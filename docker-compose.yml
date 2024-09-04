@@ -1,0 +1,15 @@
+version: '3.9'
+
+name: kitu
+
+services:
+  db:
+    image: postgres:16
+    volumes:
+      - ./scripts/postgres-docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_USER: kitu
+      POSTGRES_PASSWORD: kitu
+      PGUSER: kitu
+    ports:
+      - '127.0.0.1:5432:5432'
