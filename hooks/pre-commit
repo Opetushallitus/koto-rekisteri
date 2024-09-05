@@ -6,9 +6,3 @@ echo "Running git pre-commit hook"
 
 echo "Running ktlint..."
 ktlint
-
-LINT_STATUS=$?
-
-if [[ $LINT_STATUS -ne 0 ]]; then
-    exit 1
-fi
