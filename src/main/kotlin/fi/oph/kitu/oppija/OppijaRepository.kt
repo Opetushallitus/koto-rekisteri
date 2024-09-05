@@ -7,20 +7,6 @@ import javax.sql.DataSource
 
 @Repository
 class OppijaRepository(dataSource: DataSource) : JdbcTemplate(dataSource) {
-    override fun afterPropertiesSet() {
-        super.afterPropertiesSet()
-
-        execute("DROP TABLE IF EXISTS oppija")
-        execute(
-            """
-            |CREATE TABLE oppija (
-            |    id SERIAL PRIMARY KEY,
-            |    name TEXT
-            |)
-            """.trimMargin()
-        )
-    }
-
     fun getAll(): Iterable<Oppija> {
         return query(
             "SELECT id, name FROM oppija ORDER BY name, id",
