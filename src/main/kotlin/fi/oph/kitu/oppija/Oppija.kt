@@ -1,3 +1,6 @@
 package fi.oph.kitu.oppija
 
-data class Oppija(val id: Long, val name: String)
+data class Oppija(
+    val id: Long,
+    val name: String,
+)
