@@ -3,12 +3,10 @@ package fi.oph.kitu.oppija
 import org.springframework.stereotype.Service
 
 @Service
-class OppijaService(private val oppijaRepository: OppijaRepository) {
-    fun getAll(): Iterable<Oppija> {
-        return oppijaRepository.getAll()
-    }
+class OppijaService(
+    private val oppijaRepository: OppijaRepository,
+) {
+    fun getAll(): Iterable<Oppija> = oppijaRepository.getAll()
 
-    fun insert(name: String): Oppija? {
-        return oppijaRepository.insert(name)
-    }
+    fun insert(name: String): Oppija? = oppijaRepository.insert(name)
 }

@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import kotlin.test.assertContentEquals
 
 @SpringBootTest
-class KituKotlinApplicationTests : DBFixture() {
+class KituApplicationTests : DBFixture() {
     @Autowired
     private lateinit var oppijaService: OppijaService
 
@@ -24,11 +24,12 @@ class KituKotlinApplicationTests : DBFixture() {
         oppijaService.insert("Another One")
 
         val actual = oppijaService.getAll()
-        val expected = listOf(
-            Oppija(3L, "Another One"),
-            Oppija(1L, "Firstname Lastname"),
-            Oppija(2L, "Somebody Else"),
-        )
+        val expected =
+            listOf(
+                Oppija(3L, "Another One"),
+                Oppija(1L, "Firstname Lastname"),
+                Oppija(2L, "Somebody Else"),
+            )
         assertContentEquals(expected, actual)
     }
 }

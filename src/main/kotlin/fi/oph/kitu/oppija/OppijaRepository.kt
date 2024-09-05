@@ -6,18 +6,19 @@ import org.springframework.stereotype.Repository
 import javax.sql.DataSource
 
 @Repository
-class OppijaRepository(dataSource: DataSource) : JdbcTemplate(dataSource) {
-    fun getAll(): Iterable<Oppija> {
-        return query(
+class OppijaRepository(
+    dataSource: DataSource,
+) : JdbcTemplate(dataSource) {
+    fun getAll(): Iterable<Oppija> =
+        query(
             "SELECT id, name FROM oppija ORDER BY name, id",
-            RowMapper { rs, _ -> Oppija(rs.getLong("id"), rs.getString("name")) })
-    }
+            RowMapper { rs, _ -> Oppija(rs.getLong("id"), rs.getString("name")) },
+        )
 
-    fun insert(name: String): Oppija? {
-        return queryForObject(
+    fun insert(name: String): Oppija? =
+        queryForObject(
             "INSERT INTO oppija(name) VALUES (?) RETURNING id, name",
             { rs, _ -> Oppija(rs.getLong("id"), rs.getString("name")) },
-            name
+            name,
         )
-    }
 }
