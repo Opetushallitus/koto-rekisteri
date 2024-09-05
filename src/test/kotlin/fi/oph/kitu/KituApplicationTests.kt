@@ -2,13 +2,14 @@ package fi.oph.kitu
 
 import fi.oph.kitu.oppija.Oppija
 import fi.oph.kitu.oppija.OppijaService
+import fi.oph.kitu.test.DBFixture
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import kotlin.test.assertContentEquals
 
 @SpringBootTest
-class KituKotlinApplicationTests {
+class KituKotlinApplicationTests : DBFixture() {
     @Autowired
     private lateinit var oppijaService: OppijaService
 
