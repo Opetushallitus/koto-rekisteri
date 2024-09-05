@@ -9,25 +9,25 @@ import kotlin.test.assertContentEquals
 
 @SpringBootTest
 class KituKotlinApplicationTests {
-	@Autowired
-	private lateinit var oppijaService: OppijaService
+    @Autowired
+    private lateinit var oppijaService: OppijaService
 
-	@Test
-	fun contextLoads() {
-	}
+    @Test
+    fun contextLoads() {
+    }
 
-	@Test
-	fun dbConnectionIsAvailable() {
-		oppijaService.insert("Firstname Lastname")
-		oppijaService.insert("Somebody Else")
-		oppijaService.insert("Another One")
+    @Test
+    fun dbConnectionIsAvailable() {
+        oppijaService.insert("Firstname Lastname")
+        oppijaService.insert("Somebody Else")
+        oppijaService.insert("Another One")
 
-		val actual = oppijaService.getAll()
-		val expected = listOf(
-			Oppija(3L, "Another One"),
-			Oppija(1L, "Firstname Lastname"),
-			Oppija(2L, "Somebody Else"),
-		)
-		assertContentEquals(expected, actual)
-	}
+        val actual = oppijaService.getAll()
+        val expected = listOf(
+            Oppija(3L, "Another One"),
+            Oppija(1L, "Firstname Lastname"),
+            Oppija(2L, "Somebody Else"),
+        )
+        assertContentEquals(expected, actual)
+    }
 }
