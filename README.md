@@ -11,6 +11,7 @@ Paikallinen testaus- ja kehitysympäristö vaatii toimiakseen PostgreSQL -tietok
 ```shell
 docker compose up -d db # Käynnistä tietokanta
 ./mvnw flyway:migrate # Aja migraatiot
+./scripts/setup-hooks.sh # Jos haluat lisätä formatointitarkastuksen commitin luonnin yhteyteen
 ktlint # Tarkista formatointi. Voit formatoida koodin ajamalla `ktlint --format`
 ./mvnw spring:boot run # Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
 ```
