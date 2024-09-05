@@ -11,11 +11,21 @@ Paikallinen testaus- ja kehitysympäristö vaatii toimiakseen PostgreSQL -tietok
 ```shell
 docker compose up -d db # Käynnistä tietokanta
 ./mvnw flyway:migrate # Aja migraatiot
-./scripts/setup-hooks.sh # Jos haluat lisätä formatointitarkastuksen commitin luonnin yhteyteen
-ktlint # Tarkista formatointi. Voit formatoida koodin ajamalla `ktlint --format`
-./mvnw spring:boot run # Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
+
 ```
 
 Kontissa suoritetaan PostgreSQL -palvelinohjelmaa, johon on [konfiguroitu](scripts/postgres-docker/init-db.sql) tietokannat `kitu-dev` (paikallisen kehitysympäristön käyttöön) ja `kitu-test` (automaattisille testeille). Flyway alustaa tietokannan skeeman [migraatioilla](src/main/resources/db/migration).
 
 
+#### Hyödyllisiä komentoja
+
+```shell
+# Jos haluat lisätä formatointitarkastuksen commitin luonnin yhteyteen
+./scripts/setup-hooks.sh
+
+# Tarkista formatointi. Voit formatoida koodin ajamalla `ktlint --format`
+ktlint
+
+ # Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
+./mvnw spring-boot:run
+```
