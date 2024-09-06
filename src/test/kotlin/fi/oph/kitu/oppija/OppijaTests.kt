@@ -24,7 +24,7 @@ class OppijaTests(
     fun `get oppija`() {
         client
             .get()
-            .uri("/oppija")
+            .uri("/api/oppija")
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus()
@@ -37,7 +37,7 @@ class OppijaTests(
     fun `post oppija`() {
         client
             .post()
-            .uri("/oppija")
+            .uri("/api/oppija")
             .bodyValue("Mikko Mallikas")
             .exchange()
             .expectStatus()

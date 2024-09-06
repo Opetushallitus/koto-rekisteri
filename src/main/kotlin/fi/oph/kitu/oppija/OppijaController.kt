@@ -11,10 +11,10 @@ class OppijaController {
     @Autowired
     private lateinit var oppijaService: OppijaService
 
-    @GetMapping("/oppija")
+    @GetMapping("/api/oppija")
     fun getOppijat(): Iterable<Oppija> = oppijaService.getAll()
 
-    @PostMapping("/oppija")
+    @PostMapping("/api/oppija")
     fun addOppija(
         @RequestBody name: String,
     ) = oppijaService.insert(name)
