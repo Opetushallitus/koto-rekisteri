@@ -18,14 +18,17 @@ class Logging {
                 filterChain: FilterChain,
             ) {
                 val start = System.currentTimeMillis()
-                val result = filterChain.doFilter(request, response).runCatching { }
+                val result =
+                    runCatching {
+                        filterChain.doFilter(request, response)
+                    }
                 val end = System.currentTimeMillis()
 
                 result.fold(
                     onSuccess = {
                         logger.info("${request.method} ${request.requestURI}: duration=${end - start}ms status_code=${response.status}")
                     },
-                    onFailure = fun (err) {
+                    onFailure = { err ->
                         logger.info("${request.method} ${request.requestURI}: duration=${end - start}ms exception=${err.message}")
                         throw err
                     },
