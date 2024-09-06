@@ -18,20 +18,31 @@ class Logging {
                 filterChain: FilterChain,
             ) {
                 val start = System.currentTimeMillis()
-                val result =
-                    runCatching {
-                        filterChain.doFilter(request, response)
-                    }
+                val result = runCatching { filterChain.doFilter(request, response) }
                 val end = System.currentTimeMillis()
+
+                val prefix = "${request.method} ${request.requestURI}: "
 
                 result.fold(
                     onSuccess = {
-                        logger.info("${request.method} ${request.requestURI}: duration=${end - start}ms status_code=${response.status}")
+                        logHttpRequest(prefix, listOf("duration=${end - start}ms", "status_code=${response.status}"))
                     },
                     onFailure = { err ->
-                        logger.info("${request.method} ${request.requestURI}: duration=${end - start}ms exception=${err.message}")
+                        logHttpRequest(prefix, listOf("duration=${end - start}ms", "exception=${err.message}"))
                         throw err
                     },
+                )
+            }
+
+            private fun logHttpRequest(
+                prefix: String,
+                fields: List<String>,
+            ) {
+                logger.info(
+                    fields.joinToString(
+                        separator = ", ",
+                        prefix = prefix,
+                    ),
                 )
             }
         }
