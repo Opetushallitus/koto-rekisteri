@@ -15,5 +15,7 @@ class OppijaController {
     fun getOppijat(): Iterable<Oppija> = oppijaService.getAll()
 
     @PostMapping("/oppija")
-    fun addOppija(@RequestBody name: String) = oppijaService.insert(name)
+    fun addOppija(
+        @RequestBody name: String,
+    ) = oppijaService.insert(name)
 }

@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.client.MockMvcWebTestClient
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OppijaTests(
-    @Autowired val controller: OppijaController
+    @Autowired val controller: OppijaController,
 ) : DBFixture() {
     private lateinit var client: WebTestClient
 
@@ -22,19 +22,27 @@ class OppijaTests(
 
     @Test
     fun `get oppija`() {
-        client.get().uri("/oppija")
+        client
+            .get()
+            .uri("/oppija")
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
-            .expectStatus().isOk()
-            .expectBody().json("[]")
+            .expectStatus()
+            .isOk()
+            .expectBody()
+            .json("[]")
     }
 
     @Test
     fun `post oppija`() {
-        client.post().uri("/oppija")
+        client
+            .post()
+            .uri("/oppija")
             .bodyValue("Mikko Mallikas")
             .exchange()
-            .expectStatus().isOk()
-            .expectBody().json("{\"id\":1,\"name\":\"Mikko Mallikas\"}")
+            .expectStatus()
+            .isOk()
+            .expectBody()
+            .json("{\"id\":1,\"name\":\"Mikko Mallikas\"}")
     }
 }
