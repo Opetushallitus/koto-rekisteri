@@ -16,6 +16,8 @@ class WebSecurityConfig {
             .csrf { csrf -> csrf.ignoringRequestMatchers("/api/*") }
             .authorizeHttpRequests { authorize ->
                 authorize
+                    .requestMatchers("api/health/**")
+                    .permitAll()
                     .anyRequest()
                     .authenticated()
             }.httpBasic(Customizer.withDefaults())
