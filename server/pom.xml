@@ -176,10 +176,10 @@
                             <generatorName>kotlin-spring</generatorName>
                             <!-- Enabled generators -->
                             <generateModels>true</generateModels>
+                            <generateApis>true</generateApis>
 
                             <!-- Disable generation of everything else -->
                             <skipOperationExample>true</skipOperationExample>
-                            <generateApis>false</generateApis>
                             <generateSupportingFiles>false</generateSupportingFiles>
 
                             <!--
@@ -222,8 +222,10 @@
 
                                 <!-- Use tags for determining controllers' names etc. -->
                                 <useTags>true</useTags>
-                                <!-- Don't generate default implementations on controller methods -->
+
+                                <!-- Disable some boilerplate on generated API interfaces -->
                                 <skipDefaultInterface>true</skipDefaultInterface>
+                                <useBeanValidation>false</useBeanValidation>
                             </configOptions>
                         </configuration>
                     </execution>
