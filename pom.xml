@@ -169,11 +169,22 @@
                     </execution>
 
                     <execution>
-                        <id>frontend - npm install</id>
+                        <id>frontend - install npm packages</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                     </execution>
+
+                    <execution>
+                        <id>frontend - build node app</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
         </plugins>
