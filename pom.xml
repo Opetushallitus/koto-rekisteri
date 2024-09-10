@@ -33,6 +33,7 @@
         <local-env.datasource.url>jdbc:postgresql://localhost:5432/kitu-dev</local-env.datasource.url>
         <local-env.datasource.user>kitu</local-env.datasource.user>
         <local-env.datasource.password>kitu</local-env.datasource.password>
+        <frontendDir>${project.basedir}/src/main/frontend</frontendDir>
     </properties>
     <dependencies>
         <dependency>
@@ -155,7 +156,7 @@
                 <version>1.15.0</version>
 
                 <configuration>
-                    <workingDirectory>src/main/frontend</workingDirectory>
+                    <workingDirectory>${frontendDir}</workingDirectory>
                     <nodeVersion>v22.7.0</nodeVersion>
                     <npmVersion>10.8.3</npmVersion>
                 </configuration>
@@ -187,6 +188,38 @@
 
                 </executions>
             </plugin>
+
+            <!-- Resources Plugin to copy React build files -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.1</version>
+                    <executions>
+                        <execution>
+                            <id>copy-react-build</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+                                <resources>
+                                    <resource>
+                                        <directory>${frontendDir}/out</directory>
+                                        <filtering>false</filtering>
+                                        <includes>
+                                            <include>**/*</include>
+                                        </includes>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                        </executions>
+                    </plugin>
+
+
+
+
         </plugins>
     </build>
 
