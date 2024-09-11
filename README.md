@@ -32,9 +32,9 @@ jonka asentamisen jälkeen IDEA:n voi laittaa formatoimaan tallentamisen yhteyde
 # Tarkista formatointi. Voit formatoida koodin ajamalla `ktlint --format`
 ktlint
 
-# paketoi projektin. Tämä myöskin kopioi node-resurssit target/staticin alle
+# paketoi projektin.
 mvn package
 
- # Voit käyttää tätä jos ajat ympäristöä terminaalin kautta§§
+ # Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
 ./mvnw spring-boot:run
 ```
