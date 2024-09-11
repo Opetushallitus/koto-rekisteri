@@ -35,6 +35,8 @@ class WebSecurityConfig {
                 it.logoutRequestMatcher(AntPathRequestMatcher("/logout", "GET"))
             }.authorizeHttpRequests { authorize ->
                 authorize
+                    .requestMatchers("/actuator/health")
+                    .permitAll()
                     .anyRequest()
                     .authenticated()
             }.addFilter(casAuthenticationFilter)
