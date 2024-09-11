@@ -31,7 +31,8 @@ jobs:
       with:
         aws-region: eu-west-1
         role-to-assume: arn:aws:iam::682033502734:role/kitu-github-actions-role
-    - run: |
+    - name: Deploy
+      run: |
         npm ci
         npx cdk deploy --all
       working-directory: infra
