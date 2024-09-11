@@ -21,7 +21,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - run: |
+    - name: Build and push Docker image
+      run: |
         tag=ghcr.io/opetushallitus/koto-rekisteri:$GITHUB_SHA
         docker build -t $tag . 
         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
