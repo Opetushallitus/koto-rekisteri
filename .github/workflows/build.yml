@@ -30,7 +30,6 @@ jobs:
     - run: docker push $tag
       if: github.ref_name == 'main'
     - name: Log in to dev
-      if: github.ref_name == 'main'
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: eu-west-1
