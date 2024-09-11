@@ -27,13 +27,22 @@ jobs:
         tag=ghcr.io/opetushallitus/koto-rekisteri:$GITHUB_SHA
         docker build -t $tag . 
         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        docker push $tag
+    - run: docker push $tag
+      if: github.ref_name == 'main'
     - name: Log in to dev
+      if: github.ref_name == 'main'
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: eu-west-1
         role-to-assume: arn:aws:iam::682033502734:role/kitu-github-actions-role
+    - name: Diff
+      if: github.ref_name != 'main'
+      run: |
+        npm ci
+        npx cdk diff --all --require-approval=never
+      working-directory: infra
     - name: Deploy
+      if: github.ref_name == 'main'
       run: |
         npm ci
         npx cdk deploy --all --require-approval=never
