@@ -4,6 +4,8 @@
 - PostgreSQL
 - maven
 - java 21
+- node 22.7.0
+  - npm 10.8.3 
 
 ## Kehittäminen
 Paikallinen testaus- ja kehitysympäristö vaatii toimiakseen PostgreSQL -tietokannan. Tietokantaa ajetaan Dockerissa ja ne saa käyntiin `docker compose`:lla. Tietokannan skeema alustetaan migraatioilla. Migraatiotyökaluna käytössä on _Flyway_. Migraatioiden suorittamiseen paikallisessa kehitysympäristössä on konfiguroitu Maven-liitännäinen.
@@ -30,6 +32,9 @@ jonka asentamisen jälkeen IDEA:n voi laittaa formatoimaan tallentamisen yhteyde
 # Tarkista formatointi. Voit formatoida koodin ajamalla `ktlint --format`
 ktlint
 
- # Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
+# paketoi projektin. Tämä myöskin kopioi node-resurssit target/staticin alle
+mvn package
+
+ # Voit käyttää tätä jos ajat ympäristöä terminaalin kautta§§
 ./mvnw spring-boot:run
 ```
