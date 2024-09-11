@@ -33,7 +33,7 @@
         <local-env.datasource.url>jdbc:postgresql://localhost:5432/kitu-dev</local-env.datasource.url>
         <local-env.datasource.user>kitu</local-env.datasource.user>
         <local-env.datasource.password>kitu</local-env.datasource.password>
-        <frontendDir>${project.basedir}/frontend</frontendDir>
+        <frontendDir>${project.basedir}/../frontend</frontendDir>
     </properties>
     <dependencies>
         <dependency>
