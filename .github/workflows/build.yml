@@ -22,7 +22,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build and push Docker image
-      working-directory: server
       run: |
         tag=ghcr.io/opetushallitus/koto-rekisteri:$GITHUB_SHA
         docker build -t $tag . 
