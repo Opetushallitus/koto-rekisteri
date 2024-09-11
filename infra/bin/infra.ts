@@ -6,7 +6,7 @@ import { InfraStack } from "../lib/infra-stack";
 // CIDR allocation strategy:
 // Top: 10.15.0.0/16
 // VPCs: 10.15.0.0/18, 10.15.64.0/18, 10.15.128.0/18, 10.15.192.0/18 (16382 addresses)
-// Subnets: ...
+// Subnets: (let AWS calculate these for us)
 
 const accounts = {
   dev: {
