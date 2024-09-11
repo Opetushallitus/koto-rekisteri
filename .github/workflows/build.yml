@@ -34,5 +34,5 @@ jobs:
     - name: Deploy
       run: |
         npm ci
-        npx cdk deploy --all
+        npx cdk deploy --all --require-approval=never
       working-directory: infra
