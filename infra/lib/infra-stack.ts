@@ -4,7 +4,11 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import { GithubActionsStack } from "./github-actions-stack";
-import { aws_cloudfront, aws_cloudfront_origins } from "aws-cdk-lib";
+import {
+  aws_certificatemanager,
+  aws_cloudfront,
+  aws_cloudfront_origins,
+} from "aws-cdk-lib";
 
 export interface InfraStackProps extends cdk.StackProps {
   domainName: string;
@@ -43,7 +47,8 @@ export class InfraStack extends cdk.Stack {
           {},
         ),
       },
-      domainNames: [props.domainName],
+      // FIXME: uncomment when we have a certificate
+      // domainNames: [props.domainName],
     });
   }
 }
