@@ -13,8 +13,8 @@ Paikallinen testaus- ja kehitysympäristö vaatii toimiakseen PostgreSQL -tietok
 
 ```shell
 docker compose up -d db # Käynnistä tietokanta
+cd server
 ./mvnw flyway:migrate # Aja migraatiot
-
 ```
 
 Kontissa suoritetaan PostgreSQL -palvelinohjelmaa, johon on [konfiguroitu](scripts/postgres-docker/init-db.sql) tietokannat `kitu-dev` (paikallisen kehitysympäristön käyttöön) ja `kitu-test` (automaattisille testeille). Flyway alustaa tietokannan skeeman [migraatioilla](src/main/resources/db/migration).
@@ -29,18 +29,18 @@ Asennettuasi misen voit ajaa komennon `mise install`, ja oikeat java- ja node-ve
 Sovelluksessa käytetään `ktlint` - teknologiaa kotlin - tiedostojen tyylittämiseen. MacOS:llä sen saa asennettua ajamalla `brew install ktlint`. IntelliJ IDEA:aan saa plugin `ktlint`, 
 jonka asentamisen jälkeen IDEA:n voi laittaa formatoimaan tallentamisen yhteydessä `Settings` -> `Tools` -> `KtLint` alta `Mode`: `Distract free` - radiobutton ja `Format`: `on save` - checkbox täpätty. 
 
-#### Hyödyllisiä komentoja
+### Hyödyllisiä komentoja
 
 ```shell
 # Jos haluat lisätä formatointitarkastuksen commitin luonnin yhteyteen
 ./scripts/setup-hooks.sh
 
 # Tarkista formatointi. Voit formatoida koodin ajamalla `ktlint --format`
-ktlint
+cd server && ktlint
 
 # paketoi projektin.
-mvn package
+cd server && mvn package
 
  # Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
-./mvnw spring-boot:run
+cd server && ./mvnw spring-boot:run
 ```
