@@ -1,6 +1,7 @@
 # Kielitutkintorekisteri
 
 ## Riippuvuudet
+- Docker
 - PostgreSQL
 - maven
 - java 21
@@ -17,6 +18,11 @@ docker compose up -d db # Käynnistä tietokanta
 ```
 
 Kontissa suoritetaan PostgreSQL -palvelinohjelmaa, johon on [konfiguroitu](scripts/postgres-docker/init-db.sql) tietokannat `kitu-dev` (paikallisen kehitysympäristön käyttöön) ja `kitu-test` (automaattisille testeille). Flyway alustaa tietokannan skeeman [migraatioilla](src/main/resources/db/migration).
+
+### mise
+
+Javan ja noden voi asentaa [mise](https://github.com/jdx/mise)-työkalulla. Misen asennus onnistuu homebrewlla (`brew install mise`) tai [vaihtoehtoisilla tavoilla](https://mise.jdx.dev/getting-started.html#_1-install-mise-cli).
+Asennettuasi misen voit ajaa komennon `mise install`, ja oikeat java- ja node-versiot asentuvat.
 
 ### Linttaus
 
