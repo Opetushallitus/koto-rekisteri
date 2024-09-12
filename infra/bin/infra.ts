@@ -16,6 +16,7 @@ const environments = {
       cidr: "10.15.0.0/18",
       maxAzs: 2,
     },
+    domainName: "kotorekisteri.hahtuvaopintopolku.fi",
   },
   test: {
     account: "961341546901",
@@ -24,7 +25,7 @@ const environments = {
       cidr: "10.15.64.0/18",
       maxAzs: 3,
     },
-
+    domainName: "kotorekisteri.testiopintopolku.fi",
   },
   prod: {
     account: "515966535475",
@@ -33,7 +34,8 @@ const environments = {
       cidr: "10.15.128.0/18",
       maxAzs: 3,
     },
-  }
+    domainName: "kotorekisteri.opintopolku.fi",
+  },
 };
 
 type EnvName = keyof typeof environments;
@@ -58,4 +60,5 @@ new InfraStack(app, "InfraStack", {
   env,
   cidrBlock: env.network.cidr,
   maxAzs: env.network.maxAzs,
+  domainName: env.domainName,
 });
