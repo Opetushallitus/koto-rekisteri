@@ -8,6 +8,8 @@ const nextConfig = {
   // point the files straight to maven's target files.
   distDir: "../server/target/classes/static",
 
+  trailingSlash: true,
+
   // The build fails without this.
   images: {
     unoptimized: true
