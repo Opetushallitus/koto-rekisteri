@@ -9,6 +9,23 @@ on:
 concurrency: build-${{ github.ref }}
 
 jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+          mkdir -p ../server/target/classes/
+          mv out ../server/target/classes/static
+        working-directory: frontend
+
   deploy_dev:
     name: dev
     uses: ./.github/workflows/deploy-env.yml
@@ -31,3 +48,6 @@ jobs:
     with:
       env: prod
       account_id: 515966535475
+
+
+
