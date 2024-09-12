@@ -2,6 +2,8 @@
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { InfraStack } from "../lib/infra-stack";
+import { DnsStack } from "../lib/dns-stack";
+import { CertificateStack } from "../lib/certificate-stack";
 
 // CIDR allocation strategy:
 // Top: 10.15.0.0/16
@@ -55,6 +57,19 @@ if (environments[envName as EnvName] === undefined) {
 }
 
 const env = environments[envName as EnvName];
+
+const dnsStack = new DnsStack(app, "DnsStack", {
+  crossRegionReferences: true,
+  env,
+  name: env.domainName,
+});
+
+const certificateStack = new CertificateStack(app, "CertificateStack", {
+  crossRegionReferences: true,
+  env: { ...env, region: "us-east-1" },
+  hostedZone: dnsStack.hostedZone,
+  domainName: env.domainName,
+});
 
 new InfraStack(app, "InfraStack", {
   env,
