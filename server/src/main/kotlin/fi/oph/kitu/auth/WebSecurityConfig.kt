@@ -37,6 +37,8 @@ class WebSecurityConfig {
                 authorize
                     .requestMatchers("/actuator/health")
                     .permitAll()
+                    .requestMatchers("/hello-playwright/*")
+                    .permitAll()
                     .anyRequest()
                     .authenticated()
             }.addFilter(casAuthenticationFilter)
