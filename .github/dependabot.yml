@@ -14,3 +14,7 @@ updates:
     directory: infra
     schedule:
       interval: weekly
+    groups:
+      cdk:
+        patterns:
+          - "aws-cdk*"
