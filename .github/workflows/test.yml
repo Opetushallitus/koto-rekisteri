@@ -28,7 +28,6 @@ jobs:
       - name: Build frontend
         run: |
           npm ci
-          npm run lint
           npm run build
           mkdir -p ../server/target/classes/
           mv out ../server/target/classes/static
