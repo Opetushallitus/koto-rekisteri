@@ -6,7 +6,7 @@ const nextConfig = {
   output: "export",
 
   // point the files straight to maven's target files.
-  distDir: "../server/target/classes/static",
+  distDir: "out",
 
   trailingSlash: true,
 
