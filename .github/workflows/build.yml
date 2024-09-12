@@ -41,5 +41,13 @@ jobs:
       env: test
       account_id: 961341546901
 
+  deploy_prod:
+    name: Deploy to prod
+    needs: deploy_test
+    uses: ./.github/workflows/deploy-env.yml
+    with:
+      env: prod
+      account_id: 515966535475
+
 
 

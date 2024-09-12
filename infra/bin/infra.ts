@@ -24,7 +24,16 @@ const environments = {
       cidr: "10.15.64.0/18",
       maxAzs: 3,
     },
+
   },
+  prod: {
+    account: "515966535475",
+    region: "eu-west-1",
+    network: {
+      cidr: "10.15.128.0/18",
+      maxAzs: 3,
+    },
+  }
 };
 
 type EnvName = keyof typeof environments;
