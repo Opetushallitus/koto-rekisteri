@@ -31,6 +31,9 @@ Asennettuasi misen voit ajaa komennon `mise install`, ja oikeat java- ja node-ve
 Sovelluksessa käytetään `ktlint` - teknologiaa kotlin - tiedostojen tyylittämiseen. MacOS:llä sen saa asennettua ajamalla `brew install ktlint`. IntelliJ IDEA:aan saa plugin `ktlint`,
 jonka asentamisen jälkeen IDEA:n voi laittaa formatoimaan tallentamisen yhteydessä `Settings` -> `Tools` -> `KtLint` alta `Mode`: `Distract free` - radiobutton ja `Format`: `on save` - checkbox täpätty.
 
+### IDEA
+Frontendia varten on `.run` - kansiossa Konfiguraatio, jolla voi ajaa nodea IDEA:sta. 
+
 #### Hyödyllisiä komentoja
 
 ```shell
