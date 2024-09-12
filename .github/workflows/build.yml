@@ -25,6 +25,12 @@ jobs:
     - run: docker push ghcr.io/opetushallitus/koto-rekisteri:$GITHUB_SHA
       if: github.ref_name == 'main'
 
+    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+    - name: Update dependency graph
+      uses: advanced-security/maven-dependency-submission-action@v4.1.1
+      with:
+        directory: server
+
   deploy_dev:
     name: Deploy to dev
     needs: build
