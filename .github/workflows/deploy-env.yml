@@ -13,8 +13,33 @@ on:
 jobs:
   deploy:
     name: Deploy to ${{ inputs.env }} (${{ inputs.account_id }})
+    if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     environment: ${{ inputs.env }}
+    env:
+      KITU_ENV: ${{ inputs.env }}
+      ACCOUNT_ID: ${{ inputs.account_id }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to ${{ env.KITU_ENV }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/kitu-github-actions-role
+      - name: Deploy
+        if: github.ref_name == 'main'
+        run: |
+          npm ci
+          npx cdk deploy --all --require-approval=never
+        working-directory: infra
+
+  diff:
+    name: Diff to ${{ inputs.env }} (${{ inputs.account_id }})
+    if: github.ref_name != 'main'
+    runs-on: ubuntu-latest
     env:
       KITU_ENV: ${{ inputs.env }}
       ACCOUNT_ID: ${{ inputs.account_id }}
@@ -34,9 +59,4 @@ jobs:
           npm ci
           npx cdk diff --all --require-approval=never
         working-directory: infra
-      - name: Deploy
-        if: github.ref_name == 'main'
-        run: |
-          npm ci
-          npx cdk deploy --all --require-approval=never
-        working-directory: infra
+
