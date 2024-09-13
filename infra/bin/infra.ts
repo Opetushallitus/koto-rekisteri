@@ -18,7 +18,7 @@ const environments = {
       cidr: "10.15.0.0/18",
       maxAzs: 2,
     },
-    domainName: "kotorekisteri.hahtuvaopintopolku.fi",
+    domainName: "kios.hahtuvaopintopolku.fi",
   },
   test: {
     account: "961341546901",
@@ -27,7 +27,7 @@ const environments = {
       cidr: "10.15.64.0/18",
       maxAzs: 3,
     },
-    domainName: "kotorekisteri.testiopintopolku.fi",
+    domainName: "kios.testiopintopolku.fi",
   },
   prod: {
     account: "515966535475",
@@ -36,7 +36,7 @@ const environments = {
       cidr: "10.15.128.0/18",
       maxAzs: 3,
     },
-    domainName: "kotorekisteri.opintopolku.fi",
+    domainName: "kios.opintopolku.fi",
   },
 };
 
