@@ -2,11 +2,14 @@ FROM node:22.7-alpine3.20 AS frontend-builder
 
 WORKDIR /kitu
 
+COPY scripts /kitu/scripts
 COPY frontend /kitu/frontend
 
-WORKDIR /kitu/frontend
+RUN chmod +x ./scripts/build_frontend.sh
+RUN ./scripts/build_frontend.sh /kitu
 
-RUN npm ci && npm run build
+RUN ls -la
+RUN tree /kitu
 
 FROM maven:3.9.9-amazoncorretto-21-al2023 AS backend-builder
 
@@ -16,7 +19,7 @@ COPY server /kitu/server
 
 WORKDIR /kitu/server
 
-COPY --from=frontend-builder /kitu/frontend/out /kitu/server/target/classes/static
+COPY --from=frontend-builder /kitu/server/target/classes/static /kitu/server/target/classes/static
 
 RUN mvn package -DskipTests
 
