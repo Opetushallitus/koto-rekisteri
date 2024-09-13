@@ -3,6 +3,7 @@ package fi.oph.kitu.auth
 import org.apereo.cas.client.session.SingleSignOutFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
 import org.springframework.security.cas.web.CasAuthenticationFilter
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -26,6 +27,7 @@ class WebSecurityConfig {
         singleSignOutFilter: SingleSignOutFilter,
         authenticationEntryPoint: AuthenticationEntryPoint,
         casConfig: CasConfig,
+        environment: Environment,
     ): SecurityFilterChain {
         http
             .csrf { csrf -> csrf.ignoringRequestMatchers("/api/*") }
@@ -37,14 +39,23 @@ class WebSecurityConfig {
                 authorize
                     .requestMatchers("/actuator/health")
                     .permitAll()
-                    .requestMatchers("/hello-playwright/*")
-                    .permitAll()
-                    .anyRequest()
-                    .authenticated()
             }.addFilter(casAuthenticationFilter)
             .exceptionHandling {
                 it.authenticationEntryPoint(authenticationEntryPoint)
             }.addFilterBefore(singleSignOutFilter, CasAuthenticationFilter::class.java)
+
+        if (
+            (environment.activeProfiles.contains("local") || environment.activeProfiles.contains("e2e")) &&
+            !environment.activeProfiles.any { it == "qa" || it.lowercase().contains("prod") }
+        ) {
+            http.authorizeHttpRequests { authorize ->
+                authorize
+                    .requestMatchers("/dev/*")
+                    .permitAll()
+            }
+        }
+
+        http.authorizeHttpRequests { it.anyRequest().authenticated() }
 
         return http.build()
     }
