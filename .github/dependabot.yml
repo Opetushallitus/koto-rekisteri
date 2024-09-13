@@ -11,7 +11,10 @@ updates:
     schedule:
       interval: weekly
   - package-ecosystem: npm
-    directory: infra
+    directories:
+      - infra
+      - e2e
+      - frontend
     schedule:
       interval: weekly
     groups:
