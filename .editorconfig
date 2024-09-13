@@ -1,3 +1,6 @@
 [*.{kt,kts}]
 max_line_length = 120
 
+[**/generated**/*.{kt,kts}]
+# Allow wildcard imports in generated code. Codegen outputs wildcards we can't easily get rid of.
+ktlint_standard_no-wildcard-imports = disabled

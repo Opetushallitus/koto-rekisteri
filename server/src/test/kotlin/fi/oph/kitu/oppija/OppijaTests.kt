@@ -41,7 +41,7 @@ class OppijaTests(
             .bodyValue("Mikko Mallikas")
             .exchange()
             .expectStatus()
-            .isOk()
+            .isCreated()
             .expectBody()
             .json("{\"id\":1,\"name\":\"Mikko Mallikas\"}")
     }
