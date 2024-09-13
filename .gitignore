@@ -33,3 +33,5 @@ build/
 
 # VIM
 [._]*.un~
+
+cdk.out/
