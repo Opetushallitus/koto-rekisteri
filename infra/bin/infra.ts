@@ -18,7 +18,7 @@ const environments = {
       cidr: "10.15.0.0/18",
       maxAzs: 2,
     },
-    domainName: "kios.hahtuvaopintopolku.fi",
+    domainName: "kios.untuvaopintopolku.fi",
   },
   test: {
     account: "961341546901",
