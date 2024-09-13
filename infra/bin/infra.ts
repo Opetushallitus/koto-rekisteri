@@ -40,7 +40,11 @@ const environments = {
   },
 };
 
-type EnvName = keyof typeof environments;
+type EnvironmentName = keyof typeof environments;
+type Environment = (typeof environments)[EnvironmentName];
+const validEnvironmentNames = Object.keys(environments);
+const isValidEnvironmentName = (name: string): name is EnvironmentName =>
+  validEnvironmentNames.includes(name);
 
 const app = new cdk.App();
 
@@ -50,13 +54,13 @@ if (envName === undefined) {
   throw new Error("KITU_ENV required");
 }
 
-if (environments[envName as EnvName] === undefined) {
+if (!isValidEnvironmentName(envName)) {
   throw new Error(
-    `KITU_ENV invalid value ${envName}, expected one of ${Object.keys(environments).join(", ")}`,
+    `KITU_ENV invalid value ${envName}, expected one of ${validEnvironmentNames.join(", ")}`,
   );
 }
 
-const env = environments[envName as EnvName];
+const env: Environment = environments[envName];
 
 const dnsStack = new DnsStack(app, "DnsStack", {
   crossRegionReferences: true,
