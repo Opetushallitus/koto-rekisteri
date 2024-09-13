@@ -1,0 +1,60 @@
+openapi: 3.0.0
+info:
+  version: 0.0.1
+  title: kitu
+tags:
+  - name: kitu
+    description: KOTO-rekisteri
+paths:
+  /api/oppija:
+    get:
+      tags:
+        - "oppija-controller"
+      summary: "Hakee listan kaikista oppijoista"
+      operationId: "getOppijat"
+      responses:
+        200:
+          description: "Oppijoiden hakeminen onnistui"
+          content:
+            "application/json":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Oppija"
+    post:
+      tags:
+        - "oppija-controller"
+      summary: "Lisää oppijan järjestelmään"
+      operationId: "addOppija"
+      requestBody:
+        description: "Lisättävän oppijan nimi"
+        required: true
+        content:
+          "text/plain":
+            schema:
+              type: string
+              example: "Etunimi Sukunimi"
+      responses:
+        201:
+          description: "Oppijan lisäminen onnistui"
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Oppija"
+        400:
+          description: "Virheellinen pyyntö"
+components:
+  schemas:
+    Oppija:
+      required:
+        - id
+        - name
+      title: Oppija
+      description: KOTO-oppija
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
