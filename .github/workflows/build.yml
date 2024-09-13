@@ -9,32 +9,16 @@ on:
 concurrency: build-${{ github.ref }}
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build and push Docker image
-      run: |
-        tag=ghcr.io/opetushallitus/koto-rekisteri:$GITHUB_SHA
-        docker build -t $tag . 
-        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-    - run: docker push ghcr.io/opetushallitus/koto-rekisteri:$GITHUB_SHA
-      if: github.ref_name == 'main'
 
   deploy_dev:
-    name: Deploy to dev
-    needs: build
+    name: dev
     uses: ./.github/workflows/deploy-env.yml
     with:
       env: dev
       account_id: 682033502734
 
   deploy_test:
-    name: Deploy to test
+    name: test
     needs: deploy_dev
     uses: ./.github/workflows/deploy-env.yml
     with:
@@ -42,7 +26,7 @@ jobs:
       account_id: 961341546901
 
   deploy_prod:
-    name: Deploy to prod
+    name: prod
     needs: deploy_test
     uses: ./.github/workflows/deploy-env.yml
     with:
