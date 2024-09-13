@@ -23,6 +23,13 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
         working-directory: e2e
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+          mkdir -p ../server/target/classes/
+          mv out ../server/target/classes/static
+        working-directory: frontend
       - name: Run Playwright tests
         run: npx playwright test
         working-directory: e2e
