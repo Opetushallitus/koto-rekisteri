@@ -24,12 +24,7 @@ jobs:
         run: npx playwright install --with-deps
         working-directory: e2e
       - name: Build frontend
-        run: |
-          npm ci
-          npm run build
-          mkdir -p ../server/target/classes/
-          mv out ../server/target/classes/static
-        working-directory: frontend
+        run: (chmod +x ./scripts/build_frontend.sh && ./scripts/build_frontend.sh)
       - name: Run Playwright tests
         run: npx playwright test
         working-directory: e2e

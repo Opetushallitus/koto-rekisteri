@@ -16,7 +16,7 @@ on:
 
 jobs:
 
-  frotnend:
+  frontend:
     name: "Build frontend"
     runs-on: ubuntu-latest
     steps:
@@ -26,12 +26,7 @@ jobs:
         with:
           experimental: true
       - name: Build frontend
-        run: |
-          npm ci
-          npm run build
-          mkdir -p ../server/target/classes/
-          mv out ../server/target/classes/static
-        working-directory: ./frontend
+        run: (chmod +x ./scripts/build_frontend.sh && ./scripts/build_frontend.sh)
 
   build:
     name: Run all tests
