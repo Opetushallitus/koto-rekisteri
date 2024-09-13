@@ -62,6 +62,7 @@ const dnsStack = new DnsStack(app, "DnsStack", {
   crossRegionReferences: true,
   env,
   name: env.domainName,
+  terminationProtection: true,
 });
 
 const certificateStack = new CertificateStack(app, "CertificateStack", {
