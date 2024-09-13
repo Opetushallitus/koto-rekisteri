@@ -36,6 +36,7 @@ export class InfraStack extends cdk.Stack {
         vpc,
         taskImageOptions: {
           image: ecs.ContainerImage.fromAsset("..", { file: "Dockerfile" }),
+          containerPort: 8080,
         },
       },
     );
