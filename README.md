@@ -47,6 +47,10 @@ ktlint
 # paketoi projektin.
 mvn package
 
- # Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
+# Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
 ./mvnw spring-boot:run
+
+# e2e-testien ajaminen e2e-hakemistossa
+# Playwrightin UI testien ajamiseen --ui flagilla
+npx playwright test
 ```

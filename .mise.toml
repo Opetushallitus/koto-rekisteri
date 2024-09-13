@@ -1,3 +1,6 @@
+[env]
+SPRING_PROFILES_ACTIVE = 'local'
+
 [tools]
 node = '22.7.0'
 java = 'corretto-21'
