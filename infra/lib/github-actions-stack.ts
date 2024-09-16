@@ -47,7 +47,7 @@ export class GithubActionsStack extends cdk.Stack {
         "arn:aws:iam::*:role/cdk-hnb659fds-deploy-role-*",
         "arn:aws:iam::*:role/cdk-hnb659fds-file-publishing-*",
         "arn:aws:iam::*:role/cdk-hnb659fds-image-publishing-*",
-        "arn:aws:iam::682033502734:role/cdk-hnb659fds-lookup-*",
+        "arn:aws:iam::*:role/cdk-hnb659fds-lookup-*",
       ],
     })
     this.githubActionsRole.addToPolicy(cdkPolicyStatement)
