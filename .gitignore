@@ -34,4 +34,6 @@ build/
 # VIM
 [._]*.un~
 
+# For Prettier specifically
 cdk.out/
+.next/

@@ -12,8 +12,8 @@ const nextConfig = {
 
   // The build fails without this.
   images: {
-    unoptimized: true
-  }
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
