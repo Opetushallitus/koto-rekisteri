@@ -36,11 +36,8 @@ export default function Home() {
             priority
           />
           <ol>
-            <li>
-              OPH - Kielitutkintorekisteri
-            </li>
+            <li>OPH - Kielitutkintorekisteri</li>
           </ol>
-
         </main>
         <footer className={styles.footer}>
           <a
