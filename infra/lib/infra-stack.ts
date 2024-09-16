@@ -10,6 +10,7 @@ import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns"
 import * as ecs from "aws-cdk-lib/aws-ecs"
 import { GithubActionsStack } from "./github-actions-stack"
 import { Platform } from "aws-cdk-lib/aws-ecr-assets"
+import { ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
 
 export interface InfraStackProps extends cdk.StackProps {
   certificate: aws_certificatemanager.ICertificate
@@ -67,6 +68,7 @@ export class InfraStack extends cdk.Stack {
           service.loadBalancer,
           {},
         ),
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
       domainNames: [props.domainName],
       certificate: props.certificate,
