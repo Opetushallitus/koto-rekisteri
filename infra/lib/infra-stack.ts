@@ -9,6 +9,7 @@ import {
   aws_cloudfront,
   aws_cloudfront_origins,
 } from "aws-cdk-lib";
+import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 
 export interface InfraStackProps extends cdk.StackProps {
   domainName: string;
@@ -35,7 +36,10 @@ export class InfraStack extends cdk.Stack {
       {
         vpc,
         taskImageOptions: {
-          image: ecs.ContainerImage.fromAsset("..", { file: "Dockerfile" }),
+          image: ecs.ContainerImage.fromAsset("..", {
+            file: "Dockerfile",
+            platform: Platform.LINUX_AMD64,
+          }),
           containerPort: 8080,
         },
       },
