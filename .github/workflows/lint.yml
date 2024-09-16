@@ -14,8 +14,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Download ktlint
-        run: |
-          curl -sSLO https://github.com/pinterest/ktlint/releases/download/1.3.1/ktlint && chmod a+x ktlint && sudo mv ktlint /usr/local/bin/
+      - name: Install tools
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
       - name: Check formatting
         run: ./check-formatting.sh
