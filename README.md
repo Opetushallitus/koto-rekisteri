@@ -32,7 +32,8 @@ Sovelluksessa käytetään `ktlint` - teknologiaa kotlin - tiedostojen tyylittä
 jonka asentamisen jälkeen IDEA:n voi laittaa formatoimaan tallentamisen yhteydessä `Settings` -> `Tools` -> `KtLint` alta `Mode`: `Distract free` - radiobutton ja `Format`: `on save` - checkbox täpätty.
 
 ### IDEA
-Frontendia varten on `.run` - kansiossa Konfiguraatio, jolla voi ajaa nodea IDEA:sta. 
+
+Frontendia varten on `.run` - kansiossa Konfiguraatio, jolla voi ajaa nodea IDEA:sta.
 
 #### Hyödyllisiä komentoja
 
