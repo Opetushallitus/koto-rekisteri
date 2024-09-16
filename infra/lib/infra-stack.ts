@@ -13,6 +13,7 @@ import { Platform } from "aws-cdk-lib/aws-ecr-assets"
 
 export interface InfraStackProps extends cdk.StackProps {
   certificate: aws_certificatemanager.ICertificate
+  name: string
   domainName: string
   cidrBlock: string
   maxAzs: number
@@ -42,6 +43,9 @@ export class InfraStack extends cdk.Stack {
             platform: Platform.LINUX_AMD64,
           }),
           containerPort: 8080,
+          environment: {
+            SPRING_PROFILES_ACTIVE: props.name,
+          },
         },
         cpu: 1024,
         memoryLimitMiB: 2048,
