@@ -9,7 +9,6 @@ on:
 concurrency: build-${{ github.ref }}
 
 jobs:
-
   deploy_dev:
     name: dev
     uses: ./.github/workflows/deploy-env.yml
@@ -32,6 +31,3 @@ jobs:
     with:
       env: prod
       account_id: 515966535475
-
-
-
