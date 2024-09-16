@@ -12,6 +12,7 @@ import { CertificateStack } from "../lib/certificate-stack"
 
 const environments = {
   dev: {
+    name: "untuva",
     account: "682033502734",
     region: "eu-west-1",
     network: {
@@ -21,6 +22,7 @@ const environments = {
     domainName: "kios.untuvaopintopolku.fi",
   },
   test: {
+    name: "qa",
     account: "961341546901",
     region: "eu-west-1",
     network: {
@@ -30,6 +32,7 @@ const environments = {
     domainName: "kios.testiopintopolku.fi",
   },
   prod: {
+    name: "prod",
     account: "515966535475",
     region: "eu-west-1",
     network: {
@@ -79,6 +82,7 @@ const certificateStack = new CertificateStack(app, "CertificateStack", {
 new InfraStack(app, "InfraStack", {
   crossRegionReferences: true,
   env,
+  name: env.name,
   cidrBlock: env.network.cidr,
   maxAzs: env.network.maxAzs,
   domainName: env.domainName,
