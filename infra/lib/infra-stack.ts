@@ -1,17 +1,18 @@
 import * as cdk from "aws-cdk-lib"
-import { Construct } from "constructs"
-import * as ec2 from "aws-cdk-lib/aws-ec2"
-import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns"
-import * as ecs from "aws-cdk-lib/aws-ecs"
-import { GithubActionsStack } from "./github-actions-stack"
 import {
   aws_certificatemanager,
   aws_cloudfront,
   aws_cloudfront_origins,
 } from "aws-cdk-lib"
+import { Construct } from "constructs"
+import * as ec2 from "aws-cdk-lib/aws-ec2"
+import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns"
+import * as ecs from "aws-cdk-lib/aws-ecs"
+import { GithubActionsStack } from "./github-actions-stack"
 import { Platform } from "aws-cdk-lib/aws-ecr-assets"
 
 export interface InfraStackProps extends cdk.StackProps {
+  certificate: aws_certificatemanager.ICertificate
   domainName: string
   cidrBlock: string
   maxAzs: number
@@ -64,6 +65,7 @@ export class InfraStack extends cdk.Stack {
         ),
       },
       domainNames: [props.domainName],
+      certificate: props.certificate,
     })
   }
 }
