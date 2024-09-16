@@ -5,7 +5,6 @@ const nextConfig = {
   // https://nextjs.org/docs/app/building-your-application/deploying/static-exports
   output: "export",
 
-  // point the files straight to maven's target files.
   distDir: "out",
 
   trailingSlash: true,
