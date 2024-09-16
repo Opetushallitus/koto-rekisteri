@@ -63,8 +63,7 @@ export class InfraStack extends cdk.Stack {
           {},
         ),
       },
-      // FIXME: uncomment when we have a certificate
-      // domainNames: [props.domainName],
+      domainNames: [props.domainName],
     })
   }
 }
