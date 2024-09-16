@@ -44,6 +44,9 @@ export class InfraStack extends cdk.Stack {
         },
         cpu: 1024,
         memoryLimitMiB: 2048,
+        circuitBreaker: {
+          enable: true,
+        },
       },
     )
     // ApplicationLoadBalancedFargateService doesn't let us configure this in the constructor.
