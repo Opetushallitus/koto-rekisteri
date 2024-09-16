@@ -40,6 +40,11 @@ export class InfraStack extends cdk.Stack {
         },
       },
     );
+    // ApplicationLoadBalancedFargateService doesn't let us configure this in the constructor.
+    service.targetGroup.configureHealthCheck({
+      ...service.targetGroup.healthCheck,
+      path: "/actuator/health",
+    });
 
     new aws_cloudfront.Distribution(this, "KotoCfn", {
       defaultBehavior: {
