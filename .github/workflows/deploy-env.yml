@@ -10,6 +10,8 @@ on:
         type: string
         required: true
 
+concurrency: deploy-${{ github.ref_name }}-${{ inputs.env }}
+
 jobs:
   deploy:
     name: Deploy to ${{ inputs.env }} (${{ inputs.account_id }})
