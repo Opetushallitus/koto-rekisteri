@@ -59,4 +59,3 @@ jobs:
           npm ci
           npx cdk diff --all --require-approval=never
         working-directory: infra
-
