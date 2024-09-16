@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 name: kitu
 
@@ -12,4 +12,4 @@ services:
       POSTGRES_PASSWORD: kitu
       PGUSER: kitu
     ports:
-      - '127.0.0.1:5432:5432'
+      - "127.0.0.1:5432:5432"
