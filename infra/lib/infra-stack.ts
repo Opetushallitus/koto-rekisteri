@@ -42,6 +42,8 @@ export class InfraStack extends cdk.Stack {
           }),
           containerPort: 8080,
         },
+        cpu: 1024,
+        memoryLimitMiB: 2048,
       },
     )
     // ApplicationLoadBalancedFargateService doesn't let us configure this in the constructor.
