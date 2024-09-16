@@ -2,3 +2,4 @@
 node = '22.7.0'
 java = 'corretto-21'
 "npm:prettier" = "latest"
+ktlint = "latest"
