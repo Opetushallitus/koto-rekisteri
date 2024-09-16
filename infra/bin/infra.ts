@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import "source-map-support/register";
-import * as cdk from "aws-cdk-lib";
-import { InfraStack } from "../lib/infra-stack";
-import { DnsStack } from "../lib/dns-stack";
-import { CertificateStack } from "../lib/certificate-stack";
+import "source-map-support/register"
+import * as cdk from "aws-cdk-lib"
+import { InfraStack } from "../lib/infra-stack"
+import { DnsStack } from "../lib/dns-stack"
+import { CertificateStack } from "../lib/certificate-stack"
 
 // CIDR allocation strategy:
 // Top: 10.15.0.0/16
@@ -38,36 +38,36 @@ const environments = {
     },
     domainName: "kios.opintopolku.fi",
   },
-};
+}
 
-type EnvironmentName = keyof typeof environments;
-type Environment = (typeof environments)[EnvironmentName];
-const validEnvironmentNames = Object.keys(environments);
+type EnvironmentName = keyof typeof environments
+type Environment = (typeof environments)[EnvironmentName]
+const validEnvironmentNames = Object.keys(environments)
 const isValidEnvironmentName = (name: string): name is EnvironmentName =>
-  validEnvironmentNames.includes(name);
+  validEnvironmentNames.includes(name)
 
-const app = new cdk.App();
+const app = new cdk.App()
 
-const envName = process.env.KITU_ENV;
+const envName = process.env.KITU_ENV
 
 if (envName === undefined) {
-  throw new Error("KITU_ENV required");
+  throw new Error("KITU_ENV required")
 }
 
 if (!isValidEnvironmentName(envName)) {
   throw new Error(
     `KITU_ENV invalid value ${envName}, expected one of ${validEnvironmentNames.join(", ")}`,
-  );
+  )
 }
 
-const env: Environment = environments[envName];
+const env: Environment = environments[envName]
 
 const dnsStack = new DnsStack(app, "DnsStack", {
   crossRegionReferences: true,
   env,
   name: env.domainName,
   terminationProtection: true,
-});
+})
 
 if (process.env.CREATE_CERTIFICATE_STACK === "true") {
   new CertificateStack(app, "CertificateStack", {
@@ -75,7 +75,7 @@ if (process.env.CREATE_CERTIFICATE_STACK === "true") {
     env: { ...env, region: "us-east-1" },
     hostedZone: dnsStack.hostedZone,
     domainName: env.domainName,
-  });
+  })
 }
 
 new InfraStack(app, "InfraStack", {
@@ -83,4 +83,4 @@ new InfraStack(app, "InfraStack", {
   cidrBlock: env.network.cidr,
   maxAzs: env.network.maxAzs,
   domainName: env.domainName,
-});
+})

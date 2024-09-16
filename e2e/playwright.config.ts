@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test"
 
 /**
  * Read environment variables from file.
@@ -80,4 +80,4 @@ export default defineConfig({
     // stdout: "pipe",
     // stderr: "pipe"
   },
-});
+})
