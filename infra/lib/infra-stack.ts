@@ -10,6 +10,7 @@ import {
   aws_cloudfront_origins,
 } from "aws-cdk-lib"
 import { Platform } from "aws-cdk-lib/aws-ecr-assets"
+import { ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
 
 export interface InfraStackProps extends cdk.StackProps {
   domainName: string
@@ -62,6 +63,7 @@ export class InfraStack extends cdk.Stack {
           service.loadBalancer,
           {},
         ),
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
       domainNames: [props.domainName],
     })
