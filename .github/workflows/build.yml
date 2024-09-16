@@ -16,15 +16,15 @@ jobs:
       contents: read
       packages: write
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Build frontend
-      run: |
-        npm ci
-        npm run build
-        mkdir -p ../server/target/classes/
-        mv out ../server/target/classes/static
-        working-directory: frontend
+      - name: Install tools
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
+
+      - name: Build frontend
+        run: (chmod +x ./scripts/build_frontend.sh && ./scripts/build_frontend.sh)
 
   deploy_dev:
     name: dev
@@ -48,6 +48,3 @@ jobs:
     with:
       env: prod
       account_id: 515966535475
-
-
-
