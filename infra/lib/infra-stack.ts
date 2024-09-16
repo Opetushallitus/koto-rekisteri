@@ -46,6 +46,7 @@ export class InfraStack extends cdk.Stack {
         memoryLimitMiB: 2048,
         circuitBreaker: {
           enable: true,
+          rollback: true,
         },
       },
     )
