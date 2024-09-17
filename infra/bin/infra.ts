@@ -4,6 +4,7 @@ import * as cdk from "aws-cdk-lib"
 import { InfraStack } from "../lib/infra-stack"
 import { DnsStack } from "../lib/dns-stack"
 import { CertificateStack } from "../lib/certificate-stack"
+import { DbStack } from "../lib/db-stack"
 
 // CIDR allocation strategy:
 // Top: 10.15.0.0/16
@@ -78,6 +79,8 @@ const certificateStack = new CertificateStack(app, "CertificateStack", {
   hostedZone: dnsStack.hostedZone,
   domainName: env.domainName,
 })
+
+new DbStack(app, "DbStack", { env })
 
 new InfraStack(app, "InfraStack", {
   crossRegionReferences: true,
