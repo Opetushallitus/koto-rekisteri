@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
 
 # remember to chmod +x start_local_env.sh
 kotorekisteri_start_tmux() {
@@ -14,8 +15,11 @@ kotorekisteri_start_tmux() {
     mise install
 
     # Use old session if exists
+    set +e
     tmux has-session -t $SESS_NAME 2>/dev/null
-    if [ $? -eq 0 ]; then
+    HAS_SESSION="$?"
+    set -e
+    if [ "$HAS_SESSION" -eq "0" ]; then
       tmux attach -t $SESS_NAME
       # TODO: Instead of return, kill the old session.
       return
@@ -35,7 +39,7 @@ kotorekisteri_start_tmux() {
     tmux send-keys -t $SESS_NAME:"$WINDOW.0" "docker compose up" C-m
 
     # database: right pane (flyway migrate)
-    tmux split-window -h -t $SESSION:"$WINDOW"
+    tmux split-window -h -t "${SESSION-}":"$WINDOW"
     tmux send-keys -t $SESS_NAME:"$WINDOW.1" "(cd server &&
       sleep 5 && echo \"10 seconds left to run migrations...\" &&
       sleep 5 && echo \"05 seconds left to run migrations...\" &&
@@ -58,7 +62,7 @@ kotorekisteri_start_tmux() {
     WINDOW="workspace"
     tmux new-window -t $SESS_NAME -n "$WINDOW"
     tmux send-keys -t $SESS_NAME:"$WINDOW" "git log --oneline --decorate=full --graph --all --oneline" C-m
-    tmux split-window -h -t $SESSION:"$WINDOW"
+    tmux split-window -h -t "${SESSION-}":"$WINDOW"
     tmux send-keys -t $SESS_NAME:"$WINDOW.1" "ls -la" C-m
     tmux send-keys -t $SESS_NAME:"$WINDOW.1" "git status" C-m
 
@@ -66,4 +70,4 @@ kotorekisteri_start_tmux() {
   )
 }
 
-kotorekisteri_start_tmux $1
+kotorekisteri_start_tmux "${1-}"
