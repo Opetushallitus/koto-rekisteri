@@ -5,6 +5,7 @@ import { InfraStack } from "../lib/infra-stack"
 import { DnsStack } from "../lib/dns-stack"
 import { CertificateStack } from "../lib/certificate-stack"
 import { DbStack } from "../lib/db-stack"
+import { NetworkStack } from "../lib/network-stack"
 
 // CIDR allocation strategy:
 // Top: 10.15.0.0/16
@@ -80,14 +81,20 @@ const certificateStack = new CertificateStack(app, "CertificateStack", {
   domainName: env.domainName,
 })
 
-new DbStack(app, "DbStack", { env })
+const networkStack = new NetworkStack(app, "NetworkStack", {
+  env,
+  cidrBlock: env.network.cidr,
+  maxAzs: env.network.maxAzs,
+})
+
+const dbStack = new DbStack(app, "DbStack", { env, vpc: networkStack.vpc })
 
 new InfraStack(app, "InfraStack", {
   crossRegionReferences: true,
   env,
   name: env.name,
-  cidrBlock: env.network.cidr,
-  maxAzs: env.network.maxAzs,
   domainName: env.domainName,
   certificate: certificateStack.certificate,
+  vpc: networkStack.vpc,
+  database: dbStack.cluster,
 })
