@@ -9,6 +9,11 @@ require_command tmux
 require_command git
 require_command idea
 
+# Trust the mise configuration
+mise trust "./.mise.toml"
+# Enable experimental features (npm backend is experimental)
+mise settings set experimental true
+
 # Ensure mise is activated
 if [ -z "${MISE_SHELL:-}" ]; then
   echo "Mise does not seem to be activated. Run 'mise help activate' for activation instructions."
@@ -27,7 +32,8 @@ kotorekisteri_start_tmux() {
 
     # Install dependencies
     echo "Installing dependencies..."
-    mise install
+    # Run install and auto-accept install prompts
+    mise install --yes
 
     # Use old session if exists
     set +e
