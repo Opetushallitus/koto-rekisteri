@@ -13,5 +13,9 @@
     "eu-west-1a",
     "eu-west-1b",
     "eu-west-1c"
-  ]
+  ],
+  "hosted-zone:account=682033502734:domainName=kios.untuvaopintopolku.fi:region=eu-west-1": {
+    "Id": "/hostedzone/Z10326503D1K4RJPIWZC8",
+    "Name": "kios.untuvaopintopolku.fi."
+  }
 }
