@@ -79,7 +79,7 @@ kotorekisteri_start_tmux() {
     # Window 3:workspace
     WINDOW="workspace"
     tmux new-window -t $SESS_NAME -n "$WINDOW"
-    tmux send-keys -t $SESS_NAME:"$WINDOW" "git log --oneline --decorate=full --graph --all --oneline" C-m
+    tmux send-keys -t $SESS_NAME:"$WINDOW" "git log --decorate=full --graph --all --oneline" C-m
     tmux split-window -h -t "${SESSION-}":"$WINDOW"
     tmux send-keys -t $SESS_NAME:"$WINDOW.1" "ls -la" C-m
     tmux send-keys -t $SESS_NAME:"$WINDOW.1" "git status" C-m
