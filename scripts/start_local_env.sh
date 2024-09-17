@@ -35,8 +35,7 @@ kotorekisteri_start_tmux() {
     WINDOW="database"
     # database: left pane (docker running)
     tmux rename-window -t $SESS_NAME:0 "$WINDOW"
-    tmux send-keys -t $SESS_NAME:"$WINDOW.0" "open -a \"Docker\"" C-m
-    tmux send-keys -t $SESS_NAME:"$WINDOW.0" "docker compose up" C-m
+    tmux send-keys -t $SESS_NAME:"$WINDOW.0" "./scripts/start_database_docker.sh" C-m
 
     # database: right pane (flyway migrate)
     tmux split-window -h -t "${SESSION-}":"$WINDOW"
