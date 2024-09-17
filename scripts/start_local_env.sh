@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
-set -o errexit -o nounset -o pipefail
+set -euo pipefail
+
+source "$( dirname "${BASH_SOURCE[0]}" )/common-functions.sh"
+
+require_command mise
+require_command docker
+require_command tmux
+require_command git
+require_command idea
+
+# Ensure mise is activated
+if [ -z "${MISE_SHELL:-}" ]; then
+  echo "Mise does not seem to be activated. Run 'mise help activate' for activation instructions."
+  echo "Documentation is available at https://mise.jdx.dev"
+  exit 1
+fi
 
 # remember to chmod +x start_local_env.sh
 kotorekisteri_start_tmux() {
