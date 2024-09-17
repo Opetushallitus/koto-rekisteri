@@ -28,7 +28,7 @@ kotorekisteri_start_tmux() {
   REPO_ROOT=${1:-'.'}
 
   (
-    cd $REPO_ROOT
+    cd "$REPO_ROOT" || exit 1
 
     # Install dependencies
     echo "Installing dependencies..."
