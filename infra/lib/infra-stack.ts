@@ -1,17 +1,20 @@
 import * as cdk from "aws-cdk-lib"
-import { Construct } from "constructs"
-import * as ec2 from "aws-cdk-lib/aws-ec2"
-import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns"
-import * as ecs from "aws-cdk-lib/aws-ecs"
-import { GithubActionsStack } from "./github-actions-stack"
 import {
   aws_certificatemanager,
   aws_cloudfront,
   aws_cloudfront_origins,
   aws_route53,
 } from "aws-cdk-lib"
+import { Construct } from "constructs"
+import * as ec2 from "aws-cdk-lib/aws-ec2"
+import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns"
+import * as ecs from "aws-cdk-lib/aws-ecs"
+import { GithubActionsStack } from "./github-actions-stack"
 import { Platform } from "aws-cdk-lib/aws-ecr-assets"
-import { ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront"
+import {
+  OriginProtocolPolicy,
+  ViewerProtocolPolicy,
+} from "aws-cdk-lib/aws-cloudfront"
 import { RecordTarget } from "aws-cdk-lib/aws-route53"
 import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets"
 
@@ -69,7 +72,10 @@ export class InfraStack extends cdk.Stack {
       defaultBehavior: {
         origin: new aws_cloudfront_origins.LoadBalancerV2Origin(
           service.loadBalancer,
-          {},
+          {
+            // FIXME: remove once we have certificates for ALBs as well
+            protocolPolicy: OriginProtocolPolicy.HTTP_ONLY,
+          },
         ),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
