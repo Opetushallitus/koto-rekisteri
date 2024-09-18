@@ -3,13 +3,12 @@ set -euo pipefail
 
 source "$( dirname "${BASH_SOURCE[0]}" )/common-functions.sh"
 
+REPO_ROOT=${1:-"$( dirname "${BASH_SOURCE[0]}" )/.."}
+
 require_command mise
-require_command docker
-require_command tmux
-require_command git
 
 # Trust the mise configuration
-mise trust "./.mise.toml"
+mise trust "$REPO_ROOT/.mise.toml"
 # Enable experimental features (npm backend is experimental)
 mise settings set experimental true
 
@@ -20,6 +19,15 @@ if [ -z "${MISE_SHELL:-}" ]; then
   exit 1
 fi
 
+# Install dependencies
+echo "Installing dependencies..."
+# Run install and auto-accept install prompts
+mise install --yes --cd="$REPO_ROOT"
+
+require_command docker
+require_command tmux
+require_command git
+
 # remember to chmod +x start_local_env.sh
 kotorekisteri_start_tmux() {
   SESS_NAME=kotorekisteri
@@ -28,11 +36,6 @@ kotorekisteri_start_tmux() {
 
   (
     cd "$REPO_ROOT" || exit 1
-
-    # Install dependencies
-    echo "Installing dependencies..."
-    # Run install and auto-accept install prompts
-    mise install --yes
 
     # Use old session if exists
     set +e
@@ -87,4 +90,4 @@ kotorekisteri_start_tmux() {
   )
 }
 
-kotorekisteri_start_tmux "${1-}"
+kotorekisteri_start_tmux "$REPO_ROOT"
