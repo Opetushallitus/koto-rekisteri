@@ -6,7 +6,7 @@ source "$( dirname "${BASH_SOURCE[0]}" )/common-functions.sh"
 
   BUILD_FOLDER="out"
 
-  cd $REPO_ROOT/frontend
+  cd "$REPO_ROOT"/frontend
   
   npm ci
   npm run build

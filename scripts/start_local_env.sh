@@ -35,7 +35,6 @@ fi
 
 kotorekisteri_start_tmux() {
   SESS_NAME=kotorekisteri
-  PANE1=kotorekisteri
 
   (
     cd "$REPO_ROOT" || exit 1
