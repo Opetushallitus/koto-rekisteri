@@ -76,7 +76,7 @@ kotorekisteri_start_tmux() {
     WINDOW="springboot"
     tmux new-window -t $SESS_NAME -n "$WINDOW"
     tmux send-keys -t $SESS_NAME:"$WINDOW" "cd $REPO_ROOT/server && sleep 5" C-m
-    tmux send-keys -t $SESS_NAME:"$WINDOW" "./mvnw clean install package spring-boot:run" C-m
+    tmux send-keys -t $SESS_NAME:"$WINDOW" "./mvnw clean spring-boot:run" C-m
 
     # Window 3:workspace
     WINDOW="workspace"
