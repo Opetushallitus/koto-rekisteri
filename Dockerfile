@@ -1,12 +1,11 @@
-FROM node:22.7-alpine3.20 AS frontend-builder
+FROM node:22.7 AS frontend-builder
 
 WORKDIR /kitu
 
 COPY scripts /kitu/scripts
 COPY frontend /kitu/frontend
 
-RUN chmod +x ./scripts/build_frontend.sh
-RUN ./scripts/build_frontend.sh /kitu
+RUN ./scripts/build_frontend.sh
 
 RUN ls -la
 RUN tree /kitu
