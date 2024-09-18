@@ -21,3 +21,8 @@ updates:
       cdk:
         patterns:
           - "aws-cdk*"
+  - package-ecosystem: docker
+    directories:
+      - /
+    schedule:
+      interval: weekly
