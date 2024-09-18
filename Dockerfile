@@ -2,6 +2,8 @@ FROM node:22.7 AS frontend-builder
 
 WORKDIR /kitu
 
+RUN apt install tree
+
 COPY scripts /kitu/scripts
 COPY frontend /kitu/frontend
 
