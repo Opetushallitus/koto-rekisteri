@@ -18,6 +18,7 @@ export class DbStack extends cdk.Stack {
       }),
       vpc: props.vpc,
       writer: aws_rds.ClusterInstance.serverlessV2("writer"),
+      storageEncrypted: true,
     })
   }
 }
