@@ -21,13 +21,20 @@ fi
 # Install dependencies
 info "Installing dependencies..."
 # Run install and auto-accept install prompts
-mise install --yes --cd="$REPO_ROOT"
+mise install --quiet  --yes --cd="$REPO_ROOT"
 
 require_command docker
-require_command tmux
 require_command git
 
-# remember to chmod +x start_local_env.sh
+### Additional options/switches ###
+
+# --setup-only to skip creating tmux session
+if [[ $* == *--setup-only* ]]; then
+  readonly SETUP_ONLY="true"
+else
+  readonly SETUP_ONLY="false"
+fi
+
 kotorekisteri_start_tmux() {
   SESS_NAME=kotorekisteri
   PANE1=kotorekisteri
@@ -91,4 +98,10 @@ kotorekisteri_start_tmux() {
   )
 }
 
+if [[ "$SETUP_ONLY" == "true" ]]; then
+  info "Setup done."
+  exit 0
+fi
+
+require_command tmux
 kotorekisteri_start_tmux
