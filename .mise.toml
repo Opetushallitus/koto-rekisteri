@@ -8,3 +8,4 @@ java = 'corretto-21'
 "npm:prettier" = "latest"
 ktlint = "latest"
 maven = "latest"
+shellcheck = "latest"
