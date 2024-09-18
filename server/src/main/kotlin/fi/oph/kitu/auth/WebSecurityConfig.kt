@@ -56,6 +56,9 @@ class WebSecurityConfig {
         }
 
         http.authorizeHttpRequests { it.anyRequest().authenticated() }
+        http.cors {
+            it.disable()
+        }
 
         return http.build()
     }
