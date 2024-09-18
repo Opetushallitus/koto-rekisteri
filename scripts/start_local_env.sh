@@ -7,7 +7,6 @@ require_command mise
 require_command docker
 require_command tmux
 require_command git
-require_command idea
 
 # Trust the mise configuration
 mise trust "./.mise.toml"
