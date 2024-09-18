@@ -10,6 +10,7 @@ source "$( dirname "${BASH_SOURCE[0]}" )/common-functions.sh"
   
   npm ci
   npm run build
-  mkdir -p "$REPO_ROOT"/server/target/classes
-  mv "$BUILD_FOLDER" "$REPO_ROOT"/server/target/classes/static
+  rm -rf "$REPO_ROOT"/server/target/classes/static
+  mkdir -p "$REPO_ROOT"/server/target/classes/static
+  mv -f "$BUILD_FOLDER"/* "$REPO_ROOT"/server/target/classes/static/
 )
