@@ -2,6 +2,7 @@ FROM node:22.7-bookworm AS frontend-builder
 
 WORKDIR /kitu
 
+RUN apt-get update
 RUN apt-get install tree
 
 COPY scripts /kitu/scripts
