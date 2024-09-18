@@ -8,19 +8,18 @@ REPO_ROOT=${1:-"$( dirname "${BASH_SOURCE[0]}" )/.."}
 require_command mise
 
 # Trust the mise configuration
-mise trust "$REPO_ROOT/.mise.toml"
+mise trust --quiet "$REPO_ROOT/.mise.toml"
 # Enable experimental features (npm backend is experimental)
-mise settings set experimental true
+mise settings --quiet set experimental true
 
 # Ensure mise is activated
 if [ -z "${MISE_SHELL:-}" ]; then
-  echo "Mise does not seem to be activated. Run 'mise help activate' for activation instructions."
-  echo "Documentation is available at https://mise.jdx.dev"
-  exit 1
+  fatal "Mise does not seem to be activated. Run 'mise help activate' for activation instructions." \
+        "Documentation is available at https://mise.jdx.dev"
 fi
 
 # Install dependencies
-echo "Installing dependencies..."
+info "Installing dependencies..."
 # Run install and auto-accept install prompts
 mise install --yes --cd="$REPO_ROOT"
 
@@ -43,6 +42,7 @@ kotorekisteri_start_tmux() {
     HAS_SESSION="$?"
     set -e
     if [ "$HAS_SESSION" -eq "0" ]; then
+      info "Attaching to existing tmux session..."
       tmux attach -t $SESS_NAME
       # TODO: Instead of return, kill the old session.
       return
@@ -51,7 +51,7 @@ kotorekisteri_start_tmux() {
     # If there is no session...
     # Start a new tmux session and detach immediately
     # Window 0:zsh
-    echo "Starting new tmux session..."
+    info "Starting new tmux session..."
     tmux new-session -d -s $SESS_NAME
 
     # Window 0:database
@@ -63,8 +63,8 @@ kotorekisteri_start_tmux() {
     # database: right pane (flyway migrate)
     tmux split-window -h -t "${SESSION-}":"$WINDOW"
     tmux send-keys -t $SESS_NAME:"$WINDOW.1" "(cd $REPO_ROOT/server &&
-      sleep 5 && echo \"10 seconds left to run migrations...\" &&
-      sleep 5 && echo \"05 seconds left to run migrations...\" &&
+      echo \"Waiting 10 seconds before running migrations...\" && sleep 5 &&
+      echo \"Waiting 05 seconds before running migrations...\" && sleep 5 &&
       ./mvnw flyway:migrate)" C-m
 
     # Window 1:idea
