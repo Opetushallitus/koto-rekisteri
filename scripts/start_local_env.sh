@@ -3,7 +3,7 @@ set -euo pipefail
 
 source "$( dirname "${BASH_SOURCE[0]}" )/common-functions.sh"
 
-REPO_ROOT=${1:-"$( dirname "${BASH_SOURCE[0]}" )/.."}
+REPO_ROOT=${1:-"$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"} && readonly REPO_ROOT
 
 require_command mise
 
@@ -31,7 +31,6 @@ require_command git
 kotorekisteri_start_tmux() {
   SESS_NAME=kotorekisteri
   PANE1=kotorekisteri
-  REPO_ROOT=${1:-'.'}
 
   (
     cd "$REPO_ROOT" || exit 1
@@ -92,4 +91,4 @@ kotorekisteri_start_tmux() {
   )
 }
 
-kotorekisteri_start_tmux "$REPO_ROOT"
+kotorekisteri_start_tmux
