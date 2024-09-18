@@ -1,8 +1,8 @@
-FROM node:22.7 AS frontend-builder
+FROM node:22.7-bookworm AS frontend-builder
 
 WORKDIR /kitu
 
-RUN apt install tree
+RUN apt-get install tree
 
 COPY scripts /kitu/scripts
 COPY frontend /kitu/frontend
