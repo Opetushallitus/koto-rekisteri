@@ -7,6 +7,9 @@ if [ -n "${COMMON_FUNCTIONS_SOURCED:-}" ]; then
 fi
 readonly COMMON_FUNCTIONS_SOURCED="true"
 
+REPO_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )" && readonly REPO_ROOT
+export REPO_ROOT
+
 function require_command {
   if ! command -v "$1" > /dev/null; then
     fatal "$1 is required, but it's not installed. Aborting."
