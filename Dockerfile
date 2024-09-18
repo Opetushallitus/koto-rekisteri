@@ -1,4 +1,4 @@
-FROM node:22.7-bookworm AS frontend-builder
+FROM node:22.9-bookworm AS frontend-builder
 
 WORKDIR /kitu
 
