@@ -3,8 +3,6 @@ set -euo pipefail
 
 source "$( dirname "${BASH_SOURCE[0]}" )/common-functions.sh"
 
-REPO_ROOT=${1:-"$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"} && readonly REPO_ROOT
-
 require_command mise
 
 # Trust the mise configuration

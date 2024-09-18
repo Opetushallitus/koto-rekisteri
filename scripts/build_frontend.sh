@@ -1,8 +1,9 @@
-#!/bin/sh
+#!/usr/bin/env bash
+source "$( dirname "${BASH_SOURCE[0]}" )/common-functions.sh"
+
 (
   set -e
 
-  REPO_ROOT=${1:-"."}
   BUILD_FOLDER="out"
 
   cd $REPO_ROOT/frontend
