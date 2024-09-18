@@ -58,11 +58,11 @@ kotorekisteri_start_tmux() {
     WINDOW="database"
     # database: left pane (docker running)
     tmux rename-window -t $SESS_NAME:0 "$WINDOW"
-    tmux send-keys -t $SESS_NAME:"$WINDOW.0" "./scripts/start_database_docker.sh" C-m
+    tmux send-keys -t $SESS_NAME:"$WINDOW.0" "$REPO_ROOT/scripts/start_database_docker.sh" C-m
 
     # database: right pane (flyway migrate)
     tmux split-window -h -t "${SESSION-}":"$WINDOW"
-    tmux send-keys -t $SESS_NAME:"$WINDOW.1" "(cd server &&
+    tmux send-keys -t $SESS_NAME:"$WINDOW.1" "(cd $REPO_ROOT/server &&
       sleep 5 && echo \"10 seconds left to run migrations...\" &&
       sleep 5 && echo \"05 seconds left to run migrations...\" &&
       ./mvnw flyway:migrate)" C-m
@@ -70,19 +70,21 @@ kotorekisteri_start_tmux() {
     # Window 1:idea
     WINDOW="idea"
     tmux new-window -t $SESS_NAME -n "idea"
-    tmux send-keys -t $SESS_NAME:"idea" "idea ." C-m
+    tmux send-keys -t $SESS_NAME:"idea" "idea $REPO_ROOT" C-m
 
     # Window 2:springboot
     WINDOW="springboot"
     tmux new-window -t $SESS_NAME -n "$WINDOW"
-    tmux send-keys -t $SESS_NAME:"$WINDOW" "cd server && sleep 5" C-m
+    tmux send-keys -t $SESS_NAME:"$WINDOW" "cd $REPO_ROOT/server && sleep 5" C-m
     tmux send-keys -t $SESS_NAME:"$WINDOW" "./mvnw clean install package spring-boot:run" C-m
 
     # Window 3:workspace
     WINDOW="workspace"
     tmux new-window -t $SESS_NAME -n "$WINDOW"
+    tmux send-keys -t $SESS_NAME:"$WINDOW" "cd $REPO_ROOT" C-m
     tmux send-keys -t $SESS_NAME:"$WINDOW" "git log --decorate=full --graph --all --oneline" C-m
     tmux split-window -h -t "${SESSION-}":"$WINDOW"
+    tmux send-keys -t $SESS_NAME:"$WINDOW.1" "cd $REPO_ROOT" C-m
     tmux send-keys -t $SESS_NAME:"$WINDOW.1" "ls -la" C-m
     tmux send-keys -t $SESS_NAME:"$WINDOW.1" "git status" C-m
 
