@@ -53,10 +53,10 @@ export class InfraStack extends cdk.Stack {
           environment: {
             SPRING_PROFILES_ACTIVE: props.name,
             DATABASE_URL: `jdbc:postgresql://${props.database.clusterEndpoint.socketAddress}/public`,
-            DB_USER: dbUser,
+            DATABASE_USER: dbUser,
           },
           secrets: {
-            DB_PASSWORD: aws_ecs.Secret.fromSecretsManager(
+            DATABASE_PASSWORD: aws_ecs.Secret.fromSecretsManager(
               props.database.secret!,
             ),
           },
