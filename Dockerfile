@@ -3,15 +3,11 @@ FROM node:22.7-bookworm AS frontend-builder
 WORKDIR /kitu
 
 RUN apt-get update
-RUN apt-get install tree
 
 COPY scripts /kitu/scripts
 COPY frontend /kitu/frontend
 
 RUN ./scripts/build_frontend.sh
-
-RUN ls -la
-RUN tree /kitu
 
 FROM maven:3.9.9-amazoncorretto-21-al2023 AS backend-builder
 
