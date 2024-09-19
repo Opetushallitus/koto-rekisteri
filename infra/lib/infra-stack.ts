@@ -13,6 +13,7 @@ import * as ecs from "aws-cdk-lib/aws-ecs"
 import { GithubActionsStack } from "./github-actions-stack"
 import { Platform } from "aws-cdk-lib/aws-ecr-assets"
 import {
+  CachePolicy,
   OriginProtocolPolicy,
   ViewerProtocolPolicy,
 } from "aws-cdk-lib/aws-cloudfront"
@@ -86,6 +87,7 @@ export class InfraStack extends cdk.Stack {
           },
         ),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: CachePolicy.USE_ORIGIN_CACHE_CONTROL_HEADERS_QUERY_STRINGS,
       },
       domainNames: [props.domainName],
       certificate: props.certificate,
