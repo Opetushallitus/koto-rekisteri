@@ -3,7 +3,7 @@ SPRING_PROFILES_ACTIVE = 'local'
 KOTLIN_POST_PROCESS_FILE = "ktlint -F"
 
 [tools]
-node = '22.7.0'
+node = '22.9.0'
 java = 'corretto-21'
 "npm:prettier" = "latest"
 ktlint = "latest"
