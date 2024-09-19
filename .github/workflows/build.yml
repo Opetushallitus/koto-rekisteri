@@ -9,23 +9,6 @@ on:
 concurrency: build-${{ github.ref }}
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install tools
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-
-      - name: Build frontend
-        run: (chmod +x ./scripts/build_frontend.sh && ./scripts/build_frontend.sh)
-
   deploy_dev:
     name: dev
     uses: ./.github/workflows/deploy-env.yml
