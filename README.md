@@ -6,7 +6,7 @@
 - PostgreSQL
 - maven
 - java 21
-- node 22.7.0
+- node 22.9.0
   - npm 10.8.3
 
 ## Kehittäminen
