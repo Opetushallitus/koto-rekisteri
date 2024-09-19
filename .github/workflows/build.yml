@@ -6,8 +6,6 @@ on:
       - main
   pull_request:
 
-concurrency: build-${{ github.ref }}
-
 jobs:
   deploy_dev:
     name: dev
