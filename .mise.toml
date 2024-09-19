@@ -7,5 +7,5 @@ node = '22.7.0'
 java = 'corretto-21'
 "npm:prettier" = "latest"
 ktlint = "latest"
-maven = "latest"
+maven = "3.9.9"
 shellcheck = "latest"
