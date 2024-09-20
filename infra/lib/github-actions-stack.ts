@@ -1,46 +1,41 @@
-import * as cdk from "aws-cdk-lib"
+import { Stack, StackProps } from "aws-cdk-lib"
+import {
+  OpenIdConnectPrincipal,
+  OpenIdConnectProvider,
+  PolicyStatement,
+  Role,
+} from "aws-cdk-lib/aws-iam"
 import { Construct } from "constructs"
-import * as iam from "aws-cdk-lib/aws-iam"
 
-export const GITHUB_ACTIONS_OIDC_THUMBPRINT_LIST = [
-  "6938fd4d98bab03faadb97b34396831e3780aea1",
-  "1c58a3a8518e8759bf075b76b750d4f2df264fcd",
-]
+export class GithubActionsStack extends Stack {
+  public githubActionsRole: Role
 
-export class GithubActionsStack extends cdk.Stack {
-  public githubActionsRole: iam.Role
-
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 
-    const githubActionsOidcProvider = new iam.CfnOIDCProvider(
+    const githubActionsOidcProvider = new OpenIdConnectProvider(
       this,
       "GithubActionsIdentityProvider",
       {
         url: "https://token.actions.githubusercontent.com",
-        clientIdList: ["sts.amazonaws.com"],
-        thumbprintList: GITHUB_ACTIONS_OIDC_THUMBPRINT_LIST,
+        clientIds: ["sts.amazonaws.com"],
       },
     )
 
-    this.githubActionsRole = new iam.Role(this, "GithubActionsRole", {
+    this.githubActionsRole = new Role(this, "GithubActionsRole", {
       roleName: `kitu-github-actions-role`,
-      assumedBy: new iam.FederatedPrincipal(
-        githubActionsOidcProvider.attrArn,
-        {
-          StringEquals: {
-            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          },
-          StringLike: {
-            "token.actions.githubusercontent.com:sub":
-              "repo:Opetushallitus/koto-rekisteri:*",
-          },
+      assumedBy: new OpenIdConnectPrincipal(githubActionsOidcProvider, {
+        StringEquals: {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
         },
-        "sts:AssumeRoleWithWebIdentity",
-      ),
+        StringLike: {
+          "token.actions.githubusercontent.com:sub":
+            "repo:Opetushallitus/koto-rekisteri:*",
+        },
+      }),
     })
 
-    const cdkPolicyStatement = new iam.PolicyStatement({
+    const allowAssumingCdkRoles = new PolicyStatement({
       actions: ["sts:AssumeRole", "iam:PassRole"],
       resources: [
         "arn:aws:iam::*:role/cdk-readOnlyRole",
@@ -50,6 +45,6 @@ export class GithubActionsStack extends cdk.Stack {
         "arn:aws:iam::*:role/cdk-hnb659fds-lookup-*",
       ],
     })
-    this.githubActionsRole.addToPolicy(cdkPolicyStatement)
+    this.githubActionsRole.addToPolicy(allowAssumingCdkRoles)
   }
 }

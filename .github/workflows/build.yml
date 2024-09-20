@@ -7,11 +7,18 @@ on:
   pull_request:
 
 jobs:
+  deploy_util:
+    name: util
+    uses: ./.github/workflows/deploy-env.yml
+    with:
+      env: Util
+      account_id: 961341524988
+
   deploy_dev:
     name: dev
     uses: ./.github/workflows/deploy-env.yml
     with:
-      env: dev
+      env: Dev
       account_id: 682033502734
 
   deploy_test:
@@ -19,7 +26,7 @@ jobs:
     needs: deploy_dev
     uses: ./.github/workflows/deploy-env.yml
     with:
-      env: test
+      env: Test
       account_id: 961341546901
 
   deploy_prod:
@@ -27,5 +34,5 @@ jobs:
     needs: deploy_test
     uses: ./.github/workflows/deploy-env.yml
     with:
-      env: prod
+      env: Prod
       account_id: 515966535475
