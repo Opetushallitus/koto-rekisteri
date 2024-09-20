@@ -2,7 +2,7 @@ import * as cdk from "aws-cdk-lib"
 import { aws_certificatemanager, aws_ecs, aws_route53 } from "aws-cdk-lib"
 import { Construct } from "constructs"
 import { IVpc } from "aws-cdk-lib/aws-ec2"
-import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns"
+import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns"
 import * as ecs from "aws-cdk-lib/aws-ecs"
 import { GithubActionsStack } from "./github-actions-stack"
 import { Platform } from "aws-cdk-lib/aws-ecr-assets"
@@ -41,7 +41,7 @@ export class InfraStack extends cdk.Stack {
       },
     )
 
-    const service = new ecsPatterns.ApplicationLoadBalancedFargateService(
+    const service = new ecs_patterns.ApplicationLoadBalancedFargateService(
       this,
       "KotoService",
       {
