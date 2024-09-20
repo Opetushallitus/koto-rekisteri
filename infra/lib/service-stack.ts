@@ -1,4 +1,4 @@
-import { Stack, StackProps } from "aws-cdk-lib"
+import { aws_ecs, aws_secretsmanager, Stack, StackProps } from "aws-cdk-lib"
 import {
   Certificate,
   CertificateValidation,
@@ -51,6 +51,13 @@ export class ServiceStack extends Stack {
         },
         secrets: {
           DATABASE_PASSWORD: Secret.fromSecretsManager(props.database.secret!),
+          KIELITESTI_TOKEN: aws_ecs.Secret.fromSecretsManager(
+            aws_secretsmanager.Secret.fromSecretNameV2(
+              this,
+              "KielitestiToken",
+              "kielitesti-token",
+            ),
+          ),
         },
       },
       cpu: 1024,

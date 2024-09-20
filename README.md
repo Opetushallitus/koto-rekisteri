@@ -35,6 +35,11 @@ jonka asentamisen jälkeen IDEA:n voi laittaa formatoimaan tallentamisen yhteyde
 
 Frontendia varten on `.run` - kansiossa Konfiguraatio, jolla voi ajaa nodea IDEA:sta.
 
+### Salaisuudet paikallisessa kehityksessä
+
+Luo `server/src/main/resources/`-hakemiston alle `local.properties`-tiedosto, johon tarvittavat salaisuudet voi lisätä, Springin local-profiili lataa sinne lisätyt asetukset.
+Esimerkki tiedoston sisällöstä löytyy samasta hakemistosta tiedostosta `example-local.properties`
+
 ### Hyödyllisiä komentoja
 
 ```shell
