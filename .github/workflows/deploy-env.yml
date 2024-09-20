@@ -26,6 +26,10 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Install tools
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
       - name: Log in to ${{ env.KITU_ENV }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -50,6 +54,10 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Install tools
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
       - name: Log in to ${{ env.KITU_ENV }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
