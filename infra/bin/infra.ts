@@ -74,7 +74,7 @@ const dnsStack = new DnsStack(app, "DnsStack", {
   terminationProtection: true,
 })
 
-const certificateStack = new CertificateStack(app, "CertificateStack", {
+new CertificateStack(app, "CertificateStack", {
   crossRegionReferences: true,
   env: { ...env, region: "us-east-1" },
   hostedZone: dnsStack.hostedZone,
@@ -94,7 +94,6 @@ new InfraStack(app, "InfraStack", {
   env,
   name: env.name,
   domainName: env.domainName,
-  certificate: certificateStack.certificate,
   vpc: networkStack.vpc,
   database: dbStack.cluster,
 })

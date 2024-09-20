@@ -12,16 +12,5 @@ export class CertificateStack extends cdk.Stack {
 
   constructor(scope: Construct, id: string, props: CertificateStackProps) {
     super(scope, id, props)
-
-    this.certificate = new aws_certificatemanager.Certificate(
-      this,
-      "Certificate",
-      {
-        domainName: props.domainName,
-        validation: aws_certificatemanager.CertificateValidation.fromDns(
-          props.hostedZone,
-        ),
-      },
-    )
   }
 }
