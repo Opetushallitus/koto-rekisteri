@@ -2,45 +2,62 @@
 
 ## Riippuvuudet
 
+- mise
+- IntelliJ IDEA
 - Docker
-- PostgreSQL
-- maven
-- java 21
-- node 22.9.0
-  - npm 10.8.3
+- tmux
+
+Loput riippuvuudet asennetaan käyttäen `mise` -työkalua. Misen asennus onnistuu homebrewlla (`brew install mise`) tai
+[vaihtoehtoisilla tavoilla](https://mise.jdx.dev/getting-started.html#_1-install-mise-cli). Kehitysympäristön perustusskripti suorittaa `mise install` osana kehitysympäristön
+perustusta, joten sen ajaminen erikseen ei ole tarpeen. Ajantasainen lista asennettavista riippuvuuksista on nähtävillä
+`.mise.toml`-tiedostossa, jossa on myös muu Misen konfiguraatio (mukaanlukien joitain tarpeellisia ympäristömuuttujia).
 
 ## Kehittäminen
 
-Paikallinen testaus- ja kehitysympäristö vaatii toimiakseen PostgreSQL -tietokannan. Tietokantaa ajetaan Dockerissa ja ne saa käyntiin `docker compose`:lla. Tietokannan skeema alustetaan migraatioilla. Migraatiotyökaluna käytössä on _Flyway_. Migraatioiden suorittamiseen paikallisessa kehitysympäristössä on konfiguroitu Maven-liitännäinen.
-
-```shell
-docker compose up -d db # Käynnistä tietokanta
-./mvnw flyway:migrate # Aja migraatiot
-
-```
-
-Kontissa suoritetaan PostgreSQL -palvelinohjelmaa, johon on [konfiguroitu](scripts/postgres-docker/init-db.sql) tietokannat `kitu-dev` (paikallisen kehitysympäristön käyttöön) ja `kitu-test` (automaattisille testeille). Flyway alustaa tietokannan skeeman [migraatioilla](src/main/resources/db/migration).
-
-### mise
-
-Javan ja noden voi asentaa [mise](https://github.com/jdx/mise)-työkalulla. Misen asennus onnistuu homebrewlla (`brew install mise`) tai [vaihtoehtoisilla tavoilla](https://mise.jdx.dev/getting-started.html#_1-install-mise-cli).
-Asennettuasi misen voit ajaa komennon `mise install`, ja oikeat java- ja node-versiot asentuvat.
-
-### Linttaus
-
-Sovelluksessa käytetään `ktlint` - teknologiaa kotlin - tiedostojen tyylittämiseen. MacOS:llä sen saa asennettua ajamalla `brew install ktlint`. IntelliJ IDEA:aan saa plugin `ktlint`,
-jonka asentamisen jälkeen IDEA:n voi laittaa formatoimaan tallentamisen yhteydessä `Settings` -> `Tools` -> `KtLint` alta `Mode`: `Distract free` - radiobutton ja `Format`: `on save` - checkbox täpätty.
-
-### IDEA
-
-Frontendia varten on `.run` - kansiossa Konfiguraatio, jolla voi ajaa nodea IDEA:sta.
-
 ### Salaisuudet paikallisessa kehityksessä
 
-Luo `server/src/main/resources/`-hakemiston alle `local.properties`-tiedosto, johon tarvittavat salaisuudet voi lisätä, Springin local-profiili lataa sinne lisätyt asetukset.
-Esimerkki tiedoston sisällöstä löytyy samasta hakemistosta tiedostosta `example-local.properties`
+Luo `server/src/main/resources/`-hakemiston alle `local.properties`-tiedosto, ja lisää sinne tarvittavat salaisuudet.
+Esimerkki tiedoston sisällöstä löytyy samasta hakemistosta `example-local.properties`-tiedostosta.
 
-### Hyödyllisiä komentoja
+Spring lataa automaattisesti `<aktiivinen profiili>.properties` tiedostoon lisätyt asetukset palvelimen käynnistyksen
+yhteydessä, eli paikallisen kehitysympäristön tapauksessa `local.properties`.
+
+### Kehitysympäristön perustaminen
+
+Paikallisen kehitysympäristön perustamiseen käytetään skriptiä `start_local_env.sh`. Skriptiä sovelletaan myös
+kehitysympäristön riippuvuuksien ja perustusvaiheiden dokumentaationa.
+
+```shell
+./scripts/start_local_env.sh
+```
+
+Skripti perustaa kehitysympäristön ja oletuksena avaa uuden `tmux` session, jonka eri ikkunoihin esim. tietokantaan ja
+taustapalvelimeen liittyvät prosessit käynnistetään.
+
+Mikäli et halua avata `tmux`-sessiota ja haluat käynnistää tietokannan ja taustapalvelimen yms. jollain muulla tavoin,
+skriptille voi antaa `--setup-only` parametrin. Tällöin suoritetaan kehitysympäristön perustus ja konfigurointi, mutta
+`tmux`-session perustaminen, sekä Docker-konttien ja palvelinten käynnistäminen jätetään tekemättä.
+
+```shell
+./scripts/start_local_env.sh --setup-only
+```
+
+## IDEA
+
+### Koodin tyyli ja muotoilu
+
+Sovelluksessa käytetään `ktlint` - teknologiaa kotlin - tiedostojen tyylittämiseen. `mise` asentaa Ktlintin
+kehitysympäristön perustamisen yhteydessä. IntelliJ IDEA:aan saa Ktlint-liitännäisen, jonka asentamisen jälkeen IDEA:n
+voi laittaa muotoilemaan koodin tallentamisen yhteydessä.
+
+1. Navigoi `Settings` -> `Tools` -> `KtLint`
+2. Tämän valikon alta, aseta `Mode: Distract free` ja varmista että `Format: on save` -valintaruutu on valittu.
+
+#### Palvelimen käynnistäminen editorista
+
+Frontendia varten on `.run` - kansiossa valmis konfiguraatio, jolla voi ajaa frontin node-palvelinta IDEA:sta.
+
+## Hyödyllisiä komentoja
 
 ```shell
 # Jos haluat lisätä formatointitarkastuksen commitin luonnin yhteyteen
@@ -52,7 +69,7 @@ ktlint
 # paketoi projektin.
 mvn package
 
-# Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
+# Voit käyttää tätä jos ajat ympäristöä terminaalin kautta (ajettava 'server/' -kansiossa)
 ./mvnw spring-boot:run
 
 # e2e-testien ajaminen e2e-hakemistossa
