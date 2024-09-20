@@ -68,6 +68,20 @@ export class InfraStack extends cdk.Stack {
                 "kielitesti-token",
               ),
             ),
+            OPPIJANUMEROREKISTERI_USERNAME: aws_ecs.Secret.fromSecretsManager(
+                aws_secretsmanager.Secret.fromSecretNameV2(
+                  this,
+                  "OppijanumerorekisteriUsername",
+                  "oppijanumerorekisteri-username"
+                ),
+            ),
+            OPPIJANUMEROREKISTERI_PASSWORD: aws_ecs.Secret.fromSecretsManager(
+              aws_secretsmanager.Secret.fromSecretNameV2(
+                this,
+                "OppijanumerorekisteriPassword",
+                "oppijanumerorekisteri-password"
+              ),
+          ),
           },
         },
         cpu: 1024,
