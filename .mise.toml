@@ -5,7 +5,7 @@ KOTLIN_POST_PROCESS_FILE = "ktlint -F"
 [tools]
 node = '22.9.0'
 java = 'corretto-21'
-"npm:prettier" = "latest"
+"npm:prettier" = "3.3.3"
 ktlint = "latest"
 maven = "3.9.9"
 shellcheck = "latest"
