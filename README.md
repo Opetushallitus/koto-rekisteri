@@ -42,9 +42,30 @@ skriptille voi antaa `--setup-only` parametrin. Tällöin suoritetaan kehitysymp
 ./scripts/start_local_env.sh --setup-only
 ```
 
-## IDEA
+### OpenAPI
 
-### Koodin tyyli ja muotoilu
+Palvelimen API-rajapinnat, -tyypit ja näiden dokumentaatio generoidaan [OpenAPI-spesifikaatiosta](server/src/main/resources/static/open-api.yaml).
+Spesifikaation pohjalta generoidaan API-rajapinta ([esim. `OppijaControllerApi`-rajapinta](server/src/main/kotlin/fi/oph/kitu/generated/api/OppijaControllerApi.kt)), sekä tarvittavat luokat rajapinnassa
+käsiteltävien olioiden mallintamiseen muistissa (luokat [`generated.model.*`-paketissa](server/src/main/kotlin/fi/oph/kitu/generated/model)).
+Varsinainen toteuttava luokka perii generoidun rajapinnan ja toteuttaa kaikki rajapinnan tarjoamat metodit ([esim. `OppijaController`-luokka](server/src/main/kotlin/fi/oph/kitu/oppija/OppijaController.kt)).
+
+API-dokumentaatio on nähtävillä Swagger UI:sta, joka tarjoillaan polusta `/swagger-ui.html`, esim.
+
+- Paikallinen kehitysympäristö: http://localhost:8080/swagger-ui.html
+- Testiympäristö: https://kios.untuvaopintopolku.fi/swagger-ui.html
+
+Tiivistettynä, vaiheet uuden rajapinnan lisäämiseen:
+
+1. Dokumentoi rajapinnan API ja datatyypit `open-api.yaml`-spesifikaatiotiedostoon
+2. Suorita `./mvnw generate-sources` generoidaksesi API-rajapinnat ja muut tarvittavat luokat
+3. Mikäli kyseessä on kokonaan uusi API (uusi controller), tarvitaan uusi luokka, joka perii generoidun `*ControllerApi`-rajapinnan. Nimeämiskäytäntönä on käyttää generoidun rajapinnan nimeä, ilman `Api`-suffiksia (esim. `class OppijaController : OppijaControllerApi`).
+4. Mikäli lisäsit uusia datatyyppejä, on konventiona lisätä näille tyyppialias (esim. [generated/model/Oppija.kt](server/src/main/kotlin/fi/oph/kitu/generated/model/Oppija.kt) ja [oppija/Oppija.kt](server/src/main/kotlin/fi/oph/kitu/oppija/Oppija.kt)).
+   Konvention tarkoituksena on välttää suoria riippuvuuksia generoituun koodiin.
+5. Toteuta uudet API-metodit luokkaan, joka perii generoidun API-rajapinnan.
+
+### IDEA
+
+#### Koodin tyyli ja muotoilu
 
 Sovelluksessa käytetään `ktlint` - teknologiaa kotlin - tiedostojen tyylittämiseen. `mise` asentaa Ktlintin
 kehitysympäristön perustamisen yhteydessä. IntelliJ IDEA:aan saa Ktlint-liitännäisen, jonka asentamisen jälkeen IDEA:n
