@@ -1,99 +1,35 @@
 #!/usr/bin/env node
 import "source-map-support/register"
-import * as cdk from "aws-cdk-lib"
-import { InfraStack } from "../lib/infra-stack"
-import { DnsStack } from "../lib/dns-stack"
-import { DbStack } from "../lib/db-stack"
-import { NetworkStack } from "../lib/network-stack"
+import { App } from "aws-cdk-lib"
+import { deploymentAccounts, utilityAccount } from "../lib/accounts"
+import { UtilityStage } from "../lib/utility-stage"
+import { EnvironmentStage } from "../lib/environment-stage"
 
 // CIDR allocation strategy:
 // Top: 10.15.0.0/16
 // VPCs: 10.15.0.0/18, 10.15.64.0/18, 10.15.128.0/18, 10.15.192.0/18 (16382 addresses)
 // Subnets: (let AWS calculate these for us)
 
-const environments = {
-  dev: {
-    name: "untuva",
-    account: "682033502734",
-    region: "eu-west-1",
-    network: {
-      cidr: "10.15.0.0/18",
-      maxAzs: 2,
-    },
-    domainName: "kios.untuvaopintopolku.fi",
-    databaseName: "kios",
-  },
-  test: {
-    name: "qa",
-    account: "961341546901",
-    region: "eu-west-1",
-    network: {
-      cidr: "10.15.64.0/18",
-      maxAzs: 3,
-    },
-    domainName: "kios.testiopintopolku.fi",
-    databaseName: "kios",
-  },
-  prod: {
-    name: "prod",
-    account: "515966535475",
-    region: "eu-west-1",
-    network: {
-      cidr: "10.15.128.0/18",
-      maxAzs: 3,
-    },
-    domainName: "kios.opintopolku.fi",
-    databaseName: "kios",
-  },
-}
+const app = new App()
 
-type EnvironmentName = keyof typeof environments
-type Environment = (typeof environments)[EnvironmentName]
-const validEnvironmentNames = Object.keys(environments)
-const isValidEnvironmentName = (name: string): name is EnvironmentName =>
-  validEnvironmentNames.includes(name)
-
-const app = new cdk.App()
-
-const envName = process.env.KITU_ENV
-
-if (envName === undefined) {
-  throw new Error("KITU_ENV required")
-}
-
-if (!isValidEnvironmentName(envName)) {
-  throw new Error(
-    `KITU_ENV invalid value ${envName}, expected one of ${validEnvironmentNames.join(", ")}`,
-  )
-}
-
-const env: Environment = environments[envName]
-
-new DnsStack(app, "DnsStack", {
-  crossRegionReferences: true,
-  env,
-  name: env.domainName,
-  terminationProtection: true,
+const buildStage = new UtilityStage(app, "Util", {
+  env: utilityAccount,
 })
 
-const networkStack = new NetworkStack(app, "NetworkStack", {
-  env,
-  cidrBlock: env.network.cidr,
-  maxAzs: env.network.maxAzs,
-})
+const serviceImage = buildStage.imageBuildsStack.serviceImage
 
-const dbStack = new DbStack(app, "DbStack", {
-  env,
-  vpc: networkStack.vpc,
-  databaseName: env.databaseName,
+new EnvironmentStage(app, "Dev", {
+  env: deploymentAccounts.dev,
+  environmentConfig: deploymentAccounts.dev,
+  serviceImage,
 })
-
-new InfraStack(app, "InfraStack", {
-  crossRegionReferences: true,
-  env,
-  name: env.name,
-  domainName: env.domainName,
-  vpc: networkStack.vpc,
-  database: dbStack.cluster,
-  databaseName: env.databaseName,
+new EnvironmentStage(app, "Test", {
+  env: deploymentAccounts.test,
+  environmentConfig: deploymentAccounts.test,
+  serviceImage,
+})
+new EnvironmentStage(app, "Prod", {
+  env: deploymentAccounts.prod,
+  environmentConfig: deploymentAccounts.prod,
+  serviceImage,
 })

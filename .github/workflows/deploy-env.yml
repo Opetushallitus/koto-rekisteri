@@ -13,14 +13,9 @@ on:
 concurrency: deploy-${{ github.ref_name }}-${{ inputs.env }}
 
 jobs:
-  deploy:
-    name: Deploy to ${{ inputs.env }} (${{ inputs.account_id }})
-    if: github.ref_name == 'main'
+  run:
+    name: ${{ github.ref_name == 'main' && 'Deploy' || 'Diff' }} to ${{ inputs.env }} (${{ inputs.account_id }})
     runs-on: ubuntu-latest
-    environment: ${{ inputs.env }}
-    env:
-      KITU_ENV: ${{ inputs.env }}
-      ACCOUNT_ID: ${{ inputs.account_id }}
     permissions:
       id-token: write
       contents: read
@@ -30,42 +25,19 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           experimental: true
-      - name: Log in to ${{ env.KITU_ENV }}
+      - name: Log in to ${{ inputs.env }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/kitu-github-actions-role
+          role-to-assume: arn:aws:iam::${{ inputs.account_id }}:role/kitu-github-actions-role
+      - name: Install dependencies
+        run: npm ci
+        working-directory: infra
       - name: Deploy
         if: github.ref_name == 'main'
-        run: |
-          npm ci
-          npx cdk deploy --all --require-approval=never
+        run: npx cdk deploy --require-approval=never '${{ inputs.env }}/**'
         working-directory: infra
-
-  diff:
-    name: Diff to ${{ inputs.env }} (${{ inputs.account_id }})
-    if: github.ref_name != 'main'
-    runs-on: ubuntu-latest
-    env:
-      KITU_ENV: ${{ inputs.env }}
-      ACCOUNT_ID: ${{ inputs.account_id }}
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install tools
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-      - name: Log in to ${{ env.KITU_ENV }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/kitu-github-actions-role
       - name: Diff
         if: github.ref_name != 'main'
-        run: |
-          npm ci
-          npx cdk diff --all --require-approval=never
+        run: npx cdk diff --require-approval=never '${{ inputs.env }}/**'
         working-directory: infra

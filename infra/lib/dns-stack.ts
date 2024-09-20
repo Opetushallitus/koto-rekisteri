@@ -7,13 +7,13 @@ export interface DnsStackProps extends cdk.StackProps {
 }
 
 export class DnsStack extends cdk.Stack {
-  public readonly hostedZone: aws_route53.HostedZone
+  readonly hostedZone: aws_route53.IHostedZone
 
   constructor(scope: Construct, id: string, props: DnsStackProps) {
     super(scope, id, props)
 
-    this.hostedZone = new aws_route53.HostedZone(this, "HostedZone", {
-      zoneName: props.name,
+    this.hostedZone = aws_route53.HostedZone.fromLookup(this, "HostedZone", {
+      domainName: props.name,
     })
   }
 }
