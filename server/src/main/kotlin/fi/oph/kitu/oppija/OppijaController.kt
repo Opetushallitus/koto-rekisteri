@@ -1,17 +1,17 @@
 package fi.oph.kitu.oppija
 
 import fi.oph.kitu.generated.api.OppijaControllerApi
+import fi.oph.kitu.oppijanumerorekisteri.OppijanumerorekisteriService
 import fi.oph.kitu.oppijanumerorekisteri.YleistunnisteHaeRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.RestTemplate
 
 @RestController
 class OppijaController(
-    private val restTemplate: RestTemplate,
+    private val oppijanumerorekisteriService: OppijanumerorekisteriService,
     private val oppijaService: OppijaService,
 ) : OppijaControllerApi {
     override fun getOppijat(): ResponseEntity<List<Oppija>> =
@@ -29,26 +29,20 @@ class OppijaController(
 
     @GetMapping("/api/oppija/oppijanumero")
     fun getOppijanumero(): String {
-        val virkailijaUrl = "https://virkailija.testiopintopolku.fi/yleistunniste/hae"
-        val request =
-            YleistunnisteHaeRequest(
-                "Magdalena Testi",
-                "010866-9260",
-                "Magdalena",
-                "Sallinen-Testi",
-            )
-
-        val response =
-            restTemplate
-                .postForEntity(virkailijaUrl, request, String::class.java)
-
-        return response.body ?: "empty body"
+        try {
+            val requestData =
+                YleistunnisteHaeRequest(
+                    "Magdalena Testi",
+                    "010866-9260",
+                    "Magdalena",
+                    "Sallinen-Testi",
+                )
+            val response = oppijanumerorekisteriService.httpPostOnCasEndpoint(requestData)
+            return response.body.toString()
+        } catch (e: Exception) {
+            println("an error occurred")
+            println(e)
+            return e.localizedMessage
+        }
     }
 }
-
-data class YleistunnisteHaeRequest(
-    val etunimet: String,
-    val hetu: String,
-    val kutsumanimi: String,
-    val sukunimi: String,
-)
