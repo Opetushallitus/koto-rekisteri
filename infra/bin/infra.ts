@@ -3,7 +3,6 @@ import "source-map-support/register"
 import * as cdk from "aws-cdk-lib"
 import { InfraStack } from "../lib/infra-stack"
 import { DnsStack } from "../lib/dns-stack"
-import { CertificateStack } from "../lib/certificate-stack"
 import { DbStack } from "../lib/db-stack"
 import { NetworkStack } from "../lib/network-stack"
 
@@ -67,18 +66,11 @@ if (!isValidEnvironmentName(envName)) {
 
 const env: Environment = environments[envName]
 
-const dnsStack = new DnsStack(app, "DnsStack", {
+new DnsStack(app, "DnsStack", {
   crossRegionReferences: true,
   env,
   name: env.domainName,
   terminationProtection: true,
-})
-
-new CertificateStack(app, "CertificateStack", {
-  crossRegionReferences: true,
-  env: { ...env, region: "us-east-1" },
-  hostedZone: dnsStack.hostedZone,
-  domainName: env.domainName,
 })
 
 const networkStack = new NetworkStack(app, "NetworkStack", {
