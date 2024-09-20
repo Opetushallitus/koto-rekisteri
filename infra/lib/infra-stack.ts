@@ -1,28 +1,15 @@
 import * as cdk from "aws-cdk-lib"
-import {
-  aws_certificatemanager,
-  aws_cloudfront,
-  aws_cloudfront_origins,
-  aws_ecs,
-  aws_route53,
-} from "aws-cdk-lib"
+import { aws_certificatemanager, aws_ecs, aws_route53 } from "aws-cdk-lib"
 import { Construct } from "constructs"
 import { IVpc } from "aws-cdk-lib/aws-ec2"
 import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns"
 import * as ecs from "aws-cdk-lib/aws-ecs"
 import { GithubActionsStack } from "./github-actions-stack"
 import { Platform } from "aws-cdk-lib/aws-ecr-assets"
-import {
-  CachePolicy,
-  OriginProtocolPolicy,
-  ViewerProtocolPolicy,
-} from "aws-cdk-lib/aws-cloudfront"
-import { RecordTarget } from "aws-cdk-lib/aws-route53"
-import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets"
 import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
+import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2"
 
 export interface InfraStackProps extends cdk.StackProps {
-  certificate: aws_certificatemanager.ICertificate
   name: string
   domainName: string
   vpc: IVpc
@@ -39,6 +26,10 @@ export class InfraStack extends cdk.Stack {
 
     // Default Postgres DB user: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html#credentials
     const dbUser = "postgres"
+
+    const zone = aws_route53.HostedZone.fromLookup(this, "Zone", {
+      domainName: props.domainName,
+    })
 
     const service = new ecsPatterns.ApplicationLoadBalancedFargateService(
       this,
@@ -68,48 +59,18 @@ export class InfraStack extends cdk.Stack {
           enable: true,
           rollback: true,
         },
+        domainName: props.domainName,
+        domainZone: zone,
+        protocol: ApplicationProtocol.HTTPS,
+        redirectHTTP: true,
       },
     )
+
     service.targetGroup.configureHealthCheck({
       ...service.targetGroup.healthCheck,
       path: "/actuator/health",
     })
 
     props.database.grantConnect(service.taskDefinition.taskRole, dbUser)
-
-    const distribution = new aws_cloudfront.Distribution(this, "KotoCfn", {
-      defaultBehavior: {
-        origin: new aws_cloudfront_origins.LoadBalancerV2Origin(
-          service.loadBalancer,
-          {
-            // FIXME: remove once we have certificates for ALBs as well
-            protocolPolicy: OriginProtocolPolicy.HTTP_ONLY,
-          },
-        ),
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: CachePolicy.USE_ORIGIN_CACHE_CONTROL_HEADERS_QUERY_STRINGS,
-      },
-      domainNames: [props.domainName],
-      certificate: props.certificate,
-    })
-
-    const zone = aws_route53.HostedZone.fromLookup(this, "Zone", {
-      domainName: props.domainName,
-    })
-
-    const recordTarget = RecordTarget.fromAlias(
-      new CloudFrontTarget(distribution),
-    )
-
-    new aws_route53.ARecord(this, "RecordIpV4", {
-      recordName: props.domainName,
-      target: recordTarget,
-      zone,
-    })
-    new aws_route53.AaaaRecord(this, "RecordIpV6", {
-      recordName: props.domainName,
-      target: recordTarget,
-      zone,
-    })
   }
 }
