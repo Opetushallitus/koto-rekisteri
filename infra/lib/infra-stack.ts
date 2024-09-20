@@ -8,6 +8,7 @@ import { GithubActionsStack } from "./github-actions-stack"
 import { Platform } from "aws-cdk-lib/aws-ecr-assets"
 import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2"
+import { CertificateValidation } from "aws-cdk-lib/aws-certificatemanager"
 
 export interface InfraStackProps extends cdk.StackProps {
   name: string
@@ -30,6 +31,15 @@ export class InfraStack extends cdk.Stack {
     const zone = aws_route53.HostedZone.fromLookup(this, "Zone", {
       domainName: props.domainName,
     })
+
+    const certificate = new aws_certificatemanager.Certificate(
+      this,
+      "Certificate",
+      {
+        domainName: props.domainName,
+        validation: CertificateValidation.fromDns(zone),
+      },
+    )
 
     const service = new ecsPatterns.ApplicationLoadBalancedFargateService(
       this,
@@ -63,6 +73,7 @@ export class InfraStack extends cdk.Stack {
         domainZone: zone,
         protocol: ApplicationProtocol.HTTPS,
         redirectHTTP: true,
+        certificate,
       },
     )
 
