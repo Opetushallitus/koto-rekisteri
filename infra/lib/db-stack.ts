@@ -3,6 +3,7 @@ import { Construct } from "constructs"
 import { aws_ec2, aws_rds } from "aws-cdk-lib"
 
 export interface DbStackProps extends cdk.StackProps {
+  databaseName: string
   vpc: aws_ec2.IVpc
 }
 
@@ -19,6 +20,7 @@ export class DbStack extends cdk.Stack {
       vpc: props.vpc,
       writer: aws_rds.ClusterInstance.serverlessV2("writer"),
       storageEncrypted: true,
+      defaultDatabaseName: props.databaseName,
     })
   }
 }

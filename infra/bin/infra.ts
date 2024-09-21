@@ -21,6 +21,7 @@ const environments = {
       maxAzs: 2,
     },
     domainName: "kios.untuvaopintopolku.fi",
+    databaseName: "kios",
   },
   test: {
     name: "qa",
@@ -31,6 +32,7 @@ const environments = {
       maxAzs: 3,
     },
     domainName: "kios.testiopintopolku.fi",
+    databaseName: "kios",
   },
   prod: {
     name: "prod",
@@ -41,6 +43,7 @@ const environments = {
       maxAzs: 3,
     },
     domainName: "kios.opintopolku.fi",
+    databaseName: "kios",
   },
 }
 
@@ -79,7 +82,11 @@ const networkStack = new NetworkStack(app, "NetworkStack", {
   maxAzs: env.network.maxAzs,
 })
 
-const dbStack = new DbStack(app, "DbStack", { env, vpc: networkStack.vpc })
+const dbStack = new DbStack(app, "DbStack", {
+  env,
+  vpc: networkStack.vpc,
+  databaseName: env.databaseName,
+})
 
 new InfraStack(app, "InfraStack", {
   crossRegionReferences: true,
@@ -88,4 +95,5 @@ new InfraStack(app, "InfraStack", {
   domainName: env.domainName,
   vpc: networkStack.vpc,
   database: dbStack.cluster,
+  databaseName: env.databaseName,
 })
