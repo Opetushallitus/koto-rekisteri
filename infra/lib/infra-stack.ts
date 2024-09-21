@@ -7,7 +7,10 @@ import * as ecs from "aws-cdk-lib/aws-ecs"
 import { GithubActionsStack } from "./github-actions-stack"
 import { Platform } from "aws-cdk-lib/aws-ecr-assets"
 import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
-import { ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2"
+import {
+  ApplicationProtocol,
+  SslPolicy,
+} from "aws-cdk-lib/aws-elasticloadbalancingv2"
 import { CertificateValidation } from "aws-cdk-lib/aws-certificatemanager"
 
 export interface InfraStackProps extends cdk.StackProps {
@@ -74,6 +77,7 @@ export class InfraStack extends cdk.Stack {
         protocol: ApplicationProtocol.HTTPS,
         redirectHTTP: true,
         certificate,
+        sslPolicy: SslPolicy.RECOMMENDED_TLS,
       },
     )
 
