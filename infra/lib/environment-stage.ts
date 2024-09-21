@@ -24,7 +24,6 @@ export class EnvironmentStage extends Stage {
     })
 
     new DnsStack(this, "Dns", {
-      terminationProtection: true,
       env,
       name: environmentConfig.domainName,
     })
