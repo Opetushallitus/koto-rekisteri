@@ -1,5 +1,5 @@
 import { Stage, StageProps } from "aws-cdk-lib"
-import { DockerImageAsset } from "aws-cdk-lib/aws-ecr-assets"
+import { ContainerImage } from "aws-cdk-lib/aws-ecs"
 import { Construct } from "constructs"
 import { EnvironmentConfig } from "./accounts"
 import { DbStack } from "./db-stack"
@@ -10,7 +10,7 @@ import { ServiceStack } from "./service-stack"
 
 interface EnvironmentStageProps extends StageProps {
   environmentConfig: EnvironmentConfig
-  serviceImage: DockerImageAsset
+  serviceImage: ContainerImage
 }
 
 export class EnvironmentStage extends Stage {

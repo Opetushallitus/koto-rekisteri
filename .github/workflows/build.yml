@@ -7,16 +7,44 @@ on:
   pull_request:
 
 jobs:
+  build_image:
+    name: Build image
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
+      - name: Log in to utility account
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::961341524988:role/kitu-github-actions-role
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: login-ecr
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          push: ${{ github.ref_name == 'main' }}
+          tags: ${{ steps.login-ecr.outputs.registry }}/kitu:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
   deploy_util:
     name: util
-    uses: ./.github/workflows/deploy-env.yml
+    uses: ./.github/workflows/_deploy-env.yml
     with:
       env: Util
       account_id: 961341524988
 
   deploy_dev:
     name: dev
-    uses: ./.github/workflows/deploy-env.yml
+    needs: build_image
+    uses: ./.github/workflows/_deploy-env.yml
     with:
       env: Dev
       account_id: 682033502734
@@ -24,7 +52,7 @@ jobs:
   deploy_test:
     name: test
     needs: deploy_dev
-    uses: ./.github/workflows/deploy-env.yml
+    uses: ./.github/workflows/_deploy-env.yml
     with:
       env: Test
       account_id: 961341546901
@@ -32,7 +60,7 @@ jobs:
   deploy_prod:
     name: prod
     needs: deploy_test
-    uses: ./.github/workflows/deploy-env.yml
+    uses: ./.github/workflows/_deploy-env.yml
     with:
       env: Prod
       account_id: 515966535475
