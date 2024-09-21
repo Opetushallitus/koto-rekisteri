@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import "source-map-support/register"
 import { App } from "aws-cdk-lib"
+import { EcrImage } from "aws-cdk-lib/aws-ecs"
 import { deploymentAccounts, utilityAccount } from "../lib/accounts"
+import { getEnv } from "../lib/env"
 import { UtilityStage } from "../lib/utility-stage"
 import { EnvironmentStage } from "../lib/environment-stage"
 
@@ -12,11 +14,19 @@ import { EnvironmentStage } from "../lib/environment-stage"
 
 const app = new App()
 
-const buildStage = new UtilityStage(app, "Util", {
+const utilityStage = new UtilityStage(app, "Util", {
   env: utilityAccount,
+  allowPullsFromAccounts: [
+    deploymentAccounts.dev.account,
+    deploymentAccounts.test.account,
+    deploymentAccounts.prod.account,
+  ],
 })
 
-const serviceImage = buildStage.imageBuildsStack.serviceImage
+const serviceImage = EcrImage.fromEcrRepository(
+  utilityStage.imageBuildsStack.repository,
+  getEnv("TAG"),
+)
 
 new EnvironmentStage(app, "Dev", {
   env: deploymentAccounts.dev,

@@ -4,7 +4,6 @@ import {
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager"
 import { IVpc } from "aws-cdk-lib/aws-ec2"
-import { DockerImageAsset } from "aws-cdk-lib/aws-ecr-assets"
 import { ContainerImage, Secret } from "aws-cdk-lib/aws-ecs"
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns"
 import {
@@ -16,7 +15,7 @@ import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { Construct } from "constructs"
 
 export interface InfraStackProps extends StackProps {
-  image: DockerImageAsset
+  image: ContainerImage
   name: string
   domainName: string
   vpc: IVpc
@@ -43,7 +42,7 @@ export class ServiceStack extends Stack {
     const service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
       vpc: props.vpc,
       taskImageOptions: {
-        image: ContainerImage.fromDockerImageAsset(props.image),
+        image: props.image,
         containerPort: 8080,
         environment: {
           SPRING_PROFILES_ACTIVE: props.name,

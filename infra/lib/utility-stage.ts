@@ -1,18 +1,34 @@
-import { Stage, StageProps } from "aws-cdk-lib"
+import { StackProps, Stage, StageProps } from "aws-cdk-lib"
+import { ManagedPolicy, PolicyStatement } from "aws-cdk-lib/aws-iam"
 import { Construct } from "constructs"
 import { GithubActionsStack } from "./github-actions-stack"
-import { ImageBuildsStack } from "./image-builds-stack"
+import { ContainerRepositoryStack } from "./container-repository-stack"
+
+interface UtilityStageProps extends StageProps {
+  allowPullsFromAccounts: string[]
+}
 
 export class UtilityStage extends Stage {
-  readonly imageBuildsStack: ImageBuildsStack
+  readonly imageBuildsStack: ContainerRepositoryStack
 
-  constructor(scope: Construct, id: string, props: StageProps) {
+  constructor(scope: Construct, id: string, props: UtilityStageProps) {
     super(scope, id, props)
 
-    new GithubActionsStack(this, "GithubActions", {
+    const githubActionsStack = new GithubActionsStack(this, "GithubActions", {
       env: props.env,
     })
 
-    this.imageBuildsStack = new ImageBuildsStack(this, "ImageBuilds", props)
+    githubActionsStack.githubActionsRole.addToPolicy(
+      new PolicyStatement({
+        actions: ["ecr:GetAuthorizationToken"],
+        resources: ["*"],
+      }),
+    )
+
+    this.imageBuildsStack = new ContainerRepositoryStack(
+      this,
+      "ImageBuilds",
+      props,
+    )
   }
 }
