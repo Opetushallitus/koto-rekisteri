@@ -21,4 +21,4 @@ jobs:
           experimental: true
 
       - name: Check formatting
-        run: ./check-formatting.sh
+        run: ./scripts/check-formatting.sh
