@@ -18,6 +18,12 @@ export class UtilityStage extends Stage {
       env: props.env,
     })
 
+    this.imageBuildsStack = new ContainerRepositoryStack(
+      this,
+      "ImageBuilds",
+      props,
+    )
+
     githubActionsStack.githubActionsRole.addToPolicy(
       new PolicyStatement({
         actions: ["ecr:GetAuthorizationToken"],
@@ -25,10 +31,8 @@ export class UtilityStage extends Stage {
       }),
     )
 
-    this.imageBuildsStack = new ContainerRepositoryStack(
-      this,
-      "ImageBuilds",
-      props,
+    this.imageBuildsStack.repository.grantPullPush(
+      githubActionsStack.githubActionsRole,
     )
   }
 }
