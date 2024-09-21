@@ -15,6 +15,7 @@ export interface InfraStackProps extends cdk.StackProps {
   domainName: string
   vpc: IVpc
   database: DatabaseCluster
+  databaseName: string
 }
 
 export class InfraStack extends cdk.Stack {
@@ -54,7 +55,7 @@ export class InfraStack extends cdk.Stack {
           containerPort: 8080,
           environment: {
             SPRING_PROFILES_ACTIVE: props.name,
-            DATABASE_URL: `jdbc:postgresql://${props.database.clusterEndpoint.socketAddress}/public`,
+            DATABASE_URL: `jdbc:postgresql://${props.database.clusterEndpoint.socketAddress}/${props.databaseName}`,
             DATABASE_USER: dbUser,
           },
           secrets: {
