@@ -12,6 +12,7 @@ export class DnsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DnsStackProps) {
     super(scope, id, props)
 
+    // note: DNS zone created separately to make it harder to accidentally destroy
     this.hostedZone = aws_route53.HostedZone.fromLookup(this, "HostedZone", {
       domainName: props.name,
     })
