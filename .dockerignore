@@ -1,3 +1,4 @@
-**/target
-**/node_modules
-**/cdk.out
+*
+!frontend
+!server
+!scripts
