@@ -35,7 +35,7 @@ jonka asentamisen jälkeen IDEA:n voi laittaa formatoimaan tallentamisen yhteyde
 
 Frontendia varten on `.run` - kansiossa Konfiguraatio, jolla voi ajaa nodea IDEA:sta.
 
-#### Hyödyllisiä komentoja
+### Hyödyllisiä komentoja
 
 ```shell
 # Jos haluat lisätä formatointitarkastuksen commitin luonnin yhteyteen
@@ -53,4 +53,25 @@ mvn package
 # e2e-testien ajaminen e2e-hakemistossa
 # Playwrightin UI testien ajamiseen --ui flagilla
 npx playwright test
+```
+
+## Ympäristöt
+
+Sovellus julkaistaan kolmelle AWS-tilille:
+
+| Nimi | AWS-tili     |
+| ---- | ------------ |
+| dev  | 682033502734 |
+| test | 961341546901 |
+| prod | 515966535475 |
+
+Julkaisu tapahtuu automaattisesti GitHub Actions -palvelussa [Build](./.github/workflows/build.yml)-tiedoston mukaisesti jokaisella `main`-haaran päivityksellä. Julkaisun voi myös ajaa omalta koneelta komennoilla:
+
+[//]: # "TODO: luo skripti tätä varten"
+
+```shell
+(cd infra && npx cdk deploy 'Util/**')
+(cd infra && npx cdk deploy 'Dev/**')
+(cd infra && npx cdk deploy 'Test/**')
+(cd infra && npx cdk deploy 'Prod/**')
 ```
