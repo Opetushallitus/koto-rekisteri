@@ -70,8 +70,8 @@ Julkaisu tapahtuu automaattisesti GitHub Actions -palvelussa [Build](./.github/w
 [//]: # "TODO: luo skripti tätä varten"
 
 ```shell
-(cd infra && npx cdk deploy 'Util/**')
-(cd infra && npx cdk deploy 'Dev/**')
-(cd infra && npx cdk deploy 'Test/**')
-(cd infra && npx cdk deploy 'Prod/**')
+(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Util/**')
+(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Dev/**')
+(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Test/**')
+(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Prod/**')
 ```
