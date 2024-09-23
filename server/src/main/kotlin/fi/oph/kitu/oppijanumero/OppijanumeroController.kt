@@ -11,7 +11,7 @@ class OppijanumeroController(
 ) : OppijanumeroControllerApi {
     override fun getOppijanumero(): ResponseEntity<String> {
         try {
-            val response = oppijanumeroService.getGrantingTicket()
+            val response = oppijanumeroService.yleistunnisteHae()
             return ResponseEntity(
                 response,
                 HttpStatus.OK,

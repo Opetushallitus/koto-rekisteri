@@ -21,6 +21,38 @@ class OppijanumeroService(
     @Value("\${kitu.oppijanumero.casUrl}")
     private lateinit var casUrl: String
 
+    @Value("\${kitu.oppijanumero.serviceUrl}")
+    private lateinit var serviceUrl: String
+
+    fun yleistunnisteHae(): String {
+        val grantingTicket = getGrantingTicket()
+        val serviceTicket = getServiceTicket(grantingTicket)
+
+        return "ServiceTicket: $serviceTicket"
+    }
+
+    fun getServiceTicket(ticketGrantingTicket: String): String {
+        val request =
+            HttpRequest
+                .newBuilder(URI.create("$casUrl/v1/tickets/$ticketGrantingTicket"))
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                        "service=$serviceUrl/j_spring_cas_security_check",
+                    ),
+                ).header("Content-Type", "application/x-www-form-urlencoded")
+                .build()
+
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+
+        if (response.statusCode() != 200) {
+            throw RuntimeException("Unexpected status code: ${response.statusCode()} and message: ${response.body()}")
+        }
+
+        val ticket = response.body()
+        println("Successfully got service ticket $ticket")
+        return ticket
+    }
+
     fun getGrantingTicket(): String {
         // Step 2 - form a request
         val username = URLEncoder.encode(onrUsername, "UTF-8")
@@ -37,6 +69,14 @@ class OppijanumeroService(
         val statusCode = response.statusCode()
         val body = response.body()
 
-        return body
+        if (statusCode != 201) {
+            throw RuntimeException("Ticket granting service responded with status code $statusCode and message $body")
+        }
+
+        val location = response.headers().firstValue("Location").get()
+        val ticket = location.substring(location.lastIndexOf("/") + 1)
+        println("Successfully fetched TGT (Ticket Granting Ticket): $ticket")
+
+        return ticket
     }
 }
