@@ -19,7 +19,7 @@ COPY --from=frontend-builder /kitu/server/target/classes/static /kitu/server/tar
 
 RUN mvn package -DskipTests
 
-FROM amazoncorretto:21-al2023
+FROM amazoncorretto:23-al2023
 
 WORKDIR /kitu/server/target
 
