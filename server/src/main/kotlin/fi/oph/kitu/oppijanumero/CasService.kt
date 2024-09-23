@@ -9,8 +9,8 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 @Service
-class OppijanumeroService(
-    var httpClient: HttpClient,
+class CasService(
+    private val httpClient: HttpClient,
 ) {
     @Value("\${kitu.oppijanumero.username}")
     private lateinit var onrUsername: String
@@ -24,11 +24,21 @@ class OppijanumeroService(
     @Value("\${kitu.oppijanumero.serviceUrl}")
     private lateinit var serviceUrl: String
 
-    fun yleistunnisteHae(): String {
+    fun authenticateToCas() {
         val grantingTicket = getGrantingTicket()
         val serviceTicket = getServiceTicket(grantingTicket)
 
-        return "ServiceTicket: $serviceTicket"
+        sendAuthenticationRequest(serviceTicket)
+    }
+
+    fun sendAuthenticationRequest(serviceTicket: String) {
+        val authRequest =
+            HttpRequest
+                .newBuilder(URI.create("$serviceUrl/j_spring_cas_security_check?ticket=$serviceTicket"))
+                .method("GET", HttpRequest.BodyPublishers.noBody())
+                .build()
+        val authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
+        println("Auth reset response: $authResponse")
     }
 
     fun getServiceTicket(ticketGrantingTicket: String): String {
