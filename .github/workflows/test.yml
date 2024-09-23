@@ -12,6 +12,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      MISE_ENV: ci
+
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
