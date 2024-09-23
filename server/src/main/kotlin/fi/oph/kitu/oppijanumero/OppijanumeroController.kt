@@ -7,14 +7,22 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class OppijanumeroController(
-    private val casService: CasService,
+    private val oppijanumeroService: OppijanumeroService,
 ) : OppijanumeroControllerApi {
     override fun getOppijanumero(): ResponseEntity<String> {
         try {
-            casService.authenticateToCas()
+            val response =
+                oppijanumeroService.yleistunnisteHae(
+                    YleistunnisteHaeRequest(
+                        "Magdalena Testi",
+                        "010866-9260",
+                        "Magdalena",
+                        "Sallinen-Testi",
+                    ),
+                )
             return ResponseEntity(
-                "Authenticated!",
-                HttpStatus.OK,
+                response.body(),
+                if (response.statusCode() == 200) HttpStatus.OK else HttpStatus.INTERNAL_SERVER_ERROR,
             )
         } catch (e: Exception) {
             println("ERROR: ${e.message}")

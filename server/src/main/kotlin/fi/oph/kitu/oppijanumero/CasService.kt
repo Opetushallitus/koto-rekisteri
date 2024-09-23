@@ -24,13 +24,6 @@ class CasService(
     @Value("\${kitu.oppijanumero.serviceUrl}")
     private lateinit var serviceUrl: String
 
-    fun authenticateToCas() {
-        val grantingTicket = getGrantingTicket()
-        val serviceTicket = getServiceTicket(grantingTicket)
-
-        sendAuthenticationRequest(serviceTicket)
-    }
-
     fun sendAuthenticationRequest(serviceTicket: String) {
         val authRequest =
             HttpRequest
