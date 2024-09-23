@@ -59,6 +59,25 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Oppija"
+
+  /api/oppijanumero:
+    get:
+      tags:
+        - "oppijanumero-controller"
+      summary: "Hakee yhden käyttäjän oppijanumerorekisteristä."
+      operationId: "getOppijanumero"
+      responses:
+        200:
+          description: "Oppija löytyi"
+          content:
+            "text/plain":
+              schema:
+                type: string
+                example: "oid"
+        400:
+          description: "Virheellinen pyyntö"
+        500:
+          description: "Virheellinen pyyntö"
 components:
   schemas:
     Oppija:
