@@ -1,16 +1,13 @@
 package fi.oph.kitu.kielitesti
 
 import fi.oph.kitu.oppija.Oppija
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.RestClient
 
 @Service
 class MoodleService(
-    private val restTemplate: RestTemplate,
+    private val restClientBuilder: RestClient.Builder,
 ) {
     data class MoodleOppija(
         val id: Long,
@@ -28,14 +25,22 @@ class MoodleService(
     @Value("\${kitu.kielitesti.baseurl}")
     lateinit var kielitestiBaseurl: String
 
-    private val logger: Logger = LoggerFactory.getLogger(javaClass)
+    private val restClient by lazy { restClientBuilder.baseUrl(kielitestiBaseurl).build() }
 
     fun getUsers(): List<Oppija> {
-        val response: ResponseEntity<MoodleOppijaLista> =
-            restTemplate.getForEntity(
-                "$kielitestiBaseurl/webservice/rest/server.php?wstoken=$moodleToken&wsfunction=core_user_search_identity&moodlewsrestformat=json&query=",
-                MoodleOppijaLista::class.java,
-            )
+        val response =
+            restClient
+                .get()
+                .uri(
+                    "/webservice/rest/server.php?wstoken={wstoken}",
+                    mapOf(
+                        "wstoken" to moodleToken,
+                        "wsfunction" to "core_user_search_identity",
+                        "moodlewsrestformat" to "json",
+                        "query" to "",
+                    ),
+                ).retrieve()
+                .toEntity(MoodleOppijaLista::class.java)
         val oppijat = response.body?.list?.map { Oppija(it.id, it.fullname) }
         return oppijat ?: listOf()
     }
