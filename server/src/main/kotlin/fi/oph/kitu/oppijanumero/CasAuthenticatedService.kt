@@ -1,5 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.http.HttpClient
@@ -8,6 +9,7 @@ import java.net.http.HttpResponse
 
 @Service
 class CasAuthenticatedService(
+    @Qualifier("oppijanumeroHttpClient")
     private val httpClient: HttpClient,
     private val casService: CasService,
 ) {
