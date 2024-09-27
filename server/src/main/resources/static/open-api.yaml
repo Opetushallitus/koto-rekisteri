@@ -5,6 +5,15 @@ info:
 tags:
   - name: kitu
     description: KOTO-rekisteri
+servers:
+  - url: http://localhost:8080
+    description: Lokaali ympäristö
+  - url: https://kios.untuvaopintopolku.fi
+    description: Kehitysympäristö
+  - url: https://kios.testiopintopolku.fi
+    description: Testiympäristö
+  - url: https://kios.opintopolku.fi
+    description: Tuotantoympäristö
 paths:
   /api/oppija:
     get:
