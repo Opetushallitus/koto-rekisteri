@@ -8,7 +8,7 @@ import java.time.Duration
 
 @Configuration
 class HttpClientConfig {
-    @Bean
+    @Bean("oppijanumeroHttpClient")
     fun HttpClient(): HttpClient =
         HttpClient
             .newBuilder()
