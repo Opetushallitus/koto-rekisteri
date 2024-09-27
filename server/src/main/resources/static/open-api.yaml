@@ -89,8 +89,28 @@ paths:
           description: "Virheellinen pyyntö"
         500:
           description: "Virheellinen pyyntö"
+
+  /api/yki:
+    get:
+      tags:
+        - "yki-controller"
+      summary: "Hakee yhden käyttäjän YKI:n rajapinnasta"
+      operationId: "getSuoritus"
+      responses:
+        200:
+          description: "Suoritus löytyi"
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/YkiSuoritus"
+        400:
+          description: "Virheellinen pyyntö"
+        500:
+          description: "Tapahtui odottamaton virhe"
+
 components:
   schemas:
+    # Domain: Oppija
     Oppija:
       required:
         - id
@@ -104,3 +124,35 @@ components:
           format: int64
         name:
           type: string
+
+    # Domain: YKI
+    YkiSuoritus:
+      type: object
+      properties:
+        nimi:
+          type: string
+          example: "Yrjö Ykittäjä"
+        henkilötunnus:
+          type: string
+          example: "010106A911C"
+        kansalaisuus:
+          type: string
+          example: "Yhdistynyt Kuningaskunta"
+        sukupuoli:
+          type: string
+          example: "Muu"
+        tutkinnonSuorittamispaikka:
+          type: string
+          example: "Taitotalo, Helsinki"
+        tutkintokieli:
+          type: string
+          example: "suomi"
+        saadutTaitotasoarviot:
+          type: string
+          example: "EVK B2/YKI 4"
+        tutkintokertojenAjankohta:
+          type: string
+          example: "2024-09-27 12:40"
+        tarpeellisetYhteystiedot:
+          type: string
+          example: "Yrjönkatu 13 C, 00120 Helsinki"
