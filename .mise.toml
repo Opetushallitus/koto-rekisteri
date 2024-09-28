@@ -9,4 +9,4 @@ java = 'corretto-21'
 ktlint = "latest"
 maven = "3.9.9"
 shellcheck = "latest"
-awscli = "ref:2.17.55"
+awscli = "2.17.61"
