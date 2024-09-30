@@ -1,11 +1,13 @@
 package fi.oph.kitu.dev
 
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@RequestMapping("/dev/mock/yki")
 class MockYkiControllerApi {
-    @GetMapping("/api/mock/yki")
+    @GetMapping
     fun mockYki() =
         YkiMockData(
             "Yrjö Ykittäjä",
