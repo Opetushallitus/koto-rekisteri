@@ -7,7 +7,7 @@ COPY frontend /kitu/frontend
 
 RUN ./scripts/build_frontend.sh
 
-FROM maven:3.9.9-amazoncorretto-21-al2023 AS backend-builder
+FROM maven:3-amazoncorretto-23-al2023 AS backend-builder
 
 WORKDIR /kitu
 
