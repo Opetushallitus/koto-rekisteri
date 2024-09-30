@@ -4,7 +4,7 @@ name: kitu
 
 services:
   db:
-    image: postgres:16
+    image: postgres:17
     volumes:
       - ./scripts/postgres-docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
