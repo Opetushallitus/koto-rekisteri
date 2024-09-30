@@ -50,7 +50,7 @@ class WebSecurityConfig {
         ) {
             http.authorizeHttpRequests { authorize ->
                 authorize
-                    .requestMatchers("/dev/*")
+                    .requestMatchers("/dev/**")
                     .permitAll()
             }
         }
