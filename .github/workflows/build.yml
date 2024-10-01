@@ -26,6 +26,7 @@ jobs:
   build_image:
     name: Build image
     runs-on: ubuntu-latest
+    needs: deploy_util
     permissions:
       id-token: write
       contents: read
@@ -54,29 +55,29 @@ jobs:
     name: util
     uses: ./.github/workflows/_deploy-env.yml
     with:
-      env: Util
-      account_id: 961341524988
+      environment: Util
+      action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
 
   deploy_dev:
     name: dev
     needs: build_image
     uses: ./.github/workflows/_deploy-env.yml
     with:
-      env: Dev
-      account_id: 682033502734
+      environment: Dev
+      action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
 
   deploy_test:
     name: test
     needs: deploy_dev
     uses: ./.github/workflows/_deploy-env.yml
     with:
-      env: Test
-      account_id: 961341546901
+      environment: Test
+      action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
 
   deploy_prod:
     name: prod
     needs: deploy_test
     uses: ./.github/workflows/_deploy-env.yml
     with:
-      env: Prod
-      account_id: 515966535475
+      environment: Prod
+      action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}

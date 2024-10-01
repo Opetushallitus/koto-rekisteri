@@ -3,64 +3,58 @@ name: Deploy
 on:
   workflow_call:
     inputs:
-      env:
-        type: string
-        required: true
-      account_id:
-        type: string
-        required: true
       stacks:
         type: string
         default: "**"
+      environment:
+        type: string
+      action:
+        type: string
   workflow_dispatch:
     inputs:
-      env:
+      environment:
+        type: environment
+        description: Target environment
+      action:
         type: choice
         options:
-          - Dev
-          - Test
-          - Prod
-        description: Target environment
-        required: true
-      account_id:
-        type: string
-        description: Target AWS account
-        required: true
+          - deploy
+          - diff
+        description: Action to perform
       stacks:
         type: string
         description: Stacks to deploy
         default: "**"
 
-concurrency: deploy-${{ github.ref_name }}-${{ inputs.env }}
+concurrency: deploy-${{ github.ref_name }}-${{ vars.account_id }}
+
+env:
+  TAG: ${{ github.sha }}
 
 jobs:
   run:
-    name: ${{ github.ref_name == 'main' && 'Deploy' || 'Diff' }} to ${{ inputs.env }} (${{ inputs.account_id }})
+    name: ${{ inputs.action }} to ${{ inputs.environment }} (${{ vars.account_id }})
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
-    env:
-      TAG: ${{ github.sha }}
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ vars.environment_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
         uses: jdx/mise-action@v2
         with:
           experimental: true
-      - name: Log in to ${{ inputs.env }}
+      - name: Log in to ${{ inputs.environment }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::${{ inputs.account_id }}:role/kitu-github-actions-role
+          role-to-assume: arn:aws:iam::${{ vars.account_id }}:role/kitu-github-actions-role
       - name: Install dependencies
         run: npm ci
         working-directory: infra
-      - name: Deploy
-        if: github.ref_name == 'main'
-        run: npx cdk deploy --require-approval=never --exclusively '${{ inputs.env }}/${{ inputs.stacks }}'
-        working-directory: infra
-      - name: Diff
-        if: github.ref_name != 'main'
-        run: npx cdk diff --require-approval=never --exclusively '${{ inputs.env }}/${{ inputs.stacks }}'
+      - name: ${{ inputs.action }}
+        run: npx cdk ${{ inputs.action }} --require-approval=never --exclusively '${{ inputs.environment }}/${{ inputs.stacks }}'
         working-directory: infra
