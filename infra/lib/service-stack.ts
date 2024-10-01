@@ -50,7 +50,10 @@ export class ServiceStack extends Stack {
           DATABASE_USER: dbUser,
         },
         secrets: {
-          DATABASE_PASSWORD: Secret.fromSecretsManager(props.database.secret!),
+          DATABASE_PASSWORD: Secret.fromSecretsManager(
+            props.database.secret!,
+            "password",
+          ),
           KIELITESTI_TOKEN: aws_ecs.Secret.fromSecretsManager(
             aws_secretsmanager.Secret.fromSecretNameV2(
               this,
