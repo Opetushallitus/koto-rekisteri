@@ -9,6 +9,27 @@ on:
       account_id:
         type: string
         required: true
+      stacks:
+        type: string
+        default: "**"
+  workflow_dispatch:
+    inputs:
+      env:
+        type: choice
+        options:
+          - Dev
+          - Test
+          - Prod
+        description: Target environment
+        required: true
+      account_id:
+        type: string
+        description: Target AWS account
+        required: true
+      stacks:
+        type: string
+        description: Stacks to deploy
+        default: "**"
 
 concurrency: deploy-${{ github.ref_name }}-${{ inputs.env }}
 
@@ -37,9 +58,9 @@ jobs:
         working-directory: infra
       - name: Deploy
         if: github.ref_name == 'main'
-        run: npx cdk deploy --require-approval=never '${{ inputs.env }}/**'
+        run: npx cdk deploy --require-approval=never --exclusively '${{ inputs.env }}/${{ inputs.stacks }}'
         working-directory: infra
       - name: Diff
         if: github.ref_name != 'main'
-        run: npx cdk diff --require-approval=never '${{ inputs.env }}/**'
+        run: npx cdk diff --require-approval=never --exclusively '${{ inputs.env }}/${{ inputs.stacks }}'
         working-directory: infra
