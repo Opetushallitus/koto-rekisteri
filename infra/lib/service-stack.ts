@@ -88,7 +88,5 @@ export class ServiceStack extends Stack {
       ...service.targetGroup.healthCheck,
       path: "/actuator/health",
     })
-
-    props.database.grantConnect(service.taskDefinition.taskRole, dbUser)
   }
 }
