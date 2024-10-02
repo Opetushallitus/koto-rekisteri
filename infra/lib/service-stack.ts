@@ -3,10 +3,11 @@ import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager"
-import { IVpc } from "aws-cdk-lib/aws-ec2"
+import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
 import { ContainerImage, Secret } from "aws-cdk-lib/aws-ecs"
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns"
 import {
+  ApplicationLoadBalancer,
   ApplicationProtocol,
   SslPolicy,
 } from "aws-cdk-lib/aws-elasticloadbalancingv2"
@@ -14,17 +15,21 @@ import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { Construct } from "constructs"
 
-export interface InfraStackProps extends StackProps {
+export interface ServiceStackProps extends StackProps {
   image: ContainerImage
   name: string
   domainName: string
+  serviceSecurityGroup: SecurityGroup
+  loadBalancerSecurityGroup: SecurityGroup
   vpc: IVpc
   database: DatabaseCluster
   databaseName: string
 }
 
 export class ServiceStack extends Stack {
-  constructor(scope: Construct, id: string, props: InfraStackProps) {
+  readonly service: ApplicationLoadBalancedFargateService
+
+  constructor(scope: Construct, id: string, props: ServiceStackProps) {
     super(scope, id, props)
 
     // Default Postgres DB user: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseCluster.html#credentials
@@ -39,8 +44,13 @@ export class ServiceStack extends Stack {
       validation: CertificateValidation.fromDns(zone),
     })
 
-    const service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
+    this.service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
       vpc: props.vpc,
+      securityGroups: [props.serviceSecurityGroup],
+      loadBalancer: new ApplicationLoadBalancer(this, "LoadBalancer", {
+        vpc: props.vpc,
+        securityGroup: props.loadBalancerSecurityGroup,
+      }),
       taskImageOptions: {
         image: props.image,
         containerPort: 8080,
@@ -84,8 +94,8 @@ export class ServiceStack extends Stack {
       sslPolicy: SslPolicy.RECOMMENDED_TLS,
     })
 
-    service.targetGroup.configureHealthCheck({
-      ...service.targetGroup.healthCheck,
+    this.service.targetGroup.configureHealthCheck({
+      ...this.service.targetGroup.healthCheck,
       path: "/actuator/health",
     })
   }
