@@ -58,9 +58,9 @@ jobs:
         working-directory: infra
       - name: Deploy
         if: github.ref_name == 'main'
-        run: npx cdk deploy --require-approval=never '${{ inputs.env }}/${{ inputs.stacks }}'
+        run: npx cdk deploy --require-approval=never --exclusively '${{ inputs.env }}/${{ inputs.stacks }}'
         working-directory: infra
       - name: Diff
         if: github.ref_name != 'main'
-        run: npx cdk diff --require-approval=never '${{ inputs.env }}/${{ inputs.stacks }}'
+        run: npx cdk diff --require-approval=never --exclusively '${{ inputs.env }}/${{ inputs.stacks }}'
         working-directory: infra
