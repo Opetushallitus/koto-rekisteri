@@ -129,18 +129,8 @@ components:
     YkiSuoritus:
       type: object
       properties:
-        nimi:
-          type: string
-          example: "Yrjö Ykittäjä"
-        henkilötunnus:
-          type: string
-          example: "010106A911C"
-        kansalaisuus:
-          type: string
-          example: "Yhdistynyt Kuningaskunta"
-        sukupuoli:
-          type: string
-          example: "Muu"
+        osallistuja:
+          $ref: "#/components/schemas/YkiOsallistuja"
         tutkinnonSuorittamispaikka:
           type: string
           example: "Taitotalo, Helsinki"
@@ -156,3 +146,25 @@ components:
         tarpeellisetYhteystiedot:
           type: string
           example: "Yrjönkatu 13 C, 00120 Helsinki"
+
+    YkiOsallistuja:
+      type: object
+      properties:
+        oid:
+          type: string
+        sukunimi:
+          type: string
+          example: "Ykittäjä"
+        etunimi:
+          type: string
+          example: "Yrjö"
+        henkilotunnus:
+          type: string
+          example: "010106A911C"
+        kansalaisuus:
+          type: string
+          example: "GBR"
+        sukupuoli:
+          type: string
+          description: "N=Nainen, M=Mies, E=muu/ei ilmoiteta"
+          example: "E"

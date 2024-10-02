@@ -41,12 +41,14 @@ class MockYkiControllerApi(
             "EVK B2/YKI 4",
             "2024-09-27 12:40",
             "Yrjönkatu 13 C, 00120 Helsinki",
+            "dev@null.com",
         )
 }
 
 data class YkiMockData(
-    val nimi: String,
-    val henkilötunnus: String,
+    val sukunimi: String,
+    val etunimi: String,
+    val henkilotunnus: String,
     val kansalaisuus: String,
     val sukupuoli: String,
     val tutkinnonSuorittamispaikka: String,
