@@ -210,5 +210,19 @@ components:
           type: string
           example: "https://www.helsinki.fi/en"
         tutkintotarjonta:
-          type: # TODO: Array<(kieli: string, taso: string)>
-          example: ""
+          type: array
+          items:
+            $ref: "#/components/schemas/YkiTutkintotarjonta"
+          example:
+            [{ "kieli": "eng", "taso": "KT" }, { "kieli": "spa", "taso": "PT" }]
+
+    YkiTutkintotarjonta:
+      type: object
+      properties:
+        kieli:
+          type: string
+          example: "eng"
+        taso:
+          type: string
+          description: "Tutkinnon taso. PT=Perustaso, KT=keskitaso, YT=ylin taso"
+          example: "KT"

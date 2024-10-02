@@ -23,5 +23,5 @@ data class YkiJarjestaja(
     @get:JsonProperty("puhelin") val puhelin: kotlin.String? = null,
     @get:JsonProperty("yhteyshenkilo") val yhteyshenkilo: kotlin.String? = null,
     @get:JsonProperty("wwwosoite") val wwwosoite: kotlin.String? = null,
-    @get:JsonProperty("tutkintotarjonta") val tutkintotarjonta: kotlin.Any? = null,
+    @get:JsonProperty("tutkintotarjonta") val tutkintotarjonta: kotlin.collections.List<YkiTutkintotarjonta>? = null,
 )
