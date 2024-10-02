@@ -1,10 +1,8 @@
-import { aws_ec2, Stack, StackProps, Stage, StageProps } from "aws-cdk-lib"
-import { ISecurityGroup, Port, SecurityGroup, Vpc } from "aws-cdk-lib/aws-ec2"
+import { Stage, StageProps } from "aws-cdk-lib"
 import { ContainerImage } from "aws-cdk-lib/aws-ecs"
-import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns"
-import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { Construct } from "constructs"
 import { EnvironmentConfig } from "./accounts"
+import { ConnectionsStack } from "./connections-stack"
 import { DbStack } from "./db-stack"
 import { DnsStack } from "./dns-stack"
 import { GithubActionsStack } from "./github-actions-stack"
@@ -14,31 +12,6 @@ import { ServiceStack } from "./service-stack"
 interface EnvironmentStageProps extends StageProps {
   environmentConfig: EnvironmentConfig
   serviceImage: ContainerImage
-}
-
-interface ConnectionsStackProps extends StackProps {
-  vpc: Vpc
-}
-
-class ConnectionsStack extends Stack {
-  readonly serviceSG: SecurityGroup
-  databaseSG: ISecurityGroup
-  readonly loadBalancerSG: SecurityGroup
-
-  constructor(scope: Construct, id: string, props: ConnectionsStackProps) {
-    super(scope, id, props)
-
-    this.loadBalancerSG = new aws_ec2.SecurityGroup(this, "LoadBalancerSG", {
-      vpc: props.vpc,
-    })
-    this.serviceSG = new aws_ec2.SecurityGroup(this, "ServiceSG", {
-      vpc: props.vpc,
-    })
-  }
-
-  createRules() {
-    this.databaseSG.addIngressRule(this.serviceSG, Port.tcp(5432))
-  }
 }
 
 export class EnvironmentStage extends Stage {
@@ -62,7 +35,7 @@ export class EnvironmentStage extends Stage {
       maxAzs: environmentConfig.network.maxAzs,
     })
 
-    const connectionsStack = new ConnectionsStack(this, "ConnectionsStack", {
+    const connectionsStack = new ConnectionsStack(this, "Connections", {
       env,
       vpc: networkStack.vpc,
     })
