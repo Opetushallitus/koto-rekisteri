@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @param tutkintokieli
  * @param saadutTaitotasoarviot
  * @param tutkintokertojenAjankohta
- * @param tarpeellisetYhteystiedot
  */
 data class YkiSuoritus(
     @get:JsonProperty("osallistuja") val osallistuja: YkiOsallistuja? = null,
@@ -17,5 +16,4 @@ data class YkiSuoritus(
     @get:JsonProperty("tutkintokieli") val tutkintokieli: kotlin.String? = null,
     @get:JsonProperty("saadutTaitotasoarviot") val saadutTaitotasoarviot: kotlin.String? = null,
     @get:JsonProperty("tutkintokertojenAjankohta") val tutkintokertojenAjankohta: kotlin.String? = null,
-    @get:JsonProperty("tarpeellisetYhteystiedot") val tarpeellisetYhteystiedot: kotlin.String? = null,
 )
