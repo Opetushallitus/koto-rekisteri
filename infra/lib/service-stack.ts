@@ -50,6 +50,7 @@ export class ServiceStack extends Stack {
       loadBalancer: new ApplicationLoadBalancer(this, "LoadBalancer", {
         vpc: props.vpc,
         securityGroup: props.loadBalancerSecurityGroup,
+        internetFacing: true,
       }),
       taskImageOptions: {
         image: props.image,
