@@ -143,9 +143,6 @@ components:
         tutkintokertojenAjankohta:
           type: string
           example: "2024-09-27 12:40"
-        tarpeellisetYhteystiedot:
-          type: string
-          example: "Yrjönkatu 13 C, 00120 Helsinki"
 
     YkiOsallistuja:
       type: object
@@ -168,3 +165,20 @@ components:
           type: string
           description: "N=Nainen, M=Mies, E=muu/ei ilmoiteta"
           example: "E"
+        # Tarpeelliset yhteystiedot
+        katuosoite:
+          type: string
+          description: "Osallistujan tarpeellisten yhteystietojen katuosoite"
+          example: "Hakaniemenranta 6"
+        postinumero:
+          type: string
+          description: "Osallistujan tarpeellisten yhteystietojen postinumero"
+          example: "00530"
+        postitoimipaikka:
+          type: string
+          description: "Osallistujan tarpeellisten yhteystietojen postitoimipaikka"
+          example: "Helsinki"
+        sähköpostiosoite:
+          type: string
+          description: "Osallistujan tarpeellisten yhteystietojen sähköpostiosoite"
+          example: "kirjaamo@oph.fi"
