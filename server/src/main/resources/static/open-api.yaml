@@ -131,9 +131,8 @@ components:
       properties:
         osallistuja:
           $ref: "#/components/schemas/YkiOsallistuja"
-        tutkinnonSuorittamispaikka:
-          type: string
-          example: "Taitotalo, Helsinki"
+        jarjestaja:
+          $ref: "#/components/schemas/YkiJarjestaja"
         tutkintokieli:
           type: string
           example: "suomi"
@@ -182,3 +181,34 @@ components:
           type: string
           description: "Osallistujan tarpeellisten yhteystietojen sähköpostiosoite"
           example: "kirjaamo@oph.fi"
+
+    YkiJarjestaja:
+      type: object
+      properties:
+        oid:
+          type: string
+          example: "1.2.246.562.24.01234567890"
+        nimi:
+          type: string
+          example: "Helsinki University"
+        katuosoite:
+          type: string
+          example: "Fabianinkatu 33"
+        postinumero:
+          type: string
+          example: "00014"
+        postitoimipaikka:
+          type: string
+          example: "Helsinki"
+        puhelin:
+          type: string
+          example: "02941 911"
+        yhteyshenkilo:
+          type: string
+          example: "Aapo Aapinen"
+        wwwosoite:
+          type: string
+          example: "https://www.helsinki.fi/en"
+        tutkintotarjonta:
+          type: # TODO: Array<(kieli: string, taso: string)>
+          example: ""
