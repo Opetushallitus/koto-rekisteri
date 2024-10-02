@@ -12,9 +12,5 @@ class UserController : UserControllerApi {
     @Autowired
     private lateinit var moodleService: MoodleService
 
-    override fun getUsers(): ResponseEntity<List<Oppija>> =
-        when (val users = moodleService.getUsers()) {
-            is ParsedUserList.Success -> ResponseEntity(users.users, HttpStatus.OK)
-            is ParsedUserList.Failure -> ResponseEntity(HttpStatus.SERVICE_UNAVAILABLE)
-        }
+    override fun getUsers(): ResponseEntity<List<Oppija>> = ResponseEntity(moodleService.getUsers(), HttpStatus.OK)
 }
