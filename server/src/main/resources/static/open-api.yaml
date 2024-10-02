@@ -68,6 +68,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Oppija"
+        503:
+          description: "Käyttäjien haku Moodlesta epäonnistui"
 
   /api/oppijanumero:
     get:

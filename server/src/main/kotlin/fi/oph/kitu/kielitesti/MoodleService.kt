@@ -4,38 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import fi.oph.kitu.oppija.Oppija
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-
-sealed class ParsedUserList {
-    data class Success(
-        val users: List<Oppija>,
-    ) : ParsedUserList()
-
-    data class Failure(
-        val error: MoodleError,
-    ) : ParsedUserList()
-
-    companion object {
-        private val mapper = ObjectMapper().registerKotlinModule()
-        private val logger: Logger = LoggerFactory.getLogger(ParsedUserList::class.java)
-
-        fun tryParse(json: String): ParsedUserList {
-            try {
-                val body = mapper.readValue<MoodleUserList>(json)
-                return Success(body.list.map { Oppija(it.id, it.fullname) } ?: listOf())
-            } catch (e: Exception) {
-                val moodleError = mapper.readValue<MoodleError>(json)
-                logger.error(moodleError.toString())
-                return Failure(moodleError)
-            }
-        }
-    }
-}
 
 data class MoodleUser(
     val id: Long,
@@ -47,9 +19,27 @@ data class MoodleUserList(
     val list: List<MoodleUser>,
     val maxusersperpage: Long?,
     val overflow: Boolean?,
-)
+) {
+    companion object {
+        private val mapper = ObjectMapper().registerKotlinModule()
 
-data class MoodleError(
+        fun tryParse(json: String): List<Oppija> {
+            try {
+                val body = mapper.readValue<MoodleUserList>(json)
+                return body.list.map { Oppija(it.id, it.fullname) } ?: listOf()
+            } catch (e: Exception) {
+                val moodleError = mapper.readValue<MoodleErrorMessage>(json)
+                throw MoodleException(moodleError)
+            }
+        }
+    }
+}
+
+class MoodleException(
+    val moodleErrorMessage: MoodleErrorMessage,
+) : Exception(moodleErrorMessage.message)
+
+data class MoodleErrorMessage(
     val exception: String,
     val errorcode: String,
     val message: String,
@@ -68,7 +58,7 @@ class MoodleService(
 
     private val restClient by lazy { restClientBuilder.baseUrl(kielitestiBaseurl).build() }
 
-    fun getUsers(): ParsedUserList {
+    fun getUsers(): List<Oppija> {
         val response =
             restClient
                 .get()
@@ -82,7 +72,7 @@ class MoodleService(
                 .retrieve()
                 .body(String::class.java)
 
-        if (response.isNullOrEmpty()) return ParsedUserList.Success(listOf())
-        return ParsedUserList.tryParse(response)
+        if (response.isNullOrEmpty()) return listOf()
+        return MoodleUserList.tryParse(response)
     }
 }
