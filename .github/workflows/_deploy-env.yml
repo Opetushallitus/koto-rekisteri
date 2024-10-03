@@ -56,5 +56,7 @@ jobs:
         run: npm ci
         working-directory: infra
       - name: ${{ inputs.action }}
-        run: npx cdk ${{ inputs.action }} --require-approval=never --exclusively '${{ inputs.environment }}/${{ inputs.stacks }}'
         working-directory: infra
+        run: |
+          ../scripts/live-tail.sh &
+          npx cdk ${{ inputs.action }} --require-approval=never --exclusively '${{ inputs.environment }}/${{ inputs.stacks }}'
