@@ -1,6 +1,6 @@
 import * as cdk from "aws-cdk-lib"
-import { Construct } from "constructs"
 import { aws_ec2, aws_rds } from "aws-cdk-lib"
+import { Construct } from "constructs"
 
 export interface DbStackProps extends cdk.StackProps {
   databaseName: string
