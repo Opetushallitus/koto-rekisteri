@@ -135,13 +135,44 @@ components:
           $ref: "#/components/schemas/YkiJarjestaja"
         tutkintokieli:
           type: string
-          example: "suomi"
-        saadutTaitotasoarviot:
+          description: "ISO 639-3 - koodattu kieli, jota kielitutkinnossa testataan."
+          example: "FIN"
+          enum:
+            - DEU
+            - ENG
+            - FIN
+            - FRA
+            - ITA
+            - RUS
+            - SME
+            - SPA
+            - SWE
+
+        # saadut taitotasoarviot
+        tekstinYmmartamisenArvosana:
           type: string
-          example: "EVK B2/YKI 4"
-        tutkintokertojenAjankohta:
+          description: "Tekstin ymmärtämisen arvosana"
+        kirjoittamisenArvosana:
           type: string
-          example: "2024-09-27 12:40"
+          description: "Kirjoittamisen arvosana"
+        rakenteidenJaSanastonArvosana:
+          type: string
+          description: "Rakenteiden ja sanaston arvosana"
+        puheenYmmartamisenArvosana:
+          type: string
+          description: "Puheen ymmärtämisen arvosana"
+        puhumisenArvosana:
+          type: string
+          description: "Puhumisen arvosana"
+        yleistasoarvio:
+          type: string
+          description: "Yleistasoarvio"
+
+        pvm:
+          type: string
+          example: "2024-09-27"
+          description: "Suorituksen päivämäärä"
+          format: date
 
     YkiOsallistuja:
       type: object
@@ -157,13 +188,21 @@ components:
         henkilotunnus:
           type: string
           example: "010106A911C"
+          description: "Suomalainen henkilötunnus"
         kansalaisuus:
           type: string
           example: "GBR"
+          minLength: 3
+          maxLength: 3
         sukupuoli:
           type: string
           description: "N=Nainen, M=Mies, E=muu/ei ilmoiteta"
           example: "E"
+          enum:
+            - N
+            - M
+            - E
+
         # Tarpeelliset yhteystiedot
         katuosoite:
           type: string
@@ -173,14 +212,16 @@ components:
           type: string
           description: "Osallistujan tarpeellisten yhteystietojen postinumero"
           example: "00530"
+          pattern: "^[0-9]{5}$"
         postitoimipaikka:
           type: string
           description: "Osallistujan tarpeellisten yhteystietojen postitoimipaikka"
           example: "Helsinki"
-        sähköpostiosoite:
+        sahköpostiosoite:
           type: string
           description: "Osallistujan tarpeellisten yhteystietojen sähköpostiosoite"
           example: "kirjaamo@oph.fi"
+          format: "email"
 
     YkiJarjestaja:
       type: object
@@ -188,6 +229,7 @@ components:
         oid:
           type: string
           example: "1.2.246.562.24.01234567890"
+          pattern: "^[0-9.]+$"
         nimi:
           type: string
           example: "Helsinki University"
