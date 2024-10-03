@@ -133,46 +133,20 @@ components:
           $ref: "#/components/schemas/YkiOsallistuja"
         jarjestajaOid:
           $ref: "#/components/schemas/YkiJarjestaja"
-        tutkintokieli:
-          type: string
-          description: "ISO 639-3 - koodattu kieli, jota kielitutkinnossa testataan."
-          example: "FIN"
-          enum:
-            - DEU
-            - ENG
-            - FIN
-            - FRA
-            - ITA
-            - RUS
-            - SME
-            - SPA
-            - SWE
 
         # saadut taitotasoarviot
         tekstinYmmartamisenArvosana:
-          type: string
-          description: "Tekstin ymmärtämisen arvosana"
+          $ref: "#/components/schemas/YkiArviointi"
         kirjoittamisenArvosana:
-          type: string
-          description: "Kirjoittamisen arvosana"
+          $ref: "#/components/schemas/YkiArviointi"
         rakenteidenJaSanastonArvosana:
-          type: string
-          description: "Rakenteiden ja sanaston arvosana"
+          $ref: "#/components/schemas/YkiArviointi"
         puheenYmmartamisenArvosana:
-          type: string
-          description: "Puheen ymmärtämisen arvosana"
+          $ref: "#/components/schemas/YkiArviointi"
         puhumisenArvosana:
-          type: string
-          description: "Puhumisen arvosana"
+          $ref: "#/components/schemas/YkiArviointi"
         yleistasoarvio:
-          type: string
-          description: "Yleistasoarvio"
-
-        pvm:
-          type: string
-          example: "2024-09-27"
-          description: "Suorituksen päivämäärä"
-          format: date
+          $ref: "#/components/schemas/YkiArviointi"
 
     YkiOsallistuja:
       type: object
@@ -233,3 +207,45 @@ components:
         nimi:
           type: string
           example: "Helsinki University"
+
+    # Vastaa Soljen taulossa arviointi_suoritus
+    YkiArviointi:
+      type: object
+      properties:
+        arviointinumero:
+          type: string
+          example: "7/10"
+        pvm:
+          type: string
+          example: "Päivämäärä, jolloin arviointi on tehty"
+        tutkintokieli:
+          type: string
+          description: "ISO 639-3 - koodattu kieli, jota kielitutkinnossa testataan."
+          example: "FIN"
+          enum:
+            - DEU
+            - ENG
+            - FIN
+            - FRA
+            - ITA
+            - RUS
+            - SME
+            - SPA
+            - SWE
+        taso:
+          type: string
+          description: |
+            Arvioitava taso.
+            PT = perustaso. Vastaa CEFR A1/A2
+            KT = keskitaso. Vastaa CEFR B1/B2
+            YT = Ylin taso. Vastaa CEFR C1/C2
+          example: "PT"
+          enum:
+            - "PT"
+            - "KT"
+            - "YT"
+        arvioijaOid:
+          type: string
+          description: "Arvioijan OID-tunniste"
+          example: "1.2.246.562.24.01234567890"
+          pattern: "^[0-9.]+$"
