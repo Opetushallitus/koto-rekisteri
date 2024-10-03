@@ -58,5 +58,5 @@ jobs:
       - name: ${{ inputs.action }}
         working-directory: infra
         run: |
-          aws logs start-live-tail --log-group-identifiers arn:aws:iam::${{ vars.account_id }}:log-group:KituService &
+          aws logs start-live-tail --log-group-identifiers arn:aws:logs:eu-west-1:${{ vars.account_id }}:log-group:KituService &
           npx cdk ${{ inputs.action }} --require-approval=never --exclusively '${{ inputs.environment }}/${{ inputs.stacks }}'
