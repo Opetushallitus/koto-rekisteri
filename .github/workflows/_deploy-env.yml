@@ -26,7 +26,7 @@ on:
         description: Stacks to deploy
         default: "**"
 
-concurrency: deploy-${{ github.ref_name }}-${{ vars.account_id }}
+concurrency: deploy-${{ github.ref_name }}-${{ inputs.environment }}
 
 env:
   TAG: ${{ github.sha }}
