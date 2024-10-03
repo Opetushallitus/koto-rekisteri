@@ -4,18 +4,20 @@ import {
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
-import { ContainerImage, Secret } from "aws-cdk-lib/aws-ecs"
+import { ContainerImage, LogDriver, Secret } from "aws-cdk-lib/aws-ecs"
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns"
 import {
   ApplicationLoadBalancer,
   ApplicationProtocol,
   SslPolicy,
 } from "aws-cdk-lib/aws-elasticloadbalancingv2"
+import { ILogGroup } from "aws-cdk-lib/aws-logs"
 import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { Construct } from "constructs"
 
 export interface ServiceStackProps extends StackProps {
+  logGroup: ILogGroup
   image: ContainerImage
   name: string
   domainName: string
@@ -55,6 +57,10 @@ export class ServiceStack extends Stack {
       taskImageOptions: {
         image: props.image,
         containerPort: 8080,
+        logDriver: LogDriver.awsLogs({
+          logGroup: props.logGroup,
+          streamPrefix: "kitu",
+        }),
         environment: {
           SPRING_PROFILES_ACTIVE: props.name,
           DATABASE_URL: `jdbc:postgresql://${props.database.clusterEndpoint.socketAddress}/${props.databaseName}`,

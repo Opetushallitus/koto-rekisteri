@@ -6,6 +6,7 @@ import { ConnectionsStack } from "./connections-stack"
 import { DbStack } from "./db-stack"
 import { DnsStack } from "./dns-stack"
 import { GithubActionsStack } from "./github-actions-stack"
+import { LogGroupsStack } from "./log-groups-stack"
 import { NetworkStack } from "./network-stack"
 import { ServiceStack } from "./service-stack"
 
@@ -28,6 +29,8 @@ export class EnvironmentStage extends Stage {
       env,
       name: environmentConfig.domainName,
     })
+
+    const logGroupsStack = new LogGroupsStack(this, "LogGroups", { env })
 
     const networkStack = new NetworkStack(this, "Network", {
       env,
@@ -54,6 +57,7 @@ export class EnvironmentStage extends Stage {
       domainName: environmentConfig.domainName,
       serviceSecurityGroup: connectionsStack.serviceSG,
       loadBalancerSecurityGroup: connectionsStack.loadBalancerSG,
+      logGroup: logGroupsStack.serviceLogGroup,
       vpc: networkStack.vpc,
       database: dbStack.cluster,
       databaseName: environmentConfig.databaseName,
