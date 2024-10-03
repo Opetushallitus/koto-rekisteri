@@ -138,6 +138,11 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.kagkarlsson</groupId>
+            <artifactId>db-scheduler-spring-boot-starter</artifactId>
+            <version>14.1.0</version>
+        </dependency>
     </dependencies>
 
     <build>
