@@ -35,16 +35,25 @@ export class GithubActionsStack extends Stack {
       }),
     })
 
-    const allowAssumingCdkRoles = new PolicyStatement({
-      actions: ["sts:AssumeRole", "iam:PassRole"],
-      resources: [
-        "arn:aws:iam::*:role/cdk-readOnlyRole",
-        "arn:aws:iam::*:role/cdk-hnb659fds-deploy-role-*",
-        "arn:aws:iam::*:role/cdk-hnb659fds-file-publishing-*",
-        "arn:aws:iam::*:role/cdk-hnb659fds-image-publishing-*",
-        "arn:aws:iam::*:role/cdk-hnb659fds-lookup-*",
-      ],
-    })
-    this.githubActionsRole.addToPolicy(allowAssumingCdkRoles)
+    this.githubActionsRole.addToPolicy(
+      new PolicyStatement({
+        sid: "AllowAssumingCDKRoles",
+        actions: ["sts:AssumeRole", "iam:PassRole"],
+        resources: [
+          "arn:aws:iam::*:role/cdk-readOnlyRole",
+          "arn:aws:iam::*:role/cdk-hnb659fds-deploy-role-*",
+          "arn:aws:iam::*:role/cdk-hnb659fds-file-publishing-*",
+          "arn:aws:iam::*:role/cdk-hnb659fds-image-publishing-*",
+          "arn:aws:iam::*:role/cdk-hnb659fds-lookup-*",
+        ],
+      }),
+    )
+    this.githubActionsRole.addToPolicy(
+      new PolicyStatement({
+        sid: "AllowLiveTailing",
+        actions: ["logs:StartLiveTail"],
+        resources: ["*"],
+      }),
+    )
   }
 }
