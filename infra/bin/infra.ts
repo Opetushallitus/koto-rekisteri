@@ -4,8 +4,8 @@ import { App } from "aws-cdk-lib"
 import { EcrImage } from "aws-cdk-lib/aws-ecs"
 import { deploymentAccounts, utilityAccount } from "../lib/accounts"
 import { getEnv } from "../lib/env"
-import { UtilityStage } from "../lib/utility-stage"
 import { EnvironmentStage } from "../lib/environment-stage"
+import { UtilityStage } from "../lib/utility-stage"
 
 // CIDR allocation strategy:
 // Top: 10.15.0.0/16
