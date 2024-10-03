@@ -131,7 +131,7 @@ components:
       properties:
         osallistuja:
           $ref: "#/components/schemas/YkiOsallistuja"
-        jarjestaja:
+        jarjestajaOid:
           $ref: "#/components/schemas/YkiJarjestaja"
         tutkintokieli:
           type: string
@@ -191,38 +191,3 @@ components:
         nimi:
           type: string
           example: "Helsinki University"
-        katuosoite:
-          type: string
-          example: "Fabianinkatu 33"
-        postinumero:
-          type: string
-          example: "00014"
-        postitoimipaikka:
-          type: string
-          example: "Helsinki"
-        puhelin:
-          type: string
-          example: "02941 911"
-        yhteyshenkilo:
-          type: string
-          example: "Aapo Aapinen"
-        wwwosoite:
-          type: string
-          example: "https://www.helsinki.fi/en"
-        tutkintotarjonta:
-          type: array
-          items:
-            $ref: "#/components/schemas/YkiTutkintotarjonta"
-          example:
-            [{ "kieli": "eng", "taso": "KT" }, { "kieli": "spa", "taso": "PT" }]
-
-    YkiTutkintotarjonta:
-      type: object
-      properties:
-        kieli:
-          type: string
-          example: "eng"
-        taso:
-          type: string
-          description: "Tutkinnon taso. PT=Perustaso, KT=keskitaso, YT=ylin taso"
-          example: "KT"
