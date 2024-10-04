@@ -2,6 +2,7 @@ import { Stage, StageProps } from "aws-cdk-lib"
 import { ContainerImage } from "aws-cdk-lib/aws-ecs"
 import { Construct } from "constructs"
 import { EnvironmentConfig } from "./accounts"
+import { AlarmsStack } from "./alarms-stack"
 import { ConnectionsStack } from "./connections-stack"
 import { DbStack } from "./db-stack"
 import { DnsStack } from "./dns-stack"
@@ -24,6 +25,8 @@ export class EnvironmentStage extends Stage {
     new GithubActionsStack(this, "GithubActions", {
       env,
     })
+
+    const alarmsStack = new AlarmsStack(this, "AlarmsStack", { env })
 
     new DnsStack(this, "Dns", {
       env,
@@ -62,6 +65,7 @@ export class EnvironmentStage extends Stage {
       database: dbStack.cluster,
       databaseName: environmentConfig.databaseName,
       image: props.serviceImage,
+      alarmSnsTopic: alarmsStack.alarmSnsTopic,
     })
 
     connectionsStack.createRules()
