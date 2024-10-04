@@ -118,3 +118,11 @@ Julkaisu tapahtuu automaattisesti GitHub Actions -palvelussa [Build](./.github/w
 (cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Test/**')
 (cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Prod/**')
 ```
+
+### Salaisuudet AWS-ympäristöissä
+
+Seuraavat salaisuudet pitää luoda manuaalisesti AWS Secret Manageriin.
+
+- `slack-webhook-url`: Hälytysten lähettämiseen Slack-kanavalle. Ks. [slackNotifierLambda](infra/lib/lambdas/slackNotifierLambda).
+- `oppijanumero-password`: Oppijanumeropalvelun salaisuus. Ks. [fi.oph.kitu.oppijanumero-paketti](server/src/main/kotlin/fi/oph/kitu/oppijanumero).
+- `kielitesti-token`: Koealustan salaisuus. Ks. [fi.oph.kitu.kielitesti-paketti](server/src/main/kotlin/fi/oph/kitu/kielitesti).
