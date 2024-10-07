@@ -26,6 +26,7 @@ export class AlarmsStack extends cdk.Stack {
         code: Code.fromAsset(
           path.join(__dirname, "lambdas/slackNotifierLambda"),
         ),
+        entry: "index.ts",
         environment: {
           SLACK_WEBHOOK_URL_SECRET_NAME: slackWebhookUrlSecretName,
         },
