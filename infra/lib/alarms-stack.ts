@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib"
 import { aws_lambda, aws_lambda_nodejs, aws_sns, StackProps } from "aws-cdk-lib"
 import { Code } from "aws-cdk-lib/aws-lambda"
+import { OutputFormat } from "aws-cdk-lib/aws-lambda-nodejs"
 import { Secret } from "aws-cdk-lib/aws-secretsmanager"
 import { LambdaSubscription } from "aws-cdk-lib/aws-sns-subscriptions"
 import { Construct } from "constructs"
@@ -21,14 +22,14 @@ export class AlarmsStack extends cdk.Stack {
       "SlackNotifierLambda",
       {
         runtime: aws_lambda.Runtime.NODEJS_20_X,
-        handler: "index.handler",
+        entry: path.join(__dirname, "lambdas/slackNotifierLambda/index.mts"),
+        handler: "handler",
         timeout: cdk.Duration.seconds(60),
-        code: Code.fromAsset(
-          path.join(__dirname, "lambdas/slackNotifierLambda"),
-        ),
-        entry: "index.ts",
         environment: {
           SLACK_WEBHOOK_URL_SECRET_NAME: slackWebhookUrlSecretName,
+        },
+        bundling: {
+          format: OutputFormat.ESM,
         },
       },
     )
