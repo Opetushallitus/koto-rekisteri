@@ -26,7 +26,7 @@ export class EnvironmentStage extends Stage {
       env,
     })
 
-    const alarmsStack = new AlarmsStack(this, "AlarmsStack", { env })
+    const alarmsStack = new AlarmsStack(this, "Alarms", { env })
 
     new DnsStack(this, "Dns", {
       env,
