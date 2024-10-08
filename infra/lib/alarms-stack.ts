@@ -1,6 +1,6 @@
 import * as cdk from "aws-cdk-lib"
 import { aws_lambda, aws_lambda_nodejs, aws_sns, StackProps } from "aws-cdk-lib"
-import { Code } from "aws-cdk-lib/aws-lambda"
+import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { OutputFormat } from "aws-cdk-lib/aws-lambda-nodejs"
 import { Secret } from "aws-cdk-lib/aws-secretsmanager"
 import { LambdaSubscription } from "aws-cdk-lib/aws-sns-subscriptions"
@@ -50,6 +50,7 @@ export class AlarmsStack extends cdk.Stack {
       .createAlarm(this, "SlackNotifierLambdaErrors", {
         threshold: 1,
         evaluationPeriods: 1,
+        treatMissingData: TreatMissingData.NOT_BREACHING,
       })
   }
 }
