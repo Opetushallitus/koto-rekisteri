@@ -3,21 +3,18 @@ import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager"
-import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
-import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
 import { ContainerImage, LogDriver, Secret } from "aws-cdk-lib/aws-ecs"
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns"
 import {
   ApplicationLoadBalancer,
   ApplicationProtocol,
-  HttpCodeTarget,
   SslPolicy,
 } from "aws-cdk-lib/aws-elasticloadbalancingv2"
 import { ILogGroup } from "aws-cdk-lib/aws-logs"
 import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
-import { ITopic } from "aws-cdk-lib/aws-sns"
+import { MonitoringFacade } from "cdk-monitoring-constructs"
 import { Construct } from "constructs"
 
 export interface ServiceStackProps extends StackProps {
@@ -30,7 +27,6 @@ export interface ServiceStackProps extends StackProps {
   vpc: IVpc
   database: DatabaseCluster
   databaseName: string
-  alarmSnsTopic: ITopic
 }
 
 export class ServiceStack extends Stack {
@@ -56,17 +52,6 @@ export class ServiceStack extends Stack {
       securityGroup: props.loadBalancerSecurityGroup,
       internetFacing: true,
     })
-
-    const snsAction = new SnsAction(props.alarmSnsTopic)
-    const alarm5xx = loadBalancer.metrics
-      .httpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT)
-      .createAlarm(this, "LoadBalancer5xxAlarm", {
-        evaluationPeriods: 1,
-        threshold: 1,
-        treatMissingData: TreatMissingData.NOT_BREACHING,
-      })
-    alarm5xx.addAlarmAction(snsAction)
-    alarm5xx.addOkAction(snsAction)
 
     this.service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
       vpc: props.vpc,

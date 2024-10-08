@@ -1,11 +1,8 @@
-import { aws_sns, Stack, StackProps } from "aws-cdk-lib"
-import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
-import { FilterPattern, LogGroup } from "aws-cdk-lib/aws-logs"
+import { Stack, StackProps } from "aws-cdk-lib"
+import { LogGroup } from "aws-cdk-lib/aws-logs"
 import { Construct } from "constructs"
 
-export interface LogGroupsStackProps extends StackProps {
-  alarmsSnsTopic: aws_sns.ITopic
-}
+export interface LogGroupsStackProps extends StackProps {}
 
 export class LogGroupsStack extends Stack {
   readonly serviceLogGroup: LogGroup
@@ -16,20 +13,5 @@ export class LogGroupsStack extends Stack {
     this.serviceLogGroup = new LogGroup(this, "Service", {
       logGroupName: "KituService",
     })
-
-    const alarm = this.serviceLogGroup
-      .addMetricFilter("Errors", {
-        metricName: "LogErrors",
-        metricNamespace: "Kitu",
-        filterPattern: FilterPattern.anyTerm("error", "Error", "ERROR"),
-      })
-      .metric()
-      .createAlarm(this, "ErrorsAlarm", {
-        threshold: 1,
-        evaluationPeriods: 1,
-      })
-
-    alarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
-    alarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
   }
 }

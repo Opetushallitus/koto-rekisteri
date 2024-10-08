@@ -8,6 +8,7 @@ import { DbStack } from "./db-stack"
 import { DnsStack } from "./dns-stack"
 import { GithubActionsStack } from "./github-actions-stack"
 import { LogGroupsStack } from "./log-groups-stack"
+import { MonitoringStack } from "./monitoring-stack"
 import { NetworkStack } from "./network-stack"
 import { ServiceStack } from "./service-stack"
 
@@ -35,7 +36,6 @@ export class EnvironmentStage extends Stage {
 
     const logGroupsStack = new LogGroupsStack(this, "LogGroups", {
       env,
-      alarmsSnsTopic: alarmsStack.alarmSnsTopic,
     })
 
     const networkStack = new NetworkStack(this, "Network", {
@@ -57,7 +57,7 @@ export class EnvironmentStage extends Stage {
 
     connectionsStack.databaseSG = dbStack.cluster.connections.securityGroups[0]
 
-    new ServiceStack(this, "Service", {
+    const serviceStack = new ServiceStack(this, "Service", {
       env,
       name: environmentConfig.name,
       domainName: environmentConfig.domainName,
@@ -68,9 +68,17 @@ export class EnvironmentStage extends Stage {
       database: dbStack.cluster,
       databaseName: environmentConfig.databaseName,
       image: props.serviceImage,
-      alarmSnsTopic: alarmsStack.alarmSnsTopic,
     })
 
     connectionsStack.createRules()
+
+    new MonitoringStack(this, "Monitoring", {
+      env,
+      service: serviceStack.service,
+      serviceLogGroup: logGroupsStack.serviceLogGroup,
+      databaseCluster: dbStack.cluster,
+      alarmSnsTopic: alarmsStack.alarmSnsTopic,
+      alarmNamePrefix: "Koto",
+    })
   }
 }

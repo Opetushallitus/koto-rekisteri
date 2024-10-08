@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib"
 import { aws_ec2, aws_rds } from "aws-cdk-lib"
+import { MonitoringFacade } from "cdk-monitoring-constructs"
 import { Construct } from "constructs"
 
 export interface DbStackProps extends cdk.StackProps {
