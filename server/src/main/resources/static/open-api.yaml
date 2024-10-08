@@ -90,24 +90,6 @@ paths:
         500:
           description: "Virheellinen pyyntö"
 
-  /api/yki:
-    get:
-      tags:
-        - "yki-controller"
-      summary: "Hakee yhden käyttäjän YKI:n rajapinnasta"
-      operationId: "getSuoritus"
-      responses:
-        200:
-          description: "Suoritus löytyi"
-          content:
-            "application/json":
-              schema:
-                $ref: "#/components/schemas/YkiSuoritus"
-        400:
-          description: "Virheellinen pyyntö"
-        500:
-          description: "Tapahtui odottamaton virhe"
-
 components:
   schemas:
     # Domain: Oppija
