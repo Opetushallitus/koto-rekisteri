@@ -33,7 +33,10 @@ export class EnvironmentStage extends Stage {
       name: environmentConfig.domainName,
     })
 
-    const logGroupsStack = new LogGroupsStack(this, "LogGroups", { env })
+    const logGroupsStack = new LogGroupsStack(this, "LogGroups", {
+      env,
+      alarmsSnsTopic: alarmsStack.alarmSnsTopic,
+    })
 
     const networkStack = new NetworkStack(this, "Network", {
       env,
