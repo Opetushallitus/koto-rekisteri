@@ -38,11 +38,37 @@ class OppijaTests(
         client
             .post()
             .uri("/api/oppija")
-            .bodyValue("Mikko Mallikas")
-            .exchange()
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(
+                "{" +
+                    "\"oid\": \"1.2.246.562.24.12345678910\"," +
+                    "\"lastName\": \"Ykittäjä\"," +
+                    "\"firstName\": \"Yrjö\"," +
+                    "\"hetu\": \"010106A911C\"," +
+                    "\"nationality\": \"GBR\"," +
+                    "\"gender\": \"E\"," +
+                    "\"address\": \"Hakaniemenranta 6\"," +
+                    "\"postalCode\": \"00530\"," +
+                    "\"city\": \"Helsinki\"," +
+                    "\"email\": \"kirjaamo@oph.fi\"" +
+                    "}",
+            ).exchange()
             .expectStatus()
             .isCreated()
             .expectBody()
-            .json("{\"id\":1,\"name\":\"Mikko Mallikas\"}")
+            .json(
+                "{" +
+                    "\"oid\": \"1.2.246.562.24.12345678910\"," +
+                    "\"lastName\": \"Ykittäjä\"," +
+                    "\"firstName\": \"Yrjö\"," +
+                    "\"hetu\": \"010106A911C\"," +
+                    "\"nationality\": \"GBR\"," +
+                    "\"gender\": \"E\"," +
+                    "\"address\": \"Hakaniemenranta 6\"," +
+                    "\"postalCode\": \"00530\"," +
+                    "\"city\": \"Helsinki\"," +
+                    "\"email\": \"kirjaamo@oph.fi\"" +
+                    "}",
+            )
     }
 }

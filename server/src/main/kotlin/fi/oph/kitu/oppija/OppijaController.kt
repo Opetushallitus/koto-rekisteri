@@ -16,9 +16,9 @@ class OppijaController : OppijaControllerApi {
         ResponseEntity(oppijaService.getAll().toList(), HttpStatus.OK)
 
     override fun addOppija(
-        @RequestBody name: String,
+        @RequestBody oppija: Oppija,
     ): ResponseEntity<Oppija> {
-        val inserted = oppijaService.insert(name)
+        val inserted = oppijaService.insert(oppija)
         return ResponseEntity(
             inserted,
             if (inserted != null) HttpStatus.CREATED else HttpStatus.BAD_REQUEST,
