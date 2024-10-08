@@ -26,7 +26,15 @@ data class MoodleUserList(
         fun tryParse(json: String): List<Oppija> {
             try {
                 val body = mapper.readValue<MoodleUserList>(json)
-                return body.list.map { Oppija(it.id, it.fullname) } ?: listOf()
+                return body.list.map {
+                    Oppija(
+                        id = it.id,
+                        oid = "",
+                        firstName = it.fullname,
+                        lastName = "",
+                        hetu = "",
+                    )
+                }
             } catch (e: Exception) {
                 val moodleError = mapper.readValue<MoodleErrorMessage>(json)
                 throw MoodleException(moodleError)

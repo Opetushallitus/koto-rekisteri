@@ -16,10 +16,10 @@ interface OppijaControllerApi {
         method = [RequestMethod.POST],
         value = ["/api/oppija"],
         produces = ["application/json"],
-        consumes = ["text/plain"],
+        consumes = ["application/json"],
     )
     fun addOppija(
-        @RequestBody body: kotlin.String,
+        @RequestBody oppija: Oppija,
     ): ResponseEntity<Oppija>
 
     @RequestMapping(

@@ -19,16 +19,25 @@ class KituApplicationTests : DBFixture() {
 
     @Test
     fun dbConnectionIsAvailable() {
-        oppijaService.insert("Firstname Lastname")
-        oppijaService.insert("Somebody Else")
-        oppijaService.insert("Another One")
+        val oppija =
+            Oppija(
+                oid = "1.2.246.562.24.12345678910",
+                firstName = "Yrjö",
+                lastName = "Ykittäjä",
+                hetu = "010106A911C",
+                nationality = "GBR",
+                gender = "E",
+                address = "Hakaniemenranta 6",
+                postalCode = "00530",
+                city = "Helsinki",
+                email = "kirjaamo@oph.fi",
+            )
+        oppijaService.insert(oppija)
 
         val actual = oppijaService.getAll()
         val expected =
             listOf(
-                Oppija(3L, "Another One"),
-                Oppija(1L, "Firstname Lastname"),
-                Oppija(2L, "Somebody Else"),
+                oppija.copy(id = 1L),
             )
         assertContentEquals(expected, actual)
     }
