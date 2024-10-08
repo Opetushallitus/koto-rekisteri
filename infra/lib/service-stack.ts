@@ -3,6 +3,7 @@ import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager"
+import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
 import { ContainerImage, LogDriver, Secret } from "aws-cdk-lib/aws-ecs"
@@ -62,6 +63,7 @@ export class ServiceStack extends Stack {
       .createAlarm(this, "LoadBalancer5xxAlarm", {
         evaluationPeriods: 1,
         threshold: 1,
+        treatMissingData: TreatMissingData.NOT_BREACHING,
       })
     alarm5xx.addAlarmAction(snsAction)
     alarm5xx.addOkAction(snsAction)
