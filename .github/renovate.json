@@ -1,3 +1,11 @@
 {
-  "extends": ["config:recommended"]
+  "extends": ["config:recommended"],
+  "mise": {
+    "packageRules": [
+      {
+        "matchPackageNames": ["awscli"],
+        "versionCompatibility": "^(?<compatibility>.*):(?<version>.*)$"
+      }
+    ]
+  }
 }
