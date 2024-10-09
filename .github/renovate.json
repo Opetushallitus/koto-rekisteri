@@ -8,7 +8,8 @@
       },
       {
         "matchPackageNames": ["java"],
-        "versionCompatibility": "^(?<compatibility>.*?)-(?<version>.*)$"
+        "versionCompatibility": "^(?<compatibility>.*?)-(?<version>.*)$",
+        "versioning": "semver"
       }
     ]
   }
