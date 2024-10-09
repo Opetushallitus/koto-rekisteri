@@ -5,6 +5,10 @@
       {
         "matchPackageNames": ["awscli"],
         "versionCompatibility": "^(?<compatibility>.*):(?<version>.*)$"
+      },
+      {
+        "matchPackageNames": ["java"],
+        "versionCompatibility": "^(?<compatibility>.*?)-(?<version>.*)$"
       }
     ]
   }
