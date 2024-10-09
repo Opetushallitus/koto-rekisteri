@@ -21,7 +21,7 @@ export class LogGroupsStack extends Stack {
       .addMetricFilter("Errors", {
         metricName: "LogErrors",
         metricNamespace: "Kitu",
-        filterPattern: FilterPattern.anyTerm("error", "Error", "ERROR"),
+        filterPattern: FilterPattern.anyTerm("ERROR"),
       })
       .metric()
       .createAlarm(this, "ErrorsAlarm", {
