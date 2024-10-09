@@ -8,7 +8,7 @@ import org.springframework.web.client.RestClient
 @Configuration
 class YkiRestClientConfig {
     @Value("\${kitu.yki.baseUrl}")
-    lateinit var baseUrl: String
+    private lateinit var baseUrl: String
 
     @Bean("ykiRestClient")
     fun restClient(): RestClient =
