@@ -23,10 +23,27 @@ jobs:
           directory: server
           ignore-maven-wrapper: "true"
 
+  check_generated_sources:
+    runs-on: ubuntu-latest
+    needs: [submit_dependencies]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
+
+      - name: Generate sources
+        run: mvn generate-sources
+        working-directory: server
+
+      - name: Check for differences in generated sources
+        run: git diff --exit-code
+
   build_image:
     name: Build image
     runs-on: ubuntu-latest
-    needs: deploy_util
+    needs: [deploy_util, check_generated_sources]
     permissions:
       id-token: write
       contents: read
