@@ -123,5 +123,19 @@ export class ServiceStack extends Stack {
       ...this.service.targetGroup.healthCheck,
       path: "/actuator/health",
     })
+
+    this.service.service
+      .metricCpuUtilization()
+      .createAlarm(this, "CpuUtilization", {
+        threshold: 50,
+        evaluationPeriods: 1,
+      })
+
+    this.service.service
+      .metricMemoryUtilization()
+      .createAlarm(this, "MemoryUtilization", {
+        threshold: 50,
+        evaluationPeriods: 1,
+      })
   }
 }
