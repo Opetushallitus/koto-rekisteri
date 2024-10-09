@@ -37,8 +37,17 @@ class WebSecurityConfig {
                 it.logoutRequestMatcher(AntPathRequestMatcher("/logout", "GET"))
             }.authorizeHttpRequests { authorize ->
                 authorize
-                    .requestMatchers("/actuator/health")
-                    .permitAll()
+                    // Allow healthcheck without login
+                    .requestMatchers(
+                        "/actuator/health",
+                    ).permitAll()
+                    // Make Swagger UI and OpenAPI schema YAML publicly available
+                    .requestMatchers(
+                        "/swagger-ui.html",
+                        "/swagger-ui/*",
+                        "/v3/api-docs/swagger-config",
+                        "/open-api.yaml",
+                    ).permitAll()
             }.addFilter(casAuthenticationFilter)
             .exceptionHandling {
                 it.authenticationEntryPoint(authenticationEntryPoint)
