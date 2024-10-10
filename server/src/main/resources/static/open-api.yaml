@@ -39,10 +39,9 @@ paths:
         description: "Lisättävän oppijan nimi"
         required: true
         content:
-          "text/plain":
+          "application/json":
             schema:
-              type: string
-              example: "Etunimi Sukunimi"
+              $ref: "#/components/schemas/Oppija"
       responses:
         201:
           description: "Oppijan lisäminen onnistui"
@@ -95,8 +94,10 @@ components:
     # Domain: Oppija
     Oppija:
       required:
-        - id
-        - name
+        - firstName
+        - lastName
+        - oid
+        - hetu
       title: Oppija
       description: KOTO-oppija
       type: object
@@ -104,7 +105,25 @@ components:
         id:
           type: integer
           format: int64
-        name:
+        oid:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        hetu:
+          type: string
+        nationality:
+          type: string
+        gender:
+          type: string
+        address:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+        email:
           type: string
 
     # Domain: YKI
