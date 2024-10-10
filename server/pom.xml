@@ -73,6 +73,11 @@
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
         </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>8.0</version>
+        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
