@@ -20,7 +20,7 @@ class YkiService(
         val suoritus =
             ykiRestClient
                 .get()
-                .uri("/yki")
+                .uri("/suoritukset")
                 .retrieve()
                 .body<YkiSuoritus>()
 
