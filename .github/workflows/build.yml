@@ -34,7 +34,7 @@ jobs:
           experimental: true
 
       - name: Generate sources
-        run: mvn generate-sources && prettier --write .
+        run: mvn generate-sources
         working-directory: server
 
       - name: Check for differences in generated sources
