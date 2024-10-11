@@ -1,12 +1,11 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.generated.model.YkiSuoritus
+import fi.oph.kitu.csvBody
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import org.springframework.web.client.body
 
 @Service
 class YkiService(
@@ -17,19 +16,20 @@ class YkiService(
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     fun importYkiSuoritukset() {
-        val suoritus =
+        val suoritukset =
             ykiRestClient
                 .get()
                 .uri("/yki")
                 .retrieve()
-                .body<YkiSuoritus>()
+                .csvBody()
+                ?.map { Mappers.toYkiSuoritus(it) }
 
-        if (suoritus == null) {
-            logger.info("No YKI suoritus found")
+        if (suoritukset == null) {
+            logger.info("No YKI suoritukset found")
             return
         }
 
-        repository.insertSuoritus(suoritus)
-        logger.info("YKI Suoritus added to repository")
+        repository.insertSuoritukset(suoritukset)
+        logger.info("YKI Suoritukset was added to repository")
     }
 }
