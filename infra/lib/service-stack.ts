@@ -21,6 +21,7 @@ import { ITopic } from "aws-cdk-lib/aws-sns"
 import { Construct } from "constructs"
 
 export interface ServiceStackProps extends StackProps {
+  auditLogGroup: ILogGroup
   logGroup: ILogGroup
   image: ContainerImage
   name: string
@@ -83,6 +84,7 @@ export class ServiceStack extends Stack {
           SPRING_PROFILES_ACTIVE: props.name,
           DATABASE_URL: `jdbc:postgresql://${props.database.clusterEndpoint.socketAddress}/${props.databaseName}`,
           DATABASE_USER: dbUser,
+          AUDIT_LOG_LOG_GROUP_NAME: props.auditLogGroup.logGroupName,
         },
         secrets: {
           DATABASE_PASSWORD: Secret.fromSecretsManager(
@@ -124,12 +126,15 @@ export class ServiceStack extends Stack {
       path: "/actuator/health",
     })
 
+    props.auditLogGroup.grantWrite(this.service.service.taskDefinition.taskRole)
+
     this.service.service
       .metricCpuUtilization()
       .createAlarm(this, "CpuUtilization", {
         threshold: 50,
         evaluationPeriods: 1,
       })
+      .addAlarmAction(snsAction)
 
     this.service.service
       .metricMemoryUtilization()
@@ -137,5 +142,6 @@ export class ServiceStack extends Stack {
         threshold: 50,
         evaluationPeriods: 1,
       })
+      .addAlarmAction(snsAction)
   }
 }

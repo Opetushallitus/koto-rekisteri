@@ -10,6 +10,7 @@ export interface LogGroupsStackProps extends StackProps {
 
 export class LogGroupsStack extends Stack {
   readonly serviceLogGroup: LogGroup
+  readonly serviceAuditLogGroup: LogGroup
 
   constructor(scope: Construct, id: string, props: LogGroupsStackProps) {
     super(scope, id, props)
@@ -17,12 +18,15 @@ export class LogGroupsStack extends Stack {
     this.serviceLogGroup = new LogGroup(this, "Service", {
       logGroupName: "KituService",
     })
+    this.serviceAuditLogGroup = new LogGroup(this, "ServiceAudit", {
+      logGroupName: "KituServiceAudit",
+    })
 
     const alarm = this.serviceLogGroup
       .addMetricFilter("Errors", {
         metricName: "LogErrors",
         metricNamespace: "Kitu",
-        filterPattern: FilterPattern.anyTerm("ERROR"),
+        filterPattern: FilterPattern.stringValue("$.level", "=", "error"),
       })
       .metric()
       .createAlarm(this, "ErrorsAlarm", {
