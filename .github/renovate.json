@@ -1,16 +1,10 @@
 {
   "extends": ["config:recommended"],
-  "mise": {
-    "packageRules": [
-      {
-        "matchPackageNames": ["awscli"],
-        "versionCompatibility": "^(?<compatibility>.*):(?<version>.*)$"
-      },
-      {
-        "matchPackageNames": ["java"],
-        "versionCompatibility": "^(?<compatibility>.*?)-(?<version>.*)$",
-        "versioning": "semver"
-      }
-    ]
-  }
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    }
+  ]
 }
