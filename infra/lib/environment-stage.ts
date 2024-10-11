@@ -64,6 +64,7 @@ export class EnvironmentStage extends Stage {
       serviceSecurityGroup: connectionsStack.serviceSG,
       loadBalancerSecurityGroup: connectionsStack.loadBalancerSG,
       logGroup: logGroupsStack.serviceLogGroup,
+      auditLogGroup: logGroupsStack.serviceAuditLogGroup,
       vpc: networkStack.vpc,
       database: dbStack.cluster,
       databaseName: environmentConfig.databaseName,
