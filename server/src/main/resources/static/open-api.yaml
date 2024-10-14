@@ -90,6 +90,47 @@ paths:
         500:
           description: "Virheellinen pyyntö"
 
+  # Mock API for YKI suoritukset
+  /dev/yki/arvioijat:
+    get:
+      tags:
+        - "yki-controller"
+      summary: "Hakee YKI arvioijat"
+      operationId: "getArvioijat"
+      responses:
+        200:
+          description: "Arvioija tai arvioijia löytyi"
+          content:
+            "text/plain":
+              schema:
+                type: string
+
+  # Mock API for YKI suoritukset
+  /dev/yki/suoritukset:
+    get:
+      tags:
+        - "yki-controller"
+      summary: "Hakee YKI suoritukset"
+      operationId: "getSuoritukset"
+      parameters:
+        - name: arvioitu
+          in: query
+          description: "Arviointi päivämäärä"
+          required: false
+          content:
+            "text/plain":
+              schema:
+                type: string
+                format: date
+
+      responses:
+        200:
+          description: "Suoritus tai suorituksia löytyi"
+          content:
+            "text/plain":
+              schema:
+                type: string
+
 components:
   schemas:
     # Domain: Oppija
