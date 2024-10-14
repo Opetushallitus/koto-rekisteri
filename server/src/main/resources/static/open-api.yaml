@@ -152,95 +152,19 @@ components:
     YkiSuoritus:
       type: object
       properties:
-        osallistuja:
-          $ref: "#/components/schemas/YkiOsallistuja"
-        jarjestajaOid:
-          $ref: "#/components/schemas/YkiJarjestaja"
-
-        # saadut taitotasoarviot
-        tekstinYmmartamisenArvosana:
-          $ref: "#/components/schemas/YkiArviointi"
-        kirjoittamisenArvosana:
-          $ref: "#/components/schemas/YkiArviointi"
-        rakenteidenJaSanastonArvosana:
-          $ref: "#/components/schemas/YkiArviointi"
-        puheenYmmartamisenArvosana:
-          $ref: "#/components/schemas/YkiArviointi"
-        puhumisenArvosana:
-          $ref: "#/components/schemas/YkiArviointi"
-        yleistasoarvio:
-          $ref: "#/components/schemas/YkiArviointi"
-
-    YkiOsallistuja:
-      type: object
-      properties:
-        oid:
+        suorittajanOid:
           type: string
+          example: "1.2.246.562.24.99999999999"
+          pattern: "^[0-9.]+$"
         sukunimi:
           type: string
-          example: "Ykittäjä"
-        etunimi:
+          example: "Suorittaja"
+        etunimet:
           type: string
-          example: "Yrjö"
-        henkilotunnus:
+          example: "Sulevi"
+        tutkintopaiva:
           type: string
-          example: "010106A911C"
-          description: "Suomalainen henkilötunnus"
-        kansalaisuus:
-          type: string
-          example: "GBR"
-          minLength: 3
-          maxLength: 3
-        sukupuoli:
-          type: string
-          description: "N=Nainen, M=Mies, E=muu/ei ilmoiteta"
-          example: "E"
-          enum:
-            - N
-            - M
-            - E
-
-        # Tarpeelliset yhteystiedot
-        katuosoite:
-          type: string
-          description: "Osallistujan tarpeellisten yhteystietojen katuosoite"
-          example: "Hakaniemenranta 6"
-        postinumero:
-          type: string
-          description: "Osallistujan tarpeellisten yhteystietojen postinumero"
-          example: "00530"
-          pattern: "^[0-9]{5}$"
-        postitoimipaikka:
-          type: string
-          description: "Osallistujan tarpeellisten yhteystietojen postitoimipaikka"
-          example: "Helsinki"
-        sahköpostiosoite:
-          type: string
-          description: "Osallistujan tarpeellisten yhteystietojen sähköpostiosoite"
-          example: "kirjaamo@oph.fi"
-          format: "email"
-
-    YkiJarjestaja:
-      type: object
-      properties:
-        oid:
-          type: string
-          example: "1.2.246.562.24.01234567890"
-          pattern: "^[0-9.]+$"
-        nimi:
-          type: string
-          example: "Helsinki University"
-
-    # Vastaa Soljen taulossa arviointi_suoritus
-    YkiArviointi:
-      type: object
-      properties:
-        arviointinumero:
-          type: string
-          example: "7/10"
-        pvm:
-          type: string
-          example: "Päivämäärä, jolloin arviointi on tehty"
+          example: "2022-11-12"
         tutkintokieli:
           type: string
           description: "ISO 639-3 - koodattu kieli, jota kielitutkinnossa testataan."
@@ -255,7 +179,7 @@ components:
             - SME
             - SPA
             - SWE
-        taso:
+        tutkintotaso:
           type: string
           description: |
             Arvioitava taso.
@@ -267,8 +191,31 @@ components:
             - "PT"
             - "KT"
             - "YT"
-        arvioijaOid:
+
+        jarjestajanOid:
           type: string
-          description: "Arvioijan OID-tunniste"
-          example: "1.2.246.562.24.01234567890"
+          example: "1.2.246.562.10.373218511910"
           pattern: "^[0-9.]+$"
+        jarjestajanNimi:
+          type: string
+          example: "Helsinki University"
+
+        # saadut taitotasoarviot
+        tekstinYmmartamisenArvosana:
+          type: number
+          example: 2
+        kirjoittamisenArvosana:
+          type: number
+          example: 2
+        rakenteidenJaSanastonArvosana:
+          type: number
+          example: 1
+        puheenYmmartamisenArvosana:
+          type: number
+          example: 3
+        puhumisenArvosana:
+          type: number
+          example: 2
+        yleisarvosana:
+          type: number
+          example: 2
