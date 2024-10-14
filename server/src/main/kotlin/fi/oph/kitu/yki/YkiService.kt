@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
+import java.time.LocalDate
 
 @Service
 class YkiService(
@@ -17,11 +18,11 @@ class YkiService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    fun importYkiSuoritukset() {
+    fun importYkiSuoritukset(lastSeen: LocalDate? = null) {
         val suoritukset =
             ykiRestClient
                 .get()
-                .uri("/yki")
+                .uri("suoritukset")
                 .retrieve()
                 .csvBody<Suoritus>()
 
