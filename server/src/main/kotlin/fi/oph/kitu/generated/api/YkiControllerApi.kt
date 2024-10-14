@@ -30,4 +30,17 @@ interface YkiControllerApi {
             iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE,
         ) arvioitu: java.time.LocalDate?,
     ): ResponseEntity<kotlin.String>
+
+    @RequestMapping(
+        method = [RequestMethod.GET],
+        value = ["/dev/yki/trigger-schedule"],
+    )
+    fun triggerSchedule(
+        @RequestParam(
+            value = "lastSeen",
+            required = false,
+        ) @org.springframework.format.annotation.DateTimeFormat(
+            iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE,
+        ) lastSeen: java.time.LocalDate?,
+    ): ResponseEntity<Unit>
 }

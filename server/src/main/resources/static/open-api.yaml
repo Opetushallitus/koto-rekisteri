@@ -131,6 +131,27 @@ paths:
               schema:
                 type: string
 
+  /dev/yki/trigger-schedule:
+    get:
+      tags:
+        - "yki-controller"
+      summary: "Ajaa YKI eräajon"
+      operationId: "triggerSchedule"
+      parameters:
+        - name: lastSeen
+          in: query
+          required: false
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: date
+      responses:
+        "200":
+          description: "Triggered"
+        "500":
+          description: "Failed"
+
 components:
   schemas:
     # Domain: Oppija
