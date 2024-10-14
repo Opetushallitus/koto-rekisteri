@@ -45,7 +45,7 @@ class MockYkiControllerApi(
         )
 
     override fun triggerSchedule(lastSeen: LocalDate?): ResponseEntity<Unit> {
-        val unit = ykiService.importYkiSuoritukset()
+        val unit = ykiService.importYkiSuoritukset(lastSeen)
         return ResponseEntity(unit, HttpStatus.OK)
     }
 }
