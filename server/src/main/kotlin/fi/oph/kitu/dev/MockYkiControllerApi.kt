@@ -1,15 +1,18 @@
 package fi.oph.kitu.dev
 
+import fi.oph.kitu.generated.api.YkiControllerApi
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
+import java.time.LocalDate
 import kotlin.system.exitProcess
 
 @RestController
@@ -18,7 +21,7 @@ import kotlin.system.exitProcess
 class MockYkiControllerApi(
     private val environment: Environment,
     private val applicationContext: WebApplicationContext,
-) {
+) : YkiControllerApi {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     @PostConstruct
@@ -29,31 +32,15 @@ class MockYkiControllerApi(
         }
     }
 
-    @GetMapping
-    fun mockYki() =
-        YkiMockData(
-            "Yrjö Ykittäjä",
-            "010106A911C",
-            "Yhdistynyt Kuningaskunta",
-            "Muu",
-            "Taitotalo, Helsinki",
-            "suomi",
-            "EVK B2/YKI 4",
-            "2024-09-27 12:40",
-            "Yrjönkatu 13 C, 00120 Helsinki",
-            "dev@null.com",
+    override fun getArvioijat() =
+        ResponseEntity(
+            """"09876","010101A961P","Arvioija","Arttu","arttu.arvioija@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"""",
+            HttpStatus.OK,
+        )
+
+    override fun getSuoritukset(arvioitu: LocalDate?) =
+        ResponseEntity(
+            """"1.2.246.562.24.99999999999","Suorittaja","Sulevi",2022-11-12,"fin","KT","1.2.246.562.10.373218511910","Iisalmen kansalaisopisto",2,2,1,3,2,2""",
+            HttpStatus.OK,
         )
 }
-
-data class YkiMockData(
-    val sukunimi: String,
-    val etunimi: String,
-    val henkilotunnus: String,
-    val kansalaisuus: String,
-    val sukupuoli: String,
-    val tutkinnonSuorittamispaikka: String,
-    val tutkintokieli: String,
-    val saadutTaitotasoarviot: String,
-    val tutkintokertojenAjankohta: String,
-    val tarpeellisetYhteystiedot: String,
-)
