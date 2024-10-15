@@ -8,6 +8,7 @@ on:
 
 jobs:
   submit_dependencies:
+    name: Submit dependencies
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -24,6 +25,7 @@ jobs:
           ignore-maven-wrapper: "true"
 
   check_generated_sources:
+    name: Check generated sources
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
