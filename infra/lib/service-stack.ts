@@ -152,8 +152,11 @@ export class ServiceStack extends Stack {
     })
 
     new Metric({
-      metricName: healthCheck.attrHealthCheckId,
-      namespace: "Route53",
+      metricName: "HealthCheckStatus",
+      namespace: "AWS/Route53",
+      dimensionsMap: {
+        HealthCheckId: healthCheck.attrHealthCheckId,
+      },
     }).createAlarm(this, "HealthCheckAlarm", {
       threshold: 1,
       evaluationPeriods: 1,
