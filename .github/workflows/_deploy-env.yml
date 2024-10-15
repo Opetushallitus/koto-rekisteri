@@ -33,7 +33,7 @@ env:
 
 jobs:
   run:
-    name: ${{ inputs.action }} to ${{ inputs.environment }}
+    name: ${{ inputs.action }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write
