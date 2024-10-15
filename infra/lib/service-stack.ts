@@ -3,7 +3,7 @@ import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager"
-import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
+import { Alarm, Metric, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
 import { ContainerImage, LogDriver, Secret } from "aws-cdk-lib/aws-ecs"
@@ -16,7 +16,7 @@ import {
 } from "aws-cdk-lib/aws-elasticloadbalancingv2"
 import { ILogGroup } from "aws-cdk-lib/aws-logs"
 import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
-import { HostedZone } from "aws-cdk-lib/aws-route53"
+import { CfnHealthCheck, HostedZone } from "aws-cdk-lib/aws-route53"
 import { ITopic } from "aws-cdk-lib/aws-sns"
 import { Construct } from "constructs"
 
@@ -143,5 +143,20 @@ export class ServiceStack extends Stack {
         evaluationPeriods: 1,
       })
       .addAlarmAction(snsAction)
+
+    const healthCheck = new CfnHealthCheck(this, "ServiceHealthCheck", {
+      healthCheckConfig: {
+        type: "HTTPS",
+        fullyQualifiedDomainName: props.domainName,
+      },
+    })
+
+    new Metric({
+      metricName: healthCheck.attrHealthCheckId,
+      namespace: "Route53",
+    }).createAlarm(this, "HealthCheckAlarm", {
+      threshold: 1,
+      evaluationPeriods: 1,
+    })
   }
 }
