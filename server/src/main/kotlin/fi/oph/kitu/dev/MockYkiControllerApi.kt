@@ -34,7 +34,7 @@ class MockYkiControllerApi(
 
     override fun getArvioijat() =
         ResponseEntity(
-            """"09876","010101A961P","Arvioija","Arttu","arttu.arvioija@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"""",
+            """"09876","010101A961P","Arvioija","Arttu","arttu.arvioija@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT" """,
             HttpStatus.OK,
         )
 
