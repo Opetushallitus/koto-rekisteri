@@ -9,9 +9,8 @@ inline fun <reified Body> RestClient.ResponseSpec.csvBody(
     columnSeparator: Char = ',',
     useHeader: Boolean = false,
     quoteChar: Char = '"',
-): Array<Body> {
+): List<Body> {
     val csvMapper = CsvMapper()
-
     val schema =
         csvMapper
             .typedSchemaFor(Body::class.java)
@@ -20,15 +19,11 @@ inline fun <reified Body> RestClient.ResponseSpec.csvBody(
             .withQuoteChar(quoteChar)
 
     return try {
-        val csvString = this.body(String::class.java) ?: throw RestClientException("Response is null")
-
-        val body =
-            csvMapper
-                .readerFor(Body::class.java)
-                .with(schema)
-                .readValue<Array<Body>>(csvString)
-
-        body
+        csvMapper
+            .readerFor(Body::class.java)
+            .with(schema)
+            .readValues<Body>(this.body(String::class.java))
+            .readAll()
     } catch (e: Exception) {
         throw RestClientException("Failed to parse CSV response", e)
     }
