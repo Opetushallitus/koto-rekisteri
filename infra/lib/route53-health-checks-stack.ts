@@ -1,5 +1,5 @@
 import { Stack, StackProps } from "aws-cdk-lib"
-import { Metric } from "aws-cdk-lib/aws-cloudwatch"
+import { ComparisonOperator, Metric } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { CfnHealthCheck } from "aws-cdk-lib/aws-route53"
 import { ITopic } from "aws-cdk-lib/aws-sns"
@@ -29,7 +29,8 @@ export class Route53HealthChecksStack extends Stack {
       },
     })
       .createAlarm(this, "HealthCheckAlarm", {
-        threshold: 1,
+        comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
+        threshold: 1, // 1 is healthy, 0 is unhealthy
         evaluationPeriods: 1,
       })
       .addAlarmAction(new SnsAction(props.alarmsSnsTopic))
