@@ -53,24 +53,6 @@ paths:
         400:
           description: "Virheellinen pyyntö"
 
-  /api/kielitesti/user:
-    get:
-      tags:
-        - "user-controller"
-      summary: "Hakee listan Moodlen käyttäjistä"
-      operationId: "getUsers"
-      responses:
-        200:
-          description: "Käyttäjien hakeminen onnistui"
-          content:
-            "application/json":
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Oppija"
-        503:
-          description: "Käyttäjien haku Moodlesta epäonnistui"
-
   /api/oppijanumero:
     get:
       tags:
