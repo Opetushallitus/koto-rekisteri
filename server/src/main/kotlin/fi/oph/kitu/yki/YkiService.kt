@@ -18,19 +18,18 @@ class YkiService(
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     fun importYkiSuoritukset(lastSeen: LocalDate? = null) {
-        val dto =
+        val suoritukset =
             ykiRestClient
                 .get()
                 .uri("suoritukset")
                 .retrieve()
-                .csvBody<YkiSuoritusResponse>()
+                .csvBody<YkiSuoritus>()
 
-        if (dto.isEmpty()) {
+        if (suoritukset.isEmpty()) {
             logger.error("YKI reponded with empty data.")
             throw RestClientException("The response is empty")
         }
 
-        val suoritukset = dto.map { it.toYkiSuoritus() }
         repository.insertSuoritukset(suoritukset)
         logger.info("suoritukset was added.")
     }

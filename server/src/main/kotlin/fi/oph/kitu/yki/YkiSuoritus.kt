@@ -2,7 +2,6 @@ package fi.oph.kitu.yki
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import fi.oph.kitu.generated.model.YkiSuoritus
 
 @JsonPropertyOrder(
     "suorittajanOppijanumero",
@@ -20,7 +19,7 @@ import fi.oph.kitu.generated.model.YkiSuoritus
     "puhuminen",
     "yleisarvosana",
 )
-class YkiSuoritusResponse(
+data class YkiSuoritus(
     @JsonProperty("suorittajanOppijanumero")
     val suorittajanOppijanumero: String,
     @JsonProperty("sukunimi")
@@ -49,6 +48,4 @@ class YkiSuoritusResponse(
     val puhuminen: Number,
     @JsonProperty("yleisarvosana")
     val yleisarvosana: Number,
-) {
-    fun toYkiSuoritus(): YkiSuoritus = throw NotImplementedError()
-}
+)
