@@ -9,6 +9,7 @@ import { DnsStack } from "./dns-stack"
 import { GithubActionsStack } from "./github-actions-stack"
 import { LogGroupsStack } from "./log-groups-stack"
 import { NetworkStack } from "./network-stack"
+import { Route53HealthChecksStack } from "./route53-health-checks-stack"
 import { ServiceStack } from "./service-stack"
 
 interface EnvironmentStageProps extends StageProps {
@@ -27,6 +28,9 @@ export class EnvironmentStage extends Stage {
     })
 
     const alarmsStack = new AlarmsStack(this, "Alarms", { env })
+    const usEastAlarmsStack = new AlarmsStack(this, "AlarmsUsEast1", {
+      env: { ...env, region: "us-east-1" },
+    })
 
     new DnsStack(this, "Dns", {
       env,
@@ -70,6 +74,12 @@ export class EnvironmentStage extends Stage {
       databaseName: environmentConfig.databaseName,
       image: props.serviceImage,
       alarmSnsTopic: alarmsStack.alarmSnsTopic,
+    })
+
+    new Route53HealthChecksStack(this, "Route53HealthChecks", {
+      env: { ...env, region: "us-east-1" },
+      domainName: environmentConfig.domainName,
+      alarmsSnsTopic: usEastAlarmsStack.alarmSnsTopic,
     })
 
     connectionsStack.createRules()

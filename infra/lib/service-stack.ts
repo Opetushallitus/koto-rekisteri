@@ -143,23 +143,5 @@ export class ServiceStack extends Stack {
         evaluationPeriods: 1,
       })
       .addAlarmAction(snsAction)
-
-    const healthCheck = new CfnHealthCheck(this, "ServiceHealthCheck", {
-      healthCheckConfig: {
-        type: "HTTPS",
-        fullyQualifiedDomainName: props.domainName,
-      },
-    })
-
-    new Metric({
-      metricName: "HealthCheckStatus",
-      namespace: "AWS/Route53",
-      dimensionsMap: {
-        HealthCheckId: healthCheck.attrHealthCheckId,
-      },
-    }).createAlarm(this, "HealthCheckAlarm", {
-      threshold: 1,
-      evaluationPeriods: 1,
-    })
   }
 }
