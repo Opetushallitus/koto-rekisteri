@@ -33,9 +33,9 @@ interface YkiControllerApi {
 
     @RequestMapping(
         method = [RequestMethod.GET],
-        value = ["/dev/yki/trigger-schedule"],
+        value = ["/dev/yki/trigger-schedule/yki-import-suoritukset"],
     )
-    fun triggerSchedule(
+    fun triggerYkiImportSuoritukset(
         @RequestHeader(value = "dry-run", required = false) dryRun: kotlin.Boolean?,
         @RequestParam(
             value = "lastSeen",

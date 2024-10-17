@@ -49,7 +49,7 @@ class MockYkiControllerApi(
                 """"1.2.246.562.24.99999999999","Suorittaja","Sulevi",2022-11-12,"fin","KT","1.2.246.562.10.373218511910","Iisalmen kansalaisopisto",2,2,1,3,2,2""",
             )
 
-    override fun triggerSchedule(
+    override fun triggerYkiImportSuoritukset(
         dryRun: Boolean?,
         lastSeen: LocalDate?,
     ): ResponseEntity<Unit> = ResponseEntity(ykiService.importYkiSuoritukset(lastSeen, dryRun), HttpStatus.OK)
