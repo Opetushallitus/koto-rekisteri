@@ -26,12 +26,24 @@ data class YkiSuoritus(
     val sukunimi: String,
     @JsonProperty("etunimet")
     val etunimet: String,
+    /**
+     * ISO-8601 - muodossa.
+     */
     @JsonProperty("tutkintopaiva")
-    val tutkintopaiva: String, // ISO-8601-muodossa
+    val tutkintopaiva: String,
+    /**
+     * ISO 649-2 alpha-3 - muodossa.
+     */
     @JsonProperty("tutkintokieli")
-    val tutkintokieli: String, // ISO 649-2 alpha-3 -muodossa
+    val tutkintokieli: String,
+    /**
+     * Sallitut arvot:
+     * - `PT`: perustaso
+     * - `KT`: keskitaso
+     * - `YT`: ylin taso
+     */
     @JsonProperty("tutkintotaso")
-    val tutkintotaso: String, // ("PT"=perustaso, "KT"=keskitaso, "YT"=ylin taso)
+    val tutkintotaso: String,
     @JsonProperty("jarjestajanTunnusOid")
     val jarjestajanTunnusOid: String,
     @JsonProperty("jarjestajanNimi")
