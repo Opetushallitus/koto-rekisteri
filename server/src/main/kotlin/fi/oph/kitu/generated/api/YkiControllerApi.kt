@@ -36,6 +36,7 @@ interface YkiControllerApi {
         value = ["/dev/yki/trigger-schedule"],
     )
     fun triggerSchedule(
+        @RequestHeader(value = "dry-run", required = false) dryRun: kotlin.Boolean?,
         @RequestParam(
             value = "lastSeen",
             required = false,
