@@ -1,10 +1,11 @@
 package fi.oph.kitu
 
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
-import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
 
-// Converts retrieved String response into a list that is the type of Body.
+/**
+ * Converts retrieved String response into a list that is the type of Body.
+ */
 inline fun <reified T> String.asCsv(
     columnSeparator: Char = ',',
     useHeader: Boolean = false,
@@ -32,6 +33,3 @@ inline fun <reified T> String.asCsv(
         throw RestClientException("Could not parse string as CSV into a type ${T::class.java.name}.", e)
     }
 }
-
-fun RestClient.RequestHeadersSpec.ConvertibleClientHttpResponse.isDryRun(): Boolean =
-    this.headers["dry-run"]?.first()?.toBoolean() ?: false
