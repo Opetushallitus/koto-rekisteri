@@ -131,12 +131,12 @@ paths:
               schema:
                 type: string
 
-  /dev/yki/trigger-schedule:
+  /dev/yki/trigger-schedule/yki-import-suoritukset:
     get:
       tags:
         - "yki-controller"
       summary: "Ajaa YKI eräajon"
-      operationId: "triggerSchedule"
+      operationId: "triggerYkiImportSuoritukset"
       parameters:
         - name: dry-run
           in: header
