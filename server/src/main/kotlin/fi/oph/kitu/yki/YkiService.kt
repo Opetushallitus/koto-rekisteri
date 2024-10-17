@@ -20,24 +20,38 @@ class YkiService(
     fun importYkiSuoritukset(
         lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
-    ): Int {
-        val suoritukset =
-            ykiRestClient
-                .get()
-                .uri("suoritukset")
-                .retrieve()
-                .body(String::class.java)
-                ?.asCsv<YkiSuoritus>() ?: throw RestClientException("Response body is empty")
+    ) {
+        val event = logger.atInfo()
+        event.addKeyValue("dryRun", dryRun)
+        event.addKeyValue("lastSeen", lastSeen)
 
-        if (suoritukset.isEmpty()) {
-            throw RestClientException("The response is empty")
+        try {
+            val suoritukset =
+                ykiRestClient
+                    .get()
+                    .uri("suoritukset")
+                    .retrieve()
+                    .body(String::class.java)
+                    ?.asCsv<YkiSuoritus>() ?: throw RestClientException("Response body is empty")
+
+            if (suoritukset.isEmpty()) {
+                throw RestClientException("The response is empty")
+            }
+
+            if (dryRun != true) {
+                val res = repository.insertSuoritukset(suoritukset)
+                event
+                    .addKeyValue("succcess", true)
+                    .addKeyValue("importedSuorituksetSize", res.size)
+                    .setMessage("import done successfully")
+            }
+        } catch (ex: Exception) {
+            event
+                .addKeyValue("succcess", false)
+                .setCause(ex)
+                .setMessage("import failed")
+        } finally {
+            event.log()
         }
-
-        if (dryRun == true) {
-            return 0
-        }
-
-        val res = repository.insertSuoritukset(suoritukset)
-        return res.size
     }
 }

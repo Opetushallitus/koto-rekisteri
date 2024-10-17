@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
-import java.math.BigDecimal
 import java.time.LocalDate
 import kotlin.system.exitProcess
 
@@ -48,6 +47,5 @@ class MockYkiControllerApi(
     override fun triggerYkiImportSuoritukset(
         dryRun: Boolean?,
         lastSeen: LocalDate?,
-    ): ResponseEntity<BigDecimal> =
-        ResponseEntity(ykiService.importYkiSuoritukset(lastSeen, dryRun).toBigDecimal(), HttpStatus.OK)
+    ): ResponseEntity<Unit> = ResponseEntity(ykiService.importYkiSuoritukset(lastSeen, dryRun), HttpStatus.OK)
 }

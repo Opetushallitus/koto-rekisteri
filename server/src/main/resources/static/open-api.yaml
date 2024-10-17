@@ -154,11 +154,6 @@ paths:
       responses:
         "200":
           description: "Triggered"
-          content:
-            "plain/text":
-              schema:
-                type: number
-                description: "Number of suoritukset that was imported"
         "500":
           description: "Failed"
 
