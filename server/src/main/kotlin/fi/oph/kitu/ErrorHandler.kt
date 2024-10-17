@@ -36,7 +36,14 @@ class GlobalControllerExceptionHandler {
 
     @ExceptionHandler
     fun handleMoodleException(ex: MoodleException): ResponseEntity<RestErrorMessage> {
-        logger.error(ex.moodleErrorMessage.toString())
+        logger
+            .atError()
+            .addKeyValue("moodle.exception", ex.moodleErrorMessage.exception)
+            .addKeyValue("moodle.errorcode", ex.moodleErrorMessage.errorcode)
+            .addKeyValue("moodle.debuginfo", ex.moodleErrorMessage.debuginfo)
+            .addKeyValue("moodle.message", ex.moodleErrorMessage.message)
+            .log("Moodle request failed")
+
         return ResponseEntity(
             RestErrorMessage(
                 status = HttpStatus.SERVICE_UNAVAILABLE.value(),
