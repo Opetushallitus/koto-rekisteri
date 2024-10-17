@@ -138,6 +138,11 @@ paths:
       summary: "Ajaa YKI eräajon"
       operationId: "triggerSchedule"
       parameters:
+        - name: dry-run
+          in: header
+          required: false
+          schema:
+            type: boolean
         - name: lastSeen
           in: query
           required: false
