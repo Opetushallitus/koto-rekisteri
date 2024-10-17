@@ -34,6 +34,7 @@ interface YkiControllerApi {
     @RequestMapping(
         method = [RequestMethod.GET],
         value = ["/dev/yki/trigger-schedule/yki-import-suoritukset"],
+        produces = ["plain/text"],
     )
     fun triggerYkiImportSuoritukset(
         @RequestHeader(value = "dry-run", required = false) dryRun: kotlin.Boolean?,
@@ -43,5 +44,5 @@ interface YkiControllerApi {
         ) @org.springframework.format.annotation.DateTimeFormat(
             iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE,
         ) lastSeen: java.time.LocalDate?,
-    ): ResponseEntity<Unit>
+    ): ResponseEntity<java.math.BigDecimal>
 }

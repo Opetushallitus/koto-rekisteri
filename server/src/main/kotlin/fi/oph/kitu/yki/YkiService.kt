@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.asCsv
-import fi.oph.kitu.isDryRun
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -21,30 +20,24 @@ class YkiService(
     fun importYkiSuoritukset(
         lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
-    ) {
-        var isDryRun = false
+    ): Int {
         val suoritukset =
             ykiRestClient
                 .get()
                 .uri("suoritukset")
-                .exchange { _, res ->
-                    isDryRun = (dryRun == true) || res.isDryRun()
-                    val bodyAsString =
-                        res.bodyTo(String::class.java) ?: throw RestClientException("Response body is null")
-                    bodyAsString.asCsv<YkiSuoritus>()
-                }
+                .retrieve()
+                .body(String::class.java)
+                ?.asCsv<YkiSuoritus>() ?: throw RestClientException("Response body is empty")
 
         if (suoritukset.isEmpty()) {
-            logger.error("YKI responded with empty data.")
             throw RestClientException("The response is empty")
         }
 
-        if (isDryRun) {
-            logger.info("dry run complete")
-            return
+        if (dryRun == true) {
+            return 0
         }
 
-        repository.insertSuoritukset(suoritukset)
-        logger.info("suoritukset was added.")
+        val res = repository.insertSuoritukset(suoritukset)
+        return res.size
     }
 }

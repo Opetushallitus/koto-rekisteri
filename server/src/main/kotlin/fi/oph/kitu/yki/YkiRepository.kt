@@ -4,7 +4,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class YkiRepository {
-    fun insertSuoritukset(suoritukset: List<YkiSuoritus>): Void = throw NotImplementedError()
+    fun insertSuoritukset(suoritukset: List<YkiSuoritus>): List<YkiSuoritus> = throw NotImplementedError()
 
-    fun insertSuoritus(suoritus: YkiSuoritus): Void = throw NotImplementedError()
+    fun insertSuoritus(suoritus: YkiSuoritus): YkiSuoritus = throw NotImplementedError()
 }
