@@ -3,6 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import fi.oph.kitu.addResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -54,8 +55,7 @@ class KoealustaService(
         logger
             .atInfo()
             .addKeyValue("request.token", koealustaToken)
-            .addKeyValue("response.body", response.body)
-            .addKeyValue("response.headers", response.headers)
+            .addResponse(response)
             .log("koealusta response")
 
         if (response.body == null) {

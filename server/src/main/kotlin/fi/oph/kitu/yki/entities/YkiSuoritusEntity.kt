@@ -1,0 +1,39 @@
+package fi.oph.kitu.yki.entities
+
+import org.springframework.data.annotation.Id
+import org.springframework.data.relational.core.mapping.Table
+import java.util.Date
+
+enum class Tutkintotaso {
+    /** Perustaso*/
+    PT,
+
+    /** Keskitaso*/
+    KT,
+
+    /** Ylin taso*/
+    YT,
+}
+
+@Table(name = "yki_suoritus")
+class YkiSuoritusEntity(
+    @Id
+    val id: Number?,
+    val suorittajanOppijanumero: String,
+    val sukunimi: String,
+    val etunimet: String,
+    val tutkintopaiva: Date,
+    /**
+     * ISO 649-2 alpha-3 - muodossa.
+     */
+    val tutkintokieli: String, // TODO: COnvert to enum
+    val tutkintotaso: Tutkintotaso,
+    val jarjestajanTunnusOid: String,
+    val jarjestajanNimi: String,
+    val tekstinYmmartaminen: Number,
+    val kirjoittaminen: Number,
+    val rakenteetJaSanasto: Number,
+    val puheenYmmartaminen: Number,
+    val puhuminen: Number,
+    val yleisarvosana: Number,
+)
