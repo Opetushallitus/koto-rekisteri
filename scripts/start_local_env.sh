@@ -57,18 +57,10 @@ kotorekisteri_start_tmux() {
     info "Starting new tmux session..."
     tmux new-session -d -s $SESS_NAME
 
-    # Window 0:database
+    # Window 0:database docker
     WINDOW="database"
-    # database: left pane (docker running)
     tmux rename-window -t $SESS_NAME:0 "$WINDOW"
     tmux send-keys -t $SESS_NAME:"$WINDOW.0" "$REPO_ROOT/scripts/start_database_docker.sh" C-m
-
-    # database: right pane (psql)
-    tmux split-window -h -t "${SESSION-}":"$WINDOW"
-    tmux send-keys -t $SESS_NAME:"$WINDOW.1" "(cd $REPO_ROOT/server &&
-      echo \"Waiting 10 seconds before opening psql...\" && sleep 5 &&
-      echo \"Waiting 05 seconds before opening psql...\" && sleep 5 &&
-      psql postgresql://kitu:kitu@localhost:5432/kitu-dev)" C-m
 
     # Window 1:idea
     WINDOW="idea"
@@ -100,5 +92,4 @@ if [[ "$SETUP_ONLY" == "true" ]]; then
 fi
 
 require_command tmux
-require_command psql
 kotorekisteri_start_tmux
