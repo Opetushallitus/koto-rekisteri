@@ -1,7 +1,10 @@
-package fi.oph.kitu.yki
+package fi.oph.kitu.yki.responses
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import fi.oph.kitu.yki.entities.YkiSuoritusEntity
+import java.util.Date
 
 @JsonPropertyOrder(
     "suorittajanOppijanumero",
@@ -19,8 +22,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
     "puhuminen",
     "yleisarvosana",
 )
-data class YkiSuoritus(
-    val id: Number?,
+class YkiSuoritusResponse(
     @JsonProperty("suorittajanOppijanumero")
     val suorittajanOppijanumero: String,
     @JsonProperty("sukunimi")
@@ -31,7 +33,8 @@ data class YkiSuoritus(
      * ISO-8601 - muodossa.
      */
     @JsonProperty("tutkintopaiva")
-    val tutkintopaiva: String,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val tutkintopaiva: Date,
     /**
      * ISO 649-2 alpha-3 - muodossa.
      */
@@ -61,4 +64,23 @@ data class YkiSuoritus(
     val puhuminen: Number,
     @JsonProperty("yleisarvosana")
     val yleisarvosana: Number,
-)
+) {
+    fun toEntity(id: Number? = null) =
+        YkiSuoritusEntity(
+            id,
+            suorittajanOppijanumero,
+            sukunimi,
+            etunimet,
+            tutkintopaiva,
+            tutkintokieli,
+            tutkintotaso,
+            jarjestajanTunnusOid,
+            jarjestajanNimi,
+            tekstinYmmartaminen,
+            kirjoittaminen,
+            rakenteetJaSanasto,
+            puheenYmmartaminen,
+            puhuminen,
+            yleisarvosana,
+        )
+}
