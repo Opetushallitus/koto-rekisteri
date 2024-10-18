@@ -16,6 +16,12 @@ function require_command {
   fi
 }
 
+function require_env {
+  if [ -z "$(set +e; printenv "$1")" ]; then
+    fatal "Environment variable $1 is required, but it is empty or not defined. Aborting."
+  fi
+}
+
 function info {
   log "INFO" "$*"
 }
