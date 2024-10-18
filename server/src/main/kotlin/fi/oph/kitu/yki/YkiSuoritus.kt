@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
     "yleisarvosana",
 )
 data class YkiSuoritus(
+    val id: Number?,
     @JsonProperty("suorittajanOppijanumero")
     val suorittajanOppijanumero: String,
     @JsonProperty("sukunimi")

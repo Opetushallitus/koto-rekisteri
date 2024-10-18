@@ -18,6 +18,7 @@ class YkiService(
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     fun importYkiSuoritukset(
+        // TODO: duplicate check for db rows.
         lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
     ) {
@@ -26,13 +27,13 @@ class YkiService(
         event.addKeyValue("lastSeen", lastSeen)
 
         try {
-            val suoritukset =
+            val body =
                 ykiRestClient
                     .get()
                     .uri("suoritukset")
                     .retrieve()
                     .body(String::class.java)
-                    ?.asCsv<YkiSuoritus>() ?: throw RestClientException("Response body is empty")
+            val suoritukset = body?.asCsv<YkiSuoritus>() ?: throw RestClientException("Response body is empty")
 
             if (suoritukset.isEmpty()) {
                 throw RestClientException("The response is empty")
