@@ -31,10 +31,6 @@
         <flyway.version>10.20.0</flyway.version>
         <springdoc.version>2.6.0</springdoc.version>
         <jackson.version>2.18.0</jackson.version>
-
-        <local-env.datasource.url>jdbc:postgresql://localhost:5432/kitu-dev</local-env.datasource.url>
-        <local-env.datasource.user>kitu</local-env.datasource.user>
-        <local-env.datasource.password>kitu</local-env.datasource.password>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -222,16 +218,6 @@
                         <version>${kotlin.version}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <version>${flyway.version}</version>
-                <configuration>
-                    <url>${local-env.datasource.url}</url>
-                    <user>${local-env.datasource.user}</user>
-                    <password>${local-env.datasource.password}</password>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.openapitools</groupId>
