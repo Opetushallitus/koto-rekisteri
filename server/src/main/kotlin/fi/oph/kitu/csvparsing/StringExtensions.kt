@@ -1,8 +1,8 @@
-package fi.oph.kitu
+package fi.oph.kitu.csvparsing
 
-import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import org.springframework.web.client.RestClientException
+import kotlin.reflect.full.findAnnotation
 
 /**
  * Converts retrieved String response into a list that is the type of Body.
@@ -17,7 +17,13 @@ inline fun <reified T> String.asCsv(
     }
 
     val csvMapper = CsvMapper()
-    csvMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+
+    val mapperFeatures = T::class.findAnnotation<Features>()?.features
+    if (mapperFeatures != null) {
+        for (feature in mapperFeatures) {
+            csvMapper.enable(feature)
+        }
+    }
 
     val schema =
         csvMapper
