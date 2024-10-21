@@ -40,14 +40,8 @@ class YkiSuoritusResponse(
      */
     @JsonProperty("tutkintokieli")
     val tutkintokieli: String,
-    /**
-     * Sallitut arvot:
-     * - `PT`: perustaso
-     * - `KT`: keskitaso
-     * - `YT`: ylin taso
-     */
     @JsonProperty("tutkintotaso")
-    val tutkintotaso: String,
+    val tutkintotaso: TutkintotasoResponse,
     @JsonProperty("jarjestajanTunnusOid")
     val jarjestajanTunnusOid: String,
     @JsonProperty("jarjestajanNimi")
@@ -73,7 +67,7 @@ class YkiSuoritusResponse(
             etunimet,
             tutkintopaiva,
             tutkintokieli,
-            tutkintotaso,
+            tutkintotaso.toEntity(),
             jarjestajanTunnusOid,
             jarjestajanNimi,
             tekstinYmmartaminen,

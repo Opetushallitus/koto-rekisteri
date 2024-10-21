@@ -1,19 +1,10 @@
 package fi.oph.kitu.yki.entities
 
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.util.Date
-
-enum class Tutkintotaso {
-    /** Perustaso*/
-    PT,
-
-    /** Keskitaso*/
-    KT,
-
-    /** Ylin taso*/
-    YT,
-}
 
 @Table(name = "yki_suoritus")
 class YkiSuoritusEntity(
@@ -26,8 +17,9 @@ class YkiSuoritusEntity(
     /**
      * ISO 649-2 alpha-3 - muodossa.
      */
-    val tutkintokieli: String, // TODO: COnvert to enum
-    val tutkintotaso: Tutkintotaso,
+    val tutkintokieli: String, // TODO: Convert to enum
+    @Enumerated(EnumType.STRING)
+    val tutkintotaso: TutkintotasoEntity,
     val jarjestajanTunnusOid: String,
     val jarjestajanNimi: String,
     val tekstinYmmartaminen: Number,
