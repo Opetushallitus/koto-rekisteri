@@ -71,13 +71,13 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "./mvnw spring-boot:run",
+    command: "./scripts/start_local_server.sh",
     url: "http://127.0.0.1:8080",
     reuseExistingServer: !process.env.CI,
-    cwd: "../server/",
+    cwd: "..",
     env: { SPRING_PROFILES_ACTIVE: "e2e" },
     /* Pipe server logs to console for troubleshooting */
-    // stdout: "pipe",
-    // stderr: "pipe"
+    stdout: "pipe",
+    stderr: "pipe",
   },
 })
