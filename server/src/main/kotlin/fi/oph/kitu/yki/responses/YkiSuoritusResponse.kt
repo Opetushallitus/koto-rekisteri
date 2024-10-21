@@ -29,17 +29,11 @@ class YkiSuoritusResponse(
     val sukunimi: String,
     @JsonProperty("etunimet")
     val etunimet: String,
-    /**
-     * ISO-8601 - muodossa.
-     */
     @JsonProperty("tutkintopaiva")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tutkintopaiva: Date,
-    /**
-     * ISO 649-2 alpha-3 - muodossa.
-     */
     @JsonProperty("tutkintokieli")
-    val tutkintokieli: String,
+    val tutkintokieli: TutkintokieliResponse,
     @JsonProperty("tutkintotaso")
     val tutkintotaso: TutkintotasoResponse,
     @JsonProperty("jarjestajanTunnusOid")
@@ -66,7 +60,7 @@ class YkiSuoritusResponse(
             sukunimi,
             etunimet,
             tutkintopaiva,
-            tutkintokieli,
+            tutkintokieli.toEntity(),
             tutkintotaso.toEntity(),
             jarjestajanTunnusOid,
             jarjestajanNimi,

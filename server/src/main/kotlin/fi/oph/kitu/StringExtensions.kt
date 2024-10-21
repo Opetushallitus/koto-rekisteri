@@ -1,5 +1,6 @@
 package fi.oph.kitu
 
+import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import org.springframework.web.client.RestClientException
 
@@ -16,6 +17,8 @@ inline fun <reified T> String.asCsv(
     }
 
     val csvMapper = CsvMapper()
+    csvMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+
     val schema =
         csvMapper
             .typedSchemaFor(T::class.java)
