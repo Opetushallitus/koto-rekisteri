@@ -16,11 +16,10 @@ perustusta, joten sen ajaminen erikseen ei ole tarpeen. Ajantasainen lista asenn
 
 ### Salaisuudet paikallisessa kehityksessä
 
-Luo `server/src/main/resources/`-hakemiston alle `local.properties`-tiedosto, ja lisää sinne tarvittavat salaisuudet.
-Esimerkki tiedoston sisällöstä löytyy samasta hakemistosta `example-local.properties`-tiedostosta.
-
-Spring lataa automaattisesti `<aktiivinen profiili>.properties` tiedostoon lisätyt asetukset palvelimen käynnistyksen
-yhteydessä, eli paikallisen kehitysympäristön tapauksessa `local.properties`.
+Sovellus hakee salaisuudet AWS Secrets Managerista `start_local_env.sh` tai
+`start_local_server.sh`-skriptiä käytettäessä.
+Tätä varten [start_local_server.sh](./scripts/start_local_server.sh) konfiguroi automaattisesti `aws`-komentorivityökalun käyttämään OPH:n AWS-tilejä.
+Voit konfiguroida AWS-profiilit myös erikseen [ensure_aws_profiles.sh](./scripts/ensure_aws_profiles.sh)-komennolla.
 
 ### Kehitysympäristön perustaminen
 
@@ -85,13 +84,13 @@ Frontendia varten on `.run` - kansiossa valmis konfiguraatio, jolla voi ajaa fro
 ./scripts/setup-hooks.sh
 
 # Tarkista formatointi. Voit formatoida koodin ajamalla `ktlint --format`
-ktlint
+./scripts/check-formatting.sh
 
 # paketoi projektin.
 mvn package
 
-# Voit käyttää tätä jos ajat ympäristöä terminaalin kautta (ajettava 'server/' -kansiossa)
-./mvnw spring-boot:run
+# Voit käyttää tätä jos ajat ympäristöä terminaalin kautta
+./scripts/start_local_server.sh
 
 # e2e-testien ajaminen e2e-hakemistossa
 # Playwrightin UI testien ajamiseen --ui flagilla

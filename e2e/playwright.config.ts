@@ -77,7 +77,7 @@ export default defineConfig({
     cwd: "../server/",
     env: { SPRING_PROFILES_ACTIVE: "e2e" },
     /* Pipe server logs to console for troubleshooting */
-    // stdout: "pipe",
-    // stderr: "pipe"
+    stdout: "pipe",
+    stderr: "pipe",
   },
 })
