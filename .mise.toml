@@ -1,6 +1,7 @@
 [env]
 SPRING_PROFILES_ACTIVE = 'local'
 KOTLIN_POST_PROCESS_FILE = "ktlint -F"
+AWS_PROFILE = "oph-ktr-dev"
 
 [tools]
 node = '23.1.0'
