@@ -3,6 +3,8 @@ package fi.oph.kitu.yki.responses
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.fasterxml.jackson.databind.MapperFeature
+import fi.oph.kitu.csvparsing.Features
 import fi.oph.kitu.yki.entities.YkiSuoritusEntity
 import java.util.Date
 
@@ -22,6 +24,7 @@ import java.util.Date
     "puhuminen",
     "yleisarvosana",
 )
+@Features(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
 class YkiSuoritusResponse(
     @JsonProperty("suorittajanOppijanumero")
     val suorittajanOppijanumero: String,
