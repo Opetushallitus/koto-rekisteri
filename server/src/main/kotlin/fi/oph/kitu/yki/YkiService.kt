@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.addIsDuplicateKeyException
 import fi.oph.kitu.addResponse
 import fi.oph.kitu.csvparsing.asCsv
 import fi.oph.kitu.yki.responses.YkiSuoritusResponse
@@ -59,8 +60,10 @@ class YkiService(
         } catch (ex: Exception) {
             event
                 .addKeyValue("succcess", false)
+                .addIsDuplicateKeyException(ex)
                 .setCause(ex)
                 .setMessage("import failed")
+            throw ex
         } finally {
             event.log()
         }
