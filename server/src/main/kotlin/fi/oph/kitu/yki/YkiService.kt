@@ -1,7 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.addResponse
-import fi.oph.kitu.asCsv
+import fi.oph.kitu.csvparsing.asCsv
 import fi.oph.kitu.yki.responses.YkiSuoritusResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

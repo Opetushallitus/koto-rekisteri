@@ -14,10 +14,8 @@ class YkiSuoritusEntity(
     val sukunimi: String,
     val etunimet: String,
     val tutkintopaiva: Date,
-    /**
-     * ISO 649-2 alpha-3 - muodossa.
-     */
-    val tutkintokieli: String, // TODO: Convert to enum
+    @Enumerated(EnumType.STRING)
+    val tutkintokieli: TutkintokieliEntity,
     @Enumerated(EnumType.STRING)
     val tutkintotaso: TutkintotasoEntity,
     val jarjestajanTunnusOid: String,
