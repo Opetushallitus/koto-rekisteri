@@ -1,6 +1,6 @@
-package fi.oph.kitu.yki.entities
+package fi.oph.kitu.yki
 
-enum class TutkintotasoEntity {
+enum class Tutkintotaso {
     /** Perustaso*/
     PT,
 
