@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <springProfile name="local | ci | e2e">
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
-        </appender>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
 
-        <appender name="AUDIT_LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>logs/audit.log</file>
-            <encoder>
-                <pattern>${LOG_PATTERN}</pattern>
-            </encoder>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>logs/audit.%d{yyyy-MM-dd}.log</fileNamePattern>
-                <maxHistory>30</maxHistory>
-            </rollingPolicy>
-        </appender>
+    <appender name="AUDIT_LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/audit.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/audit.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
 
-        <logger name="auditLogger" level="INFO" additivity="true">
-            <appender-ref ref="AUDIT_LOCAL"/>
-        </logger>
-    </springProfile>
+    <logger name="auditLogger" level="INFO" additivity="true">
+        <appender-ref ref="AUDIT_LOCAL"/>
+    </logger>
 
-    <springProfile name="!local &amp; !ci &amp; !e2e">
+    <springProfile name="untuva | qa | prod">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
         </appender>

@@ -14,7 +14,7 @@ data class KoealustaSuorituksetResponse(
             val courseid: Int,
             val coursename: String,
             val results: List<Result>,
-            val timecompleted: Int,
+            val timecompleted: Long,
             val total_evaluation_teacher: String,
             val total_evaluation_system: String,
         ) {
