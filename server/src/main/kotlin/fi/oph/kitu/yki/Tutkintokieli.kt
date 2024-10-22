@@ -1,7 +1,7 @@
-package fi.oph.kitu.yki.entities
+package fi.oph.kitu.yki
 
 /** ISO 649-2 Alpha 3 */
-enum class TutkintokieliEntity {
+enum class Tutkintokieli {
     DEU,
     ENG,
     FIN,

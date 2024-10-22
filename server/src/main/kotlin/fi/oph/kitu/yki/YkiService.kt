@@ -3,7 +3,6 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.addIsDuplicateKeyException
 import fi.oph.kitu.addResponse
 import fi.oph.kitu.csvparsing.asCsv
-import fi.oph.kitu.yki.responses.YkiSuoritusResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -43,7 +42,7 @@ class YkiService(
                 .addKeyValue("external-system", "solki")
 
             val suoritukset =
-                response.body?.asCsv<YkiSuoritusResponse>() ?: throw RestClientException("Response body is empty")
+                response.body?.asCsv<SolkiSuoritusResponse>() ?: throw RestClientException("Response body is empty")
 
             if (suoritukset.isEmpty()) {
                 throw RestClientException("The response is empty")

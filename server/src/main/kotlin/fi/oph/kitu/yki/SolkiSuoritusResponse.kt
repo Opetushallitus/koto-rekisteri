@@ -1,11 +1,10 @@
-package fi.oph.kitu.yki.responses
+package fi.oph.kitu.yki
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import fi.oph.kitu.csvparsing.Features
-import fi.oph.kitu.yki.entities.YkiSuoritusEntity
 import java.util.Date
 
 @JsonPropertyOrder(
@@ -25,7 +24,7 @@ import java.util.Date
     "yleisarvosana",
 )
 @Features(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-class YkiSuoritusResponse(
+class SolkiSuoritusResponse(
     @JsonProperty("suorittajanOppijanumero")
     val suorittajanOppijanumero: String,
     @JsonProperty("sukunimi")
@@ -36,9 +35,9 @@ class YkiSuoritusResponse(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tutkintopaiva: Date,
     @JsonProperty("tutkintokieli")
-    val tutkintokieli: TutkintokieliResponse,
+    val tutkintokieli: Tutkintokieli,
     @JsonProperty("tutkintotaso")
-    val tutkintotaso: TutkintotasoResponse,
+    val tutkintotaso: Tutkintotaso,
     @JsonProperty("jarjestajanTunnusOid")
     val jarjestajanTunnusOid: String,
     @JsonProperty("jarjestajanNimi")
@@ -63,8 +62,8 @@ class YkiSuoritusResponse(
             sukunimi,
             etunimet,
             tutkintopaiva,
-            tutkintokieli.toEntity(),
-            tutkintotaso.toEntity(),
+            tutkintokieli,
+            tutkintotaso,
             jarjestajanTunnusOid,
             jarjestajanNimi,
             tekstinYmmartaminen,

@@ -1,4 +1,4 @@
-package fi.oph.kitu.yki.entities
+package fi.oph.kitu.yki
 
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -15,9 +15,9 @@ class YkiSuoritusEntity(
     val etunimet: String,
     val tutkintopaiva: Date,
     @Enumerated(EnumType.STRING)
-    val tutkintokieli: TutkintokieliEntity,
+    val tutkintokieli: Tutkintokieli,
     @Enumerated(EnumType.STRING)
-    val tutkintotaso: TutkintotasoEntity,
+    val tutkintotaso: Tutkintotaso,
     val jarjestajanTunnusOid: String,
     val jarjestajanNimi: String,
     val tekstinYmmartaminen: Number,
