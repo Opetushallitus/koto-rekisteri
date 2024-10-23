@@ -14,8 +14,8 @@ import java.time.LocalDate
 
 @Service
 class YkiService(
-    @Qualifier("ykiRestClient")
-    private val ykiRestClient: RestClient,
+    @Qualifier("solkiRestClient")
+    private val solkiRestClient: RestClient,
     private val repository: YkiRepository,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -31,7 +31,7 @@ class YkiService(
 
         try {
             val response =
-                ykiRestClient
+                solkiRestClient
                     .get()
                     .uri("suoritukset")
                     .retrieve()
