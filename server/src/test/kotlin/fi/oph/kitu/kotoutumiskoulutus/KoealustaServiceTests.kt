@@ -14,14 +14,11 @@ import kotlin.test.assertEquals
 
 @SpringBootTest
 class KoealustaServiceTests {
-    @Autowired
-    private lateinit var jacksonObjectMapper: ObjectMapper
-
-    @Autowired
-    private lateinit var kielitestiSuoritusRepository: KielitestiSuoritusRepository
-
     @Test
-    fun testImportWorks() {
+    fun `test import works`(
+        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired objectMapper: ObjectMapper,
+    ) {
         // Facade
         val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
@@ -84,7 +81,7 @@ class KoealustaServiceTests {
             KoealustaService(
                 restClientBuilder = mockRestClientBuilder,
                 kielitestiSuoritusRepository = kielitestiSuoritusRepository,
-                jacksonObjectMapper = jacksonObjectMapper,
+                jacksonObjectMapper = objectMapper,
             )
 
         koealustaService.koealustaToken = "token"
