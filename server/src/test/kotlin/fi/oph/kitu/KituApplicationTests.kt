@@ -1,11 +1,22 @@
 package fi.oph.kitu
 
-import fi.oph.kitu.test.DBFixture
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest
-class KituApplicationTests : DBFixture() {
+@Testcontainers
+class KituApplicationTests {
+    companion object {
+        @JvmStatic
+        @Container
+        @ServiceConnection
+        val postgres = PostgreSQLContainer("postgres:16")
+    }
+
     @Test
     fun contextLoads() {
     }
