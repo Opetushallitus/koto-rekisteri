@@ -77,29 +77,33 @@ class KoealustaService(
                 suorituksetResponse.users.flatMap { user ->
                     user.completions.map { completion ->
                         val luetunYmmartaminen =
-                            completion.results.find { it.name == "luetun ymm\u00e4rt\u00e4minen" }!!
+                            completion.results.find {
+                                it.name == "luetun ymm\u00e4rt\u00e4minen"
+                            }!!
                         val kuullunYmmartaminen =
-                            completion.results.find { it.name == "kuullun ymm\u00e4rt\u00e4minen" }!!
+                            completion.results.find {
+                                it.name == "kuullun ymm\u00e4rt\u00e4minen"
+                            }!!
                         val puhe = completion.results.find { it.name == "puhe" }!!
                         val kirjoittaminen = completion.results.find { it.name == "kirjoittaminen" }!!
                         KielitestiSuoritus(
-                            first_name = user.firstname,
-                            last_name = user.lastname,
+                            firstName = user.firstname,
+                            lastName = user.lastname,
                             email = user.email,
-                            oppija_oid = user.OIDnumber,
-                            time_completed = Instant.ofEpochSecond(completion.timecompleted.toLong()),
+                            oppijaOid = user.OIDnumber,
+                            timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
                             courseid = completion.courseid,
                             coursename = completion.coursename,
-                            luetun_ymmartaminen_result_system = luetunYmmartaminen.quiz_result_system,
-                            luetun_ymmartaminen_result_teacher = luetunYmmartaminen.quiz_result_teacher,
-                            kuullun_ymmartaminen_result_system = kuullunYmmartaminen.quiz_result_system,
-                            kuullun_ymmartaminen_result_teacher = kuullunYmmartaminen.quiz_result_teacher,
-                            puhe_result_system = puhe.quiz_result_system,
-                            puhe_result_teacher = puhe.quiz_result_teacher,
-                            kirjoittaminen_result_system = kirjoittaminen.quiz_result_system,
-                            kirjottaminen_result_teacher = kirjoittaminen.quiz_result_teacher,
-                            total_evaluation_teacher = completion.total_evaluation_teacher,
-                            total_evaluation_system = completion.total_evaluation_system,
+                            luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system,
+                            luetunYmmartaminenResultTeacher = luetunYmmartaminen.quiz_result_teacher,
+                            kuullunYmmartaminenResultSystem = kuullunYmmartaminen.quiz_result_system,
+                            kuullunYmmartaminenResultTeacher = kuullunYmmartaminen.quiz_result_teacher,
+                            puheResultSystem = puhe.quiz_result_system,
+                            puheResultTeacher = puhe.quiz_result_teacher,
+                            kirjoittaminenResultSystem = kirjoittaminen.quiz_result_system,
+                            kirjottaminenResultTeacher = kirjoittaminen.quiz_result_teacher,
+                            totalEvaluationTeacher = completion.total_evaluation_teacher,
+                            totalEvaluationSystem = completion.total_evaluation_system,
                         )
                     }
                 }
@@ -108,7 +112,7 @@ class KoealustaService(
 
             event.add("db.saved" to result.count())
 
-            return suoritukset.maxOfOrNull { it.time_completed } ?: from
+            return suoritukset.maxOfOrNull { it.timeCompleted } ?: from
         } catch (e: Exception) {
             event.setCause(e)
             throw e
