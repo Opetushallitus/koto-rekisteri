@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.addResponse
+import fi.oph.kitu.logging.add
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -38,66 +39,81 @@ class KoealustaService(
     }
 
     fun importSuoritukset(from: Instant): Instant {
-        val response =
-            restClient
-                .get()
-                .uri(
-                    "/webservice/rest/server.php?wstoken={token}&wsfunction={function}&moodlewsrestformat=json&from={from}",
-                    mapOf<String?, Any>(
-                        "token" to koealustaToken,
-                        "function" to "local_completion_export_get_completions",
-                        "from" to from.epochSecond,
-                    ),
-                ).accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .toEntity<String>()
+        val event =
+            logger
+                .atInfo()
+                .add(
+                    "operation" to "koealusta.import.suoritukset",
+                    "from" to from,
+                )
 
-        logger
-            .atInfo()
-            .addKeyValue("request.token", koealustaToken)
-            .addResponse(response)
-            .log("koealusta response")
+        try {
+            val response =
+                restClient
+                    .get()
+                    .uri(
+                        "/webservice/rest/server.php?wstoken={token}&wsfunction={function}&moodlewsrestformat=json&from={from}",
+                        mapOf<String?, Any>(
+                            "token" to koealustaToken,
+                            "function" to "local_completion_export_get_completions",
+                            "from" to from.epochSecond,
+                        ),
+                    ).accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .toEntity<String>()
 
-        if (response.body == null) {
-            return from
-        }
+            event
+                .add("request.token" to koealustaToken)
+                .addResponse(response)
 
-        val suorituksetResponse =
-            tryParseMoodleResponse<KoealustaSuorituksetResponse>(response.body!!)
-
-        val suoritukset =
-            suorituksetResponse.users.flatMap { user ->
-                user.completions.map { completion ->
-                    val luetunYmmartaminen = completion.results.find { it.name == "luetun ymm\u00e4rt\u00e4minen" }!!
-                    val kuullunYmmartaminen = completion.results.find { it.name == "kuullun ymm\u00e4rt\u00e4minen" }!!
-                    val puhe = completion.results.find { it.name == "puhe" }!!
-                    val kirjoittaminen = completion.results.find { it.name == "kirjoittaminen" }!!
-                    KielitestiSuoritus(
-                        first_name = user.firstname,
-                        last_name = user.lastname,
-                        email = user.email,
-                        oppija_oid = user.OIDnumber,
-                        time_completed = Instant.ofEpochSecond(completion.timecompleted.toLong()),
-                        courseid = completion.courseid,
-                        coursename = completion.coursename,
-                        luetun_ymmartaminen_result_system = luetunYmmartaminen.quiz_result_system,
-                        luetun_ymmartaminen_result_teacher = luetunYmmartaminen.quiz_result_teacher,
-                        kuullun_ymmartaminen_result_system = kuullunYmmartaminen.quiz_result_system,
-                        kuullun_ymmartaminen_result_teacher = kuullunYmmartaminen.quiz_result_teacher,
-                        puhe_result_system = puhe.quiz_result_system,
-                        puhe_result_teacher = puhe.quiz_result_teacher,
-                        kirjoittaminen_result_system = kirjoittaminen.quiz_result_system,
-                        kirjottaminen_result_teacher = kirjoittaminen.quiz_result_teacher,
-                        total_evaluation_teacher = completion.total_evaluation_teacher,
-                        total_evaluation_system = completion.total_evaluation_system,
-                    )
-                }
+            if (response.body == null) {
+                return from
             }
 
-        val result = kielitestiSuoritusRepository.saveAll(suoritukset)
+            val suorituksetResponse =
+                tryParseMoodleResponse<KoealustaSuorituksetResponse>(response.body!!)
 
-        logger.atInfo().addKeyValue("db.saved", result.count()).log("saved suoritukset")
+            val suoritukset =
+                suorituksetResponse.users.flatMap { user ->
+                    user.completions.map { completion ->
+                        val luetunYmmartaminen =
+                            completion.results.find { it.name == "luetun ymm\u00e4rt\u00e4minen" }!!
+                        val kuullunYmmartaminen =
+                            completion.results.find { it.name == "kuullun ymm\u00e4rt\u00e4minen" }!!
+                        val puhe = completion.results.find { it.name == "puhe" }!!
+                        val kirjoittaminen = completion.results.find { it.name == "kirjoittaminen" }!!
+                        KielitestiSuoritus(
+                            first_name = user.firstname,
+                            last_name = user.lastname,
+                            email = user.email,
+                            oppija_oid = user.OIDnumber,
+                            time_completed = Instant.ofEpochSecond(completion.timecompleted.toLong()),
+                            courseid = completion.courseid,
+                            coursename = completion.coursename,
+                            luetun_ymmartaminen_result_system = luetunYmmartaminen.quiz_result_system,
+                            luetun_ymmartaminen_result_teacher = luetunYmmartaminen.quiz_result_teacher,
+                            kuullun_ymmartaminen_result_system = kuullunYmmartaminen.quiz_result_system,
+                            kuullun_ymmartaminen_result_teacher = kuullunYmmartaminen.quiz_result_teacher,
+                            puhe_result_system = puhe.quiz_result_system,
+                            puhe_result_teacher = puhe.quiz_result_teacher,
+                            kirjoittaminen_result_system = kirjoittaminen.quiz_result_system,
+                            kirjottaminen_result_teacher = kirjoittaminen.quiz_result_teacher,
+                            total_evaluation_teacher = completion.total_evaluation_teacher,
+                            total_evaluation_system = completion.total_evaluation_system,
+                        )
+                    }
+                }
 
-        return suoritukset.maxOfOrNull { it.time_completed } ?: from
+            val result = kielitestiSuoritusRepository.saveAll(suoritukset)
+
+            event.add("db.saved" to result.count())
+
+            return suoritukset.maxOfOrNull { it.time_completed } ?: from
+        } catch (e: Exception) {
+            event.setCause(e)
+            throw e
+        } finally {
+            event.log()
+        }
     }
 }
