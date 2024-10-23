@@ -3,16 +3,28 @@ package fi.oph.kitu.yki
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest
+@Testcontainers
 class YkiServiceTests(
     @Autowired private val ykiRepository: YkiRepository,
 ) {
+    companion object {
+        @JvmStatic
+        @Container
+        @ServiceConnection
+        val postgres = PostgreSQLContainer("postgres:16")
+    }
+
     @Test
     fun testImportWorks() {
         // Arrange
