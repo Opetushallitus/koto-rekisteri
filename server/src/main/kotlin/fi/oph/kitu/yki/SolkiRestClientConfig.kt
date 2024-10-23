@@ -6,11 +6,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestClient
 
 @Configuration
-class YkiRestClientConfig {
+class SolkiRestClientConfig {
     @Value("\${kitu.yki.baseUrl}")
     private lateinit var baseUrl: String
 
-    @Bean("ykiRestClient")
+    @Bean("solkiRestClient")
     fun restClient(): RestClient =
         RestClient
             .builder()
