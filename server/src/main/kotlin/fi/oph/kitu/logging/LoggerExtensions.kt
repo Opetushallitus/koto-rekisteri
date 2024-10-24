@@ -6,15 +6,23 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.ResponseEntity
 import java.net.http.HttpResponse
 
-inline fun <reified T> LoggingEventBuilder.addResponse(response: HttpResponse<T>): LoggingEventBuilder =
+inline fun <reified T> LoggingEventBuilder.addResponse(
+    response: HttpResponse<T>,
+    externalSystem: ExternalSystem,
+): LoggingEventBuilder =
     this
         .addKeyValue("response.headers", response.headers().toString())
         .addKeyValue("response.body", response.body().toString())
+        .addKeyValue("external-system", externalSystem.value)
 
-inline fun <reified T> LoggingEventBuilder.addResponse(response: ResponseEntity<T>): LoggingEventBuilder =
+inline fun <reified T> LoggingEventBuilder.addResponse(
+    response: ResponseEntity<T>,
+    externalSystem: ExternalSystem,
+): LoggingEventBuilder =
     this
         .addKeyValue("response.headers", response.headers)
         .addKeyValue("response.body", response.body)
+        .addKeyValue("external-system", externalSystem.value)
 
 fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventBuilder {
     val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
@@ -39,9 +47,6 @@ fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventB
 
     return this
 }
-
-fun LoggingEventBuilder.addExternalSystem(externalSystem: ExternalSystem) =
-    this.addKeyValue("external-system", externalSystem.value)
 
 fun LoggingEventBuilder.add(vararg pairs: Pair<String, Any?>): LoggingEventBuilder {
     for ((key, value) in pairs) {

@@ -5,4 +5,6 @@ enum class ExternalSystem(
 ) {
     Koealusta("koealusta"),
     Solki("solki"),
+    Cas("cas"),
+    Oppijanumero("oppijanumero"),
 }

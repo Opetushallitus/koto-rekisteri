@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.ExternalSystem
 import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addExternalSystem
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
 import org.slf4j.LoggerFactory
@@ -74,8 +73,7 @@ class KoealustaService(
 
             event
                 .add("request.token" to koealustaToken)
-                .addExternalSystem(ExternalSystem.Koealusta)
-                .addResponse(response)
+                .addResponse(response, ExternalSystem.Koealusta)
 
             if (response.body == null) {
                 return@withEvent from

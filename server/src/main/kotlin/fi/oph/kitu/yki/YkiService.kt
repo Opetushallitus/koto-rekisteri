@@ -3,8 +3,6 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.ExternalSystem
 import fi.oph.kitu.csvparsing.asCsv
 import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addExternalSystem
-import fi.oph.kitu.logging.addIsDuplicateKeyException
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
 import org.slf4j.Logger
@@ -28,8 +26,7 @@ class YkiService(
         lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
     ) = logger.atInfo().withEvent("yki.importSuoritukset") { event ->
-        event
-            .add("dryRun" to dryRun, "lastSeen" to lastSeen)
+        event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
         val response =
             solkiRestClient
@@ -38,11 +35,7 @@ class YkiService(
                 .retrieve()
                 .toEntity<String>()
 
-        event
-            .addResponse(response)
-            .addKeyValue("external-system", "solki")
-                .addResponse(response)
-                .addExternalSystem(ExternalSystem.Solki)
+        event.addResponse(response, ExternalSystem.Solki)
 
         val suoritukset =
             response.body?.asCsv<SolkiSuoritusResponse>() ?: throw RestClientException("Response body is empty")
