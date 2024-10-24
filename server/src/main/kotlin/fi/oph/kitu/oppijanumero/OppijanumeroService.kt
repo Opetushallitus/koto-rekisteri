@@ -1,5 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.logging.addResponse
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -10,6 +12,8 @@ import java.net.http.HttpResponse
 class OppijanumeroService(
     private val casAuthenticatedService: CasAuthenticatedService,
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     @Value("\${kitu.oppijanumero.serviceUrl}")
     private lateinit var serviceUrl: String
 
@@ -21,6 +25,7 @@ class OppijanumeroService(
                 .header("Content-Type", "application/json")
 
         val response = casAuthenticatedService.sendRequest(httpRequest)
+        logger.atInfo().addResponse(response).log()
         return response
     }
 

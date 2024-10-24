@@ -1,5 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.logging.addResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -27,25 +28,28 @@ class CasAuthenticatedService(
     }
 
     fun sendRequest(requestBuilder: HttpRequest.Builder): HttpResponse<String> {
-        logger.atInfo().log("Sending CAS authenticated request")
         requestBuilder
             .header("Caller-Id", callerId)
             .header("CSRF", "CSRF")
             .header("Cookie", "CSRF=CSRF")
         val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+        logger.atInfo().addResponse(response).log()
 
         if (isLoginToCas(response)) {
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
             // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
-            logger.atInfo().log("Was redirected to CAS login")
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-            return httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+            val authenticatedResponse = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+            logger.atInfo().addResponse(authenticatedResponse).log()
+
+            return authenticatedResponse
         } else if (response.statusCode() == 401) {
             // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
             // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
-            logger.atInfo().log("Received HTTP 401 response")
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-            return httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+            val authenticatedResponse = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+            logger.atInfo().addResponse(authenticatedResponse).log()
+            return authenticatedResponse
         } else {
             return response
         }
