@@ -1,6 +1,8 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.ExternalSystem
 import fi.oph.kitu.csvparsing.asCsv
+import fi.oph.kitu.logging.addExternalSystem
 import fi.oph.kitu.logging.addIsDuplicateKeyException
 import fi.oph.kitu.logging.addResponse
 import org.slf4j.Logger
@@ -39,7 +41,7 @@ class YkiService(
 
             event
                 .addResponse(response)
-                .addKeyValue("external-system", "solki")
+                .addExternalSystem(ExternalSystem.Solki)
 
             val suoritukset =
                 response.body?.asCsv<SolkiSuoritusResponse>() ?: throw RestClientException("Response body is empty")
