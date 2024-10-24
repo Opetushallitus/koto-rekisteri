@@ -1,5 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -12,6 +13,8 @@ import java.net.http.HttpResponse
 class CasService(
     private val httpClient: HttpClient,
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     @Value("\${kitu.oppijanumero.username}")
     private lateinit var onrUsername: String
 
@@ -31,7 +34,7 @@ class CasService(
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build()
         val authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
-        println("Auth reset response: $authResponse")
+        logger.atInfo().log("Auth reset response: $authResponse")
     }
 
     fun getServiceTicket(ticketGrantingTicket: String): String {
@@ -52,7 +55,7 @@ class CasService(
         }
 
         val ticket = response.body()
-        println("Successfully got service ticket $ticket")
+        logger.atInfo().log("Successfully got service ticket $ticket")
         return ticket
     }
 
@@ -78,7 +81,7 @@ class CasService(
 
         val location = response.headers().firstValue("Location").get()
         val ticket = location.substring(location.lastIndexOf("/") + 1)
-        println("Successfully fetched TGT (Ticket Granting Ticket): $ticket")
+        logger.atInfo().log("Successfully fetched TGT (Ticket Granting Ticket): $ticket")
 
         return ticket
     }

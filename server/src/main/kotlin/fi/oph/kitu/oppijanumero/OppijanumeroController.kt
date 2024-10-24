@@ -1,6 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.generated.api.OppijanumeroControllerApi
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController
 class OppijanumeroController(
     private val oppijanumeroService: OppijanumeroService,
 ) : OppijanumeroControllerApi {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     override fun getOppijanumero(): ResponseEntity<String> {
         try {
             val response =
@@ -25,7 +28,7 @@ class OppijanumeroController(
                 if (response.statusCode() == 200) HttpStatus.OK else HttpStatus.INTERNAL_SERVER_ERROR,
             )
         } catch (e: Exception) {
-            println("ERROR: ${e.message}")
+            logger.atError().setCause(e).log()
 
             return ResponseEntity(
                 "An unexpected error has occurred:${e.localizedMessage}",
