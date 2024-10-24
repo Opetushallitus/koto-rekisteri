@@ -6,5 +6,18 @@
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     }
+  ],
+  "customManagers": [
+    {
+      "fileMatch": ["\\.mise\\.toml$"],
+      "matchStrings": [
+        "^(?<depName>[a-zA-Z0-9_-]+)\\s*=\\s*\"ref:(?<currentValue>.*?)\"$"
+      ],
+      "depNameTemplate": "{{depName}}",
+      "versioningTemplate": "semver",
+      "datasourceTemplate": "pypi",
+      "extractVersionTemplate": "ref:{{newVersion}}",
+      "autoReplaceStringTemplate": "{{depName}} = \"ref:{{newVersion}}\""
+    }
   ]
 }
