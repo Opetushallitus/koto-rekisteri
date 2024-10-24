@@ -14,6 +14,7 @@ class OppijanumeroController(
 
     override fun getOppijanumero(): ResponseEntity<String> {
         try {
+            oppijanumeroService.initEvent(logger.atInfo())
             val response =
                 oppijanumeroService.yleistunnisteHae(
                     YleistunnisteHaeRequest(
@@ -28,12 +29,14 @@ class OppijanumeroController(
                 if (response.statusCode() == 200) HttpStatus.OK else HttpStatus.INTERNAL_SERVER_ERROR,
             )
         } catch (e: Exception) {
-            logger.atError().setCause(e).log()
+            oppijanumeroService.event.setCause(e)
 
             return ResponseEntity(
                 "An unexpected error has occurred:${e.localizedMessage}",
                 HttpStatus.INTERNAL_SERVER_ERROR,
             )
+        } finally {
+            oppijanumeroService.event.log()
         }
     }
 }

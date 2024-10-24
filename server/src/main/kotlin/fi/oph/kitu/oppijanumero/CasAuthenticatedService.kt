@@ -2,7 +2,7 @@ package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.ExternalSystem
 import fi.oph.kitu.logging.addResponse
-import org.slf4j.LoggerFactory
+import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -16,10 +16,15 @@ class CasAuthenticatedService(
     private val httpClient: HttpClient,
     private val casService: CasService,
 ) {
-    private val logger = LoggerFactory.getLogger(javaClass)
+    lateinit var event: LoggingEventBuilder
 
     @Value("\${kitu.oppijanumero.callerid}")
     private lateinit var callerId: String
+
+    fun initEvent(logger: LoggingEventBuilder) {
+        this.event = event
+        casService.initEvent(event)
+    }
 
     fun authenticateToCas() {
         val grantingTicket = casService.getGrantingTicket()
@@ -34,14 +39,14 @@ class CasAuthenticatedService(
             .header("CSRF", "CSRF")
             .header("Cookie", "CSRF=CSRF")
         val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addResponse(response, ExternalSystem.Oppijanumero).log()
+        event.addResponse(response, ExternalSystem.Oppijanumero).log()
 
         if (isLoginToCas(response)) {
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
             // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
             val authenticatedResponse = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-            logger.atInfo().addResponse(authenticatedResponse, ExternalSystem.Oppijanumero).log()
+            event.addResponse(authenticatedResponse, ExternalSystem.Oppijanumero).log()
 
             return authenticatedResponse
         } else if (response.statusCode() == 401) {
@@ -49,7 +54,7 @@ class CasAuthenticatedService(
             // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
             val authenticatedResponse = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-            logger.atInfo().addResponse(authenticatedResponse, ExternalSystem.Oppijanumero).log()
+            event.addResponse(authenticatedResponse, ExternalSystem.Oppijanumero).log()
             return authenticatedResponse
         } else {
             return response
