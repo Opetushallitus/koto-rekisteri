@@ -71,8 +71,10 @@ class KoealustaService(
                     .toEntity<String>()
 
             event
-                .add("request.token" to koealustaToken)
-                .addResponse(response)
+                .add(
+                    "request.token" to koealustaToken,
+                    "external-system" to "solki",
+                ).addResponse(response)
 
             if (response.body == null) {
                 return@withEvent from
