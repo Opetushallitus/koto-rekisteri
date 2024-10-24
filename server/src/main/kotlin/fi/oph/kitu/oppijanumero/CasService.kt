@@ -1,5 +1,8 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.ExternalSystem
+import fi.oph.kitu.logging.addResponse
+import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -12,6 +15,8 @@ import java.net.http.HttpResponse
 class CasService(
     private val httpClient: HttpClient,
 ) {
+    lateinit var event: LoggingEventBuilder
+
     @Value("\${kitu.oppijanumero.username}")
     private lateinit var onrUsername: String
 
@@ -24,6 +29,10 @@ class CasService(
     @Value("\${kitu.oppijanumero.serviceUrl}")
     private lateinit var serviceUrl: String
 
+    fun initEvent(incomingEvent: LoggingEventBuilder) {
+        this.event = incomingEvent
+    }
+
     fun sendAuthenticationRequest(serviceTicket: String) {
         val authRequest =
             HttpRequest
@@ -31,7 +40,7 @@ class CasService(
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build()
         val authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
-        println("Auth reset response: $authResponse")
+        event.addResponse(authResponse, ExternalSystem.Oppijanumero).log()
     }
 
     fun getServiceTicket(ticketGrantingTicket: String): String {
@@ -46,13 +55,13 @@ class CasService(
                 .build()
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        event.addResponse(response, ExternalSystem.Cas).log()
 
         if (response.statusCode() != 200) {
             throw RuntimeException("Unexpected status code: ${response.statusCode()} and message: ${response.body()}")
         }
 
         val ticket = response.body()
-        println("Successfully got service ticket $ticket")
         return ticket
     }
 
@@ -69,6 +78,8 @@ class CasService(
 
         // Step 3 - Get the response
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        event.addResponse(response, ExternalSystem.Cas).log()
+
         val statusCode = response.statusCode()
         val body = response.body()
 
@@ -77,9 +88,6 @@ class CasService(
         }
 
         val location = response.headers().firstValue("Location").get()
-        val ticket = location.substring(location.lastIndexOf("/") + 1)
-        println("Successfully fetched TGT (Ticket Granting Ticket): $ticket")
-
-        return ticket
+        return location.substring(location.lastIndexOf("/") + 1)
     }
 }

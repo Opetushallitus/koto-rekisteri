@@ -1,5 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
+import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -10,8 +11,15 @@ import java.net.http.HttpResponse
 class OppijanumeroService(
     private val casAuthenticatedService: CasAuthenticatedService,
 ) {
+    lateinit var event: LoggingEventBuilder
+
     @Value("\${kitu.oppijanumero.serviceUrl}")
     private lateinit var serviceUrl: String
+
+    fun initEvent(incomingEvent: LoggingEventBuilder) {
+        this.event = incomingEvent
+        casAuthenticatedService.initEvent(incomingEvent)
+    }
 
     fun yleistunnisteHae(request: YleistunnisteHaeRequest): HttpResponse<String> {
         val httpRequest =
@@ -20,8 +28,7 @@ class OppijanumeroService(
                 .POST(toBodyPublisher(request))
                 .header("Content-Type", "application/json")
 
-        val response = casAuthenticatedService.sendRequest(httpRequest)
-        return response
+        return casAuthenticatedService.sendRequest(httpRequest)
     }
 
     private fun toBodyPublisher(request: YleistunnisteHaeRequest): HttpRequest.BodyPublisher =

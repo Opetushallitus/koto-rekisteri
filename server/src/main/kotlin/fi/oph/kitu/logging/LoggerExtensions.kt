@@ -1,15 +1,28 @@
 package fi.oph.kitu.logging
 
+import fi.oph.kitu.ExternalSystem
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.ResponseEntity
+import java.net.http.HttpResponse
 
-inline fun <reified T> LoggingEventBuilder.addResponse(response: ResponseEntity<T>): LoggingEventBuilder {
-    this.addKeyValue("response.headers", response.headers)
-    this.addKeyValue("response.body", response.body)
+inline fun <reified T> LoggingEventBuilder.addResponse(
+    response: HttpResponse<T>,
+    externalSystem: ExternalSystem,
+): LoggingEventBuilder =
+    this
+        .addKeyValue("response.headers", response.headers().toString())
+        .addKeyValue("response.body", response.body().toString())
+        .addKeyValue("external-system", externalSystem.value)
 
-    return this
-}
+inline fun <reified T> LoggingEventBuilder.addResponse(
+    response: ResponseEntity<T>,
+    externalSystem: ExternalSystem,
+): LoggingEventBuilder =
+    this
+        .addKeyValue("response.headers", response.headers)
+        .addKeyValue("response.body", response.body)
+        .addKeyValue("external-system", externalSystem.value)
 
 fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventBuilder {
     val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
