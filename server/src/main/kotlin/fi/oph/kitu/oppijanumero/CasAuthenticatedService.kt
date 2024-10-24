@@ -1,5 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -13,6 +14,8 @@ class CasAuthenticatedService(
     private val httpClient: HttpClient,
     private val casService: CasService,
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     @Value("\${kitu.oppijanumero.callerid}")
     private lateinit var callerId: String
 
@@ -24,7 +27,7 @@ class CasAuthenticatedService(
     }
 
     fun sendRequest(requestBuilder: HttpRequest.Builder): HttpResponse<String> {
-        println("Sending CAS authenticated request")
+        logger.atInfo().log("Sending CAS authenticated request")
         requestBuilder
             .header("Caller-Id", callerId)
             .header("CSRF", "CSRF")
@@ -34,13 +37,13 @@ class CasAuthenticatedService(
         if (isLoginToCas(response)) {
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
             // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
-            println("Was redirected to CAS login")
+            logger.atInfo().log("Was redirected to CAS login")
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
             return httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
         } else if (response.statusCode() == 401) {
             // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
             // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
-            println("Received HTTP 401 response")
+            logger.atInfo().log("Received HTTP 401 response")
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
             return httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
         } else {
