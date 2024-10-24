@@ -3,7 +3,9 @@ package fi.oph.kitu.kotoutumiskoulutus
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import fi.oph.kitu.ExternalSystem
 import fi.oph.kitu.logging.add
+import fi.oph.kitu.logging.addExternalSystem
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
 import org.slf4j.LoggerFactory
@@ -71,10 +73,9 @@ class KoealustaService(
                     .toEntity<String>()
 
             event
-                .add(
-                    "request.token" to koealustaToken,
-                    "external-system" to "solki",
-                ).addResponse(response)
+                .add("request.token" to koealustaToken)
+                .addExternalSystem(ExternalSystem.Koealusta)
+                .addResponse(response)
 
             if (response.body == null) {
                 return@withEvent from

@@ -1,5 +1,6 @@
 package fi.oph.kitu.logging
 
+import fi.oph.kitu.ExternalSystem
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.ResponseEntity
@@ -34,6 +35,9 @@ fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventB
 
     return this
 }
+
+fun LoggingEventBuilder.addExternalSystem(externalSystem: ExternalSystem) =
+    this.addKeyValue("external-system", externalSystem.value)
 
 fun LoggingEventBuilder.add(vararg pairs: Pair<String, Any?>): LoggingEventBuilder {
     for ((key, value) in pairs) {
