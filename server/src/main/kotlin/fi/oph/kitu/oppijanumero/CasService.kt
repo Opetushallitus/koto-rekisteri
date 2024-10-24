@@ -1,5 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.ExternalSystem
 import fi.oph.kitu.logging.addResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -35,7 +36,7 @@ class CasService(
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build()
         val authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addResponse(authResponse).log()
+        logger.atInfo().addResponse(authResponse, ExternalSystem.Oppijanumero).log()
     }
 
     fun getServiceTicket(ticketGrantingTicket: String): String {
@@ -50,7 +51,7 @@ class CasService(
                 .build()
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addResponse(response).log()
+        logger.atInfo().addResponse(response, ExternalSystem.Cas).log()
 
         if (response.statusCode() != 200) {
             throw RuntimeException("Unexpected status code: ${response.statusCode()} and message: ${response.body()}")
@@ -73,7 +74,7 @@ class CasService(
 
         // Step 3 - Get the response
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addResponse(response).log()
+        logger.atInfo().addResponse(response, ExternalSystem.Cas).log()
 
         val statusCode = response.statusCode()
         val body = response.body()
