@@ -77,7 +77,7 @@ class KoealustaService(
                         last_name = user.lastname,
                         email = user.email,
                         oppija_oid = user.OIDnumber,
-                        time_completed = Instant.ofEpochSecond(completion.timecompleted.toLong()),
+                        time_completed = Instant.ofEpochSecond(completion.timecompleted),
                         courseid = completion.courseid,
                         coursename = completion.coursename,
                         luetun_ymmartaminen_result_system = luetunYmmartaminen.quiz_result_system,
