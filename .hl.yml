@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/pamburus/hl/master/schema/json/config.schema.json
+$schema: https://raw.githubusercontent.com/pamburus/hl/master/schema/json/config.schema.json
+
+fields:
+  predefined:
+    time:
+      names:
+        - "@timestamp"
+    logger:
+      names:
+        - "logger_name"

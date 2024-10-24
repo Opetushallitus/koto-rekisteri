@@ -10,5 +10,5 @@ require_env KOTLIN_POST_PROCESS_FILE
 
 (
   cd "$REPO_ROOT"/server
-  ./mvnw spring-boot:run | humanlog --truncate-length 9999
+  ./mvnw spring-boot:run | hl -P
 )
