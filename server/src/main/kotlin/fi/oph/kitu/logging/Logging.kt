@@ -1,10 +1,14 @@
 package fi.oph.kitu.logging
 
+import fi.oph.kitu.auth.CasUserDetails
+import jakarta.servlet.Filter
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.MDC
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.cas.authentication.CasAuthenticationToken
 import org.springframework.web.filter.OncePerRequestFilter
 
 @Configuration
@@ -45,5 +49,17 @@ class Logging {
                     ),
                 )
             }
+        }
+
+    @Bean
+    fun authContextLogFilter() =
+        Filter { request, response, filterChain ->
+            val auth = (request as? HttpServletRequest)?.userPrincipal
+            if (auth is CasAuthenticationToken) {
+                val user = auth.userDetails as CasUserDetails
+                MDC.put("user.oid", user.oid)
+            }
+            MDC.put("test", "foobar")
+            filterChain.doFilter(request, response)
         }
 }
