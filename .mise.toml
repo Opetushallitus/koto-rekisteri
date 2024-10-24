@@ -3,7 +3,7 @@ SPRING_PROFILES_ACTIVE = 'local'
 KOTLIN_POST_PROCESS_FILE = "ktlint -F"
 
 [tools]
-node = '23.0.0'
+node = '23.1.0'
 "npm:prettier" = "3.3.3"
 maven = "3.9.9"
 awscli = "ref:2.18.13"
