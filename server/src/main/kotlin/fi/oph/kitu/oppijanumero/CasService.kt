@@ -29,8 +29,8 @@ class CasService(
     @Value("\${kitu.oppijanumero.serviceUrl}")
     private lateinit var serviceUrl: String
 
-    fun initEvent(event: LoggingEventBuilder) {
-        this.event = event
+    fun initEvent(incomingEvent: LoggingEventBuilder) {
+        this.event = incomingEvent
     }
 
     fun sendAuthenticationRequest(serviceTicket: String) {

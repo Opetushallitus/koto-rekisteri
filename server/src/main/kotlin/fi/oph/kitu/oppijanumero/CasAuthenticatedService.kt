@@ -21,8 +21,8 @@ class CasAuthenticatedService(
     @Value("\${kitu.oppijanumero.callerid}")
     private lateinit var callerId: String
 
-    fun initEvent(logger: LoggingEventBuilder) {
-        this.event = event
+    fun initEvent(incomingEvent: LoggingEventBuilder) {
+        this.event = incomingEvent
         casService.initEvent(event)
     }
 

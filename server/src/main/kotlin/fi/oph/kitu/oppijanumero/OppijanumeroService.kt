@@ -16,9 +16,9 @@ class OppijanumeroService(
     @Value("\${kitu.oppijanumero.serviceUrl}")
     private lateinit var serviceUrl: String
 
-    fun initEvent(logger: LoggingEventBuilder) {
-        this.event = event
-        casAuthenticatedService.initEvent(event)
+    fun initEvent(incomingEvent: LoggingEventBuilder) {
+        this.event = incomingEvent
+        casAuthenticatedService.initEvent(incomingEvent)
     }
 
     fun yleistunnisteHae(request: YleistunnisteHaeRequest): HttpResponse<String> {
