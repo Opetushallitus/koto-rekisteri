@@ -3,8 +3,8 @@ package fi.oph.kitu.kotoutumiskoulutus
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import fi.oph.kitu.addResponse
 import fi.oph.kitu.logging.add
+import fi.oph.kitu.logging.addResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType

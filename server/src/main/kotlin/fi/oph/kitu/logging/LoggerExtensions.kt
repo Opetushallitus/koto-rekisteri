@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.logging
 
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.dao.DuplicateKeyException
@@ -32,5 +32,12 @@ fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventB
         this.addKeyValue("constraint", constraint)
     }
 
+    return this
+}
+
+fun LoggingEventBuilder.add(vararg pairs: Pair<String, Any?>): LoggingEventBuilder {
+    for ((key, value) in pairs) {
+        addKeyValue(key, value)
+    }
     return this
 }

@@ -3,13 +3,12 @@ package fi.oph.kitu.logging
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.filter.OncePerRequestFilter
 
 @Configuration
-class Logging {
+class AccessLogging {
     @Bean
     fun logFilter() =
         object : OncePerRequestFilter() {
@@ -47,11 +46,4 @@ class Logging {
                 )
             }
         }
-}
-
-fun LoggingEventBuilder.add(vararg pairs: Pair<String, Any?>): LoggingEventBuilder {
-    for ((key, value) in pairs) {
-        addKeyValue(key, value)
-    }
-    return this
 }

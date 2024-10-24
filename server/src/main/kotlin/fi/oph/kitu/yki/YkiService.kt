@@ -1,8 +1,8 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.addIsDuplicateKeyException
-import fi.oph.kitu.addResponse
 import fi.oph.kitu.csvparsing.asCsv
+import fi.oph.kitu.logging.addIsDuplicateKeyException
+import fi.oph.kitu.logging.addResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
