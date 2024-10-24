@@ -1,5 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.logging.addResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -34,7 +35,7 @@ class CasService(
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build()
         val authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().log("Auth reset response: $authResponse")
+        logger.atInfo().addResponse(authResponse).log()
     }
 
     fun getServiceTicket(ticketGrantingTicket: String): String {
@@ -49,13 +50,13 @@ class CasService(
                 .build()
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        logger.atInfo().addResponse(response).log()
 
         if (response.statusCode() != 200) {
             throw RuntimeException("Unexpected status code: ${response.statusCode()} and message: ${response.body()}")
         }
 
         val ticket = response.body()
-        logger.atInfo().log("Successfully got service ticket $ticket")
         return ticket
     }
 
@@ -72,6 +73,8 @@ class CasService(
 
         // Step 3 - Get the response
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        logger.atInfo().addResponse(response).log()
+
         val statusCode = response.statusCode()
         val body = response.body()
 
@@ -80,9 +83,6 @@ class CasService(
         }
 
         val location = response.headers().firstValue("Location").get()
-        val ticket = location.substring(location.lastIndexOf("/") + 1)
-        logger.atInfo().log("Successfully fetched TGT (Ticket Granting Ticket): $ticket")
-
-        return ticket
+        return location.substring(location.lastIndexOf("/") + 1)
     }
 }
