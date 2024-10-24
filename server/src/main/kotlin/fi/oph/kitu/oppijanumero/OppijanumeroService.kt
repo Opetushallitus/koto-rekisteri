@@ -1,6 +1,5 @@
 package fi.oph.kitu.oppijanumero
 
-import fi.oph.kitu.logging.addResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -24,9 +23,7 @@ class OppijanumeroService(
                 .POST(toBodyPublisher(request))
                 .header("Content-Type", "application/json")
 
-        val response = casAuthenticatedService.sendRequest(httpRequest)
-        logger.atInfo().addResponse(response).log()
-        return response
+        return casAuthenticatedService.sendRequest(httpRequest)
     }
 
     private fun toBodyPublisher(request: YleistunnisteHaeRequest): HttpRequest.BodyPublisher =
