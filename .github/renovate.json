@@ -16,7 +16,8 @@
       "depNameTemplate": "{{depName}}",
       "versioningTemplate": "semver",
       "datasourceTemplate": "pypi",
-      "extractVersionTemplate": "ref:{{newVersion}}"
+      "extractVersionTemplate": "ref:{{newVersion}}",
+      "autoReplaceStringTemplate": "{{depName}} = \"ref:{{newVersion}}\""
     }
   ]
 }
