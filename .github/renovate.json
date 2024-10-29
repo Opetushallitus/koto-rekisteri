@@ -7,7 +7,7 @@
       "automerge": true
     },
     {
-      "fileMatch": ["**/pom.xml"],
+      "fileMatch": ["pom.xml$"],
       "matchUpdateTypes": ["patch"],
       "automerge": true
     }
