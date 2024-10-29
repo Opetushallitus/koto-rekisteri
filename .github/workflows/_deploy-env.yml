@@ -47,6 +47,7 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           experimental: true
+          cache: true
       - name: Log in to ${{ inputs.environment }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
