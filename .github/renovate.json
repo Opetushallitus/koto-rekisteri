@@ -14,6 +14,7 @@
   ],
   "customManagers": [
     {
+      "customType": "regex",
       "fileMatch": ["\\.mise\\.toml$"],
       "matchStrings": [
         "^(?<depName>[a-zA-Z0-9_-]+)\\s*=\\s*\"ref:(?<currentValue>.*?)\"$"
