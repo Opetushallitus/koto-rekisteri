@@ -7,6 +7,9 @@ on:
   pull_request:
 
 jobs:
+  setup_mise_tools:
+    uses: ./.github/workflows/mise.yml
+
   submit_dependencies:
     name: Submit dependencies
     runs-on: ubuntu-latest
@@ -14,11 +17,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Install tools
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-          cache: true
       - name: Update dependency graph
         uses: advanced-security/maven-dependency-submission-action@v4.1.1
         with:

@@ -1,0 +1,24 @@
+name: Setup Mise tools
+
+on:
+  workflow_call:
+
+jobs:
+  setup_mise_tools:
+    name: Setup Mise tools
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Restore tools from cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/.mise
+          key: $${{ runner.os }}-mise-tools-${{ hashFiles('.mise.toml') }}
+
+      - name: Install tools
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
+          cache: false
