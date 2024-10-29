@@ -5,6 +5,11 @@
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
+    },
+    {
+      "fileMatch": ["**/pom.xml"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
     }
   ],
   "customManagers": [
