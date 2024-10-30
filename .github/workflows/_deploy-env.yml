@@ -32,6 +32,9 @@ env:
   TAG: ${{ github.sha }}
 
 jobs:
+  setup_mise_tools:
+    uses: ./.github/workflows/mise.yml
+
   run:
     name: ${{ inputs.action }}
     runs-on: ubuntu-latest
@@ -43,7 +46,6 @@ jobs:
       url: ${{ vars.environment_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: ./github/workflows/mise.yml
       - name: Log in to ${{ inputs.environment }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
