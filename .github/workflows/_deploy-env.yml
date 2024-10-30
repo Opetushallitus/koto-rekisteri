@@ -47,6 +47,8 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Log in to ${{ inputs.environment }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
