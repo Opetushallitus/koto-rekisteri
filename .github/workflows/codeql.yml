@@ -20,6 +20,9 @@ on:
     - cron: "30 23 * * 4"
 
 jobs:
+  setup_mise_tools:
+    uses: ./.github/workflows/mise.yml
+
   analyze:
     name: Analyze (${{ matrix.language }})
     # Runner size impacts CodeQL analysis time. To learn more, please see:
@@ -78,12 +81,6 @@ jobs:
       # to build your code.
       # ℹ️ Command-line programs to run using the OS shell.
       # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-      - if: matrix.build-mode == 'manual'
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-          cache: true
-
       - if: matrix.build-mode == 'manual'
         shell: bash
         run: mvn -B package -DskipTests
