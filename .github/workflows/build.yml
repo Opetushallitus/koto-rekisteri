@@ -13,6 +13,7 @@ jobs:
   submit_dependencies:
     name: Submit dependencies
     runs-on: ubuntu-latest
+    needs: setup_mise_tools
     permissions:
       contents: write
     steps:
