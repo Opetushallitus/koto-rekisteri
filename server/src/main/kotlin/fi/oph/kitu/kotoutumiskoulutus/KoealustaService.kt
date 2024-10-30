@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
+import fi.oph.kitu.logging.withEvent
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -38,16 +39,10 @@ class KoealustaService(
         }
     }
 
-    fun importSuoritukset(from: Instant): Instant {
-        val event =
-            logger
-                .atInfo()
-                .add(
-                    "operation" to "koealusta.import.suoritukset",
-                    "from" to from,
-                )
+    fun importSuoritukset(from: Instant): Instant =
+        logger.atInfo().withEvent("koealusta.importSuoritukset") { event ->
+            event.add("from" to from)
 
-        try {
             val response =
                 restClient
                     .get()
@@ -67,7 +62,7 @@ class KoealustaService(
                 .addResponse(response)
 
             if (response.body == null) {
-                return from
+                return@withEvent from
             }
 
             val suorituksetResponse =
@@ -112,12 +107,6 @@ class KoealustaService(
 
             event.add("db.saved" to result.count())
 
-            return suoritukset.maxOfOrNull { it.timeCompleted } ?: from
-        } catch (e: Exception) {
-            event.setCause(e)
-            throw e
-        } finally {
-            event.log()
+            return@withEvent suoritukset.maxOfOrNull { it.timeCompleted } ?: from
         }
-    }
 }
