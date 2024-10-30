@@ -1,0 +1,5 @@
+[env]
+SPRING_PROFILES_ACTIVE = 'local'
+
+[tools]
+node = '23.1.0'
