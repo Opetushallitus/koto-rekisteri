@@ -41,3 +41,24 @@ fun LoggingEventBuilder.add(vararg pairs: Pair<String, Any?>): LoggingEventBuild
     }
     return this
 }
+
+fun <T> LoggingEventBuilder.withEvent(
+    operationName: String,
+    f: (event: LoggingEventBuilder) -> T,
+): T {
+    addKeyValue("operation", operationName)
+    try {
+        val ret = f(this)
+        addKeyValue("success", true)
+        setMessage("$operationName successful")
+        return ret
+    } catch (ex: Exception) {
+        addKeyValue("success", false)
+        addIsDuplicateKeyException(ex)
+        setCause(ex)
+        setMessage("$operationName failed")
+        throw ex
+    } finally {
+        log()
+    }
+}

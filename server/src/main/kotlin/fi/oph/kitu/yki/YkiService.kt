@@ -1,8 +1,9 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.csvparsing.asCsv
-import fi.oph.kitu.logging.addIsDuplicateKeyException
+import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
+import fi.oph.kitu.logging.withEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -23,48 +24,31 @@ class YkiService(
     fun importYkiSuoritukset(
         lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
-    ) {
-        val event = logger.atInfo()
+    ) = logger.atInfo().withEvent("yki.importSuoritukset") { event ->
         event
-            .addKeyValue("dryRun", dryRun)
-            .addKeyValue("lastSeen", lastSeen)
+            .add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
-        try {
-            val response =
-                solkiRestClient
-                    .get()
-                    .uri("suoritukset")
-                    .retrieve()
-                    .toEntity<String>()
+        val response =
+            solkiRestClient
+                .get()
+                .uri("suoritukset")
+                .retrieve()
+                .toEntity<String>()
 
-            event
-                .addResponse(response)
-                .addKeyValue("external-system", "solki")
+        event
+            .addResponse(response)
+            .addKeyValue("external-system", "solki")
 
-            val suoritukset =
-                response.body?.asCsv<SolkiSuoritusResponse>() ?: throw RestClientException("Response body is empty")
+        val suoritukset =
+            response.body?.asCsv<SolkiSuoritusResponse>() ?: throw RestClientException("Response body is empty")
 
-            if (suoritukset.isEmpty()) {
-                throw RestClientException("The response is empty")
-            }
+        if (suoritukset.isEmpty()) {
+            throw RestClientException("The response is empty")
+        }
 
-            if (dryRun != true) {
-                val res = repository.saveAll(suoritukset.map { it.toEntity() })
-                event.addKeyValue("importedSuorituksetSize", res.count())
-            }
-
-            event
-                .addKeyValue("success", true)
-                .setMessage("import done successfully")
-        } catch (ex: Exception) {
-            event
-                .addKeyValue("succcess", false)
-                .addIsDuplicateKeyException(ex)
-                .setCause(ex)
-                .setMessage("import failed")
-            throw ex
-        } finally {
-            event.log()
+        if (dryRun != true) {
+            val res = repository.saveAll(suoritukset.map { it.toEntity() })
+            event.addKeyValue("importedSuorituksetSize", res.count())
         }
     }
 }
