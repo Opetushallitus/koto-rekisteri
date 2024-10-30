@@ -27,13 +27,9 @@ jobs:
   check_generated_sources:
     name: Check generated sources
     runs-on: ubuntu-latest
+    needs: setup_mise_tools
     steps:
       - uses: actions/checkout@v4
-      - name: Install tools
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-          cache: true
 
       - name: Generate sources
         run: mvn generate-sources
@@ -44,20 +40,14 @@ jobs:
 
   server_tests:
     name: Server tests
-
     runs-on: ubuntu-latest
+    needs: setup_mise_tools
 
     env:
       MISE_ENV: ci
 
     steps:
       - uses: actions/checkout@v4
-      - name: Install tools
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-          cache: true
-
       - name: Start DB
         run: docker compose up -d db
       - name: Build with Maven
@@ -68,13 +58,9 @@ jobs:
     name: Frontend tests
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    needs: setup_mise_tools
     steps:
       - uses: actions/checkout@v4
-      - name: Install tools
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-          cache: true
       - name: Start DB
         run: docker compose up -d db
         working-directory: server
@@ -98,17 +84,11 @@ jobs:
 
   lint:
     name: Check code formatting
-
     runs-on: ubuntu-latest
+    needs: setup_mise_tools
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install tools
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-          cache: true
 
       - name: Check formatting
         run: ./scripts/check-formatting.sh
@@ -117,6 +97,7 @@ jobs:
     name: Build image
     runs-on: ubuntu-latest
     needs:
+      - setup_mise_tools
       - deploy_util
       - check_generated_sources
       - submit_dependencies
@@ -128,11 +109,6 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - name: Install tools
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-          cache: true
       - name: Log in to utility account
         uses: aws-actions/configure-aws-credentials@v4
         with:
