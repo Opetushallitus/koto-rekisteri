@@ -18,6 +18,8 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update dependency graph
         uses: advanced-security/maven-dependency-submission-action@v4.1.1
         with:
@@ -33,28 +35,27 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           experimental: true
-
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate sources
         run: mvn generate-sources
         working-directory: server
-
       - name: Check for differences in generated sources
         run: git diff --exit-code
 
   server_tests:
     name: Server tests
-
     runs-on: ubuntu-latest
-
     env:
       MISE_ENV: ci
-
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
         uses: jdx/mise-action@v2
         with:
           experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build with Maven
         run: mvn -B package --file pom.xml
         working-directory: server
@@ -69,6 +70,8 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Start DB
         run: docker compose up -d db
         working-directory: server
@@ -92,17 +95,15 @@ jobs:
 
   lint:
     name: Check code formatting
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Install tools
         uses: jdx/mise-action@v2
         with:
           experimental: true
-
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check formatting
         run: ./scripts/check-formatting.sh
 
@@ -125,6 +126,8 @@ jobs:
         uses: jdx/mise-action@v2
         with:
           experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Log in to utility account
         uses: aws-actions/configure-aws-credentials@v4
         with:
