@@ -43,11 +43,7 @@ jobs:
       url: ${{ vars.environment_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install tools
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-          cache: true
+      - uses: ./github/workflows/mise.yml
       - name: Log in to ${{ inputs.environment }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
