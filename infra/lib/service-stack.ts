@@ -3,7 +3,7 @@ import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager"
-import { Alarm, Metric, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
+import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
 import { ContainerImage, LogDriver, Secret } from "aws-cdk-lib/aws-ecs"
@@ -16,7 +16,7 @@ import {
 } from "aws-cdk-lib/aws-elasticloadbalancingv2"
 import { ILogGroup } from "aws-cdk-lib/aws-logs"
 import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
-import { CfnHealthCheck, HostedZone } from "aws-cdk-lib/aws-route53"
+import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { ITopic } from "aws-cdk-lib/aws-sns"
 import { Construct } from "constructs"
 
