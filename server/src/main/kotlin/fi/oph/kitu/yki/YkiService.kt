@@ -51,12 +51,7 @@ class YkiService(
         }
     }
 
-    /**
-     * Runs the task of importing all arvioijat from YKI.
-     *
-     * @return `true` if import was completed successfully, otherwise `false`.
-     */
-    fun importYkiArvioijat(dryRun: Boolean = false): Boolean =
+    fun importYkiArvioijat(dryRun: Boolean = false) =
         logger.atInfo().withEvent("yki.importArvioijat") { event ->
             val response =
                 solkiRestClient
@@ -70,23 +65,23 @@ class YkiService(
                 .addKeyValue("peer.service", PeerService.Solki.value)
 
             val arvioijat =
-                response.body?.asCsv<SolkiArvioijaResponse>() ?: listOf()
+                response.body?.asCsv<SolkiArvioijaResponse>() ?: throw Error.MalformedArvioijatResponse()
+            event.addKeyValue("yki.arvioijat.receivedCount", arvioijat.size)
             if (arvioijat.isEmpty()) {
-                event
-                    .addKeyValue("success", false)
-                    .addKeyValue("yki.arvioijat.receivedCount", 0)
-                    .setMessage("import failed: unexpected empty get arvioijat response")
-                return@withEvent false
+                throw Error.EmptyArvioijat()
             }
 
             if (!dryRun) {
                 val res = arvioijaRepository.saveAll(arvioijat.map { it.toEntity() })
                 event.addKeyValue("yki.arvioijat.importedCount", res.count())
             }
-
-            event
-                .addKeyValue("success", true)
-                .setMessage("import done successfully")
-            return@withEvent true
         }
+
+    sealed class Error(
+        message: String,
+    ) : Exception(message) {
+        class MalformedArvioijatResponse : Error("Malformed body on arvioijat response")
+
+        class EmptyArvioijat : Error("Unexpected empty list of arvioijat")
+    }
 }
