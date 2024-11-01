@@ -24,6 +24,16 @@ inline fun <reified T> LoggingEventBuilder.addResponse(
         .addKeyValue("response.body", response.body)
         .addKeyValue("peer.service", peerService.value)
 
+inline fun <reified T> LoggingEventBuilder.addResponse(
+    endpoint: String,
+    response: ResponseEntity<T>,
+): LoggingEventBuilder {
+    this.addKeyValue("$endpoint.response.headers", response.headers)
+    this.addKeyValue("$endpoint.response.body", response.body)
+
+    return this
+}
+
 fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventBuilder {
     val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
     this.addKeyValue("isDuplicateKeyException", isDuplicateKeyException)
