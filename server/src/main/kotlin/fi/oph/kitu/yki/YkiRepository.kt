@@ -5,3 +5,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface YkiRepository : CrudRepository<YkiSuoritusEntity, Int>
+
+@Repository
+interface YkiArvioijaRepository : CrudRepository<YkiArvioijaEntity, Int>
