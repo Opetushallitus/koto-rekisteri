@@ -19,6 +19,7 @@ class YkiService(
     @Qualifier("solkiRestClient")
     private val solkiRestClient: RestClient,
     private val repository: YkiRepository,
+    private val arvioijaRepository: YkiArvioijaRepository,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -49,4 +50,43 @@ class YkiService(
             event.addKeyValue("importedSuorituksetSize", res.count())
         }
     }
+
+    /**
+     * Runs the task of importing all arvioijat from YKI.
+     *
+     * @return `true` if import was completed successfully, otherwise `false`.
+     */
+    fun importYkiArvioijat(dryRun: Boolean = false): Boolean =
+        logger.atInfo().withEvent("yki.importArvioijat") { event ->
+            val response =
+                solkiRestClient
+                    .get()
+                    .uri("arvioijat")
+                    .retrieve()
+                    .toEntity<String>()
+
+            event
+                .addResponse("yki.arvioijat.get", response)
+                .addKeyValue("peer.service", PeerService.Solki.value)
+
+            val arvioijat =
+                response.body?.asCsv<SolkiArvioijaResponse>() ?: listOf()
+            if (arvioijat.isEmpty()) {
+                event
+                    .addKeyValue("success", false)
+                    .addKeyValue("yki.arvioijat.receivedCount", 0)
+                    .setMessage("import failed: unexpected empty get arvioijat response")
+                return@withEvent false
+            }
+
+            if (!dryRun) {
+                val res = arvioijaRepository.saveAll(arvioijat.map { it.toEntity() })
+                event.addKeyValue("yki.arvioijat.importedCount", res.count())
+            }
+
+            event
+                .addKeyValue("success", true)
+                .setMessage("import done successfully")
+            return@withEvent true
+        }
 }

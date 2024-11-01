@@ -20,6 +20,7 @@ import kotlin.test.assertEquals
 @Testcontainers
 class YkiServiceTests(
     @Autowired private val ykiRepository: YkiRepository,
+    @Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
 ) {
     companion object {
         @JvmStatic
@@ -53,6 +54,7 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 repository = ykiRepository,
+                arvioijaRepository = ykiArvioijaRepository,
             )
 
         // Act
@@ -84,6 +86,7 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 repository = ykiRepository,
+                arvioijaRepository = ykiArvioijaRepository,
             )
 
         // Act
@@ -92,5 +95,33 @@ class YkiServiceTests(
         }
         val suoritukset = ykiRepository.findAll()
         assertEquals(0, suoritukset.count())
+    }
+
+    @Test
+    fun testArvioijatImportWorks() {
+        val mockRestClientBuilder = RestClient.builder()
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("arvioijat"))
+            .andRespond(
+                withSuccess(
+                    """
+                    "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"
+                    """.trimIndent(),
+                    MediaType.TEXT_PLAIN,
+                ),
+            )
+
+        val ykiService =
+            YkiService(
+                solkiRestClient = mockRestClientBuilder.build(),
+                repository = ykiRepository,
+                arvioijaRepository = ykiArvioijaRepository,
+            )
+
+        ykiService.importYkiArvioijat()
+
+        val imported = ykiArvioijaRepository.findAll()
+        assertEquals(1, imported.count())
     }
 }
