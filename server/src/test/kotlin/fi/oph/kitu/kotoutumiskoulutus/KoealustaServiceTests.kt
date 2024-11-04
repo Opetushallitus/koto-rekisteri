@@ -47,7 +47,8 @@ class KoealustaServiceTests {
                         {
                           "firstname": "Mervi",
                           "lastname": "Esimerkki",
-                          "OIDnumber": "12345",
+                          "OID": "",
+                          "SSN": "",
                           "email": "mervi.esimerkki@oph.fi",
                           "completions": [
                             {

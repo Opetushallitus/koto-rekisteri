@@ -34,8 +34,21 @@ class KoealustaService(
         try {
             return jacksonObjectMapper.enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION).readValue<T>(json)
         } catch (e: Exception) {
-            val moodleError = jacksonObjectMapper.readValue<MoodleErrorMessage>(json)
-            throw MoodleException(moodleError)
+            throw tryParseMoodleError(json, e)
+        }
+    }
+
+    private fun tryParseMoodleError(
+        json: String,
+        originalException: Exception,
+    ): MoodleException {
+        try {
+            return MoodleException(jacksonObjectMapper.readValue<MoodleErrorMessage>(json))
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Could not parse Moodle error message: ${e.message} while handling parsing error",
+                originalException,
+            )
         }
     }
 
@@ -85,7 +98,7 @@ class KoealustaService(
                             firstName = user.firstname,
                             lastName = user.lastname,
                             email = user.email,
-                            oppijaOid = user.OIDnumber,
+                            oppijaOid = user.OID,
                             timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
                             courseid = completion.courseid,
                             coursename = completion.coursename,
