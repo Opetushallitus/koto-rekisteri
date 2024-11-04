@@ -6,7 +6,8 @@ data class KoealustaSuorituksetResponse(
     data class User(
         val firstname: String,
         val lastname: String,
-        val OIDnumber: String,
+        val OID: String,
+        val SSN: String,
         val email: String,
         val completions: List<Completion>,
     ) {
