@@ -1,13 +1,14 @@
 import { Stack, StackProps } from "aws-cdk-lib"
 import { ComparisonOperator, Metric } from "aws-cdk-lib/aws-cloudwatch"
-import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
+import { LambdaAction, SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { CfnHealthCheck } from "aws-cdk-lib/aws-route53"
 import { ITopic } from "aws-cdk-lib/aws-sns"
 import { Construct } from "constructs"
+import { IFunction } from "aws-cdk-lib/aws-lambda"
 
 export interface Route53HealthChecksProps extends StackProps {
   domainName: string
-  alarmsSnsTopic: ITopic
+  alarmLambdaHandler: IFunction
 }
 
 export class Route53HealthChecksStack extends Stack {
@@ -21,18 +22,19 @@ export class Route53HealthChecksStack extends Stack {
       },
     })
 
-    new Metric({
+    const alarm = new Metric({
       metricName: "HealthCheckStatus",
       namespace: "AWS/Route53",
       dimensionsMap: {
         HealthCheckId: healthCheck.attrHealthCheckId,
       },
+    }).createAlarm(this, "HealthCheckAlarm", {
+      comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
+      threshold: 1, // 1 is healthy, 0 is unhealthy
+      evaluationPeriods: 1,
     })
-      .createAlarm(this, "HealthCheckAlarm", {
-        comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
-        threshold: 1, // 1 is healthy, 0 is unhealthy
-        evaluationPeriods: 1,
-      })
-      .addAlarmAction(new SnsAction(props.alarmsSnsTopic))
+    const lambdaAction = new LambdaAction(props.alarmLambdaHandler)
+    alarm.addAlarmAction(lambdaAction)
+    alarm.addOkAction(lambdaAction)
   }
 }

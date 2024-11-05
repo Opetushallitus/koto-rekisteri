@@ -39,7 +39,7 @@ export class EnvironmentStage extends Stage {
 
     const logGroupsStack = new LogGroupsStack(this, "LogGroups", {
       env,
-      alarmsSnsTopic: alarmsStack.alarmSnsTopic,
+      alarmLambdaHandler: alarmsStack.slackNotifierLambda,
     })
 
     const networkStack = new NetworkStack(this, "Network", {
@@ -73,13 +73,13 @@ export class EnvironmentStage extends Stage {
       database: dbStack.cluster,
       databaseName: environmentConfig.databaseName,
       image: props.serviceImage,
-      alarmSnsTopic: alarmsStack.alarmSnsTopic,
+      alarmLambdaHandler: alarmsStack.slackNotifierLambda,
     })
 
     new Route53HealthChecksStack(this, "Route53HealthChecks", {
       env: { ...env, region: "us-east-1" },
       domainName: environmentConfig.domainName,
-      alarmsSnsTopic: usEastAlarmsStack.alarmSnsTopic,
+      alarmLambdaHandler: usEastAlarmsStack.slackNotifierLambda,
     })
 
     connectionsStack.createRules()

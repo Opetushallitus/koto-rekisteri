@@ -1,11 +1,11 @@
-import { aws_sns, Stack, StackProps } from "aws-cdk-lib"
+import { aws_lambda, aws_sns, Stack, StackProps } from "aws-cdk-lib"
 import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
-import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
+import { LambdaAction, SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { FilterPattern, LogGroup } from "aws-cdk-lib/aws-logs"
 import { Construct } from "constructs"
 
 export interface LogGroupsStackProps extends StackProps {
-  alarmsSnsTopic: aws_sns.ITopic
+  alarmLambdaHandler: aws_lambda.IFunction
 }
 
 export class LogGroupsStack extends Stack {
@@ -40,7 +40,7 @@ export class LogGroupsStack extends Stack {
         treatMissingData: TreatMissingData.NOT_BREACHING,
       })
 
-    alarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
-    alarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
+    alarm.addAlarmAction(new LambdaAction(props.alarmLambdaHandler))
+    alarm.addOkAction(new LambdaAction(props.alarmLambdaHandler))
   }
 }

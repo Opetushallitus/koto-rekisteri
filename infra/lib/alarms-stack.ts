@@ -1,23 +1,20 @@
 import * as cdk from "aws-cdk-lib"
-import { aws_lambda, aws_lambda_nodejs, aws_sns, StackProps } from "aws-cdk-lib"
+import { aws_lambda, aws_lambda_nodejs, StackProps } from "aws-cdk-lib"
 import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
-import { OutputFormat } from "aws-cdk-lib/aws-lambda-nodejs"
+import { NodejsFunction, OutputFormat } from "aws-cdk-lib/aws-lambda-nodejs"
 import { Secret } from "aws-cdk-lib/aws-secretsmanager"
-import { LambdaSubscription } from "aws-cdk-lib/aws-sns-subscriptions"
 import { Construct } from "constructs"
 import * as path from "node:path"
 
 export class AlarmsStack extends cdk.Stack {
-  readonly alarmSnsTopic: aws_sns.Topic
+  readonly slackNotifierLambda: NodejsFunction
 
   constructor(scope: Construct, id: string, props: StackProps) {
     super(scope, id, props)
 
-    this.alarmSnsTopic = new aws_sns.Topic(this, "AlarmSnsTopic")
-
     const slackWebhookUrlSecretName = `slack-webhook-url`
 
-    const slackNotifierLambda = new aws_lambda_nodejs.NodejsFunction(
+    this.slackNotifierLambda = new aws_lambda_nodejs.NodejsFunction(
       this,
       "SlackNotifierLambda",
       {
@@ -34,18 +31,14 @@ export class AlarmsStack extends cdk.Stack {
       },
     )
 
-    this.alarmSnsTopic.addSubscription(
-      new LambdaSubscription(slackNotifierLambda),
-    )
-
     Secret.fromSecretNameV2(
       this,
       "SlackWebhookUrlSecret",
       slackWebhookUrlSecretName,
-    ).grantRead(slackNotifierLambda)
+    ).grantRead(this.slackNotifierLambda)
 
-    // Can't send alarms from this to the SNS topic, since that would create an infinite loop.
-    slackNotifierLambda
+    // Can't send alarms from this metric this Lambda, since that would create an infinite loop.
+    this.slackNotifierLambda
       .metricErrors()
       .createAlarm(this, "SlackNotifierLambdaErrors", {
         threshold: 1,

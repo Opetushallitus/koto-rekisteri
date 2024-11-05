@@ -2,33 +2,42 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager"
-import { Handler, SNSEvent } from "aws-lambda"
+import type { CloudWatchAlarmEvent, CloudWatchAlarmHandler } from "aws-lambda"
 
-const secretName = process.env.SLACK_WEBHOOK_URL_SECRET_NAME
+const slackWebhookSecretName = process.env.SLACK_WEBHOOK_URL_SECRET_NAME
 
-const client = new SecretsManagerClient()
-const response = await client.send(
+const secretsManagerClient = new SecretsManagerClient()
+const secretResponse = await secretsManagerClient.send(
   new GetSecretValueCommand({
-    SecretId: secretName,
+    SecretId: slackWebhookSecretName,
   }),
 )
 
-const slackWebhookUrl = response.SecretString!
+const slackWebhookUrl = secretResponse.SecretString!
 
-export const handler: Handler = async (event: SNSEvent) => {
+async function sendSlackMessage(slackMessage: { text: string }) {
+  const fetchResponse = await fetch(slackWebhookUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(slackMessage),
+  })
+
+  return await fetchResponse.text()
+}
+
+export const handler: CloudWatchAlarmHandler = async (
+  event: CloudWatchAlarmEvent,
+) => {
   console.log("Received event:", JSON.stringify(event, null, 2))
 
-  const message = event.Records[0].Sns.Message
-
   const {
-    AlarmName,
-    NewStateValue,
-    NewStateReason,
-    OldStateValue,
-    StateChangeTime,
-  } = JSON.parse(message)
+    alarmData: { alarmName, state, previousState },
+    time,
+  } = event
 
-  const date = new Date(StateChangeTime)
+  const date = new Date(time)
 
   const formattedDate = new Intl.DateTimeFormat("fi-FI", {
     year: "numeric",
@@ -42,9 +51,9 @@ export const handler: Handler = async (event: SNSEvent) => {
   }).format(date)
 
   const getEmoji = () => {
-    if (OldStateValue === "ALARM" && NewStateValue === "OK") {
+    if (previousState.value === "ALARM" && state.value === "OK") {
       return ":sunny:"
-    } else if (NewStateValue === "ALARM") {
+    } else if (state.value === "ALARM") {
       return ":thunder_cloud_and_rain:"
     }
     return ":question:"
@@ -53,23 +62,15 @@ export const handler: Handler = async (event: SNSEvent) => {
   const slackMessage = {
     text: `
     *Alarm from CloudWatch* ${getEmoji()}
-    *State changed*: \`${OldStateValue}\` :arrow_right: \`${NewStateValue}\`
-    *Alarm Name*: ${AlarmName}
-    *Reason*: ${NewStateReason}
+    *State changed*: \`${previousState.value}\` :arrow_right: \`${state.value}\`
+    *Alarm Name*: ${alarmName}
+    *Reason*: ${state.reason} ${state.reasonData ?? ""}
     *Timestamp*: ${formattedDate}
     `,
   }
 
   try {
-    const fetchResponse = await fetch(slackWebhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(slackMessage),
-    })
-
-    const responseBody = await fetchResponse.text()
+    const responseBody = await sendSlackMessage(slackMessage)
     console.log(`Response from Slack: ${responseBody}`)
   } catch (error) {
     console.error(`Request failed: ${error}`)

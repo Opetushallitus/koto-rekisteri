@@ -4,7 +4,7 @@ import {
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager"
 import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
-import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
+import { LambdaAction, SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
 import { ContainerImage, LogDriver, Secret } from "aws-cdk-lib/aws-ecs"
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns"
@@ -19,6 +19,7 @@ import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { ITopic } from "aws-cdk-lib/aws-sns"
 import { Construct } from "constructs"
+import { IFunction } from "aws-cdk-lib/aws-lambda"
 
 export interface ServiceStackProps extends StackProps {
   auditLogGroup: ILogGroup
@@ -31,7 +32,7 @@ export interface ServiceStackProps extends StackProps {
   vpc: IVpc
   database: DatabaseCluster
   databaseName: string
-  alarmSnsTopic: ITopic
+  alarmLambdaHandler: IFunction
 }
 
 export class ServiceStack extends Stack {
@@ -58,7 +59,7 @@ export class ServiceStack extends Stack {
       internetFacing: true,
     })
 
-    const snsAction = new SnsAction(props.alarmSnsTopic)
+    const lambdaAction = new LambdaAction(props.alarmLambdaHandler)
     const alarm5xx = loadBalancer.metrics
       .httpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT)
       .createAlarm(this, "LoadBalancer5xxAlarm", {
@@ -66,8 +67,8 @@ export class ServiceStack extends Stack {
         threshold: 1,
         treatMissingData: TreatMissingData.NOT_BREACHING,
       })
-    alarm5xx.addAlarmAction(snsAction)
-    alarm5xx.addOkAction(snsAction)
+    alarm5xx.addAlarmAction(lambdaAction)
+    alarm5xx.addOkAction(lambdaAction)
 
     this.service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
       vpc: props.vpc,
@@ -134,7 +135,7 @@ export class ServiceStack extends Stack {
         threshold: 50,
         evaluationPeriods: 1,
       })
-      .addAlarmAction(snsAction)
+      .addAlarmAction(lambdaAction)
 
     this.service.service
       .metricMemoryUtilization()
@@ -142,6 +143,6 @@ export class ServiceStack extends Stack {
         threshold: 50,
         evaluationPeriods: 1,
       })
-      .addAlarmAction(snsAction)
+      .addAlarmAction(lambdaAction)
   }
 }
