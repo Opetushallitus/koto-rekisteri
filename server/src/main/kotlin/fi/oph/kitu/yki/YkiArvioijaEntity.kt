@@ -20,6 +20,5 @@ class YkiArvioijaEntity(
     val tila: Number,
     @Enumerated(EnumType.STRING)
     val kieli: Tutkintokieli,
-    // FIXME: it'd be nice if this was Set<Tutkintotaso>
-    val tasot: Set<String>,
+    val tasot: Set<Tutkintotaso>,
 )

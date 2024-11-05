@@ -56,8 +56,7 @@ class SolkiArvioijaResponse(
             postitoimipaikka,
             tila,
             kieli,
-            // tasot = tasot.split("+").map({ taso -> Tutkintotaso.valueOf(taso) }).toSet(),
-            tasot = tasot.split("+").toSet(),
+            tasot = tasot.split("+").map({ taso -> Tutkintotaso.valueOf(taso) }).toSet(),
         )
 
     override fun toString(): String =
