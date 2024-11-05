@@ -7,6 +7,8 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
+import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -20,6 +22,7 @@ class KoealustaService(
     private val restClientBuilder: RestClient.Builder,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val jacksonObjectMapper: ObjectMapper,
+    private val oppijanumeroService: OppijanumeroService,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -95,6 +98,20 @@ class KoealustaService(
                             }!!
                         val puhe = completion.results.find { it.name == "puhe" }!!
                         val kirjoittaminen = completion.results.find { it.name == "kirjoittaminen" }!!
+
+                        val oppija =
+                            oppijanumeroService
+                                .yleistunnisteHae(
+                                    YleistunnisteHaeRequest(
+                                        etunimet = user.firstname,
+                                        sukunimi = user.lastname,
+                                        hetu = user.SSN,
+                                        // TODO: Should you send OID?
+                                        kutsumanimi = user.firstname,
+                                    ),
+                                ).body()
+                        event.add("oppija-json" to oppija)
+
                         KielitestiSuoritus(
                             firstName = user.firstname,
                             lastName = user.lastname,
