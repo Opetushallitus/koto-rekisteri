@@ -1,6 +1,8 @@
 package fi.oph.kitu.yki
 
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -29,6 +31,11 @@ class YkiServiceTests(
         val postgres =
             PostgreSQLContainer("postgres:16")
                 .withUrlParam("stringtype", "unspecified")
+    }
+
+    @BeforeEach
+    fun nukeArvioijat() {
+        ykiArvioijaRepository.deleteAll()
     }
 
     @Test
@@ -98,7 +105,7 @@ class YkiServiceTests(
     }
 
     @Test
-    fun testArvioijatImportWorks() {
+    fun `arvioijat import persists arvioijat to DB`() {
         val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
@@ -119,9 +126,56 @@ class YkiServiceTests(
                 arvioijaRepository = ykiArvioijaRepository,
             )
 
-        ykiService.importYkiArvioijat()
+        assertDoesNotThrow {
+            ykiService.importYkiArvioijat()
+        }
 
         val imported = ykiArvioijaRepository.findAll()
         assertEquals(1, imported.count())
+    }
+
+    @Test
+    fun `consecutive arvioijat import run only inserts new entries`() {
+        val mockRestClientBuilder = RestClient.builder()
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("arvioijat"))
+            .andRespond(
+                withSuccess(
+                    """
+                    "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"
+                    """.trimIndent(),
+                    MediaType.TEXT_PLAIN,
+                ),
+            )
+        mockServer
+            .expect(requestTo("arvioijat"))
+            .andRespond(
+                withSuccess(
+                    """
+                    "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"
+                    "1.2.246.562.24.27639310186","010180-918P","Haverinen-Testi","Silja Testi","silja.testi@yki.fi","Testausosoite 42","00100","HELSINKI",1,"ita","PT+KT+YT"
+                    """.trimIndent(),
+                    MediaType.TEXT_PLAIN,
+                ),
+            )
+
+        val ykiService =
+            YkiService(
+                solkiRestClient = mockRestClientBuilder.build(),
+                repository = ykiRepository,
+                arvioijaRepository = ykiArvioijaRepository,
+            )
+
+        assertDoesNotThrow {
+            ykiService.importYkiArvioijat()
+        }
+        var arvioijat = ykiArvioijaRepository.findAll()
+        assertEquals(1, arvioijat.count())
+
+        ykiService.importYkiArvioijat()
+
+        arvioijat = ykiArvioijaRepository.findAll()
+        assertEquals(2, arvioijat.count())
     }
 }
