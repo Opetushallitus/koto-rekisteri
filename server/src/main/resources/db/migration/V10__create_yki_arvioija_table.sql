@@ -11,10 +11,7 @@ CREATE TABLE yki_arvioija
     postitoimipaikka       TEXT               NOT NULL,
     tila                   INTEGER            NOT NULL,
     kieli                  YKI_TUTKINTOKIELI  NOT NULL,
-    tasot                  TEXT[]             NOT NULL,
+    tasot                  YKI_TUTKINTOTASO[] NOT NULL,
 
-    CONSTRAINT all_tasot_are_valid_tutkintotaso CHECK (
-        -- "tasot is contained by YKI_TUTKINTOTASO"
-        tasot <@ enum_range(NULL::YKI_TUTKINTOTASO)::TEXT[]
-    )
+    CONSTRAINT yki_arvioija_oppijanumero_is_unique UNIQUE (arvioijan_oppijanumero)
 )
