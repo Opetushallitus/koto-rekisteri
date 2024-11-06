@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import jakarta.persistence.Column
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
@@ -9,6 +10,7 @@ import org.springframework.data.relational.core.mapping.Table
 class YkiArvioijaEntity(
     @Id
     val id: Number?,
+    @Column(unique = true)
     val arvioijanOppijanumero: String,
     val henkilotunnus: String,
     val sukunimi: String,

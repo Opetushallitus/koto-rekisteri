@@ -72,8 +72,8 @@ class YkiService(
             }
 
             if (!dryRun) {
-                val count = arvioijaRepository.saveAllByOppijanumero(arvioijat.map { it.toEntity() })
-                event.addKeyValue("yki.arvioijat.importedCount", count)
+                val importedArvioijat = arvioijaRepository.saveAll(arvioijat.map { it.toEntity() })
+                event.addKeyValue("yki.arvioijat.importedCount", importedArvioijat.count())
             }
         }
 
