@@ -26,7 +26,11 @@ on:
         description: Stacks to deploy
         default: "**"
 
-concurrency: deploy-${{ github.ref_name }}-${{ inputs.environment }}
+concurrency:
+  group: deploy-${{ github.ref_name }}-${{ inputs.environment }}
+  # Cancel any in-progress jobs if a new one is queued, but only in Pull Requests.
+  # On the main branch we don't want to cancel in-progress jobs, because they might be deploying.
+  cancel-in-progress: ${{ inputs.action == 'diff' }}
 
 env:
   TAG: ${{ github.sha }}
