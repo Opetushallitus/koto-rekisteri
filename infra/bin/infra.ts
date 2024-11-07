@@ -7,11 +7,6 @@ import { getEnv } from "../lib/env"
 import { EnvironmentStage } from "../lib/environment-stage"
 import { UtilityStage } from "../lib/utility-stage"
 
-// CIDR allocation strategy:
-// Top: 10.15.0.0/16
-// VPCs: 10.15.0.0/18, 10.15.64.0/18, 10.15.128.0/18, 10.15.192.0/18 (16382 addresses)
-// Subnets: (let AWS calculate these for us)
-
 const app = new App()
 
 const utilityStage = new UtilityStage(app, "Util", {
