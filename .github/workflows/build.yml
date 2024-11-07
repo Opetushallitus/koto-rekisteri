@@ -7,11 +7,32 @@ on:
   pull_request:
 
 jobs:
+  update_tools_cache:
+    name: Update tools cache if changed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            mise:
+              - '.mise.toml'
+              - '.mise.*.toml'
+      - name: Install tools
+        if: steps.filter.outputs.mise == 'true'
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   submit_dependencies:
     name: Submit dependencies
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    needs: update_tools_cache
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
@@ -29,6 +50,7 @@ jobs:
   check_generated_sources:
     name: Check generated sources
     runs-on: ubuntu-latest
+    needs: update_tools_cache
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
@@ -46,6 +68,7 @@ jobs:
   server_tests:
     name: Server tests
     runs-on: ubuntu-latest
+    needs: update_tools_cache
     env:
       MISE_ENV: ci
     steps:
@@ -64,6 +87,7 @@ jobs:
     name: Frontend tests
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    needs: update_tools_cache
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
@@ -96,6 +120,7 @@ jobs:
   lint:
     name: Check code formatting
     runs-on: ubuntu-latest
+    needs: update_tools_cache
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
@@ -146,6 +171,7 @@ jobs:
   deploy_util:
     name: Util
     uses: ./.github/workflows/_deploy-env.yml
+    needs: update_tools_cache
     with:
       environment: Util
       action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
