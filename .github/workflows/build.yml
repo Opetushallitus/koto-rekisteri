@@ -148,9 +148,7 @@ jobs:
     name: Build image
     runs-on: ubuntu-latest
     needs:
-      - deploy_util
       - check_generated_sources
-      - submit_dependencies
       - server_tests
       - frontend_tests
       - lint
@@ -195,6 +193,7 @@ jobs:
     name: Dev
     needs:
       - build_image
+      - deploy_util
     uses: ./.github/workflows/_deploy-env.yml
     if: inputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
