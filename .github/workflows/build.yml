@@ -7,9 +7,12 @@ on:
   pull_request:
 
 jobs:
-  update_tools_cache:
-    name: Update tools cache if changed
+  list_changes:
+    name: List changes
     runs-on: ubuntu-latest
+    outputs:
+      mise: ${{ steps.filter.outputs.mise }}
+      infra: ${{ steps.filter.outputs.infra }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -19,8 +22,17 @@ jobs:
             mise:
               - '.mise.toml'
               - '.mise.*.toml'
+            infra:
+              - 'infra/**'
+
+  update_tools_cache:
+    name: Update tools cache if changed
+    runs-on: ubuntu-latest
+    needs: list_changes
+    steps:
+      - uses: actions/checkout@v4
       - name: Install tools
-        if: steps.filter.outputs.mise == 'true'
+        if: needs.list_changes.outputs.mise == 'true'
         uses: jdx/mise-action@v2
         with:
           experimental: true
@@ -171,7 +183,10 @@ jobs:
   deploy_util:
     name: Util
     uses: ./.github/workflows/_deploy-env.yml
-    needs: update_tools_cache
+    needs:
+      - list_changes
+      - update_tools_cache
+    if: inputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Util
       action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
@@ -181,6 +196,7 @@ jobs:
     needs:
       - build_image
     uses: ./.github/workflows/_deploy-env.yml
+    if: inputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Dev
       action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
@@ -189,6 +205,7 @@ jobs:
     name: Test
     needs: deploy_dev
     uses: ./.github/workflows/_deploy-env.yml
+    if: inputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Test
       action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
@@ -197,6 +214,7 @@ jobs:
     name: Prod
     needs: deploy_test
     uses: ./.github/workflows/_deploy-env.yml
+    if: inputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Prod
       action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
