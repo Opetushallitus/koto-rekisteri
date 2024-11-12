@@ -19,20 +19,6 @@ interface YkiControllerApi {
 
     @RequestMapping(
         method = [RequestMethod.GET],
-        value = ["/dev/yki/suoritukset"],
-        produces = ["text/plain"],
-    )
-    fun getSuoritukset(
-        @RequestParam(
-            value = "arvioitu",
-            required = false,
-        ) @org.springframework.format.annotation.DateTimeFormat(
-            iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE,
-        ) arvioitu: java.time.LocalDate?,
-    ): ResponseEntity<kotlin.String>
-
-    @RequestMapping(
-        method = [RequestMethod.GET],
         value = ["/dev/yki/trigger-schedule/yki-import-suoritukset"],
     )
     fun triggerYkiImportSuoritukset(

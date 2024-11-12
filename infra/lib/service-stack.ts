@@ -105,6 +105,20 @@ export class ServiceStack extends Stack {
               "oppijanumero-password",
             ),
           ),
+          YKI_API_PASSWORD: aws_ecs.Secret.fromSecretsManager(
+            aws_secretsmanager.Secret.fromSecretNameV2(
+              this,
+              "YkiApiPassword",
+              "yki-api-password",
+            ),
+          ),
+          YKI_API_USER: aws_ecs.Secret.fromSecretsManager(
+            aws_secretsmanager.Secret.fromSecretNameV2(
+              this,
+              "YkiApiUser",
+              "yki-api-user",
+            ),
+          ),
         },
       },
       cpu: 1024,
