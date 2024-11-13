@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController
 class OppijanumeroController(
     private val oppijanumeroService: OppijanumeroService,
 ) : OppijanumeroControllerApi {
-    private val logger = LoggerFactory.getLogger(javaClass)
+    private val event = LoggerFactory.getLogger(javaClass).atInfo()
 
     override fun getOppijanumero(): ResponseEntity<String> {
         try {
@@ -28,12 +28,14 @@ class OppijanumeroController(
                 if (response.statusCode() == 200) HttpStatus.OK else HttpStatus.INTERNAL_SERVER_ERROR,
             )
         } catch (e: Exception) {
-            logger.atError().setCause(e).log()
+            event.setCause(e)
 
             return ResponseEntity(
                 "An unexpected error has occurred:${e.localizedMessage}",
                 HttpStatus.INTERNAL_SERVER_ERROR,
             )
+        } finally {
+            event.log()
         }
     }
 }
