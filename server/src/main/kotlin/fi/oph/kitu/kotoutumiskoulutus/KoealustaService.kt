@@ -3,7 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import fi.oph.kitu.ExternalSystem
+import fi.oph.kitu.PeerService
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
@@ -73,7 +73,7 @@ class KoealustaService(
 
             event
                 .add("request.token" to koealustaToken)
-                .addResponse(response, ExternalSystem.Koealusta)
+                .addResponse(response, PeerService.Koealusta)
 
             if (response.body == null) {
                 return@withEvent from

@@ -1,6 +1,6 @@
 package fi.oph.kitu
 
-enum class ExternalSystem(
+enum class PeerService(
     val value: String,
 ) {
     Koealusta("koealusta"),
