@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <title>Kielitutkintorekisteri</title>
+  </head>
+  <body>
+    <h1><a href="/">Kielitutkintorekisteri</a></h1>
+    <h2>Yleiset kielitutkinnot - suoritukset</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Oppijanumero</th>
+          <th>Sukupuoli</th>
+          <th>Henkilötunnus</th>
+          <th>Sukunimi</th>
+          <th>Etunimet</th>
+          <th>Kansalaisuus</th>
+          <th>Osoite</th>
+          <th>Sähköposti</th>
+          <th>Tutkintopäivä</th>
+          <th>Tutkintokieli</th>
+          <th>Tutkintotaso</th>
+          <th>Järjestäjän OID</th>
+          <th>Järjestäjän nimi</th>
+          <th>Arviointipäivä</th>
+          <th>Tekstin ymmärtäminen</th>
+          <th>Kirjoittaminen</th>
+          <th>Rakenteet ja sanasto</th>
+          <th>Puheen ymmärtäminen</th>
+          <th>Puhuminen</th>
+          <th>Yleisarvosana</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#suoritukset}}
+        <tr>
+          <td>{{suorittajanOppijanumero}}</td>
+          <td>{{sukupuoli}}</td>
+          <td>{{hetu}}</td>
+          <td>{{sukunimi}}</td>
+          <td>{{etunimet}}</td>
+          <td>{{kansalaisuus}}</td>
+          <td>{{katuosoite}}, {{postinumero}} {{postitoimipaikka}}</td>
+          <td>{{email}}</td>
+          <td>{{tutkintopaiva}}</td>
+          <td>{{tutkintokieli}}</td>
+          <td>{{tutkintotaso}}</td>
+          <td>{{jarjestajanTunnusOid}}</td>
+          <td>{{jarjestajanNimi}}</td>
+          <td>{{arviointipaiva}}</td>
+          <td>
+            {{#tekstinYmmartaminen}}{{tekstinYmmartaminen}}{{/tekstinYmmartaminen}}
+          </td>
+          <td>{{#kirjoittaminen}}{{kirjoittaminen}}{{/kirjoittaminen}}</td>
+          <td>
+            {{#rakenteetJaSanasto}}{{rakenteetJaSanasto}}{{/rakenteetJaSanasto}}
+          </td>
+          <td>
+            {{#puheenYmmartaminen}}{{puheenYmmartaminen}}{{/puheenYmmartaminen}}
+          </td>
+          <td>{{#puhuminen}}{{puhuminen}}{{/puhuminen}}</td>
+          <td>{{#yleisarvosana}}{{yleisarvosana}}{{/yleisarvosana}}</td>
+        </tr>
+        {{/suoritukset}}
+      </tbody>
+    </table>
+  </body>
+</html>
