@@ -117,8 +117,6 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
         working-directory: e2e
-      - name: Build frontend
-        run: (chmod +x ./scripts/build_frontend.sh && ./scripts/build_frontend.sh)
       - name: Run Playwright tests
         run: npx playwright test
         working-directory: e2e

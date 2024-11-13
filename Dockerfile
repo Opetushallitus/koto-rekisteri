@@ -1,12 +1,3 @@
-FROM node:23.1.0-bookworm AS frontend-builder
-
-WORKDIR /kitu
-
-COPY scripts /kitu/scripts
-COPY frontend /kitu/frontend
-
-RUN ./scripts/build_frontend.sh
-
 FROM maven:3.9.9-amazoncorretto-21-al2023 AS backend-builder
 
 WORKDIR /kitu
@@ -14,8 +5,6 @@ WORKDIR /kitu
 COPY server /kitu/server
 
 WORKDIR /kitu/server
-
-COPY --from=frontend-builder /kitu/server/target/classes/static /kitu/server/target/classes/static
 
 RUN mvn package -DskipTests
 
