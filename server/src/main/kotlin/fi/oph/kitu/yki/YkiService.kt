@@ -65,7 +65,7 @@ class YkiService(
                 .addKeyValue("peer.service", PeerService.Solki.value)
 
             val arvioijat =
-                response.body?.asCsv<SolkiArvioijaResponse>() ?: throw Error.MalformedArvioijatResponse()
+                response.body?.asCsv<SolkiArvioijaResponse>() ?: throw Error.EmptyArvioijatResponse()
             event.addKeyValue("yki.arvioijat.receivedCount", arvioijat.size)
             if (arvioijat.isEmpty()) {
                 throw Error.EmptyArvioijat()
@@ -80,7 +80,7 @@ class YkiService(
     sealed class Error(
         message: String,
     ) : Exception(message) {
-        class MalformedArvioijatResponse : Error("Malformed body on arvioijat response")
+        class EmptyArvioijatResponse : Error("Empty body on arvioijat response")
 
         class EmptyArvioijat : Error("Unexpected empty list of arvioijat")
     }
