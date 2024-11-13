@@ -1,6 +1,6 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.ExternalSystem
+import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.asCsv
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
@@ -35,7 +35,7 @@ class YkiService(
                 .retrieve()
                 .toEntity<String>()
 
-        event.addResponse(response, ExternalSystem.Solki)
+        event.addResponse(response, PeerService.Solki)
 
         val suoritukset =
             response.body?.asCsv<SolkiSuoritusResponse>() ?: throw RestClientException("Response body is empty")
