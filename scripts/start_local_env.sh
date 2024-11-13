@@ -70,7 +70,7 @@ kotorekisteri_start_tmux() {
     # Window 2:springboot
     WINDOW="springboot"
     tmux new-window -t $SESS_NAME -n "$WINDOW"
-    tmux send-keys -t $SESS_NAME:"$WINDOW" "$REPO_ROOT/scripts/build_frontend.sh && $REPO_ROOT/scripts/start_local_server.sh" C-m
+    tmux send-keys -t $SESS_NAME:"$WINDOW" "$REPO_ROOT/scripts/start_local_server.sh" C-m
 
     # Window 3:workspace
     WINDOW="workspace"
