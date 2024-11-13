@@ -73,10 +73,6 @@ voi laittaa muotoilemaan koodin tallentamisen yhteydessä.
 1. Navigoi `Settings` -> `Tools` -> `KtLint`
 2. Tämän valikon alta, aseta `Mode: Distract free` ja varmista että `Format: on save` -valintaruutu on valittu.
 
-#### Palvelimen käynnistäminen editorista
-
-Frontendia varten on `.run` - kansiossa valmis konfiguraatio, jolla voi ajaa frontin node-palvelinta IDEA:sta.
-
 ## Hyödyllisiä komentoja
 
 ```shell
