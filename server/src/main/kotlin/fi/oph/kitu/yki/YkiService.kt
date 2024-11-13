@@ -47,7 +47,7 @@ class YkiService(
                     .retrieve()
                     .toEntity<String>()
 
-            event.addResponse(response, PeerService.Solki)
+            event.addResponse(PeerService.Solki, "suoritukset", response)
 
             val suoritukset = response.body?.asCsv<SolkiSuoritusResponse>() ?: listOf()
 

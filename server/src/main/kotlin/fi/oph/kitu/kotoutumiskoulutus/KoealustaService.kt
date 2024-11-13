@@ -100,7 +100,7 @@ class KoealustaService(
 
             event
                 .add("request.token" to koealustaToken)
-                .addResponse(response, PeerService.Koealusta)
+                .addResponse(PeerService.Koealusta, "webservice", response)
 
             if (response.body == null) {
                 return@withEvent from

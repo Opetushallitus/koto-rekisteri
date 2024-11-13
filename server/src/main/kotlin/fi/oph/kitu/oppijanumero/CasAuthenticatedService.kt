@@ -34,14 +34,20 @@ class CasAuthenticatedService(
             .header("CSRF", "CSRF")
             .header("Cookie", "CSRF=CSRF")
         val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addResponse(response, PeerService.Oppijanumero).log()
+        logger.atInfo().addResponse(PeerService.Oppijanumero, "yleistunniste.hae", response).log()
 
         if (isLoginToCas(response)) {
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
             // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
             val authenticatedResponse = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-            logger.atInfo().addResponse(authenticatedResponse, PeerService.Oppijanumero).log()
+            logger
+                .atInfo()
+                .addResponse(
+                    PeerService.Oppijanumero,
+                    "yleistunnistunniste.hae",
+                    authenticatedResponse,
+                ).log()
 
             return authenticatedResponse
         } else if (response.statusCode() == 401) {
@@ -49,7 +55,7 @@ class CasAuthenticatedService(
             // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
             val authenticatedResponse = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-            logger.atInfo().addResponse(authenticatedResponse, PeerService.Oppijanumero).log()
+            logger.atInfo().addResponse(PeerService.Oppijanumero, "yleistunniste.hae", authenticatedResponse).log()
             return authenticatedResponse
         } else if (response.statusCode() != 200) {
             throw RuntimeException("Unexpected HTTP status code: ${response.statusCode()}")

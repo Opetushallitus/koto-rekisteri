@@ -7,23 +7,29 @@ import org.springframework.http.ResponseEntity
 import java.net.http.HttpResponse
 
 inline fun <reified T> LoggingEventBuilder.addResponse(
-    response: HttpResponse<T>,
     peerService: PeerService,
+    endpoint: String,
+    response: HttpResponse<T>,
 ): LoggingEventBuilder =
-    this
-        .addKeyValue("response.status", response.statusCode())
-        .addKeyValue("response.headers", response.headers().toString())
-        .addKeyValue("response.body", response.body().toString())
-        .addKeyValue("peer.service", peerService.value)
+    addResponse<T>(peerService, endpoint, response.statusCode(), response.headers(), response.body())
 
 inline fun <reified T> LoggingEventBuilder.addResponse(
-    response: ResponseEntity<T>,
     peerService: PeerService,
+    endpoint: String,
+    response: ResponseEntity<T>,
+): LoggingEventBuilder = addResponse<T>(peerService, endpoint, response.statusCode, response.headers, response.body)
+
+inline fun <reified T> LoggingEventBuilder.addResponse(
+    peerService: PeerService,
+    endpoint: String,
+    responseStatus: Any,
+    responseHeaders: Any,
+    responseBody: Any?,
 ): LoggingEventBuilder =
     this
-        .addKeyValue("response.status", response.statusCode)
-        .addKeyValue("response.headers", response.headers)
-        .addKeyValue("response.body", response.body)
+        .addKeyValue("$peerService.$endpoint.response.status", responseStatus)
+        .addKeyValue("$peerService.$endpoint.response.headers", responseHeaders)
+        .addKeyValue("$peerService.$endpoint.response.body", responseBody)
         .addKeyValue("peer.service", peerService.value)
 
 inline fun <reified T> LoggingEventBuilder.addResponse(

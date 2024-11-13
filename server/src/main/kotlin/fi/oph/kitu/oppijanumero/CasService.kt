@@ -36,7 +36,7 @@ class CasService(
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build()
         val authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addResponse(authResponse, PeerService.Oppijanumero).log()
+        logger.atInfo().addResponse(PeerService.Oppijanumero, "j_spring_cas_security_check", authResponse).log()
     }
 
     fun getServiceTicket(ticketGrantingTicket: String): String {
@@ -51,7 +51,7 @@ class CasService(
                 .build()
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addResponse(response, PeerService.Cas).log()
+        logger.atInfo().addResponse(PeerService.Cas, "v1.tickets.withticket", response).log()
 
         if (response.statusCode() != 200) {
             throw RuntimeException("Unexpected status code: ${response.statusCode()} and message: ${response.body()}")
@@ -74,7 +74,7 @@ class CasService(
 
         // Step 3 - Get the response
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addResponse(response, PeerService.Cas).log()
+        logger.atInfo().addResponse(PeerService.Cas, "v1.tickets", response).log()
 
         val statusCode = response.statusCode()
         val body = response.body()
