@@ -7,6 +7,13 @@ on:
   pull_request:
 
 jobs:
+  determine_action:
+    runs-on: ubuntu-latest
+    outputs:
+      action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
+    steps:
+      - run: echo nothing to see here
+
   list_changes:
     name: List changes
     runs-on: ubuntu-latest
@@ -184,10 +191,11 @@ jobs:
     needs:
       - list_changes
       - update_tools_cache
-    if: inputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
+      - determine_action
+    if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Util
-      action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
+      action: ${{ needs.determine_action.outputs.action == 'deploy' }}
 
   deploy_dev:
     name: Dev
@@ -195,25 +203,25 @@ jobs:
       - build_image
       - deploy_util
     uses: ./.github/workflows/_deploy-env.yml
-    if: inputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
+    if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Dev
-      action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
+      action: ${{ needs.determine_action.outputs.action == 'deploy' }}
 
   deploy_test:
     name: Test
     needs: deploy_dev
     uses: ./.github/workflows/_deploy-env.yml
-    if: inputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
+    if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Test
-      action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
+      action: ${{ needs.determine_action.outputs.action == 'deploy' }}
 
   deploy_prod:
     name: Prod
     needs: deploy_test
     uses: ./.github/workflows/_deploy-env.yml
-    if: inputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
+    if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Prod
-      action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
+      action: ${{ needs.determine_action.outputs.action == 'deploy' }}
