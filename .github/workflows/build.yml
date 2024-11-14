@@ -193,7 +193,7 @@ jobs:
     if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Util
-      action: ${{ needs.determine_action.outputs.action == 'deploy' }}
+      action: ${{ needs.determine_action.outputs.action }}
 
   deploy_dev:
     name: Dev
@@ -204,7 +204,7 @@ jobs:
     if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Dev
-      action: ${{ needs.determine_action.outputs.action == 'deploy' }}
+      action: ${{ needs.determine_action.outputs.action }}
 
   deploy_test:
     name: Test
@@ -213,7 +213,7 @@ jobs:
     if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Test
-      action: ${{ needs.determine_action.outputs.action == 'deploy' }}
+      action: ${{ needs.determine_action.outputs.action }}
 
   deploy_prod:
     name: Prod
@@ -222,4 +222,4 @@ jobs:
     if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
       environment: Prod
-      action: ${{ needs.determine_action.outputs.action == 'deploy' }}
+      action: ${{ needs.determine_action.outputs.action }}
