@@ -199,6 +199,7 @@ jobs:
     name: Dev
     needs:
       - build_image
+      - determine_action
       - deploy_util
     uses: ./.github/workflows/_deploy-env.yml
     if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
@@ -208,7 +209,9 @@ jobs:
 
   deploy_test:
     name: Test
-    needs: deploy_dev
+    needs:
+      - determine_action
+      - deploy_dev
     uses: ./.github/workflows/_deploy-env.yml
     if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
@@ -217,7 +220,9 @@ jobs:
 
   deploy_prod:
     name: Prod
-    needs: deploy_test
+    needs:
+      - determine_action
+      - deploy_test
     uses: ./.github/workflows/_deploy-env.yml
     if: needs.determine_action.outputs.action == 'deploy' || needs.list_changes.outputs.infra == 'true'
     with:
