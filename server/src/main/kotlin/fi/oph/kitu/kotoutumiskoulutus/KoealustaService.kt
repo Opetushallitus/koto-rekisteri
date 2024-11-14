@@ -99,17 +99,16 @@ class KoealustaService(
                         val puhe = completion.results.find { it.name == "puhe" }!!
                         val kirjoittaminen = completion.results.find { it.name == "kirjoittaminen" }!!
 
-                        val oppija =
+                        val (_, oppija) =
                             oppijanumeroService
                                 .yleistunnisteHae(
                                     YleistunnisteHaeRequest(
                                         etunimet = user.firstname,
                                         sukunimi = user.lastname,
                                         hetu = user.SSN,
-                                        // TODO: Should you send OID?
                                         kutsumanimi = user.firstname,
                                     ),
-                                ).body()
+                                )
                         event.add("oppija-json" to oppija)
 
                         KielitestiSuoritus(
