@@ -30,8 +30,9 @@ class WebSecurityConfig {
         environment: Environment,
     ): SecurityFilterChain {
         http
-            .csrf { csrf -> csrf.ignoringRequestMatchers("/api/*") }
-            .logout {
+            .csrf { csrf ->
+                csrf.ignoringRequestMatchers("/api/*", "/db-scheduler-api/**")
+            }.logout {
                 it.logoutSuccessUrl(casConfig.getCasLogoutUrl())
                 it.logoutUrl("/logout")
                 it.logoutRequestMatcher(AntPathRequestMatcher("/logout", "GET"))
