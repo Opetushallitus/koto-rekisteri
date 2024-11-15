@@ -146,10 +146,6 @@ jobs:
           experimental: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Regenerate necessary shims
-        run: mise reshim
-
       - name: Check formatting
         run: ./scripts/check-formatting.sh
 
