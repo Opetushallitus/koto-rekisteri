@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-source "$( dirname "${BASH_SOURCE[0]}" )/common-functions.sh"
+scripts_dir=$( dirname "${BASH_SOURCE[0]}" )
+source "$scripts_dir/common-functions.sh"
 
 require_command mise
 
@@ -23,6 +24,8 @@ mise install --quiet  --yes --cd="$REPO_ROOT"
 
 require_command docker
 require_command git
+
+"$scripts_dir/ensure_aws_secrets.sh"
 
 ### Additional options/switches ###
 
