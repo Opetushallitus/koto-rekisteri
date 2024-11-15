@@ -25,7 +25,8 @@ mise install --quiet  --yes --cd="$REPO_ROOT"
 require_command docker
 require_command git
 
-"$scripts_dir/ensure_aws_secrets.sh"
+# exports secrets to environment variables
+source "$scripts_dir/ensure_aws_secrets.sh"
 
 ### Additional options/switches ###
 
