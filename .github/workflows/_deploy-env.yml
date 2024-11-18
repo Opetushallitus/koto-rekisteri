@@ -34,6 +34,7 @@ concurrency:
 
 env:
   TAG: ${{ github.sha }}
+  MISE_PROFILE: ci
 
 jobs:
   run:
