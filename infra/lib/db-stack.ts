@@ -21,6 +21,7 @@ export class DbStack extends cdk.Stack {
       writer: aws_rds.ClusterInstance.serverlessV2("writer"),
       storageEncrypted: true,
       defaultDatabaseName: props.databaseName,
+      enableDataApi: true,
     })
   }
 }
