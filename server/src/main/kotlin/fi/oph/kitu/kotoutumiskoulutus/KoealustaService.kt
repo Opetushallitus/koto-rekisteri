@@ -56,6 +56,30 @@ class KoealustaService(
         }
     }
 
+    fun getOid(user: KoealustaSuorituksetResponse.User): String {
+        val oid =
+            if (user.OID.isEmpty()) {
+                val (_, oppija) =
+                    oppijanumeroService.yleistunnisteHae(
+                        YleistunnisteHaeRequest(
+                            etunimet = user.firstname,
+                            sukunimi = user.lastname,
+                            hetu = user.SSN,
+                            kutsumanimi = user.firstname,
+                        ),
+                    )
+                oppija.oid
+            } else {
+                user.OID
+            }
+
+        if (oid.isEmpty()) {
+            throw RuntimeException("oid is empty")
+        }
+
+        return oid
+    }
+
     fun importSuoritukset(from: Instant): Instant =
         logger.atInfo().withEvent("koealusta.importSuoritukset") { event ->
             event.add("from" to from)
@@ -98,24 +122,13 @@ class KoealustaService(
                             }!!
                         val puhe = completion.results.find { it.name == "puhe" }!!
                         val kirjoittaminen = completion.results.find { it.name == "kirjoittaminen" }!!
-
-                        val (_, oppija) =
-                            oppijanumeroService
-                                .yleistunnisteHae(
-                                    YleistunnisteHaeRequest(
-                                        etunimet = user.firstname,
-                                        sukunimi = user.lastname,
-                                        hetu = user.SSN,
-                                        kutsumanimi = user.firstname,
-                                    ),
-                                )
-                        event.add("oppija-json" to oppija)
+                        val oid = getOid(user)
 
                         KielitestiSuoritus(
                             firstName = user.firstname,
                             lastName = user.lastname,
                             email = user.email,
-                            oppijaOid = user.OID,
+                            oppijaOid = oid,
                             timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
                             courseid = completion.courseid,
                             coursename = completion.coursename,

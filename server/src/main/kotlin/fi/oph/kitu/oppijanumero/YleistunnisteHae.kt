@@ -6,3 +6,8 @@ data class YleistunnisteHaeRequest(
     val kutsumanimi: String,
     val sukunimi: String,
 )
+
+data class YleistunnisteHaeResponse(
+    val oid: String,
+    val oppijanumero: String?,
+)
