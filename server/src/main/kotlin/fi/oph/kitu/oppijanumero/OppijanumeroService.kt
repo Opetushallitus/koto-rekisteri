@@ -16,14 +16,29 @@ class OppijanumeroServiceImpl(
 ) : OppijanumeroService {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    @Value("\${kitu.oppijanumero.serviceUrl}")
+    @Value("\${kitu.oppijanumero.service.url}")
     private lateinit var serviceUrl: String
 
+    @Value("\${kitu.oppijanumero.service.use-mock-data}")
+    private var useMockData: Boolean = false
+
     override fun yleistunnisteHae(request: YleistunnisteHaeRequest): Pair<Int, String> {
+        val data =
+            if (useMockData) {
+                YleistunnisteHaeRequest(
+                    etunimet = "Magdalena Testi",
+                    hetu = "010866-9260",
+                    kutsumanimi = "Magdalena",
+                    sukunimi = "Sallinen-Testi",
+                )
+            } else {
+                request
+            }
+
         val httpRequest =
             HttpRequest
                 .newBuilder(URI.create("$serviceUrl/yleistunniste/hae"))
-                .POST(toBodyPublisher(request))
+                .POST(toBodyPublisher(data))
                 .header("Content-Type", "application/json")
 
         val httpResponse = casAuthenticatedService.sendRequest(httpRequest)
