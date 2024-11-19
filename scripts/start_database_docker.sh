@@ -4,7 +4,7 @@ set -euo pipefail
 KERNEL="$(uname -s)"
 if [[ $KERNEL == "Darwin" ]]; then
   echo "Opening Docker Desktop to ensure daemon is running"
-  open -a "Docker"
+  open -a "Docker" --background
   sleep 5
 fi
 
