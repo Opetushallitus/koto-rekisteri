@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <title>Kielitutkintorekisteri</title>
+  </head>
+  <body>
+    <h1><a href="/">Kielitutkintorekisteri</a></h1>
+    <h2>Yleiset kielitutkinnot - arvioijat</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Oppijanumero</th>
+          <th>Henkilötunnus</th>
+          <th>Sukunimi</th>
+          <th>Etunimet</th>
+          <th>Sähköposti</th>
+          <th>Osoite</th>
+          <th>Tila</th>
+          <th>Kieli</th>
+          <th>Tasot</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#arvioijat}}
+        <tr>
+          <td>{{arvioijanOppijanumero}}</td>
+          <td>{{henkilotunnus}}</td>
+          <td>{{sukunimi}}</td>
+          <td>{{etunimet}}</td>
+          <td>{{sahkopostiosoite}}</td>
+          <td>{{katuosoite}}, {{postinumero}} {{postitoimipaikka}}</td>
+          <td>{{tila}}</td>
+          <td>{{kieli}}</td>
+          <td>{{tasot}}</td>
+        </tr>
+        {{/arvioijat}}
+      </tbody>
+    </table>
+  </body>
+</html>
