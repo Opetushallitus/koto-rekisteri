@@ -26,7 +26,7 @@ class CasService(
     @Value("\${kitu.oppijanumero.casUrl}")
     private lateinit var casUrl: String
 
-    @Value("\${kitu.oppijanumero.serviceUrl}")
+    @Value("\${kitu.oppijanumero.service.url}")
     private lateinit var serviceUrl: String
 
     fun sendAuthenticationRequest(serviceTicket: String) {
