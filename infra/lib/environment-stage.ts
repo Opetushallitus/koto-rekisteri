@@ -11,6 +11,8 @@ import { LogGroupsStack } from "./log-groups-stack"
 import { NetworkStack } from "./network-stack"
 import { Route53HealthChecksStack } from "./route53-health-checks-stack"
 import { ServiceStack } from "./service-stack"
+import { BackupsStack } from "./backups-stack"
+import { BackupResource } from "aws-cdk-lib/aws-backup"
 import { SlackBotStack } from "./slack-bot-stack"
 
 interface EnvironmentStageProps extends StageProps {
@@ -91,6 +93,11 @@ export class EnvironmentStage extends Stage {
       env: { ...env, region: "us-east-1" },
       domainName: environmentConfig.domainName,
       alarmsSnsTopic: usEastAlarmsStack.alarmSnsTopic,
+    })
+
+    new BackupsStack(this, "Backups", {
+      env,
+      resources: [BackupResource.fromRdsServerlessCluster(dbStack.cluster)],
     })
 
     connectionsStack.createRules()
