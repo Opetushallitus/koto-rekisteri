@@ -2,6 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.oppijanumero.OppijanumeroServiceMock
+import fi.oph.kitu.oppijanumero.YleistunnisteHaeResponse
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -99,15 +100,7 @@ class KoealustaServiceTests {
                 oppijanumeroService =
                     OppijanumeroServiceMock(
                         statusCode = 200,
-                        body =
-                            """
-                            {
-                               etunimet = "Ranja Testi",
-                               sukunimi = "Öhman-Testi",
-                               kutsumanimi = "Ranja",
-                               hetu = "010180-9026",
-                            }
-                            """.trimIndent(),
+                        response = YleistunnisteHaeResponse("123", "123"),
                     ),
             )
 
