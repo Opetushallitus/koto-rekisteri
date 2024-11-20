@@ -1,6 +1,7 @@
 package fi.oph.kitu.csvparsing
 
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.springframework.web.client.RestClientException
 import kotlin.reflect.full.findAnnotation
 
@@ -17,6 +18,7 @@ inline fun <reified T> String.asCsv(
     }
 
     val csvMapper = CsvMapper()
+    csvMapper.registerModule(JavaTimeModule())
 
     val mapperFeatures = T::class.findAnnotation<Features>()?.features
     if (mapperFeatures != null) {

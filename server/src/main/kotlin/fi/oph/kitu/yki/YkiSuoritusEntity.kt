@@ -4,13 +4,14 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
+import java.time.Instant
 import java.util.Date
 
 @Table(name = "yki_suoritus")
-class YkiSuoritusEntity(
+data class YkiSuoritusEntity(
     @Id
     val id: Number?,
-    val suorittajanOppijanumero: String,
+    val suorittajanOID: String,
     val hetu: String,
     @Enumerated(EnumType.STRING)
     val sukupuoli: Sukupuoli,
@@ -21,6 +22,8 @@ class YkiSuoritusEntity(
     val postinumero: String,
     val postitoimipaikka: String,
     val email: String?,
+    val suoritusId: Int,
+    val lastModified: Instant,
     val tutkintopaiva: Date,
     @Enumerated(EnumType.STRING)
     val tutkintokieli: Tutkintokieli,
@@ -35,4 +38,10 @@ class YkiSuoritusEntity(
     val puheenYmmartaminen: Number?,
     val puhuminen: Number?,
     val yleisarvosana: Number?,
+    val tarkistusarvioinninSaapumisPvm: Date?,
+    val tarkistusarvioinninAsiatunnus: String?,
+    val tarkistusarvioidutOsakokeet: Number?,
+    val arvosanaMuuttui: Boolean?,
+    val perustelu: String?,
+    val tarkistusarvioinninKasittelyPvm: Date?,
 )
