@@ -6,10 +6,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import fi.oph.kitu.csvparsing.Features
 import org.ietf.jgss.Oid
+import java.time.Instant
 import java.util.Date
 
 @JsonPropertyOrder(
-    "suorittajanOppijanumero",
+    "suorittajanOID",
     "hetu",
     "sukupuoli",
     "sukunimi",
@@ -19,10 +20,12 @@ import java.util.Date
     "postinumero",
     "postitoimipaikka",
     "email",
+    "suoritusID",
+    "lastModified",
     "tutkintopaiva",
     "tutkintokieli",
     "tutkintotaso",
-    "jarjestajanTunnusOid",
+    "jarjestajanOID",
     "jarjestajanNimi",
     "arviointipaiva",
     "tekstinYmmartaminen",
@@ -31,11 +34,17 @@ import java.util.Date
     "puheenYmmartaminen",
     "puhuminen",
     "yleisarvosana",
+    "tarkistusarvioinninSaapumisPvm",
+    "tarkistusarvioinninAsiatunnus",
+    "tarkistusarvioidutOsakokeet",
+    "arvosanaMuuttui",
+    "perustelu",
+    "tarkistusarvioinninKasittelyPvm",
 )
 @Features(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-class SolkiSuoritusResponse(
-    @JsonProperty("suorittajanOppijanumero")
-    val suorittajanOppijanumero: Oid,
+data class SolkiSuoritusResponse(
+    @JsonProperty("suorittajanOID")
+    val suorittajanOID: Oid,
     @JsonProperty("hetu")
     val hetu: String,
     @JsonProperty("sukupuoli")
@@ -54,6 +63,11 @@ class SolkiSuoritusResponse(
     val postitoimipaikka: String,
     @JsonProperty("email")
     val email: String?,
+    @JsonProperty("suoritusID")
+    val suoritusID: Int,
+    @JsonProperty("lastModified")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssX")
+    val lastModified: Instant,
     @JsonProperty("tutkintopaiva")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tutkintopaiva: Date,
@@ -61,8 +75,8 @@ class SolkiSuoritusResponse(
     val tutkintokieli: Tutkintokieli,
     @JsonProperty("tutkintotaso")
     val tutkintotaso: Tutkintotaso,
-    @JsonProperty("jarjestajanTunnusOid")
-    val jarjestajanTunnusOid: Oid,
+    @JsonProperty("jarjestajanOID")
+    val jarjestajanOID: Oid,
     @JsonProperty("jarjestajanNimi")
     val jarjestajanNimi: String,
     @JsonProperty("arviointipaiva")
@@ -80,11 +94,25 @@ class SolkiSuoritusResponse(
     val puhuminen: Number?,
     @JsonProperty("yleisarvosana")
     val yleisarvosana: Number?,
+    @JsonProperty("tarkistusarvioinninSaapumisPvm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val tarkistusarvioinninSaapumisPvm: Date?,
+    @JsonProperty("tarkistusarvioinninAsiatunnus")
+    val tarkistusarvioinninAsiatunnus: String?,
+    @JsonProperty("tarkistusarvioidutOsakokeet")
+    val tarkistusarvioidutOsakokeet: Number?,
+    @JsonProperty("arvosanaMuuttui")
+    val arvosanaMuuttui: Number?,
+    @JsonProperty("perustelu")
+    val perustelu: String?,
+    @JsonProperty("tarkistusarvioinninKasittelyPvm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val tarkistusarvioinninKasittelyPvm: Date?,
 ) {
     fun toEntity(id: Number? = null) =
         YkiSuoritusEntity(
             id,
-            suorittajanOppijanumero.toString(),
+            suorittajanOID.toString(),
             hetu,
             sukupuoli,
             sukunimi,
@@ -94,10 +122,12 @@ class SolkiSuoritusResponse(
             postinumero,
             postitoimipaikka,
             email,
+            suoritusID,
+            lastModified,
             tutkintopaiva,
             tutkintokieli,
             tutkintotaso,
-            jarjestajanTunnusOid.toString(),
+            jarjestajanOID.toString(),
             jarjestajanNimi,
             arviointipaiva,
             tekstinYmmartaminen,
@@ -106,5 +136,11 @@ class SolkiSuoritusResponse(
             puheenYmmartaminen,
             puhuminen,
             yleisarvosana,
+            tarkistusarvioinninSaapumisPvm,
+            tarkistusarvioinninAsiatunnus,
+            tarkistusarvioidutOsakokeet,
+            arvosanaMuuttui == 1,
+            perustelu,
+            tarkistusarvioinninKasittelyPvm,
         )
 }
