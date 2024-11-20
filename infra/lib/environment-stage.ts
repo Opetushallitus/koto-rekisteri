@@ -11,6 +11,7 @@ import { LogGroupsStack } from "./log-groups-stack"
 import { NetworkStack } from "./network-stack"
 import { Route53HealthChecksStack } from "./route53-health-checks-stack"
 import { ServiceStack } from "./service-stack"
+import { SlackBotStack } from "./slack-bot-stack"
 
 interface EnvironmentStageProps extends StageProps {
   environmentConfig: EnvironmentConfig
@@ -29,15 +30,17 @@ export class EnvironmentStage extends Stage {
 
     const alarmsStack = new AlarmsStack(this, "Alarms", {
       env,
-      slackChannelName: "koto-rekisteri-alerts",
-      slackChannelId: "C07QPSYBY7L",
-      slackWorkspaceId: "T02C6SZL7KP",
     })
     const usEastAlarmsStack = new AlarmsStack(this, "AlarmsUsEast1", {
       env: { ...env, region: "us-east-1" },
+    })
+
+    new SlackBotStack(this, "SlackBot", {
+      env,
       slackChannelName: "koto-rekisteri-alerts",
-      slackChannelId: "C02A8J5QY5Y",
+      slackChannelId: "C07QPSYBY7L",
       slackWorkspaceId: "T02C6SZL7KP",
+      alarmTopics: [alarmsStack.alarmSnsTopic, usEastAlarmsStack.alarmSnsTopic],
     })
 
     new DnsStack(this, "Dns", {
