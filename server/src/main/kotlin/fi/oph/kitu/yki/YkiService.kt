@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.asCsv
+import fi.oph.kitu.csvparsing.toCsvString
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
@@ -79,6 +80,16 @@ class YkiService(
                 val importedArvioijat = arvioijaRepository.saveAll(arvioijat.map { it.toEntity() })
                 event.addKeyValue("yki.arvioijat.importedCount", importedArvioijat.count())
             }
+        }
+
+    fun getSuorituksetCsv() =
+        logger.atInfo().withEvent<String>("yki.getSuorituksetCsv") { event ->
+            val data = suoritusRepository.findAll()
+            val csv = data.toCsvString()
+
+            event.add("suorituksetCsvRowCount" to data.count())
+
+            csv
         }
 
     sealed class Error(
