@@ -98,6 +98,7 @@ export class EnvironmentStage extends Stage {
     new BackupsStack(this, "Backups", {
       env,
       resources: [BackupResource.fromRdsServerlessCluster(dbStack.cluster)],
+      notificationTopic: alarmsStack.alarmSnsTopic,
     })
 
     connectionsStack.createRules()
