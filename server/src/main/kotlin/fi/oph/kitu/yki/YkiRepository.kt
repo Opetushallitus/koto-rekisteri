@@ -5,6 +5,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
+import java.time.OffsetDateTime
 
 @Repository
 interface YkiRepository : CrudRepository<YkiSuoritusEntity, Int>
@@ -38,7 +39,7 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
                 kieli,
                 tasot
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT ON CONSTRAINT yki_arvioija_oppijanumero_is_unique DO NOTHING;
+            ON CONFLICT ON CONSTRAINT yki_arvioija_is_unique DO NOTHING;
             """.trimIndent()
         jdbcTemplate.batchUpdate(
             sql,
@@ -62,6 +63,7 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
             """
             SELECT
                 id,
+                rekisteriintuontiaika,
                 arvioijan_oppijanumero,
                 henkilotunnus,
                 sukunimi,
@@ -79,6 +81,7 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
             .query(findAllQuerySql) { rs, _ ->
                 YkiArvioijaEntity(
                     rs.getInt("id"),
+                    rs.getObject("rekisteriintuontiaika", OffsetDateTime::class.java),
                     rs.getString("arvioijan_oppijanumero"),
                     rs.getString("henkilotunnus"),
                     rs.getString("sukunimi"),

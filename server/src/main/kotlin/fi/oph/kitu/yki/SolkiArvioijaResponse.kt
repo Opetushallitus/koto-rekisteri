@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import fi.oph.kitu.csvparsing.Features
+import java.time.OffsetDateTime
 
 @JsonPropertyOrder(
     "arvioijanOppijanumero",
@@ -43,21 +44,24 @@ class SolkiArvioijaResponse(
     @JsonProperty("tasot")
     val tasot: String,
 ) {
-    fun toEntity(id: Number? = null) =
-        YkiArvioijaEntity(
-            id,
-            arvioijanOppijanumero,
-            henkilotunnus,
-            sukunimi,
-            etunimet,
-            sahkopostiosoite,
-            katuosoite,
-            postinumero,
-            postitoimipaikka,
-            tila,
-            kieli,
-            tasot = tasot.split("+").map({ taso -> Tutkintotaso.valueOf(taso) }).toSet(),
-        )
+    fun toEntity(
+        id: Number? = null,
+        rekisteriintuontiaika: OffsetDateTime? = null,
+    ) = YkiArvioijaEntity(
+        id,
+        rekisteriintuontiaika,
+        arvioijanOppijanumero,
+        henkilotunnus,
+        sukunimi,
+        etunimet,
+        sahkopostiosoite,
+        katuosoite,
+        postinumero,
+        postitoimipaikka,
+        tila,
+        kieli,
+        tasot = tasot.split("+").map({ taso -> Tutkintotaso.valueOf(taso) }).toSet(),
+    )
 
     override fun toString(): String =
         "SolkiArvioijaResponse(arvioijanOppijanumero='$arvioijanOppijanumero', tila=$tila, kieli=$kieli, tasot='$tasot')"
