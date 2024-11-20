@@ -73,6 +73,45 @@ voi laittaa muotoilemaan koodin tallentamisen yhteydessä.
 1. Navigoi `Settings` -> `Tools` -> `KtLint`
 2. Tämän valikon alta, aseta `Mode: Distract free` ja varmista että `Format: on save` -valintaruutu on valittu.
 
+## Ympäristöt
+
+Sovellus julkaistaan kolmelle AWS-tilille:
+
+| Nimi | AWS-tili     |
+| ---- | ------------ |
+| dev  | 682033502734 |
+| test | 961341546901 |
+| prod | 515966535475 |
+
+### Ensimmäinen julkaisu
+
+Ensimmäinen julkaisu AWS-tilille, jolle ei ole vielä julkaistu palvelua vaatii, että kehittäjä käy manuaalisesti antamassa luvan AWS Chatbotille päästä käsiksi Slack-kanavaan jonne hälytykset ohjataan. Tämä tapahtuu AWS Chatbot -palvelun konsolista kohdasta "Configure a chat client" ja valitsemalla Slackin.
+
+### Automaattinen julkaisu
+
+Julkaisu tapahtuu automaattisesti GitHub Actions -palvelussa [Build](./.github/workflows/build.yml)-tiedoston mukaisesti jokaisella `main`-haaran päivityksellä.
+
+### Manuaalinen julkaisu
+
+Julkaisun voi myös ajaa omalta koneelta komennoilla:
+
+[//]: # "TODO: luo skripti tätä varten"
+
+```shell
+(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Util/**')
+(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Dev/**')
+(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Test/**')
+(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Prod/**')
+```
+
+### Salaisuudet AWS-ympäristöissä
+
+Seuraavat salaisuudet pitää luoda manuaalisesti AWS Secret Manageriin.
+
+- `slack-webhook-url`: Hälytysten lähettämiseen Slack-kanavalle. Ks. [slackNotifierLambda](infra/lib/lambdas/slackNotifierLambda). Pitää luoda regioonille `eu-west-1` sekä `us-east-1`.
+- `oppijanumero-password`: Oppijanumeropalvelun salaisuus. Ks. [fi.oph.kitu.oppijanumero-paketti](server/src/main/kotlin/fi/oph/kitu/oppijanumero).
+- `kielitesti-token`: Koealustan salaisuus. Ks. [fi.oph.kitu.kielitesti-paketti](server/src/main/kotlin/fi/oph/kitu/kotoutumiskoulutus).
+
 ## Hyödyllisiä komentoja
 
 ```shell
@@ -92,32 +131,3 @@ mvn package
 # Playwrightin UI testien ajamiseen --ui flagilla
 npx playwright test
 ```
-
-## Ympäristöt
-
-Sovellus julkaistaan kolmelle AWS-tilille:
-
-| Nimi | AWS-tili     |
-| ---- | ------------ |
-| dev  | 682033502734 |
-| test | 961341546901 |
-| prod | 515966535475 |
-
-Julkaisu tapahtuu automaattisesti GitHub Actions -palvelussa [Build](./.github/workflows/build.yml)-tiedoston mukaisesti jokaisella `main`-haaran päivityksellä. Julkaisun voi myös ajaa omalta koneelta komennoilla:
-
-[//]: # "TODO: luo skripti tätä varten"
-
-```shell
-(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Util/**')
-(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Dev/**')
-(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Test/**')
-(cd infra && TAG=$(git rev-parse HEAD) npx cdk deploy 'Prod/**')
-```
-
-### Salaisuudet AWS-ympäristöissä
-
-Seuraavat salaisuudet pitää luoda manuaalisesti AWS Secret Manageriin.
-
-- `slack-webhook-url`: Hälytysten lähettämiseen Slack-kanavalle. Ks. [slackNotifierLambda](infra/lib/lambdas/slackNotifierLambda). Pitää luoda regioonille `eu-west-1` sekä `us-east-1`.
-- `oppijanumero-password`: Oppijanumeropalvelun salaisuus. Ks. [fi.oph.kitu.oppijanumero-paketti](server/src/main/kotlin/fi/oph/kitu/oppijanumero).
-- `kielitesti-token`: Koealustan salaisuus. Ks. [fi.oph.kitu.kielitesti-paketti](server/src/main/kotlin/fi/oph/kitu/kotoutumiskoulutus).
