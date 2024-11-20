@@ -27,9 +27,17 @@ export class EnvironmentStage extends Stage {
       env,
     })
 
-    const alarmsStack = new AlarmsStack(this, "Alarms", { env })
+    const alarmsStack = new AlarmsStack(this, "Alarms", {
+      env,
+      slackChannelName: "#koto-rekisteri-alerts",
+      slackChannelId: "C07QPSYBY7L",
+      slackWorkspaceId: "T02C6SZL7KP",
+    })
     const usEastAlarmsStack = new AlarmsStack(this, "AlarmsUsEast1", {
       env: { ...env, region: "us-east-1" },
+      slackChannelName: "#koto-rekisteri-alerts",
+      slackChannelId: "C02A8J5QY5Y",
+      slackWorkspaceId: "T02A8J5QX6",
     })
 
     new DnsStack(this, "Dns", {
