@@ -35,7 +35,7 @@ export class EnvironmentStage extends Stage {
       env: { ...env, region: "us-east-1" },
     })
 
-    new SlackBotStack(this, "SlackBot", {
+    const slackBotStack = new SlackBotStack(this, "SlackBot", {
       env,
       slackChannelName: "koto-rekisteri-alerts",
       slackChannelId: "C07QPSYBY7L",
@@ -86,6 +86,8 @@ export class EnvironmentStage extends Stage {
       image: props.serviceImage,
       alarmSnsTopic: alarmsStack.alarmSnsTopic,
     })
+
+    logGroupsStack.serviceLogGroup.grantRead(slackBotStack.channelConfiguration)
 
     new Route53HealthChecksStack(this, "Route53HealthChecks", {
       env: { ...env, region: "us-east-1" },
