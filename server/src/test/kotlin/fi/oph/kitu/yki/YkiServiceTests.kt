@@ -1,5 +1,7 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -22,7 +24,7 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Testcontainers
 class YkiServiceTests(
-    @Autowired private val ykiRepository: YkiRepository,
+    @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
 ) {
     companion object {
@@ -35,12 +37,13 @@ class YkiServiceTests(
     }
 
     @BeforeEach
-    fun nukeArvioijat() {
+    fun nukeDb() {
         ykiArvioijaRepository.deleteAll()
+        ykiSuoritusRepository.deleteAll()
     }
 
     @Test
-    fun `test import works`() {
+    fun `test suoritukset import works`() {
         // Arrange
         val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
@@ -61,15 +64,15 @@ class YkiServiceTests(
         val ykiService =
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
-                repository = ykiRepository,
+                suoritusRepository = ykiSuoritusRepository,
                 arvioijaRepository = ykiArvioijaRepository,
             )
 
         // Act
-        ykiService.importYkiSuoritukset(null, false)
+        ykiService.importYkiSuoritukset(null, null, false)
 
         // Assert
-        val suoritukset = ykiRepository.findAll()
+        val suoritukset = ykiSuoritusRepository.findAll()
         assertEquals(3, suoritukset.count())
     }
 
@@ -93,16 +96,70 @@ class YkiServiceTests(
         val ykiService =
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
-                repository = ykiRepository,
+                suoritusRepository = ykiSuoritusRepository,
                 arvioijaRepository = ykiArvioijaRepository,
             )
 
         // Act
         assertThrows<RestClientException> {
-            ykiService.importYkiSuoritukset(null, false)
+            ykiService.importYkiSuoritukset(null, null, false)
         }
-        val suoritukset = ykiRepository.findAll()
+        val suoritukset = ykiSuoritusRepository.findAll()
         assertEquals(0, suoritukset.count())
+    }
+
+    @Test
+    fun `import of newest suoritukset ignores duplicates`() {
+        // Arrange
+        val mockRestClientBuilder = RestClient.builder()
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("suoritukset"))
+            .andRespond(
+                withSuccess(
+                    """
+                    "1.2.246.562.24.24941612410","010180-922U","N","Torvinen-Testi","Anniina Testi","LVA","Testitie 2","95700","Testimäki","torvanniina@testi.fi",183440,2024-11-14T10:17:51Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,6,6,,6,6,,,,0,0,,
+                    "1.2.246.562.24.27639310186","010180-918P","N","Haverinen-Testi","Silja Testi","EST","Testikatu 17","40960","Testisuo","silja.haverinen@testi.fi",183439,2024-11-14T10:16:13Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+                    "1.2.246.562.24.98558310636","131168-739M","M","Heponiemi","Joonas","ISL","Testikatu 32","40960","Testisuo","joonas.heponiemi@testi.fi",183441,2024-11-14T10:36:31Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,4,4,,4,4,,,,0,0,,
+                    """.trimIndent(),
+                    MediaType.TEXT_PLAIN,
+                ),
+            )
+
+        // System under test
+        val ykiService =
+            YkiService(
+                solkiRestClient = mockRestClientBuilder.build(),
+                suoritusRepository = ykiSuoritusRepository,
+                arvioijaRepository = ykiArvioijaRepository,
+            )
+
+        // Act
+        val from = ykiService.importYkiSuoritukset(null, null, false)
+
+        // Assert
+        val firstSuoritukset = ykiSuoritusRepository.findAll()
+        assertEquals(3, firstSuoritukset.count())
+
+        mockServer.reset()
+        mockServer
+            .expect(requestTo("suoritukset?m=2024-11-14T10:36:31Z"))
+            .andRespond(
+                withSuccess(
+                    """
+                    "1.2.246.562.24.98558310636","131168-739M","M","Heponiemi","Joonas","ISL","Testikatu 32","40960","Testisuo","joonas.heponiemi@testi.fi",183441,2024-11-14T10:36:31Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,4,4,,4,4,,,,0,0,,
+                    "1.2.246.562.24.33342764709","010866-9260","N","Sallinen-Testi","Magdalena Testi","ALA","Testitie 3","95700","Testimäki","sallinen.magdalena@testi.fi",183442,2024-11-14T10:39:48Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,4,6,,,,0,0,,
+                    """.trimIndent(),
+                    MediaType.TEXT_PLAIN,
+                ),
+            )
+
+        // Act
+        ykiService.importYkiSuoritukset(from, null, false)
+
+        // Assert
+        val suoritukset = ykiSuoritusRepository.findAll()
+        assertEquals(4, suoritukset.count())
     }
 
     @Test
@@ -123,7 +180,7 @@ class YkiServiceTests(
         val ykiService =
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
-                repository = ykiRepository,
+                suoritusRepository = ykiSuoritusRepository,
                 arvioijaRepository = ykiArvioijaRepository,
             )
 
@@ -166,7 +223,7 @@ class YkiServiceTests(
         val ykiService =
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
-                repository = ykiRepository,
+                suoritusRepository = ykiSuoritusRepository,
                 arvioijaRepository = ykiArvioijaRepository,
             )
 

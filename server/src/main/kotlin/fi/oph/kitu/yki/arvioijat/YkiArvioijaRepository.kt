@@ -1,14 +1,13 @@
-package fi.oph.kitu.yki
+package fi.oph.kitu.yki.arvioijat
 
+import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.getTutkintokieli
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
 import java.time.OffsetDateTime
-
-@Repository
-interface YkiRepository : CrudRepository<YkiSuoritusEntity, Int>
 
 interface CustomYkiArvioijaRepository {
     fun <S : YkiArvioijaEntity?> saveAll(arvioijat: Iterable<S>): Iterable<S>
