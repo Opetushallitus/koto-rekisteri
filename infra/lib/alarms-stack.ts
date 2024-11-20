@@ -1,5 +1,11 @@
 import * as cdk from "aws-cdk-lib"
-import { aws_lambda, aws_lambda_nodejs, aws_sns, StackProps } from "aws-cdk-lib"
+import {
+  aws_lambda,
+  aws_lambda_nodejs,
+  aws_sns,
+  PhysicalName,
+  StackProps,
+} from "aws-cdk-lib"
 import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { OutputFormat } from "aws-cdk-lib/aws-lambda-nodejs"
 import { Secret } from "aws-cdk-lib/aws-secretsmanager"
@@ -15,7 +21,9 @@ export class AlarmsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: AlarmsStackProps) {
     super(scope, id, props)
 
-    this.alarmSnsTopic = new aws_sns.Topic(this, "AlarmSnsTopic")
+    this.alarmSnsTopic = new aws_sns.Topic(this, "AlarmSnsTopic", {
+      topicName: PhysicalName.GENERATE_IF_NEEDED,
+    })
 
     const slackWebhookUrlSecretName = `slack-webhook-url`
 
