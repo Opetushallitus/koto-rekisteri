@@ -16,6 +16,7 @@ import org.springframework.web.client.RestClientException
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.time.OffsetDateTime
 import kotlin.test.assertEquals
 
 @SpringBootTest
@@ -135,7 +136,7 @@ class YkiServiceTests(
     }
 
     @Test
-    fun `consecutive arvioijat import run only inserts new entries`() {
+    fun `consecutive arvioijat import run inserts new and updated entries`() {
         val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
@@ -144,6 +145,7 @@ class YkiServiceTests(
                 withSuccess(
                     """
                     "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"
+                    "1.2.246.562.24.20281155246","010180-9026","Öhmana-Testi","Ranja Testi","testi@testi.fi","Testikuja 5","40100","Testilä",1,"fin","YT"
                     """.trimIndent(),
                     MediaType.TEXT_PLAIN,
                 ),
@@ -154,6 +156,7 @@ class YkiServiceTests(
                 withSuccess(
                     """
                     "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"
+                    "1.2.246.562.24.20281155246","010180-9026","Öhmana-Testi","Ranja Testi","testi@testi.fi","Testikuja 5","40100","Testilä",0,"fin","KT+YT"
                     "1.2.246.562.24.27639310186","010180-918P","Haverinen-Testi","Silja Testi","silja.testi@yki.fi","Testausosoite 42","00100","HELSINKI",1,"ita","PT+KT+YT"
                     """.trimIndent(),
                     MediaType.TEXT_PLAIN,
@@ -171,11 +174,26 @@ class YkiServiceTests(
             ykiService.importYkiArvioijat()
         }
         var arvioijat = ykiArvioijaRepository.findAll()
-        assertEquals(1, arvioijat.count())
+        assertEquals(2, arvioijat.count())
+        val ranjaBeforeUpdate = arvioijat.find { it.etunimet.startsWith("Ranja") }
+        assertEquals(1, ranjaBeforeUpdate?.tila)
 
-        ykiService.importYkiArvioijat()
+        Thread.sleep(1000L)
+
+        assertDoesNotThrow {
+            ykiService.importYkiArvioijat()
+        }
 
         arvioijat = ykiArvioijaRepository.findAll()
-        assertEquals(2, arvioijat.count())
+
+        // 3 people entries, 1 updated entry => 4 entries total
+        // Note that there are rows that are duplicated in both the first and
+        // the second import. Those should be imported only once.
+        assertEquals(4, arvioijat.count())
+        val ranjaAfterUpdate =
+            arvioijat
+                .filter { it.etunimet.startsWith("Ranja") }
+                .maxByOrNull { it.rekisteriintuontiaika ?: OffsetDateTime.MIN }
+        assertEquals(0, ranjaAfterUpdate?.tila)
     }
 }
