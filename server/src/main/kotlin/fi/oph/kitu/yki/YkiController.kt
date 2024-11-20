@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseBody
 
 @Controller
 @RequestMapping("yki")
@@ -34,5 +35,18 @@ class YkiController(
         val arvioijat: List<YkiArvioijaEntity> = arvioijatRepository.findAll().toList()
         model.addAttribute("arvioijat", arvioijat)
         return "yki-arvioijat"
+    }
+
+    @GetMapping("/suoritukset/csv")
+    @ResponseBody
+    fun suorituksetCsv(response: HttpServletResponse) {
+        val filename = "suoritukset.csv"
+        val content = repository.findAll().toCsvString()
+
+        response.contentType = "text/csv"
+        response.setHeader("Content-Disposition", "attachment; filename=$filename")
+
+        response.writer.write(content)
+        response.writer.flush()
     }
 }
