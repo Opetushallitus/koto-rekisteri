@@ -37,7 +37,7 @@ export class EnvironmentStage extends Stage {
       env: { ...env, region: "us-east-1" },
       slackChannelName: "koto-rekisteri-alerts",
       slackChannelId: "C02A8J5QY5Y",
-      slackWorkspaceId: "T02A8J5QX6",
+      slackWorkspaceId: "T02C6SZL7KP",
     })
 
     new DnsStack(this, "Dns", {
