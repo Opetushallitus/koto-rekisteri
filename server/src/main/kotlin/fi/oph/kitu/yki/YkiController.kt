@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 class YkiController(
     private val arvioijatRepository: YkiArvioijaRepository,
     private val suoritusRepository: YkiSuoritusRepository,
+    private val service: YkiService,
 ) {
     @GetMapping("/suoritukset")
     fun suorituksetView(
@@ -41,7 +42,7 @@ class YkiController(
     @ResponseBody
     fun suorituksetCsv(response: HttpServletResponse) {
         val filename = "suoritukset.csv"
-        val content = repository.findAll().toCsvString()
+        val content = service.getSuorituksetCsv()
 
         response.contentType = "text/csv"
         response.setHeader("Content-Disposition", "attachment; filename=$filename")
