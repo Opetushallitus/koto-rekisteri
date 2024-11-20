@@ -1,5 +1,9 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -9,15 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 @Controller
 @RequestMapping("yki")
 class YkiController(
-    private val repository: YkiRepository,
     private val arvioijatRepository: YkiArvioijaRepository,
+    private val suoritusRepository: YkiSuoritusRepository,
 ) {
     @GetMapping("/suoritukset")
     fun suorituksetView(
         model: Model,
         response: HttpServletResponse?,
     ): String {
-        val suoritukset: List<YkiSuoritusEntity> = repository.findAll().toList()
+        val suoritukset: List<YkiSuoritusEntity> = suoritusRepository.findAll().toList()
         model.addAttribute("suoritukset", suoritukset)
         return "yki-suoritukset"
     }

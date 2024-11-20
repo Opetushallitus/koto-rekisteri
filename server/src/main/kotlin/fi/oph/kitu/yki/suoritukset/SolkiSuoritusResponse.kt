@@ -1,10 +1,13 @@
-package fi.oph.kitu.yki
+package fi.oph.kitu.yki.suoritukset
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import fi.oph.kitu.csvparsing.Features
+import fi.oph.kitu.yki.Sukupuoli
+import fi.oph.kitu.yki.Tutkintokieli
+import fi.oph.kitu.yki.Tutkintotaso
 import org.ietf.jgss.Oid
 import java.time.Instant
 import java.util.Date

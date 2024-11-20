@@ -5,51 +5,55 @@ import fi.oph.kitu.csvparsing.asCsv
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
+import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.suoritukset.SolkiSuoritusResponse
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import org.springframework.web.client.RestClientException
 import org.springframework.web.client.toEntity
+import java.time.Instant
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Service
 class YkiService(
     @Qualifier("solkiRestClient")
     private val solkiRestClient: RestClient,
-    private val repository: YkiRepository,
+    private val suoritusRepository: YkiSuoritusRepository,
     private val arvioijaRepository: YkiArvioijaRepository,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     fun importYkiSuoritukset(
+        from: Instant? = null,
         lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
-    ) = logger.atInfo().withEvent("yki.importSuoritukset") { event ->
-        event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
+    ): Instant? =
+        logger.atInfo().withEvent("yki.importSuoritukset") { event ->
+            event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
-        val response =
-            solkiRestClient
-                .get()
-                .uri("suoritukset")
-                .retrieve()
-                .toEntity<String>()
+            val url = if (from != null) "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}" else "suoritukset"
+            val response =
+                solkiRestClient
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .toEntity<String>()
 
-        event.addResponse(response, PeerService.Solki)
+            event.addResponse(response, PeerService.Solki)
 
-        val suoritukset =
-            response.body?.asCsv<SolkiSuoritusResponse>() ?: throw RestClientException("Response body is empty")
+            val suoritukset = response.body?.asCsv<SolkiSuoritusResponse>() ?: listOf()
 
-        if (suoritukset.isEmpty()) {
-            throw RestClientException("The response is empty")
+            if (dryRun != true) {
+                val res = suoritusRepository.saveAll(suoritukset.map { it.toEntity() })
+                event.addKeyValue("importedSuorituksetSize", res.count())
+            }
+            return@withEvent suoritukset.maxOfOrNull { it.lastModified } ?: from
         }
-
-        if (dryRun != true) {
-            val res = repository.saveAll(suoritukset.map { it.toEntity() })
-            event.addKeyValue("importedSuorituksetSize", res.count())
-        }
-    }
 
     fun importYkiArvioijat(dryRun: Boolean = false) =
         logger.atInfo().withEvent("yki.importArvioijat") { event ->

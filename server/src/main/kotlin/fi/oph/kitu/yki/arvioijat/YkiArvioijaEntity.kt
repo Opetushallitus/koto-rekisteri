@@ -1,5 +1,7 @@
-package fi.oph.kitu.yki
+package fi.oph.kitu.yki.arvioijat
 
+import fi.oph.kitu.yki.Tutkintokieli
+import fi.oph.kitu.yki.Tutkintotaso
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id

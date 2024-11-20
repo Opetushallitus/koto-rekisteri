@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.time.Instant
 
 @Configuration
 @ConditionalOnProperty(name = ["kitu.yki.scheduling.enabled"], matchIfMissing = false)
@@ -18,10 +19,11 @@ class YkiScheduledTasks {
     lateinit var ykiImportArvioijatSchedule: String
 
     @Bean
-    fun dailyImport(ykiService: YkiService): Task<Void> =
+    fun dailyImport(ykiService: YkiService): Task<Instant?> =
         Tasks
-            .recurring("YKI-import", Schedules.parseSchedule(ykiImportSchedule))
-            .execute { _, _ -> ykiService.importYkiSuoritukset() }
+            .recurring("YKI-import", Schedules.parseSchedule(ykiImportSchedule), Instant::class.java)
+            .initialData(null)
+            .execute { taskInstance, _ -> ykiService.importYkiSuoritukset(taskInstance.data) }
 
     @Bean
     fun arvioijatImport(ykiService: YkiService): Task<Void> =
