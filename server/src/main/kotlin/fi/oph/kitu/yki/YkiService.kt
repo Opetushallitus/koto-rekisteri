@@ -2,7 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.asCsv
-import fi.oph.kitu.csvparsing.toCsvString
+import fi.oph.kitu.csvparsing.writeAsCsv
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import java.time.Instant
+import java.io.PrintWriter
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -82,14 +83,12 @@ class YkiService(
             }
         }
 
-    fun getSuorituksetCsv() =
-        logger.atInfo().withEvent<String>("yki.getSuorituksetCsv") { event ->
+    fun streamSuorituksetCsv(writer: PrintWriter) =
+        logger.atInfo().withEvent("yki.getSuorituksetCsv") { event ->
             val data = suoritusRepository.findAll()
-            val csv = data.toCsvString()
+            event.add("dataCount" to data.count())
 
-            event.add("suorituksetCsvRowCount" to data.count())
-
-            csv
+            data.writeAsCsv(writer)
         }
 
     sealed class Error(

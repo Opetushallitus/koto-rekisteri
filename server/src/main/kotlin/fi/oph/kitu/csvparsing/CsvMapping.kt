@@ -5,6 +5,12 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import kotlin.reflect.full.findAnnotation
 
+data class CsvArgs(
+    val columnSeparator: Char = ',',
+    val useHeader: Boolean = false,
+    val quoteChar: Char = '"',
+)
+
 inline fun <reified T> getCsvMapper(): CsvMapper {
     val builder = CsvMapper.builder()
     val mapperFeatures = T::class.findAnnotation<Features>()?.features
@@ -22,16 +28,9 @@ inline fun <reified T> getCsvMapper(): CsvMapper {
 
 inline fun <reified T> getSchema(
     csvMapper: CsvMapper,
-    columnSeparator: Char = ',',
-    useHeader: Boolean = false,
-    quoteChar: Char = '"',
-): CsvSchema {
-    val schema =
-        csvMapper
-            .typedSchemaFor(T::class.java)
-            .withColumnSeparator(columnSeparator)
-            .withUseHeader(useHeader)
-            .withQuoteChar(quoteChar)
-
-    return schema
-}
+    args: CsvArgs,
+) = csvMapper
+    .typedSchemaFor(T::class.java)
+    .withColumnSeparator(args.columnSeparator)
+    .withUseHeader(args.useHeader)
+    .withQuoteChar(args.quoteChar)

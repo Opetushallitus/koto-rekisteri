@@ -42,12 +42,10 @@ class YkiController(
     @ResponseBody
     fun suorituksetCsv(response: HttpServletResponse) {
         val filename = "suoritukset.csv"
-        val content = service.getSuorituksetCsv()
 
         response.contentType = "text/csv"
         response.setHeader("Content-Disposition", "attachment; filename=$filename")
 
-        response.writer.write(content)
-        response.writer.flush()
+        service.streamSuorituksetCsv(response.writer)
     }
 }
