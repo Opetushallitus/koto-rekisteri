@@ -6,6 +6,7 @@ export interface EnvironmentConfig {
   }
   domainName: string
   databaseName: string
+  productionQuality: boolean
 }
 
 // CIDR allocation strategy:
@@ -24,6 +25,7 @@ export const deploymentAccounts = {
     },
     domainName: "kios.untuvaopintopolku.fi",
     databaseName: "kios",
+    productionQuality: false,
   },
   test: {
     name: "qa",
@@ -35,6 +37,7 @@ export const deploymentAccounts = {
     },
     domainName: "kios.testiopintopolku.fi",
     databaseName: "kios",
+    productionQuality: false,
   },
   prod: {
     name: "prod",
@@ -46,6 +49,7 @@ export const deploymentAccounts = {
     },
     domainName: "kios.opintopolku.fi",
     databaseName: "kios",
+    productionQuality: true,
   },
 }
 
