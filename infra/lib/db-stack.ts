@@ -15,7 +15,7 @@ export class DbStack extends cdk.Stack {
 
     this.cluster = new aws_rds.DatabaseCluster(this, "DbStack", {
       engine: aws_rds.DatabaseClusterEngine.auroraPostgres({
-        version: aws_rds.AuroraPostgresEngineVersion.VER_16_3,
+        version: aws_rds.AuroraPostgresEngineVersion.VER_16_4,
       }),
       vpc: props.vpc,
       writer: aws_rds.ClusterInstance.serverlessV2("writer"),
