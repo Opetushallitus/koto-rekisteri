@@ -14,4 +14,22 @@ servers:
     description: Testiympäristö
   - url: https://kios.opintopolku.fi
     description: Tuotantoympäristö
-paths: {}
+paths:
+  /api/yki/suoritukset/csv:
+    get:
+      tags:
+        - "yki-controller"
+      summary: "Palauttaa suoritukset CSV -formaatissa"
+      operationId: getSuorituksetAsCsv
+      responses:
+        200:
+          description: "Tietojen haku onnistui"
+          content:
+            "text/csv":
+              schema:
+                type: "string"
+                format: binary
+        400:
+          description: "Virheellinen pyyntö"
+        500:
+          description: "Virhe palvelimella"
