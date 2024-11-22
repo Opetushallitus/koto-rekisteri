@@ -25,22 +25,20 @@ class OppijanumeroServiceImpl(
     private var useMockData: Boolean = false
 
     override fun yleistunnisteHae(request: YleistunnisteHaeRequest): Pair<Int, YleistunnisteHaeResponse> {
-        val data =
-            if (useMockData) {
-                YleistunnisteHaeRequest(
-                    etunimet = "Magdalena Testi",
-                    hetu = "010866-9260",
-                    kutsumanimi = "Magdalena",
-                    sukunimi = "Sallinen-Testi",
-                )
-            } else {
-                request
-            }
+        if (useMockData) {
+            return Pair(
+                200,
+                YleistunnisteHaeResponse(
+                    oid = "1.2.246.562.24.33342764709",
+                    oppijanumero = "1.2.246.562.24.33342764709",
+                ),
+            )
+        }
 
         val httpRequest =
             HttpRequest
                 .newBuilder(URI.create("$serviceUrl/yleistunniste/hae"))
-                .POST(toBodyPublisher(data))
+                .POST(toBodyPublisher(request))
                 .header("Content-Type", "application/json")
 
         val httpResponse = casAuthenticatedService.sendRequest(httpRequest)
