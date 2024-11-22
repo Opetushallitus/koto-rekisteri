@@ -1,10 +1,14 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.generated.api.YkiControllerApi
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.core.io.Resource
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,7 +21,7 @@ class YkiController(
     private val arvioijatRepository: YkiArvioijaRepository,
     private val suoritusRepository: YkiSuoritusRepository,
     private val service: YkiService,
-) {
+) : YkiControllerApi {
     @GetMapping("/suoritukset")
     fun suorituksetView(
         model: Model,
@@ -40,12 +44,18 @@ class YkiController(
 
     @GetMapping("/suoritukset/csv")
     @ResponseBody
-    fun suorituksetCsv(response: HttpServletResponse) {
+    override fun getSuorituksetAsCsv(): ResponseEntity<Resource> {
         val filename = "suoritukset.csv"
 
-        response.contentType = "text/csv"
-        response.setHeader("Content-Disposition", "attachment; filename=$filename")
+        val inputStream = service.generateSuorituksetCsvStream()
+        val resource =
+            org.springframework.core.io
+                .InputStreamResource(inputStream)
 
-        service.streamSuorituksetCsv(response.writer)
+        return ResponseEntity
+            .ok()
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .header("Content-Disposition", "attachment; filename=$filename")
+            .body(resource)
     }
 }
