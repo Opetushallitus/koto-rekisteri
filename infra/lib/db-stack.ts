@@ -5,6 +5,7 @@ import { Construct } from "constructs"
 export interface DbStackProps extends cdk.StackProps {
   databaseName: string
   vpc: aws_ec2.IVpc
+  productionQuality: boolean
 }
 
 export class DbStack extends cdk.Stack {
@@ -22,6 +23,11 @@ export class DbStack extends cdk.Stack {
       storageEncrypted: true,
       defaultDatabaseName: props.databaseName,
       enableDataApi: true,
+      ...(props.productionQuality && {
+        readers: [aws_rds.ClusterInstance.serverlessV2("reader")],
+        deletionProtection: true,
+        enablePerformanceInsights: true,
+      }),
     })
   }
 }

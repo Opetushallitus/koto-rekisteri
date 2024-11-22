@@ -70,6 +70,7 @@ export class EnvironmentStage extends Stage {
       env,
       vpc: networkStack.vpc,
       databaseName: environmentConfig.databaseName,
+      productionQuality: environmentConfig.productionQuality,
     })
 
     connectionsStack.databaseSG = dbStack.cluster.connections.securityGroups[0]
