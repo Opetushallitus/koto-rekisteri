@@ -51,6 +51,8 @@ class CasAuthenticatedService(
             val authenticatedResponse = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
             logger.atInfo().addResponse(authenticatedResponse, PeerService.Oppijanumero).log()
             return authenticatedResponse
+        } else if (response.statusCode() != 200) {
+            throw RuntimeException("Unexpected HTTP status code: ${response.statusCode()}")
         } else {
             return response
         }
