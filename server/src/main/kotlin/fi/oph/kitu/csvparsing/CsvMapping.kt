@@ -1,7 +1,6 @@
 package fi.oph.kitu.csvparsing
 
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
-import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import kotlin.reflect.full.findAnnotation
 

@@ -1,10 +1,10 @@
 package fi.oph.kitu.csvparsing
 
 import org.springframework.web.client.RestClientException
-import java.io.PrintWriter
+import java.io.OutputStream
 
 inline fun <reified T> Iterable<T>.writeAsCsv(
-    writer: PrintWriter,
+    outputStream: OutputStream,
     args: CsvArgs = CsvArgs(),
 ) {
     val csvMapper = getCsvMapper<T>()
@@ -13,7 +13,7 @@ inline fun <reified T> Iterable<T>.writeAsCsv(
     csvMapper
         .writerFor(Iterable::class.java)
         .with(schema)
-        .writeValue(writer, this)
+        .writeValue(outputStream, this)
 }
 
 /**
