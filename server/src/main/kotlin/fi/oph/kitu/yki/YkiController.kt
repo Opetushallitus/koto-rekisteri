@@ -14,6 +14,7 @@ import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.servlet.ModelAndView
 
 @Controller
 @RequestMapping("yki")
@@ -26,20 +27,26 @@ class YkiController(
     fun suorituksetView(
         model: Model,
         response: HttpServletResponse?,
-    ): String {
+    ): ModelAndView {
         val suoritukset: List<YkiSuoritusEntity> = suoritusRepository.findAll().toList()
-        model.addAttribute("suoritukset", suoritukset)
-        return "yki-suoritukset"
+
+        val modelAndView = ModelAndView("yki-suoritukset")
+        modelAndView.addObject("suoritukset", suoritukset)
+
+        return modelAndView
     }
 
     @GetMapping("/arvioijat")
     fun arvioijatView(
         model: Model,
         response: HttpServletResponse?,
-    ): String {
+    ): ModelAndView {
         val arvioijat: List<YkiArvioijaEntity> = arvioijatRepository.findAll().toList()
-        model.addAttribute("arvioijat", arvioijat)
-        return "yki-arvioijat"
+
+        val modelAndView = ModelAndView("yki-arvioijat")
+        modelAndView.addObject("arvioijat", arvioijat)
+
+        return modelAndView
     }
 
     @GetMapping("/suoritukset", produces = ["text/csv"])
