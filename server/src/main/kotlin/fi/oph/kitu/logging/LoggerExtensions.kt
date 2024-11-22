@@ -11,6 +11,7 @@ inline fun <reified T> LoggingEventBuilder.addResponse(
     peerService: PeerService,
 ): LoggingEventBuilder =
     this
+        .addKeyValue("response.status", response.statusCode())
         .addKeyValue("response.headers", response.headers().toString())
         .addKeyValue("response.body", response.body().toString())
         .addKeyValue("peer.service", peerService.value)
@@ -20,6 +21,7 @@ inline fun <reified T> LoggingEventBuilder.addResponse(
     peerService: PeerService,
 ): LoggingEventBuilder =
     this
+        .addKeyValue("response.status", response.statusCode)
         .addKeyValue("response.headers", response.headers)
         .addKeyValue("response.body", response.body)
         .addKeyValue("peer.service", peerService.value)
@@ -27,12 +29,11 @@ inline fun <reified T> LoggingEventBuilder.addResponse(
 inline fun <reified T> LoggingEventBuilder.addResponse(
     endpoint: String,
     response: ResponseEntity<T>,
-): LoggingEventBuilder {
-    this.addKeyValue("$endpoint.response.headers", response.headers)
-    this.addKeyValue("$endpoint.response.body", response.body)
-
-    return this
-}
+): LoggingEventBuilder =
+    this
+        .addKeyValue("$endpoint.response.status", response.statusCode)
+        .addKeyValue("$endpoint.response.headers", response.headers)
+        .addKeyValue("$endpoint.response.body", response.body)
 
 fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventBuilder {
     val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
