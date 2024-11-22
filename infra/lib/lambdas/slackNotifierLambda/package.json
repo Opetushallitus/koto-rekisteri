@@ -1,7 +1,0 @@
-{
-  "type": "module",
-  "devDependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.664.0",
-    "@types/aws-lambda": "^8.10.145"
-  }
-}
