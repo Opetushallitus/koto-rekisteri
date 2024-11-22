@@ -22,7 +22,7 @@ class YkiController(
     private val suoritusRepository: YkiSuoritusRepository,
     private val service: YkiService,
 ) : YkiControllerApi {
-    @GetMapping("/suoritukset")
+    @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetView(
         model: Model,
         response: HttpServletResponse?,
@@ -42,7 +42,7 @@ class YkiController(
         return "yki-arvioijat"
     }
 
-    @GetMapping("/suoritukset/csv")
+    @GetMapping("/suoritukset", produces = ["text/csv"])
     @ResponseBody
     override fun getSuorituksetAsCsv(): ResponseEntity<Resource> {
         val filename = "suoritukset.csv"
