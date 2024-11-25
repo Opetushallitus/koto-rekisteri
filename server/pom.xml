@@ -32,6 +32,7 @@
         <flyway.version>11.0.0</flyway.version>
         <springdoc.version>2.7.0</springdoc.version>
         <jackson.version>2.18.1</jackson.version>
+        <opentelemetry-semconv.version>1.28.0-alpha</opentelemetry-semconv.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -41,6 +42,11 @@
                 <version>2.29.20</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>1.44.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -81,17 +87,6 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.akkinoc.spring.boot</groupId>
-            <artifactId>logback-access-spring-boot-starter</artifactId>
-            <version>4.4.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-coyote</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
@@ -166,6 +161,20 @@
             <groupId>io.rocketbase.extension</groupId>
             <artifactId>db-scheduler-log-spring-boot-starter</artifactId>
             <version>0.7.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+            <version>${opentelemetry-semconv.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv-incubating</artifactId>
+            <version>${opentelemetry-semconv.version}</version>
         </dependency>
         <dependency>
             <groupId>no.bekk.db-scheduler-ui</groupId>
