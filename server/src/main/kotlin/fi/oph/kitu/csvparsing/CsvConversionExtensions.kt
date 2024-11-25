@@ -2,15 +2,13 @@ package fi.oph.kitu.csvparsing
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
-import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.withEvent
-import org.slf4j.LoggerFactory
+import io.opentelemetry.api.trace.Span
 import java.io.ByteArrayOutputStream
 
 inline fun <reified T> Iterable<T>.writeAsCsv(
     outputStream: ByteArrayOutputStream,
     args: CsvArgs = CsvArgs(),
-) = LoggerFactory.getLogger(javaClass).atInfo().withEvent("csvparsing.writeAsCsv") { _ ->
+) {
     val csvMapper: CsvMapper = getCsvMapper<T>()
     val schema = getSchema<T>(csvMapper, args)
 
@@ -24,12 +22,13 @@ inline fun <reified T> Iterable<T>.writeAsCsv(
  * Converts retrieved String response into a list that is the type of Body.
  */
 inline fun <reified T> String.asCsv(args: CsvArgs = CsvArgs()): List<T> {
+    val span = Span.current()
+
+    span.setAttribute("serialization.isEmptyList", this.isBlank())
+
     if (this.isBlank()) {
-        args.event.add("serialization.isEmptyList" to true)
         return emptyList()
     }
-
-    args.event.add("serialization.isEmptyList" to false)
 
     val csvMapper = getCsvMapper<T>()
     val schema = getSchema<T>(csvMapper, args)
@@ -41,13 +40,12 @@ inline fun <reified T> String.asCsv(args: CsvArgs = CsvArgs()): List<T> {
             .readValues<T>(this)
             .readAll()
     } catch (e: InvalidFormatException) {
-        args.event.add(
-            "serialization.isInvalidFormatException" to true,
-            "serialization.value" to e.value,
-            "serialization.targetType" to e.targetType,
-            "serialization.path" to e.path,
-        )
-
+        span.apply {
+            setAttribute("serialization.isInvalidFormatException", true)
+            setAttribute("serialization.value", e.value.toString())
+            setAttribute("serialization.targetType", e.targetType.toString())
+            setAttribute("serialization.path", e.path.joinToString())
+        }
         throw e
     }
 }

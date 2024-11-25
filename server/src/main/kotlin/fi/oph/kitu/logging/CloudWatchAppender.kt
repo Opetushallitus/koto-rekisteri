@@ -3,7 +3,8 @@ package fi.oph.kitu.logging
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
 import ch.qos.logback.core.encoder.Encoder
-import org.slf4j.LoggerFactory
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
 import software.amazon.awssdk.services.cloudwatchlogs.CloudWatchLogsClient
 import software.amazon.awssdk.services.cloudwatchlogs.model.CreateLogStreamRequest
 import software.amazon.awssdk.services.cloudwatchlogs.model.InputLogEvent
@@ -11,8 +12,6 @@ import software.amazon.awssdk.services.cloudwatchlogs.model.PutLogEventsRequest
 
 // Copied from https://github.com/Opetushallitus/ludos/blob/main/server/src/main/kotlin/fi/oph/ludos/aws/LudosLogbackCloudwatchAppender.kt
 class CloudwatchAppender : AppenderBase<ILoggingEvent>() {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     // <logback-spring.xml-attributes>
     var encoder: Encoder<ILoggingEvent>? = null
     var logGroupName: String? = null
@@ -63,7 +62,12 @@ class CloudwatchAppender : AppenderBase<ILoggingEvent>() {
         try {
             cloudWatchLogsClient.putLogEvents(request)
         } catch (e: Throwable) {
-            logger.error("Error calling put-log-events(${eventObject.formattedMessage})", e)
+            // Don't propagate exception.
+            Span
+                .current()
+                .recordException(
+                    e,
+                ).setStatus(StatusCode.ERROR, "Error calling put-log-events(${eventObject.formattedMessage})")
         }
     }
 }

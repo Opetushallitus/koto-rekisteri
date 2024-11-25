@@ -17,13 +17,21 @@
       "customType": "regex",
       "fileMatch": ["\\.mise\\.toml$"],
       "matchStrings": [
-        "^(?<depName>[a-zA-Z0-9_-]+)\\s*=\\s*\"ref:(?<currentValue>.*?)\"$"
+        "(?<depName>[a-zA-Z0-9_-]+)\\s*=\\s*\"ref:(?<currentValue>.*?)\""
       ],
       "depNameTemplate": "{{depName}}",
       "versioningTemplate": "semver",
       "datasourceTemplate": "pypi",
       "extractVersionTemplate": "ref:{{newVersion}}",
       "autoReplaceStringTemplate": "{{depName}} = \"ref:{{newVersion}}\""
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["\\.ts$"],
+      "matchStrings": [
+        "renovate: datasource=(?<datasource>.+?)\\s+\"(?<depName>\\S+):(?<currentValue>\\S+)\""
+      ],
+      "versioningTemplate": "semver"
     }
   ]
 }

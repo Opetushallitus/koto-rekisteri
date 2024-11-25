@@ -69,7 +69,7 @@ class YkiServiceTests(
             )
 
         // Act
-        ykiService.importYkiSuoritukset(null, null, false)
+        ykiService.importYkiSuoritukset(null, false)
 
         // Assert
         val suoritukset = ykiSuoritusRepository.findAll()
@@ -102,7 +102,7 @@ class YkiServiceTests(
 
         // Act
         assertThrows<ValueInstantiationException> {
-            ykiService.importYkiSuoritukset(null, null, false)
+            ykiService.importYkiSuoritukset(null, false)
         }
         val suoritukset = ykiSuoritusRepository.findAll()
         assertEquals(0, suoritukset.count())
@@ -135,7 +135,7 @@ class YkiServiceTests(
             )
 
         // Act
-        val from = ykiService.importYkiSuoritukset(null, null, false)
+        val from = ykiService.importYkiSuoritukset(null, false)
 
         // Assert
         val firstSuoritukset = ykiSuoritusRepository.findAll()
@@ -155,7 +155,7 @@ class YkiServiceTests(
             )
 
         // Act
-        ykiService.importYkiSuoritukset(from, null, false)
+        ykiService.importYkiSuoritukset(from, false)
 
         // Assert
         val suoritukset = ykiSuoritusRepository.findAll()
