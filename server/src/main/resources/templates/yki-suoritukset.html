@@ -2,6 +2,7 @@
 <html lang="fi">
   <head>
     <title>Kielitutkintorekisteri</title>
+    <link href="/style.css" rel="stylesheet" />
   </head>
   <body>
     <h1><a href="/">Kielitutkintorekisteri</a></h1>
@@ -12,14 +13,7 @@
     <table>
       <thead>
         <tr>
-          <th>Suorittajan OID</th>
-          <th>Sukupuoli</th>
-          <th>Henkilötunnus</th>
-          <th>Sukunimi</th>
-          <th>Etunimet</th>
-          <th>Kansalaisuus</th>
-          <th>Osoite</th>
-          <th>Sähköposti</th>
+          <th>Suorituksen tunniste</th>
           <th>Tutkintopäivä</th>
           <th>Tutkintokieli</th>
           <th>Tutkintotaso</th>
@@ -34,17 +28,10 @@
           <th>Yleisarvosana</th>
         </tr>
       </thead>
-      <tbody>
-        {{#suoritukset}}
+      {{#suoritukset}}
+      <tbody class="suoritus">
         <tr>
-          <td>{{suorittajanOID}}</td>
-          <td>{{sukupuoli}}</td>
-          <td>{{hetu}}</td>
-          <td>{{sukunimi}}</td>
-          <td>{{etunimet}}</td>
-          <td>{{kansalaisuus}}</td>
-          <td>{{katuosoite}}, {{postinumero}} {{postitoimipaikka}}</td>
-          <td>{{email}}</td>
+          <td>{{suoritusId}}</td>
           <td>{{tutkintopaiva}}</td>
           <td>{{tutkintokieli}}</td>
           <td>{{tutkintotaso}}</td>
@@ -64,8 +51,74 @@
           <td>{{#puhuminen}}{{puhuminen}}{{/puhuminen}}</td>
           <td>{{#yleisarvosana}}{{yleisarvosana}}{{/yleisarvosana}}</td>
         </tr>
-        {{/suoritukset}}
+        <tr>
+          <td colspan="13">
+            <details>
+              <summary>Näytä suorittajan tiedot</summary>
+              <table>
+                <tr>
+                  <th>OID</th>
+                  <th>Sukunimi</th>
+                  <th>Etunimet</th>
+                  <th>Sukupuoli</th>
+                  <th>Henkilötunnus</th>
+                  <th>Kansalaisuus</th>
+                  <th>Osoite</th>
+                  <th>Sähköposti</th>
+                </tr>
+                <tr>
+                  <td>{{suorittajanOID}}</td>
+                  <td>{{sukunimi}}</td>
+                  <td>{{etunimet}}</td>
+                  <td>{{sukupuoli}}</td>
+                  <td>{{hetu}}</td>
+                  <td>{{kansalaisuus}}</td>
+                  <td>{{katuosoite}}, {{postinumero}} {{postitoimipaikka}}</td>
+                  <td>{{email}}</td>
+                </tr>
+              </table>
+            </details>
+          </td>
+        </tr>
+        {{#tarkistusarvioinninSaapumisPvm}}
+        <tr>
+          <td colspan="13">
+            <details>
+              <summary>Näytä tarkistusarvioinnin tiedot</summary>
+              <table>
+                <tr>
+                  <th>Saapumispäivä</th>
+                  <th>Asiatunnus</th>
+                  <th>Osakokeet</th>
+                  <th>Arvosana muuttui?</th>
+                  <th>Perustelu</th>
+                  <th>Käsittelypäivä</th>
+                </tr>
+                <tr>
+                  <td>
+                    {{#tarkistusarvioinninSaapumisPvm}}{{tarkistusarvioinninSaapumisPvm}}{{/tarkistusarvioinninSaapumisPvm}}
+                  </td>
+                  <td>
+                    {{#tarkistusarvioinninAsiatunnus}}{{tarkistusarvioinninAsiatunnus}}{{/tarkistusarvioinninAsiatunnus}}
+                  </td>
+                  <td>
+                    {{#tarkistusarvioidutOsakokeet}}{{tarkistusarvioidutOsakokeet}}{{/tarkistusarvioidutOsakokeet}}
+                  </td>
+                  <td>
+                    {{#arvosanaMuuttui}}{{arvosanaMuuttui}}{{/arvosanaMuuttui}}
+                  </td>
+                  <td>{{#perustelu}}{{perustelu}}{{/perustelu}}</td>
+                  <td>
+                    {{#tarkistusarvioinninKasittelyPvm}}{{tarkistusarvioinninKasittelyPvm}}{{/tarkistusarvioinninKasittelyPvm}}
+                  </td>
+                </tr>
+              </table>
+            </details>
+          </td>
+        </tr>
+        {{/tarkistusarvioinninSaapumisPvm}}
       </tbody>
+      {{/suoritukset}}
     </table>
   </body>
 </html>
