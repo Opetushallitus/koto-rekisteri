@@ -1,10 +1,8 @@
 package fi.oph.kitu.oppijanumero
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addCondition
-import fi.oph.kitu.logging.withEventAndPerformanceCheck
-import org.slf4j.LoggerFactory
+import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.trace.Span
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -19,74 +17,72 @@ interface OppijanumeroService {
 class OppijanumeroServiceImpl(
     private val casAuthenticatedService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
+    openTelemetry: OpenTelemetry,
 ) : OppijanumeroService {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
     @Value("\${kitu.oppijanumero.service.use-mock-data}")
     var useMockData: Boolean = false
 
-    override fun getOppijanumero(oppija: Oppija): String =
-        logger
-            .atInfo()
-            .withEventAndPerformanceCheck { event ->
-                require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
-                require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
-                require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
-                require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
+    private val tracer = openTelemetry.getTracer("oppijanumero-service")
 
-                if (event.addCondition(key = "request.hasOppijanumero", condition = oppija.oppijanumero != null)) {
-                    return@withEventAndPerformanceCheck oppija.oppijanumero.toString()
-                }
+    fun Span.setAttributeWithCondition(
+        key: String,
+        value: Boolean,
+    ): Boolean {
+        setAttribute(key, value)
+        return value
+    }
 
-                if (event.addCondition(key = "useMockData", condition = useMockData)) {
-                    return@withEventAndPerformanceCheck "1.2.246.562.24.33342764709"
-                }
+    override fun getOppijanumero(oppija: Oppija): String {
+        val span = tracer.spanBuilder("getOppijanumero").startSpan()
 
-                val endpoint = "$serviceUrl/yleistunniste/hae"
-                val httpRequest =
-                    HttpRequest
-                        .newBuilder(URI.create(endpoint))
-                        .POST(
-                            HttpRequest.BodyPublishers.ofString(
-                                objectMapper.writeValueAsString(oppija.toYleistunnisteHaeRequest()),
-                            ),
-                        ).header("Content-Type", "application/json")
+        require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
+        require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
+        require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
+        require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
 
-                // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
-                val stringResponse =
-                    casAuthenticatedService
-                        .sendRequest(httpRequest)
-                        .getOrLogAndThrowCasException(event)
+        if (span.setAttributeWithCondition("requestHasOppijanumero", oppija.oppijanumero != null)) {
+            return oppija.oppijanumero.toString()
+        }
 
-                if (stringResponse.statusCode() == 404) {
-                    throw OppijanumeroException.OppijaNotFoundException(oppija)
-                } else if (stringResponse.statusCode() != 200) {
-                    throw OppijanumeroException(
-                        oppija,
-                        "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
-                    )
-                }
+        if (span.setAttributeWithCondition("useMockData", useMockData)) {
+            return "1.2.246.562.24.33342764709"
+        }
 
-                val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse)
-                event.add(
-                    "response.hasOppijanumero" to body.oppijanumero.isNullOrEmpty(),
-                    "response.hasOid" to body.oid.isEmpty(),
-                    "response.areOppijanumeroAndOidSame" to (body.oppijanumero == body.oid),
-                )
+        val endpoint = "$serviceUrl/yleistunniste/hae"
+        val httpRequest =
+            HttpRequest
+                .newBuilder(URI.create(endpoint))
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                        objectMapper.writeValueAsString(oppija.toYleistunnisteHaeRequest()),
+                    ),
+                ).header("Content-Type", "application/json")
 
-                if (body.oppijanumero.isNullOrEmpty()) {
-                    throw OppijanumeroException.OppijaNotIdentifiedException(
-                        oppija.withYleistunnisteHaeResponse(body),
-                    )
-                }
+        // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
+        val stringResponse = casAuthenticatedService.sendRequest(httpRequest).getOrThrow()
 
-                return@withEventAndPerformanceCheck body.oppijanumero
-            }.apply {
-                addDefaults("getOppijanumero")
-            }.getOrThrow()
+        if (stringResponse.statusCode() == 404) {
+            throw OppijanumeroException.OppijaNotFoundException(oppija)
+        } else if (stringResponse.statusCode() != 200) {
+            throw OppijanumeroException(
+                oppija,
+                "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
+            )
+        }
+
+        val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse)
+
+        if (body.oppijanumero.isNullOrEmpty()) {
+            throw OppijanumeroException.OppijaNotIdentifiedException(
+                oppija.withYleistunnisteHaeResponse(body),
+            )
+        }
+
+        return body.oppijanumero
+    }
 
     /**
      * Tries to convert HttpResponse<String> into the given T.

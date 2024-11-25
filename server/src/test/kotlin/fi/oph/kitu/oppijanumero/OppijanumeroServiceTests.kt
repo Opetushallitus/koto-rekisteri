@@ -2,10 +2,13 @@ package fi.oph.kitu.oppijanumero
 
 import HttpResponseMock
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.opentelemetry.api.OpenTelemetry
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class OppijanumeroServiceTests {
+    val openTelemetry: OpenTelemetry = OpenTelemetry.noop()
+
     @Test
     fun `oppijanumero service returns identified user`() {
         // Facade
@@ -28,6 +31,7 @@ class OppijanumeroServiceTests {
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
                 objectMapper = ObjectMapper(),
+                openTelemetry = openTelemetry,
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
@@ -63,6 +67,7 @@ class OppijanumeroServiceTests {
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
                 objectMapper = ObjectMapper(),
+                openTelemetry = openTelemetry,
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
@@ -102,6 +107,7 @@ class OppijanumeroServiceTests {
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
                 objectMapper = ObjectMapper(),
+                openTelemetry = openTelemetry,
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 

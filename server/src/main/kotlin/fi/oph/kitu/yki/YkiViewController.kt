@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -12,6 +13,7 @@ class YkiViewController(
     private val ykiService: YkiService,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
+    @WithSpan
     fun suorituksetView(
         @RequestParam("versionHistory") versionHistory: Boolean?,
     ): ModelAndView =
@@ -20,6 +22,7 @@ class YkiViewController(
             .addObject("versionHistory", versionHistory == true)
 
     @GetMapping("/arvioijat")
+    @WithSpan
     fun arvioijatView(): ModelAndView =
         ModelAndView("yki-arvioijat")
             .addObject("arvioijat", ykiService.allArvioijat())

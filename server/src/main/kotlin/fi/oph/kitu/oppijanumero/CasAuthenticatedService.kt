@@ -1,8 +1,5 @@
 package fi.oph.kitu.oppijanumero
 
-import fi.oph.kitu.PeerService
-import fi.oph.kitu.logging.addHttpResponse
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -20,8 +17,6 @@ class CasAuthenticatedServiceImpl(
     private val httpClient: HttpClient,
     private val casService: CasService,
 ) : CasAuthenticatedService {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     @Value("\${kitu.oppijanumero.callerid}")
     private lateinit var callerId: String
 
@@ -37,33 +32,17 @@ class CasAuthenticatedServiceImpl(
             .header("Caller-Id", callerId)
             .header("CSRF", "CSRF")
             .header("Cookie", "CSRF=CSRF")
-        val request = requestBuilder.build()
-        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addHttpResponse(PeerService.Oppijanumero, request.uri().toString(), response).log()
-
+        val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
         if (isLoginToCas(response)) {
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
             // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-            val authenticatedRequest = requestBuilder.build()
-            val authenticatedResponse = httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
-            logger
-                .atInfo()
-                .addHttpResponse(PeerService.Oppijanumero, authenticatedRequest.uri().toString(), authenticatedResponse)
-                .log()
-
-            return Result.success(authenticatedResponse)
+            return Result.success(httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString()))
         } else if (response.statusCode() == 401) {
             // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
             // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-            val authenticatedRequest = requestBuilder.build()
-            val authenticatedResponse = httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
-            logger
-                .atInfo()
-                .addHttpResponse(PeerService.Oppijanumero, authenticatedRequest.uri().toString(), authenticatedResponse)
-                .log()
-            return Result.success(authenticatedResponse)
+            return Result.success(httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString()))
         }
 
         // loput statuskoodit oletetaan johtuvan kutsuttuvasta rajapinnasta

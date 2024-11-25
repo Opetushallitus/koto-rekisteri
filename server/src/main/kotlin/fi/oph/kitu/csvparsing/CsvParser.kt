@@ -7,38 +7,25 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import fi.oph.kitu.logging.add
+import io.opentelemetry.api.trace.Span
 import org.ietf.jgss.Oid
-import org.slf4j.spi.LoggingEventBuilder
 import java.io.ByteArrayOutputStream
 import java.lang.RuntimeException
 import kotlin.reflect.full.findAnnotation
 
 class CsvParser(
-    val event: LoggingEventBuilder,
     val columnSeparator: Char = ',',
     val lineSeparator: String = "\n",
     val useHeader: Boolean = false,
     val quoteChar: Char = '"',
 ) {
-    init {
-        event.add(
-            "serialization.schema.args.columnSeparator" to columnSeparator.toString(),
-            "serialization.schema.args.lineSeparator" to lineSeparator,
-            "serialization.schema.args.useHeader" to useHeader,
-            "serialization.schema.args.quoteChar" to quoteChar,
-        )
-    }
-
-    inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema {
-        event.add("serialization.schema.args.type" to T::class.java.name)
-
-        return csvMapper
+    inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema =
+        csvMapper
             .typedSchemaFor(T::class.java)
             .withColumnSeparator(columnSeparator)
             .withLineSeparator(lineSeparator)
             .withUseHeader(useHeader)
             .withQuoteChar(quoteChar)
-    }
 
     inline fun <reified T> CsvMapper.Builder.withFeatures(): CsvMapper.Builder {
         val mapperFeatures = T::class.findAnnotation<Features>()?.features
@@ -85,11 +72,8 @@ class CsvParser(
      */
     inline fun <reified T> convertCsvToData(csvString: String): List<T> {
         if (csvString.isBlank()) {
-            event.add("serialization.isEmptyList" to true)
             return emptyList()
         }
-
-        event.add("serialization.isEmptyList" to false)
 
         val csvMapper = getCsvMapper<T>()
         val schema = getSchema<T>(csvMapper)
@@ -115,11 +99,13 @@ class CsvParser(
             return data
         }
 
+        val span = Span.current()
+
         // add all errors to log
         errors.forEachIndexed { i, error ->
-            event.add("serialization.error[$i].index" to i)
+            span.setAttribute("serialization.error[$i].index", i.toLong())
             for (kvp in error.keyValues) {
-                event.add("serialization.error[$i].${kvp.first}" to kvp.second)
+                span.setAttribute("serialization.error[$i].${kvp.first}", kvp.second.toString())
             }
         }
 

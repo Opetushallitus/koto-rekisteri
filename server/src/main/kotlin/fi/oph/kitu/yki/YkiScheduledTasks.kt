@@ -23,7 +23,9 @@ class YkiScheduledTasks {
         Tasks
             .recurring("YKI-import", Schedules.parseSchedule(ykiImportSchedule), Instant::class.java)
             .initialData(null)
-            .execute { taskInstance, _ -> ykiService.importYkiSuoritukset(taskInstance.data) }
+            .execute { taskInstance, _ ->
+                ykiService.importYkiSuoritukset(taskInstance.data)
+            }
 
     @Bean
     fun arvioijatImport(ykiService: YkiService): Task<Void> =

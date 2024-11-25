@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <include resource="org/springframework/boot/logging/logback/structured-console-appender.xml"/>
 
     <appender name="AUDIT_LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/audit.log</file>
@@ -18,10 +17,6 @@
     <logger name="auditLogger" level="INFO" additivity="true">
         <appender-ref ref="AUDIT_LOCAL"/>
     </logger>
-
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-    </root>
 
     <springProfile name="untuva | qa | prod">
         <appender name="AUDIT_CLOUDWATCH" class="fi.oph.kitu.logging.CloudwatchAppender">

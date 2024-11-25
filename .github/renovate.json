@@ -29,6 +29,14 @@
       "datasourceTemplate": "github-tags",
       "packageNameTemplate": "aws/aws-cli",
       "autoReplaceStringTemplate": "{{depName}} = \"ref:{{newVersion}}\""
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["\\.ts$"],
+      "matchStrings": [
+        "renovate: datasource=(?<datasource>.+?)\\s+\"(?<depName>\\S+):(?<currentValue>\\S+)\""
+      ],
+      "versioningTemplate": "semver"
     }
   ]
 }
