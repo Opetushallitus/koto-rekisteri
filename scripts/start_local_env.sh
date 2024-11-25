@@ -74,7 +74,7 @@ kotorekisteri_start_tmux() {
     # Window 2:springboot
     WINDOW="springboot"
     tmux new-window -t $SESS_NAME -n "$WINDOW"
-    tmux send-keys -t $SESS_NAME:"$WINDOW" "cd $REPO_ROOT/server && ./mvnw spring-boot:run" C-m
+    tmux send-keys -t $SESS_NAME:"$WINDOW" "$REPO_ROOT/scripts/start_local_server.sh" C-m
 
     # Window 3:workspace
     WINDOW="workspace"
