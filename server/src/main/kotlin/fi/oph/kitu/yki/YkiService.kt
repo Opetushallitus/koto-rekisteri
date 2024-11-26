@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
+import fi.oph.kitu.csvparsing.CsvArgs
 import fi.oph.kitu.csvparsing.asCsv
 import fi.oph.kitu.csvparsing.writeAsCsv
 import fi.oph.kitu.logging.add
@@ -89,7 +90,7 @@ class YkiService(
             event.add("dataCount" to data.count())
 
             val outputStream = ByteArrayOutputStream()
-            data.writeAsCsv(outputStream)
+            data.writeAsCsv(outputStream, CsvArgs(useHeader = true))
 
             return@withEvent outputStream
         }
