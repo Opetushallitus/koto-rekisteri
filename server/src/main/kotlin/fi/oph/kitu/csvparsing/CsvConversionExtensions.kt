@@ -1,7 +1,7 @@
 package fi.oph.kitu.csvparsing
 
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
-import fi.oph.kitu.logging.add
+import fi.oph.kitu.logging.withEvent
 import org.slf4j.LoggerFactory
 import org.springframework.web.client.RestClientException
 import java.io.ByteArrayOutputStream
@@ -9,27 +9,14 @@ import java.io.ByteArrayOutputStream
 inline fun <reified T> Iterable<T>.writeAsCsv(
     outputStream: ByteArrayOutputStream,
     args: CsvArgs = CsvArgs(),
-) {
-    val event = LoggerFactory.getLogger(javaClass).atInfo()
-    val start = System.currentTimeMillis()
-
+) = LoggerFactory.getLogger(javaClass).atInfo().withEvent("csvparsing.writeAsCsv") { _ ->
     val csvMapper: CsvMapper = getCsvMapper<T>()
     val schema = getSchema<T>(csvMapper, args)
 
-    try {
-        csvMapper
-            .writerFor(Iterable::class.java)
-            .with(schema)
-            .writeValue(outputStream, this)
-
-        event.add("success" to true)
-    } catch (ex: Exception) {
-        event.setCause(ex)
-        event.add("success" to false)
-    } finally {
-        event.add("elapsed" to System.currentTimeMillis() - start)
-        event.log()
-    }
+    csvMapper
+        .writerFor(Iterable::class.java)
+        .with(schema)
+        .writeValue(outputStream, this)
 }
 
 /**
