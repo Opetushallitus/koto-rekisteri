@@ -20,6 +20,7 @@ inline fun <reified T> getCsvMapper(): CsvMapper {
     }
 
     val csvMapper = builder.build()
+
     csvMapper.registerModule(JavaTimeModule())
 
     return csvMapper
