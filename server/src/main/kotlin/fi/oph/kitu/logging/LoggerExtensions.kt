@@ -71,6 +71,8 @@ fun <T> LoggingEventBuilder.withEvent(
     f: (event: LoggingEventBuilder) -> T,
 ): T {
     addKeyValue("operation", operationName)
+    val start = System.currentTimeMillis()
+
     try {
         val ret = f(this)
         addKeyValue("success", true)
@@ -83,6 +85,8 @@ fun <T> LoggingEventBuilder.withEvent(
         setMessage("$operationName failed")
         throw ex
     } finally {
+        val elapsed = System.currentTimeMillis() - start
+        addKeyValue("duration_ms", elapsed)
         log()
     }
 }
