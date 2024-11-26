@@ -28,6 +28,9 @@ require_command git
 # exports secrets to environment variables
 source "$scripts_dir/ensure_aws_secrets.sh"
 
+# setup playwright
+(cd "$REPO_ROOT"/e2e && npm i && npx playwright install)
+
 ### Additional options/switches ###
 
 # --setup-only to skip creating tmux session
