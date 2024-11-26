@@ -16,9 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
-import java.io.InputStream
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
+import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -85,19 +83,15 @@ class YkiService(
             }
         }
 
-    fun generateSuorituksetCsvStream(): InputStream =
-        logger.atInfo().withEvent<InputStream>("yki.getSuorituksetCsv") { event ->
+    fun generateSuorituksetCsvStream(): ByteArrayOutputStream =
+        logger.atInfo().withEvent("yki.getSuorituksetCsv") { event ->
             val data = suoritusRepository.findAll()
             event.add("dataCount" to data.count())
 
-            val outputStream = PipedOutputStream()
-            val inputStream = PipedInputStream(outputStream)
+            val outputStream = ByteArrayOutputStream()
+            data.writeAsCsv(outputStream)
 
-            outputStream.use { stream ->
-                data.writeAsCsv(stream)
-            }
-
-            return@withEvent inputStream
+            return@withEvent outputStream
         }
 
     sealed class Error(

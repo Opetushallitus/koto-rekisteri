@@ -1,19 +1,35 @@
 package fi.oph.kitu.csvparsing
 
+import com.fasterxml.jackson.dataformat.csv.CsvMapper
+import fi.oph.kitu.logging.add
+import org.slf4j.LoggerFactory
 import org.springframework.web.client.RestClientException
-import java.io.OutputStream
+import java.io.ByteArrayOutputStream
 
 inline fun <reified T> Iterable<T>.writeAsCsv(
-    outputStream: OutputStream,
+    outputStream: ByteArrayOutputStream,
     args: CsvArgs = CsvArgs(),
 ) {
-    val csvMapper = getCsvMapper<T>()
+    val event = LoggerFactory.getLogger(javaClass).atInfo()
+    val start = System.currentTimeMillis()
+
+    val csvMapper: CsvMapper = getCsvMapper<T>()
     val schema = getSchema<T>(csvMapper, args)
 
-    csvMapper
-        .writerFor(Iterable::class.java)
-        .with(schema)
-        .writeValue(outputStream, this)
+    try {
+        csvMapper
+            .writerFor(Iterable::class.java)
+            .with(schema)
+            .writeValue(outputStream, this)
+
+        event.add("success" to true)
+    } catch (ex: Exception) {
+        event.setCause(ex)
+        event.add("success" to false)
+    } finally {
+        event.add("elapsed" to System.currentTimeMillis() - start)
+        event.log()
+    }
 }
 
 /**
