@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 interface YkiControllerApi {
     @RequestMapping(
         method = [RequestMethod.GET],
-        value = ["/yki/suoritukset/"],
+        value = ["/yki/api/suoritukset/"],
         produces = ["text/csv"],
     )
     fun getSuorituksetAsCsv(): ResponseEntity<org.springframework.core.io.Resource>

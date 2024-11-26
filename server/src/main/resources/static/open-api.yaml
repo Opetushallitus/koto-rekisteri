@@ -15,7 +15,7 @@ servers:
   - url: https://kios.opintopolku.fi
     description: Tuotantoympäristö
 paths:
-  /yki/suoritukset/:
+  /yki/api/suoritukset/:
     get:
       tags:
         - "yki-controller"
