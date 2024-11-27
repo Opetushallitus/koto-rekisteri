@@ -86,33 +86,33 @@ data class SolkiSuoritusResponse(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val arviointipaiva: Date,
     @JsonProperty("tekstinYmmartaminen")
-    val tekstinYmmartaminen: Number?,
+    val tekstinYmmartaminen: Double?,
     @JsonProperty("kirjoittaminen")
-    val kirjoittaminen: Number?,
+    val kirjoittaminen: Double?,
     @JsonProperty("rakenteetJaSanasto")
-    val rakenteetJaSanasto: Number?,
+    val rakenteetJaSanasto: Double?,
     @JsonProperty("puheenYmmartaminen")
-    val puheenYmmartaminen: Number?,
+    val puheenYmmartaminen: Double?,
     @JsonProperty("puhuminen")
-    val puhuminen: Number?,
+    val puhuminen: Double?,
     @JsonProperty("yleisarvosana")
-    val yleisarvosana: Number?,
+    val yleisarvosana: Double?,
     @JsonProperty("tarkistusarvioinninSaapumisPvm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tarkistusarvioinninSaapumisPvm: Date?,
     @JsonProperty("tarkistusarvioinninAsiatunnus")
     val tarkistusarvioinninAsiatunnus: String?,
     @JsonProperty("tarkistusarvioidutOsakokeet")
-    val tarkistusarvioidutOsakokeet: Number?,
+    val tarkistusarvioidutOsakokeet: Int?,
     @JsonProperty("arvosanaMuuttui")
-    val arvosanaMuuttui: Number?,
+    val arvosanaMuuttui: Int?,
     @JsonProperty("perustelu")
     val perustelu: String?,
     @JsonProperty("tarkistusarvioinninKasittelyPvm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tarkistusarvioinninKasittelyPvm: Date?,
 ) {
-    fun toEntity(id: Number? = null) =
+    fun toEntity(id: Int? = null) =
         YkiSuoritusEntity(
             id,
             suorittajanOID.toString(),

@@ -87,15 +87,15 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
             ps.setString(16, suoritus.jarjestajanTunnusOid)
             ps.setString(17, suoritus.jarjestajanNimi)
             ps.setDate(18, Date(suoritus.arviointipaiva.time))
-            ps.setObject(19, suoritus.tekstinYmmartaminen?.toInt())
-            ps.setObject(20, suoritus.kirjoittaminen?.toInt())
-            ps.setObject(21, suoritus.rakenteetJaSanasto?.toInt())
-            ps.setObject(22, suoritus.puheenYmmartaminen?.toInt())
-            ps.setObject(23, suoritus.puhuminen?.toInt())
-            ps.setObject(24, suoritus.yleisarvosana?.toInt())
+            ps.setObject(19, suoritus.tekstinYmmartaminen)
+            ps.setObject(20, suoritus.kirjoittaminen)
+            ps.setObject(21, suoritus.rakenteetJaSanasto)
+            ps.setObject(22, suoritus.puheenYmmartaminen)
+            ps.setObject(23, suoritus.puhuminen)
+            ps.setObject(24, suoritus.yleisarvosana)
             ps.setNullableDate(25, suoritus.tarkistusarvioinninSaapumisPvm)
             ps.setObject(26, suoritus.tarkistusarvioinninAsiatunnus)
-            ps.setObject(27, suoritus.tarkistusarvioidutOsakokeet?.toInt())
+            ps.setObject(27, suoritus.tarkistusarvioidutOsakokeet)
             ps.setObject(28, suoritus.arvosanaMuuttui)
             ps.setObject(29, suoritus.perustelu)
             ps.setNullableDate(30, suoritus.tarkistusarvioinninKasittelyPvm)
@@ -187,6 +187,9 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
     }
 }
 
+fun ResultSet.getNullableDouble(columnLabel: String): Double? =
+    if (this.getObject(columnLabel) != null) this.getDouble(columnLabel) else null
+
 fun ResultSet.getNullableInt(columnLabel: String): Int? =
     if (this.getObject(columnLabel) != null) this.getInt(columnLabel) else null
 
@@ -225,12 +228,12 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getString("jarjestajan_tunnus_oid"),
         rs.getString("jarjestajan_nimi"),
         rs.getDate("arviointipaiva"),
-        rs.getNullableInt("tekstin_ymmartaminen"),
-        rs.getNullableInt("kirjoittaminen"),
-        rs.getNullableInt("rakenteet_ja_sanasto"),
-        rs.getNullableInt("puheen_ymmartaminen"),
-        rs.getNullableInt("puhuminen"),
-        rs.getNullableInt("yleisarvosana"),
+        rs.getNullableDouble("tekstin_ymmartaminen"),
+        rs.getNullableDouble("kirjoittaminen"),
+        rs.getNullableDouble("rakenteet_ja_sanasto"),
+        rs.getNullableDouble("puheen_ymmartaminen"),
+        rs.getNullableDouble("puhuminen"),
+        rs.getNullableDouble("yleisarvosana"),
         rs.getDate("tarkistusarvioinnin_saapumis_pvm"),
         rs.getString("tarkistusarvioinnin_asiatunnus"),
         rs.getNullableInt("tarkistusarvioidut_osakokeet"),
