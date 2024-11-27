@@ -2,26 +2,36 @@
 <html lang="fi">
 <head>
     <title>Kielitutkintorekisteri</title>
+    <link href="/style.css" rel="stylesheet"/>
 </head>
 <body>
-<nav>
-    <ul>
-        <li>
-            YKI
-            <ul>
-                <li><a href="/yki/suoritukset">Suoritukset</a></li>
-                <li><a href="/yki/arvioijat">Arvioijat</a></li>
-            </ul>
-        </li>
-        <li>
-            KOTO-kielitesti
-            <ul>
-                <li><a href="/koto-kielitesti/suoritukset">Suoritukset</a></li>
-            </ul>
-        </li>
-    </ul>
-</nav>
-{{$body}}
-{{/body}}
+<header class="main">
+    <h1>Kielitutkintorekisteri</h1>
+    <nav aria-label="Päänavigaatio">
+        <ul>
+            <li class="dropdown">
+                <button type="button" class="dropdown__title" aria-controls="yki-dropdown">
+                    YKI
+                </button>
+                <ul class="dropdown__menu" id="yki-dropdown">
+                    <li><a href="/yki/suoritukset">Suoritukset</a></li>
+                    <li><a href="/yki/arvioijat">Arvioijat</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <button type="button" class="dropdown__title" aria-controls="koto-dropdown">
+                    KOTO-kielitesti
+                </button>
+                <ul class="dropdown__menu" id="koto-dropdown">
+                    <li><a href="/koto-kielitesti/suoritukset">Suoritukset</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</header>
+<section class="main content">
+    {{$body}}
+    {{/body}}
+</section>
 </body>
 </html>

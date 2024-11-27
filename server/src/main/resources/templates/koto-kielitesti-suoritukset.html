@@ -1,5 +1,45 @@
 {{<page}}
 {{$body}}
-<p>Hei, Maailma!</p>
+<h1>KOTO kielitutkinto - suoritukset</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>Suorituksen tunniste</th>
+        <th>Kurssin nimi</th>
+        <th>Suoritusaika</th>
+    </tr>
+    </thead>
+    {{#suoritukset}}
+    <tbody class="suoritus">
+    <tr>
+        <td>{{id}}</td>
+        <td>{{coursename}}</td>
+        <td>{{timeCompleted}}</td>
+    </tr>
+    <tr>
+        <td colspan="13">
+            <details>
+                <summary>Näytä suorittajan tiedot</summary>
+                <table>
+                    <tr>
+                        <th>OID</th>
+                        <th>Sukunimi</th>
+                        <th>Etunimi</th>
+                        <th>Sähköposti</th>
+                    </tr>
+                    <tr>
+                        <td>{{oppijaOid}}</td>
+                        <td>{{lastName}}</td>
+                        <td>{{firstName}}</td>
+                        <td>{{email}}</td>
+                    </tr>
+                </table>
+            </details>
+        </td>
+    </tr>
+    </tbody>
+    {{/suoritukset}}
+</table>
 {{/body}}
 {{/page}}
