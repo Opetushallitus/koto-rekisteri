@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 
 @Controller
@@ -21,12 +22,20 @@ class YkiViewController(
     fun suorituksetView(
         model: Model,
         response: HttpServletResponse?,
+        @RequestParam("versionHistory") versionHistory: Boolean?,
     ): ModelAndView {
-        val suoritukset: List<YkiSuoritusEntity> = suoritusRepository.findAll().toList()
+        val suoritukset: List<YkiSuoritusEntity> =
+            if (versionHistory != null && versionHistory) {
+                suoritusRepository.findAll().toList()
+            } else {
+                suoritusRepository
+                    .findAllDistinct()
+                    .toList()
+            }
 
         val modelAndView = ModelAndView("yki-suoritukset")
         modelAndView.addObject("suoritukset", suoritukset)
-
+        modelAndView.addObject("versionHistory", versionHistory)
         return modelAndView
     }
 
