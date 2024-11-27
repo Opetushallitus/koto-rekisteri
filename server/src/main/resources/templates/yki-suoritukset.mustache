@@ -10,6 +10,14 @@
 
     <a href="/yki/api/suoritukset" download>Lataa tiedot CSV:nä</a>
 
+    <form action="">
+      <label>
+        Näytä versiohistoria
+      <input id="versionHistory" type="checkbox" name="versionHistory" {{#versionHistory}}checked{{/versionHistory}} />
+      </label>
+      <button type="submit" >Suodata</button>
+    </form>
+
     <table>
       <thead>
         <tr>
