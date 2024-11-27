@@ -14,7 +14,7 @@ test("should download yki suoritukset CSV and verify its content", async ({
   page,
 }) => {
   await page.goto("http://127.0.0.1:8080/dev/mocklogin")
-  await page.getByRole("link", { name: "Suoritukset" }).click()
+  await page.getByRole("link", { name: "Suoritukset" }).first().click()
 
   // Intercept the download
   const [download] = await Promise.all([
