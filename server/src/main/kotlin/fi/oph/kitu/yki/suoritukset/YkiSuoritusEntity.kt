@@ -47,4 +47,6 @@ data class YkiSuoritusEntity(
     val arvosanaMuuttui: Boolean?,
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: Date?,
-)
+) {
+    companion object
+}

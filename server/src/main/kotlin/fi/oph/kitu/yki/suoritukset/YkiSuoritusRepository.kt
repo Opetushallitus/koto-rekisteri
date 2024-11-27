@@ -14,6 +14,8 @@ import java.sql.Timestamp
 
 interface CustomYkiSuoritusRepository {
     fun <S : YkiSuoritusEntity?> saveAll(suoritukset: Iterable<S>): Iterable<S>
+
+    fun findAllDistinct(): Iterable<YkiSuoritusEntity>
 }
 
 @Repository
@@ -136,40 +138,52 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
             """.trimIndent()
         return jdbcTemplate
             .query(findAllQuerySql) { rs, _ ->
-                YkiSuoritusEntity(
-                    rs.getInt("id"),
-                    rs.getString("suorittajan_oid"),
-                    rs.getString("hetu"),
-                    Sukupuoli.valueOf(rs.getString("sukupuoli")),
-                    rs.getString("sukunimi"),
-                    rs.getString("etunimet"),
-                    rs.getString("kansalaisuus"),
-                    rs.getString("katuosoite"),
-                    rs.getString("postinumero"),
-                    rs.getString("postitoimipaikka"),
-                    rs.getString("email"),
-                    rs.getInt("suoritus_id"),
-                    rs.getTimestamp("last_modified").toInstant(),
-                    rs.getDate("tutkintopaiva"),
-                    Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
-                    Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
-                    rs.getString("jarjestajan_tunnus_oid"),
-                    rs.getString("jarjestajan_nimi"),
-                    rs.getDate("arviointipaiva"),
-                    rs.getNullableInt("tekstin_ymmartaminen"),
-                    rs.getNullableInt("kirjoittaminen"),
-                    rs.getNullableInt("rakenteet_ja_sanasto"),
-                    rs.getNullableInt("puheen_ymmartaminen"),
-                    rs.getNullableInt("puhuminen"),
-                    rs.getNullableInt("yleisarvosana"),
-                    rs.getDate("tarkistusarvioinnin_saapumis_pvm"),
-                    rs.getString("tarkistusarvioinnin_asiatunnus"),
-                    rs.getNullableInt("tarkistusarvioidut_osakokeet"),
-                    rs.getNullableBoolean("arvosana_muuttui"),
-                    rs.getString("perustelu"),
-                    rs.getDate("tarkistusarvioinnin_kasittely_pvm"),
-                )
+                YkiSuoritusEntity.fromResultSet(rs)
             } as Iterable<S>
+    }
+
+    override fun findAllDistinct(): Iterable<YkiSuoritusEntity> {
+        val findAllDistinctQuerySql =
+            """
+            SELECT DISTINCT ON (suoritus_id)
+                id,
+                suorittajan_oid,
+                hetu,
+                sukupuoli,
+                sukunimi,
+                etunimet,
+                kansalaisuus,
+                katuosoite,
+                postinumero,
+                postitoimipaikka,
+                email,
+                suoritus_id,
+                last_modified,
+                tutkintopaiva,
+                tutkintokieli,
+                tutkintotaso,
+                jarjestajan_tunnus_oid,
+                jarjestajan_nimi,
+                arviointipaiva,
+                tekstin_ymmartaminen,
+                kirjoittaminen,
+                rakenteet_ja_sanasto,
+                puheen_ymmartaminen,
+                puhuminen,
+                yleisarvosana,
+                tarkistusarvioinnin_saapumis_pvm,
+                tarkistusarvioinnin_asiatunnus,
+                tarkistusarvioidut_osakokeet,
+                arvosana_muuttui,
+                perustelu,
+                tarkistusarvioinnin_kasittely_pvm
+            FROM yki_suoritus
+            ORDER BY suoritus_id, last_modified DESC
+            """.trimIndent()
+        return jdbcTemplate
+            .query(findAllDistinctQuerySql) { rs, _ ->
+                YkiSuoritusEntity.fromResultSet(rs)
+            }
     }
 }
 
@@ -189,6 +203,41 @@ fun PreparedStatement.setNullableDate(
         this.setObject(parameterIndex, null)
     }
 }
+
+fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity =
+    YkiSuoritusEntity(
+        rs.getInt("id"),
+        rs.getString("suorittajan_oid"),
+        rs.getString("hetu"),
+        Sukupuoli.valueOf(rs.getString("sukupuoli")),
+        rs.getString("sukunimi"),
+        rs.getString("etunimet"),
+        rs.getString("kansalaisuus"),
+        rs.getString("katuosoite"),
+        rs.getString("postinumero"),
+        rs.getString("postitoimipaikka"),
+        rs.getString("email"),
+        rs.getInt("suoritus_id"),
+        rs.getTimestamp("last_modified").toInstant(),
+        rs.getDate("tutkintopaiva"),
+        Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
+        Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
+        rs.getString("jarjestajan_tunnus_oid"),
+        rs.getString("jarjestajan_nimi"),
+        rs.getDate("arviointipaiva"),
+        rs.getNullableInt("tekstin_ymmartaminen"),
+        rs.getNullableInt("kirjoittaminen"),
+        rs.getNullableInt("rakenteet_ja_sanasto"),
+        rs.getNullableInt("puheen_ymmartaminen"),
+        rs.getNullableInt("puhuminen"),
+        rs.getNullableInt("yleisarvosana"),
+        rs.getDate("tarkistusarvioinnin_saapumis_pvm"),
+        rs.getString("tarkistusarvioinnin_asiatunnus"),
+        rs.getNullableInt("tarkistusarvioidut_osakokeet"),
+        rs.getNullableBoolean("arvosana_muuttui"),
+        rs.getString("perustelu"),
+        rs.getDate("tarkistusarvioinnin_kasittely_pvm"),
+    )
 
 @Repository
 interface YkiSuoritusRepository :
