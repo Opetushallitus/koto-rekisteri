@@ -1,6 +1,8 @@
 :root {
     --dark-blue: #040066;
     --dark-blue-accent: #484890;
+    --light-blue: #e0f3ff;
+    --light-blue-accent: #f6fcff;
     --white: #ffffff;
 
     --main-bg-color: #f6f4f0;
@@ -8,12 +10,12 @@
 
     --nav-bg-color: var(--dark-blue);
     --nav-link-separator-color: var(--dark-blue-accent);
-    --nav-link-bg-color-hover: #e0f3ff;
-    --nav-link-bg-color-active: #f6fcff;
+    --nav-link-bg-color-hover: var(--light-blue);
+    --nav-link-bg-color-active: var(--light-blue-accent);
     --nav-link-bg-color: var(--white);
     --nav-color: var(--white);
 
-    --table-border-color: var(--dark-blue);
+    --table-border-color: lightgrey;
 
     font-family: sans-serif;
 }
@@ -21,6 +23,18 @@
 body {
     margin: 0;
     background-color: var(--main-bg-color);
+}
+
+code {
+    background-color: lightgrey;
+}
+
+details[open] {
+    margin-bottom: 0.5em;
+}
+
+details[open] > summary {
+    margin-bottom: 0.5em;
 }
 
 header.main {
@@ -41,6 +55,11 @@ header.main {
 
 header.main h1 {
     margin: 0;
+}
+
+header.main h1 a {
+    text-decoration: none;
+    color: var(--nav-color);
 }
 
 header.main > * + * {
@@ -64,6 +83,7 @@ header.main li {
 }
 
 header.main nav > ul {
+    border-collapse: collapse;
     grid-auto-flow: column;
 }
 
@@ -88,12 +108,14 @@ header.main nav > ul > li a {
     font-family: inherit;
     font-size: 1.125em;
     display: inline-block;
+
+    padding: 0.75rem 0.75rem;
 }
 
 /* Top-level navigation links only */
 header.main nav > ul > li > .dropdown__title,
 header.main nav > ul > li > a {
-    padding: 1rem 0.5rem 0.5rem;
+    padding-bottom: 0.5rem;
 }
 
 .dropdown {
@@ -107,6 +129,7 @@ header.main nav > ul > li > a {
     min-width: 100%;
 }
 
+/* Show all dropdown menus when hovering over the nav (mimics virkailija-raamit behaviour) */
 nav:hover .dropdown .dropdown__menu,
 nav:focus-within .dropdown .dropdown__menu {
     display: revert;
@@ -122,11 +145,13 @@ nav:focus-within .dropdown .dropdown__menu {
     visibility: hidden;
 }
 
+/* Highlight the active dropdown menu */
 .dropdown:hover .dropdown__menu,
 .dropdown:focus-within .dropdown__menu {
     background-color: var(--nav-link-bg-color-active);
 }
 
+/* Extra highlight for the hover/focused nav link within the active dropdown menu */
 .dropdown .dropdown__menu li:hover,
 .dropdown .dropdown__menu li:focus-within {
     background-color: var(--nav-link-bg-color-hover);
@@ -134,7 +159,7 @@ nav:focus-within .dropdown .dropdown__menu {
 
 .dropdown .dropdown__menu a {
     display: block;
-    padding: 0.5em;
+    font-size: 1em;
 }
 
 table {
@@ -146,11 +171,12 @@ table {
 }
 
 table th {
+    text-align: left;
     padding: 0.75em 0.5em;
 }
 
 table td {
-    padding: 0.25em 0.5em;
+    padding: 0.5em;
 }
 
 tbody.suoritus {
