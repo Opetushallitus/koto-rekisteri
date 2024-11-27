@@ -72,7 +72,8 @@ class YkiService(
                 .addKeyValue("peer.service", PeerService.Solki.value)
 
             val arvioijat =
-                response.body?.asCsv<SolkiArvioijaResponse>() ?: throw Error.EmptyArvioijatResponse()
+                response.body?.asCsv<SolkiArvioijaResponse>(CsvArgs(event = event))
+                    ?: throw Error.EmptyArvioijatResponse()
             event.addKeyValue("yki.arvioijat.receivedCount", arvioijat.size)
             if (arvioijat.isEmpty()) {
                 throw Error.EmptyArvioijat()
