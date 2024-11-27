@@ -1,38 +1,52 @@
 {{<page}}
 {{$body}}
-<h1>KOTO kielitutkinto - suoritukset</h1>
+<h1>Kotoutumiskoulutuksen kielikokeet - suoritukset</h1>
+<p>
+    Arvosanat on ilmoitettu muodossa <code>(laskennallinen tulos / opettajan tulos)</code>. Ensimmäinen sulkeiden
+    sisällä ilmoitettu luku on järjestelmän laskema tulos ja toinen luku on opettajan kirjaama tulos.
+</p>
 
 <table>
     <thead>
     <tr>
-        <th>Suorituksen tunniste</th>
+        <th>Sukunimi</th>
+        <th>Etunimi</th>
+        <th>Sähköposti</th>
         <th>Kurssin nimi</th>
         <th>Suoritusaika</th>
+        <th>Kokonaisarvosana</th>
     </tr>
     </thead>
     {{#suoritukset}}
     <tbody class="suoritus">
     <tr>
-        <td>{{id}}</td>
+        <td>{{lastName}}</td>
+        <td>{{firstName}}</td>
+        <td>{{email}}</td>
         <td>{{coursename}}</td>
         <td>{{timeCompleted}}</td>
+        <td>({{totalEvaluationSystem}} / {{totalEvaluationTeacher}})</td>
     </tr>
     <tr>
         <td colspan="13">
             <details>
-                <summary>Näytä suorittajan tiedot</summary>
+                <summary>Näytä lisätiedot/tulokset</summary>
                 <table>
                     <tr>
-                        <th>OID</th>
-                        <th>Sukunimi</th>
-                        <th>Etunimi</th>
-                        <th>Sähköposti</th>
+                        <th>Suorittajan OID</th>
+                        <th>Luetun Ymmärtäminen</th>
+                        <th>Kuullun Ymmärtäminen</th>
+                        <th>Puhe</th>
+                        <th>Kirjoittaminen</th>
+                        <th>Kokonaisarvosana</th>
                     </tr>
                     <tr>
                         <td>{{oppijaOid}}</td>
-                        <td>{{lastName}}</td>
-                        <td>{{firstName}}</td>
-                        <td>{{email}}</td>
+                        <td>({{luetunYmmartaminenResultSystem}} / {{luetunYmmartaminenResultTeacher}})</td>
+                        <td>({{kuullunYmmartaminenResultSystem}} / {{kuullunYmmartaminenResultTeacher}})</td>
+                        <td>({{puheResultSystem}} / {{puheResultTeacher}})</td>
+                        <td>({{kirjoittaminenResultSystem}} / {{kirjottaminenResultTeacher}})</td>
+                        <td>({{totalEvaluationSystem}} / {{totalEvaluationTeacher}})</td>
                     </tr>
                 </table>
             </details>
