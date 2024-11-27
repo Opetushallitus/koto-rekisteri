@@ -111,6 +111,7 @@ class KoealustaService(
 
             val suoritukset =
                 suorituksetResponse.users.flatMap { user ->
+                    val oid = getOid(user)
                     user.completions.map { completion ->
                         val luetunYmmartaminen =
                             completion.results.find {
@@ -122,7 +123,6 @@ class KoealustaService(
                             }!!
                         val puhe = completion.results.find { it.name == "puhe" }!!
                         val kirjoittaminen = completion.results.find { it.name == "kirjoittaminen" }!!
-                        val oid = getOid(user)
 
                         KielitestiSuoritus(
                             firstName = user.firstname,
