@@ -15,5 +15,7 @@ interface YkiControllerApi {
         value = ["/yki/api/suoritukset/"],
         produces = ["text/csv"],
     )
-    fun getSuorituksetAsCsv(): ResponseEntity<org.springframework.core.io.Resource>
+    fun getSuorituksetAsCsv(
+        @RequestParam(value = "includeVersionHistory", required = false) includeVersionHistory: kotlin.Boolean?,
+    ): ResponseEntity<org.springframework.core.io.Resource>
 }
