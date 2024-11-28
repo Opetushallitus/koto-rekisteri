@@ -64,7 +64,8 @@ class SolkiArvioijaResponse(
     @JsonProperty("kieli")
     val kieli: Tutkintokieli,
     @JsonProperty("tasot")
-    val tasot: String,
+    @JsonDeserialize(using = TutkintotasotFromStringDeserializer::class)
+    val tasot: Iterable<Tutkintotaso>,
 ) {
     fun toEntity(
         id: Number? = null,
@@ -82,7 +83,7 @@ class SolkiArvioijaResponse(
         postitoimipaikka,
         tila,
         kieli,
-        tasot = tasot.split("+").map({ taso -> Tutkintotaso.valueOf(taso) }).toSet(),
+        tasot = tasot.toSet(),
     )
 
     override fun toString(): String =
