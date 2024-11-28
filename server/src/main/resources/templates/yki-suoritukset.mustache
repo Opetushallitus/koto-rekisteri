@@ -8,8 +8,6 @@
     <h1><a href="/">Kielitutkintorekisteri</a></h1>
     <h2>Yleiset kielitutkinnot - suoritukset</h2>
 
-    <a href="/yki/api/suoritukset" download>Lataa tiedot CSV:nä</a>
-
     <form action="">
       <label>
         Näytä versiohistoria
@@ -17,6 +15,8 @@
       </label>
       <button type="submit" >Suodata</button>
     </form>
+
+    <a href="/yki/api/suoritukset?includeVersionHistory={{versionHistory}}" download>Lataa tiedot CSV:nä</a>
 
     <table>
       <thead>

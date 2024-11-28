@@ -25,7 +25,7 @@ class YkiViewController(
         @RequestParam("versionHistory") versionHistory: Boolean?,
     ): ModelAndView {
         val suoritukset: List<YkiSuoritusEntity> =
-            if (versionHistory != null && versionHistory) {
+            if (versionHistory == true) {
                 suoritusRepository.findAll().toList()
             } else {
                 suoritusRepository
@@ -35,7 +35,7 @@ class YkiViewController(
 
         val modelAndView = ModelAndView("yki-suoritukset")
         modelAndView.addObject("suoritukset", suoritukset)
-        modelAndView.addObject("versionHistory", versionHistory)
+        modelAndView.addObject("versionHistory", versionHistory == true)
         return modelAndView
     }
 

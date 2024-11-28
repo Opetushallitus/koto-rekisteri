@@ -20,6 +20,13 @@ paths:
       tags:
         - "yki-controller"
       summary: "Palauttaa suoritukset CSV -formaatissa"
+      parameters:
+        - in: query
+          name: includeVersionHistory
+          schema:
+            type: boolean
+          required: false
+          description: Sisällytetäänkö suorituksien versiohistoria CSV-tiedostoon
       operationId: getSuorituksetAsCsv
       responses:
         200:
