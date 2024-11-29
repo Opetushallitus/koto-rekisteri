@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import fi.oph.kitu.csvparsing.BooleanFromNumericDeserializer
 import fi.oph.kitu.csvparsing.Features
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
@@ -105,7 +107,8 @@ data class SolkiSuoritusResponse(
     @JsonProperty("tarkistusarvioidutOsakokeet")
     val tarkistusarvioidutOsakokeet: Int?,
     @JsonProperty("arvosanaMuuttui")
-    val arvosanaMuuttui: Int?,
+    @JsonDeserialize(using = BooleanFromNumericDeserializer::class)
+    val arvosanaMuuttui: Boolean?,
     @JsonProperty("perustelu")
     val perustelu: String?,
     @JsonProperty("tarkistusarvioinninKasittelyPvm")
@@ -142,7 +145,7 @@ data class SolkiSuoritusResponse(
             tarkistusarvioinninSaapumisPvm,
             tarkistusarvioinninAsiatunnus,
             tarkistusarvioidutOsakokeet,
-            arvosanaMuuttui == 1,
+            arvosanaMuuttui,
             perustelu,
             tarkistusarvioinninKasittelyPvm,
         )
