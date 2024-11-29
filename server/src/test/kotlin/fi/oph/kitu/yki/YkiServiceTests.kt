@@ -171,7 +171,7 @@ class YkiServiceTests(
             .andRespond(
                 withSuccess(
                     """
-                    "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"
+                    "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"rus","PT+KT"
                     """.trimIndent(),
                     MediaType.TEXT_PLAIN,
                 ),
@@ -201,8 +201,8 @@ class YkiServiceTests(
             .andRespond(
                 withSuccess(
                     """
-                    "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"
-                    "1.2.246.562.24.20281155246","010180-9026","Öhmana-Testi","Ranja Testi","testi@testi.fi","Testikuja 5","40100","Testilä",1,"fin","YT"
+                    "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"rus","PT+KT"
+                    "1.2.246.562.24.20281155246","010180-9026","Öhmana-Testi","Ranja Testi","testi@testi.fi","Testikuja 5","40100","Testilä",1994-08-01,2019-06-29,2024-06-29,0,1,"fin","YT"
                     """.trimIndent(),
                     MediaType.TEXT_PLAIN,
                 ),
@@ -212,9 +212,9 @@ class YkiServiceTests(
             .andRespond(
                 withSuccess(
                     """
-                    "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",0,"rus","PT+KT"
-                    "1.2.246.562.24.20281155246","010180-9026","Öhmana-Testi","Ranja Testi","testi@testi.fi","Testikuja 5","40100","Testilä",0,"fin","KT+YT"
-                    "1.2.246.562.24.27639310186","010180-918P","Haverinen-Testi","Silja Testi","silja.testi@yki.fi","Testausosoite 42","00100","HELSINKI",1,"ita","PT+KT+YT"
+                    "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"rus","PT+KT"
+                    "1.2.246.562.24.20281155246","010180-9026","Öhmana-Testi","Ranja Testi","testi@testi.fi","Testikuja 5","40100","Testilä",1994-08-01,2019-06-29,2024-06-29,0,0,"fin","KT+YT"
+                    "1.2.246.562.24.27639310186","010180-918P","Haverinen-Testi","Silja Testi","silja.testi@yki.fi","Testausosoite 42","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,1,"ita","PT+KT+YT"
                     """.trimIndent(),
                     MediaType.TEXT_PLAIN,
                 ),

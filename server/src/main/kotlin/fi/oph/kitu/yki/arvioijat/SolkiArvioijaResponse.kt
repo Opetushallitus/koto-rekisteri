@@ -1,12 +1,16 @@
 package fi.oph.kitu.yki.arvioijat
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import fi.oph.kitu.csvparsing.BooleanFromNumericDeserializer
 import fi.oph.kitu.csvparsing.Features
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.time.OffsetDateTime
+import java.util.Date
 
 @JsonPropertyOrder(
     "arvioijanOppijanumero",
@@ -17,6 +21,10 @@ import java.time.OffsetDateTime
     "katuosoite",
     "postinumero",
     "postitoimipaikka",
+    "ensimmainenRekisterointipaiva",
+    "kaudenAlkupaiva",
+    "kaudenPaattymispaiva",
+    "jatkorekisterointi",
     "tila",
     "kieli",
     "tasot",
@@ -26,19 +34,31 @@ class SolkiArvioijaResponse(
     @JsonProperty("arvioijanOppijanumero")
     val arvioijanOppijanumero: String,
     @JsonProperty("henkilotunnus")
-    val henkilotunnus: String,
+    val henkilotunnus: String?,
     @JsonProperty("sukunimi")
     val sukunimi: String,
     @JsonProperty("etunimet")
     val etunimet: String,
     @JsonProperty("sahkopostiosoite")
-    val sahkopostiosoite: String,
+    val sahkopostiosoite: String?,
     @JsonProperty("katuosoite")
     val katuosoite: String,
     @JsonProperty("postinumero")
     val postinumero: String,
     @JsonProperty("postitoimipaikka")
     val postitoimipaikka: String,
+    @JsonProperty("ensimmainenRekisterointipaiva")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val ensimmainenRekisterointipaiva: Date,
+    @JsonProperty("kaudenAlkupaiva")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val kaudenAlkupaiva: Date?,
+    @JsonProperty("kaudenPaattymispaiva")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val kaudenPaattymispaiva: Date?,
+    @JsonProperty("jatkorekisterointi")
+    @JsonDeserialize(using = BooleanFromNumericDeserializer::class)
+    val jatkorekisterointi: Boolean,
     @JsonProperty("tila")
     val tila: Number,
     @JsonProperty("kieli")
