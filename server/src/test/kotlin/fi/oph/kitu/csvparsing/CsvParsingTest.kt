@@ -48,7 +48,7 @@ class CsvParsingTest {
         assertNull(suoritus.tarkistusarvioinninSaapumisPvm)
         assertEquals("", suoritus.tarkistusarvioinninAsiatunnus)
         assertEquals(0, suoritus.tarkistusarvioidutOsakokeet)
-        assertEquals(0, suoritus.arvosanaMuuttui)
+        assertEquals(false, suoritus.arvosanaMuuttui)
         assertEquals("", suoritus.perustelu)
         assertNull(suoritus.tarkistusarvioinninKasittelyPvm)
     }
