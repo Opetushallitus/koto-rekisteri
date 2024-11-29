@@ -1,5 +1,9 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.getNullableBoolean
+import fi.oph.kitu.getNullableDouble
+import fi.oph.kitu.getNullableInt
+import fi.oph.kitu.setNullableDate
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -8,7 +12,6 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.Date
-import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Timestamp
 
@@ -184,26 +187,6 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
             .query(findAllDistinctQuerySql) { rs, _ ->
                 YkiSuoritusEntity.fromResultSet(rs)
             }
-    }
-}
-
-fun ResultSet.getNullableDouble(columnLabel: String): Double? =
-    if (this.getObject(columnLabel) != null) this.getDouble(columnLabel) else null
-
-fun ResultSet.getNullableInt(columnLabel: String): Int? =
-    if (this.getObject(columnLabel) != null) this.getInt(columnLabel) else null
-
-fun ResultSet.getNullableBoolean(columnLabel: String): Boolean? =
-    if (this.getObject(columnLabel) != null) this.getBoolean(columnLabel) else null
-
-fun PreparedStatement.setNullableDate(
-    parameterIndex: Int,
-    date: java.util.Date?,
-) {
-    if (date != null) {
-        this.setDate(parameterIndex, Date(date.time))
-    } else {
-        this.setObject(parameterIndex, null)
     }
 }
 

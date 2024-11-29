@@ -1,11 +1,13 @@
 package fi.oph.kitu.yki.arvioijat
 
+import fi.oph.kitu.setNullableDate
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.getTutkintokieli
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
+import java.sql.Date
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 
@@ -34,10 +36,14 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
                 katuosoite,
                 postinumero,
                 postitoimipaikka,
+                ensimmainen_rekisterointipaiva,
+                kauden_alkupaiva,
+                kauden_paattymispaiva,
+                jatkorekisterointi,
                 tila,
                 kieli,
                 tasot
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT ON CONSTRAINT yki_arvioija_is_unique DO NOTHING;
             """.trimIndent()
         jdbcTemplate.batchUpdate(
@@ -53,9 +59,13 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
             ps.setString(6, arvioija.katuosoite)
             ps.setString(7, arvioija.postinumero)
             ps.setString(8, arvioija.postitoimipaikka)
-            ps.setInt(9, arvioija.tila.toInt())
-            ps.setString(10, arvioija.kieli.toString())
-            ps.setArray(11, ps.connection.createArrayOf("YKI_TUTKINTOTASO", arvioija.tasot.toTypedArray()))
+            ps.setDate(9, Date(arvioija.ensimmainenRekisterointipaiva.time))
+            ps.setNullableDate(10, arvioija.kaudenAlkupaiva)
+            ps.setNullableDate(11, arvioija.kaudenPaattymispaiva)
+            ps.setBoolean(12, arvioija.jatkorekisterointi)
+            ps.setInt(13, arvioija.tila.toInt())
+            ps.setString(14, arvioija.kieli.toString())
+            ps.setArray(15, ps.connection.createArrayOf("YKI_TUTKINTOTASO", arvioija.tasot.toTypedArray()))
         }
 
         val findAllQuerySql =
@@ -71,6 +81,10 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
                 katuosoite,
                 postinumero,
                 postitoimipaikka,
+                ensimmainen_rekisterointipaiva,
+                kauden_alkupaiva,
+                kauden_paattymispaiva,
+                jatkorekisterointi,
                 tila,
                 kieli,
                 tasot
@@ -89,6 +103,10 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
                     rs.getString("katuosoite"),
                     rs.getString("postinumero"),
                     rs.getString("postitoimipaikka"),
+                    rs.getDate("ensimmainen_rekisterointipaiva"),
+                    rs.getDate("kauden_alkupaiva"),
+                    rs.getDate("kauden_paattymispaiva"),
+                    rs.getBoolean("jatkorekisterointi"),
                     rs.getInt("tila"),
                     rs.getTutkintokieli("kieli"),
                     rs.getTypedArray("tasot") { taso -> Tutkintotaso.valueOf(taso) }.toSet(),
