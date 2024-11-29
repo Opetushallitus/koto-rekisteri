@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.time.OffsetDateTime
+import java.util.Date
 
 @Table(name = "yki_arvioija")
 class YkiArvioijaEntity(
@@ -21,6 +22,10 @@ class YkiArvioijaEntity(
     val katuosoite: String,
     val postinumero: String,
     val postitoimipaikka: String,
+    val ensimmainenRekisterointipaiva: Date,
+    val kaudenAlkupaiva: Date?,
+    val kaudenPaattymispaiva: Date?,
+    val jatkorekisterointi: Boolean,
     val tila: Number,
     @Enumerated(EnumType.STRING)
     val kieli: Tutkintokieli,
