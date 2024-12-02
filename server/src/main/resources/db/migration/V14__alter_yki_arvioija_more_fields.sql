@@ -6,7 +6,3 @@ ALTER TABLE yki_arvioija
     ADD COLUMN kauden_paattymispaiva DATE NULL,
     ADD COLUMN jatkorekisterointi BOOLEAN;
 
--- Delete the data.
--- This requires reimport, so we can get data for kaydenAlkupaiva and jatkorekisterointi.
-TRUNCATE yki_arvioija
-
