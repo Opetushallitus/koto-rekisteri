@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
@@ -14,7 +15,6 @@ import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
-import org.springframework.web.client.RestClientException
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -101,7 +101,7 @@ class YkiServiceTests(
             )
 
         // Act
-        assertThrows<RestClientException> {
+        assertThrows<ValueInstantiationException> {
             ykiService.importYkiSuoritukset(null, null, false)
         }
         val suoritukset = ykiSuoritusRepository.findAll()
