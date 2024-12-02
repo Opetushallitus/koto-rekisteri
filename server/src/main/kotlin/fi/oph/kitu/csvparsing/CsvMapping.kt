@@ -1,9 +1,11 @@
 package fi.oph.kitu.csvparsing
 
+import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import fi.oph.kitu.logging.add
+import org.ietf.jgss.Oid
 import org.slf4j.LoggerFactory
 import org.slf4j.spi.LoggingEventBuilder
 import kotlin.reflect.full.findAnnotation
@@ -27,6 +29,9 @@ inline fun <reified T> getCsvMapper(): CsvMapper {
     val csvMapper = builder.build()
 
     csvMapper.registerModule(JavaTimeModule())
+    val oidSerializerModule = SimpleModule()
+    oidSerializerModule.addSerializer(Oid::class.java, OidSerializer())
+    csvMapper.registerModule(oidSerializerModule)
 
     return csvMapper
 }

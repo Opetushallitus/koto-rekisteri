@@ -9,7 +9,7 @@ import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
-import fi.oph.kitu.yki.suoritukset.SolkiSuoritusResponse
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -49,7 +49,7 @@ class YkiService(
 
             event.addResponse(response, PeerService.Solki)
 
-            val suoritukset = response.body?.asCsv<SolkiSuoritusResponse>() ?: listOf()
+            val suoritukset = response.body?.asCsv<YkiSuoritusCsv>() ?: listOf()
 
             if (dryRun != true) {
                 val res = suoritusRepository.saveAll(suoritukset.map { it.toEntity() })
@@ -89,9 +89,9 @@ class YkiService(
         logger.atInfo().withEvent("yki.getSuorituksetCsv") { event ->
             val data = if (includeVersionHistory) suoritusRepository.findAll() else suoritusRepository.findAllDistinct()
             event.add("dataCount" to data.count())
-
+            val writableData = data.map { it.toYkiSuoritusCsv() }
             val outputStream = ByteArrayOutputStream()
-            data.writeAsCsv(outputStream, CsvArgs(useHeader = true))
+            writableData.writeAsCsv(outputStream, CsvArgs(useHeader = true))
 
             return@withEvent outputStream
         }

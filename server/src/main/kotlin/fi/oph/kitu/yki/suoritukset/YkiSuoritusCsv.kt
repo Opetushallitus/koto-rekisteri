@@ -47,7 +47,7 @@ import java.util.Date
     "tarkistusarvioinninKasittelyPvm",
 )
 @Features(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-data class SolkiSuoritusResponse(
+data class YkiSuoritusCsv(
     @JsonProperty("suorittajanOID")
     val suorittajanOID: Oid,
     @JsonProperty("hetu")
@@ -71,7 +71,7 @@ data class SolkiSuoritusResponse(
     @JsonProperty("suoritusID")
     val suoritusID: Int,
     @JsonProperty("lastModified")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssX")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssX", timezone = "UTC")
     val lastModified: Instant,
     @JsonProperty("tutkintopaiva")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
