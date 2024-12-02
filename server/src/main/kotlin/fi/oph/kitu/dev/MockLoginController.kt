@@ -12,6 +12,7 @@ import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.web.bind.annotation.GetMapping
@@ -50,7 +51,12 @@ class MockLoginController(
                 oid = "",
                 strongAuth = false,
                 kayttajaTyyppi = "VIRKAILIJA",
-                authorities = listOf(),
+                authorities =
+                    listOf(
+                        SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI"),
+                        SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_READ"),
+                        SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_READ_1.2.246.562.10.00000000001"),
+                    ),
             )
         val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
         SecurityContextHolder.getContext().authentication = authentication
