@@ -7,6 +7,7 @@ import org.springframework.core.env.Environment
 import org.springframework.security.cas.web.CasAuthenticationFilter
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
@@ -29,43 +30,37 @@ class WebSecurityConfig {
         casConfig: CasConfig,
         environment: Environment,
     ): SecurityFilterChain {
-        http
-            .csrf { csrf ->
-                csrf.ignoringRequestMatchers("/api/*", "/db-scheduler-api/**")
-            }.logout {
-                it.logoutSuccessUrl(casConfig.getCasLogoutUrl())
-                it.logoutUrl("/logout")
-                it.logoutRequestMatcher(AntPathRequestMatcher("/logout", "GET"))
-            }.authorizeHttpRequests { authorize ->
-                authorize
-                    // Allow healthcheck without login
-                    .requestMatchers(
-                        "/actuator/health",
-                    ).permitAll()
-                    // Make Swagger UI and OpenAPI schema YAML publicly available
-                    .requestMatchers(
-                        "/swagger-ui.html",
-                        "/swagger-ui/*",
-                        "/v3/api-docs/swagger-config",
-                        "/open-api.yaml",
-                    ).permitAll()
-            }.addFilter(casAuthenticationFilter)
-            .exceptionHandling {
-                it.authenticationEntryPoint(authenticationEntryPoint)
-            }.addFilterBefore(singleSignOutFilter, CasAuthenticationFilter::class.java)
-
-        if (
-            (environment.activeProfiles.contains("local") || environment.activeProfiles.contains("e2e")) &&
-            !environment.activeProfiles.any { it == "qa" || it.lowercase().contains("prod") }
-        ) {
-            http.authorizeHttpRequests { authorize ->
-                authorize
-                    .requestMatchers("/dev/**")
-                    .permitAll()
+        http {
+            csrf {
+                ignoringRequestMatchers("/api/*", "/db-scheduler-api/**")
             }
+            logout {
+                logoutSuccessUrl = casConfig.getCasLogoutUrl()
+                logoutUrl = "/logout"
+                logoutRequestMatcher = AntPathRequestMatcher("/logout", "GET")
+            }
+            authorizeHttpRequests {
+                authorize("/actuator/health", permitAll)
+                authorize("/swagger-ui.html", permitAll)
+                authorize("/swagger/*", permitAll)
+                authorize("/v3/api-docs/swagger-config", permitAll)
+                authorize("/open-api.yaml", permitAll)
+
+                if ((environment.activeProfiles.contains("local") || environment.activeProfiles.contains("e2e")) &&
+                    !environment.activeProfiles.any { it == "qa" || it.lowercase().contains("prod") }
+                ) {
+                    authorize("/dev/**", permitAll)
+                }
+
+                authorize(anyRequest, authenticated)
+            }
+            exceptionHandling {
+                this.authenticationEntryPoint = authenticationEntryPoint
+            }
+            addFilterBefore<CasAuthenticationFilter>(singleSignOutFilter)
         }
 
-        http.authorizeHttpRequests { it.anyRequest().authenticated() }
+        http.addFilter(casAuthenticationFilter)
 
         return http.build()
     }
