@@ -8,8 +8,8 @@
     </title>
     <link href="/style.css" rel="stylesheet"/>
 </head>
-<body>
-<header class="main">
+<body data-testid="page-body">
+<header data-testid="page-main-nav-header" class="main">
     <h1><a href="/">Kielitutkintorekisteri</a></h1>
     <nav aria-label="Päänavigaatio">
         <ul>
@@ -33,7 +33,7 @@
         </ul>
     </nav>
 </header>
-<section class="main content">
+<section data-testid="page-content" class="main content">
     {{$body}}
     {{/body}}
 </section>

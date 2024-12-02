@@ -1,184 +1,184 @@
 :root {
-    --dark-blue: #040066;
-    --dark-blue-accent: #484890;
-    --light-blue: #e0f3ff;
-    --light-blue-accent: #f6fcff;
-    --white: #ffffff;
+  --dark-blue: #040066;
+  --dark-blue-accent: #484890;
+  --light-blue: #e0f3ff;
+  --light-blue-accent: #f6fcff;
+  --white: #ffffff;
 
-    --main-bg-color: #f6f4f0;
-    --content-bg-color: var(--white);
+  --main-bg-color: #f6f4f0;
+  --content-bg-color: var(--white);
 
-    --nav-bg-color: var(--dark-blue);
-    --nav-link-separator-color: var(--dark-blue-accent);
-    --nav-link-bg-color-hover: var(--light-blue);
-    --nav-link-bg-color-active: var(--light-blue-accent);
-    --nav-link-bg-color: var(--white);
-    --nav-color: var(--white);
+  --nav-bg-color: var(--dark-blue);
+  --nav-link-separator-color: var(--dark-blue-accent);
+  --nav-link-bg-color-hover: var(--light-blue);
+  --nav-link-bg-color-active: var(--light-blue-accent);
+  --nav-link-bg-color: var(--white);
+  --nav-color: var(--white);
 
-    --table-border-color: lightgrey;
+  --table-border-color: lightgrey;
 
-    font-family: sans-serif;
+  font-family: sans-serif;
 }
 
 body {
-    margin: 0;
-    background-color: var(--main-bg-color);
+  margin: 0;
+  background-color: var(--main-bg-color);
 }
 
 code {
-    background-color: lightgrey;
+  background-color: lightgrey;
 }
 
 details[open] {
-    margin-bottom: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 details[open] > summary {
-    margin-bottom: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 header.main {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-items: start;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-items: start;
 
-    padding: 1rem 1.5rem 0;
+  padding: 1rem 1.5rem 0;
 
-    color: var(--nav-color);
-    background-color: var(--nav-bg-color);
+  color: var(--nav-color);
+  background-color: var(--nav-bg-color);
 }
 
 .main.content {
-    padding: 2rem 0.5rem;
+  padding: 2rem 0.5rem;
 }
 
 header.main h1 {
-    margin: 0;
+  margin: 0;
 }
 
 header.main h1 a {
-    text-decoration: none;
-    color: var(--nav-color);
+  text-decoration: none;
+  color: var(--nav-color);
 }
 
 header.main > * + * {
-    margin-left: 1.5rem;
+  margin-left: 1.5rem;
 }
 
 header.main nav {
-    display: grid;
-    place-items: center;
+  display: grid;
+  place-items: center;
 }
 
 header.main ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
 }
 
 header.main li {
-    padding: 0;
+  padding: 0;
 }
 
 header.main nav > ul {
-    border-collapse: collapse;
-    grid-auto-flow: column;
+  border-collapse: collapse;
+  grid-auto-flow: column;
 }
 
 header.main nav > ul > li + li {
-    border-left: 1px solid var(--nav-link-separator-color);
+  border-left: 1px solid var(--nav-link-separator-color);
 }
 
 /* Clear native button styles from clickable dropdown titles */
 button.dropdown__title {
-    background-color: transparent;
-    border: none;
-    font-family: inherit;
-    color: var(--nav-color);
+  background-color: transparent;
+  border: none;
+  font-family: inherit;
+  color: var(--nav-color);
 }
 
 /* All navigation links */
 header.main nav > ul > li .dropdown__title,
 header.main nav > ul > li a {
-    text-decoration: none;
-    text-align: left;
-    vertical-align: top;
-    font-family: inherit;
-    font-size: 1.125em;
-    display: inline-block;
+  text-decoration: none;
+  text-align: left;
+  vertical-align: top;
+  font-family: inherit;
+  font-size: 1.125em;
+  display: inline-block;
 
-    padding: 0.75rem 0.75rem;
+  padding: 0.75rem 0.75rem;
 }
 
 /* Top-level navigation links only */
 header.main nav > ul > li > .dropdown__title,
 header.main nav > ul > li > a {
-    padding-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .dropdown {
-    position: relative;
+  position: relative;
 
-    min-width: 15ch;
+  min-width: 15ch;
 }
 
 .dropdown .dropdown__menu,
 .dropdown .dropdown__title {
-    min-width: 100%;
+  min-width: 100%;
 }
 
 /* Show all dropdown menus when hovering over the nav (mimics virkailija-raamit behaviour) */
 nav:hover .dropdown .dropdown__menu,
 nav:focus-within .dropdown .dropdown__menu {
-    display: revert;
-    visibility: visible;
+  display: revert;
+  visibility: visible;
 }
 
 .dropdown .dropdown__menu {
-    background-color: var(--nav-link-bg-color);
+  background-color: var(--nav-link-bg-color);
 
-    position: absolute;
+  position: absolute;
 
-    display: none;
-    visibility: hidden;
+  display: none;
+  visibility: hidden;
 }
 
 /* Highlight the active dropdown menu */
 .dropdown:hover .dropdown__menu,
 .dropdown:focus-within .dropdown__menu {
-    background-color: var(--nav-link-bg-color-active);
+  background-color: var(--nav-link-bg-color-active);
 }
 
 /* Extra highlight for the hover/focused nav link within the active dropdown menu */
 .dropdown .dropdown__menu li:hover,
 .dropdown .dropdown__menu li:focus-within {
-    background-color: var(--nav-link-bg-color-hover);
+  background-color: var(--nav-link-bg-color-hover);
 }
 
 .dropdown .dropdown__menu a {
-    display: block;
-    font-size: 1em;
+  display: block;
+  font-size: 1em;
 }
 
 table {
-    background-color: var(--content-bg-color);
-    border-collapse: collapse;
-    border-radius: 2px;
+  background-color: var(--content-bg-color);
+  border-collapse: collapse;
+  border-radius: 2px;
 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 table th {
-    text-align: left;
-    padding: 0.75em 0.5em;
+  text-align: left;
+  padding: 0.75em 0.5em;
 }
 
 table td {
-    padding: 0.5em;
+  padding: 0.5em;
 }
 
 tbody.suoritus {
-    border-top: 1px solid var(--table-border-color);
+  border-top: 1px solid var(--table-border-color);
 }
