@@ -1,5 +1,6 @@
 import { Page } from "@playwright/test"
 import BasePage from "../BasePage"
+import { expect } from "../../fixtures/baseFixture"
 
 export default class KielitestiSuorituksetPage extends BasePage {
   constructor(page: Page) {
