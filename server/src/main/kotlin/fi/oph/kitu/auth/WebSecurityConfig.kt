@@ -52,7 +52,7 @@ class WebSecurityConfig {
                     authorize("/dev/**", permitAll)
                 }
 
-                authorize(anyRequest, authenticated)
+                authorize(anyRequest, hasRole("APP_KIELITUTKINTOREKISTERI_READ"))
             }
             exceptionHandling {
                 this.authenticationEntryPoint = authenticationEntryPoint
