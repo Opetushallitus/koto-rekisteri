@@ -46,7 +46,7 @@ describe('"YKI Suoritukset" -page', () => {
 
     const csvContent = await fs.readFile(path!, "utf8")
     expect(csvContent).toContain(
-      'arviointipaiva,arvosanaMuuttui,email,etunimet,hetu,id,jarjestajanNimi,jarjestajanTunnusOid,kansalaisuus,katuosoite,kirjoittaminen,lastModified,perustelu,postinumero,postitoimipaikka,puheenYmmartaminen,puhuminen,rakenteetJaSanasto,sukunimi,sukupuoli,suorittajanOID,suoritusId,"tarkistusarvioidutOsakokeet","tarkistusarvioinninAsiatunnus","tarkistusarvioinninKasittelyPvm","tarkistusarvioinninSaapumisPvm",tekstinYmmartaminen,tutkintokieli,tutkintopaiva,tutkintotaso,yleisarvosana\n',
+      'suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"\n',
     ) // Validate headers
   })
 })
