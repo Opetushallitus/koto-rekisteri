@@ -9,4 +9,9 @@ export default class IndexPage extends BasePage {
   async open() {
     await this.goto("/")
   }
+
+  getYkiSuorituksetLink() {
+    const ykiLinkList = this.getPageContent().getByTestId("yki-links")
+    return ykiLinkList.getByRole("link", { name: "Suoritukset" })
+  }
 }
