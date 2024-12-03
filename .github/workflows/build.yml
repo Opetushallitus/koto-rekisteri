@@ -8,7 +8,7 @@ on:
 
 jobs:
   determine_action:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       action: ${{ github.ref_name == 'main' && 'deploy' || 'diff' }}
     steps:
@@ -16,7 +16,7 @@ jobs:
 
   list_changes:
     name: List changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       mise: ${{ steps.filter.outputs.mise }}
       infra: ${{ steps.filter.outputs.infra }}
@@ -34,7 +34,7 @@ jobs:
 
   update_tools_cache:
     name: Update tools cache if changed
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: list_changes
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
 
   submit_dependencies:
     name: Submit dependencies
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     needs: update_tools_cache
@@ -68,7 +68,7 @@ jobs:
 
   check_generated_sources:
     name: Check generated sources
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: update_tools_cache
     steps:
       - uses: actions/checkout@v4
@@ -86,7 +86,7 @@ jobs:
 
   server_tests:
     name: Server tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: update_tools_cache
     env:
       MISE_ENV: ci
@@ -105,7 +105,7 @@ jobs:
   frontend_tests:
     name: Frontend tests
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: update_tools_cache
     steps:
       - uses: actions/checkout@v4
@@ -136,7 +136,7 @@ jobs:
 
   lint:
     name: Check code formatting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: update_tools_cache
     steps:
       - uses: actions/checkout@v4
@@ -151,7 +151,7 @@ jobs:
 
   build_image:
     name: Build image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - check_generated_sources
       - server_tests
