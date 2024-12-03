@@ -31,6 +31,14 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
           <th>Puheen ymmärtäminen</th>
           <th>Puhuminen</th>
           <th>Yleisarvosana</th>
+          <th>Oppijanumero</th>
+          <th>Sukunimi</th>
+          <th>Etunimet</th>
+          <th>Sukupuoli</th>
+          <th>Henkilötunnus</th>
+          <th>Kansalaisuus</th>
+          <th>Osoite</th>
+          <th>Sähköposti</th>
         </tr>
       </thead>
       {{#suoritukset}}
@@ -55,35 +63,14 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
           </td>
           <td>{{#puhuminen}}{{puhuminen}}{{/puhuminen}}</td>
           <td>{{#yleisarvosana}}{{yleisarvosana}}{{/yleisarvosana}}</td>
-        </tr>
-        <tr>
-          <td colspan="13">
-            <details>
-              <summary>Näytä suorittajan tiedot</summary>
-              <table>
-                <tr>
-                  <th>OID</th>
-                  <th>Sukunimi</th>
-                  <th>Etunimet</th>
-                  <th>Sukupuoli</th>
-                  <th>Henkilötunnus</th>
-                  <th>Kansalaisuus</th>
-                  <th>Osoite</th>
-                  <th>Sähköposti</th>
-                </tr>
-                <tr>
-                  <td>{{suorittajanOID}}</td>
-                  <td>{{sukunimi}}</td>
-                  <td>{{etunimet}}</td>
-                  <td>{{sukupuoli}}</td>
-                  <td>{{hetu}}</td>
-                  <td>{{kansalaisuus}}</td>
-                  <td>{{katuosoite}}, {{postinumero}} {{postitoimipaikka}}</td>
-                  <td>{{email}}</td>
-                </tr>
-              </table>
-            </details>
-          </td>
+          <td>{{suorittajanOID}}</td>
+          <td>{{sukunimi}}</td>
+          <td>{{etunimet}}</td>
+          <td>{{sukupuoli}}</td>
+          <td>{{hetu}}</td>
+          <td>{{kansalaisuus}}</td>
+          <td>{{katuosoite}}, {{postinumero}} {{postitoimipaikka}}</td>
+          <td>{{email}}</td>
         </tr>
         {{#tarkistusarvioinninSaapumisPvm}}
         <tr>
