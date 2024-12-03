@@ -18,6 +18,14 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
     <table>
       <thead>
         <tr>
+          <th>Oppijanumero</th>
+          <th>Sukunimi</th>
+          <th>Etunimet</th>
+          <th>Sukupuoli</th>
+          <th>Henkilötunnus</th>
+          <th>Kansalaisuus</th>
+          <th>Osoite</th>
+          <th>Sähköposti</th>
           <th>Suorituksen tunniste</th>
           <th>Tutkintopäivä</th>
           <th>Tutkintokieli</th>
@@ -36,6 +44,14 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
       {{#suoritukset}}
       <tbody class="suoritus">
         <tr>
+          <td>{{suorittajanOID}}</td>
+          <td>{{sukunimi}}</td>
+          <td>{{etunimet}}</td>
+          <td>{{sukupuoli}}</td>
+          <td>{{hetu}}</td>
+          <td>{{kansalaisuus}}</td>
+          <td>{{katuosoite}}, {{postinumero}} {{postitoimipaikka}}</td>
+          <td>{{email}}</td>
           <td>{{suoritusId}}</td>
           <td>{{tutkintopaiva}}</td>
           <td>{{tutkintokieli}}</td>
@@ -55,35 +71,6 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
           </td>
           <td>{{#puhuminen}}{{puhuminen}}{{/puhuminen}}</td>
           <td>{{#yleisarvosana}}{{yleisarvosana}}{{/yleisarvosana}}</td>
-        </tr>
-        <tr>
-          <td colspan="13">
-            <details>
-              <summary>Näytä suorittajan tiedot</summary>
-              <table>
-                <tr>
-                  <th>OID</th>
-                  <th>Sukunimi</th>
-                  <th>Etunimet</th>
-                  <th>Sukupuoli</th>
-                  <th>Henkilötunnus</th>
-                  <th>Kansalaisuus</th>
-                  <th>Osoite</th>
-                  <th>Sähköposti</th>
-                </tr>
-                <tr>
-                  <td>{{suorittajanOID}}</td>
-                  <td>{{sukunimi}}</td>
-                  <td>{{etunimet}}</td>
-                  <td>{{sukupuoli}}</td>
-                  <td>{{hetu}}</td>
-                  <td>{{kansalaisuus}}</td>
-                  <td>{{katuosoite}}, {{postinumero}} {{postitoimipaikka}}</td>
-                  <td>{{email}}</td>
-                </tr>
-              </table>
-            </details>
-          </td>
         </tr>
         {{#tarkistusarvioinninSaapumisPvm}}
         <tr>
