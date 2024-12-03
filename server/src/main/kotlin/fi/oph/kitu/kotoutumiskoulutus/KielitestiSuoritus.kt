@@ -10,6 +10,7 @@ data class KielitestiSuoritus(
     val id: Int? = null,
     val firstName: String,
     val lastName: String,
+    val preferredname: String,
     val oppijaOid: String,
     val email: String,
     val timeCompleted: Instant,
