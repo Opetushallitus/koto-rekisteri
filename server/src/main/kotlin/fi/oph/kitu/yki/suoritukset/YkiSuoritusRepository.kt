@@ -3,7 +3,6 @@ package fi.oph.kitu.yki.suoritukset
 import fi.oph.kitu.getNullableBoolean
 import fi.oph.kitu.getNullableDouble
 import fi.oph.kitu.getNullableInt
-import fi.oph.kitu.setNullableDate
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -11,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
-import java.sql.Date
 import java.sql.ResultSet
 import java.sql.Timestamp
+import java.time.LocalDate
 
 interface CustomYkiSuoritusRepository {
     fun <S : YkiSuoritusEntity?> saveAll(suoritukset: Iterable<S>): Iterable<S>
@@ -84,24 +83,24 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
             ps.setString(10, suoritus.email)
             ps.setInt(11, suoritus.suoritusId)
             ps.setTimestamp(12, Timestamp(suoritus.lastModified.toEpochMilli()))
-            ps.setDate(13, Date(suoritus.tutkintopaiva.time))
+            ps.setObject(13, suoritus.tutkintopaiva)
             ps.setString(14, suoritus.tutkintokieli.toString())
             ps.setString(15, suoritus.tutkintotaso.toString())
             ps.setString(16, suoritus.jarjestajanTunnusOid)
             ps.setString(17, suoritus.jarjestajanNimi)
-            ps.setDate(18, Date(suoritus.arviointipaiva.time))
+            ps.setObject(18, suoritus.arviointipaiva)
             ps.setObject(19, suoritus.tekstinYmmartaminen)
             ps.setObject(20, suoritus.kirjoittaminen)
             ps.setObject(21, suoritus.rakenteetJaSanasto)
             ps.setObject(22, suoritus.puheenYmmartaminen)
             ps.setObject(23, suoritus.puhuminen)
             ps.setObject(24, suoritus.yleisarvosana)
-            ps.setNullableDate(25, suoritus.tarkistusarvioinninSaapumisPvm)
+            ps.setObject(25, suoritus.tarkistusarvioinninSaapumisPvm)
             ps.setObject(26, suoritus.tarkistusarvioinninAsiatunnus)
             ps.setObject(27, suoritus.tarkistusarvioidutOsakokeet)
             ps.setObject(28, suoritus.arvosanaMuuttui)
             ps.setObject(29, suoritus.perustelu)
-            ps.setNullableDate(30, suoritus.tarkistusarvioinninKasittelyPvm)
+            ps.setObject(30, suoritus.tarkistusarvioinninKasittelyPvm)
         }
         val findAllQuerySql =
             """
@@ -205,24 +204,24 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getString("email"),
         rs.getInt("suoritus_id"),
         rs.getTimestamp("last_modified").toInstant(),
-        rs.getDate("tutkintopaiva"),
+        rs.getObject("tutkintopaiva", LocalDate::class.java),
         Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
         Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
         rs.getString("jarjestajan_tunnus_oid"),
         rs.getString("jarjestajan_nimi"),
-        rs.getDate("arviointipaiva"),
+        rs.getObject("arviointipaiva", LocalDate::class.java),
         rs.getNullableDouble("tekstin_ymmartaminen"),
         rs.getNullableDouble("kirjoittaminen"),
         rs.getNullableDouble("rakenteet_ja_sanasto"),
         rs.getNullableDouble("puheen_ymmartaminen"),
         rs.getNullableDouble("puhuminen"),
         rs.getNullableDouble("yleisarvosana"),
-        rs.getDate("tarkistusarvioinnin_saapumis_pvm"),
+        rs.getObject("tarkistusarvioinnin_saapumis_pvm", LocalDate::class.java),
         rs.getString("tarkistusarvioinnin_asiatunnus"),
         rs.getNullableInt("tarkistusarvioidut_osakokeet"),
         rs.getNullableBoolean("arvosana_muuttui"),
         rs.getString("perustelu"),
-        rs.getDate("tarkistusarvioinnin_kasittely_pvm"),
+        rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
     )
 
 @Repository

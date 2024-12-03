@@ -9,7 +9,7 @@ import org.ietf.jgss.Oid
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
-import java.util.Date
+import java.time.LocalDate
 
 @Table(name = "yki_suoritus")
 data class YkiSuoritusEntity(
@@ -28,26 +28,26 @@ data class YkiSuoritusEntity(
     val email: String?,
     val suoritusId: Int,
     val lastModified: Instant,
-    val tutkintopaiva: Date,
+    val tutkintopaiva: LocalDate,
     @Enumerated(EnumType.STRING)
     val tutkintokieli: Tutkintokieli,
     @Enumerated(EnumType.STRING)
     val tutkintotaso: Tutkintotaso,
     val jarjestajanTunnusOid: String,
     val jarjestajanNimi: String,
-    val arviointipaiva: Date,
+    val arviointipaiva: LocalDate,
     val tekstinYmmartaminen: Double?,
     val kirjoittaminen: Double?,
     val rakenteetJaSanasto: Double?,
     val puheenYmmartaminen: Double?,
     val puhuminen: Double?,
     val yleisarvosana: Double?,
-    val tarkistusarvioinninSaapumisPvm: Date?,
+    val tarkistusarvioinninSaapumisPvm: LocalDate?,
     val tarkistusarvioinninAsiatunnus: String?,
     val tarkistusarvioidutOsakokeet: Int?,
     val arvosanaMuuttui: Boolean?,
     val perustelu: String?,
-    val tarkistusarvioinninKasittelyPvm: Date?,
+    val tarkistusarvioinninKasittelyPvm: LocalDate?,
 ) {
     fun toYkiSuoritusCsv(): YkiSuoritusCsv =
         YkiSuoritusCsv(

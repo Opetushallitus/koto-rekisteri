@@ -8,8 +8,9 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import org.ietf.jgss.Oid
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -22,7 +23,7 @@ class CsvParsingTest {
             """.trimIndent()
         val suoritus = csv.asCsv<YkiSuoritusCsv>()[0]
         val datePattern = "yyyy-MM-dd"
-        val dateFormatter = SimpleDateFormat(datePattern)
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         assertEquals(Oid("1.2.246.562.24.20281155246"), suoritus.suorittajanOID)
         assertEquals("010180-9026", suoritus.hetu)
         assertEquals(Sukupuoli.N, suoritus.sukupuoli)
@@ -35,12 +36,12 @@ class CsvParsingTest {
         assertEquals("testi@testi.fi", suoritus.email)
         assertEquals(183424, suoritus.suoritusID)
         assertEquals(Instant.parse("2024-10-30T13:53:56Z"), suoritus.lastModified)
-        assertEquals("2024-09-01", dateFormatter.format(suoritus.tutkintopaiva))
+        assertEquals("2024-09-01", suoritus.tutkintopaiva.format(dateFormatter))
         assertEquals(Tutkintokieli.FIN, suoritus.tutkintokieli)
         assertEquals(Tutkintotaso.YT, suoritus.tutkintotaso)
         assertEquals(Oid("1.2.246.562.10.14893989377"), suoritus.jarjestajanOID)
         assertEquals("Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus", suoritus.jarjestajanNimi)
-        assertEquals("2024-11-14", dateFormatter.format(suoritus.arviointipaiva))
+        assertEquals("2024-11-14", suoritus.arviointipaiva.format(dateFormatter))
         assertEquals(5.0, suoritus.tekstinYmmartaminen)
         assertEquals(5.0, suoritus.kirjoittaminen)
         assertNull(suoritus.rakenteetJaSanasto)
@@ -58,7 +59,7 @@ class CsvParsingTest {
     @Test
     fun `test writing csv`() {
         val datePattern = "yyyy-MM-dd"
-        val dateFormatter = SimpleDateFormat(datePattern)
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         val entity =
             YkiSuoritusEntity(
                 id = null,
@@ -74,24 +75,24 @@ class CsvParsingTest {
                 email = "testi@testi.fi",
                 suoritusId = 183424,
                 lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = dateFormatter.parse("2024-09-01"),
+                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
                 jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = dateFormatter.parse("2024-11-14"),
+                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 5.0,
                 kirjoittaminen = 4.0,
                 rakenteetJaSanasto = 3.0,
                 puheenYmmartaminen = 1.0,
                 puhuminen = 2.0,
                 yleisarvosana = 3.0,
-                tarkistusarvioinninSaapumisPvm = dateFormatter.parse("2024-10-01"),
+                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
                 tarkistusarvioinninAsiatunnus = "123123",
                 tarkistusarvioidutOsakokeet = 2,
                 arvosanaMuuttui = true,
                 perustelu = "Tarkistusarvioinnin testi",
-                tarkistusarvioinninKasittelyPvm = dateFormatter.parse("2024-10-15"),
+                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
             )
         val writable = listOf(entity.toYkiSuoritusCsv())
         val outputStream = ByteArrayOutputStream()
@@ -99,7 +100,7 @@ class CsvParsingTest {
         val expectedCsv =
             """
             suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
-            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-08-31,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-13,5.0,4.0,3.0,1.0,2.0,3.0,2024-09-30,123123,2,true,"Tarkistusarvioinnin testi",2024-10-14
+            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5.0,4.0,3.0,1.0,2.0,3.0,2024-10-01,123123,2,true,"Tarkistusarvioinnin testi",2024-10-15
 
             """.trimIndent()
         assertEquals(expectedCsv, outputStream.toString(Charsets.UTF_8))
@@ -108,7 +109,7 @@ class CsvParsingTest {
     @Test
     fun `null values are written correctly to csv`() {
         val datePattern = "yyyy-MM-dd"
-        val dateFormatter = SimpleDateFormat(datePattern)
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         val entity =
             YkiSuoritusEntity(
                 id = null,
@@ -124,12 +125,12 @@ class CsvParsingTest {
                 email = null,
                 suoritusId = 183424,
                 lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = dateFormatter.parse("2024-09-01"),
+                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
                 jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = dateFormatter.parse("2024-11-14"),
+                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = null,
                 kirjoittaminen = null,
                 rakenteetJaSanasto = null,
@@ -149,7 +150,7 @@ class CsvParsingTest {
         val expectedCsv =
             """
             suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
-            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,,183424,2024-10-30T13:53:56Z,2024-08-31,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-13,,,,,,,,,,,,
+            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,,,,,,,,,,,,
 
             """.trimIndent()
         assertEquals(expectedCsv, outputStream.toString(Charsets.UTF_8))
