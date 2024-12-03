@@ -65,7 +65,7 @@ class KoealustaService(
                             etunimet = user.firstname,
                             sukunimi = user.lastname,
                             hetu = user.SSN,
-                            kutsumanimi = user.firstname,
+                            kutsumanimi = user.preferredname,
                         ),
                     )
                 oppija.oid
