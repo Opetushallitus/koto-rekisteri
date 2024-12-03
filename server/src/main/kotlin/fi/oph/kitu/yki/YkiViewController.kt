@@ -26,11 +26,9 @@ class YkiViewController(
     ): ModelAndView {
         val suoritukset: List<YkiSuoritusEntity> =
             if (versionHistory == true) {
-                suoritusRepository.findAll().toList()
+                suoritusRepository.findAllOrdered().toList()
             } else {
-                suoritusRepository
-                    .findAllDistinct()
-                    .toList()
+                suoritusRepository.findAllDistinct().toList()
             }
 
         val modelAndView = ModelAndView("yki-suoritukset")
