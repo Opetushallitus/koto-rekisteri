@@ -1,7 +1,5 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.getNullableBoolean
-import fi.oph.kitu.getNullableInt
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -217,8 +215,8 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getObject("yleisarvosana", Integer::class.java)?.toInt(),
         rs.getObject("tarkistusarvioinnin_saapumis_pvm", LocalDate::class.java),
         rs.getString("tarkistusarvioinnin_asiatunnus"),
-        rs.getNullableInt("tarkistusarvioidut_osakokeet"),
-        rs.getNullableBoolean("arvosana_muuttui"),
+        rs.getObject("tarkistusarvioidut_osakokeet", Integer::class.java)?.toInt(),
+        rs.getObject("arvosana_muuttui", Boolean::class.javaObjectType),
         rs.getString("perustelu"),
         rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
     )
