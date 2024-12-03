@@ -88,17 +88,17 @@ data class YkiSuoritusCsv(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val arviointipaiva: LocalDate,
     @JsonProperty("tekstinYmmartaminen")
-    val tekstinYmmartaminen: Double?,
+    val tekstinYmmartaminen: Int?,
     @JsonProperty("kirjoittaminen")
-    val kirjoittaminen: Double?,
+    val kirjoittaminen: Int?,
     @JsonProperty("rakenteetJaSanasto")
-    val rakenteetJaSanasto: Double?,
+    val rakenteetJaSanasto: Int?,
     @JsonProperty("puheenYmmartaminen")
-    val puheenYmmartaminen: Double?,
+    val puheenYmmartaminen: Int?,
     @JsonProperty("puhuminen")
-    val puhuminen: Double?,
+    val puhuminen: Int?,
     @JsonProperty("yleisarvosana")
-    val yleisarvosana: Double?,
+    val yleisarvosana: Int?,
     @JsonProperty("tarkistusarvioinninSaapumisPvm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tarkistusarvioinninSaapumisPvm: LocalDate?,

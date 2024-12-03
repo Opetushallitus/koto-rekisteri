@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.getNullableBoolean
-import fi.oph.kitu.getNullableDouble
 import fi.oph.kitu.getNullableInt
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
@@ -210,12 +209,12 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getString("jarjestajan_tunnus_oid"),
         rs.getString("jarjestajan_nimi"),
         rs.getObject("arviointipaiva", LocalDate::class.java),
-        rs.getNullableDouble("tekstin_ymmartaminen"),
-        rs.getNullableDouble("kirjoittaminen"),
-        rs.getNullableDouble("rakenteet_ja_sanasto"),
-        rs.getNullableDouble("puheen_ymmartaminen"),
-        rs.getNullableDouble("puhuminen"),
-        rs.getNullableDouble("yleisarvosana"),
+        rs.getObject("tekstin_ymmartaminen", Integer::class.java)?.toInt(),
+        rs.getObject("kirjoittaminen", Integer::class.java)?.toInt(),
+        rs.getObject("rakenteet_ja_sanasto", Integer::class.java)?.toInt(),
+        rs.getObject("puheen_ymmartaminen", Integer::class.java)?.toInt(),
+        rs.getObject("puhuminen", Integer::class.java)?.toInt(),
+        rs.getObject("yleisarvosana", Integer::class.java)?.toInt(),
         rs.getObject("tarkistusarvioinnin_saapumis_pvm", LocalDate::class.java),
         rs.getString("tarkistusarvioinnin_asiatunnus"),
         rs.getNullableInt("tarkistusarvioidut_osakokeet"),

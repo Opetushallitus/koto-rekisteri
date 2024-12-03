@@ -42,11 +42,11 @@ class CsvParsingTest {
         assertEquals(Oid("1.2.246.562.10.14893989377"), suoritus.jarjestajanOID)
         assertEquals("Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus", suoritus.jarjestajanNimi)
         assertEquals("2024-11-14", suoritus.arviointipaiva.format(dateFormatter))
-        assertEquals(5.0, suoritus.tekstinYmmartaminen)
-        assertEquals(5.0, suoritus.kirjoittaminen)
+        assertEquals(5, suoritus.tekstinYmmartaminen)
+        assertEquals(5, suoritus.kirjoittaminen)
         assertNull(suoritus.rakenteetJaSanasto)
-        assertEquals(5.0, suoritus.puheenYmmartaminen)
-        assertEquals(5.0, suoritus.puhuminen)
+        assertEquals(5, suoritus.puheenYmmartaminen)
+        assertEquals(5, suoritus.puhuminen)
         assertNull(suoritus.yleisarvosana)
         assertNull(suoritus.tarkistusarvioinninSaapumisPvm)
         assertEquals("", suoritus.tarkistusarvioinninAsiatunnus)
@@ -81,12 +81,12 @@ class CsvParsingTest {
                 jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = 5.0,
-                kirjoittaminen = 4.0,
-                rakenteetJaSanasto = 3.0,
-                puheenYmmartaminen = 1.0,
-                puhuminen = 2.0,
-                yleisarvosana = 3.0,
+                tekstinYmmartaminen = 5,
+                kirjoittaminen = 4,
+                rakenteetJaSanasto = 3,
+                puheenYmmartaminen = 1,
+                puhuminen = 2,
+                yleisarvosana = 3,
                 tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
                 tarkistusarvioinninAsiatunnus = "123123",
                 tarkistusarvioidutOsakokeet = 2,
@@ -100,7 +100,7 @@ class CsvParsingTest {
         val expectedCsv =
             """
             suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
-            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5.0,4.0,3.0,1.0,2.0,3.0,2024-10-01,123123,2,true,"Tarkistusarvioinnin testi",2024-10-15
+            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,4,3,1,2,3,2024-10-01,123123,2,true,"Tarkistusarvioinnin testi",2024-10-15
 
             """.trimIndent()
         assertEquals(expectedCsv, outputStream.toString(Charsets.UTF_8))
