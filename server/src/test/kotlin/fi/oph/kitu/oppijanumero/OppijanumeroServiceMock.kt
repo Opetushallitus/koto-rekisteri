@@ -1,8 +1,13 @@
 package fi.oph.kitu.oppijanumero
 
 class OppijanumeroServiceMock(
-    private val statusCode: Int,
-    private val response: YleistunnisteHaeResponse,
+    private val oppijanumero: String,
 ) : OppijanumeroService {
-    override fun yleistunnisteHae(request: YleistunnisteHaeRequest) = Pair(statusCode, response)
+    override fun getOppijanumero(
+        etunimet: String,
+        hetu: String,
+        kutsumanimi: String,
+        sukunimi: String,
+        oppijanumero: String?,
+    ): String = this.oppijanumero
 }
