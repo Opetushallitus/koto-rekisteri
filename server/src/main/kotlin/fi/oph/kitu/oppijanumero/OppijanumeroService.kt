@@ -1,7 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import fi.oph.kitu.logging.add
+import fi.oph.kitu.logging.addCondition
 import fi.oph.kitu.logging.withEvent
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -46,19 +46,13 @@ class OppijanumeroServiceImpl(
             require(sukunimi.isEmpty()) { "sukunimi cannot be empty" }
             require(kutsumanimi.isEmpty()) { "kutsumanimi cannot be empty" }
 
-            if (oppijanumero != null) {
-                event.add("requestHasOppijanumero" to true)
-                return@withEvent oppijanumero
+            if (event.addCondition(key = "requestHasOppijamumero", condition = oppijanumero != null)) {
+                return@withEvent oppijanumero.toString()
             }
 
-            event.add("requestHasOppijanumero" to false)
-
-            if (useMockData) {
-                event.add("useMockData" to true)
+            if (event.addCondition(key = "useMockData", condition = useMockData)) {
                 return@withEvent "1.2.246.562.24.33342764709"
             }
-
-            event.add("useMockData" to false)
 
             val endpoint = "$serviceUrl/yleistunniste/hae"
             val httpRequest =
@@ -66,12 +60,14 @@ class OppijanumeroServiceImpl(
                     .newBuilder(URI.create(endpoint))
                     .POST(
                         HttpRequest.BodyPublishers.ofString(
-                            """{
-                                "etunimet": "$etunimet",
-                                "hetu": "$hetu",
-                                "kutsumanimi": "$kutsumanimi",
-                                "sukunimi": "$sukunimi"
-                            }""".trim(),
+                            objectMapper.writeValueAsString(
+                                YleistunnisteHaeRequest(
+                                    etunimet,
+                                    hetu,
+                                    kutsumanimi,
+                                    sukunimi,
+                                ),
+                            ),
                         ),
                     ).header("Content-Type", "application/json")
 
