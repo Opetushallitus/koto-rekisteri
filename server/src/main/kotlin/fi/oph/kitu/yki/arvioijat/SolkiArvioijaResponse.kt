@@ -9,8 +9,8 @@ import fi.oph.kitu.csvparsing.BooleanFromNumericDeserializer
 import fi.oph.kitu.csvparsing.Features
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import java.time.LocalDate
 import java.time.OffsetDateTime
-import java.util.Date
 
 @JsonPropertyOrder(
     "arvioijanOppijanumero",
@@ -49,13 +49,13 @@ class SolkiArvioijaResponse(
     val postitoimipaikka: String,
     @JsonProperty("ensimmainenRekisterointipaiva")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val ensimmainenRekisterointipaiva: Date,
+    val ensimmainenRekisterointipaiva: LocalDate,
     @JsonProperty("kaudenAlkupaiva")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val kaudenAlkupaiva: Date?,
+    val kaudenAlkupaiva: LocalDate?,
     @JsonProperty("kaudenPaattymispaiva")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val kaudenPaattymispaiva: Date?,
+    val kaudenPaattymispaiva: LocalDate?,
     @JsonProperty("jatkorekisterointi")
     @JsonDeserialize(using = BooleanFromNumericDeserializer::class)
     val jatkorekisterointi: Boolean,

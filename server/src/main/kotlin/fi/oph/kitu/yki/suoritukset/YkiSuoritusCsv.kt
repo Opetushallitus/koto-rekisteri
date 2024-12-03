@@ -12,7 +12,7 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import org.ietf.jgss.Oid
 import java.time.Instant
-import java.util.Date
+import java.time.LocalDate
 
 @JsonPropertyOrder(
     "suorittajanOID",
@@ -75,7 +75,7 @@ data class YkiSuoritusCsv(
     val lastModified: Instant,
     @JsonProperty("tutkintopaiva")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val tutkintopaiva: Date,
+    val tutkintopaiva: LocalDate,
     @JsonProperty("tutkintokieli")
     val tutkintokieli: Tutkintokieli,
     @JsonProperty("tutkintotaso")
@@ -86,7 +86,7 @@ data class YkiSuoritusCsv(
     val jarjestajanNimi: String,
     @JsonProperty("arviointipaiva")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val arviointipaiva: Date,
+    val arviointipaiva: LocalDate,
     @JsonProperty("tekstinYmmartaminen")
     val tekstinYmmartaminen: Double?,
     @JsonProperty("kirjoittaminen")
@@ -101,7 +101,7 @@ data class YkiSuoritusCsv(
     val yleisarvosana: Double?,
     @JsonProperty("tarkistusarvioinninSaapumisPvm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val tarkistusarvioinninSaapumisPvm: Date?,
+    val tarkistusarvioinninSaapumisPvm: LocalDate?,
     @JsonProperty("tarkistusarvioinninAsiatunnus")
     val tarkistusarvioinninAsiatunnus: String?,
     @JsonProperty("tarkistusarvioidutOsakokeet")
@@ -113,7 +113,7 @@ data class YkiSuoritusCsv(
     val perustelu: String?,
     @JsonProperty("tarkistusarvioinninKasittelyPvm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val tarkistusarvioinninKasittelyPvm: Date?,
+    val tarkistusarvioinninKasittelyPvm: LocalDate?,
 ) {
     fun toEntity(id: Int? = null) =
         YkiSuoritusEntity(

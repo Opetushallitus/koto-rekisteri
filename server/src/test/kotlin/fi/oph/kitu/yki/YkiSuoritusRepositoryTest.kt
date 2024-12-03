@@ -10,8 +10,9 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -38,7 +39,7 @@ class YkiSuoritusRepositoryTest(
     @Test
     fun `suoritus is saved correctly`() {
         val datePattern = "yyyy-MM-dd"
-        val dateFormatter = SimpleDateFormat(datePattern)
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         val suoritus =
             YkiSuoritusEntity(
                 id = null,
@@ -54,24 +55,24 @@ class YkiSuoritusRepositoryTest(
                 email = "testi@testi.fi",
                 suoritusId = 183424,
                 lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = dateFormatter.parse("2024-09-01"),
+                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
                 jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = dateFormatter.parse("2024-11-14"),
+                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 5.0,
                 kirjoittaminen = 4.0,
                 rakenteetJaSanasto = 3.0,
                 puheenYmmartaminen = 1.0,
                 puhuminen = 2.0,
                 yleisarvosana = 3.0,
-                tarkistusarvioinninSaapumisPvm = dateFormatter.parse("2024-10-01"),
+                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
                 tarkistusarvioinninAsiatunnus = "123123",
                 tarkistusarvioidutOsakokeet = 2,
                 arvosanaMuuttui = true,
                 perustelu = "Tarkistusarvioinnin testi",
-                tarkistusarvioinninKasittelyPvm = dateFormatter.parse("2024-10-15"),
+                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
             )
         val savedSuoritukset = ykiSuoritusRepository.saveAll(listOf(suoritus)).toList()
         assertEquals(suoritus, savedSuoritukset[0].copy(id = null))
@@ -80,7 +81,7 @@ class YkiSuoritusRepositoryTest(
     @Test
     fun `suoritus with null values is saved correctly`() {
         val datePattern = "yyyy-MM-dd"
-        val dateFormatter = SimpleDateFormat(datePattern)
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         val suoritus =
             YkiSuoritusEntity(
                 id = null,
@@ -96,12 +97,12 @@ class YkiSuoritusRepositoryTest(
                 email = null,
                 suoritusId = 183424,
                 lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = dateFormatter.parse("2024-09-01"),
+                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
                 jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = dateFormatter.parse("2024-11-14"),
+                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = null,
                 kirjoittaminen = null,
                 rakenteetJaSanasto = null,
@@ -122,7 +123,7 @@ class YkiSuoritusRepositoryTest(
     @Test
     fun `findAllDistinct returns the latest suoritus of same suoritusId`() {
         val datePattern = "yyyy-MM-dd"
-        val dateFormatter = SimpleDateFormat(datePattern)
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         val suoritus =
             YkiSuoritusEntity(
                 id = null,
@@ -138,12 +139,12 @@ class YkiSuoritusRepositoryTest(
                 email = "testi@testi.fi",
                 suoritusId = 183424,
                 lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = dateFormatter.parse("2024-09-01"),
+                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
                 jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = dateFormatter.parse("2024-11-14"),
+                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 1.0,
                 kirjoittaminen = 1.0,
                 rakenteetJaSanasto = 1.0,
@@ -172,12 +173,12 @@ class YkiSuoritusRepositoryTest(
                 email = "testi@testi.fi",
                 suoritusId = 123456,
                 lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = dateFormatter.parse("2024-09-01"),
+                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.ENG,
                 tutkintotaso = Tutkintotaso.YT,
                 jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = dateFormatter.parse("2024-11-14"),
+                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 1.0,
                 kirjoittaminen = 1.0,
                 rakenteetJaSanasto = 1.0,
@@ -200,12 +201,12 @@ class YkiSuoritusRepositoryTest(
                 puheenYmmartaminen = 1.0,
                 puhuminen = 2.0,
                 yleisarvosana = 3.0,
-                tarkistusarvioinninSaapumisPvm = dateFormatter.parse("2024-10-01"),
+                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
                 tarkistusarvioinninAsiatunnus = "123123",
                 tarkistusarvioidutOsakokeet = 2,
                 arvosanaMuuttui = true,
                 perustelu = "Tarkistusarvioinnin testi",
-                tarkistusarvioinninKasittelyPvm = dateFormatter.parse("2024-10-15"),
+                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
             )
         ykiSuoritusRepository.saveAll(listOf(suoritus, suoritus2, updatedSuoritus))
         val suoritukset = ykiSuoritusRepository.findAllDistinct().toList()

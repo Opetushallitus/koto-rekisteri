@@ -1,14 +1,13 @@
 package fi.oph.kitu.yki.arvioijat
 
-import fi.oph.kitu.setNullableDate
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.getTutkintokieli
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
-import java.sql.Date
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 interface CustomYkiArvioijaRepository {
@@ -59,9 +58,9 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
             ps.setString(6, arvioija.katuosoite)
             ps.setString(7, arvioija.postinumero)
             ps.setString(8, arvioija.postitoimipaikka)
-            ps.setDate(9, Date(arvioija.ensimmainenRekisterointipaiva.time))
-            ps.setNullableDate(10, arvioija.kaudenAlkupaiva)
-            ps.setNullableDate(11, arvioija.kaudenPaattymispaiva)
+            ps.setObject(9, arvioija.ensimmainenRekisterointipaiva)
+            ps.setObject(10, arvioija.kaudenAlkupaiva)
+            ps.setObject(11, arvioija.kaudenPaattymispaiva)
             ps.setBoolean(12, arvioija.jatkorekisterointi)
             ps.setInt(13, arvioija.tila.toInt())
             ps.setString(14, arvioija.kieli.toString())
@@ -103,9 +102,9 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
                     rs.getString("katuosoite"),
                     rs.getString("postinumero"),
                     rs.getString("postitoimipaikka"),
-                    rs.getDate("ensimmainen_rekisterointipaiva"),
-                    rs.getDate("kauden_alkupaiva"),
-                    rs.getDate("kauden_paattymispaiva"),
+                    rs.getObject("ensimmainen_rekisterointipaiva", LocalDate::class.java),
+                    rs.getObject("kauden_alkupaiva", LocalDate::class.java),
+                    rs.getObject("kauden_paattymispaiva", LocalDate::class.java),
                     rs.getBoolean("jatkorekisterointi"),
                     rs.getInt("tila"),
                     rs.getTutkintokieli("kieli"),
