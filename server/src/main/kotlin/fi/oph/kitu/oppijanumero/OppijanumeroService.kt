@@ -41,12 +41,12 @@ class OppijanumeroServiceImpl(
         oppijanumero: String?,
     ): String =
         logger.atInfo().withEvent("getOppijanumero") { event ->
-            require(etunimet.isEmpty()) { "etunimet cannot be empty" }
-            require(hetu.isEmpty()) { "hetu cannot be empty" }
-            require(sukunimi.isEmpty()) { "sukunimi cannot be empty" }
-            require(kutsumanimi.isEmpty()) { "kutsumanimi cannot be empty" }
+            require(etunimet.isNotEmpty()) { "etunimet cannot be empty" }
+            require(hetu.isNotEmpty()) { "hetu cannot be empty" }
+            require(sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
+            require(kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
 
-            if (event.addCondition(key = "requestHasOppijamumero", condition = oppijanumero != null)) {
+            if (event.addCondition(key = "requestHasOppijanumero", condition = oppijanumero != null)) {
                 return@withEvent oppijanumero.toString()
             }
 
