@@ -58,7 +58,7 @@ class KoealustaService(
 
     fun getOid(user: KoealustaSuorituksetResponse.User): String {
         val oid =
-            if (user.OID.isEmpty()) {
+            user.OID.ifEmpty {
                 val (_, oppija) =
                     oppijanumeroService.yleistunnisteHae(
                         YleistunnisteHaeRequest(
@@ -69,8 +69,6 @@ class KoealustaService(
                         ),
                     )
                 oppija.oid
-            } else {
-                user.OID
             }
 
         if (oid.isEmpty()) {
@@ -127,6 +125,7 @@ class KoealustaService(
                         KielitestiSuoritus(
                             firstName = user.firstname,
                             lastName = user.lastname,
+                            preferredname = user.preferredname,
                             email = user.email,
                             oppijaOid = oid,
                             timeCompleted = Instant.ofEpochSecond(completion.timecompleted),

@@ -47,8 +47,9 @@ class KoealustaServiceTests {
                     {
                       "users": [
                         {
-                          "firstname": "Mervi",
+                          "firstname": "Mervi-Marianne",
                           "lastname": "Esimerkki",
+                          "preferredname": "Mervi", 
                           "OID": "",
                           "SSN": "",
                           "email": "mervi.esimerkki@oph.fi",
