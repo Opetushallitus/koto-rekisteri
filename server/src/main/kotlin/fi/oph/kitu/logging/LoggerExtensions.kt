@@ -58,6 +58,14 @@ inline fun <reified T> LoggingEventBuilder.addResponse(
         .addKeyValue("$endpoint.response.headers", response.headers)
         .addKeyValue("$endpoint.response.body", response.body)
 
+fun LoggingEventBuilder.addCondition(
+    key: String,
+    condition: Boolean,
+): Boolean {
+    this.addKeyValue(key, condition)
+    return condition
+}
+
 fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventBuilder {
     val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
     this.addKeyValue("isDuplicateKeyException", isDuplicateKeyException)
