@@ -8,7 +8,6 @@ import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -56,28 +55,6 @@ class KoealustaService(
         }
     }
 
-    fun getOid(user: KoealustaSuorituksetResponse.User): String {
-        val oid =
-            user.OID.ifEmpty {
-                val (_, oppija) =
-                    oppijanumeroService.yleistunnisteHae(
-                        YleistunnisteHaeRequest(
-                            etunimet = user.firstname,
-                            sukunimi = user.lastname,
-                            hetu = user.SSN,
-                            kutsumanimi = user.preferredname,
-                        ),
-                    )
-                oppija.oid
-            }
-
-        if (oid.isEmpty()) {
-            throw RuntimeException("oid is empty")
-        }
-
-        return oid
-    }
-
     fun importSuoritukset(from: Instant): Instant =
         logger.atInfo().withEvent("koealusta.importSuoritukset") { event ->
             event.add("from" to from)
@@ -109,7 +86,13 @@ class KoealustaService(
 
             val suoritukset =
                 suorituksetResponse.users.flatMap { user ->
-                    val oid = getOid(user)
+                    val oid =
+                        oppijanumeroService.getOppijanumero(
+                            etunimet = user.firstname,
+                            sukunimi = user.lastname,
+                            hetu = user.SSN,
+                            kutsumanimi = user.preferredname,
+                        )
                     user.completions.map { completion ->
                         val luetunYmmartaminen =
                             completion.results.find {

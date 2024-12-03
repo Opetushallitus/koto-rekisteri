@@ -71,7 +71,7 @@ class OppijanumeroServiceImpl(
                         ),
                     ).header("Content-Type", "application/json")
 
-            // no need to log sendRequest, because there are request and reponse logging inside casAuthenticatedService.
+            // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
             val httpResponse = casAuthenticatedService.sendRequest(httpRequest)
             val code = httpResponse.statusCode()
             if (code != 200) {
