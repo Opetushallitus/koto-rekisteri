@@ -29,8 +29,11 @@ export class LogGroupsStack extends Stack {
         filterPattern: FilterPattern.any(
           FilterPattern.booleanValue("$.success", false),
           FilterPattern.exists("$.stack_trace"),
+          FilterPattern.exists("$.error.type"),
           FilterPattern.stringValue("$.level", "=", "WARN"),
+          FilterPattern.stringValue("$.log.level", "=", "WARN"),
           FilterPattern.stringValue("$.level", "=", "ERROR"),
+          FilterPattern.stringValue("$.log.level", "=", "ERROR"),
         ),
       })
       .metric()
