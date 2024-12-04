@@ -22,7 +22,7 @@ Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
     </thead>
     {{#suoritukset}}
     <tbody class="suoritus">
-    <tr>
+    <tr data-testid="suoritus-summary-row">
         <td>{{lastName}}</td>
         <td>{{firstName}}</td>
         <td>{{email}}</td>
@@ -30,7 +30,7 @@ Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
         <td>{{timeCompleted}}</td>
         <td>({{totalEvaluationSystem}} / {{totalEvaluationTeacher}})</td>
     </tr>
-    <tr>
+    <tr data-testid="suoritus-details-row">
         <td colspan="13">
             <details>
                 <summary>Näytä lisätiedot/tulokset</summary>

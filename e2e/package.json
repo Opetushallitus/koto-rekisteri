@@ -9,6 +9,9 @@
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.47.0",
-    "@types/node": "^22.5.4"
+    "@types/node": "^22.5.4",
+    "@types/pg": "^8.11.10",
+    "pg": "^8.13.1",
+    "sql-template-strings": "^2.2.2"
   }
 }
