@@ -1,7 +1,12 @@
 import { aws_sns, Stack, StackProps } from "aws-cdk-lib"
 import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
-import { FilterPattern, LogGroup } from "aws-cdk-lib/aws-logs"
+import {
+  CustomDataIdentifier,
+  DataProtectionPolicy,
+  FilterPattern,
+  LogGroup,
+} from "aws-cdk-lib/aws-logs"
 import { Construct } from "constructs"
 
 export interface LogGroupsStackProps extends StackProps {
@@ -15,8 +20,17 @@ export class LogGroupsStack extends Stack {
   constructor(scope: Construct, id: string, props: LogGroupsStackProps) {
     super(scope, id, props)
 
+    const FINNISH_SSN_REGEX =
+      "((0[1-9]|[12][0-9]|3[01]))((0[1-9]|1[0-2]))(\\d{2})([-AaBbCcDdEeFfXxYyWwVvUu+])(\\d{3})([0-9A-Ya-y])"
+    const dataProtectionPolicy = new DataProtectionPolicy({
+      name: "KituDataProtectionPolicy",
+      description: "Kitu data protection policy",
+      identifiers: [new CustomDataIdentifier("Finnish_SSN", FINNISH_SSN_REGEX)],
+    })
+
     this.serviceLogGroup = new LogGroup(this, "Service", {
       logGroupName: "KituService",
+      dataProtectionPolicy,
     })
     this.serviceAuditLogGroup = new LogGroup(this, "ServiceAudit", {
       logGroupName: "KituServiceAudit",
