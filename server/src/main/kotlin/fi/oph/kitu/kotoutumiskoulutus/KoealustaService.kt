@@ -7,7 +7,6 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
-import fi.oph.kitu.oppijanumero.OppijanumeroService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -21,7 +20,7 @@ class KoealustaService(
     private val restClientBuilder: RestClient.Builder,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val jacksonObjectMapper: ObjectMapper,
-    private val oppijanumeroService: OppijanumeroService,
+    private val mappingService: KoealustaMappingService,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -84,49 +83,7 @@ class KoealustaService(
             val suorituksetResponse =
                 tryParseMoodleResponse<KoealustaSuorituksetResponse>(response.body!!)
 
-            val suoritukset =
-                suorituksetResponse.users.flatMap { user ->
-                    val oppijanumero =
-                        oppijanumeroService.getOppijanumero(
-                            etunimet = user.firstname,
-                            sukunimi = user.lastname,
-                            hetu = user.SSN,
-                            kutsumanimi = user.preferredname,
-                        )
-                    user.completions.map { completion ->
-                        val luetunYmmartaminen =
-                            completion.results.find {
-                                it.name == "luetun ymm\u00e4rt\u00e4minen"
-                            }!!
-                        val kuullunYmmartaminen =
-                            completion.results.find {
-                                it.name == "kuullun ymm\u00e4rt\u00e4minen"
-                            }!!
-                        val puhe = completion.results.find { it.name == "puhe" }!!
-                        val kirjoittaminen = completion.results.find { it.name == "kirjoittaminen" }!!
-
-                        KielitestiSuoritus(
-                            firstName = user.firstname,
-                            lastName = user.lastname,
-                            preferredname = user.preferredname,
-                            email = user.email,
-                            oppijanumero = oppijanumero,
-                            timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
-                            courseid = completion.courseid,
-                            coursename = completion.coursename,
-                            luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system,
-                            luetunYmmartaminenResultTeacher = luetunYmmartaminen.quiz_result_teacher,
-                            kuullunYmmartaminenResultSystem = kuullunYmmartaminen.quiz_result_system,
-                            kuullunYmmartaminenResultTeacher = kuullunYmmartaminen.quiz_result_teacher,
-                            puheResultSystem = puhe.quiz_result_system,
-                            puheResultTeacher = puhe.quiz_result_teacher,
-                            kirjoittaminenResultSystem = kirjoittaminen.quiz_result_system,
-                            kirjottaminenResultTeacher = kirjoittaminen.quiz_result_teacher,
-                            totalEvaluationTeacher = completion.total_evaluation_teacher,
-                            totalEvaluationSystem = completion.total_evaluation_system,
-                        )
-                    }
-                }
+            val suoritukset = mappingService.suorituksetToEntity(suorituksetResponse)
 
             val result = kielitestiSuoritusRepository.saveAll(suoritukset)
 

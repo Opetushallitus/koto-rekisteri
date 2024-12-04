@@ -97,10 +97,7 @@ class KoealustaServiceTests {
                 restClientBuilder = mockRestClientBuilder,
                 kielitestiSuoritusRepository = kielitestiSuoritusRepository,
                 jacksonObjectMapper = objectMapper,
-                oppijanumeroService =
-                    OppijanumeroServiceMock(
-                        "123",
-                    ),
+                mappingService = KoealustaMappingService(OppijanumeroServiceMock("123")),
             )
 
         koealustaService.koealustaToken = "token"
