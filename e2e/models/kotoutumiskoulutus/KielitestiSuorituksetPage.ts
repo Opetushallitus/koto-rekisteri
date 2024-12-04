@@ -1,6 +1,5 @@
 import { Page } from "@playwright/test"
 import BasePage from "../BasePage"
-import { expect } from "../../fixtures/baseFixture"
 
 export default class KielitestiSuorituksetPage extends BasePage {
   constructor(page: Page) {
@@ -24,5 +23,19 @@ export default class KielitestiSuorituksetPage extends BasePage {
 
   getContent() {
     return this.getPageContent()
+  }
+
+  getSuorituksetTable() {
+    return this.getContent().getByRole("table")
+  }
+
+  getSuoritusRow() {
+    const suorituksetTable = this.getSuorituksetTable()
+    return suorituksetTable.getByTestId("suoritus-summary-row")
+  }
+
+  getSuoritusDetailsRow() {
+    const suorituksetTable = this.getSuorituksetTable()
+    return suorituksetTable.getByTestId("suoritus-details-row")
   }
 }
