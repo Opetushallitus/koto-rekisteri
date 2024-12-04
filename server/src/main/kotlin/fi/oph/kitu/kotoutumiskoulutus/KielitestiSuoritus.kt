@@ -11,7 +11,7 @@ data class KielitestiSuoritus(
     val firstName: String,
     val lastName: String,
     val preferredname: String,
-    val oppijaOid: String,
+    val oppijanumero: String,
     val email: String,
     val timeCompleted: Instant,
     val courseid: Int,
