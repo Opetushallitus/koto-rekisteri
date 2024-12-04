@@ -1,7 +1,5 @@
 package fi.oph.kitu
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -18,12 +16,9 @@ data class RestErrorMessage(
 
 @ControllerAdvice
 class GlobalControllerExceptionHandler {
-    private val logger: Logger = LoggerFactory.getLogger(GlobalControllerExceptionHandler::class.java)
-
     @ExceptionHandler
-    fun handleRestClientException(ex: RestClientException): ResponseEntity<RestErrorMessage> {
-        logger.error(ex.stackTraceToString())
-        return ResponseEntity(
+    fun handleRestClientException(ex: RestClientException): ResponseEntity<RestErrorMessage> =
+        ResponseEntity(
             RestErrorMessage(
                 status = HttpStatus.SERVICE_UNAVAILABLE.value(),
                 error = "Service Unavailable",
@@ -31,5 +26,4 @@ class GlobalControllerExceptionHandler {
             ),
             HttpStatus.SERVICE_UNAVAILABLE,
         )
-    }
 }

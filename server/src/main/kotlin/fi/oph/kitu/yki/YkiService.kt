@@ -1,25 +1,20 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.CsvArgs
 import fi.oph.kitu.csvparsing.asCsv
 import fi.oph.kitu.csvparsing.writeAsCsv
-import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addResponse
-import fi.oph.kitu.logging.withEvent
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import java.io.ByteArrayOutputStream
 import java.time.Instant
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -29,72 +24,68 @@ class YkiService(
     private val suoritusRepository: YkiSuoritusRepository,
     private val arvioijaRepository: YkiArvioijaRepository,
 ) {
-    private val logger: Logger = LoggerFactory.getLogger(javaClass)
-
+    @WithSpan
     fun importYkiSuoritukset(
         from: Instant? = null,
-        lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
-    ): Instant? =
-        logger.atInfo().withEvent("yki.importSuoritukset") { event ->
-            event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
+    ): Instant? {
+        val span = Span.current()
 
-            val url = if (from != null) "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}" else "suoritukset"
-            val response =
-                solkiRestClient
-                    .get()
-                    .uri(url)
-                    .retrieve()
-                    .toEntity<String>()
+        val url = if (from != null) "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}" else "suoritukset"
+        span.setAttribute("url", url)
 
-            event.addResponse(response, PeerService.Solki)
+        val response =
+            solkiRestClient
+                .get()
+                .uri(url)
+                .retrieve()
+                .toEntity<String>()
 
-            val suoritukset = response.body?.asCsv<YkiSuoritusCsv>() ?: listOf()
+        val suoritukset = response.body?.asCsv<YkiSuoritusCsv>() ?: listOf()
 
-            if (dryRun != true) {
-                val res = suoritusRepository.saveAll(suoritukset.map { it.toEntity() })
-                event.addKeyValue("importedSuorituksetSize", res.count())
-            }
-            return@withEvent suoritukset.maxOfOrNull { it.lastModified } ?: from
+        if (dryRun != true) {
+            val res = suoritusRepository.saveAll(suoritukset.map { it.toEntity() })
         }
 
-    fun importYkiArvioijat(dryRun: Boolean = false) =
-        logger.atInfo().withEvent("yki.importArvioijat") { event ->
-            val response =
-                solkiRestClient
-                    .get()
-                    .uri("arvioijat")
-                    .retrieve()
-                    .toEntity<String>()
+        return suoritukset.maxOfOrNull { it.lastModified } ?: from
+    }
 
-            event
-                .addResponse("yki.arvioijat.get", response)
-                .addKeyValue("peer.service", PeerService.Solki.value)
+    @WithSpan
+    fun importYkiArvioijat(dryRun: Boolean = false) {
+        val span = Span.current()
 
-            val arvioijat =
-                response.body?.asCsv<SolkiArvioijaResponse>(CsvArgs(event = event))
-                    ?: throw Error.EmptyArvioijatResponse()
-            event.addKeyValue("yki.arvioijat.receivedCount", arvioijat.size)
-            if (arvioijat.isEmpty()) {
-                throw Error.EmptyArvioijat()
-            }
+        val response =
+            solkiRestClient
+                .get()
+                .uri("arvioijat")
+                .retrieve()
+                .toEntity<String>()
 
-            if (!dryRun) {
-                val importedArvioijat = arvioijaRepository.saveAll(arvioijat.map { it.toEntity() })
-                event.addKeyValue("yki.arvioijat.importedCount", importedArvioijat.count())
-            }
+        val arvioijat =
+            response.body?.asCsv<SolkiArvioijaResponse>(CsvArgs())
+                ?: throw Error.EmptyArvioijatResponse()
+
+        span.setAttribute("yki.arvioijat.receivedCount", arvioijat.size.toLong())
+
+        if (arvioijat.isEmpty()) {
+            throw Error.EmptyArvioijat()
         }
 
-    fun generateSuorituksetCsvStream(includeVersionHistory: Boolean): ByteArrayOutputStream =
-        logger.atInfo().withEvent("yki.getSuorituksetCsv") { event ->
-            val data = if (includeVersionHistory) suoritusRepository.findAll() else suoritusRepository.findAllDistinct()
-            event.add("dataCount" to data.count())
-            val writableData = data.map { it.toYkiSuoritusCsv() }
-            val outputStream = ByteArrayOutputStream()
-            writableData.writeAsCsv(outputStream, CsvArgs(useHeader = true))
-
-            return@withEvent outputStream
+        if (dryRun) {
+            return
         }
+
+        arvioijaRepository.saveAll(arvioijat.map { it.toEntity() })
+    }
+
+    fun generateSuorituksetCsvStream(includeVersionHistory: Boolean): ByteArrayOutputStream {
+        val data = if (includeVersionHistory) suoritusRepository.findAll() else suoritusRepository.findAllDistinct()
+        Span.current().setAttribute("suoritus.count", data.count().toLong())
+        val writableData = data.map { it.toYkiSuoritusCsv() }
+        val outputStream = ByteArrayOutputStream()
+        writableData.writeAsCsv(outputStream, CsvArgs(useHeader = true))
+        return outputStream
+    }
 
     sealed class Error(
         message: String,

@@ -19,6 +19,7 @@ import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { ITopic } from "aws-cdk-lib/aws-sns"
 import { Construct } from "constructs"
+import { ManagedPolicy } from "aws-cdk-lib/aws-iam"
 
 export interface ServiceStackProps extends StackProps {
   auditLogGroup: ILogGroup
@@ -135,12 +136,24 @@ export class ServiceStack extends Stack {
       sslPolicy: SslPolicy.RECOMMENDED_TLS,
     })
 
+    this.service.taskDefinition.addContainer("AwsOtelCollector", {
+      image: ContainerImage.fromRegistry(
+        // renovate: datasource=docker
+        "public.ecr.aws/aws-observability/aws-otel-collector:v0.41.1",
+      ),
+    })
+
     this.service.targetGroup.configureHealthCheck({
       ...this.service.targetGroup.healthCheck,
       path: "/actuator/health",
     })
 
     props.auditLogGroup.grantWrite(this.service.service.taskDefinition.taskRole)
+
+    // Ref: https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AWSXrayWriteOnlyAccess.html
+    this.service.taskDefinition.taskRole.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName("AWSXrayWriteOnlyAccess"),
+    )
 
     this.service.service
       .metricCpuUtilization()

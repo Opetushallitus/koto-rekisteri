@@ -1,0 +1,34 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+extensions:
+  health_check:
+
+exporters:
+  debug:
+  otlphttp/jaeger:
+    endpoint: http://jaeger:4318
+  otlp/oteltui:
+    endpoint: oteltui:4317
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlphttp/jaeger, otlp/oteltui]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlp/oteltui]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlp/oteltui]

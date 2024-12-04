@@ -4,6 +4,7 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -19,6 +20,7 @@ class YkiViewController(
     private val suoritusRepository: YkiSuoritusRepository,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
+    @WithSpan
     fun suorituksetView(
         model: Model,
         response: HttpServletResponse?,
@@ -40,6 +42,7 @@ class YkiViewController(
     }
 
     @GetMapping("/arvioijat")
+    @WithSpan
     fun arvioijatView(
         model: Model,
         response: HttpServletResponse?,
