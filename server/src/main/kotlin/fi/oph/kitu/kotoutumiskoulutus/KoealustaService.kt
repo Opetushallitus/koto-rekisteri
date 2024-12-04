@@ -86,7 +86,7 @@ class KoealustaService(
 
             val suoritukset =
                 suorituksetResponse.users.flatMap { user ->
-                    val oid =
+                    val oppijanumero =
                         oppijanumeroService.getOppijanumero(
                             etunimet = user.firstname,
                             sukunimi = user.lastname,
@@ -110,7 +110,7 @@ class KoealustaService(
                             lastName = user.lastname,
                             preferredname = user.preferredname,
                             email = user.email,
-                            oppijaOid = oid,
+                            oppijanumero = oppijanumero,
                             timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
                             courseid = completion.courseid,
                             coursename = completion.coursename,
