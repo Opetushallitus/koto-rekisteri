@@ -75,6 +75,15 @@ class OppijanumeroServiceImpl(
             val httpResponse = casAuthenticatedService.sendRequest(httpRequest)
             val code = httpResponse.statusCode()
             if (code != 200) {
+                // This can happen at least in few scenarios:
+                //  1. code == 504. Oppijanumero-service goes down while we are having sign-in request -flow.
+                //      First requests are passed, but the last request returns 504.
+                //  2. code == 5xx. There is an unknown internal error in oppijanumero-service
+                //  3. code == 404. Person not found.
+                //      - Oppijanumero-service was unable to identify person with SSN and other information.
+                //  4. code == 409. Conflict in person information.
+                //      - Oppijanumero-service was able to identify person with SSN
+                //        but there is a mismatch in etunimet, kutsumanimi and/or sukunimi.
                 throw RuntimeException("Unexpected status code '$code' by the endpoint '$endpoint'.")
             }
 
