@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.PeerService
+import fi.oph.kitu.kotoutumiskoulutus.KoealustaMappingService.KoealustaMappingServiceException
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
+import fi.oph.kitu.oppijanumero.addOppijanumeroExceptions
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -83,7 +85,13 @@ class KoealustaService(
             val suorituksetResponse =
                 tryParseMoodleResponse<KoealustaSuorituksetResponse>(response.body!!)
 
-            val suoritukset = mappingService.suorituksetToEntity(suorituksetResponse)
+            val suoritukset =
+                try {
+                    mappingService.convertToEntity(suorituksetResponse)
+                } catch (ex: KoealustaMappingServiceException) {
+                    event.addOppijanumeroExceptions(ex.oppijanumeroExceptions)
+                    throw ex
+                }
 
             val result = kielitestiSuoritusRepository.saveAll(suoritukset)
 
