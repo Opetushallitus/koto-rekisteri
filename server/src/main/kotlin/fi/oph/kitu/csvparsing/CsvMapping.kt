@@ -12,6 +12,7 @@ import kotlin.reflect.full.findAnnotation
 
 data class CsvArgs(
     val columnSeparator: Char = ',',
+    val lineSeparator: String = "\n",
     val useHeader: Boolean = false,
     val quoteChar: Char = '"',
     val event: LoggingEventBuilder = LoggerFactory.getLogger(CsvArgs::class.java).atInfo(),
@@ -52,6 +53,7 @@ inline fun <reified T> getSchema(
         csvMapper
             .typedSchemaFor(T::class.java)
             .withColumnSeparator(args.columnSeparator)
+            .withLineSeparator(args.lineSeparator)
             .withUseHeader(args.useHeader)
             .withQuoteChar(args.quoteChar)
 
