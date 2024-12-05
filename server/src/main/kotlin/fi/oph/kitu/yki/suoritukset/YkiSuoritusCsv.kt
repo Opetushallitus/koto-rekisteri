@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import fi.oph.kitu.csvparsing.BooleanFromNumericDeserializer
 import fi.oph.kitu.csvparsing.Features
+import fi.oph.kitu.csvparsing.TutkintokieliDeserializer
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -77,6 +78,7 @@ data class YkiSuoritusCsv(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tutkintopaiva: LocalDate,
     @JsonProperty("tutkintokieli")
+    @JsonDeserialize(using = TutkintokieliDeserializer::class)
     val tutkintokieli: Tutkintokieli,
     @JsonProperty("tutkintotaso")
     val tutkintotaso: Tutkintotaso,
