@@ -3,6 +3,7 @@ package fi.oph.kitu.csvparsing
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import org.ietf.jgss.Oid
@@ -54,6 +55,36 @@ class CsvParsingTest {
         assertEquals(false, suoritus.arvosanaMuuttui)
         assertEquals("", suoritus.perustelu)
         assertNull(suoritus.tarkistusarvioinninKasittelyPvm)
+    }
+
+    @Test
+    fun `test legacy language code 10 parsing`() {
+        val arvioijaCsv =
+            """
+            "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"10","PT+KT"
+            """.trimIndent()
+        val arvioija = arvioijaCsv.asCsv<SolkiArvioijaResponse>()[0]
+        assertEquals(Tutkintokieli.SWE10, arvioija.kieli)
+    }
+
+    @Test
+    fun `test legacy language code 11 parsing`() {
+        val arvioijaCsv =
+            """
+            "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"11","PT+KT"
+            """.trimIndent()
+        val arvioija = arvioijaCsv.asCsv<SolkiArvioijaResponse>()[0]
+        assertEquals(Tutkintokieli.ENG11, arvioija.kieli)
+    }
+
+    @Test
+    fun `test legacy language code 12 parsing`() {
+        val arvioijaCsv =
+            """
+            "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"12","PT+KT"
+            """.trimIndent()
+        val arvioija = arvioijaCsv.asCsv<SolkiArvioijaResponse>()[0]
+        assertEquals(Tutkintokieli.ENG12, arvioija.kieli)
     }
 
     @Test
