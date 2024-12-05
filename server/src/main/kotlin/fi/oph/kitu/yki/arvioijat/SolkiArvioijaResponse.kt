@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import fi.oph.kitu.csvparsing.BooleanFromNumericDeserializer
 import fi.oph.kitu.csvparsing.Features
+import fi.oph.kitu.csvparsing.TutkintokieliDeserializer
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.time.LocalDate
@@ -62,6 +63,7 @@ class SolkiArvioijaResponse(
     @JsonProperty("tila")
     val tila: Number,
     @JsonProperty("kieli")
+    @JsonDeserialize(using = TutkintokieliDeserializer::class)
     val kieli: Tutkintokieli,
     @JsonProperty("tasot")
     @JsonDeserialize(using = TutkintotasotFromStringDeserializer::class)
