@@ -2,6 +2,8 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completion
+import fi.oph.kitu.oppijanumero.Oppija
+import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -10,24 +12,45 @@ import java.time.Instant
 class KoealustaMappingService(
     private val oppijanumeroService: OppijanumeroService,
 ) {
-    fun suorituksetToEntity(suorituksetResponse: KoealustaSuorituksetResponse): List<KielitestiSuoritus> =
-        suorituksetResponse.users.flatMap { user ->
-            val oppijanumero = getOppijanumero(user)
-            user.completions.map { completion ->
-                completionToEntity(
-                    user,
-                    oppijanumero,
-                    completion,
-                )
-            }
-        }
+    fun convertToEntity(suorituksetResponse: KoealustaSuorituksetResponse): List<KielitestiSuoritus> {
+        val exceptions = mutableListOf<OppijanumeroException>()
 
-    fun getOppijanumero(user: User) =
-        oppijanumeroService.getOppijanumero(
-            etunimet = user.firstname,
-            sukunimi = user.lastname,
-            hetu = user.SSN,
-            kutsumanimi = user.preferredname,
+        val entity =
+            suorituksetResponse.users.flatMap { user ->
+                val oppijanumero =
+                    try {
+                        oppijanumeroService.getOppijanumero(toOppija(user))
+                    } catch (ex: OppijanumeroException) {
+                        exceptions.add(ex)
+                        null
+                    }
+
+                user.completions.map { completion ->
+                    completionToEntity(
+                        user,
+                        oppijanumero,
+                        completion,
+                    )
+                }
+            }
+
+        return if (exceptions.isNotEmpty()) {
+            throw KoealustaMappingServiceException(
+                "Unable to convert into list of KielitestiSuoritus, because there were ${exceptions.size} exceptions from oppijanumero-service.",
+                exceptions,
+            )
+        } else {
+            entity
+        }
+    }
+
+    fun toOppija(koealustaUser: User) =
+        Oppija(
+            etunimet = koealustaUser.firstname,
+            hetu = koealustaUser.SSN,
+            kutsumanimi = koealustaUser.preferredname,
+            sukunimi = koealustaUser.lastname,
+            oppijanumero = koealustaUser.OID.ifEmpty { null }, // Nullify empty values
         )
 
     fun getLuetunYmmartaminen(completion: Completion) =
@@ -71,4 +94,9 @@ class KoealustaMappingService(
             totalEvaluationSystem = completion.total_evaluation_system,
         )
     }
+
+    class KoealustaMappingServiceException(
+        msg: String,
+        val oppijanumeroExceptions: List<OppijanumeroException>,
+    ) : Exception(msg)
 }
