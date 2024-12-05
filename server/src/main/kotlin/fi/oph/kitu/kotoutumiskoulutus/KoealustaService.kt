@@ -7,7 +7,9 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
+import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.oppijanumero.addOppijanumeroExceptions
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -84,15 +86,19 @@ class KoealustaService(
             val suorituksetResponse =
                 tryParseMoodleResponse<KoealustaSuorituksetResponse>(response.body!!)
 
+            val exceptions = mutableListOf<OppijanumeroException>()
+
             val suoritukset =
                 suorituksetResponse.users.flatMap { user ->
-                    val oppijanumero =
-                        oppijanumeroService.getOppijanumero(
-                            etunimet = user.firstname,
-                            sukunimi = user.lastname,
-                            hetu = user.SSN,
-                            kutsumanimi = user.preferredname,
-                        )
+                    val (ex, oppijanumero) = oppijanumeroService.getOppijanumeroOrError(user.toOppija())
+
+                    if (ex != null) {
+                        exceptions.add(ex)
+                        // break the loop, because there was an error in oppijanumero-service regarding to the user.
+                        // The user's suoritus cannot be saved to our repository.
+                        return from
+                    }
+
                     user.completions.map { completion ->
                         val luetunYmmartaminen =
                             completion.results.find {
@@ -110,7 +116,9 @@ class KoealustaService(
                             lastName = user.lastname,
                             preferredname = user.preferredname,
                             email = user.email,
-                            oppijanumero = oppijanumero,
+                            // Oppijanumero should be non nullable here.
+                            // if not, then there is an unexpected error that should be thrown.
+                            oppijanumero = oppijanumero.toString(),
                             timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
                             courseid = completion.courseid,
                             coursename = completion.coursename,
@@ -127,6 +135,13 @@ class KoealustaService(
                         )
                     }
                 }
+
+            if (exceptions.isNotEmpty()) {
+                event.addOppijanumeroExceptions(exceptions)
+                throw java.lang.RuntimeException(
+                    "Canno't save information, because there was ${exceptions.count()} errors in oppijanumero-service.",
+                )
+            }
 
             val result = kielitestiSuoritusRepository.saveAll(suoritukset)
 
