@@ -1,28 +1,11 @@
 import * as pg from "pg"
 import * as assert from "node:assert"
 import { SQLStatement } from "sql-template-strings"
-
-const config = {
-  database: {
-    url: "postgresql://localhost:5432/kitu-dev",
-    enableSsl: false,
-    user: "kitu", //process.env.DATABASE_USER,
-    password: "kitu", //process.env.DATABASE_PASSWORD,
-  },
-}
+import config from "../config"
 
 const pool = new pg.Pool({
-  //connectionString: config.database.url,
-  database: "kitu-dev",
-  user: config.database.user,
-  password: config.database.password,
-  host: "localhost",
-  port: 5432,
-  ssl: config.database.enableSsl
-    ? {
-        rejectUnauthorized: false,
-      }
-    : false,
+  connectionString: config.database.connectionString,
+  ssl: false,
 })
 
 const createQuery =
