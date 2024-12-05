@@ -7,7 +7,6 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
-import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.oppijanumero.addOppijanumeroExceptions
 import org.slf4j.LoggerFactory
@@ -86,18 +85,9 @@ class KoealustaService(
             val suorituksetResponse =
                 tryParseMoodleResponse<KoealustaSuorituksetResponse>(response.body!!)
 
-            val exceptions = mutableListOf<OppijanumeroException>()
-
-            val suoritukset =
+            val exceptionsAndSuoritukset =
                 suorituksetResponse.users.flatMap { user ->
                     val (ex, oppijanumero) = oppijanumeroService.getOppijanumeroOrError(user.toOppija())
-
-                    if (ex != null) {
-                        exceptions.add(ex)
-                        // break the loop, because there was an error in oppijanumero-service regarding to the user.
-                        // The user's suoritus cannot be saved to our repository.
-                        return from
-                    }
 
                     user.completions.map { completion ->
                         val luetunYmmartaminen =
@@ -111,38 +101,44 @@ class KoealustaService(
                         val puhe = completion.results.find { it.name == "puhe" }!!
                         val kirjoittaminen = completion.results.find { it.name == "kirjoittaminen" }!!
 
-                        KielitestiSuoritus(
-                            firstName = user.firstname,
-                            lastName = user.lastname,
-                            preferredname = user.preferredname,
-                            email = user.email,
-                            // Oppijanumero should be non nullable here.
-                            // if not, then there is an unexpected error that should be thrown.
-                            oppijanumero = oppijanumero.toString(),
-                            timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
-                            courseid = completion.courseid,
-                            coursename = completion.coursename,
-                            luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system,
-                            luetunYmmartaminenResultTeacher = luetunYmmartaminen.quiz_result_teacher,
-                            kuullunYmmartaminenResultSystem = kuullunYmmartaminen.quiz_result_system,
-                            kuullunYmmartaminenResultTeacher = kuullunYmmartaminen.quiz_result_teacher,
-                            puheResultSystem = puhe.quiz_result_system,
-                            puheResultTeacher = puhe.quiz_result_teacher,
-                            kirjoittaminenResultSystem = kirjoittaminen.quiz_result_system,
-                            kirjottaminenResultTeacher = kirjoittaminen.quiz_result_teacher,
-                            totalEvaluationTeacher = completion.total_evaluation_teacher,
-                            totalEvaluationSystem = completion.total_evaluation_system,
+                        Pair(
+                            ex,
+                            KielitestiSuoritus(
+                                firstName = user.firstname,
+                                lastName = user.lastname,
+                                preferredname = user.preferredname,
+                                email = user.email,
+                                // Oppijanumero should be non nullable here.
+                                // if not, then there is an unexpected error that should be thrown.
+                                oppijanumero = oppijanumero.toString(),
+                                timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
+                                courseid = completion.courseid,
+                                coursename = completion.coursename,
+                                luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system,
+                                luetunYmmartaminenResultTeacher = luetunYmmartaminen.quiz_result_teacher,
+                                kuullunYmmartaminenResultSystem = kuullunYmmartaminen.quiz_result_system,
+                                kuullunYmmartaminenResultTeacher = kuullunYmmartaminen.quiz_result_teacher,
+                                puheResultSystem = puhe.quiz_result_system,
+                                puheResultTeacher = puhe.quiz_result_teacher,
+                                kirjoittaminenResultSystem = kirjoittaminen.quiz_result_system,
+                                kirjottaminenResultTeacher = kirjoittaminen.quiz_result_teacher,
+                                totalEvaluationTeacher = completion.total_evaluation_teacher,
+                                totalEvaluationSystem = completion.total_evaluation_system,
+                            ),
                         )
                     }
                 }
 
-            if (exceptions.isNotEmpty()) {
+            val suorituksetWithErrors = exceptionsAndSuoritukset.filter { it.first != null }
+            if (suorituksetWithErrors.isNotEmpty()) {
+                val exceptions = suorituksetWithErrors.map { it.first!! }
                 event.addOppijanumeroExceptions(exceptions)
                 throw java.lang.RuntimeException(
-                    "Canno't save information, because there was ${exceptions.count()} errors in oppijanumero-service.",
+                    "Can't save Suoritus, because there was ${exceptions.count()} errors in oppijanumero-service.",
                 )
             }
 
+            val suoritukset = exceptionsAndSuoritukset.map { it.second }
             val result = kielitestiSuoritusRepository.saveAll(suoritukset)
 
             event.add("db.saved" to result.count())
