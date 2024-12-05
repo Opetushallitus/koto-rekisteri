@@ -1,5 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
+import fi.oph.kitu.oppijanumero.Oppija
+
 data class KoealustaSuorituksetResponse(
     val users: List<User>,
 ) {
@@ -26,5 +28,15 @@ data class KoealustaSuorituksetResponse(
                 val quiz_result_teacher: Double,
             )
         }
+
+        fun toOppija() =
+            Oppija(
+                etunimet = firstname,
+                hetu = SSN,
+                kutsumanimi = preferredname,
+                sukunimi = lastname,
+                oppijanumero = OID, // Koealusta incorrectly refers oppijanumero as OID
+                henkilo_oid = null,
+            )
     }
 }
