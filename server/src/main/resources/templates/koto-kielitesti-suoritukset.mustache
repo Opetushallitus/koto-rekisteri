@@ -22,7 +22,7 @@ Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
     </thead>
     {{#suoritukset}}
     <tbody class="suoritus">
-    <tr>
+    <tr data-testid="suoritus-summary-row">
         <td>{{lastName}}</td>
         <td>{{firstName}}</td>
         <td>{{email}}</td>
@@ -30,13 +30,13 @@ Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
         <td>{{timeCompleted}}</td>
         <td>({{totalEvaluationSystem}} / {{totalEvaluationTeacher}})</td>
     </tr>
-    <tr>
+    <tr data-testid="suoritus-details-row">
         <td colspan="13">
             <details>
                 <summary>Näytä lisätiedot/tulokset</summary>
                 <table>
                     <tr>
-                        <th>Suorittajan OID</th>
+                        <th>Oppijanumero</th>
                         <th>Luetun Ymmärtäminen</th>
                         <th>Kuullun Ymmärtäminen</th>
                         <th>Puhe</th>
@@ -44,7 +44,7 @@ Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
                         <th>Kokonaisarvosana</th>
                     </tr>
                     <tr>
-                        <td>{{oppijaOid}}</td>
+                        <td>{{oppijanumero}}</td>
                         <td>({{luetunYmmartaminenResultSystem}} / {{luetunYmmartaminenResultTeacher}})</td>
                         <td>({{kuullunYmmartaminenResultSystem}} / {{kuullunYmmartaminenResultTeacher}})</td>
                         <td>({{puheResultSystem}} / {{puheResultTeacher}})</td>
