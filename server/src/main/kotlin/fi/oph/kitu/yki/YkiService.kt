@@ -87,7 +87,13 @@ class YkiService(
 
     fun generateSuorituksetCsvStream(includeVersionHistory: Boolean): ByteArrayOutputStream =
         logger.atInfo().withEvent("yki.getSuorituksetCsv") { event ->
-            val data = if (includeVersionHistory) suoritusRepository.findAll() else suoritusRepository.findAllDistinct()
+            val data =
+                if (includeVersionHistory) {
+                    suoritusRepository.findAllOrdered()
+                } else {
+                    suoritusRepository
+                        .findAllDistinct()
+                }
             event.add("dataCount" to data.count())
             val writableData = data.map { it.toYkiSuoritusCsv() }
             val outputStream = ByteArrayOutputStream()
