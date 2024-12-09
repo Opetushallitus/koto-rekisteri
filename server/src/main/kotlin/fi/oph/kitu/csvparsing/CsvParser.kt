@@ -1,6 +1,5 @@
 package fi.oph.kitu.csvparsing
 
-import com.fasterxml.jackson.databind.JsonMappingException.Reference
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
@@ -10,6 +9,7 @@ import fi.oph.kitu.logging.add
 import org.ietf.jgss.Oid
 import org.slf4j.spi.LoggingEventBuilder
 import java.io.ByteArrayOutputStream
+import java.lang.Exception
 import java.lang.RuntimeException
 import kotlin.reflect.full.findAnnotation
 
@@ -108,7 +108,10 @@ class CsvParser(
                             .with(schema)
                             .readValue<T?>(line)
                     } catch (e: InvalidFormatException) {
-                        errors.add(CsvExportError(index, e))
+                        errors.add(InvalidFormatCsvExportError(index, e))
+                        null
+                    } catch (e: Exception) {
+                        errors.add(SimpleCsvExportError(index, e))
                         null
                     }
                 }.filterNotNull()
@@ -119,25 +122,12 @@ class CsvParser(
 
         // add all errors to log
         errors.forEachIndexed { index, error ->
-            event.add(
-                "serialization.error[$index].index" to index,
-                "serialization.error[$index].lineNumber" to error.lineNumber,
-                "serialization.error[$index].value" to error.value,
-                "serialization.error[$index].path" to error.path,
-                "serialization.error[$index].targetType" to error.targetType,
-                "serialization.error[$index].exception," to error.exception,
-            )
+            event.add("serialization.error[$index].index" to index)
+            for (kvp in error.keyValues) {
+                event.add("serialization.error[$index].${kvp.first}" to kvp.second)
+            }
         }
 
         throw RuntimeException("Unable to convert string to csv, because the string had ${errors.count()} error(s).")
-    }
-
-    class CsvExportError(
-        val lineNumber: Int,
-        val exception: InvalidFormatException,
-    ) {
-        val value: Any = exception.value
-        val path: List<Reference> = exception.path
-        val targetType: Class<*> = exception.targetType
     }
 }
