@@ -1,9 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
-import fi.oph.kitu.csvparsing.CsvArgs
-import fi.oph.kitu.csvparsing.asCsv
-import fi.oph.kitu.csvparsing.writeAsCsv
+import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
@@ -37,6 +35,7 @@ class YkiService(
         dryRun: Boolean? = null,
     ): Instant? =
         logger.atInfo().withEvent("yki.importSuoritukset") { event ->
+            val parser = CsvParser(event)
             event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
             val url = if (from != null) "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}" else "suoritukset"
@@ -49,7 +48,7 @@ class YkiService(
 
             event.addResponse(response, PeerService.Solki)
 
-            val suoritukset = response.body?.asCsv<YkiSuoritusCsv>(CsvArgs(event = event)) ?: listOf()
+            val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
 
             if (dryRun != true) {
                 val res = suoritusRepository.saveAll(suoritukset.map { it.toEntity() })
@@ -60,6 +59,7 @@ class YkiService(
 
     fun importYkiArvioijat(dryRun: Boolean = false) =
         logger.atInfo().withEvent("yki.importArvioijat") { event ->
+            val parser = CsvParser(event)
             val response =
                 solkiRestClient
                     .get()
@@ -72,8 +72,8 @@ class YkiService(
                 .addKeyValue("peer.service", PeerService.Solki.value)
 
             val arvioijat =
-                response.body?.asCsv<SolkiArvioijaResponse>(CsvArgs(event = event))
-                    ?: throw Error.EmptyArvioijatResponse()
+                parser.convertCsvToData<SolkiArvioijaResponse>(response.body ?: throw Error.EmptyArvioijatResponse())
+
             event.addKeyValue("yki.arvioijat.receivedCount", arvioijat.size)
             if (arvioijat.isEmpty()) {
                 throw Error.EmptyArvioijat()
@@ -87,11 +87,12 @@ class YkiService(
 
     fun generateSuorituksetCsvStream(includeVersionHistory: Boolean): ByteArrayOutputStream =
         logger.atInfo().withEvent("yki.getSuorituksetCsv") { event ->
+            val parser = CsvParser(event, useHeader = true)
             val data = if (includeVersionHistory) suoritusRepository.findAll() else suoritusRepository.findAllDistinct()
             event.add("dataCount" to data.count())
             val writableData = data.map { it.toYkiSuoritusCsv() }
             val outputStream = ByteArrayOutputStream()
-            writableData.writeAsCsv(outputStream, CsvArgs(useHeader = true, event = event))
+            parser.streamDataAsCsv(outputStream, writableData)
 
             return@withEvent outputStream
         }
