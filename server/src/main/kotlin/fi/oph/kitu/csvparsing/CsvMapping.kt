@@ -6,16 +6,15 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import fi.oph.kitu.logging.add
 import org.ietf.jgss.Oid
-import org.slf4j.LoggerFactory
 import org.slf4j.spi.LoggingEventBuilder
 import kotlin.reflect.full.findAnnotation
 
 data class CsvArgs(
+    val event: LoggingEventBuilder,
     val columnSeparator: Char = ',',
     val lineSeparator: String = "\n",
     val useHeader: Boolean = false,
     val quoteChar: Char = '"',
-    val event: LoggingEventBuilder = LoggerFactory.getLogger(CsvArgs::class.java).atInfo(),
 )
 
 inline fun <reified T> getCsvMapper(): CsvMapper {
