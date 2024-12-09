@@ -9,7 +9,7 @@ import java.lang.RuntimeException
 
 inline fun <reified T> Iterable<T>.writeAsCsv(
     outputStream: ByteArrayOutputStream,
-    args: CsvArgs = CsvArgs(),
+    args: CsvArgs, // Common args for all csv parsing
 ) {
     val csvMapper: CsvMapper = getCsvMapper<T>()
     val schema = getSchema<T>(csvMapper, args)
@@ -23,7 +23,7 @@ inline fun <reified T> Iterable<T>.writeAsCsv(
 /**
  * Converts retrieved String response into a list that is the type of Body.
  */
-inline fun <reified T> String.asCsv(args: CsvArgs = CsvArgs()): List<T> {
+inline fun <reified T> String.asCsv(args: CsvArgs): List<T> {
     if (this.isBlank()) {
         args.event.add("serialization.isEmptyList" to true)
         return emptyList()

@@ -49,7 +49,7 @@ class YkiService(
 
             event.addResponse(response, PeerService.Solki)
 
-            val suoritukset = response.body?.asCsv<YkiSuoritusCsv>() ?: listOf()
+            val suoritukset = response.body?.asCsv<YkiSuoritusCsv>(CsvArgs(event = event)) ?: listOf()
 
             if (dryRun != true) {
                 val res = suoritusRepository.saveAll(suoritukset.map { it.toEntity() })
@@ -91,7 +91,7 @@ class YkiService(
             event.add("dataCount" to data.count())
             val writableData = data.map { it.toYkiSuoritusCsv() }
             val outputStream = ByteArrayOutputStream()
-            writableData.writeAsCsv(outputStream, CsvArgs(useHeader = true))
+            writableData.writeAsCsv(outputStream, CsvArgs(useHeader = true, event = event))
 
             return@withEvent outputStream
         }
