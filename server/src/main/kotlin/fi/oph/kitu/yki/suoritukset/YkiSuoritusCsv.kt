@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import fi.oph.kitu.csvparsing.BooleanFromNumericDeserializer
 import fi.oph.kitu.csvparsing.Features
-import fi.oph.kitu.csvparsing.TutkintokieliDeserializer
+import fi.oph.kitu.csvparsing.yki.BooleanFromNumericDeserializer
+import fi.oph.kitu.csvparsing.yki.TutkintokieliDeserializer
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso

@@ -1,4 +1,4 @@
-package fi.oph.kitu.csvparsing
+package fi.oph.kitu.csvparsing.yki
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
