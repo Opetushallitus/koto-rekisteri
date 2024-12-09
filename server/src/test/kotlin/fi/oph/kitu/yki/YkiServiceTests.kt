@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki
 
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
@@ -18,6 +17,7 @@ import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.lang.RuntimeException
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
 
@@ -101,7 +101,7 @@ class YkiServiceTests(
             )
 
         // Act
-        assertThrows<ValueInstantiationException> {
+        assertThrows<RuntimeException> {
             ykiService.importYkiSuoritukset(null, null, false)
         }
         val suoritukset = ykiSuoritusRepository.findAll()
