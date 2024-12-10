@@ -42,7 +42,7 @@ class KoealustaMappingService(
 
     fun completionToEntity(
         user: User,
-        oppijanumero: String,
+        oppijanumero: String?,
         completion: Completion,
     ): KielitestiSuoritus {
         val luetunYmmartaminen = getLuetunYmmartaminen(completion)
