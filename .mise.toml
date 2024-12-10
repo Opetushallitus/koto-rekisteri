@@ -3,6 +3,9 @@ SPRING_PROFILES_ACTIVE = 'local'
 KOTLIN_POST_PROCESS_FILE = "ktlint -F"
 AWS_PROFILE = "oph-ktr-dev"
 
+[alias]
+awscli = "asdf:MetricMike/asdf-awscli"
+
 [tools]
 node = "22.12.0"
 "npm:prettier" = "3.3.3"
