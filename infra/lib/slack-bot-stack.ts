@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib"
 import { aws_chatbot, StackProps } from "aws-cdk-lib"
 import { Construct } from "constructs"
 import { ITopic } from "aws-cdk-lib/aws-sns"
+import { LoggingLevel } from "aws-cdk-lib/aws-chatbot"
 
 export interface SlackBotProps extends StackProps {
   alarmTopics: ITopic[]
@@ -24,6 +25,7 @@ export class SlackBotStack extends cdk.Stack {
         slackWorkspaceId: props.slackWorkspaceId,
         slackChannelConfigurationName: props.slackChannelName,
         notificationTopics: props.alarmTopics,
+        loggingLevel: LoggingLevel.INFO,
       },
     )
   }
