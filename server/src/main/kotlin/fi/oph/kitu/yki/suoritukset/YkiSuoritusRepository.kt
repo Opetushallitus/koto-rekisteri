@@ -14,13 +14,50 @@ import java.time.LocalDate
 interface CustomYkiSuoritusRepository {
     fun <S : YkiSuoritusEntity?> saveAll(suoritukset: Iterable<S>): Iterable<S>
 
-    fun findAllDistinct(): Iterable<YkiSuoritusEntity>
+    fun findAllOrdered(orderBy: String = "tutkintopaiva"): Iterable<YkiSuoritusEntity>
+
+    fun findAllDistinct(orderBy: String = "tutkintopaiva"): Iterable<YkiSuoritusEntity>
 }
 
 @Repository
 class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
+
+    private val allColumns =
+        """
+        id,
+        suorittajan_oid,
+        hetu,
+        sukupuoli,
+        sukunimi,
+        etunimet,
+        kansalaisuus,
+        katuosoite,
+        postinumero,
+        postitoimipaikka,
+        email,
+        suoritus_id,
+        last_modified,
+        tutkintopaiva,
+        tutkintokieli,
+        tutkintotaso,
+        jarjestajan_tunnus_oid,
+        jarjestajan_nimi,
+        arviointipaiva,
+        tekstin_ymmartaminen,
+        kirjoittaminen,
+        rakenteet_ja_sanasto,
+        puheen_ymmartaminen,
+        puhuminen,
+        yleisarvosana,
+        tarkistusarvioinnin_saapumis_pvm,
+        tarkistusarvioinnin_asiatunnus,
+        tarkistusarvioidut_osakokeet,
+        arvosana_muuttui,
+        perustelu,
+        tarkistusarvioinnin_kasittely_pvm
+        """.trimIndent()
 
     /**
      * Override to allow handling duplicates/conflicts. The default implementation from CrudRepository fails
@@ -102,37 +139,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         val findAllQuerySql =
             """
             SELECT
-                id,
-                suorittajan_oid,
-                hetu,
-                sukupuoli,
-                sukunimi,
-                etunimet,
-                kansalaisuus,
-                katuosoite,
-                postinumero,
-                postitoimipaikka,
-                email,
-                suoritus_id,
-                last_modified,
-                tutkintopaiva,
-                tutkintokieli,
-                tutkintotaso,
-                jarjestajan_tunnus_oid,
-                jarjestajan_nimi,
-                arviointipaiva,
-                tekstin_ymmartaminen,
-                kirjoittaminen,
-                rakenteet_ja_sanasto,
-                puheen_ymmartaminen,
-                puhuminen,
-                yleisarvosana,
-                tarkistusarvioinnin_saapumis_pvm,
-                tarkistusarvioinnin_asiatunnus,
-                tarkistusarvioidut_osakokeet,
-                arvosana_muuttui,
-                perustelu,
-                tarkistusarvioinnin_kasittely_pvm
+                $allColumns
             FROM yki_suoritus
             """.trimIndent()
         return jdbcTemplate
@@ -141,43 +148,31 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
             } as Iterable<S>
     }
 
-    override fun findAllDistinct(): Iterable<YkiSuoritusEntity> {
+    override fun findAllOrdered(orderBy: String): Iterable<YkiSuoritusEntity> {
+        val findAllQuerySql =
+            """
+            SELECT * FROM
+                (SELECT
+                    $allColumns
+                FROM yki_suoritus
+                ORDER BY suoritus_id, last_modified DESC)
+            ORDER BY $orderBy DESC
+            """.trimIndent()
+        return jdbcTemplate
+            .query(findAllQuerySql) { rs, _ ->
+                YkiSuoritusEntity.fromResultSet(rs)
+            }
+    }
+
+    override fun findAllDistinct(orderBy: String): Iterable<YkiSuoritusEntity> {
         val findAllDistinctQuerySql =
             """
-            SELECT DISTINCT ON (suoritus_id)
-                id,
-                suorittajan_oid,
-                hetu,
-                sukupuoli,
-                sukunimi,
-                etunimet,
-                kansalaisuus,
-                katuosoite,
-                postinumero,
-                postitoimipaikka,
-                email,
-                suoritus_id,
-                last_modified,
-                tutkintopaiva,
-                tutkintokieli,
-                tutkintotaso,
-                jarjestajan_tunnus_oid,
-                jarjestajan_nimi,
-                arviointipaiva,
-                tekstin_ymmartaminen,
-                kirjoittaminen,
-                rakenteet_ja_sanasto,
-                puheen_ymmartaminen,
-                puhuminen,
-                yleisarvosana,
-                tarkistusarvioinnin_saapumis_pvm,
-                tarkistusarvioinnin_asiatunnus,
-                tarkistusarvioidut_osakokeet,
-                arvosana_muuttui,
-                perustelu,
-                tarkistusarvioinnin_kasittely_pvm
-            FROM yki_suoritus
-            ORDER BY suoritus_id, last_modified DESC
+            SELECT * FROM 
+                (SELECT DISTINCT ON (suoritus_id)
+                    $allColumns
+                FROM yki_suoritus
+                ORDER BY suoritus_id, last_modified DESC)
+            ORDER BY $orderBy DESC
             """.trimIndent()
         return jdbcTemplate
             .query(findAllDistinctQuerySql) { rs, _ ->
