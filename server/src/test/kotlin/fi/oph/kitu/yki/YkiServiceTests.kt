@@ -1,6 +1,8 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -65,7 +67,9 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
+                suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
+                arvioijaMapper = YkiArvioijaMappingService(),
             )
 
         // Act
@@ -97,7 +101,9 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
+                suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
+                arvioijaMapper = YkiArvioijaMappingService(),
             )
 
         // Act
@@ -131,7 +137,9 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
+                suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
+                arvioijaMapper = YkiArvioijaMappingService(),
             )
 
         // Act
@@ -181,7 +189,9 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
+                suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
+                arvioijaMapper = YkiArvioijaMappingService(),
             )
 
         assertDoesNotThrow {
@@ -224,7 +234,9 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
+                suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
+                arvioijaMapper = YkiArvioijaMappingService(),
             )
 
         assertDoesNotThrow {

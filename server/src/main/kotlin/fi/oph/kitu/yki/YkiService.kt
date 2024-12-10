@@ -6,8 +6,10 @@ import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addResponse
 import fi.oph.kitu.logging.withEvent
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -25,7 +27,9 @@ class YkiService(
     @Qualifier("solkiRestClient")
     private val solkiRestClient: RestClient,
     private val suoritusRepository: YkiSuoritusRepository,
+    private val suoritusMapper: YkiSuoritusMappingService,
     private val arvioijaRepository: YkiArvioijaRepository,
+    private val arvioijaMapper: YkiArvioijaMappingService,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -51,7 +55,7 @@ class YkiService(
             val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
 
             if (dryRun != true) {
-                val res = suoritusRepository.saveAll(suoritukset.map { it.toEntity() })
+                val res = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
                 event.addKeyValue("importedSuorituksetSize", res.count())
             }
             return@withEvent suoritukset.maxOfOrNull { it.lastModified } ?: from
@@ -80,7 +84,7 @@ class YkiService(
             }
 
             if (!dryRun) {
-                val importedArvioijat = arvioijaRepository.saveAll(arvioijat.map { it.toEntity() })
+                val importedArvioijat = arvioijaRepository.saveAll(arvioijaMapper.convertToEntityIterable(arvioijat))
                 event.addKeyValue("yki.arvioijat.importedCount", importedArvioijat.count())
             }
         }
@@ -90,7 +94,7 @@ class YkiService(
             val parser = CsvParser(event, useHeader = true)
             val data = if (includeVersionHistory) suoritusRepository.findAll() else suoritusRepository.findAllDistinct()
             event.add("dataCount" to data.count())
-            val writableData = data.map { it.toYkiSuoritusCsv() }
+            val writableData = suoritusMapper.convertToResponseIterable(data)
             val outputStream = ByteArrayOutputStream()
             parser.streamDataAsCsv(outputStream, writableData)
 

@@ -8,7 +8,6 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import org.ietf.jgss.Oid
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -141,41 +140,41 @@ class CsvParsingTest {
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         val parser = CsvParser(MockEvent(), useHeader = true)
-        val entity =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.N,
-                sukunimi = "Öhmana-Testi",
-                etunimet = "Ranja Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 5",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = "testi@testi.fi",
-                suoritusId = 183424,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = 5,
-                kirjoittaminen = 4,
-                rakenteetJaSanasto = 3,
-                puheenYmmartaminen = 1,
-                puhuminen = 2,
-                yleisarvosana = 3,
-                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
-                tarkistusarvioinninAsiatunnus = "123123",
-                tarkistusarvioidutOsakokeet = 2,
-                arvosanaMuuttui = true,
-                perustelu = "Tarkistusarvioinnin testi",
-                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
+        val writable =
+            listOf(
+                YkiSuoritusCsv(
+                    suorittajanOID = Oid("1.2.246.562.24.20281155246"),
+                    hetu = "010180-9026",
+                    sukupuoli = Sukupuoli.N,
+                    sukunimi = "Öhmana-Testi",
+                    etunimet = "Ranja Testi",
+                    kansalaisuus = "EST",
+                    katuosoite = "Testikuja 5",
+                    postinumero = "40100",
+                    postitoimipaikka = "Testilä",
+                    email = "testi@testi.fi",
+                    suoritusID = 183424,
+                    lastModified = Instant.parse("2024-10-30T13:53:56Z"),
+                    tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
+                    tutkintokieli = Tutkintokieli.FIN,
+                    tutkintotaso = Tutkintotaso.YT,
+                    jarjestajanOID = Oid("1.2.246.562.10.14893989377"),
+                    jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                    arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
+                    tekstinYmmartaminen = 5,
+                    kirjoittaminen = 4,
+                    rakenteetJaSanasto = 3,
+                    puheenYmmartaminen = 1,
+                    puhuminen = 2,
+                    yleisarvosana = 3,
+                    tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
+                    tarkistusarvioinninAsiatunnus = "123123",
+                    tarkistusarvioidutOsakokeet = 2,
+                    arvosanaMuuttui = true,
+                    perustelu = "Tarkistusarvioinnin testi",
+                    tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
+                ),
             )
-        val writable = listOf(entity.toYkiSuoritusCsv())
         val outputStream = ByteArrayOutputStream()
         parser.streamDataAsCsv(outputStream, writable)
         val expectedCsv =
@@ -192,41 +191,41 @@ class CsvParsingTest {
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         val parser = CsvParser(MockEvent(), useHeader = true)
-        val entity =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.N,
-                sukunimi = "Öhmana-Testi",
-                etunimet = "Ranja Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 5",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = null,
-                suoritusId = 183424,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = null,
-                kirjoittaminen = null,
-                rakenteetJaSanasto = null,
-                puheenYmmartaminen = null,
-                puhuminen = null,
-                yleisarvosana = null,
-                tarkistusarvioinninSaapumisPvm = null,
-                tarkistusarvioinninAsiatunnus = null,
-                tarkistusarvioidutOsakokeet = null,
-                arvosanaMuuttui = null,
-                perustelu = null,
-                tarkistusarvioinninKasittelyPvm = null,
+        val writable =
+            listOf(
+                YkiSuoritusCsv(
+                    suorittajanOID = Oid("1.2.246.562.24.20281155246"),
+                    hetu = "010180-9026",
+                    sukupuoli = Sukupuoli.N,
+                    sukunimi = "Öhmana-Testi",
+                    etunimet = "Ranja Testi",
+                    kansalaisuus = "EST",
+                    katuosoite = "Testikuja 5",
+                    postinumero = "40100",
+                    postitoimipaikka = "Testilä",
+                    email = null,
+                    suoritusID = 183424,
+                    lastModified = Instant.parse("2024-10-30T13:53:56Z"),
+                    tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
+                    tutkintokieli = Tutkintokieli.FIN,
+                    tutkintotaso = Tutkintotaso.YT,
+                    jarjestajanOID = Oid("1.2.246.562.10.14893989377"),
+                    jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                    arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
+                    tekstinYmmartaminen = null,
+                    kirjoittaminen = null,
+                    rakenteetJaSanasto = null,
+                    puheenYmmartaminen = null,
+                    puhuminen = null,
+                    yleisarvosana = null,
+                    tarkistusarvioinninSaapumisPvm = null,
+                    tarkistusarvioinninAsiatunnus = null,
+                    tarkistusarvioidutOsakokeet = null,
+                    arvosanaMuuttui = null,
+                    perustelu = null,
+                    tarkistusarvioinninKasittelyPvm = null,
+                ),
             )
-        val writable = listOf(entity.toYkiSuoritusCsv())
         val outputStream = ByteArrayOutputStream()
         parser.streamDataAsCsv(outputStream, writable)
 
