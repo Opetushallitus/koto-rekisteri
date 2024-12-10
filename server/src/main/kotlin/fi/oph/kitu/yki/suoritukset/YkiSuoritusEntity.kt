@@ -5,7 +5,6 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import org.ietf.jgss.Oid
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
@@ -49,39 +48,5 @@ data class YkiSuoritusEntity(
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
 ) {
-    fun toYkiSuoritusCsv(): YkiSuoritusCsv =
-        YkiSuoritusCsv(
-            suorittajanOID = Oid(suorittajanOID),
-            hetu = hetu,
-            sukupuoli = sukupuoli,
-            sukunimi = sukunimi,
-            etunimet = etunimet,
-            kansalaisuus = kansalaisuus,
-            katuosoite = katuosoite,
-            postinumero = postinumero,
-            postitoimipaikka = postitoimipaikka,
-            email = email,
-            suoritusID = suoritusId,
-            lastModified = lastModified,
-            tutkintopaiva = tutkintopaiva,
-            tutkintokieli = tutkintokieli,
-            tutkintotaso = tutkintotaso,
-            jarjestajanOID = Oid(jarjestajanTunnusOid),
-            jarjestajanNimi = jarjestajanNimi,
-            arviointipaiva = arviointipaiva,
-            tekstinYmmartaminen = tekstinYmmartaminen,
-            kirjoittaminen = kirjoittaminen,
-            rakenteetJaSanasto = rakenteetJaSanasto,
-            puheenYmmartaminen = puheenYmmartaminen,
-            puhuminen = puhuminen,
-            yleisarvosana = yleisarvosana,
-            tarkistusarvioinninSaapumisPvm = tarkistusarvioinninSaapumisPvm,
-            tarkistusarvioinninAsiatunnus = tarkistusarvioinninAsiatunnus,
-            tarkistusarvioidutOsakokeet = tarkistusarvioidutOsakokeet,
-            arvosanaMuuttui = arvosanaMuuttui,
-            perustelu = perustelu,
-            tarkistusarvioinninKasittelyPvm = tarkistusarvioinninKasittelyPvm,
-        )
-
     companion object
 }

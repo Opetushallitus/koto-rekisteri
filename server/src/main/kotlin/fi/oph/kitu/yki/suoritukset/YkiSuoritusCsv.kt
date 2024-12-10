@@ -116,39 +116,4 @@ data class YkiSuoritusCsv(
     @JsonProperty("tarkistusarvioinninKasittelyPvm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
-) {
-    fun toEntity(id: Int? = null) =
-        YkiSuoritusEntity(
-            id,
-            suorittajanOID.toString(),
-            hetu,
-            sukupuoli,
-            sukunimi,
-            etunimet,
-            kansalaisuus,
-            katuosoite,
-            postinumero,
-            postitoimipaikka,
-            email,
-            suoritusID,
-            lastModified,
-            tutkintopaiva,
-            tutkintokieli,
-            tutkintotaso,
-            jarjestajanOID.toString(),
-            jarjestajanNimi,
-            arviointipaiva,
-            tekstinYmmartaminen,
-            kirjoittaminen,
-            rakenteetJaSanasto,
-            puheenYmmartaminen,
-            puhuminen,
-            yleisarvosana,
-            tarkistusarvioinninSaapumisPvm,
-            tarkistusarvioinninAsiatunnus,
-            tarkistusarvioidutOsakokeet,
-            arvosanaMuuttui,
-            perustelu,
-            tarkistusarvioinninKasittelyPvm,
-        )
-}
+)

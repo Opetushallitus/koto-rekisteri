@@ -11,7 +11,6 @@ import fi.oph.kitu.csvparsing.yki.TutkintokieliDeserializer
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 @JsonPropertyOrder(
     "arvioijanOppijanumero",
@@ -69,29 +68,6 @@ class SolkiArvioijaResponse(
     @JsonDeserialize(using = TutkintotasotFromStringDeserializer::class)
     val tasot: Iterable<Tutkintotaso>,
 ) {
-    fun toEntity(
-        id: Number? = null,
-        rekisteriintuontiaika: OffsetDateTime? = null,
-    ) = YkiArvioijaEntity(
-        id,
-        rekisteriintuontiaika,
-        arvioijanOppijanumero,
-        henkilotunnus,
-        sukunimi,
-        etunimet,
-        sahkopostiosoite,
-        katuosoite,
-        postinumero,
-        postitoimipaikka,
-        ensimmainenRekisterointipaiva,
-        kaudenAlkupaiva,
-        kaudenPaattymispaiva,
-        jatkorekisterointi,
-        tila,
-        kieli,
-        tasot = tasot.toSet(),
-    )
-
     override fun toString(): String =
         "SolkiArvioijaResponse(arvioijanOppijanumero='$arvioijanOppijanumero', tila=$tila, kieli=$kieli, tasot='$tasot')"
 }
