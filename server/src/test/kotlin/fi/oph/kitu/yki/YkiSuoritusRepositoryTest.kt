@@ -214,4 +214,49 @@ class YkiSuoritusRepositoryTest(
         assertFalse(suoritukset.map { it.copy(id = null) }.contains(suoritus))
         assertEquals(2, suoritukset.count())
     }
+
+    @Test
+    fun `suoritukset with legacy language codes are saved correctly`() {
+        val datePattern = "yyyy-MM-dd"
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
+        val suoritusSWE10 =
+            YkiSuoritusEntity(
+                id = null,
+                suorittajanOID = "1.2.246.562.24.20281155246",
+                hetu = "010180-9026",
+                sukupuoli = Sukupuoli.N,
+                sukunimi = "Öhmana-Testi",
+                etunimet = "Ranja Testi",
+                kansalaisuus = "EST",
+                katuosoite = "Testikuja 5",
+                postinumero = "40100",
+                postitoimipaikka = "Testilä",
+                email = null,
+                suoritusId = 183424,
+                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
+                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
+                tutkintokieli = Tutkintokieli.SWE10,
+                tutkintotaso = Tutkintotaso.YT,
+                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
+                tekstinYmmartaminen = null,
+                kirjoittaminen = null,
+                rakenteetJaSanasto = null,
+                puheenYmmartaminen = null,
+                puhuminen = null,
+                yleisarvosana = null,
+                tarkistusarvioinninSaapumisPvm = null,
+                tarkistusarvioinninAsiatunnus = null,
+                tarkistusarvioidutOsakokeet = null,
+                arvosanaMuuttui = null,
+                perustelu = null,
+                tarkistusarvioinninKasittelyPvm = null,
+            )
+        val suoritusENG11 = suoritusSWE10.copy(tutkintokieli = Tutkintokieli.ENG11, suoritusId = 12345)
+        val suoritusENG12 = suoritusSWE10.copy(tutkintokieli = Tutkintokieli.ENG12, suoritusId = 54321)
+        val suoritukset = listOf(suoritusSWE10, suoritusENG11, suoritusENG12)
+        val savedSuoritukset = ykiSuoritusRepository.saveAll(suoritukset).toList()
+        assertTrue(savedSuoritukset.map { it.copy(id = null) }.containsAll(suoritukset))
+    }
 }
