@@ -70,7 +70,7 @@ class YkiSuoritusRepositoryTest(
                 tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
                 tarkistusarvioinninAsiatunnus = "123123",
                 tarkistusarvioidutOsakokeet = 2,
-                arvosanaMuuttui = true,
+                arvosanaMuuttui = 1,
                 perustelu = "Tarkistusarvioinnin testi",
                 tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
             )
@@ -204,7 +204,7 @@ class YkiSuoritusRepositoryTest(
                 tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
                 tarkistusarvioinninAsiatunnus = "123123",
                 tarkistusarvioidutOsakokeet = 2,
-                arvosanaMuuttui = true,
+                arvosanaMuuttui = 4,
                 perustelu = "Tarkistusarvioinnin testi",
                 tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
             )

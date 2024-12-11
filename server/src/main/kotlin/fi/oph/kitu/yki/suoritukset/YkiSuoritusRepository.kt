@@ -216,7 +216,7 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getObject("tarkistusarvioinnin_saapumis_pvm", LocalDate::class.java),
         rs.getString("tarkistusarvioinnin_asiatunnus"),
         rs.getObject("tarkistusarvioidut_osakokeet", Integer::class.java)?.toInt(),
-        rs.getObject("arvosana_muuttui", Boolean::class.javaObjectType),
+        rs.getObject("arvosana_muuttui", Integer::class.java)?.toInt(),
         rs.getString("perustelu"),
         rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
     )
