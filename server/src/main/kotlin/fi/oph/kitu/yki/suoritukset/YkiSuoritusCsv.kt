@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import fi.oph.kitu.csvparsing.Features
-import fi.oph.kitu.csvparsing.yki.BooleanFromNumericDeserializer
 import fi.oph.kitu.csvparsing.yki.TutkintokieliDeserializer
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
@@ -109,8 +108,7 @@ data class YkiSuoritusCsv(
     @JsonProperty("tarkistusarvioidutOsakokeet")
     val tarkistusarvioidutOsakokeet: Int?,
     @JsonProperty("arvosanaMuuttui")
-    @JsonDeserialize(using = BooleanFromNumericDeserializer::class)
-    val arvosanaMuuttui: Boolean?,
+    val arvosanaMuuttui: Int?,
     @JsonProperty("perustelu")
     val perustelu: String?,
     @JsonProperty("tarkistusarvioinninKasittelyPvm")

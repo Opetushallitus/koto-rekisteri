@@ -59,7 +59,7 @@ class CsvParsingTest {
         assertNull(suoritus.tarkistusarvioinninSaapumisPvm)
         assertEquals("", suoritus.tarkistusarvioinninAsiatunnus)
         assertEquals(0, suoritus.tarkistusarvioidutOsakokeet)
-        assertEquals(false, suoritus.arvosanaMuuttui)
+        assertEquals(0, suoritus.arvosanaMuuttui)
         assertEquals("", suoritus.perustelu)
         assertNull(suoritus.tarkistusarvioinninKasittelyPvm)
     }
@@ -170,8 +170,8 @@ class CsvParsingTest {
                     tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
                     tarkistusarvioinninAsiatunnus = "123123",
                     tarkistusarvioidutOsakokeet = 2,
-                    arvosanaMuuttui = true,
-                    perustelu = "Tarkistusarvioinnin testi",
+                    arvosanaMuuttui = 1,
+                    perustelu = "Tarkistusarvioinnin testi\\nJossa rivinvaihto",
                     tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
                 ),
             )
@@ -180,7 +180,7 @@ class CsvParsingTest {
         val expectedCsv =
             """
             suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
-            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,4,3,1,2,3,2024-10-01,123123,2,true,"Tarkistusarvioinnin testi",2024-10-15
+            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,4,3,1,2,3,2024-10-01,123123,2,1,"Tarkistusarvioinnin testi\nJossa rivinvaihto",2024-10-15
 
             """.trimIndent()
         assertEquals(expectedCsv, outputStream.toString(Charsets.UTF_8))

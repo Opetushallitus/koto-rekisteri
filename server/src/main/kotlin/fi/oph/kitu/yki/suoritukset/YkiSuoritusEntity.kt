@@ -44,7 +44,7 @@ data class YkiSuoritusEntity(
     val tarkistusarvioinninSaapumisPvm: LocalDate?,
     val tarkistusarvioinninAsiatunnus: String?,
     val tarkistusarvioidutOsakokeet: Int?,
-    val arvosanaMuuttui: Boolean?,
+    val arvosanaMuuttui: Int?,
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
 ) {
