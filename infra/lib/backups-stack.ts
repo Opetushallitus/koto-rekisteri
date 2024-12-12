@@ -26,8 +26,9 @@ export class BackupsStack extends Stack {
         notificationTopic: props.notificationTopic,
         // All the failure events documented here: https://docs.aws.amazon.com/aws-backup/latest/devguide/API_PutBackupVaultNotifications.html#Backup-PutBackupVaultNotifications-request-BackupVaultEvents
         notificationEvents: [
-          BackupVaultEvents.BACKUP_JOB_FAILED,
+          BackupVaultEvents.BACKUP_JOB_COMPLETED,
           BackupVaultEvents.COPY_JOB_FAILED,
+          BackupVaultEvents.RESTORE_JOB_COMPLETED,
           BackupVaultEvents.S3_BACKUP_OBJECT_FAILED,
           BackupVaultEvents.S3_RESTORE_OBJECT_FAILED,
         ],
