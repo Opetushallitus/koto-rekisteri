@@ -1,5 +1,5 @@
 import { aws_sns, Stack, StackProps } from "aws-cdk-lib"
-import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
+import { Stats, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import {
   CustomDataIdentifier,
@@ -50,7 +50,7 @@ export class LogGroupsStack extends Stack {
           FilterPattern.stringValue("$.log.level", "=", "ERROR"),
         ),
       })
-      .metric()
+      .metric({ statistic: Stats.SAMPLE_COUNT })
       .createAlarm(this, "ErrorsAlarm", {
         threshold: 1,
         evaluationPeriods: 1,
