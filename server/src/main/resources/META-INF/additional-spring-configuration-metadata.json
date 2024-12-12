@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "kitu.yki.scheduling.enabled",
+      "type": "java.lang.String",
+      "description": "Enable YKI import scheduling."
+    },
+    {
+      "name": "kitu.kotoutumiskoulutus.koealusta.scheduling.enabled",
+      "type": "java.lang.String",
+      "description": "Enable koealusta import scheduling."
+    }
+  ]
+}
