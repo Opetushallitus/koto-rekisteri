@@ -1,7 +1,6 @@
 package fi.oph.kitu.csvparsing
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import java.lang.Exception
 
 class InvalidFormatCsvExportError(
     lineNumber: Int,
@@ -16,12 +15,12 @@ class InvalidFormatCsvExportError(
 
 class SimpleCsvExportError(
     lineNumber: Int,
-    exception: Exception,
+    exception: Throwable,
 ) : CsvExportError(lineNumber, exception)
 
 abstract class CsvExportError(
     lineNumber: Int,
-    exception: Exception,
+    exception: Throwable,
 ) {
     val keyValues = mutableListOf<Pair<String, Any>>()
 
