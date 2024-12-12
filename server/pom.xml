@@ -157,7 +157,7 @@
         <dependency>
             <groupId>com.github.kagkarlsson</groupId>
             <artifactId>db-scheduler-spring-boot-starter</artifactId>
-            <version>15.1.0</version>
+            <version>15.1.1</version>
         </dependency>
         <dependency>
             <groupId>io.rocketbase.extension</groupId>
