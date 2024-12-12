@@ -43,7 +43,21 @@ data class YkiSuoritusEntity(
     val yleisarvosana: Int?,
     val tarkistusarvioinninSaapumisPvm: LocalDate?,
     val tarkistusarvioinninAsiatunnus: String?,
+    /*
+     * kokonaisluku 0–15, tulkitaan bittimaskina
+     * 1=puhuminen
+     * 2=kirjoittaminen
+     * 4=tekstin ymmärtäminen
+     * 8=puheen ymmärtäminen
+     * */
     val tarkistusarvioidutOsakokeet: Int?,
+    /*
+     * kokonaisluku 0–15, tulkitaan bittimaskina
+     * 1=puhuminen
+     * 2=kirjoittaminen
+     * 4=tekstin ymmärtäminen
+     * 8=puheen ymmärtäminen
+     * */
     val arvosanaMuuttui: Int?,
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
