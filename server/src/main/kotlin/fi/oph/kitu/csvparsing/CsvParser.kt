@@ -98,33 +98,40 @@ class CsvParser(
 
         // the lines are needed to read line by line in order to distinguish all erroneous lines
         val errors = mutableListOf<CsvExportError>()
-        val data =
-            csvString
-                .split(lineSeparator)
-                .mapIndexed { index, line ->
-                    try {
-                        csvMapper
-                            .readerFor(T::class.java)
-                            .with(schema)
-                            .readValue<T?>(line)
-                    } catch (e: InvalidFormatException) {
-                        errors.add(InvalidFormatCsvExportError(index, e))
-                        null
-                    } catch (e: Exception) {
-                        errors.add(SimpleCsvExportError(index, e))
-                        null
-                    }
-                }.filterNotNull()
+
+        val iterator =
+            csvMapper
+                .readerFor(T::class.java)
+                .with(schema)
+                .readValues<T?>(csvString)
+
+        val debugCsvString = csvString
+        println(debugCsvString)
+
+        val data = mutableListOf<T>()
+        var index = 0
+        while (iterator.hasNext()) {
+            try {
+                val row = iterator.nextValue()
+                data.add(row)
+            } catch (e: InvalidFormatException) {
+                errors.add(InvalidFormatCsvExportError(index, e))
+            } catch (e: Exception) {
+                errors.add(SimpleCsvExportError(index, e))
+            } finally {
+                index++
+            }
+        }
 
         if (errors.isEmpty()) {
             return data
         }
 
         // add all errors to log
-        errors.forEachIndexed { index, error ->
-            event.add("serialization.error[$index].index" to index)
+        errors.forEachIndexed { i, error ->
+            event.add("serialization.error[$i].index" to i)
             for (kvp in error.keyValues) {
-                event.add("serialization.error[$index].${kvp.first}" to kvp.second)
+                event.add("serialization.error[$i].${kvp.first}" to kvp.second)
             }
         }
 

@@ -65,6 +65,17 @@ class CsvParsingTest {
     }
 
     @Test
+    fun `test line breaks`() {
+        val parser = CsvParser(MockEvent())
+        val perustelut = " - Hyvä kielioppi\n - Selkeä puhuminen\n - Ymmärtää hyvin puhetta\n"
+        val csv =
+            """"1.2.246.562.24.20281155246","010180-9026","N","Öhmana-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"$perustelut","""
+        val suoritus = parser.convertCsvToData<YkiSuoritusCsv>(csv).first()
+
+        assertEquals(perustelut, suoritus.perustelu)
+    }
+
+    @Test
     fun `test legacy language code 10 parsing`() {
         val parser = CsvParser(MockEvent())
         val arvioijaCsv =
