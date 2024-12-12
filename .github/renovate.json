@@ -21,7 +21,7 @@
       ],
       "depNameTemplate": "{{depName}}",
       "versioningTemplate": "semver",
-      "datasourceTemplate": "pypi",
+      "datasourceTemplate": "github-tags",
       "extractVersionTemplate": "ref:{{newVersion}}",
       "autoReplaceStringTemplate": "{{depName}} = \"ref:{{newVersion}}\""
     }
