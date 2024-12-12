@@ -22,6 +22,7 @@
       "depNameTemplate": "{{depName}}",
       "versioningTemplate": "semver",
       "datasourceTemplate": "github-tags",
+      "packageNameTemplate": "aws/aws-cli",
       "extractVersionTemplate": "ref:{{newVersion}}",
       "autoReplaceStringTemplate": "{{depName}} = \"ref:{{newVersion}}\""
     }
