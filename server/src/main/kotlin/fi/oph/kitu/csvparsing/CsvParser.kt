@@ -1,5 +1,6 @@
 package fi.oph.kitu.csvparsing
 
+import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
@@ -9,7 +10,6 @@ import fi.oph.kitu.logging.add
 import org.ietf.jgss.Oid
 import org.slf4j.spi.LoggingEventBuilder
 import java.io.ByteArrayOutputStream
-import java.lang.Exception
 import java.lang.RuntimeException
 import kotlin.reflect.full.findAnnotation
 
@@ -105,23 +105,13 @@ class CsvParser(
                 .with(schema)
                 .readValues<T?>(csvString)
 
-        val debugCsvString = csvString
-        println(debugCsvString)
-
-        val data = mutableListOf<T>()
-        var index = 0
-        while (iterator.hasNext()) {
-            try {
-                val row = iterator.nextValue()
-                data.add(row)
-            } catch (e: InvalidFormatException) {
-                errors.add(InvalidFormatCsvExportError(index, e))
-            } catch (e: Exception) {
-                errors.add(SimpleCsvExportError(index, e))
-            } finally {
-                index++
+        val data =
+            iterator.toDataWithErrorHandling { index, e ->
+                when (e) {
+                    is InvalidFormatException -> errors.add(InvalidFormatCsvExportError(index, e))
+                    else -> errors.add(SimpleCsvExportError(index, e))
+                }
             }
-        }
 
         if (errors.isEmpty()) {
             return data
@@ -137,4 +127,18 @@ class CsvParser(
 
         throw RuntimeException("Unable to convert string to csv, because the string had ${errors.count()} error(s).")
     }
+}
+
+fun <T> MappingIterator<T>.toDataWithErrorHandling(
+    onFailure: (index: Int, exception: Throwable) -> Unit = { _, _ -> },
+): List<T> {
+    val data = mutableListOf<T>()
+    var index = 0
+    while (this.hasNext()) {
+        runCatching { data.add(this.nextValue()) }
+            .onFailure { e -> onFailure(index, e) }
+            .also { index++ }
+    }
+
+    return data
 }
