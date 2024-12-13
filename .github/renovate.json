@@ -10,6 +10,11 @@
       "matchFileNames": ["**/pom.xml"],
       "matchUpdateTypes": ["patch"],
       "automerge": true
+    },
+    {
+      "matchFileNames": ["\\.mise.toml$"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
     }
   ],
   "customManagers": [
