@@ -60,13 +60,13 @@ fun LoggingEventBuilder.addCondition(
     key: String,
     condition: Boolean,
 ): Boolean {
-    this.addKeyValue(key, condition)
+    this.add(key to condition)
     return condition
 }
 
 fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventBuilder {
     val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
-    this.addKeyValue("isDuplicateKeyException", isDuplicateKeyException)
+    this.add("isDuplicateKeyException" to isDuplicateKeyException)
 
     if (isDuplicateKeyException) {
         val duplicateKeyException = (if (ex is DuplicateKeyException) ex else ex.cause) as DuplicateKeyException
@@ -75,14 +75,17 @@ fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventB
             duplicateKeyException.message
                 ?.substringAfter("INSERT INTO \"")
                 ?.substringBefore("\"")
-        this.addKeyValue("table", table)
 
         val constraint =
             duplicateKeyException.cause
                 ?.message
                 ?.substringAfter("unique constraint \"")
                 ?.substringBefore("\"")
-        this.addKeyValue("constraint", constraint)
+
+        this.add(
+            "table" to table,
+            "constraint" to constraint,
+        )
     }
 
     return this
@@ -99,23 +102,23 @@ fun <T> LoggingEventBuilder.withEvent(
     operationName: String,
     f: (event: LoggingEventBuilder) -> T,
 ): T {
-    addKeyValue("operation", operationName)
+    add("operation" to operationName)
     val start = System.currentTimeMillis()
 
     try {
         val ret = f(this)
-        addKeyValue("success", true)
+        add("success" to true)
         setMessage("$operationName successful")
         return ret
     } catch (ex: Exception) {
-        addKeyValue("success", false)
+        add("success" to false)
         addIsDuplicateKeyException(ex)
         setCause(ex)
         setMessage("$operationName failed")
         throw ex
     } finally {
         val elapsed = System.currentTimeMillis() - start
-        addKeyValue("duration_ms", elapsed)
+        add("duration_ms" to elapsed)
         log()
     }
 }

@@ -56,7 +56,7 @@ class YkiService(
 
             if (dryRun != true) {
                 val res = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
-                event.addKeyValue("importedSuorituksetSize", res.count())
+                event.add("importedSuorituksetSize" to res.count())
             }
             return@withEvent suoritukset.maxOfOrNull { it.lastModified } ?: from
         }
@@ -76,14 +76,14 @@ class YkiService(
             val arvioijat =
                 parser.convertCsvToData<SolkiArvioijaResponse>(response.body ?: throw Error.EmptyArvioijatResponse())
 
-            event.addKeyValue("yki.arvioijat.receivedCount", arvioijat.size)
+            event.add("yki.arvioijat.receivedCount" to arvioijat.size)
             if (arvioijat.isEmpty()) {
                 throw Error.EmptyArvioijat()
             }
 
             if (!dryRun) {
                 val importedArvioijat = arvioijaRepository.saveAll(arvioijaMapper.convertToEntityIterable(arvioijat))
-                event.addKeyValue("yki.arvioijat.importedCount", importedArvioijat.count())
+                event.add("yki.arvioijat.importedCount" to importedArvioijat.count())
             }
         }
 
