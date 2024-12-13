@@ -1,7 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.PeerService
-import fi.oph.kitu.logging.addResponse
+import fi.oph.kitu.logging.addHttpResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -33,23 +33,32 @@ class CasAuthenticatedService(
             .header("Caller-Id", callerId)
             .header("CSRF", "CSRF")
             .header("Cookie", "CSRF=CSRF")
-        val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addResponse(response, PeerService.Oppijanumero).log()
+        val request = requestBuilder.build()
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        logger.atInfo().addHttpResponse(PeerService.Oppijanumero, request.uri().toString(), response).log()
 
         if (isLoginToCas(response)) {
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
             // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-            val authenticatedResponse = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-            logger.atInfo().addResponse(authenticatedResponse, PeerService.Oppijanumero).log()
+            val authenticatedRequest = requestBuilder.build()
+            val authenticatedResponse = httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
+            logger
+                .atInfo()
+                .addHttpResponse(PeerService.Oppijanumero, authenticatedRequest.uri().toString(), authenticatedResponse)
+                .log()
 
             return authenticatedResponse
         } else if (response.statusCode() == 401) {
             // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
             // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-            val authenticatedResponse = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-            logger.atInfo().addResponse(authenticatedResponse, PeerService.Oppijanumero).log()
+            val authenticatedRequest = requestBuilder.build()
+            val authenticatedResponse = httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
+            logger
+                .atInfo()
+                .addHttpResponse(PeerService.Oppijanumero, authenticatedRequest.uri().toString(), authenticatedResponse)
+                .log()
             return authenticatedResponse
         } else if (response.statusCode() != 200) {
             throw RuntimeException("Unexpected HTTP status code: ${response.statusCode()}")

@@ -29,34 +29,32 @@ fun LoggingEventBuilder.addServletResponse(response: HttpServletResponse): Loggi
             response.getHeader(HttpHeaders.CONTENT_LENGTH),
     )
 
-inline fun <reified T> LoggingEventBuilder.addResponse(
+inline fun <reified T> LoggingEventBuilder.addHttpResponse(
+    peerService: PeerService,
+    uri: String,
     response: HttpResponse<T>,
-    peerService: PeerService,
-): LoggingEventBuilder =
-    this
-        .addKeyValue("response.status", response.statusCode())
-        .addKeyValue("response.headers", response.headers().toString())
-        .addKeyValue("response.body", response.body().toString())
-        .addKeyValue("peer.service", peerService.value)
+): LoggingEventBuilder = addHttpResponse(peerService, uri, response.statusCode(), response.headers(), response.body())
 
-inline fun <reified T> LoggingEventBuilder.addResponse(
-    response: ResponseEntity<T>,
+inline fun <reified T> LoggingEventBuilder.addHttpResponse(
     peerService: PeerService,
-): LoggingEventBuilder =
-    this
-        .addKeyValue("response.status", response.statusCode)
-        .addKeyValue("response.headers", response.headers)
-        .addKeyValue("response.body", response.body)
-        .addKeyValue("peer.service", peerService.value)
-
-inline fun <reified T> LoggingEventBuilder.addResponse(
-    endpoint: String,
+    uri: String,
     response: ResponseEntity<T>,
+): LoggingEventBuilder = addHttpResponse(peerService, uri, response.statusCode, response.headers, response.body)
+
+inline fun <reified T> LoggingEventBuilder.addHttpResponse(
+    peerService: PeerService,
+    uri: String,
+    status: Any,
+    headers: Any,
+    body: T,
 ): LoggingEventBuilder =
-    this
-        .addKeyValue("$endpoint.response.status", response.statusCode)
-        .addKeyValue("$endpoint.response.headers", response.headers)
-        .addKeyValue("$endpoint.response.body", response.body)
+    this.add(
+        "peer.service" to peerService.value,
+        "response.uri" to uri,
+        "response.status" to status,
+        "response.headers" to headers,
+        "response.body" to body,
+    )
 
 fun LoggingEventBuilder.addCondition(
     key: String,
