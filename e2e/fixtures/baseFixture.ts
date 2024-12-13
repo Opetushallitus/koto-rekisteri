@@ -2,37 +2,57 @@ import { test as baseTest } from "@playwright/test"
 import KielitestiSuorituksetPage from "../models/kotoutumiskoulutus/KielitestiSuorituksetPage"
 import IndexPage from "../models/IndexPage"
 import YkiSuorituksetPage from "../models/yki/YkiSuorituksetPage"
-import database from "../db/database"
+import { createTestDatabase } from "../db/database"
 import * as kotoSuoritusFixture from "./kotoSuoritus"
+import BasePage from "../models/BasePage"
+import { Config, createConfig } from "../config"
 
 interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
   kielitestiSuorituksetPage: KielitestiSuorituksetPage
   indexPage: IndexPage
+  basePage: BasePage
   kotoSuoritus: typeof kotoSuoritusFixture
 }
 
-export type TestDB = typeof database
+export type TestDB = ReturnType<typeof createTestDatabase>
 
 interface WorkerArgs {
   db: TestDB
+  config: Config
 }
 
 export const test = baseTest.extend<Fixtures, WorkerArgs>({
-  kielitestiSuorituksetPage: async ({ page }, use) => {
-    const kielitestiSuorituksetPage = new KielitestiSuorituksetPage(page)
+  basePage: async ({ page, config }, use) => {
+    const basePage = new BasePage(page, config)
+    await use(basePage)
+  },
+  kielitestiSuorituksetPage: async ({ page, config }, use) => {
+    const kielitestiSuorituksetPage = new KielitestiSuorituksetPage(
+      page,
+      config,
+    )
     await use(kielitestiSuorituksetPage)
   },
-  indexPage: async ({ page }, use) => {
-    const indexPage = new IndexPage(page)
+  indexPage: async ({ page, config }, use) => {
+    const indexPage = new IndexPage(page, config)
     await use(indexPage)
   },
-  ykiSuorituksetPage: async ({ page }, use) => {
-    const ykiSuorituksetPage = new YkiSuorituksetPage(page)
+  ykiSuorituksetPage: async ({ page, config }, use) => {
+    const ykiSuorituksetPage = new YkiSuorituksetPage(page, config)
     await use(ykiSuorituksetPage)
   },
-  db: [
+  config: [
     async ({}, use) => {
+      const workerIndex = parseInt(process.env.TEST_PARALLEL_INDEX)
+      const config = createConfig(workerIndex)
+      await use(config)
+    },
+    { scope: "worker", auto: true },
+  ],
+  db: [
+    async ({ config }, use) => {
+      const database = createTestDatabase(config)
       await use({ ...database })
     },
     { scope: "worker", auto: true },

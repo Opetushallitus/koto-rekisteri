@@ -1,9 +1,10 @@
 import { Page } from "@playwright/test"
 import BasePage from "./BasePage"
+import { Config } from "../config"
 
 export default class IndexPage extends BasePage {
-  constructor(page: Page) {
-    super(page)
+  constructor(page: Page, config: Config) {
+    super(page, config)
   }
 
   async open() {

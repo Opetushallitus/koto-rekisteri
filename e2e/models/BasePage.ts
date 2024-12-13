@@ -1,20 +1,19 @@
 import { Page } from "@playwright/test"
+import { Config, createConfig } from "../config"
 
 type GotoParams = Parameters<Page["goto"]>[1]
 
-const config = {
-  baseUrl: "http://127.0.0.1:8080/",
-}
-
 export default class BasePage {
   protected readonly page: Page
+  protected readonly config: Config
 
-  constructor(page: Page) {
+  constructor(page: Page, config: Config) {
     this.page = page
+    this.config = config
   }
 
   protected async goto(url: string, params?: GotoParams) {
-    const fullUrl = new URL(url, config.baseUrl)
+    const fullUrl = new URL(url, this.config.baseUrl)
     return this.page.goto(fullUrl.toString(), params)
   }
 
@@ -32,6 +31,10 @@ export default class BasePage {
     const navLink = navDropdownSubmenu.getByRole("link", { name: navLinkText })
 
     await navLink.click()
+  }
+
+  async login() {
+    await this.goto("/dev/mocklogin")
   }
 
   getPageContent() {

@@ -7,15 +7,17 @@ import {
 } from "../../fixtures/baseFixture"
 
 describe("Kotoutumiskoulutuksen kielitesti -page", () => {
-  beforeAll(async ({ db, kotoSuoritus }) => {
+  beforeEach(async ({ db, kotoSuoritus }) => {
+    await db.withEmptyDatabase()
+
     await kotoSuoritus.insert(db, "anniina")
     await kotoSuoritus.insert(db, "eino")
     await kotoSuoritus.insert(db, "magdalena")
     await kotoSuoritus.insert(db, "toni")
   })
 
-  beforeEach(async ({ page }) => {
-    await page.goto("http://127.0.0.1:8080/dev/mocklogin")
+  beforeEach(async ({ basePage }) => {
+    await basePage.login()
   })
 
   test("loads and has content visible", async ({

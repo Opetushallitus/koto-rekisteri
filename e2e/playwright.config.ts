@@ -7,19 +7,46 @@ import { defineConfig, devices } from "@playwright/test"
 // import dotenv from 'dotenv';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+const numWorkers = process.env.CI
+  ? 1
+  : parseInt(process.env.TEST_WORKERS ?? "1")
+
+const workerWebServer = (workerIndex: number) => {
+  const port = 8080 + workerIndex
+  return {
+    command: "./mvnw spring-boot:run",
+    url: `http://127.0.0.1:${port}`,
+    reuseExistingServer: false,
+    cwd: "../server/",
+    env: {
+      SPRING_PROFILES_ACTIVE: "e2e",
+      // per-worker settings (e.g. assign each worker unique DB and port)
+      TEST_WORKER_PORT: port.toString(),
+      TEST_PARALLEL_INDEX: workerIndex.toString(),
+    },
+    /* Pipe server logs to console for troubleshooting */
+    stdout: "pipe",
+    stderr: "pipe",
+  } as const
+}
+
+const workerWebServerConfigs = Array(numWorkers)
+  .fill(0)
+  .map((_, workerIndex) => workerWebServer(workerIndex))
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: "./tests",
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: numWorkers > 1,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: numWorkers,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -70,14 +97,5 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: "./mvnw spring-boot:run",
-    url: "http://127.0.0.1:8080",
-    reuseExistingServer: !process.env.CI,
-    cwd: "../server/",
-    env: { SPRING_PROFILES_ACTIVE: "e2e" },
-    /* Pipe server logs to console for troubleshooting */
-    stdout: "pipe",
-    stderr: "pipe",
-  },
+  webServer: workerWebServerConfigs,
 })

@@ -1,10 +1,11 @@
 import BasePage from "../BasePage"
 import { Page } from "@playwright/test"
 import { expect } from "../../fixtures/baseFixture"
+import { Config } from "../../config"
 
 export default class YkiSuorituksetPage extends BasePage {
-  constructor(page: Page) {
-    super(page)
+  constructor(page: Page, config: Config) {
+    super(page, config)
   }
 
   async open() {
