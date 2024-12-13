@@ -130,4 +130,8 @@ mvn package
 # e2e-testien ajaminen e2e-hakemistossa
 # Playwrightin UI testien ajamiseen --ui flagilla
 npx playwright test
+
+# e2e-testien ajaminen rinnakkain. Määritä haluttu workerien lukumäärä ympäristömuuttujalla TEST_WORKERS. Suurin tuettu
+# arvo on 4. Oletusarvo on 1, joka poistaa testien rinnakkaisuuden käytöstä.
+TEST_WORKERS=4 npx playwright test
 ```

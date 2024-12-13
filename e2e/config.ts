@@ -36,29 +36,39 @@ import * as fs from "node:fs"
  *  2. parses the database URL and credentials from Spring datasource properties
  *  3. Constructs a `pg`-compatible connection string from the parsed parts
  */
-function getDatabaseConnectionStringFromServerE2EConfiguration() {
+function getDatabaseConnectionStringFromServerE2EConfiguration(
+  workerIndex: number,
+) {
   const propertiesFile =
     "../server/src/main/resources/application-e2e.properties"
   const properties = readJavaPropertiesFile(propertiesFile)
 
-  const dbUrl = parseDatabaseUrlFromJDBCUrl(properties["spring.datasource.url"])
+  const dbUrl = parseDatabaseUrlFromJDBCUrl(
+    properties["spring.datasource.url"],
+    workerIndex,
+  )
   const user = properties["spring.datasource.username"]
   const password = properties["spring.datasource.password"]
 
   return `postgresql://${user}:${password}@${dbUrl.substring("postgresql://".length)}`
 }
 
-function parseDatabaseUrlFromJDBCUrl(jdbcUrl: string): string {
+function parseDatabaseUrlFromJDBCUrl(
+  jdbcUrl: string,
+  workerIndex: number,
+): string {
   // The actual DB url is the part beginning with `postgresql://` up to any
   // possible JDBC parameters provided as URL query parameters. The start of
   // JDBC parameters is thus the first `?` in the string.
   const dbUrlBodyStart = jdbcUrl.indexOf("postgresql://")
   const jdbcParamsStart = jdbcUrl.indexOf("?")
 
-  return jdbcUrl.substring(
-    dbUrlBodyStart,
-    jdbcParamsStart < 0 ? undefined : jdbcParamsStart,
-  )
+  return jdbcUrl
+    .replace("${TEST_PARALLEL_INDEX}", workerIndex.toString())
+    .substring(
+      dbUrlBodyStart,
+      jdbcParamsStart < 0 ? undefined : jdbcParamsStart,
+    )
 }
 
 function readJavaPropertiesFile(path: string): Record<string, string> {
@@ -83,8 +93,17 @@ function readJavaPropertiesFile(path: string): Record<string, string> {
   return Object.fromEntries(propertiesEntries)
 }
 
-export default {
-  database: {
-    connectionString: getDatabaseConnectionStringFromServerE2EConfiguration(),
-  },
+export type Config = ReturnType<typeof createConfig>
+
+export const createConfig = (workerIndex: number) => {
+  const port = 8080 + workerIndex
+  return {
+    workerIndex,
+    port,
+    baseUrl: `http://127.0.0.1:${port}/`,
+    database: {
+      connectionString:
+        getDatabaseConnectionStringFromServerE2EConfiguration(workerIndex),
+    },
+  } as const
 }

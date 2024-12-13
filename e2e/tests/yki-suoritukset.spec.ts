@@ -4,8 +4,9 @@ import { beforeEach, describe, expect, test } from "../fixtures/baseFixture"
 const fs = node_fs.promises
 
 describe('"YKI Suoritukset" -page', () => {
-  beforeEach(async ({ page }) => {
-    await page.goto("http://127.0.0.1:8080/dev/mocklogin")
+  beforeEach(async ({ db, basePage }) => {
+    await db.withEmptyDatabase()
+    await basePage.login()
   })
 
   test("yki suoritukset page is navigable from index page", async ({
