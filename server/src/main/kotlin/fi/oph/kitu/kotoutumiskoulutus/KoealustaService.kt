@@ -6,7 +6,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaMappingService.KoealustaMappingServiceException
 import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addResponse
+import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEvent
 import fi.oph.kitu.oppijanumero.addOppijanumeroExceptions
 import org.slf4j.LoggerFactory
@@ -76,7 +76,7 @@ class KoealustaService(
 
             event
                 .add("request.token" to koealustaToken)
-                .addResponse(response, PeerService.Koealusta)
+                .addHttpResponse(PeerService.Koealusta, uri = "/webservice/rest/server.php", response)
 
             if (response.body == null) {
                 return@withEvent from

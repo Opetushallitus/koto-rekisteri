@@ -3,7 +3,7 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addResponse
+import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEvent
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
@@ -50,7 +50,7 @@ class YkiService(
                     .retrieve()
                     .toEntity<String>()
 
-            event.addResponse(response, PeerService.Solki)
+            event.addHttpResponse(PeerService.Solki, "suoritukset", response)
 
             val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
 
@@ -71,9 +71,7 @@ class YkiService(
                     .retrieve()
                     .toEntity<String>()
 
-            event
-                .addResponse("yki.arvioijat.get", response)
-                .addKeyValue("peer.service", PeerService.Solki.value)
+            event.addHttpResponse(PeerService.Solki, "arvioijat", response)
 
             val arvioijat =
                 parser.convertCsvToData<SolkiArvioijaResponse>(response.body ?: throw Error.EmptyArvioijatResponse())
