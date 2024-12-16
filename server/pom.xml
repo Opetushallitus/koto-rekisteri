@@ -261,6 +261,7 @@
                     <args>
                         <arg>-Xjsr305=strict</arg>
                         <arg>-Xlint:deprecation</arg>
+                        <arg>-Xreport-deprecated</arg>
                     </args>
                     <compilerPlugins>
                         <plugin>spring</plugin>
