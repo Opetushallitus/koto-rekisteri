@@ -104,7 +104,8 @@ const withEmptyDatabase = (pool: pg.Pool) => async () => {
     await client.query(SQL`
       TRUNCATE TABLE
         koto_suoritus,
-        yki_suoritus
+        yki_suoritus,
+        yki_arvioija,
       RESTART IDENTITY CASCADE
     `)
   } finally {
