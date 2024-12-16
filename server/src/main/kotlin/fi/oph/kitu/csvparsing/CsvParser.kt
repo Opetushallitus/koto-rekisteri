@@ -50,24 +50,32 @@ class CsvParser(
         return schema
     }
 
-    inline fun <reified T> getCsvMapper(): CsvMapper {
-        val builder = CsvMapper.builder()
+    inline fun <reified T> CsvMapper.Builder.withFeatures(): CsvMapper.Builder {
         val mapperFeatures = T::class.findAnnotation<Features>()?.features
         if (mapperFeatures != null) {
             for (feature in mapperFeatures) {
-                builder.enable(feature)
+                this.enable(feature)
             }
         }
 
-        val csvMapper = builder.build()
+        return this
+    }
 
-        csvMapper.registerModule(JavaTimeModule())
+    fun CsvMapper.withModules(): CsvMapper {
+        this.registerModule(JavaTimeModule())
         val oidSerializerModule = SimpleModule()
         oidSerializerModule.addSerializer(Oid::class.java, OidSerializer())
-        csvMapper.registerModule(oidSerializerModule)
+        this.registerModule(oidSerializerModule)
 
-        return csvMapper
+        return this
     }
+
+    inline fun <reified T> getCsvMapper(): CsvMapper =
+        CsvMapper
+            .builder()
+            .withFeatures<T>()
+            .build()
+            .withModules()
 
     inline fun <reified T> streamDataAsCsv(
         outputStream: ByteArrayOutputStream,
