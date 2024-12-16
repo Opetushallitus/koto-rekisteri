@@ -12,7 +12,7 @@
       "automerge": true
     },
     {
-      "matchFileNames": ["\\.mise.toml$"],
+      "matchFileNames": [".mise.toml"],
       "matchUpdateTypes": ["patch"],
       "automerge": true
     }
