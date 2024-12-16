@@ -29,31 +29,29 @@ fun LoggingEventBuilder.addServletResponse(response: HttpServletResponse): Loggi
             response.getHeader(HttpHeaders.CONTENT_LENGTH),
     )
 
-inline fun <reified T> LoggingEventBuilder.addHttpResponse(
+fun LoggingEventBuilder.addHttpResponse(
     peerService: PeerService,
     uri: String,
-    response: HttpResponse<T>,
-): LoggingEventBuilder = addHttpResponse(peerService, uri, response.statusCode(), response.headers(), response.body())
+    response: HttpResponse<*>,
+): LoggingEventBuilder = addHttpResponse(peerService, uri, response.statusCode(), response.headers())
 
-inline fun <reified T> LoggingEventBuilder.addHttpResponse(
+fun LoggingEventBuilder.addHttpResponse(
     peerService: PeerService,
     uri: String,
-    response: ResponseEntity<T>,
-): LoggingEventBuilder = addHttpResponse(peerService, uri, response.statusCode, response.headers, response.body)
+    response: ResponseEntity<*>,
+): LoggingEventBuilder = addHttpResponse(peerService, uri, response.statusCode, response.headers)
 
-inline fun <reified T> LoggingEventBuilder.addHttpResponse(
+fun LoggingEventBuilder.addHttpResponse(
     peerService: PeerService,
     uri: String,
     status: Any,
     headers: Any,
-    body: T,
 ): LoggingEventBuilder =
     this.add(
         "peer.service" to peerService.value,
         "response.uri" to uri,
         "response.status" to status,
         "response.headers" to headers,
-        "response.body" to body,
     )
 
 fun LoggingEventBuilder.addCondition(
