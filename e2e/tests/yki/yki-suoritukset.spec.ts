@@ -1,11 +1,15 @@
 import * as node_fs from "node:fs"
-import { beforeEach, describe, expect, test } from "../fixtures/baseFixture"
+import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 
 const fs = node_fs.promises
 
 describe('"YKI Suoritukset" -page', () => {
-  beforeEach(async ({ db, basePage }) => {
+  beforeEach(async ({ db, basePage, ykiSuoritus }) => {
     await db.withEmptyDatabase()
+    await ykiSuoritus.insert(db, "ranja")
+    await ykiSuoritus.insert(db, "ranjaTarkistus")
+    await ykiSuoritus.insert(db, "petro")
+
     await basePage.login()
   })
 
@@ -27,6 +31,31 @@ describe('"YKI Suoritukset" -page', () => {
     await ykiSuorituksetPage.openFromNavigation()
 
     await ykiSuorituksetPage.expectContentToBeVisible()
+  })
+
+  test("yki suoritus versions are hidden by default", async ({
+    indexPage,
+    ykiSuorituksetPage,
+  }) => {
+    await indexPage.open()
+    await ykiSuorituksetPage.openFromNavigation()
+
+    const suoritukset = ykiSuorituksetPage.getSuoritusRow()
+
+    await expect(suoritukset).toHaveCount(2)
+  })
+
+  test("yki suoritukset with show version history shows all suoritukset", async ({
+    indexPage,
+    ykiSuorituksetPage,
+  }) => {
+    await indexPage.open()
+    await ykiSuorituksetPage.openFromNavigation()
+    await ykiSuorituksetPage.showVersionHistory()
+
+    const suoritukset = ykiSuorituksetPage.getSuoritusRow()
+
+    await expect(suoritukset).toHaveCount(3)
   })
 
   test("should download yki suoritukset CSV and verify its content", async ({
