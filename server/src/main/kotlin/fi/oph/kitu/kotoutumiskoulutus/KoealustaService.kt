@@ -3,6 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import fi.oph.kitu.AUDIT_LOGGER_NAME
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
@@ -24,6 +25,7 @@ class KoealustaService(
     private val mappingService: KoealustaMappingService,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
+    private val auditLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
 
     @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
     lateinit var koealustaToken: String
@@ -92,9 +94,19 @@ class KoealustaService(
                     throw ex
                 }
 
-            val result = kielitestiSuoritusRepository.saveAll(suoritukset)
+            val savedSuoritukset = kielitestiSuoritusRepository.saveAll(suoritukset)
 
-            event.add("db.saved" to result.count())
+            event.add("db.saved" to savedSuoritukset.count())
+
+            for (suoritus in savedSuoritukset) {
+                auditLogger
+                    .atInfo()
+                    .add(
+                        "principal" to "koealusta.import",
+                        "peer.service" to PeerService.Koealusta.value,
+                        "suoritus.id" to suoritus.id,
+                    ).log("Kielitesti suoritus imported")
+            }
 
             return@withEvent suoritukset.maxOfOrNull { it.timeCompleted } ?: from
         }
