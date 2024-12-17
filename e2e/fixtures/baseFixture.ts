@@ -4,6 +4,7 @@ import IndexPage from "../models/IndexPage"
 import YkiSuorituksetPage from "../models/yki/YkiSuorituksetPage"
 import { createTestDatabase } from "../db/database"
 import * as kotoSuoritusFixture from "./kotoSuoritus"
+import * as ykiSuoritusFixture from "./ykiSuoritus"
 import BasePage from "../models/BasePage"
 import { Config, createConfig } from "../config"
 
@@ -13,6 +14,7 @@ interface Fixtures {
   indexPage: IndexPage
   basePage: BasePage
   kotoSuoritus: typeof kotoSuoritusFixture
+  ykiSuoritus: typeof ykiSuoritusFixture
 }
 
 export type TestDB = ReturnType<typeof createTestDatabase>
@@ -59,6 +61,9 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   ],
   kotoSuoritus: async ({}, use) => {
     await use({ ...kotoSuoritusFixture })
+  },
+  ykiSuoritus: async ({}, use) => {
+    await use({ ...ykiSuoritusFixture })
   },
 })
 

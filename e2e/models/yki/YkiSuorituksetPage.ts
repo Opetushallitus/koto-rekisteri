@@ -26,9 +26,29 @@ export default class YkiSuorituksetPage extends BasePage {
     await expect(contentHeading).toBeVisible()
   }
 
+  getContent() {
+    return this.getPageContent()
+  }
+
+  getSuorituksetTable() {
+    return this.getContent().getByRole("table")
+  }
+
+  getSuoritusRow() {
+    const suorituksetTable = this.getSuorituksetTable()
+    return suorituksetTable.locator(".suoritus")
+  }
+
   getCSVDownloadLink() {
     return this.getPageContent().getByRole("link", {
       name: "Lataa tiedot CSV:nä",
     })
+  }
+
+  async showVersionHistory() {
+    await this.getContent()
+      .getByRole("checkbox", { name: "Näytä versiohistoria" })
+      .setChecked(true)
+    await this.getContent().getByRole("button", { name: "Suodata" }).click()
   }
 }
