@@ -4,11 +4,10 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.PeerService
-import fi.oph.kitu.kotoutumiskoulutus.KoealustaMappingService.KoealustaMappingServiceException
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEvent
-import fi.oph.kitu.oppijanumero.addOppijanumeroExceptions
+import fi.oph.kitu.oppijanumero.addValidationExceptions
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -88,8 +87,8 @@ class KoealustaService(
             val suoritukset =
                 try {
                     mappingService.convertToEntity(suorituksetResponse)
-                } catch (ex: KoealustaMappingServiceException) {
-                    event.addOppijanumeroExceptions(ex.oppijanumeroExceptions)
+                } catch (ex: KoealustaMappingService.Error.ValidationFailure) {
+                    event.addValidationExceptions(ex.oppijanumeroExceptions, ex.validationErrors)
                     throw ex
                 }
 
