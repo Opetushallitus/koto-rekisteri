@@ -1,6 +1,7 @@
 package fi.oph.kitu.logging
 
 import fi.oph.kitu.PeerService
+import fi.oph.kitu.auth.CasUserDetails
 import io.opentelemetry.semconv.HttpAttributes
 import io.opentelemetry.semconv.UrlAttributes
 import io.opentelemetry.semconv.UserAgentAttributes
@@ -11,6 +12,7 @@ import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
 import java.net.http.HttpResponse
 
 fun LoggingEventBuilder.addServletRequest(request: HttpServletRequest): LoggingEventBuilder =
@@ -119,4 +121,13 @@ fun <T> LoggingEventBuilder.withEvent(
         add("duration_ms" to elapsed)
         log()
     }
+}
+
+fun LoggingEventBuilder.tryAddUser(): LoggingEventBuilder {
+    val userDetails = SecurityContextHolder.getContext().authentication?.principal as? CasUserDetails
+    if (userDetails == null) {
+        return this
+    }
+    add("user" to userDetails)
+    return this
 }
