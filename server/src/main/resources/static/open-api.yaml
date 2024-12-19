@@ -4,7 +4,7 @@ info:
   title: kitu
 tags:
   - name: kitu
-    description: KOTO-rekisteri
+    description: Kielitutkintorekisteri
 servers:
   - url: http://localhost:8080
     description: Lokaali ympäristö
