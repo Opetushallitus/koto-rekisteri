@@ -1,9 +1,9 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
-import fi.oph.kitu.csvparsing.CsvExportException
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.csvparsing.addErrors
+import fi.oph.kitu.csvparsing.foldWithErrors
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEvent
@@ -58,17 +58,11 @@ class YkiService(
 
             event.addHttpResponse(PeerService.Solki, "suoritukset", response)
 
-            val suoritukset =
-                try {
-                    parser.convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
-                } catch (e: CsvExportException) {
-                    event.addErrors(e)
-
-                    if (!importSuorituksetContinueOnError) {
-                        throw e
-                    } else {
-                        listOf()
-                    }
+            val suoritukset = mutableListOf<YkiSuoritusCsv>()
+            parser
+                .convertCsvtToResults<YkiSuoritusCsv>(response.body ?: "")
+                .foldWithErrors(importSuorituksetContinueOnError) {
+                    event.addErrors(it)
                 }
 
             if (dryRun != true) {
@@ -91,7 +85,12 @@ class YkiService(
             event.addHttpResponse(PeerService.Solki, "arvioijat", response)
 
             val arvioijat =
-                parser.convertCsvToData<SolkiArvioijaResponse>(response.body ?: throw Error.EmptyArvioijatResponse())
+                parser
+                    .convertCsvtToResults<SolkiArvioijaResponse>(
+                        response.body ?: throw Error.EmptyArvioijatResponse(),
+                    ).foldWithErrors(false) {
+                        event.addErrors(it)
+                    }
 
             event.add("yki.arvioijat.receivedCount" to arvioijat.size)
             if (arvioijat.isEmpty()) {

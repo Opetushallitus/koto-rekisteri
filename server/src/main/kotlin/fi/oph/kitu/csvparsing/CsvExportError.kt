@@ -32,15 +32,9 @@ abstract class CsvExportError(
     }
 }
 
-class CsvExportException(
-    val errors: Iterable<CsvExportError>,
-    message: String? = "Unable to convert string to csv, because the string had ${errors.count()} error(s).",
-    cause: Throwable? = null,
-) : Throwable(message, cause)
-
-fun LoggingEventBuilder.addErrors(exception: CsvExportException) {
+fun LoggingEventBuilder.addErrors(errors: Iterable<CsvExportError>) {
     // add all errors to log
-    exception.errors.forEachIndexed { i, error ->
+    errors.forEachIndexed { i, error ->
         this.add("serialization.error[$i].index" to i)
         for (kvp in error.keyValues) {
             this.add("serialization.error[$i].${kvp.first}" to kvp.second)
