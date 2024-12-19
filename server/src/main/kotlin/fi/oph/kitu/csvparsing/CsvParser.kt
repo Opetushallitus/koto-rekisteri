@@ -10,7 +10,6 @@ import fi.oph.kitu.logging.add
 import org.ietf.jgss.Oid
 import org.slf4j.spi.LoggingEventBuilder
 import java.io.ByteArrayOutputStream
-import java.lang.RuntimeException
 import kotlin.reflect.full.findAnnotation
 
 class CsvParser(
@@ -125,15 +124,7 @@ class CsvParser(
             return data
         }
 
-        // add all errors to log
-        errors.forEachIndexed { i, error ->
-            event.add("serialization.error[$i].index" to i)
-            for (kvp in error.keyValues) {
-                event.add("serialization.error[$i].${kvp.first}" to kvp.second)
-            }
-        }
-
-        throw RuntimeException("Unable to convert string to csv, because the string had ${errors.count()} error(s).")
+        throw CsvExportException(errors)
     }
 }
 
@@ -143,7 +134,8 @@ fun <T> MappingIterator<T>.toDataWithErrorHandling(
     val data = mutableListOf<T>()
     var index = 0
     while (this.hasNext()) {
-        runCatching { data.add(this.nextValue()) }
+        runCatching { this.nextValue() }
+            .onSuccess { d -> data.add(d) }
             .onFailure { e -> onFailure(index, e) }
             .also { index++ }
     }
