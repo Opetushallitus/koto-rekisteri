@@ -1,6 +1,5 @@
 package fi.oph.kitu.csvparsing
 
-import com.fasterxml.jackson.databind.MappingIterator
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
@@ -93,7 +92,7 @@ class CsvParser(
     /**
      * Converts retrieved String response into a list that is the type of Body.
      */
-    inline fun <reified T> convertCsvToData(csvString: String): List<T> {
+    inline fun <reified T> convertCsvtToResults(csvString: String): Iterable<Result<T>> {
         if (csvString.isBlank()) {
             event.add("serialization.isEmptyList" to true)
             return emptyList()
@@ -104,49 +103,48 @@ class CsvParser(
         val csvMapper = getCsvMapper<T>()
         val schema = getSchema<T>(csvMapper)
 
-        // the lines are needed to read line by line in order to distinguish all erroneous lines
-        val errors = mutableListOf<CsvExportError>()
-
         val iterator =
             csvMapper
                 .readerFor(T::class.java)
                 .with(schema)
                 .readValues<T?>(csvString)
 
-        val data =
-            iterator.toDataWithErrorHandling { index, e ->
+        // the lines are needed to read line by line in order to distinguish all erroneous lines
+        val data = mutableListOf<Result<T>>()
+        while (iterator.hasNext()) {
+            data.add(runCatching { iterator.nextValue() })
+        }
+
+        return data
+    }
+}
+
+fun <T> Iterable<Result<T>>.foldWithErrors(
+    continueOnError: Boolean,
+    action: (Iterable<CsvExportError>) -> Unit,
+): List<T> {
+    val errors = mutableListOf<CsvExportError>()
+    val data = mutableListOf<T>()
+    // Add errors to error list
+    this.forEachIndexed { index, result ->
+        result
+            .onFailure { e ->
                 when (e) {
                     is InvalidFormatException -> errors.add(InvalidFormatCsvExportError(index, e))
                     else -> errors.add(SimpleCsvExportError(index, e))
                 }
-            }
+            }.onSuccess { row -> data.add(row) }
 
-        if (errors.isEmpty()) {
-            return data
-        }
+        if (errors.isNotEmpty()) {
+            action(errors)
 
-        // add all errors to log
-        errors.forEachIndexed { i, error ->
-            event.add("serialization.error[$i].index" to i)
-            for (kvp in error.keyValues) {
-                event.add("serialization.error[$i].${kvp.first}" to kvp.second)
+            if (!continueOnError) {
+                throw RuntimeException(
+                    "Unable to convert string to csv, because the string had ${errors.count()} error(s).",
+                )
             }
         }
 
-        throw RuntimeException("Unable to convert string to csv, because the string had ${errors.count()} error(s).")
+        return data
     }
-}
-
-fun <T> MappingIterator<T>.toDataWithErrorHandling(
-    onFailure: (index: Int, exception: Throwable) -> Unit = { _, _ -> },
-): List<T> {
-    val data = mutableListOf<T>()
-    var index = 0
-    while (this.hasNext()) {
-        runCatching { data.add(this.nextValue()) }
-            .onFailure { e -> onFailure(index, e) }
-            .also { index++ }
-    }
-
-    return data
 }
