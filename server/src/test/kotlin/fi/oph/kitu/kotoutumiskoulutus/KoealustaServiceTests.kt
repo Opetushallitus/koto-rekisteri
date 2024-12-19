@@ -46,40 +46,41 @@ class KoealustaServiceTests {
                     {
                       "users": [
                         {
-                          "firstname": "Mervi-Marianne",
+                          "firstnames": "Mervi-Marianne",
                           "lastname": "Esimerkki",
                           "preferredname": "Mervi", 
-                          "OID": "",
-                          "SSN": "",
+                          "oppijanumero": "",
+                          "SSN": "12345678901",
                           "email": "mervi.esimerkki@oph.fi",
                           "completions": [
                             {
                               "courseid": 32,
                               "coursename": "Integraatio testaus",
+                              "schoolOID": "",
                               "results": [
                                 {
                                   "name": "luetun ymm\u00e4rt\u00e4minen",
-                                  "quiz_result_system": 40,
-                                  "quiz_result_teacher": 50
+                                  "quiz_result_system": "A1",
+                                  "quiz_result_teacher": "A1"
                                 },
                                 {
                                   "name": "kuullun ymm\u00e4rt\u00e4minen",
-                                  "quiz_result_system": 32,
-                                  "quiz_result_teacher": 40
+                                  "quiz_result_system": "B1",
+                                  "quiz_result_teacher": "B1"
                                 },
                                 {
                                   "name": "puhe",
                                   "quiz_result_system": null,
-                                  "quiz_result_teacher": 35
+                                  "quiz_result_teacher": "A1"
                                 },
                                 {
                                   "name": "kirjoittaminen",
                                   "quiz_result_system": null,
-                                  "quiz_result_teacher": 55
+                                  "quiz_result_teacher": "A1"
                                 }
                               ],
                               "timecompleted": 1728969131,
-                              "total_evaluation_teacher": "47.5",
+                              "total_evaluation_teacher": "47,5",
                               "total_evaluation_system": "40"
                             }
                           ]
