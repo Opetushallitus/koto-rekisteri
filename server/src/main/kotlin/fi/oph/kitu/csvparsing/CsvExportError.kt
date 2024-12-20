@@ -1,6 +1,8 @@
 package fi.oph.kitu.csvparsing
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import fi.oph.kitu.logging.add
+import org.slf4j.spi.LoggingEventBuilder
 
 class InvalidFormatCsvExportError(
     lineNumber: Int,
@@ -27,5 +29,15 @@ abstract class CsvExportError(
     init {
         keyValues.add(Pair("lineNumber", lineNumber))
         keyValues.add(Pair("exception", exception))
+    }
+}
+
+fun LoggingEventBuilder.addErrors(errors: Iterable<CsvExportError>) {
+    // add all errors to log
+    errors.forEachIndexed { i, error ->
+        this.add("serialization.error[$i].index" to i)
+        for (kvp in error.keyValues) {
+            this.add("serialization.error[$i].${kvp.first}" to kvp.second)
+        }
     }
 }
