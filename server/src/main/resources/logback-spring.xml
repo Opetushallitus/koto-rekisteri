@@ -5,8 +5,9 @@
 
     <appender name="AUDIT_LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/audit.log</file>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
+        <encoder class="org.springframework.boot.logging.logback.StructuredLogEncoder">
+            <format>${FILE_LOG_STRUCTURED_FORMAT}</format>
+            <charset>${FILE_LOG_CHARSET}</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>logs/audit.%d{yyyy-MM-dd}.log</fileNamePattern>
