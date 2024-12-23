@@ -54,7 +54,7 @@ class CasService(
         logger.atInfo().addHttpResponse(PeerService.Cas, request.uri().toString(), response).log()
 
         if (response.statusCode() != 200) {
-            throw RuntimeException("Unexpected status code: ${response.statusCode()} and message: ${response.body()}")
+            throw CasException(response, "Ticket service did not respond with 200 status code.")
         }
 
         val ticket = response.body()
@@ -77,10 +77,9 @@ class CasService(
         logger.atInfo().addHttpResponse(PeerService.Cas, request.uri().toString(), response).log()
 
         val statusCode = response.statusCode()
-        val body = response.body()
 
         if (statusCode != 201) {
-            throw RuntimeException("Ticket granting service responded with status code $statusCode and message $body")
+            throw CasException(response, "Ticket granting service did not respond with 201 status code.")
         }
 
         val location = response.headers().firstValue("Location").get()
