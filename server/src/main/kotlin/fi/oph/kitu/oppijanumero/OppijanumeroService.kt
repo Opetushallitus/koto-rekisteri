@@ -52,17 +52,29 @@ class OppijanumeroServiceImpl(
                     ).header("Content-Type", "application/json")
 
             // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
-            val result =
+            val oppijanumeroResponse =
                 casAuthenticatedService
                     .sendRequest(httpRequest)
                     .getOrLogAndThrowCasException(event)
 
-            val body = objectMapper.readValue(result, YleistunnisteHaeResponse::class.java)
+            val body = objectMapper.readValue(oppijanumeroResponse.body(), YleistunnisteHaeResponse::class.java)
+
+            if (oppijanumeroResponse.statusCode() == 404) {
+                throw OppijanumeroException(
+                    oppija.withYleistunnisteHaeResponse(body),
+                    "Oppija not found from oppijanumero-service",
+                )
+            } else if (oppijanumeroResponse.statusCode() != 200) {
+                throw OppijanumeroException(
+                    oppija.withYleistunnisteHaeResponse(body),
+                    "Oppijanumero-service returned unexpected status code ${oppijanumeroResponse.statusCode()}",
+                )
+            }
 
             if (body.oppijanumero.isNullOrEmpty()) {
                 throw OppijanumeroException(
                     oppija.withYleistunnisteHaeResponse(body),
-                    "Oppija is not identified",
+                    "Oppija is not identified in oppijanumero-service",
                 )
             }
 

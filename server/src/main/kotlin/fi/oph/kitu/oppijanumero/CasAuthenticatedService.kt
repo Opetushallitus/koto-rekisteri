@@ -28,7 +28,7 @@ class CasAuthenticatedService(
         casService.sendAuthenticationRequest(serviceTicket)
     }
 
-    fun sendRequest(requestBuilder: HttpRequest.Builder): Result<String> {
+    fun sendRequest(requestBuilder: HttpRequest.Builder): Result<HttpResponse<String>> {
         requestBuilder
             .header("Caller-Id", callerId)
             .header("CSRF", "CSRF")
@@ -48,7 +48,7 @@ class CasAuthenticatedService(
                 .addHttpResponse(PeerService.Oppijanumero, authenticatedRequest.uri().toString(), authenticatedResponse)
                 .log()
 
-            return Result.success(authenticatedResponse.body())
+            return Result.success(authenticatedResponse)
         } else if (response.statusCode() == 401) {
             // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
             // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
@@ -59,17 +59,11 @@ class CasAuthenticatedService(
                 .atInfo()
                 .addHttpResponse(PeerService.Oppijanumero, authenticatedRequest.uri().toString(), authenticatedResponse)
                 .log()
-            return Result.success(authenticatedResponse.body())
-        } else if (response.statusCode() != 200) {
-            return Result.failure(
-                CasException(
-                    response,
-                    "CAS flow returned with status code: ${response.statusCode()}",
-                ),
-            )
-        } else {
-            return Result.success(response.body())
+            return Result.success(authenticatedResponse)
         }
+
+        // loput statuskoodit oletetaan johtuvan kutsuttuvasta rajapinnasta
+        return Result.success(response)
     }
 
     private fun isLoginToCas(response: HttpResponse<*>): Boolean {
