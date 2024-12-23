@@ -15,11 +15,11 @@ fun Result<String>.getOrLogAndThrowCasException(event: LoggingEventBuilder): Str
             when (cause) {
                 is CasException ->
                     event.add(
-                        "cas.response.statusCode" to cause.response.statusCode(),
-                        "cas.response.uri" to cause.response.uri(),
-                        "cas.response.headers" to cause.response.headers(),
-                        "cas.response.body" to cause.response.body(),
-                        "cas.exception.message" to cause.message,
+                        "cas-error.response.statusCode" to cause.response.statusCode(),
+                        "cas-error.response.uri" to cause.response.uri(),
+                        "cas-error.response.headers" to cause.response.headers(),
+                        "cas-error.response.body" to cause.response.body(),
+                        "cas-error.exception.message" to cause.message,
                     )
             }
         }.getOrThrow()
