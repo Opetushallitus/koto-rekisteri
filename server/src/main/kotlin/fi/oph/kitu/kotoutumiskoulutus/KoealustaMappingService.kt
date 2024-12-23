@@ -13,7 +13,7 @@ class KoealustaMappingService(
     private val oppijanumeroService: OppijanumeroService,
 ) {
     fun convertToEntity(suorituksetResponse: KoealustaSuorituksetResponse): List<KielitestiSuoritus> {
-        val exceptions = mutableListOf<Exception>()
+        val exceptions = mutableListOf<Throwable>()
 
         val suoritukset =
             suorituksetResponse.users.flatMap { user ->
