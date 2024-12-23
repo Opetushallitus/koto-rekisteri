@@ -9,7 +9,7 @@ class CasException(
     message: String,
 ) : Throwable(message)
 
-fun Result<String>.getOrLogAndThrowCasException(event: LoggingEventBuilder): String =
+fun Result<HttpResponse<String>>.getOrLogAndThrowCasException(event: LoggingEventBuilder): HttpResponse<String> =
     this
         .onFailure { cause ->
             when (cause) {
