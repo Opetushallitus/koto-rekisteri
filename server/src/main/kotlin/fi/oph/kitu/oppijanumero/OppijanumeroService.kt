@@ -22,10 +22,10 @@ class OppijanumeroServiceImpl(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @Value("\${kitu.oppijanumero.service.url}")
-    private lateinit var serviceUrl: String
+    lateinit var serviceUrl: String
 
     @Value("\${kitu.oppijanumero.service.use-mock-data}")
-    private var useMockData: Boolean = false
+    var useMockData: Boolean = false
 
     override fun getOppijanumero(oppija: Oppija): String =
         logger.atInfo().withEvent("getOppijanumero") { event ->
@@ -95,17 +95,16 @@ class OppijanumeroServiceImpl(
         runCatching {
             objectMapper.readValue(response.body(), T::class.java)
         }.onFailure { exception ->
-            runCatching {
-                val error = objectMapper.readValue(response.body(), OppijanumeroServiceError::class.java)
+            val error =
+                runCatching {
+                    objectMapper.readValue(response.body(), OppijanumeroServiceError::class.java)
+                }.onFailure { _ -> throw exception }
+                    .getOrThrow()
 
-                throw OppijanumeroException(
-                    oppija,
-                    "Error from oppijanumero-service",
-                    error,
-                )
-            }.onFailure {
-                // throw original exception
-                throw exception
-            }
+            throw OppijanumeroException(
+                oppija,
+                "Error from oppijanumero-service: ${error.error}",
+                error,
+            )
         }.getOrThrow()
 }

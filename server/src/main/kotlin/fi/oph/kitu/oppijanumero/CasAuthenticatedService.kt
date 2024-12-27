@@ -10,25 +10,29 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
+interface CasAuthenticatedService {
+    fun sendRequest(requestBuilder: HttpRequest.Builder): Result<HttpResponse<String>>
+}
+
 @Service
-class CasAuthenticatedService(
+class CasAuthenticatedServiceImpl(
     @Qualifier("oppijanumeroHttpClient")
     private val httpClient: HttpClient,
     private val casService: CasService,
-) {
+) : CasAuthenticatedService {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @Value("\${kitu.oppijanumero.callerid}")
     private lateinit var callerId: String
 
-    fun authenticateToCas() {
+    private fun authenticateToCas() {
         val grantingTicket = casService.getGrantingTicket()
         val serviceTicket = casService.getServiceTicket(grantingTicket)
 
         casService.sendAuthenticationRequest(serviceTicket)
     }
 
-    fun sendRequest(requestBuilder: HttpRequest.Builder): Result<HttpResponse<String>> {
+    override fun sendRequest(requestBuilder: HttpRequest.Builder): Result<HttpResponse<String>> {
         requestBuilder
             .header("Caller-Id", callerId)
             .header("CSRF", "CSRF")
