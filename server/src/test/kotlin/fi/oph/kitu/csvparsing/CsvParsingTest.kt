@@ -26,7 +26,7 @@ class CsvParsingTest {
         val parser = CsvParser(MockEvent())
         val csv =
             """
-            "1.2.246.562.24.20281155246","010180-9026","N","Öhmana-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             """.trimIndent()
         val suoritus = parser.convertCsvToData<YkiSuoritusCsv>(csv).first()
 
@@ -35,7 +35,7 @@ class CsvParsingTest {
         assertEquals(Oid("1.2.246.562.24.20281155246"), suoritus.suorittajanOID)
         assertEquals("010180-9026", suoritus.hetu)
         assertEquals(Sukupuoli.N, suoritus.sukupuoli)
-        assertEquals("Öhmana-Testi", suoritus.sukunimi)
+        assertEquals("Öhman-Testi", suoritus.sukunimi)
         assertEquals("Ranja Testi", suoritus.etunimet)
         assertEquals("EST", suoritus.kansalaisuus)
         assertEquals("Testikuja 5", suoritus.katuosoite)
@@ -71,8 +71,8 @@ class CsvParsingTest {
         val perustelut2 = " - Hyvä kielioppi\r\n - Selkeä puhuminen\r\n - Ymmärtää hyvin puhetta\r\n"
         // you can't use trimIndent here, because the string contains CR (\r)
         val csv =
-            """"1.2.246.562.24.20281155246","010180-9026","N","Öhmana-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"$perustelut1",
-"1.2.246.562.24.20281155246","010180-9026","N","Öhmana-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"$perustelut2","""
+            """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"$perustelut1",
+"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"$perustelut2","""
         val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(csv)
 
         val suoritus1 = suoritukset.first()
@@ -120,7 +120,7 @@ class CsvParsingTest {
         val parser = CsvParser(MockEvent())
         val csv =
             """
-            "1.2.246.562.24.20281155246","010180-9026","N","Öhmana-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"Tarkistusarvioinnin perustelu\nJossa rivinvaihto",
+            "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"Tarkistusarvioinnin perustelu\nJossa rivinvaihto",
             """.trimIndent()
         val suoritus = parser.convertCsvToData<YkiSuoritusCsv>(csv).first()
 
@@ -129,7 +129,7 @@ class CsvParsingTest {
         assertEquals(Oid("1.2.246.562.24.20281155246"), suoritus.suorittajanOID)
         assertEquals("010180-9026", suoritus.hetu)
         assertEquals(Sukupuoli.N, suoritus.sukupuoli)
-        assertEquals("Öhmana-Testi", suoritus.sukunimi)
+        assertEquals("Öhman-Testi", suoritus.sukunimi)
         assertEquals("Ranja Testi", suoritus.etunimet)
         assertEquals("EST", suoritus.kansalaisuus)
         assertEquals("Testikuja 5", suoritus.katuosoite)
@@ -164,10 +164,10 @@ class CsvParsingTest {
         val parser = CsvParser(event)
         val csv =
             """
-            "INVALID_OID","010180-9026","N","Öhmana-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            "1.2.246.562.24.20281155246","INVALID_HETU","N","Öhmana-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            "1.2.246.562.24.20281155246","010180-9026","INVALID_SEX","Öhmana-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            "1.2.246.562.24.20281155246","010180-9026","N","Öhmana-Testi","Ranja Testi","INVALID_NATIONALITY","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "INVALID_OID","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "1.2.246.562.24.20281155246","INVALID_HETU","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "1.2.246.562.24.20281155246","010180-9026","INVALID_SEX","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","INVALID_NATIONALITY","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             """.trimIndent()
 
         assertThrows<RuntimeException> {
@@ -207,7 +207,7 @@ class CsvParsingTest {
                     suorittajanOID = Oid("1.2.246.562.24.20281155246"),
                     hetu = "010180-9026",
                     sukupuoli = Sukupuoli.N,
-                    sukunimi = "Öhmana-Testi",
+                    sukunimi = "Öhman-Testi",
                     etunimet = "Ranja Testi",
                     kansalaisuus = "EST",
                     katuosoite = "Testikuja 5",
@@ -241,7 +241,7 @@ class CsvParsingTest {
         val expectedCsv =
             """
             suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
-            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,4,3,1,2,3,2024-10-01,123123,2,1,"Tarkistusarvioinnin testi\nJossa rivinvaihto",2024-10-15
+            "1.2.246.562.24.20281155246",010180-9026,N,Öhman-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,4,3,1,2,3,2024-10-01,123123,2,1,"Tarkistusarvioinnin testi\nJossa rivinvaihto",2024-10-15
 
             """.trimIndent()
         assertEquals(expectedCsv, outputStream.toString(Charsets.UTF_8))
@@ -258,7 +258,7 @@ class CsvParsingTest {
                     suorittajanOID = Oid("1.2.246.562.24.20281155246"),
                     hetu = "010180-9026",
                     sukupuoli = Sukupuoli.N,
-                    sukunimi = "Öhmana-Testi",
+                    sukunimi = "Öhman-Testi",
                     etunimet = "Ranja Testi",
                     kansalaisuus = "EST",
                     katuosoite = "Testikuja 5",
@@ -293,7 +293,7 @@ class CsvParsingTest {
         val expectedCsv =
             """
             suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
-            "1.2.246.562.24.20281155246",010180-9026,N,Öhmana-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,,,,,,,,,,,,
+            "1.2.246.562.24.20281155246",010180-9026,N,Öhman-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,,183424,2024-10-30T13:53:56Z,2024-09-01,FIN,YT,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,,,,,,,,,,,,
 
             """.trimIndent()
         assertEquals(expectedCsv, outputStream.toString(Charsets.UTF_8))
