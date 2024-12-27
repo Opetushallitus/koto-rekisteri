@@ -1,5 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
+import java.util.Date
+
 data class YleistunnisteHaeRequest(
     val etunimet: String,
     val hetu: String,
@@ -13,8 +15,8 @@ data class YleistunnisteHaeResponse(
 )
 
 data class OppijanumeroServiceError(
-    val timestamp: Int, // 1734962667439
-    val status: Int, // 404
-    val error: String, // "Not Found"
-    val path: String, // "oppijanumerorekisteri-service/yleistunniste/hae"
+    val timestamp: Date,
+    val status: Int,
+    val error: String,
+    val path: String,
 )
