@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 
 interface OppijanumeroService {
     fun getOppijanumero(oppija: Oppija): String
@@ -16,7 +17,7 @@ interface OppijanumeroService {
 @Service
 class OppijanumeroServiceImpl(
     private val casAuthenticatedService: CasAuthenticatedService,
-    private val objectMapper: ObjectMapper,
+    val objectMapper: ObjectMapper,
 ) : OppijanumeroService {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -52,22 +53,22 @@ class OppijanumeroServiceImpl(
                     ).header("Content-Type", "application/json")
 
             // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
-            val oppijanumeroResponse =
+            val stringResponse =
                 casAuthenticatedService
                     .sendRequest(httpRequest)
                     .getOrLogAndThrowCasException(event)
 
-            val body = objectMapper.readValue(oppijanumeroResponse.body(), YleistunnisteHaeResponse::class.java)
+            val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse)
 
-            if (oppijanumeroResponse.statusCode() == 404) {
+            if (stringResponse.statusCode() == 404) {
                 throw OppijanumeroException(
                     oppija.withYleistunnisteHaeResponse(body),
                     "Oppija not found from oppijanumero-service",
                 )
-            } else if (oppijanumeroResponse.statusCode() != 200) {
+            } else if (stringResponse.statusCode() != 200) {
                 throw OppijanumeroException(
                     oppija.withYleistunnisteHaeResponse(body),
-                    "Oppijanumero-service returned unexpected status code ${oppijanumeroResponse.statusCode()}",
+                    "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
                 )
             }
 
@@ -80,4 +81,31 @@ class OppijanumeroServiceImpl(
 
             return@withEvent body.oppijanumero
         }
+
+    /**
+     * Tries to convert HttpResponse<String> into the given T.
+     * If the conversion fails, it checks whether the response was OppijanumeroServiceError.
+     * In that case OppijanumeroException will be thrown.
+     * Otherwise the underlying exception will be thrown
+     */
+    final inline fun <reified T> tryConvertToOppijanumeroResponse(
+        oppija: Oppija,
+        response: HttpResponse<String>,
+    ): T =
+        runCatching {
+            objectMapper.readValue(response.body(), T::class.java)
+        }.onFailure { exception ->
+            runCatching {
+                val error = objectMapper.readValue(response.body(), OppijanumeroServiceError::class.java)
+
+                throw OppijanumeroException(
+                    oppija,
+                    "Error from oppijanumero-service",
+                    error,
+                )
+            }.onFailure {
+                // throw original exception
+                throw exception
+            }
+        }.getOrThrow()
 }
