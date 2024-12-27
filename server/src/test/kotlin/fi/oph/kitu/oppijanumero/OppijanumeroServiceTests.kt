@@ -75,7 +75,7 @@ class OppijanumeroServiceTests {
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
-        assertThrows<OppijanumeroException> {
+        assertThrows<OppijanumeroException.OppijaNotIdentifiedException> {
             oppijanumeroService.getOppijanumero(
                 Oppija(
                     "Magdalena Testi",
@@ -116,7 +116,7 @@ class OppijanumeroServiceTests {
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
-        assertThrows<OppijanumeroException> {
+        assertThrows<OppijanumeroException.OppijaNotFoundException> {
             oppijanumeroService.getOppijanumero(
                 Oppija(
                     "Magdalena Testi",

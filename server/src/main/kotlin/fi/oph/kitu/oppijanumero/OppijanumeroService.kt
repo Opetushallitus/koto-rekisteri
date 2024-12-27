@@ -58,24 +58,20 @@ class OppijanumeroServiceImpl(
                     .sendRequest(httpRequest)
                     .getOrLogAndThrowCasException(event)
 
-            val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse)
-
             if (stringResponse.statusCode() == 404) {
-                throw OppijanumeroException(
-                    oppija.withYleistunnisteHaeResponse(body),
-                    "Oppija not found from oppijanumero-service",
-                )
+                throw OppijanumeroException.OppijaNotFoundException(oppija)
             } else if (stringResponse.statusCode() != 200) {
                 throw OppijanumeroException(
-                    oppija.withYleistunnisteHaeResponse(body),
+                    oppija,
                     "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
                 )
             }
 
+            val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse)
+
             if (body.oppijanumero.isNullOrEmpty()) {
-                throw OppijanumeroException(
+                throw OppijanumeroException.OppijaNotIdentifiedException(
                     oppija.withYleistunnisteHaeResponse(body),
-                    "Oppija is not identified in oppijanumero-service",
                 )
             }
 
