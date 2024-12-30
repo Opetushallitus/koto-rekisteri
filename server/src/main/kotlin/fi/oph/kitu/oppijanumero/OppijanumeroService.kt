@@ -3,7 +3,9 @@ package fi.oph.kitu.oppijanumero
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.logging.addCondition
 import fi.oph.kitu.logging.withEvent
+import fi.oph.kitu.logging.withTryCatch
 import org.slf4j.LoggerFactory
+import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -67,7 +69,7 @@ class OppijanumeroServiceImpl(
                 )
             }
 
-            val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse)
+            val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse, event)
 
             if (body.oppijanumero.isNullOrEmpty()) {
                 throw OppijanumeroException.OppijaNotIdentifiedException(
@@ -87,20 +89,40 @@ class OppijanumeroServiceImpl(
     final inline fun <reified T> tryConvertToOppijanumeroResponse(
         oppija: Oppija,
         response: HttpResponse<String>,
+        event: LoggingEventBuilder,
     ): T =
-        runCatching {
-            objectMapper.readValue(response.body(), T::class.java)
-        }.onFailure { exception ->
-            val error =
-                runCatching {
-                    objectMapper.readValue(response.body(), OppijanumeroServiceError::class.java)
-                }.onFailure { _ -> throw exception }
-                    .getOrThrow()
+        event.withTryCatch(
+            key = "oppijanumero.parse-response.success",
+            action = {
+                val value = objectMapper.readValue(response.body(), T::class.java)
+                return@withTryCatch value
+            },
+            onFailure = { exception ->
+                val error = tryParseOppijanumeroError(response.body(), exception, event)
 
-            throw OppijanumeroException(
-                oppija,
-                "Error from oppijanumero-service: ${error.error}",
-                error,
-            )
-        }.getOrThrow()
+                throw OppijanumeroException(
+                    oppija,
+                    "Error from oppijanumero-service: ${error.error}",
+                    error,
+                )
+            },
+        )
+
+    fun tryParseOppijanumeroError(
+        json: String,
+        originalException: Throwable,
+        event: LoggingEventBuilder,
+    ): OppijanumeroServiceError =
+        event.withTryCatch(
+            key = "oppijanumero.parse-oppijanumero-error.success",
+            action = {
+                // assume that exception was caused, because response was OppijanumeroServiceError
+                objectMapper.readValue(json, OppijanumeroServiceError::class.java)
+            },
+            onFailure = {
+                // If the assumption was wrong, then throw the original error,
+                // in order to see what is wrong.
+                throw originalException
+            },
+        )
 }
