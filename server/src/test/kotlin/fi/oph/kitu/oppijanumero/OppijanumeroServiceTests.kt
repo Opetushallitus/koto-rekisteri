@@ -4,17 +4,10 @@ import HttpResponseMock
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.testcontainers.junit.jupiter.Testcontainers
 
-@SpringBootTest
-@Testcontainers
 class OppijanumeroServiceTests {
     @Test
-    fun `oppijanumero service returns identified user`(
-        @Autowired objectMapper: ObjectMapper,
-    ) {
+    fun `oppijanumero service returns identified user`() {
         // Facade
         val response =
             Result.success(
@@ -34,7 +27,7 @@ class OppijanumeroServiceTests {
             OppijanumeroServiceImpl(
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
-                objectMapper = objectMapper,
+                objectMapper = ObjectMapper(),
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
@@ -49,9 +42,7 @@ class OppijanumeroServiceTests {
     }
 
     @Test
-    fun `oppijanumero service returns unidentified user`(
-        @Autowired objectMapper: ObjectMapper,
-    ) {
+    fun `oppijanumero service returns unidentified user`() {
         // Facade
         val response =
             Result.success(
@@ -71,7 +62,7 @@ class OppijanumeroServiceTests {
             OppijanumeroServiceImpl(
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
-                objectMapper = objectMapper,
+                objectMapper = ObjectMapper(),
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
@@ -88,9 +79,7 @@ class OppijanumeroServiceTests {
     }
 
     @Test
-    fun `oppijanumero service returns error`(
-        @Autowired objectMapper: ObjectMapper,
-    ) {
+    fun `oppijanumero service returns error`() {
         // Facade
         val response =
             Result.success(
@@ -112,7 +101,7 @@ class OppijanumeroServiceTests {
             OppijanumeroServiceImpl(
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
-                objectMapper = objectMapper,
+                objectMapper = ObjectMapper(),
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
