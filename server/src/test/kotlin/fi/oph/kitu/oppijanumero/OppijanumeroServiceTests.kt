@@ -2,13 +2,17 @@ package fi.oph.kitu.oppijanumero
 
 import HttpResponseMock
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.oph.kitu.logging.MockEvent
+import fi.oph.kitu.logging.MockLogger
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import kotlin.test.assertTrue
 
 class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service returns identified user`() {
         // Facade
+        val event = MockEvent()
         val response =
             Result.success(
                 HttpResponseMock(
@@ -28,6 +32,7 @@ class OppijanumeroServiceTests {
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
                 objectMapper = ObjectMapper(),
+                logger = MockLogger(event),
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
@@ -39,11 +44,15 @@ class OppijanumeroServiceTests {
                 "010866-9260",
             ),
         )
+
+        val isResponseSuccess = event.getValueOrNullByKey<Boolean>("oppijanumero.parse-response.success") == true
+        assertTrue(isResponseSuccess)
     }
 
     @Test
     fun `oppijanumero service returns unidentified user`() {
         // Facade
+        val event = MockEvent()
         val response =
             Result.success(
                 HttpResponseMock(
@@ -63,6 +72,7 @@ class OppijanumeroServiceTests {
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
                 objectMapper = ObjectMapper(),
+                logger = MockLogger(event),
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
@@ -81,6 +91,7 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service returns error`() {
         // Facade
+        val event = MockEvent()
         val response =
             Result.success(
                 HttpResponseMock(
@@ -102,6 +113,7 @@ class OppijanumeroServiceTests {
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
                 objectMapper = ObjectMapper(),
+                logger = MockLogger(event),
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 

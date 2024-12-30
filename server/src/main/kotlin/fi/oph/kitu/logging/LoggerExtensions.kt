@@ -103,20 +103,45 @@ fun <T> LoggingEventBuilder.withEvent(
     add("operation" to operationName)
     val start = System.currentTimeMillis()
 
+    return this.withTryCatch(
+        key = "success",
+        action = {
+            val ret = f(this)
+            setMessage("$operationName successful")
+            ret
+        },
+        onFailure = { ex ->
+            addIsDuplicateKeyException(ex)
+            setCause(ex)
+            setMessage("$operationName failed")
+        },
+        onComplete = {
+            val elapsed = System.currentTimeMillis() - start
+            add("duration_ms" to elapsed)
+            log()
+        },
+    )
+}
+
+/**
+ * Runs the given action.
+ * After the action, adds true if action succeed or false if exception was thrown.
+*/
+fun <T> LoggingEventBuilder.withTryCatch(
+    key: String,
+    action: (event: LoggingEventBuilder) -> T,
+    onFailure: (event: Exception) -> Unit = { },
+    onComplete: (event: LoggingEventBuilder) -> Unit = { },
+): T {
     try {
-        val ret = f(this)
-        add("success" to true)
-        setMessage("$operationName successful")
+        val ret = action(this)
+        add(key to true)
         return ret
     } catch (ex: Exception) {
-        add("success" to false)
-        addIsDuplicateKeyException(ex)
-        setCause(ex)
-        setMessage("$operationName failed")
+        add(key to false)
+        onFailure(ex)
         throw ex
     } finally {
-        val elapsed = System.currentTimeMillis() - start
-        add("duration_ms" to elapsed)
-        log()
+        onComplete(this)
     }
 }
