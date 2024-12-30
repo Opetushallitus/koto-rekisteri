@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.logging.addCondition
 import fi.oph.kitu.logging.withEvent
 import fi.oph.kitu.logging.withTryCatch
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 import org.slf4j.spi.LoggingEventBuilder
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -20,9 +21,9 @@ interface OppijanumeroService {
 class OppijanumeroServiceImpl(
     private val casAuthenticatedService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
+    @Qualifier("oppijanumeroServiceLogger")
+    private val logger: Logger,
 ) : OppijanumeroService {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
