@@ -62,7 +62,7 @@ fun LoggingEventBuilder.addCondition(
     return condition
 }
 
-fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Exception): LoggingEventBuilder {
+fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Throwable): LoggingEventBuilder {
     val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
     this.add("isDuplicateKeyException" to isDuplicateKeyException)
 
@@ -108,7 +108,7 @@ fun <T> LoggingEventBuilder.withEvent(
         add("success" to true)
         setMessage("$operationName successful")
         return ret
-    } catch (ex: Exception) {
+    } catch (ex: Throwable) {
         add("success" to false)
         addIsDuplicateKeyException(ex)
         setCause(ex)

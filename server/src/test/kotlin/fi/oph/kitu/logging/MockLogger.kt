@@ -2,8 +2,14 @@ package fi.oph.kitu.logging
 
 import org.slf4j.Logger
 import org.slf4j.Marker
+import org.slf4j.event.Level
+import org.slf4j.spi.LoggingEventBuilder
 
-class MockLogger : Logger {
+class MockLogger(
+    private val loggingEventBuilder: LoggingEventBuilder = MockEvent(),
+) : Logger {
+    override fun makeLoggingEventBuilder(level: Level?) = loggingEventBuilder
+
     override fun getName(): String {
         TODO("Not yet implemented")
     }
@@ -170,86 +176,62 @@ class MockLogger : Logger {
         TODO("Not yet implemented")
     }
 
-    override fun isInfoEnabled(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isInfoEnabled() = true
 
-    override fun isInfoEnabled(p0: Marker?): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isInfoEnabled(p0: Marker?) = true
 
-    override fun info(p0: String?) {
-        TODO("Not yet implemented")
-    }
+    override fun info(p0: String?) {}
 
     override fun info(
         p0: String?,
         p1: Any?,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun info(
         p0: String?,
         p1: Any?,
         p2: Any?,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun info(
         p0: String?,
         vararg p1: Any?,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun info(
         p0: String?,
         p1: Throwable?,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun info(
         p0: Marker?,
         p1: String?,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun info(
         p0: Marker?,
         p1: String?,
         p2: Any?,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun info(
         p0: Marker?,
         p1: String?,
         p2: Any?,
         p3: Any?,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun info(
         p0: Marker?,
         p1: String?,
         vararg p2: Any?,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun info(
         p0: Marker?,
         p1: String?,
         p2: Throwable?,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun isWarnEnabled(): Boolean {
         TODO("Not yet implemented")

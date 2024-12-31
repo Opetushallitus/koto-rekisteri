@@ -13,6 +13,13 @@ class MockEvent : LoggingEventBuilder {
     val logs = mutableListOf<String?>()
     val defaultLogValue: String = "NULL"
 
+    inline fun <reified T> getValueOrNullByKey(key: String?) =
+        keyValues
+            .filter { it.first == key }
+            .map { it.second }
+            .filterIsInstance<T>()
+            .firstOrNull()
+
     override fun setCause(p0: Throwable?): LoggingEventBuilder {
         causes.add(p0)
         return this
