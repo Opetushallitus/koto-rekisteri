@@ -36,18 +36,18 @@ class KoealustaService(
     private inline fun <reified T> tryParseMoodleResponse(json: String): T {
         try {
             return jacksonObjectMapper.enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION).readValue<T>(json)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             throw tryParseMoodleError(json, e)
         }
     }
 
     private fun tryParseMoodleError(
         json: String,
-        originalException: Exception,
+        originalException: Throwable,
     ): MoodleException {
         try {
             return MoodleException(jacksonObjectMapper.readValue<MoodleErrorMessage>(json))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             throw RuntimeException(
                 "Could not parse Moodle error message: ${e.message} while handling parsing error",
                 originalException,
