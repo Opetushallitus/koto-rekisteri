@@ -106,7 +106,7 @@ class YkiService(
 
     sealed class Error(
         message: String,
-    ) : Exception(message) {
+    ) : Throwable(message) {
         class EmptyArvioijatResponse : Error("Empty body on arvioijat response")
 
         class EmptyArvioijat : Error("Unexpected empty list of arvioijat")
