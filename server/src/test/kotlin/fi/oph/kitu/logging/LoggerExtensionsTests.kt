@@ -19,20 +19,20 @@ class LoggerExtensionsTests {
         }
 
         val success = event.getValueOrNullByKey<Boolean>("success")
-        assertNotNull(success)
-        assertTrue(success)
+        assertNotNull(success, "missing success")
+        assertTrue(success, "success should be true")
 
-        val message = event.messages.first { m -> m == "unit-test successful" }
+        val message = event.messages.first { m -> m == "unit-test success" }
         assertNotNull(message)
-        assertEquals("unit-test successful", message)
+        assertEquals("unit-test success", message, "expected correct message")
 
         val durationMs = event.getValueOrNullByKey<Long>("duration_ms")
-        assertNotNull(durationMs)
-        assertTrue(durationMs > 0)
+        assertNotNull(durationMs, "duration_ms should not be null")
+        assertTrue(durationMs > 0, "duration_ms should be greater than 0")
 
         val logsCount = event.logs.size
-        assertNotNull(logsCount)
-        assertEquals(1, logsCount)
+        assertNotNull(logsCount, "logs_count should not be null")
+        assertEquals(1, logsCount, "logs_count should be 1")
     }
 
     @Test
@@ -53,19 +53,19 @@ class LoggerExtensionsTests {
         }
 
         val success = event.getValueOrNullByKey<Boolean>("success")
-        assertNotNull(success)
-        assertFalse(success)
+        assertNotNull(success, "success should not be null")
+        assertFalse(success, "success should be false")
 
         val message = event.messages.first { m -> m == "unit-test failed" }
         assertNotNull(message)
-        assertEquals("unit-test failed", message)
+        assertEquals("unit-test failed", message, "expected correct message")
 
         val durationMs = event.getValueOrNullByKey<Long>("duration_ms")
-        assertNotNull(durationMs)
-        assertTrue(durationMs > 0)
+        assertNotNull(durationMs, "duration_ms should not be null")
+        assertTrue(durationMs > 0, "duration_ms should be greater than 0")
 
         val logsCount = event.logs.size
-        assertNotNull(logsCount)
-        assertEquals(1, logsCount)
+        assertNotNull(logsCount, "logs_count should not be null")
+        assertEquals(1, logsCount, "logs_count should be 1")
     }
 }
