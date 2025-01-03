@@ -2,6 +2,8 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.csvparsing.addErrors
+import fi.oph.kitu.csvparsing.foldWithErrors
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEvent
@@ -14,6 +16,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
@@ -32,6 +35,9 @@ class YkiService(
     private val arvioijaMapper: YkiArvioijaMappingService,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
+
+    @Value("\${kitu.yki.import.suoritukset.ontinue-on-error}")
+    private var importSuorituksetContinueOnError: Boolean = false
 
     fun importYkiSuoritukset(
         from: Instant? = null,
@@ -52,7 +58,12 @@ class YkiService(
 
             event.addHttpResponse(PeerService.Solki, "suoritukset", response)
 
-            val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
+            val suoritukset = mutableListOf<YkiSuoritusCsv>()
+            parser
+                .convertCsvtToResults<YkiSuoritusCsv>(response.body ?: "")
+                .foldWithErrors(importSuorituksetContinueOnError) {
+                    event.addErrors(it)
+                }
 
             if (dryRun != true) {
                 val res = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
@@ -74,7 +85,12 @@ class YkiService(
             event.addHttpResponse(PeerService.Solki, "arvioijat", response)
 
             val arvioijat =
-                parser.convertCsvToData<SolkiArvioijaResponse>(response.body ?: throw Error.EmptyArvioijatResponse())
+                parser
+                    .convertCsvtToResults<SolkiArvioijaResponse>(
+                        response.body ?: throw Error.EmptyArvioijatResponse(),
+                    ).foldWithErrors(false) {
+                        event.addErrors(it)
+                    }
 
             event.add("yki.arvioijat.receivedCount" to arvioijat.size)
             if (arvioijat.isEmpty()) {
