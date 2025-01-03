@@ -95,28 +95,3 @@ fun LoggingEventBuilder.add(vararg pairs: Pair<String, Any?>): LoggingEventBuild
     }
     return this
 }
-
-fun <T> LoggingEventBuilder.withEvent(
-    operationName: String,
-    f: (event: LoggingEventBuilder) -> T,
-): T {
-    add("operation" to operationName)
-    val start = System.currentTimeMillis()
-
-    try {
-        val ret = f(this)
-        add("success" to true)
-        setMessage("$operationName successful")
-        return ret
-    } catch (ex: Throwable) {
-        add("success" to false)
-        addIsDuplicateKeyException(ex)
-        setCause(ex)
-        setMessage("$operationName failed")
-        throw ex
-    } finally {
-        val elapsed = System.currentTimeMillis() - start
-        add("duration_ms" to elapsed)
-        log()
-    }
-}
