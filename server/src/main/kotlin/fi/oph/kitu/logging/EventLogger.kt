@@ -6,18 +6,25 @@ class EventLogger<T>(
     val event: LoggingEventBuilder,
     val action: Result<T>,
 ) {
-    fun logOperation(operationName: String): EventLogger<T> {
-        event.add("operation" to operationName)
-        action
-            .onSuccess {
-                event.add("success" to true)
-                event.setMessage("$operationName success")
-            }.onFailure { ex ->
-                event.add("success" to false)
-                event.setCause(ex)
-                event.setMessage("$operationName failed")
-            }
+    fun withOperation(operationName: String): EventLogger<T> {
+        event.add("operationName" to operationName)
+        return this
+    }
 
+    fun withSuccess(): EventLogger<T> {
+        action.onSuccess { event.add("success" to true) }
+        action.onFailure { event.add("success" to false) }
+        return this
+    }
+
+    fun withMessage(operationName: String): EventLogger<T> {
+        action.onSuccess { event.setMessage("$operationName success") }
+        action.onFailure { event.setMessage("$operationName success") }
+        return this
+    }
+
+    fun withCause(): EventLogger<T> {
+        action.onFailure { ex -> event.setCause(ex) }
         return this
     }
 
@@ -38,16 +45,19 @@ class EventLogger<T>(
         return this
     }
 
-    fun runAndLog(): Result<T> = action.also { event.log() }
-
-    fun <T> LoggingEventBuilder.withEventResult(
-        operationName: String,
-        f: (event: LoggingEventBuilder) -> T,
-    ): T =
-        EventLogger(this, runCatching { f(this) })
-            .logOperation(operationName)
-            .withPerformanceCheck()
-            .withDatabaseLogs()
-            .runAndLog()
-            .getOrThrow()
+    fun withLog(): Result<T> = action.also { event.log() }
 }
+
+fun <T> LoggingEventBuilder.withEvent(
+    operationName: String,
+    f: (event: LoggingEventBuilder) -> T,
+): T =
+    EventLogger(this, runCatching { f(this) })
+        .withOperation(operationName)
+        .withSuccess()
+        .withMessage(operationName)
+        .withCause()
+        .withPerformanceCheck()
+        .withDatabaseLogs()
+        .withLog()
+        .getOrThrow()
