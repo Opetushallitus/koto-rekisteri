@@ -1,6 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addCondition
 import fi.oph.kitu.logging.withEvent
 import org.slf4j.LoggerFactory
@@ -34,7 +35,7 @@ class OppijanumeroServiceImpl(
             require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
             require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
 
-            if (event.addCondition(key = "requestHasOppijanumero", condition = oppija.oppijanumero != null)) {
+            if (event.addCondition(key = "request.hasOppijanumero", condition = oppija.oppijanumero != null)) {
                 return@withEvent oppija.oppijanumero.toString()
             }
 
@@ -68,6 +69,9 @@ class OppijanumeroServiceImpl(
             }
 
             val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse)
+            event.add("response.hasOppijanumero" to body.oppijanumero.isNullOrEmpty())
+            event.add("response.hasOid" to body.oid.isEmpty())
+            event.add("response.areOppijanumeroAndOidSame" to (body.oppijanumero == body.oid))
 
             if (body.oppijanumero.isNullOrEmpty()) {
                 throw OppijanumeroException.OppijaNotIdentifiedException(
