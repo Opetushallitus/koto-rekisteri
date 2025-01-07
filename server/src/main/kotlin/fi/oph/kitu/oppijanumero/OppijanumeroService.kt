@@ -69,9 +69,11 @@ class OppijanumeroServiceImpl(
             }
 
             val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse)
-            event.add("response.hasOppijanumero" to body.oppijanumero.isNullOrEmpty())
-            event.add("response.hasOid" to body.oid.isEmpty())
-            event.add("response.areOppijanumeroAndOidSame" to (body.oppijanumero == body.oid))
+            event.add(
+                "response.hasOppijanumero" to body.oppijanumero.isNullOrEmpty(),
+                "response.hasOid" to body.oid.isEmpty(),
+                "response.areOppijanumeroAndOidSame" to (body.oppijanumero == body.oid),
+            )
 
             if (body.oppijanumero.isNullOrEmpty()) {
                 throw OppijanumeroException.OppijaNotIdentifiedException(
