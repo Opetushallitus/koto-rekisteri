@@ -20,34 +20,24 @@ class CsvParser(
     val useHeader: Boolean = false,
     val quoteChar: Char = '"',
 ) {
-    inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema {
+    init {
         event.add(
-            "serialization.schema.args.type" to T::class.java.name,
             "serialization.schema.args.columnSeparator" to columnSeparator.toString(),
+            "serialization.schema.args.lineSeparator" to lineSeparator,
             "serialization.schema.args.useHeader" to useHeader,
             "serialization.schema.args.quoteChar" to quoteChar,
         )
+    }
 
-        val schema: CsvSchema =
-            csvMapper
-                .typedSchemaFor(T::class.java)
-                .withColumnSeparator(columnSeparator)
-                .withLineSeparator(lineSeparator)
-                .withUseHeader(useHeader)
-                .withQuoteChar(quoteChar)
+    inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema {
+        event.add("serialization.schema.args.type" to T::class.java.name)
 
-        schema
-            .sortedBy { column -> column.index }
-            .forEach { column ->
-                val paddedIndex = column.index.toString().padStart(2, '0')
-                event.add(
-                    "serialization.schema.column[$paddedIndex].index" to column.index,
-                    "serialization.schema.column[$paddedIndex].name" to column.name,
-                    "serialization.schema.column[$paddedIndex].type" to column.type,
-                )
-            }
-
-        return schema
+        return csvMapper
+            .typedSchemaFor(T::class.java)
+            .withColumnSeparator(columnSeparator)
+            .withLineSeparator(lineSeparator)
+            .withUseHeader(useHeader)
+            .withQuoteChar(quoteChar)
     }
 
     inline fun <reified T> CsvMapper.Builder.withFeatures(): CsvMapper.Builder {
