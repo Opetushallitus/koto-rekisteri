@@ -112,7 +112,7 @@ class KoealustaService(
 
                 return@withEventAndPerformanceCheck suoritukset.maxOfOrNull { it.timeCompleted } ?: from
             }.apply {
-                withDefaultLogging("koealusta.importSuoritukset")
-                withDatabaseLogs()
+                addDefaults("koealusta.importSuoritukset")
+                addDatabaseLogs()
             }.getOrThrow()
 }

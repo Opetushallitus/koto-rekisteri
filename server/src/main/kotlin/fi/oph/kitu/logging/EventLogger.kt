@@ -15,13 +15,13 @@ class EventLogger<T>(
     /** Gets the value from the underlying action */
     fun getOrThrow() = result.getOrThrow()
 
-    /** Sets the "operationName" key with given value. */
-    private fun withOperationName(operationName: String) {
+    /** Adds the "operationName" key with given value. */
+    private fun addKeyOperationName(operationName: String) {
         event.add("operationName" to operationName)
     }
 
     /** Adds key "success" with boolean whether the action succeed or not. */
-    private fun withSuccessCheck() {
+    private fun checkSuccess() {
         result.onSuccess { event.add("success" to true) }
         result.onFailure { event.add("success" to false) }
     }
@@ -30,7 +30,7 @@ class EventLogger<T>(
      * Sets success message when the action is success.
      * Sets error message when the action fails.
      * */
-    private fun withMessage(
+    private fun setMessage(
         onSuccessMessage: String,
         onFailureMessage: String,
     ) {
@@ -39,22 +39,22 @@ class EventLogger<T>(
     }
 
     /** When action fails, a cause will be logged. */
-    private fun withCause() {
+    private fun setCause() {
         result.onFailure { ex -> event.setCause(ex) }
     }
 
     /** Performs the actual logging. */
-    private fun withLog() {
+    private fun performLog() {
         result.also { event.log() }
     }
 
     /** Adds database related logging, such as checking if the error caused by [org.springframework.dao.DuplicateKeyException] */
-    fun withDatabaseLogs() {
-        result.onFailure { ex -> addIsDuplicateKeyException(ex) }
+    fun addDatabaseLogs() {
+        result.onFailure { ex -> checkDuplicateKeyException(ex) }
     }
 
     /** adds key/value that indicates whether the error was caused by [org.springframework.dao.DuplicateKeyException]. */
-    private fun addIsDuplicateKeyException(ex: Throwable) {
+    private fun checkDuplicateKeyException(ex: Throwable) {
         val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
 
         if (!event.addCondition("isDuplicateKeyException", isDuplicateKeyException)) {
@@ -82,21 +82,21 @@ class EventLogger<T>(
 
     /**
      * Adds defaults to logging which are:
-     *  - [EventLogger.withOperationName]
-     *  - [EventLogger.withSuccessCheck]
-     *  - [EventLogger.withMessage]
-     *  - [EventLogger.withCause]
-     *  - [EventLogger.withLog]
+     *  - [EventLogger.addKeyOperationName]
+     *  - [EventLogger.checkSuccess]
+     *  - [EventLogger.setMessage]
+     *  - [EventLogger.setCause]
+     *  - [EventLogger.performLog]
      */
-    fun withDefaultLogging(operationName: String) {
-        withOperationName(operationName)
-        withSuccessCheck()
-        withMessage(
+    fun addDefaults(operationName: String) {
+        addKeyOperationName(operationName)
+        checkSuccess()
+        setMessage(
             onSuccessMessage = "$operationName success",
             onFailureMessage = "$operationName failed",
         )
-        withCause()
-        withLog()
+        setCause()
+        performLog()
     }
 }
 
@@ -118,6 +118,6 @@ fun <T> LoggingEventBuilder.withEvent(
     action: (LoggingEventBuilder) -> T,
 ) = withEventAndPerformanceCheck(action)
     .apply {
-        withDefaultLogging(operationName)
-        withDatabaseLogs()
+        addDefaults(operationName)
+        addDatabaseLogs()
     }.getOrThrow()
