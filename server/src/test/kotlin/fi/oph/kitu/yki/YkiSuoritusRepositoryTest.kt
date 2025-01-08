@@ -22,13 +22,14 @@ import kotlin.test.assertTrue
 class YkiSuoritusRepositoryTest(
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
 ) {
+    @Suppress("unused")
     companion object {
         @JvmStatic
         @Container
         @ServiceConnection
         val postgres =
             PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")
+                .withUrlParam("stringtype", "unspecified")!!
     }
 
     @BeforeEach
