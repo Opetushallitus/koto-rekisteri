@@ -2,41 +2,64 @@ package fi.oph.kitu.logging
 
 import org.slf4j.spi.LoggingEventBuilder
 
+/**
+ * A class to specify what to log to an event before, during or after, the specified lambda call.
+ */
 class EventBuilder<T>(
-    val action: Result<T>,
+    /** Result of an action that will be wrapped with event logs. */
+    val result: Result<T>,
+    /** Event builder, that logs, sets message, adds key-value, etc, around the action. */
     val event: LoggingEventBuilder,
 ) {
-    fun getOrThrow() = action.getOrThrow()
+    /** Gets the value from the underlying action */
+    fun getOrThrow() = result.getOrThrow()
 
+    /** Sets the "operationName" key with given value. */
     private fun withOperationName(operationName: String) {
         event.add("operationName" to operationName)
     }
 
+    /** Adds key "success" with boolean whether the action succeed or not. */
     private fun withSuccessCheck() {
-        action.onSuccess { event.add("success" to true) }
-        action.onFailure { event.add("success" to false) }
+        result.onSuccess { event.add("success" to true) }
+        result.onFailure { event.add("success" to false) }
     }
 
+    /**
+     * Sets success message when the action is success.
+     * Sets error message when the action fails.
+     * */
     private fun withMessage(
         onSuccessMessage: String,
         onFailureMessage: String,
     ) {
-        action.onSuccess { event.setMessage(onSuccessMessage) }
-        action.onFailure { event.setMessage(onFailureMessage) }
+        result.onSuccess { event.setMessage(onSuccessMessage) }
+        result.onFailure { event.setMessage(onFailureMessage) }
     }
 
+    /** When action fails, a cause will be logged. */
     private fun withCause() {
-        action.onFailure { ex -> event.setCause(ex) }
+        result.onFailure { ex -> event.setCause(ex) }
     }
 
+    /** Performs the actual logging. */
     private fun withLog() {
-        action.also { event.log() }
+        result.also { event.log() }
     }
 
+    /** Adds database related logging, such as checking if the error caused by a [org.springframework.dao.DuplicateKeyException] */
     fun withDatabaseLogs() {
-        action.onFailure { ex -> event.addIsDuplicateKeyException(ex) }
+        result.onFailure { ex -> event.addIsDuplicateKeyException(ex) }
     }
 
+    /**
+     * Adds defaults to logging which are:
+     *  - [EventBuilder.withOperationName]
+     *  - [EventBuilder.withSuccessCheck]
+     *  - [EventBuilder.withMessage]
+     *  - [EventBuilder.withCause]
+     *  - [EventBuilder.withLog]
+     */
     fun withDefaultLogging(operationName: String) {
         withOperationName(operationName)
         withSuccessCheck()
@@ -49,6 +72,7 @@ class EventBuilder<T>(
     }
 }
 
+/** Runs the given lambda action and measure it's performance */
 fun <T> LoggingEventBuilder.withEventAndPerformanceCheck(action: (LoggingEventBuilder) -> T): EventBuilder<T> {
     val start = System.currentTimeMillis()
     val result =
