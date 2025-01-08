@@ -1,6 +1,7 @@
 package fi.oph.kitu.logging
 
 import org.slf4j.spi.LoggingEventBuilder
+import org.springframework.dao.DuplicateKeyException
 
 /**
  * A class to specify what to log to an event before, during or after, the specified lambda call.
@@ -47,9 +48,36 @@ class EventLogger<T>(
         result.also { event.log() }
     }
 
-    /** Adds database related logging, such as checking if the error caused by a [org.springframework.dao.DuplicateKeyException] */
+    /** Adds database related logging, such as checking if the error caused by [org.springframework.dao.DuplicateKeyException] */
     fun withDatabaseLogs() {
-        result.onFailure { ex -> event.addIsDuplicateKeyException(ex) }
+        result.onFailure { ex -> addIsDuplicateKeyException(ex) }
+    }
+
+    /** adds key/value that indicates whether the error was caused by [org.springframework.dao.DuplicateKeyException]. */
+    private fun addIsDuplicateKeyException(ex: Throwable) {
+        val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
+
+        if (!event.addCondition("isDuplicateKeyException", isDuplicateKeyException)) {
+            return
+        }
+
+        val duplicateKeyException = (if (ex is DuplicateKeyException) ex else ex.cause) as DuplicateKeyException
+
+        val table =
+            duplicateKeyException.message
+                ?.substringAfter("INSERT INTO \"")
+                ?.substringBefore("\"")
+
+        val constraint =
+            duplicateKeyException.cause
+                ?.message
+                ?.substringAfter("unique constraint \"")
+                ?.substringBefore("\"")
+
+        event.add(
+            "table" to table,
+            "constraint" to constraint,
+        )
     }
 
     /**

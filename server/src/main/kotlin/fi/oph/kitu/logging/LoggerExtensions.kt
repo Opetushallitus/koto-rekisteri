@@ -8,7 +8,6 @@ import io.opentelemetry.semconv.incubating.HttpIncubatingAttributes
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.spi.LoggingEventBuilder
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import java.net.http.HttpResponse
@@ -60,33 +59,6 @@ fun LoggingEventBuilder.addCondition(
 ): Boolean {
     this.add(key to condition)
     return condition
-}
-
-fun LoggingEventBuilder.addIsDuplicateKeyException(ex: Throwable): LoggingEventBuilder {
-    val isDuplicateKeyException = ex is DuplicateKeyException || ex.cause is DuplicateKeyException
-    this.add("isDuplicateKeyException" to isDuplicateKeyException)
-
-    if (isDuplicateKeyException) {
-        val duplicateKeyException = (if (ex is DuplicateKeyException) ex else ex.cause) as DuplicateKeyException
-
-        val table =
-            duplicateKeyException.message
-                ?.substringAfter("INSERT INTO \"")
-                ?.substringBefore("\"")
-
-        val constraint =
-            duplicateKeyException.cause
-                ?.message
-                ?.substringAfter("unique constraint \"")
-                ?.substringBefore("\"")
-
-        this.add(
-            "table" to table,
-            "constraint" to constraint,
-        )
-    }
-
-    return this
 }
 
 fun LoggingEventBuilder.add(vararg pairs: Pair<String, Any?>): LoggingEventBuilder {
