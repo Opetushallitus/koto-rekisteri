@@ -29,13 +29,14 @@ class YkiServiceTests(
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
 ) {
+    @Suppress("unused")
     companion object {
         @JvmStatic
         @Container
         @ServiceConnection
         val postgres =
             PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")
+                .withUrlParam("stringtype", "unspecified")!!
     }
 
     @BeforeEach

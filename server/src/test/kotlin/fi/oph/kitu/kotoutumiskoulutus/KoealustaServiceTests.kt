@@ -20,6 +20,7 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Testcontainers
 class KoealustaServiceTests {
+    @Suppress("unused")
     companion object {
         @JvmStatic
         @Container

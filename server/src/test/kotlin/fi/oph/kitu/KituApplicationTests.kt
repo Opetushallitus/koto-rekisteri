@@ -10,6 +10,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @SpringBootTest
 @Testcontainers
 class KituApplicationTests {
+    @Suppress("unused")
     companion object {
         @JvmStatic
         @Container
