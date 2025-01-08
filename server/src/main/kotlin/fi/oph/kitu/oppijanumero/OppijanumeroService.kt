@@ -85,7 +85,7 @@ class OppijanumeroServiceImpl(
 
                 return@withEventAndPerformanceCheck body.oppijanumero
             }.apply {
-                withDefaultLogging("getOppijanumero")
+                addDefaults("getOppijanumero")
             }.getOrThrow()
 
     /**

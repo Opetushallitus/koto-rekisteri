@@ -69,8 +69,8 @@ class YkiService(
                 }
                 return@withEventAndPerformanceCheck suoritukset.maxOfOrNull { it.lastModified } ?: from
             }.apply {
-                withDefaultLogging("yki.importSuoritukset")
-                withDatabaseLogs()
+                addDefaults("yki.importSuoritukset")
+                addDatabaseLogs()
             }.getOrThrow()
 
     fun importYkiArvioijat(dryRun: Boolean = false) =
@@ -105,8 +105,8 @@ class YkiService(
                     event.add("yki.arvioijat.importedCount" to importedArvioijat.count())
                 }
             }.apply {
-                withDefaultLogging("yki.importArvioijat")
-                withDatabaseLogs()
+                addDefaults("yki.importArvioijat")
+                addDatabaseLogs()
             }.getOrThrow()
 
     fun generateSuorituksetCsvStream(includeVersionHistory: Boolean): ByteArrayOutputStream =
@@ -127,8 +127,8 @@ class YkiService(
 
                 return@withEventAndPerformanceCheck outputStream
             }.apply {
-                withDefaultLogging("yki.getSuorituksetCsv")
-                withDatabaseLogs()
+                addDefaults("yki.getSuorituksetCsv")
+                addDatabaseLogs()
             }.getOrThrow()
 
     sealed class Error(
