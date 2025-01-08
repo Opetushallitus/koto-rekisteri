@@ -5,7 +5,7 @@ import org.slf4j.spi.LoggingEventBuilder
 /**
  * A class to specify what to log to an event before, during or after, the specified lambda call.
  */
-class EventBuilder<T>(
+class EventLogger<T>(
     /** Result of an action that will be wrapped with event logs. */
     val result: Result<T>,
     /** Event builder, that logs, sets message, adds key-value, etc, around the action. */
@@ -54,11 +54,11 @@ class EventBuilder<T>(
 
     /**
      * Adds defaults to logging which are:
-     *  - [EventBuilder.withOperationName]
-     *  - [EventBuilder.withSuccessCheck]
-     *  - [EventBuilder.withMessage]
-     *  - [EventBuilder.withCause]
-     *  - [EventBuilder.withLog]
+     *  - [EventLogger.withOperationName]
+     *  - [EventLogger.withSuccessCheck]
+     *  - [EventLogger.withMessage]
+     *  - [EventLogger.withCause]
+     *  - [EventLogger.withLog]
      */
     fun withDefaultLogging(operationName: String) {
         withOperationName(operationName)
@@ -73,7 +73,7 @@ class EventBuilder<T>(
 }
 
 /** Runs the given lambda action and measure it's performance */
-fun <T> LoggingEventBuilder.withEventAndPerformanceCheck(action: (LoggingEventBuilder) -> T): EventBuilder<T> {
+fun <T> LoggingEventBuilder.withEventAndPerformanceCheck(action: (LoggingEventBuilder) -> T): EventLogger<T> {
     val start = System.currentTimeMillis()
     val result =
         runCatching { action(this) }
@@ -82,10 +82,9 @@ fun <T> LoggingEventBuilder.withEventAndPerformanceCheck(action: (LoggingEventBu
                 add("duration_ms" to elapsed)
             }
 
-    return EventBuilder(result, this)
+    return EventLogger(result, this)
 }
 
-// Wrapper for old calls
 fun <T> LoggingEventBuilder.withEvent(
     operationName: String,
     action: (LoggingEventBuilder) -> T,
