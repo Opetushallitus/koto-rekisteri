@@ -4,7 +4,7 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
-import fi.oph.kitu.logging.withEvent
+import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
@@ -38,71 +38,98 @@ class YkiService(
         lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
     ): Instant? =
-        logger.atInfo().withEvent("yki.importSuoritukset") { event ->
-            val parser = CsvParser(event)
-            event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
+        logger
+            .atInfo()
+            .withEventAndPerformanceCheck { event ->
+                val parser = CsvParser(event)
+                event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
-            val url = if (from != null) "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}" else "suoritukset"
-            val response =
-                solkiRestClient
-                    .get()
-                    .uri(url)
-                    .retrieve()
-                    .toEntity<String>()
+                val url =
+                    if (from !=
+                        null
+                    ) {
+                        "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
+                    } else {
+                        "suoritukset"
+                    }
+                val response =
+                    solkiRestClient
+                        .get()
+                        .uri(url)
+                        .retrieve()
+                        .toEntity<String>()
 
-            event.addHttpResponse(PeerService.Solki, "suoritukset", response)
+                event.addHttpResponse(PeerService.Solki, "suoritukset", response)
 
-            val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
+                val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
 
-            if (dryRun != true) {
-                val res = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
-                event.add("importedSuorituksetSize" to res.count())
-            }
-            return@withEvent suoritukset.maxOfOrNull { it.lastModified } ?: from
-        }
+                if (dryRun != true) {
+                    val res = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
+                    event.add("importedSuorituksetSize" to res.count())
+                }
+                return@withEventAndPerformanceCheck suoritukset.maxOfOrNull { it.lastModified } ?: from
+            }.apply {
+                withDefaultLogging("yki.importSuoritukset")
+                withDatabaseLogs()
+            }.getOrThrow()
 
     fun importYkiArvioijat(dryRun: Boolean = false) =
-        logger.atInfo().withEvent("yki.importArvioijat") { event ->
-            val parser = CsvParser(event)
-            val response =
-                solkiRestClient
-                    .get()
-                    .uri("arvioijat")
-                    .retrieve()
-                    .toEntity<String>()
+        logger
+            .atInfo()
+            .withEventAndPerformanceCheck { event ->
+                val parser = CsvParser(event)
+                val response =
+                    solkiRestClient
+                        .get()
+                        .uri("arvioijat")
+                        .retrieve()
+                        .toEntity<String>()
 
-            event.addHttpResponse(PeerService.Solki, "arvioijat", response)
+                event.addHttpResponse(PeerService.Solki, "arvioijat", response)
 
-            val arvioijat =
-                parser.convertCsvToData<SolkiArvioijaResponse>(response.body ?: throw Error.EmptyArvioijatResponse())
+                val arvioijat =
+                    parser.convertCsvToData<SolkiArvioijaResponse>(
+                        response.body ?: throw Error.EmptyArvioijatResponse(),
+                    )
 
-            event.add("yki.arvioijat.receivedCount" to arvioijat.size)
-            if (arvioijat.isEmpty()) {
-                throw Error.EmptyArvioijat()
-            }
+                event.add("yki.arvioijat.receivedCount" to arvioijat.size)
+                if (arvioijat.isEmpty()) {
+                    throw Error.EmptyArvioijat()
+                }
 
-            if (!dryRun) {
-                val importedArvioijat = arvioijaRepository.saveAll(arvioijaMapper.convertToEntityIterable(arvioijat))
-                event.add("yki.arvioijat.importedCount" to importedArvioijat.count())
-            }
-        }
+                if (!dryRun) {
+                    val importedArvioijat =
+                        arvioijaRepository.saveAll(
+                            arvioijaMapper.convertToEntityIterable(arvioijat),
+                        )
+                    event.add("yki.arvioijat.importedCount" to importedArvioijat.count())
+                }
+            }.apply {
+                withDefaultLogging("yki.importArvioijat")
+                withDatabaseLogs()
+            }.getOrThrow()
 
     fun generateSuorituksetCsvStream(includeVersionHistory: Boolean): ByteArrayOutputStream =
-        logger.atInfo().withEvent("yki.getSuorituksetCsv") { event ->
-            val parser = CsvParser(event, useHeader = true)
-            val data =
-                if (includeVersionHistory) {
-                    suoritusRepository.findAllOrdered()
-                } else {
-                    suoritusRepository.findAllDistinct()
-                }
-            event.add("dataCount" to data.count())
-            val writableData = suoritusMapper.convertToResponseIterable(data)
-            val outputStream = ByteArrayOutputStream()
-            parser.streamDataAsCsv(outputStream, writableData)
+        logger
+            .atInfo()
+            .withEventAndPerformanceCheck { event ->
+                val parser = CsvParser(event, useHeader = true)
+                val data =
+                    if (includeVersionHistory) {
+                        suoritusRepository.findAllOrdered()
+                    } else {
+                        suoritusRepository.findAllDistinct()
+                    }
+                event.add("dataCount" to data.count())
+                val writableData = suoritusMapper.convertToResponseIterable(data)
+                val outputStream = ByteArrayOutputStream()
+                parser.streamDataAsCsv(outputStream, writableData)
 
-            return@withEvent outputStream
-        }
+                return@withEventAndPerformanceCheck outputStream
+            }.apply {
+                withDefaultLogging("yki.getSuorituksetCsv")
+                withDatabaseLogs()
+            }.getOrThrow()
 
     sealed class Error(
         message: String,
