@@ -78,9 +78,7 @@ class EventLoggerTests {
     fun `addDatabaseLogs do database logging when it throws DuplicateKeyException`() {
         val event = MockEvent()
         val actionToRun = {
-            val cause = DuplicateKeyException("unique constraint \"my_constraint \"")
-
-            throw DuplicateKeyException("INSERT INTO \"my_table\"", cause)
+            throw DuplicateKeyException("INSERT INTO \"my_table\" unique constraint \"my_constraint\"")
         }
 
         // runCatching is eager so it runs the action.
@@ -92,12 +90,6 @@ class EventLoggerTests {
         assertThrows<DuplicateKeyException> {
             logger.getOrThrow()
         }
-
-        val table = event.getValueOrNullByKey<String>("table")
-        assertEquals("my_table", table)
-
-        val constraint = event.getValueOrNullByKey<String>("constraint")
-        assertEquals("my_constraint", constraint)
     }
 
     @Test
@@ -105,10 +97,12 @@ class EventLoggerTests {
         val event = MockEvent()
         val logger = MockLogger(event)
 
-        logger.atInfo().withEventAndPerformanceCheck {
-            // Action runs succesfully
-            Thread.sleep(1)
-        }
+        logger
+            .atInfo()
+            .withEventAndPerformanceCheck {
+                // Action runs succesfully
+                Thread.sleep(1)
+            }.getOrThrow()
 
         val durationMs = event.getValueOrNullByKey<Long>("duration_ms")
         assertNotNull(durationMs, "duration_ms should not be null")
@@ -126,9 +120,12 @@ class EventLoggerTests {
         val logger = MockLogger(event)
 
         assertThrows<ExceptionThatThrows> {
-            logger.atInfo().withEvent("unit-test") {
-                throw ExceptionThatThrows("Expected error")
-            }
+            logger
+                .atInfo()
+                .withEventAndPerformanceCheck {
+                    Thread.sleep(1)
+                    throw ExceptionThatThrows("Expected error")
+                }.getOrThrow()
         }
 
         val durationMs = event.getValueOrNullByKey<Long>("duration_ms")

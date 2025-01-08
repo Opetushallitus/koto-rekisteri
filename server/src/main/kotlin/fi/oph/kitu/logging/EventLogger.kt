@@ -64,7 +64,8 @@ class EventLogger<T>(
         val duplicateKeyException = (if (ex is DuplicateKeyException) ex else ex.cause) as DuplicateKeyException
 
         val table =
-            duplicateKeyException.message
+            duplicateKeyException.cause
+                ?.message
                 ?.substringAfter("INSERT INTO \"")
                 ?.substringBefore("\"")
 

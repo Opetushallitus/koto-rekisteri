@@ -45,9 +45,7 @@ class YkiService(
                 event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
                 val url =
-                    if (from !=
-                        null
-                    ) {
+                    if (from != null) {
                         "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
                     } else {
                         "suoritukset"
