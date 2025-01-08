@@ -76,7 +76,7 @@ class EventLogger<T>(
 
         event.add(
             "table" to table,
-            "constraint" to constraint,
+            "constraint" to constraint?.trim(),
         )
     }
 

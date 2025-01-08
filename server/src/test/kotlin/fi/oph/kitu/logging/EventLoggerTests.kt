@@ -3,6 +3,7 @@ package fi.oph.kitu.logging
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.dao.DuplicateKeyException
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -15,6 +16,8 @@ class EventLoggerTests {
 
         // runCatching is eager so it runs the action.
         val logger = EventLogger(runCatching(actionToRun), event)
+
+        // Act
         logger.addDefaults("unit-test")
 
         val result = logger.getOrThrow()
@@ -50,6 +53,8 @@ class EventLoggerTests {
             }
 
         val logger = EventLogger(actionToRun, event)
+
+        // Act
         logger.addDefaults("unit-test")
 
         assertThrows<ExceptionThatThrows> {
@@ -67,6 +72,32 @@ class EventLoggerTests {
         val logsCount = event.logs.size
         assertNotNull(logsCount, "logs_count should not be null")
         assertEquals(1, logsCount, "logs_count should be 1")
+    }
+
+    @Test
+    fun `addDatabaseLogs do database logging when it throws DuplicateKeyException`() {
+        val event = MockEvent()
+        val actionToRun = {
+            val cause = DuplicateKeyException("unique constraint \"my_constraint \"")
+
+            throw DuplicateKeyException("INSERT INTO \"my_table\"", cause)
+        }
+
+        // runCatching is eager so it runs the action.
+        val logger = EventLogger(runCatching(actionToRun), event)
+
+        // Act
+        logger.addDatabaseLogs()
+
+        assertThrows<DuplicateKeyException> {
+            logger.getOrThrow()
+        }
+
+        val table = event.getValueOrNullByKey<String>("table")
+        assertEquals("my_table", table)
+
+        val constraint = event.getValueOrNullByKey<String>("constraint")
+        assertEquals("my_constraint", constraint)
     }
 
     @Test
