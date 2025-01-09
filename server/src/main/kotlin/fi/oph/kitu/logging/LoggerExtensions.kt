@@ -1,6 +1,7 @@
 package fi.oph.kitu.logging
 
 import fi.oph.kitu.PeerService
+import fi.oph.kitu.auth.CasUserDetails
 import io.opentelemetry.semconv.HttpAttributes
 import io.opentelemetry.semconv.UrlAttributes
 import io.opentelemetry.semconv.UserAgentAttributes
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
 import java.net.http.HttpResponse
 
 fun LoggingEventBuilder.addServletRequest(request: HttpServletRequest): LoggingEventBuilder =
@@ -67,3 +69,8 @@ fun LoggingEventBuilder.add(vararg pairs: Pair<String, Any?>): LoggingEventBuild
     }
     return this
 }
+
+fun LoggingEventBuilder.addUser(): LoggingEventBuilder =
+    add(
+        "principal.oid" to (SecurityContextHolder.getContext().authentication?.principal as CasUserDetails).oid,
+    )

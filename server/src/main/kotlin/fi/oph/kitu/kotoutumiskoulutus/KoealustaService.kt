@@ -3,8 +3,8 @@ package fi.oph.kitu.kotoutumiskoulutus
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import fi.oph.kitu.AUDIT_LOGGER_NAME
 import fi.oph.kitu.PeerService
+import fi.oph.kitu.logging.Logging
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
@@ -25,7 +25,7 @@ class KoealustaService(
     private val mappingService: KoealustaMappingService,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val auditLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
+    private val auditLogger = Logging.auditLogger()
 
     @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
     lateinit var koealustaToken: String
