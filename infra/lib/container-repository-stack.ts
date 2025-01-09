@@ -3,8 +3,11 @@ import { StackProps } from "aws-cdk-lib"
 import { Repository, TagMutability } from "aws-cdk-lib/aws-ecr"
 import { AccountPrincipal } from "aws-cdk-lib/aws-iam"
 import { Construct } from "constructs"
+import { Topic } from "aws-cdk-lib/aws-sns"
+import { SnsTopic } from "aws-cdk-lib/aws-events-targets"
 
 interface ImageBuildStackProps extends StackProps {
+  vulnerabilitiesSnsTopic: Topic
   allowPullsFromAccounts: string[]
 }
 
@@ -17,7 +20,24 @@ export class ContainerRepositoryStack extends cdk.Stack {
     this.repository = new Repository(this, "Service", {
       repositoryName: "kitu",
       imageTagMutability: TagMutability.IMMUTABLE,
+      imageScanOnPush: true,
     })
+
+    this.repository
+      .onImageScanCompleted("ReportVulnerabilities", {
+        eventPattern: {
+          detailType: ["ECR Image Scan"],
+          source: ["aws.ecr"],
+          detail: {
+            scanStatus: ["COMPLETE"],
+            findingSeverityCounts: {
+              CRITICAL: [">0"],
+              HIGH: [">0"],
+            },
+          },
+        },
+      })
+      .addTarget(new SnsTopic(props.vulnerabilitiesSnsTopic))
 
     for (const accountId of props.allowPullsFromAccounts) {
       this.repository.grantPull(new AccountPrincipal(accountId))

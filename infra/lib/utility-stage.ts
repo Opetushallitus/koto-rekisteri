@@ -3,6 +3,8 @@ import { PolicyStatement } from "aws-cdk-lib/aws-iam"
 import { Construct } from "constructs"
 import { ContainerRepositoryStack } from "./container-repository-stack"
 import { GithubActionsStack } from "./github-actions-stack"
+import { AlarmsStack } from "./alarms-stack"
+import { SlackBotStack } from "./slack-bot-stack"
 
 interface UtilityStageProps extends StageProps {
   allowPullsFromAccounts: string[]
@@ -18,11 +20,23 @@ export class UtilityStage extends Stage {
       env: props.env,
     })
 
-    this.imageBuildsStack = new ContainerRepositoryStack(
-      this,
-      "ImageBuilds",
-      props,
-    )
+    const alarmsStack = new AlarmsStack(this, "Alarms", {
+      env: props.env,
+    })
+
+    new SlackBotStack(this, "SlackBot", {
+      env: props.env,
+      slackChannelName: "koto-rekisteri-alerts",
+      slackChannelId: "C07QPSYBY7L",
+      slackWorkspaceId: "T02C6SZL7KP",
+      alarmTopics: [alarmsStack.alarmSnsTopic],
+    })
+
+    this.imageBuildsStack = new ContainerRepositoryStack(this, "ImageBuilds", {
+      env: props.env,
+      allowPullsFromAccounts: props.allowPullsFromAccounts,
+      vulnerabilitiesSnsTopic: alarmsStack.alarmSnsTopic,
+    })
 
     githubActionsStack.githubActionsRole.addToPolicy(
       new PolicyStatement({
