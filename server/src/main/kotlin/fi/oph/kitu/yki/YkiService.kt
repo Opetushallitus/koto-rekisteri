@@ -64,7 +64,11 @@ class YkiService(
 
                 event.addHttpResponse(PeerService.Solki, "suoritukset", response)
 
-                val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
+                val suoritukset =
+                    parser.convertCsvToData(
+                        response.body ?: "",
+                        YkiSuoritusCsv::class,
+                    )
 
                 if (dryRun != true) {
                     val res = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
@@ -91,8 +95,9 @@ class YkiService(
                 event.addHttpResponse(PeerService.Solki, "arvioijat", response)
 
                 val arvioijat =
-                    parser.convertCsvToData<SolkiArvioijaResponse>(
+                    parser.convertCsvToData(
                         response.body ?: throw Error.EmptyArvioijatResponse(),
+                        SolkiArvioijaResponse::class,
                     )
 
                 event.add("yki.arvioijat.receivedCount" to arvioijat.size)
@@ -121,7 +126,7 @@ class YkiService(
                 event.add("dataCount" to suoritukset.count())
                 val writableData = suoritusMapper.convertToResponseIterable(suoritukset)
                 val outputStream = ByteArrayOutputStream()
-                parser.streamDataAsCsv(outputStream, writableData)
+                parser.streamDataAsCsv(outputStream, writableData, YkiSuoritusCsv::class)
 
                 return@withEventAndPerformanceCheck outputStream
             }.apply {

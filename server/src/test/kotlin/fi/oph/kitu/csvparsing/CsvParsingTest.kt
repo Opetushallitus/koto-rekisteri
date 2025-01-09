@@ -28,7 +28,7 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             """.trimIndent()
-        val suoritus = parser.convertCsvToData<YkiSuoritusCsv>(csv).first()
+        val suoritus = parser.convertCsvToData(csv, YkiSuoritusCsv::class).first()
 
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
@@ -73,7 +73,7 @@ class CsvParsingTest {
         val csv =
             """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"$perustelut1",
 "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"$perustelut2","""
-        val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(csv)
+        val suoritukset = parser.convertCsvToData(csv, YkiSuoritusCsv::class)
 
         val suoritus1 = suoritukset.first()
         assertEquals(perustelut1, suoritus1.perustelu)
@@ -89,7 +89,7 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"10","PT+KT"
             """.trimIndent()
-        val arvioija = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv)[0]
+        val arvioija = parser.convertCsvToData(arvioijaCsv, SolkiArvioijaResponse::class)[0]
         assertEquals(Tutkintokieli.SWE10, arvioija.kieli)
     }
 
@@ -100,7 +100,7 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"11","PT+KT"
             """.trimIndent()
-        val arvioija = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv)[0]
+        val arvioija = parser.convertCsvToData(arvioijaCsv, SolkiArvioijaResponse::class)[0]
         assertEquals(Tutkintokieli.ENG11, arvioija.kieli)
     }
 
@@ -111,7 +111,7 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"12","PT+KT"
             """.trimIndent()
-        val arvioija = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv)[0]
+        val arvioija = parser.convertCsvToData(arvioijaCsv, SolkiArvioijaResponse::class)[0]
         assertEquals(Tutkintokieli.ENG12, arvioija.kieli)
     }
 
@@ -122,7 +122,7 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"Tarkistusarvioinnin perustelu\nJossa rivinvaihto",
             """.trimIndent()
-        val suoritus = parser.convertCsvToData<YkiSuoritusCsv>(csv).first()
+        val suoritus = parser.convertCsvToData(csv, YkiSuoritusCsv::class).first()
 
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
@@ -171,7 +171,7 @@ class CsvParsingTest {
             """.trimIndent()
 
         assertThrows<RuntimeException> {
-            parser.convertCsvToData<YkiSuoritusCsv>(csv)
+            parser.convertCsvToData(csv, YkiSuoritusCsv::class)
         }
 
         val serializationErrors = event.keyValues.filter { kvp -> kvp.first?.startsWith("serialization.error") == true }
@@ -237,7 +237,7 @@ class CsvParsingTest {
                 ),
             )
         val outputStream = ByteArrayOutputStream()
-        parser.streamDataAsCsv(outputStream, writable)
+        parser.streamDataAsCsv(outputStream, writable, YkiSuoritusCsv::class)
         val expectedCsv =
             """
             suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
@@ -288,7 +288,7 @@ class CsvParsingTest {
                 ),
             )
         val outputStream = ByteArrayOutputStream()
-        parser.streamDataAsCsv(outputStream, writable)
+        parser.streamDataAsCsv(outputStream, writable, YkiSuoritusCsv::class)
 
         val expectedCsv =
             """
