@@ -2,13 +2,17 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.logging.Logging
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
+import fi.oph.kitu.logging.addUser
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.slf4j.Logger
@@ -32,6 +36,7 @@ class YkiService(
     private val arvioijaMapper: YkiArvioijaMappingService,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
+    private val auditLogger: Logger = Logging.auditLogger()
 
     fun importYkiSuoritukset(
         from: Instant? = null,
@@ -112,14 +117,9 @@ class YkiService(
             .atInfo()
             .withEventAndPerformanceCheck { event ->
                 val parser = CsvParser(event, useHeader = true)
-                val data =
-                    if (includeVersionHistory) {
-                        suoritusRepository.findAllOrdered()
-                    } else {
-                        suoritusRepository.findAllDistinct()
-                    }
-                event.add("dataCount" to data.count())
-                val writableData = suoritusMapper.convertToResponseIterable(data)
+                val suoritukset = allSuoritukset(includeVersionHistory)
+                event.add("dataCount" to suoritukset.count())
+                val writableData = suoritusMapper.convertToResponseIterable(suoritukset)
                 val outputStream = ByteArrayOutputStream()
                 parser.streamDataAsCsv(outputStream, writableData)
 
@@ -128,6 +128,34 @@ class YkiService(
                 addDefaults("yki.getSuorituksetCsv")
                 addDatabaseLogs()
             }.getOrThrow()
+
+    fun allSuoritukset(versionHistory: Boolean?): List<YkiSuoritusEntity> =
+        if (versionHistory == true) {
+            suoritusRepository.findAllOrdered().toList()
+        } else {
+            suoritusRepository.findAllDistinct().toList()
+        }.also {
+            for (suoritus in it) {
+                auditLogger
+                    .atInfo()
+                    .addUser()
+                    .add(
+                        "suoritus.id" to suoritus.id,
+                    ).log("Yki suoritus viewed")
+            }
+        }
+
+    fun allArvioijat(): List<YkiArvioijaEntity> =
+        arvioijaRepository.findAll().toList().also {
+            for (arvioija in it) {
+                auditLogger
+                    .atInfo()
+                    .addUser()
+                    .add(
+                        "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
+                    ).log("Yki arvioija viewed")
+            }
+        }
 
     sealed class Error(
         message: String,
