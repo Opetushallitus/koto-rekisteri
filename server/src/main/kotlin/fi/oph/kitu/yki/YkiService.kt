@@ -106,6 +106,16 @@ class YkiService(
                             arvioijaMapper.convertToEntityIterable(arvioijat),
                         )
                     event.add("yki.arvioijat.importedCount" to importedArvioijat.count())
+
+                    for (arvioija in importedArvioijat) {
+                        auditLogger
+                            .atInfo()
+                            .add(
+                                "principal" to "yki.importArvioijat",
+                                "peer.service" to PeerService.Solki.value,
+                                "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
+                            ).log("YKI arvioija imported")
+                    }
                 }
             }.apply {
                 addDefaults("yki.importArvioijat")
