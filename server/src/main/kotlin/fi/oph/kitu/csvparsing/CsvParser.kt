@@ -8,41 +8,35 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import fi.oph.kitu.logging.add
 import org.ietf.jgss.Oid
-import org.slf4j.spi.LoggingEventBuilder
+import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
-import java.lang.RuntimeException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 
+@Service
 class CsvParser(
-    val event: LoggingEventBuilder,
     val columnSeparator: Char = ',',
     val lineSeparator: String = "\n",
     val useHeader: Boolean = false,
     val quoteChar: Char = '"',
 ) {
-    init {
-        event.add(
-            "serialization.schema.args.columnSeparator" to columnSeparator.toString(),
-            "serialization.schema.args.lineSeparator" to lineSeparator,
-            "serialization.schema.args.useHeader" to useHeader,
-            "serialization.schema.args.quoteChar" to quoteChar,
-        )
-    }
+    fun with(
+        columnSeparator: Char = ',',
+        lineSeparator: String = "\n",
+        useHeader: Boolean = false,
+        quoteChar: Char = '"',
+    ) = CsvParser(columnSeparator, lineSeparator, useHeader, quoteChar)
 
-    private fun getSchema(
+    fun getSchema(
         csvMapper: CsvMapper,
         type: KClass<*>,
-    ): CsvSchema {
-        event.add("serialization.schema.args.type" to type::class.java.name)
-
-        return csvMapper
+    ): CsvSchema =
+        csvMapper
             .typedSchemaFor(type.java)
             .withColumnSeparator(columnSeparator)
             .withLineSeparator(lineSeparator)
             .withUseHeader(useHeader)
             .withQuoteChar(quoteChar)
-    }
 
     private fun CsvMapper.Builder.withFeatures(type: KClass<*>): CsvMapper.Builder {
         val mapperFeatures = type.findAnnotation<Features>()?.features
@@ -93,11 +87,8 @@ class CsvParser(
         type: KClass<T>,
     ): List<T> {
         if (csvString.isBlank()) {
-            event.add("serialization.isEmptyList" to true)
             return emptyList()
         }
-
-        event.add("serialization.isEmptyList" to false)
 
         val csvMapper = getCsvMapper(type)
         val schema = getSchema(csvMapper, type)
@@ -123,15 +114,7 @@ class CsvParser(
             return data
         }
 
-        // add all errors to log
-        errors.forEachIndexed { i, error ->
-            event.add("serialization.error[$i].index" to i)
-            for (kvp in error.keyValues) {
-                event.add("serialization.error[$i].${kvp.first}" to kvp.second)
-            }
-        }
-
-        throw RuntimeException("Unable to convert string to csv, because the string had ${errors.count()} error(s).")
+        throw CsvExportException(errors)
     }
 }
 

@@ -29,3 +29,7 @@ abstract class CsvExportError(
         keyValues.add(Pair("exception", exception))
     }
 }
+
+class CsvExportException(
+    val errors: Iterable<CsvExportError>,
+) : Throwable("Unable to convert string to csv, because the string had ${errors.count()} error(s).")

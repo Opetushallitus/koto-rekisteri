@@ -1,5 +1,7 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.csvparsing.CsvExportException
+import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
@@ -19,7 +21,6 @@ import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import java.lang.RuntimeException
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
 
@@ -71,6 +72,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                parser = CsvParser(),
             )
 
         // Act
@@ -105,10 +107,11 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                parser = CsvParser(),
             )
 
         // Act
-        assertThrows<RuntimeException> {
+        assertThrows<CsvExportException> {
             ykiService.importYkiSuoritukset(null, null, false)
         }
         val suoritukset = ykiSuoritusRepository.findAll()
@@ -141,6 +144,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                parser = CsvParser(),
             )
 
         // Act
@@ -193,6 +197,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                parser = CsvParser(),
             )
 
         assertDoesNotThrow {
@@ -238,6 +243,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                parser = CsvParser(),
             )
 
         assertDoesNotThrow {

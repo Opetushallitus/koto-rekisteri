@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.csvparsing.withEvent
 import fi.oph.kitu.logging.Logging
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
@@ -34,6 +35,7 @@ class YkiService(
     private val suoritusMapper: YkiSuoritusMappingService,
     private val arvioijaRepository: YkiArvioijaRepository,
     private val arvioijaMapper: YkiArvioijaMappingService,
+    private val parser: CsvParser,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val auditLogger: Logger = Logging.auditLogger()
@@ -46,7 +48,7 @@ class YkiService(
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
-                val parser = CsvParser(event)
+
                 event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
                 val url =
@@ -65,7 +67,7 @@ class YkiService(
                 event.addHttpResponse(PeerService.Solki, "suoritukset", response)
 
                 val suoritukset =
-                    parser.convertCsvToData(
+                    parser.withEvent(event).convertCsvToData(
                         response.body ?: "",
                         YkiSuoritusCsv::class,
                     )
@@ -84,7 +86,6 @@ class YkiService(
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
-                val parser = CsvParser(event)
                 val response =
                     solkiRestClient
                         .get()
@@ -95,7 +96,7 @@ class YkiService(
                 event.addHttpResponse(PeerService.Solki, "arvioijat", response)
 
                 val arvioijat =
-                    parser.convertCsvToData(
+                    parser.withEvent(event).convertCsvToData(
                         response.body ?: throw Error.EmptyArvioijatResponse(),
                         SolkiArvioijaResponse::class,
                     )
@@ -121,12 +122,14 @@ class YkiService(
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
-                val parser = CsvParser(event, useHeader = true)
                 val suoritukset = allSuoritukset(includeVersionHistory)
                 event.add("dataCount" to suoritukset.count())
                 val writableData = suoritusMapper.convertToResponseIterable(suoritukset)
                 val outputStream = ByteArrayOutputStream()
-                parser.streamDataAsCsv(outputStream, writableData, YkiSuoritusCsv::class)
+                parser
+                    .with(useHeader = true)
+                    .withEvent(event)
+                    .streamDataAsCsv(outputStream, writableData, YkiSuoritusCsv::class)
 
                 return@withEventAndPerformanceCheck outputStream
             }.apply {
