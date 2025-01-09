@@ -21,19 +21,19 @@ class YkiApiController(
     @ResponseBody
     override fun getSuorituksetAsCsv(
         @RequestParam("includeVersionHistory") includeVersionHistory: Boolean?,
-    ): ResponseEntity<Resource> {
-        val filename = "suoritukset.csv"
-
-        val stream = service.generateSuorituksetCsvStream(includeVersionHistory == true)
-
-        val byteArray = stream.toByteArray()
-        val inputStream = ByteArrayInputStream(byteArray)
-        val resource = InputStreamResource(inputStream)
-
-        return ResponseEntity
+    ): ResponseEntity<Resource> =
+        ResponseEntity
             .ok()
             .contentType(MediaType.parseMediaType("text/csv"))
-            .header("Content-Disposition", "attachment; filename=$filename")
-            .body(resource)
-    }
+            .header("Content-Disposition", "attachment; filename=suoritukset.csv")
+            .body(
+                InputStreamResource(
+                    ByteArrayInputStream(
+                        service
+                            .generateSuorituksetCsvStream(
+                                includeVersionHistory == true,
+                            ).toByteArray(),
+                    ),
+                ),
+            )
 }
