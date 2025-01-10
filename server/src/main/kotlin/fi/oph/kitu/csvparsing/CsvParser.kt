@@ -60,7 +60,7 @@ class CsvParser(
         return this
     }
 
-    inline fun <reified T> getCsvMapper(): CsvMapper =
+    inline fun <reified T> getCsvMapper() =
         CsvMapper
             .builder()
             .withFeatures<T>()

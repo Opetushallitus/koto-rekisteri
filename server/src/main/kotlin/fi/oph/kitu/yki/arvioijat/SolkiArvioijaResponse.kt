@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import fi.oph.kitu.csvparsing.Features
-import fi.oph.kitu.csvparsing.yki.BooleanFromNumericDeserializer
-import fi.oph.kitu.csvparsing.yki.TutkintokieliDeserializer
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.time.LocalDate

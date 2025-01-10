@@ -1,8 +1,5 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.logging.Logging
 import fi.oph.kitu.logging.add
@@ -21,7 +18,6 @@ import java.time.Instant
 class KoealustaService(
     private val restClientBuilder: RestClient.Builder,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
-    private val jacksonObjectMapper: ObjectMapper,
     private val mappingService: KoealustaMappingService,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -34,28 +30,6 @@ class KoealustaService(
     lateinit var koealustaBaseUrl: String
 
     private val restClient by lazy { restClientBuilder.baseUrl(koealustaBaseUrl).build() }
-
-    private inline fun <reified T> tryParseMoodleResponse(json: String): T {
-        try {
-            return jacksonObjectMapper.enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION).readValue<T>(json)
-        } catch (e: Throwable) {
-            throw tryParseMoodleError(json, e)
-        }
-    }
-
-    private fun tryParseMoodleError(
-        json: String,
-        originalException: Throwable,
-    ): MoodleException {
-        try {
-            return MoodleException(jacksonObjectMapper.readValue<MoodleErrorMessage>(json))
-        } catch (e: Throwable) {
-            throw RuntimeException(
-                "Could not parse Moodle error message: ${e.message} while handling parsing error",
-                originalException,
-            )
-        }
-    }
 
     fun importSuoritukset(from: Instant) =
         logger
@@ -85,30 +59,30 @@ class KoealustaService(
                     return@withEventAndPerformanceCheck from
                 }
 
-                val suorituksetResponse =
-                    tryParseMoodleResponse<KoealustaSuorituksetResponse>(response.body!!)
-
                 val suoritukset =
                     try {
-                        mappingService.convertToEntity(suorituksetResponse)
+                        mappingService.responseStringToEntity(response.body!!)
                     } catch (ex: KoealustaMappingService.Error.ValidationFailure) {
                         event.addValidationExceptions(ex.oppijanumeroExceptions, ex.validationErrors)
                         throw ex
                     }
 
-                val savedSuoritukset = kielitestiSuoritusRepository.saveAll(suoritukset)
+                val savedSuoritukset =
+                    kielitestiSuoritusRepository
+                        .saveAll(suoritukset)
+                        .also {
+                            for (suoritus in it) {
+                                auditLogger
+                                    .atInfo()
+                                    .add(
+                                        "principal" to "koealusta.import",
+                                        "peer.service" to PeerService.Koealusta.value,
+                                        "suoritus.id" to suoritus.id,
+                                    ).log("Kielitesti suoritus imported")
+                            }
+                        }
 
                 event.add("db.saved" to savedSuoritukset.count())
-
-                for (suoritus in savedSuoritukset) {
-                    auditLogger
-                        .atInfo()
-                        .add(
-                            "principal" to "koealusta.import",
-                            "peer.service" to PeerService.Koealusta.value,
-                            "suoritus.id" to suoritus.id,
-                        ).log("Kielitesti suoritus imported")
-                }
 
                 return@withEventAndPerformanceCheck suoritukset.maxOfOrNull { it.timeCompleted } ?: from
             }.apply {
