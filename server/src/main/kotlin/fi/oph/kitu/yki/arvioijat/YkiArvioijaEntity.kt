@@ -10,7 +10,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 
 @Table(name = "yki_arvioija")
-class YkiArvioijaEntity(
+data class YkiArvioijaEntity(
     @Id
     val id: Number?,
     val rekisteriintuontiaika: OffsetDateTime?,
