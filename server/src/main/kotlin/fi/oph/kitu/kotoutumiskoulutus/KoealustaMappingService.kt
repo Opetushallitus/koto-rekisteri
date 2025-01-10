@@ -1,5 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completion
 import fi.oph.kitu.oppijanumero.Oppija
@@ -10,9 +13,35 @@ import java.time.Instant
 
 @Service
 class KoealustaMappingService(
+    private val jacksonObjectMapper: ObjectMapper,
     private val oppijanumeroService: OppijanumeroService,
 ) {
-    fun convertToEntity(suorituksetResponse: KoealustaSuorituksetResponse): List<KielitestiSuoritus> {
+    private inline fun <reified T> tryParseMoodleResponse(json: String): T {
+        try {
+            return jacksonObjectMapper.enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION).readValue<T>(json)
+        } catch (e: Throwable) {
+            throw tryParseMoodleError(json, e)
+        }
+    }
+
+    private fun tryParseMoodleError(
+        json: String,
+        originalException: Throwable,
+    ): MoodleException {
+        try {
+            return MoodleException(jacksonObjectMapper.readValue<MoodleErrorMessage>(json))
+        } catch (e: Throwable) {
+            throw RuntimeException(
+                "Could not parse Moodle error message: ${e.message} while handling parsing error",
+                originalException,
+            )
+        }
+    }
+
+    fun responseStringToEntity(body: String): Iterable<KielitestiSuoritus> =
+        convertToEntity(tryParseMoodleResponse<KoealustaSuorituksetResponse>(body))
+
+    fun convertToEntity(suorituksetResponse: KoealustaSuorituksetResponse): Iterable<KielitestiSuoritus> {
         val exceptions = mutableListOf<Throwable>()
 
         val suoritukset =
