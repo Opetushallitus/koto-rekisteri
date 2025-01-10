@@ -4,6 +4,7 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.logging.Logging
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
+import fi.oph.kitu.logging.addUser
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.oppijanumero.addValidationExceptions
 import org.slf4j.LoggerFactory
@@ -30,6 +31,18 @@ class KoealustaService(
     lateinit var koealustaBaseUrl: String
 
     private val restClient by lazy { restClientBuilder.baseUrl(koealustaBaseUrl).build() }
+
+    fun getSuoritukset() =
+        kielitestiSuoritusRepository.findAll().toList().also {
+            for (suoritus in it) {
+                auditLogger
+                    .atInfo()
+                    .addUser()
+                    .add(
+                        "suoritus.id" to suoritus.id,
+                    ).log("Kielitesti suoritus viewed")
+            }
+        }
 
     fun importSuoritukset(from: Instant) =
         logger
