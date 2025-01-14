@@ -8,16 +8,25 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import fi.oph.kitu.logging.add
 import org.ietf.jgss.Oid
+import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import kotlin.reflect.full.findAnnotation
 
+@Service
 class CsvParser(
     val columnSeparator: Char = ',',
     val lineSeparator: String = "\n",
-    val useHeader: Boolean = false,
+    var useHeader: Boolean = false,
     val quoteChar: Char = '"',
 ) {
     val extensions = mutableListOf<CsvParserExtension>()
+
+    fun with(
+        columnSeparator: Char = ',',
+        lineSeparator: String = "\n",
+        useHeader: Boolean = false,
+        quoteChar: Char = '"',
+    ) = CsvParser(columnSeparator, lineSeparator, useHeader, quoteChar)
 
     fun withExtension(extension: CsvParserExtension) =
         CsvParser(columnSeparator, lineSeparator, useHeader, quoteChar)
@@ -27,7 +36,7 @@ class CsvParser(
         extensions.forEach { it.onInit(this) }
     }
 
-    inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema =
+    final inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema =
         csvMapper
             .typedSchemaFor(T::class.java)
             .withColumnSeparator(columnSeparator)
@@ -35,7 +44,7 @@ class CsvParser(
             .withUseHeader(useHeader)
             .withQuoteChar(quoteChar)
 
-    inline fun <reified T> CsvMapper.Builder.withFeatures(): CsvMapper.Builder {
+    final inline fun <reified T> CsvMapper.Builder.withFeatures(): CsvMapper.Builder {
         val mapperFeatures = T::class.findAnnotation<Features>()?.features
         if (mapperFeatures != null) {
             for (feature in mapperFeatures) {
@@ -56,14 +65,14 @@ class CsvParser(
         return this
     }
 
-    inline fun <reified T> getCsvMapper(): CsvMapper =
+    final inline fun <reified T> getCsvMapper(): CsvMapper =
         CsvMapper
             .builder()
             .withFeatures<T>()
             .build()
             .withModules()
 
-    inline fun <reified T> streamDataAsCsv(
+    final inline fun <reified T> streamDataAsCsv(
         outputStream: ByteArrayOutputStream,
         data: Iterable<T>,
     ) {
@@ -81,7 +90,7 @@ class CsvParser(
     /**
      * Converts retrieved String response into a list that is the type of Body.
      */
-    inline fun <reified T> convertCsvToData(csvString: String): List<T> {
+    final inline fun <reified T> convertCsvToData(csvString: String): List<T> {
         extensions.forEach { it.beforeFunctionCall(this, csvString, T::class.java) }
 
         if (csvString.isBlank()) {

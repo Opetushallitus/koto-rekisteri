@@ -63,3 +63,5 @@ class CsvParserExtensionEvent(
         TODO("Not yet implemented")
     }
 }
+
+fun CsvParser.withEvent(event: LoggingEventBuilder) = this.withExtension(CsvParserExtensionEvent(event))
