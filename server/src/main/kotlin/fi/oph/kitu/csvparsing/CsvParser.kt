@@ -8,37 +8,32 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import fi.oph.kitu.logging.add
 import org.ietf.jgss.Oid
-import org.slf4j.spi.LoggingEventBuilder
 import java.io.ByteArrayOutputStream
-import java.lang.RuntimeException
 import kotlin.reflect.full.findAnnotation
 
 class CsvParser(
-    val event: LoggingEventBuilder,
     val columnSeparator: Char = ',',
     val lineSeparator: String = "\n",
     val useHeader: Boolean = false,
     val quoteChar: Char = '"',
 ) {
+    val extensions = mutableListOf<CsvParserExtension>()
+
+    fun withExtension(extension: CsvParserExtension) =
+        CsvParser(columnSeparator, lineSeparator, useHeader, quoteChar)
+            .apply { extensions += extension }
+
     init {
-        event.add(
-            "serialization.schema.args.columnSeparator" to columnSeparator.toString(),
-            "serialization.schema.args.lineSeparator" to lineSeparator,
-            "serialization.schema.args.useHeader" to useHeader,
-            "serialization.schema.args.quoteChar" to quoteChar,
-        )
+        extensions.forEach { it.onInit(this) }
     }
 
-    inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema {
-        event.add("serialization.schema.args.type" to T::class.java.name)
-
-        return csvMapper
+    inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema =
+        csvMapper
             .typedSchemaFor(T::class.java)
             .withColumnSeparator(columnSeparator)
             .withLineSeparator(lineSeparator)
             .withUseHeader(useHeader)
             .withQuoteChar(quoteChar)
-    }
 
     inline fun <reified T> CsvMapper.Builder.withFeatures(): CsvMapper.Builder {
         val mapperFeatures = T::class.findAnnotation<Features>()?.features
@@ -52,10 +47,11 @@ class CsvParser(
     }
 
     fun CsvMapper.withModules(): CsvMapper {
-        this.registerModule(JavaTimeModule())
-        val oidSerializerModule = SimpleModule()
-        oidSerializerModule.addSerializer(Oid::class.java, OidSerializer())
-        this.registerModule(oidSerializerModule)
+        this.registerModules(
+            JavaTimeModule(),
+            SimpleModule()
+                .addSerializer(Oid::class.java, OidSerializer()),
+        )
 
         return this
     }
@@ -71,6 +67,8 @@ class CsvParser(
         outputStream: ByteArrayOutputStream,
         data: Iterable<T>,
     ) {
+        extensions.forEach { it.beforeFunctionCall(this, null, T::class.java) }
+
         val csvMapper: CsvMapper = getCsvMapper<T>()
         val schema = getSchema<T>(csvMapper)
 
@@ -84,12 +82,11 @@ class CsvParser(
      * Converts retrieved String response into a list that is the type of Body.
      */
     inline fun <reified T> convertCsvToData(csvString: String): List<T> {
+        extensions.forEach { it.beforeFunctionCall(this, csvString, T::class.java) }
+
         if (csvString.isBlank()) {
-            event.add("serialization.isEmptyList" to true)
             return emptyList()
         }
-
-        event.add("serialization.isEmptyList" to false)
 
         val csvMapper = getCsvMapper<T>()
         val schema = getSchema<T>(csvMapper)
@@ -111,19 +108,13 @@ class CsvParser(
                 }
             }
 
-        if (errors.isEmpty()) {
-            return data
-        }
-
-        // add all errors to log
-        errors.forEachIndexed { i, error ->
-            event.add("serialization.error[$i].index" to i)
-            for (kvp in error.keyValues) {
-                event.add("serialization.error[$i].${kvp.first}" to kvp.second)
+        if (errors.isNotEmpty()) {
+            throw CsvExportException(errors).also { ex ->
+                extensions.forEach { it.onErrorFunctionCall(this, ex) }
             }
         }
 
-        throw RuntimeException("Unable to convert string to csv, because the string had ${errors.count()} error(s).")
+        return data
     }
 }
 
