@@ -10,6 +10,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -31,6 +32,39 @@ class YkiArvioijaRepositoryTest(
     @BeforeEach
     fun nukeDb() {
         arvioijaRepository.deleteAll()
+    }
+
+    @Test
+    fun `saveAll returns only the saved arvioijat`() {
+        val arvioija =
+            YkiArvioijaEntity(
+                id = null,
+                rekisteriintuontiaika = null,
+                arvioijanOppijanumero = "1.2.246.562.24.20281155246",
+                henkilotunnus = "010180-9026",
+                sukunimi = "Öhman-Testi",
+                etunimet = "Ranja Testi",
+                sahkopostiosoite = "testi@testi.fi",
+                katuosoite = "Testikuja 5",
+                postinumero = "40100",
+                postitoimipaikka = "Testilä",
+                ensimmainenRekisterointipaiva = LocalDate.now(),
+                kaudenAlkupaiva = null,
+                kaudenPaattymispaiva = null,
+                jatkorekisterointi = false,
+                tila = 0,
+                kieli = Tutkintokieli.SWE,
+                tasot = setOf(Tutkintotaso.YT),
+            )
+        arvioijaRepository.saveAll(listOf(arvioija))
+
+        val arvioijaEng = arvioija.copy(kieli = Tutkintokieli.ENG)
+        val saved = arvioijaRepository.saveAll(listOf(arvioijaEng))
+        assertEquals(1, saved.count())
+        assertEquals(arvioijaEng, saved.elementAt(0).copy(id = null, rekisteriintuontiaika = null))
+
+        val allArvioijat = arvioijaRepository.findAll()
+        assertEquals(2, allArvioijat.count())
     }
 
     @Test
@@ -56,17 +90,21 @@ class YkiArvioijaRepositoryTest(
                 tasot = setOf(Tutkintotaso.YT),
             )
 
-        arvioijaRepository.saveAll(listOf(arvioija))
-        val arvioijat = arvioijaRepository.findAll().toList()
+        val initialSaved = arvioijaRepository.saveAll(listOf(arvioija))
+        val arvioijat = arvioijaRepository.findAll()
         assertEquals(1, arvioijat.count())
+        assertEquals(1, initialSaved.count())
 
-        arvioijaRepository.saveAll(listOf(arvioija))
-        val updatedArvioijat = arvioijaRepository.findAll().toList()
+        val saved = arvioijaRepository.saveAll(listOf(arvioija))
+        val updatedArvioijat = arvioijaRepository.findAll()
         assertEquals(1, updatedArvioijat.count())
+        assertEquals(0, saved.count())
     }
 
     @Test
     fun `different versions of the same arvioija are saved`() {
+        val datePattern = "yyyy-MM-dd"
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
         val arvioija =
             YkiArvioijaEntity(
                 id = null,
@@ -79,9 +117,9 @@ class YkiArvioijaRepositoryTest(
                 katuosoite = "Testikuja 5",
                 postinumero = "40100",
                 postitoimipaikka = "Testilä",
-                ensimmainenRekisterointipaiva = LocalDate.now(),
-                kaudenAlkupaiva = null,
-                kaudenPaattymispaiva = null,
+                ensimmainenRekisterointipaiva = LocalDate.parse("2024-09-01", dateFormatter),
+                kaudenAlkupaiva = LocalDate.parse("2024-09-01", dateFormatter),
+                kaudenPaattymispaiva = LocalDate.parse("2025-09-01", dateFormatter),
                 jatkorekisterointi = false,
                 tila = 0,
                 kieli = Tutkintokieli.SWE,
@@ -89,12 +127,14 @@ class YkiArvioijaRepositoryTest(
             )
 
         arvioijaRepository.saveAll(listOf(arvioija))
-        val arvioijat = arvioijaRepository.findAll().toList()
+        val arvioijat = arvioijaRepository.findAll()
         assertEquals(1, arvioijat.count())
 
         val updatedArvioija = arvioija.copy(kaudenAlkupaiva = LocalDate.now(), jatkorekisterointi = true)
-        arvioijaRepository.saveAll(listOf(updatedArvioija))
-        val updatedArvioijat = arvioijaRepository.findAll().toList()
+        val saved = arvioijaRepository.saveAll(listOf(updatedArvioija))
+        assertEquals(1, saved.count())
+        assertEquals(updatedArvioija, saved.elementAt(0).copy(id = null, rekisteriintuontiaika = null))
+        val updatedArvioijat = arvioijaRepository.findAll()
         assertEquals(2, updatedArvioijat.count())
     }
 }
