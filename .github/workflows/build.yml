@@ -134,7 +134,7 @@ jobs:
           path: e2e/playwright-report/
           retention-days: 30
 
-  lint:
+  check-formatting:
     name: Check code formatting
     runs-on: ubuntu-24.04
     needs: update_tools_cache
@@ -149,6 +149,31 @@ jobs:
       - name: Check formatting
         run: ./scripts/check-formatting.sh
 
+  lint:
+    name: Lint code for bugs
+    runs-on: ubuntu-24.04
+    needs: update_tools_cache
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build server
+        run: mvn -B package
+        working-directory: server
+      - name: Run detekt
+        uses: natiginfo/action-detekt-all@1.23.7
+        with:
+          args: --config detekt.yml --input server --report sarif:detekt.sarif --base-path . --classpath server/target/ --jvm-target 21 --jdk-home $JAVA_HOME
+      - name: Upload SARIF report
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: detekt.sarif
+
   build_image:
     name: Build image
     runs-on: ubuntu-24.04
@@ -156,7 +181,7 @@ jobs:
       - check_generated_sources
       - server_tests
       - frontend_tests
-      - lint
+      - check-formatting
     permissions:
       id-token: write
       contents: read
