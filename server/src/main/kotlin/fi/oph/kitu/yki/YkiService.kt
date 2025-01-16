@@ -74,7 +74,7 @@ class YkiService(
                                     .add(
                                         "principal" to "yki.importSuoritukset",
                                         "suoritus.id" to suoritus.suoritusID,
-                                    )
+                                    ).log("YKI suoritus imported")
                             }
                         }
 
