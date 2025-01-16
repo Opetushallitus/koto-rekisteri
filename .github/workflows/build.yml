@@ -161,13 +161,17 @@ jobs:
           experimental: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build server
-        run: mvn -B package
-        working-directory: server
-      - name: Run detekt
-        uses: natiginfo/action-detekt-all@1.23.7
+      - name: Setup detekt
+        uses: peter-murray/setup-detekt@v2
         with:
-          args: --config detekt.yml --input server --report sarif:detekt.sarif --base-path . --classpath server/target/ --jvm-target 21 --jdk-home $JAVA_HOME
+          detekt_version: 1.23.7
+      - name: Build server
+        run: |
+          set -uex
+          cpf=cp.txt
+          mvn -f server -q -B compile dependency:build-classpath -Dmdep.outputFile=$cpf
+          wc server/$cpf
+          detekt-cli --debug --config detekt.yml --input server --report sarif:detekt.sarif --base-path . --classpath $(cat server/$cpf) --jvm-target 21 --jdk-home $JAVA_HOME
       - name: Upload SARIF report
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
