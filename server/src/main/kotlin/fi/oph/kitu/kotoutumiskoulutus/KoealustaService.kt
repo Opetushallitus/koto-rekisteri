@@ -44,7 +44,10 @@ class KoealustaService(
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
-                event.add("from" to from)
+                event.add(
+                    "function" to "local_completion_export_get_completions",
+                    "from" to from,
+                )
 
                 val response =
                     restClient
