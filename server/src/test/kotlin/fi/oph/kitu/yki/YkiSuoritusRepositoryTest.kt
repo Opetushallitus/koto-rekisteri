@@ -80,6 +80,55 @@ class YkiSuoritusRepositoryTest(
     }
 
     @Test
+    fun `saveAll returns only the saved suoritus`() {
+        val datePattern = "yyyy-MM-dd"
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
+        val initialSuoritus =
+            YkiSuoritusEntity(
+                id = null,
+                suorittajanOID = "1.2.246.562.24.20281155246",
+                hetu = "010180-9026",
+                sukupuoli = Sukupuoli.N,
+                sukunimi = "Öhman-Testi",
+                etunimet = "Ranja Testi",
+                kansalaisuus = "EST",
+                katuosoite = "Testikuja 5",
+                postinumero = "40100",
+                postitoimipaikka = "Testilä",
+                email = "testi@testi.fi",
+                suoritusId = 183424,
+                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
+                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
+                tutkintokieli = Tutkintokieli.FIN,
+                tutkintotaso = Tutkintotaso.YT,
+                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
+                tekstinYmmartaminen = 5,
+                kirjoittaminen = 4,
+                rakenteetJaSanasto = 3,
+                puheenYmmartaminen = 1,
+                puhuminen = 2,
+                yleisarvosana = 3,
+                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
+                tarkistusarvioinninAsiatunnus = "123123",
+                tarkistusarvioidutOsakokeet = 2,
+                arvosanaMuuttui = 1,
+                perustelu = "Tarkistusarvioinnin testi",
+                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
+            )
+        ykiSuoritusRepository.saveAll(listOf(initialSuoritus)).toList()
+        val updatedSuoritus =
+            initialSuoritus.copy(
+                sukupuoli = Sukupuoli.E,
+                lastModified = Instant.parse("2025-01-01T13:53:56Z"),
+            )
+        val savedSuoritukset = ykiSuoritusRepository.saveAll(listOf(initialSuoritus, updatedSuoritus))
+        assertEquals(1, savedSuoritukset.count())
+        assertEquals(updatedSuoritus, savedSuoritukset.elementAt(0).copy(id = null))
+    }
+
+    @Test
     fun `suoritus with null values is saved correctly`() {
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
