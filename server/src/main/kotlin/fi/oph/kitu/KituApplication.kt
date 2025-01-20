@@ -7,5 +7,11 @@ import org.springframework.boot.runApplication
 class KituApplication
 
 fun main(args: Array<String>) {
+    println(foobar())
+    foobar()
     runApplication<KituApplication>(*args)
 }
+
+// Testing detekt
+
+fun foobar(): Int = 42 * 2
