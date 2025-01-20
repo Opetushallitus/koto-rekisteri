@@ -88,12 +88,12 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
             keyHolder,
         )
 
-        val updatedArvioijat = keyHolder.keyList.map { it["id"] }
+        val updatedArvioijat = keyHolder.keyList.map { it["id"] as Int }
 
         return if (updatedArvioijat.isEmpty()) listOf() else findArvioijatByIdList(updatedArvioijat) as Iterable<S>
     }
 
-    private fun findArvioijatByIdList(ids: List<Any?>): Iterable<YkiArvioijaEntity> {
+    private fun findArvioijatByIdList(ids: List<Int>): Iterable<YkiArvioijaEntity> {
         val idsQuery = ids.joinToString(",", "(", ")")
         val findAllQuerySql =
             """
