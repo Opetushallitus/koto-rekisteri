@@ -1,5 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
+import fi.oph.kitu.Oid
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
@@ -14,7 +15,7 @@ data class KielitestiSuoritus(
     val oppijanumero: String,
     val email: String,
     val timeCompleted: Instant,
-    val schoolOid: String,
+    val schoolOid: Oid,
     val courseid: Int,
     val coursename: String,
     val luetunYmmartaminenResultSystem: String,
