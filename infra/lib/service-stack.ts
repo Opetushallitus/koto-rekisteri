@@ -19,6 +19,8 @@ import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { ITopic } from "aws-cdk-lib/aws-sns"
 import { Construct } from "constructs"
+import * as s3 from "aws-cdk-lib/aws-s3"
+import * as cdk from "aws-cdk-lib"
 
 export interface ServiceStackProps extends StackProps {
   auditLogGroup: ILogGroup
@@ -56,6 +58,13 @@ export class ServiceStack extends Stack {
       vpc: props.vpc,
       securityGroup: props.loadBalancerSecurityGroup,
       internetFacing: true,
+    })
+
+    // Create an S3 bucket
+    new s3.Bucket(this, "Kitu-Bucket", {
+      bucketName: "kitu-bucket",
+      publicReadAccess: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     })
 
     const snsAction = new SnsAction(props.alarmSnsTopic)
