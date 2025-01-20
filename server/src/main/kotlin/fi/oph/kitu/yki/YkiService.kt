@@ -67,20 +67,18 @@ class YkiService(
                 val suoritukset =
                     parser
                         .convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
-                        .also {
-                            for (suoritus in it) {
-                                auditLogger
-                                    .atInfo()
-                                    .add(
-                                        "principal" to "yki.importSuoritukset",
-                                        "suoritus.id" to suoritus.suoritusID,
-                                    ).log("YKI suoritus imported")
-                            }
-                        }
 
                 if (dryRun != true) {
-                    val res = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
-                    event.add("importedSuorituksetSize" to res.count())
+                    val saved = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
+                    event.add("importedSuorituksetSize" to saved.count())
+                    for (suoritus in saved) {
+                        auditLogger
+                            .atInfo()
+                            .add(
+                                "principal" to "yki.importSuoritukset",
+                                "suoritus.id" to suoritus.suoritusId,
+                            ).log("YKI suoritus imported")
+                    }
                 }
                 return@withEventAndPerformanceCheck suoritukset.maxOfOrNull { it.lastModified } ?: from
             }.apply {
