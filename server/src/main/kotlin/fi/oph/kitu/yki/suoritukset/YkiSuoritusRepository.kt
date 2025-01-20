@@ -5,14 +5,18 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
+import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.PreparedStatementCreatorFactory
+import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.LocalDate
 
 interface CustomYkiSuoritusRepository {
-    fun <S : YkiSuoritusEntity?> saveAll(suoritukset: Iterable<S>): Iterable<S>
+    fun <S : YkiSuoritusEntity> saveAll(suoritukset: Iterable<S>): Iterable<S>
 
     fun findAllOrdered(orderBy: String = "tutkintopaiva"): Iterable<YkiSuoritusEntity>
 
@@ -63,7 +67,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
      * Override to allow handling duplicates/conflicts. The default implementation from CrudRepository fails
      * due to the unique constraint. Overriding the implementation allows explicit handling of conflicts.
      */
-    override fun <S : YkiSuoritusEntity?> saveAll(suoritukset: Iterable<S>): Iterable<S> {
+    override fun <S : YkiSuoritusEntity> saveAll(suoritukset: Iterable<S>): Iterable<S> {
         val sql =
             """
             INSERT INTO yki_suoritus (
@@ -100,52 +104,78 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
             ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT ON CONSTRAINT unique_suoritus DO NOTHING;
             """.trimIndent()
+        val pscf = PreparedStatementCreatorFactory(sql)
+        pscf.setGeneratedKeysColumnNames("id")
+        val preparedStatementCreator = pscf.newPreparedStatementCreator(sql, null)
+
+        val batchPreparedStatementSetter =
+            object : BatchPreparedStatementSetter {
+                override fun setValues(
+                    ps: PreparedStatement,
+                    i: Int,
+                ) {
+                    val suoritus = suoritukset.elementAt(i)
+                    ps.setString(1, suoritus.suorittajanOID)
+                    ps.setString(2, suoritus.hetu)
+                    ps.setString(3, suoritus.sukupuoli.toString())
+                    ps.setString(4, suoritus.sukunimi)
+                    ps.setString(5, suoritus.etunimet)
+                    ps.setString(6, suoritus.kansalaisuus)
+                    ps.setString(7, suoritus.katuosoite)
+                    ps.setString(8, suoritus.postinumero)
+                    ps.setString(9, suoritus.postitoimipaikka)
+                    ps.setString(10, suoritus.email)
+                    ps.setInt(11, suoritus.suoritusId)
+                    ps.setTimestamp(12, Timestamp(suoritus.lastModified.toEpochMilli()))
+                    ps.setObject(13, suoritus.tutkintopaiva)
+                    ps.setString(14, suoritus.tutkintokieli.toString())
+                    ps.setString(15, suoritus.tutkintotaso.toString())
+                    ps.setString(16, suoritus.jarjestajanTunnusOid)
+                    ps.setString(17, suoritus.jarjestajanNimi)
+                    ps.setObject(18, suoritus.arviointipaiva)
+                    ps.setObject(19, suoritus.tekstinYmmartaminen)
+                    ps.setObject(20, suoritus.kirjoittaminen)
+                    ps.setObject(21, suoritus.rakenteetJaSanasto)
+                    ps.setObject(22, suoritus.puheenYmmartaminen)
+                    ps.setObject(23, suoritus.puhuminen)
+                    ps.setObject(24, suoritus.yleisarvosana)
+                    ps.setObject(25, suoritus.tarkistusarvioinninSaapumisPvm)
+                    ps.setObject(26, suoritus.tarkistusarvioinninAsiatunnus)
+                    ps.setObject(27, suoritus.tarkistusarvioidutOsakokeet)
+                    ps.setObject(28, suoritus.arvosanaMuuttui)
+                    ps.setObject(29, suoritus.perustelu)
+                    ps.setObject(30, suoritus.tarkistusarvioinninKasittelyPvm)
+                }
+
+                override fun getBatchSize() = suoritukset.count()
+            }
+
+        val keyHolder = GeneratedKeyHolder()
+
         jdbcTemplate.batchUpdate(
-            sql,
-            suoritukset.toList(),
-            suoritukset.count(),
-        ) { ps, suoritus ->
-            ps.setString(1, suoritus.suorittajanOID)
-            ps.setString(2, suoritus.hetu)
-            ps.setString(3, suoritus.sukupuoli.toString())
-            ps.setString(4, suoritus.sukunimi)
-            ps.setString(5, suoritus.etunimet)
-            ps.setString(6, suoritus.kansalaisuus)
-            ps.setString(7, suoritus.katuosoite)
-            ps.setString(8, suoritus.postinumero)
-            ps.setString(9, suoritus.postitoimipaikka)
-            ps.setString(10, suoritus.email)
-            ps.setInt(11, suoritus.suoritusId)
-            ps.setTimestamp(12, Timestamp(suoritus.lastModified.toEpochMilli()))
-            ps.setObject(13, suoritus.tutkintopaiva)
-            ps.setString(14, suoritus.tutkintokieli.toString())
-            ps.setString(15, suoritus.tutkintotaso.toString())
-            ps.setString(16, suoritus.jarjestajanTunnusOid)
-            ps.setString(17, suoritus.jarjestajanNimi)
-            ps.setObject(18, suoritus.arviointipaiva)
-            ps.setObject(19, suoritus.tekstinYmmartaminen)
-            ps.setObject(20, suoritus.kirjoittaminen)
-            ps.setObject(21, suoritus.rakenteetJaSanasto)
-            ps.setObject(22, suoritus.puheenYmmartaminen)
-            ps.setObject(23, suoritus.puhuminen)
-            ps.setObject(24, suoritus.yleisarvosana)
-            ps.setObject(25, suoritus.tarkistusarvioinninSaapumisPvm)
-            ps.setObject(26, suoritus.tarkistusarvioinninAsiatunnus)
-            ps.setObject(27, suoritus.tarkistusarvioidutOsakokeet)
-            ps.setObject(28, suoritus.arvosanaMuuttui)
-            ps.setObject(29, suoritus.perustelu)
-            ps.setObject(30, suoritus.tarkistusarvioinninKasittelyPvm)
-        }
-        val findAllQuerySql =
+            preparedStatementCreator,
+            batchPreparedStatementSetter,
+            keyHolder,
+        )
+
+        val savedSuoritukset = keyHolder.keyList.map { it["id"] as Int }
+
+        return if (savedSuoritukset.isEmpty()) listOf() else findSuorituksetByIdList(savedSuoritukset) as Iterable<S>
+    }
+
+    private fun findSuorituksetByIdList(ids: List<Int>): Iterable<YkiSuoritusEntity> {
+        val suoritusIds = ids.joinToString(",", "(", ")")
+        val findSavedQuerySql =
             """
             SELECT
                 $allColumns
             FROM yki_suoritus
+            WHERE id IN $suoritusIds
             """.trimIndent()
         return jdbcTemplate
-            .query(findAllQuerySql) { rs, _ ->
+            .query(findSavedQuerySql) { rs, _ ->
                 YkiSuoritusEntity.fromResultSet(rs)
-            } as Iterable<S>
+            }
     }
 
     override fun findAllOrdered(orderBy: String): Iterable<YkiSuoritusEntity> {
