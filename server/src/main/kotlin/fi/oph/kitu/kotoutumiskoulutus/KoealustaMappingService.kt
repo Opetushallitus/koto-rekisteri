@@ -3,6 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import fi.oph.kitu.Oid
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completion
 import fi.oph.kitu.oppijanumero.Oppija
@@ -203,6 +204,17 @@ class KoealustaMappingService(
         return result
     }
 
+    fun getSchoolOid(
+        userId: Int,
+        oid: String,
+    ): Oid =
+        Oid.valueOf(oid)
+            ?: throw Error.Validation.MalformedField(
+                userId,
+                "schoolOID",
+                oid,
+            )
+
     fun completionToEntity(
         user: User,
         oppijanumero: String,
@@ -212,6 +224,7 @@ class KoealustaMappingService(
         val kuullunYmmartaminen = getKuullunYmmartaminen(user.userid, completion)
         val puhe = getPuhe(user.userid, completion)
         val kirjoittaminen = getKirjoittaminen(user.userid, completion)
+        val schoolOid = getSchoolOid(user.userid, completion.schoolOID)
 
         if (user.preferredname.isNullOrEmpty()) {
             throw Error.Validation.MissingField("preferred name", user.userid)
@@ -224,7 +237,7 @@ class KoealustaMappingService(
             email = user.email,
             oppijanumero = oppijanumero,
             timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
-            schoolOid = completion.schoolOID,
+            schoolOid = schoolOid,
             courseid = completion.courseid,
             coursename = completion.coursename,
             luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system!!,
@@ -273,6 +286,12 @@ class KoealustaMappingService(
                 field: String,
                 userId: Int,
             ) : Validation(userId, "Missing student \"$field\" for user \"$userId\"")
+
+            class MalformedField(
+                userId: Int,
+                field: String,
+                value: String,
+            ) : Validation(userId, "Malformed value \"$value\" in \"$field\" for user \"$userId\"")
         }
     }
 }

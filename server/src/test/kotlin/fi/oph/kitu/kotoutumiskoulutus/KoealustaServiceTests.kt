@@ -1,6 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.oph.kitu.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroServiceMock
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -57,7 +58,7 @@ class KoealustaServiceTests {
                             {
                               "courseid": 32,
                               "coursename": "Integraatio testaus",
-                              "schoolOID": "",
+                              "schoolOID": "1.2.246.562.10.1234567890",
                               "results": [
                                 {
                                   "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -124,6 +125,10 @@ class KoealustaServiceTests {
         assertEquals(
             expected = "Integraatio testaus",
             actual = mervi.coursename,
+        )
+        assertEquals(
+            expected = Oid.valueOf("1.2.246.562.10.1234567890"),
+            actual = mervi.schoolOid,
         )
     }
 }
