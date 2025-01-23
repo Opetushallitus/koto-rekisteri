@@ -62,7 +62,7 @@ export class ServiceStack extends Stack {
 
     // Create an S3 bucket
     new s3.Bucket(this, "Kitu-Bucket", {
-      bucketName: "kitu-bucket",
+      bucketName: `kitu-bucket-${props.name}`,
       publicReadAccess: false,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     })
