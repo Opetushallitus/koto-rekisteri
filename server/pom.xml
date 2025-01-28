@@ -32,6 +32,7 @@
         <flyway.version>11.2.0</flyway.version>
         <springdoc.version>2.8.3</springdoc.version>
         <jackson.version>2.18.2</jackson.version>
+        <jte.version>3.1.16</jte.version>
         <opentelemetry-semconv.version>1.29.0-alpha</opentelemetry-semconv.version>
     </properties>
     <dependencyManagement>
@@ -114,6 +115,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mustache</artifactId>
         </dependency>
+
+
+        <dependency>
+            <groupId>gg.jte</groupId>
+            <artifactId>jte-spring-boot-starter-3</artifactId>
+            <version>${jte.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>gg.jte</groupId>
+            <artifactId>jte</artifactId>
+            <version>${jte.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -412,6 +426,26 @@
                             </rules>
                             <fail>true</fail>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>gg.jte</groupId>
+                <artifactId>jte-maven-plugin</artifactId>
+                <version>${jte.version}</version>
+                <configuration>
+                    <!-- This is the directory where your .jte files are located. -->
+                    <sourceDirectory>${project.basedir}/src/main/jte</sourceDirectory>
+                    <!-- This is the directory where compiled templates are located. -->
+                    <targetDirectory>${project.build.directory}/jte-classes</targetDirectory>
+                    <contentType>Html</contentType>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>precompile</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
