@@ -20,12 +20,21 @@ export class LogGroupsStack extends Stack {
   constructor(scope: Construct, id: string, props: LogGroupsStackProps) {
     super(scope, id, props)
 
+    const dataProtectionAuditLogGroup = new LogGroup(
+      this,
+      "DataProtectionAudit",
+      {
+        logGroupName: "KituServiceDataProtectionAudit",
+      },
+    )
+
     const FINNISH_SSN_REGEX =
       "((0[1-9]|[12][0-9]|3[01]))((0[1-9]|1[0-2]))(\\d{2})([-AaBbCcDdEeFfXxYyWwVvUu+])(\\d{3})([0-9A-Ya-y])"
     const dataProtectionPolicy = new DataProtectionPolicy({
       name: "KituDataProtectionPolicy",
       description: "Kitu data protection policy",
       identifiers: [new CustomDataIdentifier("Finnish_SSN", FINNISH_SSN_REGEX)],
+      logGroupAuditDestination: dataProtectionAuditLogGroup,
     })
 
     this.serviceLogGroup = new LogGroup(this, "Service", {
@@ -36,7 +45,7 @@ export class LogGroupsStack extends Stack {
       logGroupName: "KituServiceAudit",
     })
 
-    const alarm = this.serviceLogGroup
+    const errorsAlarm = this.serviceLogGroup
       .addMetricFilter("Errors", {
         metricName: "LogErrors",
         metricNamespace: "Kitu",
@@ -57,7 +66,7 @@ export class LogGroupsStack extends Stack {
         treatMissingData: TreatMissingData.NOT_BREACHING,
       })
 
-    alarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
-    alarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
+    errorsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
+    errorsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
   }
 }
