@@ -53,7 +53,7 @@ data class YkiSuoritusCsv(
     @JsonProperty("hetu")
     val hetu: String,
     @JsonProperty("sukupuoli")
-    val sukupuoli: Sukupuoli,
+    val sukupuoli: Sukupuoli?,
     @JsonProperty("sukunimi")
     val sukunimi: String,
     @JsonProperty("etunimet")
