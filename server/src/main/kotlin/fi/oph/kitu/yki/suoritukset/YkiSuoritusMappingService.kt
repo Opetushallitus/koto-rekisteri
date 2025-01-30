@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.yki.Sukupuoli
 import org.ietf.jgss.Oid
 import org.springframework.stereotype.Service
 
@@ -14,7 +15,7 @@ class YkiSuoritusMappingService {
         id,
         csv.suorittajanOID.toString(),
         csv.hetu,
-        csv.sukupuoli,
+        csv.sukupuoli ?: Sukupuoli.E,
         csv.sukunimi,
         csv.etunimet,
         csv.kansalaisuus,
