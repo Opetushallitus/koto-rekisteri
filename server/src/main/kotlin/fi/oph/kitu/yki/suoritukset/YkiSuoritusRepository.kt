@@ -187,6 +187,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 FROM yki_suoritus
                 ORDER BY suoritus_id, last_modified DESC)
             ORDER BY $orderBy DESC
+            LIMIT 100
             """.trimIndent()
         return jdbcTemplate
             .query(findAllQuerySql) { rs, _ ->
@@ -203,6 +204,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 FROM yki_suoritus
                 ORDER BY suoritus_id, last_modified DESC)
             ORDER BY $orderBy DESC
+            LIMIT 100
             """.trimIndent()
         return jdbcTemplate
             .query(findAllDistinctQuerySql) { rs, _ ->
