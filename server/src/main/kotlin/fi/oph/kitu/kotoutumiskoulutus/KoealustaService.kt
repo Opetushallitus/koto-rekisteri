@@ -1,10 +1,9 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.PeerService
-import fi.oph.kitu.logging.Logging
+import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
-import fi.oph.kitu.logging.addUser
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.oppijanumero.addValidationExceptions
 import org.slf4j.LoggerFactory
@@ -20,9 +19,9 @@ class KoealustaService(
     private val restClientBuilder: RestClient.Builder,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val mappingService: KoealustaMappingService,
+    private val auditLogger: AuditLogger,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val auditLogger = Logging.auditLogger()
 
     @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
     lateinit var koealustaToken: String
@@ -34,13 +33,10 @@ class KoealustaService(
 
     fun getSuoritukset() =
         kielitestiSuoritusRepository.findAll().toList().also {
-            for (suoritus in it) {
-                auditLogger
-                    .atInfo()
-                    .addUser()
-                    .add(
-                        "suoritus.id" to suoritus.id,
-                    ).log("Kielitesti suoritus viewed")
+            auditLogger.logAll("Kielitesti suoritus viewed", it) { suoritus ->
+                arrayOf(
+                    "suoritus.id" to suoritus.id,
+                )
             }
         }
 
@@ -84,14 +80,12 @@ class KoealustaService(
                     kielitestiSuoritusRepository
                         .saveAll(suoritukset)
                         .also {
-                            for (suoritus in it) {
-                                auditLogger
-                                    .atInfo()
-                                    .add(
-                                        "principal" to "koealusta.import",
-                                        "peer.service" to PeerService.Koealusta.value,
-                                        "suoritus.id" to suoritus.id,
-                                    ).log("Kielitesti suoritus imported")
+                            auditLogger.logAll("Kielitesti suoritus imported", it) { suoritus ->
+                                arrayOf(
+                                    "suoritus.id" to suoritus.id,
+                                    "principal" to "koealusta.import",
+                                    "peer.service" to PeerService.Koealusta.value,
+                                )
                             }
                         }
 

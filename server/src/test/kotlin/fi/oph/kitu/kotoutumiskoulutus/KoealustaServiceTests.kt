@@ -2,6 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
+import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.oppijanumero.OppijanumeroServiceMock
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,7 +21,9 @@ import kotlin.test.assertEquals
 
 @SpringBootTest
 @Testcontainers
-class KoealustaServiceTests {
+class KoealustaServiceTests(
+    @Autowired private val auditLogger: AuditLogger,
+) {
     @Suppress("unused")
     companion object {
         @JvmStatic
@@ -104,6 +107,7 @@ class KoealustaServiceTests {
                         objectMapper,
                         OppijanumeroServiceMock("123"),
                     ),
+                auditLogger = auditLogger,
             )
 
         koealustaService.koealustaToken = "token"
