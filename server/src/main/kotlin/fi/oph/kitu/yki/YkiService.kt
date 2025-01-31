@@ -2,10 +2,9 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.csvparsing.CsvParser
-import fi.oph.kitu.logging.Logging
+import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
-import fi.oph.kitu.logging.addUser
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
@@ -34,9 +33,9 @@ class YkiService(
     private val suoritusMapper: YkiSuoritusMappingService,
     private val arvioijaRepository: YkiArvioijaRepository,
     private val arvioijaMapper: YkiArvioijaMappingService,
+    private val auditLogger: AuditLogger,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
-    private val auditLogger: Logger = Logging.auditLogger()
 
     fun importYkiSuoritukset(
         from: Instant? = null,
@@ -71,13 +70,11 @@ class YkiService(
                 if (dryRun != true) {
                     val saved = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
                     event.add("importedSuorituksetSize" to saved.count())
-                    for (suoritus in saved) {
-                        auditLogger
-                            .atInfo()
-                            .add(
-                                "principal" to "yki.importSuoritukset",
-                                "suoritus.id" to suoritus.suoritusId,
-                            ).log("YKI suoritus imported")
+                    auditLogger.logAll("YKI suoritus imported", saved) { suoritus ->
+                        arrayOf(
+                            "principal" to "yki.importSuoritukset",
+                            "suoritus.id" to suoritus.suoritusId,
+                        )
                     }
                 }
                 return@withEventAndPerformanceCheck suoritukset.maxOfOrNull { it.lastModified } ?: from
@@ -118,14 +115,12 @@ class YkiService(
                         )
                     event.add("yki.arvioijat.importedCount" to importedArvioijat.count())
 
-                    for (arvioija in importedArvioijat) {
-                        auditLogger
-                            .atInfo()
-                            .add(
-                                "principal" to "yki.importArvioijat",
-                                "peer.service" to PeerService.Solki.value,
-                                "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
-                            ).log("YKI arvioija imported")
+                    auditLogger.logAll("YKI arvioija imported", importedArvioijat) { arvioija ->
+                        arrayOf(
+                            "principal" to "yki.importArvioijat",
+                            "peer.service" to PeerService.Solki.value,
+                            "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
+                        )
                     }
                 }
             }.apply {
@@ -156,25 +151,19 @@ class YkiService(
         } else {
             suoritusRepository.findAllDistinct().toList()
         }.also {
-            for (suoritus in it) {
-                auditLogger
-                    .atInfo()
-                    .addUser()
-                    .add(
-                        "suoritus.id" to suoritus.id,
-                    ).log("Yki suoritus viewed")
+            auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
+                arrayOf(
+                    "suoritus.id" to suoritus.id,
+                )
             }
         }
 
     fun allArvioijat(): List<YkiArvioijaEntity> =
         arvioijaRepository.findAll().toList().also {
-            for (arvioija in it) {
-                auditLogger
-                    .atInfo()
-                    .addUser()
-                    .add(
-                        "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
-                    ).log("Yki arvioija viewed")
+            auditLogger.logAll("Yki arvioija viewed", it) { arvioija ->
+                arrayOf(
+                    "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
+                )
             }
         }
 
