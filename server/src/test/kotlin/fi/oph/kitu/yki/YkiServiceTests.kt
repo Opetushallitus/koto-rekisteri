@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
@@ -28,6 +29,7 @@ import kotlin.test.assertEquals
 class YkiServiceTests(
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
+    @Autowired private val auditLogger: AuditLogger,
 ) {
     @Suppress("unused")
     companion object {
@@ -71,6 +73,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                auditLogger = auditLogger,
             )
 
         // Act
@@ -105,6 +108,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                auditLogger = auditLogger,
             )
 
         // Act
@@ -141,6 +145,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                auditLogger = auditLogger,
             )
 
         // Act
@@ -193,6 +198,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                auditLogger = auditLogger,
             )
 
         assertDoesNotThrow {
@@ -238,6 +244,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                auditLogger = auditLogger,
             )
 
         assertDoesNotThrow {
