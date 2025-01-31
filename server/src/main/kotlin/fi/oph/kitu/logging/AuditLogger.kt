@@ -14,6 +14,7 @@ class AuditLogger {
     ) {
         logger
             .atInfo()
+            .addUser()
             .add(*properties)
             .log(message)
     }
