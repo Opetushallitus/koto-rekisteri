@@ -43,3 +43,6 @@ build/
 # For Prettier specifically
 cdk.out/
 .next/
+
+### Mise ###
+.mise.local.toml
