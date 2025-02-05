@@ -21,6 +21,20 @@ interface CustomYkiSuoritusRepository {
     fun findAllOrdered(orderBy: String = "tutkintopaiva"): Iterable<YkiSuoritusEntity>
 
     fun findAllDistinct(orderBy: String = "tutkintopaiva"): Iterable<YkiSuoritusEntity>
+
+    fun findAllOrderedPaged(
+        orderBy: String = "tutkintopaiva",
+        limit: Int,
+        offset: Int,
+    ): Iterable<YkiSuoritusEntity>
+
+    fun findAllDistinctPaged(
+        orderBy: String = "tutkintopaiva",
+        limit: Int,
+        offset: Int,
+    ): Iterable<YkiSuoritusEntity>
+
+    fun countDistinct(): Long
 }
 
 @Repository
@@ -187,7 +201,6 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 FROM yki_suoritus
                 ORDER BY suoritus_id, last_modified DESC)
             ORDER BY $orderBy DESC
-            LIMIT 100
             """.trimIndent()
         return jdbcTemplate
             .query(findAllQuerySql) { rs, _ ->
@@ -204,7 +217,61 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 FROM yki_suoritus
                 ORDER BY suoritus_id, last_modified DESC)
             ORDER BY $orderBy DESC
-            LIMIT 100
+            """.trimIndent()
+        return jdbcTemplate
+            .query(findAllDistinctQuerySql) { rs, _ ->
+                YkiSuoritusEntity.fromResultSet(rs)
+            }
+    }
+
+    override fun countDistinct(): Long {
+        val sql =
+            """
+            SELECT COUNT(id) FROM
+                (SELECT DISTINCT ON (suoritus_id) id
+                FROM yki_suoritus
+                ORDER BY suoritus_id)
+            """.trimIndent()
+        return jdbcTemplate.queryForObject(sql, Long::class.java) ?: 0
+    }
+
+    override fun findAllOrderedPaged(
+        orderBy: String,
+        limit: Int,
+        offset: Int,
+    ): Iterable<YkiSuoritusEntity> {
+        val findAllQuerySql =
+            """
+            SELECT * FROM
+                (SELECT
+                    $allColumns
+                FROM yki_suoritus
+                ORDER BY suoritus_id, last_modified DESC)
+            ORDER BY $orderBy DESC
+            LIMIT $limit
+            OFFSET $offset
+            """.trimIndent()
+        return jdbcTemplate
+            .query(findAllQuerySql) { rs, _ ->
+                YkiSuoritusEntity.fromResultSet(rs)
+            }
+    }
+
+    override fun findAllDistinctPaged(
+        orderBy: String,
+        limit: Int,
+        offset: Int,
+    ): Iterable<YkiSuoritusEntity> {
+        val findAllDistinctQuerySql =
+            """
+            SELECT * FROM 
+                (SELECT DISTINCT ON (suoritus_id)
+                    $allColumns
+                FROM yki_suoritus
+                ORDER BY suoritus_id, last_modified DESC)
+            ORDER BY $orderBy DESC
+            LIMIT $limit
+            OFFSET $offset
             """.trimIndent()
         return jdbcTemplate
             .query(findAllDistinctQuerySql) { rs, _ ->

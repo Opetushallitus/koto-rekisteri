@@ -15,6 +15,8 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
 
     <a href="/yki/api/suoritukset?includeVersionHistory={{versionHistory}}" download>Lataa tiedot CSV:nä</a>
 
+    <p>Suorituksia yhteensä: {{paging.totalEntries}}</p>
+
     <table>
       <thead>
         <tr>
@@ -112,5 +114,18 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
       </tbody>
       {{/suoritukset}}
     </table>
+    <nav aria-label="Suoritusten sivutus">
+      <ul class="paging">
+        <li>
+          {{#paging.previousPage}}<a href="?versionHistory={{versionHistory}}&page={{paging.previousPage}}" aria-label="Edellinen sivu"><</a>{{/paging.previousPage}}
+          {{^paging.previousPage}}<{{/paging.previousPage}}
+        </li>
+        <li>{{paging.currentPage}}</li>
+        <li>
+          {{#paging.nextPage}}<a href="?versionHistory={{versionHistory}}&page={{paging.nextPage}}" aria-label="Seuraava sivu">></a>{{/paging.nextPage}}
+          {{^paging.nextPage}}>{{/paging.nextPage}}
+        </li>
+      </ul>
+    </nav>
 {{/body}}
 {{/page}}
