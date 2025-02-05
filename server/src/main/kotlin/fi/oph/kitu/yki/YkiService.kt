@@ -158,6 +158,26 @@ class YkiService(
             }
         }
 
+    fun countSuoritukset(versionHistory: Boolean?): Long =
+        if (versionHistory == true) suoritusRepository.count() else suoritusRepository.countDistinct()
+
+    fun allSuorituksetPaged(
+        versionHistory: Boolean?,
+        limit: Int,
+        offset: Int,
+    ): List<YkiSuoritusEntity> =
+        if (versionHistory == true) {
+            suoritusRepository.findAllOrderedPaged(limit = limit, offset = offset).toList()
+        } else {
+            suoritusRepository.findAllDistinctPaged(limit = limit, offset = offset).toList()
+        }.also {
+            auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
+                arrayOf(
+                    "suoritus.id" to suoritus.id,
+                )
+            }
+        }
+
     fun allArvioijat(): List<YkiArvioijaEntity> =
         arvioijaRepository.findAll().toList().also {
             auditLogger.logAll("Yki arvioija viewed", it) { arvioija ->

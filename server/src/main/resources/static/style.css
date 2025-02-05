@@ -162,6 +162,11 @@ nav:focus-within .dropdown .dropdown__menu {
   font-size: 1em;
 }
 
+ul.paging > li {
+  display: inline-block;
+  padding: 0.5em;
+}
+
 table {
   background-color: var(--content-bg-color);
   border-collapse: collapse;
