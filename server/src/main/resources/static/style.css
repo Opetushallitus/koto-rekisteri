@@ -171,7 +171,9 @@ table {
   background-color: var(--content-bg-color);
   border-collapse: collapse;
   border-radius: 2px;
-
+  display: block;
+  max-width: fit-content;
+  overflow-x: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
