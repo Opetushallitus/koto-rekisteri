@@ -8,12 +8,12 @@
     },
     {
       "matchFileNames": ["**/pom.xml"],
-      "matchUpdateTypes": ["patch"],
+      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },
     {
       "matchFileNames": [".mise.toml"],
-      "matchUpdateTypes": ["patch"],
+      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     }
   ],
