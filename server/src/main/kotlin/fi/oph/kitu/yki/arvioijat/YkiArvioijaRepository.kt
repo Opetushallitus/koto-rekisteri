@@ -4,6 +4,7 @@ import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.getTutkintokieli
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
+import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory
@@ -151,4 +152,5 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
 @Repository
 interface YkiArvioijaRepository :
     CrudRepository<YkiArvioijaEntity, Int>,
+    PagingAndSortingRepository<YkiArvioijaEntity, Int>,
     CustomYkiArvioijaRepository
