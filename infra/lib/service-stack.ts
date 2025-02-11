@@ -6,7 +6,13 @@ import {
 import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
-import { ContainerImage, LogDriver, Secret } from "aws-cdk-lib/aws-ecs"
+import {
+  Cluster,
+  ContainerImage,
+  ContainerInsights,
+  LogDriver,
+  Secret,
+} from "aws-cdk-lib/aws-ecs"
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns"
 import {
   ApplicationLoadBalancer,
@@ -35,6 +41,7 @@ export interface ServiceStackProps extends StackProps {
   database: DatabaseCluster
   databaseName: string
   alarmSnsTopic: ITopic
+  productionQuality: boolean
 }
 
 export class ServiceStack extends Stack {
@@ -79,8 +86,15 @@ export class ServiceStack extends Stack {
     alarm5xx.addAlarmAction(snsAction)
     alarm5xx.addOkAction(snsAction)
 
-    this.service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
+    const cluster = new Cluster(this, "Cluster", {
+      containerInsightsV2: props.productionQuality
+        ? ContainerInsights.ENHANCED
+        : ContainerInsights.DISABLED,
       vpc: props.vpc,
+    })
+
+    this.service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
+      cluster,
       securityGroups: [props.serviceSecurityGroup],
       loadBalancer: loadBalancer,
       taskImageOptions: {

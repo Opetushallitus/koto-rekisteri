@@ -88,6 +88,7 @@ export class EnvironmentStage extends Stage {
       databaseName: environmentConfig.databaseName,
       image: props.serviceImage,
       alarmSnsTopic: alarmsStack.alarmSnsTopic,
+      productionQuality: environmentConfig.productionQuality,
     })
 
     new Route53HealthChecksStack(this, "Route53HealthChecks", {
