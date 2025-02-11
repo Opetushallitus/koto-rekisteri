@@ -2,17 +2,6 @@
   "extends": ["config:recommended"],
   "packageRules": [
     {
-      "matchManagers": ["npm"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
-    },
-    {
-      "matchFileNames": ["**/pom.xml"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
-    },
-    {
-      "matchFileNames": [".mise.toml"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     }
