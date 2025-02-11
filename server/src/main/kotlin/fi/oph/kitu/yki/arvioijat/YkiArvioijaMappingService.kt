@@ -26,7 +26,7 @@ class YkiArvioijaMappingService {
         response.kaudenAlkupaiva,
         response.kaudenPaattymispaiva,
         response.jatkorekisterointi,
-        response.tila,
+        if (response.tila == 0) YkiArvioijaTila.AKTIIVINEN else YkiArvioijaTila.PASSIVOITU,
         response.kieli,
         tasot = response.tasot.toSet(),
     )

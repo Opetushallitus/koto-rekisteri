@@ -73,7 +73,7 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
                     ps.setObject(10, arvioija.kaudenAlkupaiva)
                     ps.setObject(11, arvioija.kaudenPaattymispaiva)
                     ps.setBoolean(12, arvioija.jatkorekisterointi)
-                    ps.setInt(13, arvioija.tila.toInt())
+                    ps.setString(13, arvioija.tila.toString())
                     ps.setString(14, arvioija.kieli.toString())
                     ps.setArray(15, ps.connection.createArrayOf("YKI_TUTKINTOTASO", arvioija.tasot.toTypedArray()))
                 }
@@ -136,7 +136,7 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
                     rs.getObject("kauden_alkupaiva", LocalDate::class.java),
                     rs.getObject("kauden_paattymispaiva", LocalDate::class.java),
                     rs.getBoolean("jatkorekisterointi"),
-                    rs.getInt("tila"),
+                    rs.getYkiArvioijaTila("tila"),
                     rs.getTutkintokieli("kieli"),
                     rs.getTypedArray("tasot") { taso -> Tutkintotaso.valueOf(taso) }.toSet(),
                 )

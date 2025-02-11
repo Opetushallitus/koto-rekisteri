@@ -3,6 +3,7 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
@@ -253,7 +254,7 @@ class YkiServiceTests(
         var arvioijat = ykiArvioijaRepository.findAll()
         assertEquals(2, arvioijat.count())
         val ranjaBeforeUpdate = arvioijat.find { it.etunimet.startsWith("Ranja") }
-        assertEquals(1, ranjaBeforeUpdate?.tila)
+        assertEquals(YkiArvioijaTila.PASSIVOITU, ranjaBeforeUpdate?.tila)
 
         Thread.sleep(1000L)
 
@@ -271,6 +272,6 @@ class YkiServiceTests(
             arvioijat
                 .filter { it.etunimet.startsWith("Ranja") }
                 .maxByOrNull { it.rekisteriintuontiaika ?: OffsetDateTime.MIN }
-        assertEquals(0, ranjaAfterUpdate?.tila)
+        assertEquals(YkiArvioijaTila.AKTIIVINEN, ranjaAfterUpdate?.tila)
     }
 }
