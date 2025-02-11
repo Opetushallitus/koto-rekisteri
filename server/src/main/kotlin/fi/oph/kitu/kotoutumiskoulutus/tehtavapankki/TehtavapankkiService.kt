@@ -8,6 +8,7 @@ import io.awspring.cloud.s3.S3Template
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
@@ -16,6 +17,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
+@Profile("!ci & !e2e")
 class TehtavapankkiService(
     @Qualifier("restClientBuilderForLargeResponses")
     private val restClientBuilder: RestClient.Builder,
