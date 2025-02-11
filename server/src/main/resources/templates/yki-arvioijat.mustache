@@ -16,6 +16,10 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - arvioijat
           <th>Tila</th>
           <th>Kieli</th>
           <th>Tasot</th>
+          <th>Kauden alkupäivä</th>
+          <th>Kauden päättymispäivä</th>
+          <th>Jatkorekisteröinti</th>
+          <th>Rekisteriintuontiaika</th>
         </tr>
       </thead>
       <tbody>
@@ -30,6 +34,10 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - arvioijat
           <td>{{tila}}</td>
           <td>{{kieli}}</td>
           <td>{{tasot}}</td>
+          <td>{{#kaudenAlkupaiva}}{{kaudenAlkupaiva}}{{/kaudenAlkupaiva}}</td>
+          <td>{{#kaudenPaattymispaiva}}{{kaudenPaattymispaiva}}{{/kaudenPaattymispaiva}}</td>
+          <td>{{jatkorekisterointi}}</td>
+          <td>{{rekisteriintuontiaika}}</td>
         </tr>
         {{/arvioijat}}
       </tbody>
