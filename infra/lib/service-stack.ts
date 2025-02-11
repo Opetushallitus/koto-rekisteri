@@ -148,7 +148,7 @@ export class ServiceStack extends Stack {
     this.service.taskDefinition.addContainer("AwsOtelCollector", {
       image: ContainerImage.fromRegistry(
         // renovate: datasource=docker
-        "public.ecr.aws/aws-observability/aws-otel-collector:v0.41.1",
+        "public.ecr.aws/aws-observability/aws-otel-collector:v0.42.0",
       ),
     })
 
