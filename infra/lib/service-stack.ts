@@ -69,7 +69,7 @@ export class ServiceStack extends Stack {
     })
 
     // Create an S3 bucket
-    new s3.Bucket(this, "Kitu-Bucket", {
+    const tehtavapankkiBucket = new s3.Bucket(this, "Kitu-Bucket", {
       bucketName: `kitu-bucket-${props.name}`,
       publicReadAccess: false,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -193,5 +193,7 @@ export class ServiceStack extends Stack {
         evaluationPeriods: 1,
       })
       .addAlarmAction(snsAction)
+
+    tehtavapankkiBucket.grantWrite(this.service.taskDefinition.taskRole)
   }
 }
