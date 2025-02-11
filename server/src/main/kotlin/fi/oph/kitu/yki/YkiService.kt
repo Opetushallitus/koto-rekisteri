@@ -17,6 +17,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
@@ -179,7 +180,7 @@ class YkiService(
         }
 
     fun allArvioijat(): List<YkiArvioijaEntity> =
-        arvioijaRepository.findAll().toList().also {
+        arvioijaRepository.findAll(Sort.by("rekisteriintuontiaika").descending()).toList().also {
             auditLogger.logAll("Yki arvioija viewed", it) { arvioija ->
                 arrayOf(
                     "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
