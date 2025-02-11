@@ -26,7 +26,8 @@ data class YkiArvioijaEntity(
     val kaudenAlkupaiva: LocalDate?,
     val kaudenPaattymispaiva: LocalDate?,
     val jatkorekisterointi: Boolean,
-    val tila: Number,
+    @Enumerated(EnumType.STRING)
+    val tila: YkiArvioijaTila,
     @Enumerated(EnumType.STRING)
     val kieli: Tutkintokieli,
     val tasot: Set<Tutkintotaso>,

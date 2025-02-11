@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -52,7 +53,7 @@ class YkiArvioijaRepositoryTest(
                 kaudenAlkupaiva = null,
                 kaudenPaattymispaiva = null,
                 jatkorekisterointi = false,
-                tila = 0,
+                tila = YkiArvioijaTila.AKTIIVINEN,
                 kieli = Tutkintokieli.SWE,
                 tasot = setOf(Tutkintotaso.YT),
             )
@@ -85,7 +86,7 @@ class YkiArvioijaRepositoryTest(
                 kaudenAlkupaiva = null,
                 kaudenPaattymispaiva = null,
                 jatkorekisterointi = false,
-                tila = 0,
+                tila = YkiArvioijaTila.AKTIIVINEN,
                 kieli = Tutkintokieli.SWE,
                 tasot = setOf(Tutkintotaso.YT),
             )
@@ -121,7 +122,7 @@ class YkiArvioijaRepositoryTest(
                 kaudenAlkupaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 kaudenPaattymispaiva = LocalDate.parse("2025-09-01", dateFormatter),
                 jatkorekisterointi = false,
-                tila = 0,
+                tila = YkiArvioijaTila.AKTIIVINEN,
                 kieli = Tutkintokieli.SWE,
                 tasot = setOf(Tutkintotaso.YT),
             )
