@@ -113,12 +113,3 @@ fun <T> LoggingEventBuilder.withEventAndPerformanceCheck(action: (LoggingEventBu
 
     return EventLogger(result, this)
 }
-
-fun <T> LoggingEventBuilder.withEvent(
-    operationName: String,
-    action: (LoggingEventBuilder) -> T,
-) = withEventAndPerformanceCheck(action)
-    .apply {
-        addDefaults(operationName)
-        addDatabaseLogs()
-    }.getOrThrow()
