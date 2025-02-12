@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.kotoutumiskoulutus.tehtavapankki
 
 import com.github.kagkarlsson.scheduler.task.Task
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
@@ -7,21 +7,18 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.time.Instant
 
 @Configuration
 @ConditionalOnProperty(name = ["kitu.kotoutumiskoulutus.koealusta.scheduling.enabled"], matchIfMissing = false)
-class KoealustaScheduledTasks {
-    @Value("\${kitu.kotoutumiskoulutus.koealusta.scheduling.import.schedule}")
-    lateinit var koealustaImportSchedule: String
+class TehtavapankkiScheduledTasks {
+    @Value("\${kitu.kotoutumiskoulutus.koealusta.scheduling.importTehtavapankki.schedule}")
+    lateinit var tehtavapankkiImportSchedule: String
 
     @Bean
-    fun dailyImportKotoSuoritukset(koealustaService: KoealustaService): Task<Instant> =
+    fun dailyImportKotoTehtavapankki(tehtavapankkiService: TehtavapankkiService): Task<Void> =
         Tasks
             .recurring(
-                "Koto-import",
-                Schedules.parseSchedule(koealustaImportSchedule),
-                Instant::class.java,
-            ).initialData(Instant.EPOCH)
-            .executeStateful { taskInstance, _ -> koealustaService.importSuoritukset(taskInstance.data) }
+                "Koto-import-tehtavapankki",
+                Schedules.parseSchedule(tehtavapankkiImportSchedule),
+            ).execute { _, _ -> tehtavapankkiService.importTehtavapankki() }
 }
