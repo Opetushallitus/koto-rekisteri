@@ -25,9 +25,6 @@ class OppijanumeroServiceImpl(
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
-    @Value("\${kitu.oppijanumero.service.use-mock-data}")
-    var useMockData: Boolean = false
-
     override fun getOppijanumero(oppija: Oppija): String =
         logger
             .atInfo()
@@ -39,10 +36,6 @@ class OppijanumeroServiceImpl(
 
                 if (event.addCondition(key = "request.hasOppijanumero", condition = oppija.oppijanumero != null)) {
                     return@withEventAndPerformanceCheck oppija.oppijanumero.toString()
-                }
-
-                if (event.addCondition(key = "useMockData", condition = useMockData)) {
-                    return@withEventAndPerformanceCheck "1.2.246.562.24.33342764709"
                 }
 
                 val endpoint = "$serviceUrl/yleistunniste/hae"
