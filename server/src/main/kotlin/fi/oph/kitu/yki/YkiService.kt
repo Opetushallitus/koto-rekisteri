@@ -146,38 +146,39 @@ class YkiService(
                 addDatabaseLogs()
             }.getOrThrow()
 
-    fun allSuoritukset(versionHistory: Boolean?): List<YkiSuoritusEntity> =
-        if (versionHistory == true) {
-            suoritusRepository.findAllOrdered().toList()
-        } else {
-            suoritusRepository.findAllDistinct().toList()
-        }.also {
-            auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
-                arrayOf(
-                    "suoritus.id" to suoritus.id,
-                )
+    fun allSuoritukset(versionHistory: Boolean): List<YkiSuoritusEntity> =
+        suoritusRepository
+            .find(distinct = !versionHistory)
+            .toList()
+            .also {
+                auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
+                    arrayOf(
+                        "suoritus.id" to suoritus.id,
+                    )
+                }
             }
-        }
 
-    fun countSuoritukset(versionHistory: Boolean?): Long =
-        if (versionHistory == true) suoritusRepository.count() else suoritusRepository.countDistinct()
+    fun countSuoritukset(
+        searchBy: String = "",
+        versionHistory: Boolean = false,
+    ): Long = suoritusRepository.countSuoritukset(searchBy = searchBy, distinct = !versionHistory)
 
-    fun allSuorituksetPaged(
-        versionHistory: Boolean?,
+    fun findSuorituksetPaged(
+        searcStr: String = "",
+        versionHistory: Boolean = false,
         limit: Int,
         offset: Int,
     ): List<YkiSuoritusEntity> =
-        if (versionHistory == true) {
-            suoritusRepository.findAllOrderedPaged(limit = limit, offset = offset).toList()
-        } else {
-            suoritusRepository.findAllDistinctPaged(limit = limit, offset = offset).toList()
-        }.also {
-            auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
-                arrayOf(
-                    "suoritus.id" to suoritus.id,
-                )
+        suoritusRepository
+            .find(searchBy = searcStr, distinct = !versionHistory, limit = limit, offset = offset)
+            .toList()
+            .also {
+                auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
+                    arrayOf(
+                        "suoritus.id" to suoritus.id,
+                    )
+                }
             }
-        }
 
     fun allArvioijat(): List<YkiArvioijaEntity> =
         arvioijaRepository.findAll(Sort.by("rekisteriintuontiaika").descending()).toList().also {

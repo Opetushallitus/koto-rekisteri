@@ -7,6 +7,10 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
 
     <form action="">
       <label>
+        Oppijanumero, henkilötunnus tai hakusana:
+        <input id="search" type="search" name="search" value="{{paging.searchStr}}" />
+      </label>
+      <label>
         Näytä versiohistoria
       <input id="versionHistory" type="checkbox" name="versionHistory" {{#versionHistory}}checked{{/versionHistory}} />
       </label>
@@ -117,12 +121,12 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
     <nav aria-label="Suoritusten sivutus">
       <ul class="paging">
         <li>
-          {{#paging.previousPage}}<a href="?versionHistory={{versionHistory}}&page={{paging.previousPage}}" aria-label="Edellinen sivu"><</a>{{/paging.previousPage}}
+          {{#paging.previousPage}}<a href="?search={{paging.searchStrUrl}}&versionHistory={{versionHistory}}&page={{paging.previousPage}}" aria-label="Edellinen sivu"><</a>{{/paging.previousPage}}
           {{^paging.previousPage}}<{{/paging.previousPage}}
         </li>
         <li>{{paging.currentPage}}</li>
         <li>
-          {{#paging.nextPage}}<a href="?versionHistory={{versionHistory}}&page={{paging.nextPage}}" aria-label="Seuraava sivu">></a>{{/paging.nextPage}}
+          {{#paging.nextPage}}<a href="?search={{paging.searchStrUrl}}&versionHistory={{versionHistory}}&page={{paging.nextPage}}" aria-label="Seuraava sivu">></a>{{/paging.nextPage}}
           {{^paging.nextPage}}>{{/paging.nextPage}}
         </li>
       </ul>
