@@ -21,4 +21,7 @@ class KoealustaScheduledTasks {
             .recurring("Koto-import", Schedules.parseSchedule(koealustaImportSchedule), Instant::class.java)
             .initialData(Instant.EPOCH)
             .executeStateful { taskInstance, _ -> koealustaService.importSuoritukset(taskInstance.data) }
+            .also {
+                koealustaService.importSuoritukset(Instant.MIN)
+            }
 }

@@ -9,6 +9,8 @@ import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completi
 import fi.oph.kitu.oppijanumero.Oppija
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.random.generateRandomUserOid
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -17,6 +19,9 @@ class KoealustaMappingService(
     private val jacksonObjectMapper: ObjectMapper,
     private val oppijanumeroService: OppijanumeroService,
 ) {
+    @Value("\${kitu.kotoutumiskoulutus.mapping.use-mock-data}")
+    var useMockData: Boolean = false
+
     private inline fun <reified T> tryParseMoodleResponse(json: String): T {
         try {
             return jacksonObjectMapper.enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION).readValue<T>(json)
@@ -49,7 +54,7 @@ class KoealustaMappingService(
             suorituksetResponse.users.flatMap { user ->
                 val oppijanumero =
                     try {
-                        oppijanumeroService.getOppijanumero(toOppija(user))
+                        getOppijanumero(user)
                     } catch (ex: OppijanumeroException) {
                         exceptions.add(ex)
                         // The value is irrelevant, because if (any) error was thrown here,
@@ -117,6 +122,13 @@ class KoealustaMappingService(
             oppijanumero = koealustaUser.oppijanumero?.ifEmpty { null }, // Nullify empty values
         )
     }
+
+    fun getOppijanumero(user: User): String =
+        if (useMockData) {
+            generateRandomUserOid()
+        } else {
+            oppijanumeroService.getOppijanumero(toOppija(user))
+        }
 
     fun getLuetunYmmartaminen(
         userId: Int,
@@ -215,6 +227,14 @@ class KoealustaMappingService(
                 oid,
             )
 
+    fun getKutsumanimi(user: User) =
+        user.preferredname
+            ?: if (useMockData) {
+                user.firstnames
+            } else {
+                throw Error.Validation.MissingField("preferred name", user.userid)
+            }
+
     fun completionToEntity(
         user: User,
         oppijanumero: String,
@@ -225,15 +245,12 @@ class KoealustaMappingService(
         val puhe = getPuhe(user.userid, completion)
         val kirjoittaminen = getKirjoittaminen(user.userid, completion)
         val schoolOid = getSchoolOid(user.userid, completion.schoolOID)
-
-        if (user.preferredname.isNullOrEmpty()) {
-            throw Error.Validation.MissingField("preferred name", user.userid)
-        }
+        val kutsumanimi = getKutsumanimi(user)
 
         return KielitestiSuoritus(
             firstNames = user.firstnames,
             lastName = user.lastname,
-            preferredname = user.preferredname,
+            preferredname = kutsumanimi,
             email = user.email,
             oppijanumero = oppijanumero,
             timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
