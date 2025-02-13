@@ -18,23 +18,18 @@ import java.time.LocalDate
 interface CustomYkiSuoritusRepository {
     fun <S : YkiSuoritusEntity> saveAll(suoritukset: Iterable<S>): Iterable<S>
 
-    fun findAllOrdered(orderBy: String = "tutkintopaiva"): Iterable<YkiSuoritusEntity>
+    fun countSuoritukset(
+        searchBy: String = "",
+        distinct: Boolean = true,
+    ): Long
 
-    fun findAllDistinct(orderBy: String = "tutkintopaiva"): Iterable<YkiSuoritusEntity>
-
-    fun findAllOrderedPaged(
+    fun find(
+        searchBy: String = "",
         orderBy: String = "tutkintopaiva",
-        limit: Int,
-        offset: Int,
+        distinct: Boolean = true,
+        limit: Int? = null,
+        offset: Int? = null,
     ): Iterable<YkiSuoritusEntity>
-
-    fun findAllDistinctPaged(
-        orderBy: String = "tutkintopaiva",
-        limit: Int,
-        offset: Int,
-    ): Iterable<YkiSuoritusEntity>
-
-    fun countDistinct(): Long
 }
 
 @Repository
@@ -192,91 +187,86 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
             }
     }
 
-    override fun findAllOrdered(orderBy: String): Iterable<YkiSuoritusEntity> {
+    private fun selectQuery(
+        distinct: Boolean,
+        columns: String = allColumns,
+    ): String = if (distinct) "SELECT DISTINCT ON (suoritus_id) $columns" else "SELECT $columns"
+
+    private fun pagingQuery(
+        limit: Int?,
+        offset: Int?,
+    ): String = if (limit != null && offset != null) "LIMIT $limit OFFSET $offset" else ""
+
+    private fun whereQuery(): String =
+        """
+        WHERE suorittajan_oid ILIKE ? 
+            OR etunimet ILIKE ?
+            OR sukunimi ILIKE ?
+            OR email ILIKE ?
+            OR hetu ILIKE ?
+            OR jarjestajan_tunnus_oid ILIKE ? 
+            OR jarjestajan_nimi ILIKE ? 
+        """.trimIndent()
+
+    override fun find(
+        searchBy: String,
+        orderBy: String,
+        distinct: Boolean,
+        limit: Int?,
+        offset: Int?,
+    ): Iterable<YkiSuoritusEntity> {
+        val searchStr = "%$searchBy%"
         val findAllQuerySql =
             """
             SELECT * FROM
-                (SELECT
-                    $allColumns
+                (${selectQuery(distinct)}
                 FROM yki_suoritus
+                ${whereQuery()}
                 ORDER BY suoritus_id, last_modified DESC)
-            ORDER BY $orderBy DESC
+            ORDER BY ? DESC
+            ${pagingQuery(limit, offset)}
             """.trimIndent()
+
         return jdbcTemplate
-            .query(findAllQuerySql) { rs, _ ->
+            .query(findAllQuerySql, { ps ->
+                ps.setString(1, searchStr)
+                ps.setString(2, searchStr)
+                ps.setString(3, searchStr)
+                ps.setString(4, searchStr)
+                ps.setString(5, searchStr)
+                ps.setString(6, searchStr)
+                ps.setString(7, searchStr)
+                ps.setString(8, orderBy)
+            }) { rs, _ ->
                 YkiSuoritusEntity.fromResultSet(rs)
             }
     }
 
-    override fun findAllDistinct(orderBy: String): Iterable<YkiSuoritusEntity> {
-        val findAllDistinctQuerySql =
-            """
-            SELECT * FROM 
-                (SELECT DISTINCT ON (suoritus_id)
-                    $allColumns
-                FROM yki_suoritus
-                ORDER BY suoritus_id, last_modified DESC)
-            ORDER BY $orderBy DESC
-            """.trimIndent()
-        return jdbcTemplate
-            .query(findAllDistinctQuerySql) { rs, _ ->
-                YkiSuoritusEntity.fromResultSet(rs)
-            }
-    }
-
-    override fun countDistinct(): Long {
+    override fun countSuoritukset(
+        searchBy: String,
+        distinct: Boolean,
+    ): Long {
         val sql =
             """
             SELECT COUNT(id) FROM
-                (SELECT DISTINCT ON (suoritus_id) id
+                (${selectQuery(distinct, "id")}
                 FROM yki_suoritus
+                ${whereQuery()}
                 ORDER BY suoritus_id)
             """.trimIndent()
-        return jdbcTemplate.queryForObject(sql, Long::class.java) ?: 0
-    }
-
-    override fun findAllOrderedPaged(
-        orderBy: String,
-        limit: Int,
-        offset: Int,
-    ): Iterable<YkiSuoritusEntity> {
-        val findAllQuerySql =
-            """
-            SELECT * FROM
-                (SELECT
-                    $allColumns
-                FROM yki_suoritus
-                ORDER BY suoritus_id, last_modified DESC)
-            ORDER BY $orderBy DESC
-            LIMIT $limit
-            OFFSET $offset
-            """.trimIndent()
-        return jdbcTemplate
-            .query(findAllQuerySql) { rs, _ ->
-                YkiSuoritusEntity.fromResultSet(rs)
-            }
-    }
-
-    override fun findAllDistinctPaged(
-        orderBy: String,
-        limit: Int,
-        offset: Int,
-    ): Iterable<YkiSuoritusEntity> {
-        val findAllDistinctQuerySql =
-            """
-            SELECT * FROM 
-                (SELECT DISTINCT ON (suoritus_id)
-                    $allColumns
-                FROM yki_suoritus
-                ORDER BY suoritus_id, last_modified DESC)
-            ORDER BY $orderBy DESC
-            LIMIT $limit
-            OFFSET $offset
-            """.trimIndent()
-        return jdbcTemplate
-            .query(findAllDistinctQuerySql) { rs, _ ->
-                YkiSuoritusEntity.fromResultSet(rs)
-            }
+        val searchStr = "%$searchBy%"
+        return jdbcTemplate.queryForObject(
+            sql,
+            Long::class.java,
+            searchStr,
+            searchStr,
+            searchStr,
+            searchStr,
+            searchStr,
+            searchStr,
+            searchStr,
+        )
+            ?: 0
     }
 }
 
