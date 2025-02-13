@@ -1,6 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant

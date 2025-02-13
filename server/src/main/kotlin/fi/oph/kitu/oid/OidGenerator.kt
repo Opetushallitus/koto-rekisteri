@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.oid
 
 /**
  * Generates random user OID under node class 1.2.246.562.25.

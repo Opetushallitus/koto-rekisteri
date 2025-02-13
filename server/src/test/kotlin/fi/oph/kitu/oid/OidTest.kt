@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.oid
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
