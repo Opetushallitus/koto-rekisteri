@@ -1,5 +1,6 @@
 package fi.oph.kitu.random
 
+import fi.oph.kitu.yki.Sukupuoli
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertNotNull
@@ -59,21 +60,21 @@ class SsnGeneratorTests {
 
     @Test
     fun `generate random SSN for female`() {
-        val ssn = generateRandomSsn(isTemporary = false)
-        val int = "${ssn[9]}".toInt()
-
-        assertSSn(ssn)
-
-        assertTrue(int % 2 != 0)
-    }
-
-    @Test
-    fun `generate random SSN for male`() {
-        val ssn = generateRandomSsn(isTemporary = false)
+        val ssn = generateRandomSsn(sex = Sukupuoli.N)
         val int = "${ssn[9]}".toInt()
 
         assertSSn(ssn)
 
         assertTrue(int % 2 == 0)
+    }
+
+    @Test
+    fun `generate random SSN for male`() {
+        val ssn = generateRandomSsn(sex = Sukupuoli.M)
+        val int = "${ssn[9]}".toInt()
+
+        assertSSn(ssn)
+
+        assertTrue(int % 2 != 0)
     }
 }
