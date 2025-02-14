@@ -45,10 +45,19 @@ export default class YkiSuorituksetPage extends BasePage {
     })
   }
 
-  async showVersionHistory() {
+  async setVersionHistoryTrue() {
     await this.getContent()
       .getByRole("checkbox", { name: "Näytä versiohistoria" })
       .setChecked(true)
+  }
+
+  async setSearchTerm(search: string) {
+    await this.getContent()
+      .getByLabel("Oppijanumero, henkilötunnus tai hakusana:")
+      .fill(search)
+  }
+
+  async filterSuoritukset() {
     await this.getContent().getByRole("button", { name: "Suodata" }).click()
   }
 }
