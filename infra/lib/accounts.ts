@@ -1,5 +1,7 @@
 export interface EnvironmentConfig {
   name: string
+  account: string
+  region: string
   network: {
     cidr: string
     maxAzs: number
@@ -17,7 +19,11 @@ export interface EnvironmentConfig {
 // VPCs: 10.15.0.0/18, 10.15.64.0/18, 10.15.128.0/18, 10.15.192.0/18 (16382 addresses)
 // Subnets: (let AWS calculate these for us)
 
-export const deploymentAccounts = {
+export type EnvironmentName = "dev" | "test" | "prod"
+
+export const deploymentAccounts: {
+  [A in EnvironmentName]: EnvironmentConfig
+} = {
   dev: {
     name: "untuva",
     account: "682033502734",
@@ -31,7 +37,7 @@ export const deploymentAccounts = {
     productionQuality: false,
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "koto-rekisteri-alerts-dev-test",
-    alertsSlackChanneId: "C08E14CRZ3J",
+    slackChannelId: "C08E14CRZ3J",
   },
   test: {
     name: "qa",
@@ -46,7 +52,7 @@ export const deploymentAccounts = {
     productionQuality: false,
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "koto-rekisteri-alerts-dev-test",
-    alertsSlackChanneId: "C08E14CRZ3J",
+    slackChannelId: "C08E14CRZ3J",
   },
   prod: {
     name: "prod",
@@ -61,7 +67,7 @@ export const deploymentAccounts = {
     productionQuality: true,
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "koto-rekisteri-alerts",
-    alertsSlackChanneId: "C07QPSYBY7L",
+    slackChannelId: "C07QPSYBY7L",
   },
 }
 
