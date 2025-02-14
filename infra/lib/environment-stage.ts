@@ -39,7 +39,7 @@ export class EnvironmentStage extends Stage {
 
     new SlackBotStack(this, "SlackBot", {
       env,
-      slackChannelName: "koto-rekisteri-alerts",
+      slackChannelName: props.environmentConfig.slackChannelName,
       slackChannelId: props.environmentConfig.alertsSlackChanneId,
       slackWorkspaceId: props.environmentConfig.slackWorkspaceId,
       alarmTopics: [alarmsStack.alarmSnsTopic, usEastAlarmsStack.alarmSnsTopic],
