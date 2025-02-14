@@ -8,6 +8,7 @@ export interface EnvironmentConfig {
   databaseName: string
   productionQuality: boolean
   slackWorkspaceId: string
+  slackChannelName: string
   alertsSlackChanneId: string
 }
 
@@ -29,6 +30,7 @@ export const deploymentAccounts = {
     databaseName: "kios",
     productionQuality: false,
     slackWorkspaceId: "T02C6SZL7KP",
+    slackChannelName: "koto-rekisteri-alerts-dev-test",
     alertsSlackChanneId: "C08E14CRZ3J",
   },
   test: {
@@ -43,6 +45,7 @@ export const deploymentAccounts = {
     databaseName: "kios",
     productionQuality: false,
     slackWorkspaceId: "T02C6SZL7KP",
+    slackChannelName: "koto-rekisteri-alerts-dev-test",
     alertsSlackChanneId: "C08E14CRZ3J",
   },
   prod: {
@@ -57,6 +60,7 @@ export const deploymentAccounts = {
     databaseName: "kios",
     productionQuality: true,
     slackWorkspaceId: "T02C6SZL7KP",
+    slackChannelName: "koto-rekisteri-alerts",
     alertsSlackChanneId: "C07QPSYBY7L",
   },
 }
