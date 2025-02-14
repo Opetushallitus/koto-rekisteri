@@ -10,7 +10,7 @@ fun generateRandomSsn(
     sex: Sukupuoli = listOf(Sukupuoli.M, Sukupuoli.N).random(),
     isTemporary: Boolean = true,
 ): String {
-    val birthday = getRandomBirthDay(min, max)
+    val birthday = getRandomLocalDate(min, max)
     val bdayString = birthday.format(DateTimeFormatter.ofPattern("ddMMyy"))
     val separator = birthday.getSeparator()
     val id = getSsnId(birthday, sex, isTemporary)
@@ -74,10 +74,7 @@ private fun getSsnChecksum(
             .rem(31),
     ) { throw IllegalArgumentException("Bad checksum: $it") }
 
-fun getRandomBirthDay(
+fun getRandomLocalDate(
     min: LocalDate,
     max: LocalDate,
 ): LocalDate = LocalDate.ofEpochDay((min.toEpochDay()..max.toEpochDay()).random())
-
-fun getRandomSex() {
-}

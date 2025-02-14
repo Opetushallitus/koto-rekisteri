@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class OidGeneratorTests {
     @Test
     fun `generated random user OID`() {
-        val oid = generateRandomUserOid()
+        val oid = generateRandomUserOid().toString()
 
         assertNotNull(oid)
         assertTrue(oid.isNotEmpty())
