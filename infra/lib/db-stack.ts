@@ -26,7 +26,12 @@ export class DbStack extends cdk.Stack {
       defaultDatabaseName: props.databaseName,
       enableDataApi: true,
       ...(props.productionQuality && {
-        readers: [aws_rds.ClusterInstance.serverlessV2("reader")],
+        readers: [
+          aws_rds.ClusterInstance.serverlessV2("reader", {
+            enablePerformanceInsights: props.productionQuality,
+            scaleWithWriter: true,
+          }),
+        ],
         deletionProtection: true,
         enablePerformanceInsights: true,
       }),
