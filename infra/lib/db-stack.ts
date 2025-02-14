@@ -19,7 +19,9 @@ export class DbStack extends cdk.Stack {
         version: aws_rds.AuroraPostgresEngineVersion.VER_16_4,
       }),
       vpc: props.vpc,
-      writer: aws_rds.ClusterInstance.serverlessV2("writer"),
+      writer: aws_rds.ClusterInstance.serverlessV2("writer", {
+        enablePerformanceInsights: props.productionQuality,
+      }),
       storageEncrypted: true,
       defaultDatabaseName: props.databaseName,
       enableDataApi: true,
