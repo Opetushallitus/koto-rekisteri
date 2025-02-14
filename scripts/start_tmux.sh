@@ -31,21 +31,26 @@ tmux rename-window -t $SESS_NAME:0 "$WINDOW"
 tmux send-keys -t $SESS_NAME:"$WINDOW.0" "$REPO_ROOT/scripts/start_database_docker.sh" C-m
 
 # Window 1: OpenTelemetry collector
-WINDOW="otel-exporter"
+WINDOW="otel-collector"
 tmux new-window -t $SESS_NAME -n "$WINDOW"
-tmux send-keys -t $SESS_NAME:"$WINDOW" "$REPO_ROOT/scripts/start_otel_collector.sh" C-m
+tmux send-keys -t $SESS_NAME:"$WINDOW" "docker compose up collector" C-m
 
-# Window 2:idea
+# Window 2: OpenTelemetry collector
+WINDOW="otel-tracing"
+tmux new-window -t $SESS_NAME -n "$WINDOW"
+tmux send-keys -t $SESS_NAME:"$WINDOW" "docker compose up jaeger"
+
+# Window 3:idea
 WINDOW="idea"
 tmux new-window -t $SESS_NAME -n "idea"
 tmux send-keys -t $SESS_NAME:"idea" "idea $REPO_ROOT" C-m
 
-# Window 3:springboot
+# Window 4:springboot
 WINDOW="springboot"
 tmux new-window -t $SESS_NAME -n "$WINDOW"
 tmux send-keys -t $SESS_NAME:"$WINDOW" "$REPO_ROOT/scripts/start_local_server.sh" C-m
 
-# Window 4:workspace
+# Window 5:workspace
 WINDOW="workspace"
 tmux new-window -t $SESS_NAME -n "$WINDOW"
 tmux send-keys -t $SESS_NAME:"$WINDOW" "cd $REPO_ROOT" C-m
