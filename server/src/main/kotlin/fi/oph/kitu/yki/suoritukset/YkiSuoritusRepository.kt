@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.PreparedStatement
@@ -36,6 +37,9 @@ interface CustomYkiSuoritusRepository {
 class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
+
+    @Autowired
+    private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
 
     private val allColumns =
         """
@@ -195,17 +199,17 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
     private fun pagingQuery(
         limit: Int?,
         offset: Int?,
-    ): String = if (limit != null && offset != null) "LIMIT $limit OFFSET $offset" else ""
+    ): String = if (limit != null && offset != null) "LIMIT :limit OFFSET :offset" else ""
 
     private fun whereQuery(): String =
         """
-        WHERE suorittajan_oid ILIKE ? 
-            OR etunimet ILIKE ?
-            OR sukunimi ILIKE ?
-            OR email ILIKE ?
-            OR hetu ILIKE ?
-            OR jarjestajan_tunnus_oid ILIKE ? 
-            OR jarjestajan_nimi ILIKE ? 
+        WHERE suorittajan_oid ILIKE :search_str 
+            OR etunimet ILIKE :search_str
+            OR sukunimi ILIKE :search_str
+            OR email ILIKE :search_str
+            OR hetu ILIKE :search_str
+            OR jarjestajan_tunnus_oid ILIKE :search_str 
+            OR jarjestajan_nimi ILIKE :search_str
         """.trimIndent()
 
     override fun find(
@@ -223,23 +227,20 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 FROM yki_suoritus
                 ${whereQuery()}
                 ORDER BY suoritus_id, last_modified DESC)
-            ORDER BY ? DESC
+            ORDER BY :order_by DESC
             ${pagingQuery(limit, offset)}
             """.trimIndent()
 
-        return jdbcTemplate
-            .query(findAllQuerySql, { ps ->
-                ps.setString(1, searchStr)
-                ps.setString(2, searchStr)
-                ps.setString(3, searchStr)
-                ps.setString(4, searchStr)
-                ps.setString(5, searchStr)
-                ps.setString(6, searchStr)
-                ps.setString(7, searchStr)
-                ps.setString(8, orderBy)
-            }) { rs, _ ->
-                YkiSuoritusEntity.fromResultSet(rs)
-            }
+        val params =
+            mapOf(
+                "search_str" to searchStr,
+                "order_by" to orderBy,
+                "limit" to limit,
+                "offset" to offset,
+            )
+        return jdbcNamedParameterTemplate.query(findAllQuerySql, params) { rs, _ ->
+            YkiSuoritusEntity.fromResultSet(rs)
+        }
     }
 
     override fun countSuoritukset(
@@ -255,16 +256,14 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 ORDER BY suoritus_id)
             """.trimIndent()
         val searchStr = "%$searchBy%"
-        return jdbcTemplate.queryForObject(
+        val params =
+            mapOf(
+                "search_str" to searchStr,
+            )
+        return jdbcNamedParameterTemplate.queryForObject(
             sql,
+            params,
             Long::class.java,
-            searchStr,
-            searchStr,
-            searchStr,
-            searchStr,
-            searchStr,
-            searchStr,
-            searchStr,
         )
             ?: 0
     }
