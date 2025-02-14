@@ -4,15 +4,18 @@ import fi.oph.kitu.yki.Sukupuoli
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-fun generateRandomSsn(): String {
-    val birthday = getRandomBirthDay()
+fun generateRandomSsn(
+    min: LocalDate = LocalDate.of(1900, 1, 1),
+    max: LocalDate = LocalDate.now(),
+    sex: Sukupuoli = listOf(Sukupuoli.M, Sukupuoli.N).random(),
+    isTemporary: Boolean = true,
+): String {
+    val birthday = getRandomBirthDay(min, max)
     val bdayString = birthday.format(DateTimeFormatter.ofPattern("ddMMyy"))
-
-    val sex = listOf(Sukupuoli.M, Sukupuoli.N).random()
-    val isTemporary = true
     val separator = birthday.getSeparator()
     val id = getSsnId(birthday, sex, isTemporary)
-    val checksum = getSsnChecksum(birthday, id)
+
+    val checksum = getSsnChecksum(bdayString, id)
 
     return "$bdayString$separator$id$checksum"
 }
@@ -34,19 +37,46 @@ private fun getSsnId(
     sex: Sukupuoli,
     isTemporary: Boolean,
 ): String {
-    TODO()
+    val condition: (num: Int) -> Boolean = { num ->
+        if (sex == Sukupuoli.N) {
+            num % 2 != 0
+        } else {
+            num % 2 == 0
+        }
+    }
+
+    val range =
+        if (isTemporary) {
+            (900..999)
+        } else {
+            (2..899)
+        }
+
+    var number: Int
+    do {
+        number = range.random()
+    } while (condition(number))
+    return number.toString().padStart(3, '0')
 }
 
+@Suppress("ktlint:standard:argument-list-wrapping")
 private fun getSsnChecksum(
-    birthday: LocalDate,
+    bdayString: String,
     id: String,
-): String {
-    TODO()
-}
+): String =
+    listOf(
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+        "A", "B", "C", "D", "E", "F", "H", "J", "K", "L",
+        "M", "N", "P", "R", "S", "T", "U", "V", "W", "X", "Y",
+    ).getOrElse(
+        "$bdayString$id"
+            .toInt()
+            .rem(31),
+    ) { throw IllegalArgumentException("Bad checksum: $it") }
 
 fun getRandomBirthDay(
-    min: LocalDate = LocalDate.of(1900, 1, 1),
-    max: LocalDate = LocalDate.now(),
+    min: LocalDate,
+    max: LocalDate,
 ): LocalDate = LocalDate.ofEpochDay((min.toEpochDay()..max.toEpochDay()).random())
 
 fun getRandomSex() {
