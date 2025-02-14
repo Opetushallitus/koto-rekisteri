@@ -51,11 +51,38 @@ describe('"YKI Suoritukset" -page', () => {
   }) => {
     await indexPage.open()
     await ykiSuorituksetPage.openFromNavigation()
-    await ykiSuorituksetPage.showVersionHistory()
+    await ykiSuorituksetPage.setVersionHistoryTrue()
+    await ykiSuorituksetPage.filterSuoritukset()
 
     const suoritukset = ykiSuorituksetPage.getSuoritusRow()
 
     await expect(suoritukset).toHaveCount(3)
+  })
+
+  test("yki suoritukset search", async ({ indexPage, ykiSuorituksetPage }) => {
+    await indexPage.open()
+    await ykiSuorituksetPage.openFromNavigation()
+    await ykiSuorituksetPage.setSearchTerm("ranja")
+    await ykiSuorituksetPage.filterSuoritukset()
+
+    const suoritukset = ykiSuorituksetPage.getSuoritusRow()
+
+    await expect(suoritukset).toHaveCount(1)
+  })
+
+  test("yki suoritukset search with version history", async ({
+    indexPage,
+    ykiSuorituksetPage,
+  }) => {
+    await indexPage.open()
+    await ykiSuorituksetPage.openFromNavigation()
+    await ykiSuorituksetPage.setSearchTerm("ranja")
+    await ykiSuorituksetPage.setVersionHistoryTrue()
+    await ykiSuorituksetPage.filterSuoritukset()
+
+    const suoritukset = ykiSuorituksetPage.getSuoritusRow()
+
+    await expect(suoritukset).toHaveCount(2)
   })
 
   test("should download yki suoritukset CSV and verify its content", async ({
