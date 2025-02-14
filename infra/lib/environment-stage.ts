@@ -40,7 +40,7 @@ export class EnvironmentStage extends Stage {
     new SlackBotStack(this, "SlackBot", {
       env,
       slackChannelName: props.environmentConfig.slackChannelName,
-      slackChannelId: props.environmentConfig.alertsSlackChanneId,
+      slackChannelId: props.environmentConfig.slackChannelId,
       slackWorkspaceId: props.environmentConfig.slackWorkspaceId,
       alarmTopics: [alarmsStack.alarmSnsTopic, usEastAlarmsStack.alarmSnsTopic],
     })
