@@ -1,5 +1,6 @@
 package fi.oph.kitu.dev
 
+import fi.oph.kitu.random.generateRandomUserOid
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -46,7 +47,7 @@ class CreateMockDataController(
         val mockSuoritus =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
+                suorittajanOID = generateRandomUserOid(),
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.N,
                 sukunimi = "Öhman-Testi",
