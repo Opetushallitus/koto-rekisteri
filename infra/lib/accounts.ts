@@ -9,7 +9,7 @@ export interface EnvironmentConfig {
   productionQuality: boolean
   slackWorkspaceId: string
   slackChannelName: string
-  alertsSlackChanneId: string
+  slackChannelId: string
 }
 
 // CIDR allocation strategy:
