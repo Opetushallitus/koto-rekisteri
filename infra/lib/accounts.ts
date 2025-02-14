@@ -7,6 +7,8 @@ export interface EnvironmentConfig {
   domainName: string
   databaseName: string
   productionQuality: boolean
+  slackWorkspaceId: string
+  alertsSlackChanneId: string
 }
 
 // CIDR allocation strategy:
@@ -26,6 +28,8 @@ export const deploymentAccounts = {
     domainName: "kios.untuvaopintopolku.fi",
     databaseName: "kios",
     productionQuality: false,
+    slackWorkspaceId: "T02C6SZL7KP",
+    alertsSlackChanneId: "C08E14CRZ3J",
   },
   test: {
     name: "qa",
@@ -38,6 +42,8 @@ export const deploymentAccounts = {
     domainName: "kios.testiopintopolku.fi",
     databaseName: "kios",
     productionQuality: false,
+    slackWorkspaceId: "T02C6SZL7KP",
+    alertsSlackChanneId: "C08E14CRZ3J",
   },
   prod: {
     name: "prod",
@@ -50,6 +56,8 @@ export const deploymentAccounts = {
     domainName: "kios.opintopolku.fi",
     databaseName: "kios",
     productionQuality: true,
+    slackWorkspaceId: "T02C6SZL7KP",
+    alertsSlackChanneId: "C07QPSYBY7L",
   },
 }
 
