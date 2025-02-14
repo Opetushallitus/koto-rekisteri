@@ -59,11 +59,11 @@ private fun getSsnId(
     return number.toString().padStart(3, '0')
 }
 
-@Suppress("ktlint:standard:argument-list-wrapping")
 private fun getSsnChecksum(
     bdayString: String,
     id: String,
 ): String =
+    @Suppress("ktlint:standard:argument-list-wrapping")
     listOf(
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
         "A", "B", "C", "D", "E", "F", "H", "J", "K", "L",
