@@ -164,14 +164,22 @@ class YkiService(
     ): Long = suoritusRepository.countSuoritukset(searchBy = searchBy, distinct = !versionHistory)
 
     fun findSuorituksetPaged(
-        searcStr: String = "",
+        searchStr: String = "",
+        orderBy: String = "tutkintopaiva",
+        orderByDirection: String = "DESC",
         versionHistory: Boolean = false,
         limit: Int,
         offset: Int,
     ): List<YkiSuoritusEntity> =
         suoritusRepository
-            .find(searchBy = searcStr, distinct = !versionHistory, limit = limit, offset = offset)
-            .toList()
+            .find(
+                searchBy = searchStr,
+                orderBy = orderBy,
+                orderByDirection = orderByDirection,
+                distinct = !versionHistory,
+                limit = limit,
+                offset = offset,
+            ).toList()
             .also {
                 auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
                     arrayOf(

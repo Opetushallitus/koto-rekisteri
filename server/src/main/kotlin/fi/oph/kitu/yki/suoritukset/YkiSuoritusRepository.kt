@@ -27,6 +27,7 @@ interface CustomYkiSuoritusRepository {
     fun find(
         searchBy: String = "",
         orderBy: String = "tutkintopaiva",
+        orderByDirection: String = "DESC",
         distinct: Boolean = true,
         limit: Int? = null,
         offset: Int? = null,
@@ -215,11 +216,17 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
     override fun find(
         searchBy: String,
         orderBy: String,
+        orderByDirection: String,
         distinct: Boolean,
         limit: Int?,
         offset: Int?,
     ): Iterable<YkiSuoritusEntity> {
         val searchStr = "%$searchBy%"
+
+        if (orderByDirection != "ASC" && orderByDirection != "DESC") {
+            throw IllegalArgumentException("Bad value orderByDirection '$orderByDirection'")
+        }
+
         val findAllQuerySql =
             """
             SELECT * FROM
@@ -227,7 +234,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 FROM yki_suoritus
                 ${whereQuery()}
                 ORDER BY suoritus_id, last_modified DESC)
-            ORDER BY :order_by DESC
+            ORDER BY :order_by $orderByDirection
             ${pagingQuery(limit, offset)}
             """.trimIndent()
 
@@ -238,6 +245,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 "limit" to limit,
                 "offset" to offset,
             )
+
         return jdbcNamedParameterTemplate.query(findAllQuerySql, params) { rs, _ ->
             YkiSuoritusEntity.fromResultSet(rs)
         }
