@@ -13,6 +13,7 @@ import org.springframework.boot.SpringApplication
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
@@ -37,18 +38,28 @@ class CreateMockDataController(
         }
     }
 
-    @GetMapping("/mockdata/yki/suoritus")
-    fun createYkiSuoritusMockData(): Iterable<YkiSuoritusEntity> =
+    @GetMapping(
+        "/mockdata/yki/suoritus/",
+        "/mockdata/yki/suoritus/{count}",
+    )
+    fun createYkiSuoritusMockData(
+        @PathVariable count: Int?,
+    ): Iterable<YkiSuoritusEntity> =
         suoritusRepository.saveAll(
-            List(1000) {
+            List(count ?: 1000) {
                 generateRandomYkiSuoritusEntity()
             },
         )
 
-    @GetMapping("/mockdata/yki/arviointi")
-    fun createYkiArviointiMockData(): Iterable<YkiArvioijaEntity> =
+    @GetMapping(
+        "/mockdata/yki/arviointi/",
+        "/mockdata/yki/arviointi/{count}",
+    )
+    fun createYkiArviointiMockData(
+        @PathVariable count: Int?,
+    ): Iterable<YkiArvioijaEntity> =
         arvioijaRepository.saveAll(
-            List(1000) {
+            List(count ?: 1000) {
                 generateRandomYkiArviointiEntity()
             },
         )
