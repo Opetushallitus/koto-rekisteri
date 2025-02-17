@@ -73,8 +73,3 @@ private fun getSsnChecksum(
             .toInt()
             .rem(31),
     ) { throw IllegalArgumentException("Bad checksum: $it") }
-
-fun getRandomLocalDate(
-    min: LocalDate,
-    max: LocalDate,
-): LocalDate = LocalDate.ofEpochDay((min.toEpochDay()..max.toEpochDay()).random())
