@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.generated.api.YkiControllerApi
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
@@ -16,11 +15,11 @@ import java.io.ByteArrayInputStream
 @RequestMapping("yki/api")
 class YkiApiController(
     private val service: YkiService,
-) : YkiControllerApi {
-    @GetMapping("/suoritukset")
+) {
+    @GetMapping("/suoritukset", produces = ["text/csv"])
     @ResponseBody
-    override fun getSuorituksetAsCsv(
-        @RequestParam("includeVersionHistory") includeVersionHistory: Boolean?,
+    fun getSuorituksetAsCsv(
+        @RequestParam("includeVersionHistory", required = false) includeVersionHistory: Boolean?,
     ): ResponseEntity<Resource> =
         ResponseEntity
             .ok()
