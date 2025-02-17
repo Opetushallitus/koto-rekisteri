@@ -15,9 +15,6 @@ local.properties
 .springBeans
 .sts4-cache
 
-### OpenAPI ###
-.openapi-generator/
-
 ### IntelliJ IDEA ###
 .idea
 *.iws
