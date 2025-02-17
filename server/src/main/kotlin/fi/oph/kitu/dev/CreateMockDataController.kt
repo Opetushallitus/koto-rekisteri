@@ -1,5 +1,8 @@
 package fi.oph.kitu.dev
 
+import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
+import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusRepository
+import fi.oph.kitu.kotoutumiskoulutus.generateRandomKielitestiSuoritus
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.generateRandomYkiArviointiEntity
@@ -27,6 +30,7 @@ class CreateMockDataController(
     private val applicationContext: WebApplicationContext,
     private val suoritusRepository: YkiSuoritusRepository,
     private val arvioijaRepository: YkiArvioijaRepository,
+    private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -38,6 +42,7 @@ class CreateMockDataController(
         }
     }
 
+    // Yki
     @GetMapping(
         "/mockdata/yki/suoritus/",
         "/mockdata/yki/suoritus/{count}",
@@ -61,6 +66,20 @@ class CreateMockDataController(
         arvioijaRepository.saveAll(
             List(count ?: 1000) {
                 generateRandomYkiArviointiEntity()
+            },
+        )
+
+    // Koto
+    @GetMapping(
+        "/mockdata/koto-kielitesti/suoritus/",
+        "/mockdata/koto-kielitesti/suoritus/{count}",
+    )
+    fun createKotoSuoritusMockData(
+        @PathVariable count: Int?,
+    ): Iterable<KielitestiSuoritus> =
+        kielitestiSuoritusRepository.saveAll(
+            List(count ?: 1000) {
+                generateRandomKielitestiSuoritus()
             },
         )
 }
