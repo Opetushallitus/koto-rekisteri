@@ -15,7 +15,7 @@ val femaleNames =
         "Aamu", "Henna", "Hilda", "Kukka", "Meri", "Fanni",
     )
 
-/** list of most popular 100 given female first name in Finland. */
+/** list of the most popular 100 given male first names in Finland. */
 @Suppress("ktlint:standard:argument-list-wrapping")
 val maleNames =
     listOf(
