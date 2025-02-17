@@ -30,7 +30,6 @@ val maleNames =
         "Valo", "Yrjö", "Jasper", "Markus", "Jani",
     )
 
-/** list of most popular 100 given female first name in Finland. */
 @Suppress("ktlint:standard:argument-list-wrapping")
 val surnames =
     listOf(
