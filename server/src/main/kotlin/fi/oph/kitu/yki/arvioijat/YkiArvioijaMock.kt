@@ -2,33 +2,25 @@ package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.random.generateRandomPerson
 import fi.oph.kitu.random.getRandomLocalDates
-import fi.oph.kitu.random.getRandomOffsetDateTime
+import fi.oph.kitu.random.toOffsetDateTime
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import kotlin.random.Random
 
 fun generateRandomYkiArviointiEntity(): YkiArvioijaEntity {
     val randomTeacher = generateRandomPerson()
 
-    val rekisteriintuontiaika =
-        getRandomOffsetDateTime(
-            min = OffsetDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.of("Europe/Helsinki")),
-            max = OffsetDateTime.now(),
-        )
-
-    val (ensimmainenRekisterointipaiva, kaudenAlkupaiva, kaudenPaattymispaiva) =
+    val (rekisteriintuontiaika, ensimmainenRekisterointipaiva, kaudenAlkupaiva, kaudenPaattymispaiva) =
         getRandomLocalDates(
-            3,
+            4,
             LocalDate.of(2000, 1, 1),
             LocalDate.now().minusDays(28),
         )
 
     return YkiArvioijaEntity(
         id = null,
-        rekisteriintuontiaika = rekisteriintuontiaika,
+        rekisteriintuontiaika = rekisteriintuontiaika.toOffsetDateTime(),
         arvioijanOppijanumero = randomTeacher.oppijanumero.toString(),
         henkilotunnus = randomTeacher.hetu,
         sukunimi = randomTeacher.sukunimi,
