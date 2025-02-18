@@ -13,7 +13,7 @@ tmux list-windows -F '#{window_index}' | while read -r window; do
   done
 done
 
-echo "Waiting 5 seconds before killing the session"
-sleep 5
+echo "Waiting 3 seconds before killing the session"
+sleep 3
 
 tmux kill-session
