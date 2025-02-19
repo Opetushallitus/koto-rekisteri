@@ -11,10 +11,8 @@ class KielitestiViewController(
     private val suoritusService: KoealustaService,
 ) {
     @GetMapping("/suoritukset")
-    fun suorituksetView(): ModelAndView {
-        val modelAndView = ModelAndView("koto-kielitesti-suoritukset")
-        modelAndView.addObject("suoritukset", suoritusService.getSuoritukset())
-
-        return modelAndView
-    }
+    fun suorituksetView(): ModelAndView =
+        ModelAndView("koto-kielitesti-suoritukset").apply {
+            addObject("suoritukset", suoritusService.getSuoritukset())
+        }
 }
