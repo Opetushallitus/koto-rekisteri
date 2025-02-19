@@ -166,6 +166,13 @@
             <version>2.10.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://github.com/Opetushallitus/koto-rekisteri/security/dependabot/27 -->
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>2.5.2</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test-junit5</artifactId>
