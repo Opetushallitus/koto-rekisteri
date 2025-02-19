@@ -193,7 +193,7 @@
         <dependency>
             <groupId>com.github.kagkarlsson</groupId>
             <artifactId>db-scheduler-spring-boot-starter</artifactId>
-            <version>15.2.0</version>
+            <version>15.3.0</version>
         </dependency>
         <dependency>
             <groupId>io.rocketbase.extension</groupId>
