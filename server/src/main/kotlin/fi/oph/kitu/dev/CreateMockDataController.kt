@@ -1,12 +1,14 @@
 package fi.oph.kitu.dev
 
-import fi.oph.kitu.random.generateRandomOrganizationOid
-import fi.oph.kitu.random.generateRandomPerson
-import fi.oph.kitu.random.getRandomLocalDate
-import fi.oph.kitu.yki.Tutkintokieli
-import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
+import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusRepository
+import fi.oph.kitu.kotoutumiskoulutus.generateRandomKielitestiSuoritus
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.arvioijat.generateRandomYkiArviointiEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import fi.oph.kitu.yki.suoritukset.generateRandomYkiSuoritusEntity
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -14,12 +16,10 @@ import org.springframework.boot.SpringApplication
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
-import java.time.LocalDate
-import java.time.ZoneOffset
-import kotlin.random.Random
 import kotlin.system.exitProcess
 
 @RestController
@@ -29,6 +29,8 @@ class CreateMockDataController(
     private val environment: Environment,
     private val applicationContext: WebApplicationContext,
     private val suoritusRepository: YkiSuoritusRepository,
+    private val arvioijaRepository: YkiArvioijaRepository,
+    private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -40,79 +42,44 @@ class CreateMockDataController(
         }
     }
 
-    @GetMapping("/mockdata/yki/suoritus")
-    fun createYkiSuoritusMockData(): Iterable<YkiSuoritusEntity> {
-        val suoritukset = mutableListOf<YkiSuoritusEntity>()
+    // Yki
+    @GetMapping(
+        "/mockdata/yki/suoritus/",
+        "/mockdata/yki/suoritus/{count}",
+    )
+    fun createYkiSuoritusMockData(
+        @PathVariable count: Int?,
+    ): Iterable<YkiSuoritusEntity> =
+        suoritusRepository.saveAll(
+            List(count ?: 1000) {
+                generateRandomYkiSuoritusEntity()
+            },
+        )
 
-        for (i in 0..1000) {
-            val randomPerson = generateRandomPerson()
+    @GetMapping(
+        "/mockdata/yki/arviointi/",
+        "/mockdata/yki/arviointi/{count}",
+    )
+    fun createYkiArviointiMockData(
+        @PathVariable count: Int?,
+    ): Iterable<YkiArvioijaEntity> =
+        arvioijaRepository.saveAll(
+            List(count ?: 1000) {
+                generateRandomYkiArviointiEntity()
+            },
+        )
 
-            val tutkintopaiva =
-                getRandomLocalDate(
-                    LocalDate.of(2000, 1, 1),
-                    LocalDate.now().minusDays(28),
-                )
-
-            val arviointipaiva =
-                getRandomLocalDate(
-                    tutkintopaiva,
-                    LocalDate.now().minusDays(21),
-                )
-            val tarkistusarvioinninSaapumisPvm =
-                getRandomLocalDate(
-                    arviointipaiva,
-                    LocalDate.now().minusDays(14),
-                )
-            val tarkistusarvioinninKasittelyPvm =
-                getRandomLocalDate(
-                    tarkistusarvioinninSaapumisPvm,
-                    LocalDate.now().minusDays(7),
-                )
-
-            val lastModified =
-                getRandomLocalDate(
-                    tarkistusarvioinninKasittelyPvm,
-                    LocalDate.now().minusDays(3),
-                ).atStartOfDay()
-                    .toInstant(ZoneOffset.UTC)
-
-            suoritukset.add(
-                YkiSuoritusEntity(
-                    id = null,
-                    suorittajanOID = randomPerson.oppijanumero.toString(),
-                    hetu = randomPerson.hetu,
-                    sukupuoli = randomPerson.sukupuoli,
-                    sukunimi = randomPerson.sukunimi,
-                    etunimet = randomPerson.etunimet,
-                    kansalaisuus = randomPerson.kansalaisuus,
-                    katuosoite = randomPerson.kansalaisuus,
-                    postinumero = randomPerson.postinumero,
-                    postitoimipaikka = randomPerson.postitoimipaikka,
-                    email = randomPerson.email,
-                    suoritusId = Random.nextInt(100000, 999999),
-                    lastModified = lastModified,
-                    tutkintopaiva = tutkintopaiva,
-                    tutkintokieli = Tutkintokieli.entries.toTypedArray().random(),
-                    tutkintotaso = Tutkintotaso.entries.random(),
-                    jarjestajanTunnusOid = generateRandomOrganizationOid().toString(),
-                    jarjestajanNimi = "${randomPerson.postitoimipaikka}n yliopisto",
-                    arviointipaiva = arviointipaiva,
-                    tekstinYmmartaminen = (1..5).random(),
-                    kirjoittaminen = (1..5).random(),
-                    rakenteetJaSanasto = (1..5).random(),
-                    puheenYmmartaminen = (1..5).random(),
-                    puhuminen = (1..5).random(),
-                    yleisarvosana = (1..5).random(),
-                    tarkistusarvioinninSaapumisPvm = tarkistusarvioinninSaapumisPvm,
-                    tarkistusarvioinninAsiatunnus = (0..9999999999999).random().toString(),
-                    tarkistusarvioidutOsakokeet = 2,
-                    arvosanaMuuttui = 1,
-                    perustelu = listOf("Erinomainen", "Hyvä", "Ihan hyvä", "Tyydyttävä", "Huono").random(),
-                    tarkistusarvioinninKasittelyPvm = tarkistusarvioinninKasittelyPvm,
-                ),
-            )
-        }
-
-        return suoritusRepository.saveAll(suoritukset)
-    }
+    // Koto
+    @GetMapping(
+        "/mockdata/koto-kielitesti/suoritus/",
+        "/mockdata/koto-kielitesti/suoritus/{count}",
+    )
+    fun createKotoSuoritusMockData(
+        @PathVariable count: Int?,
+    ): Iterable<KielitestiSuoritus> =
+        kielitestiSuoritusRepository.saveAll(
+            List(count ?: 1000) {
+                generateRandomKielitestiSuoritus()
+            },
+        )
 }
