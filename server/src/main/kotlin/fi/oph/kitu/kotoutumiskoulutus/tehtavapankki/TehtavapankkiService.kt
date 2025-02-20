@@ -6,6 +6,7 @@ import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import io.awspring.cloud.s3.S3Template
 import org.slf4j.LoggerFactory
+import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
@@ -31,10 +32,12 @@ class TehtavapankkiService(
     @Value("\${kitu.kotoutumiskoulutus.koealusta.baseurl}")
     lateinit var koealustaBaseUrl: String
 
-    @Value("\${kitu.kotoutumiskoulutus.tehtavapankki.bucket}")
-    lateinit var bucket: String
+    @Value("\${kitu.kotoutumiskoulutus.tehtavapankki.bucket:#{null}}")
+    var bucket: String? = null
 
     private val restClient by lazy { restClientBuilder.baseUrl(koealustaBaseUrl).build() }
+
+    fun dryRun(): Boolean = (bucket?.trim()?.length ?: 0) == 0
 
     /**
      * 1. Replaces white spaces with underscore.
@@ -47,13 +50,21 @@ class TehtavapankkiService(
             .replace(Regex("\\W+"), "")
             .take(128)
 
-    fun uploadTehtavapankki(response: TehtavapankkiResponse) {
+    fun uploadTehtavapankki(
+        response: TehtavapankkiResponse,
+        event: LoggingEventBuilder,
+    ) {
+        event.add("dryRun" to dryRun())
+
         val now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         response.questionbanks.forEachIndexed { index, (courseid, coursename, xml) ->
             val sanitizedCoursename = sanitizeFilename(coursename)
             val filename = "$courseid-$sanitizedCoursename/$now-$index.xml"
             val stream = xml.byteInputStream(Charsets.UTF_8)
-            s3Template.upload(bucket, filename, stream)
+
+            if (!dryRun()) {
+                s3Template.upload(bucket!!, filename, stream)
+            }
         }
     }
 
@@ -82,7 +93,7 @@ class TehtavapankkiService(
                     .add("request.token" to koealustaToken)
                     .addHttpResponse(PeerService.Koealusta, uri = "/webservice/rest/server.php", response)
 
-                uploadTehtavapankki(response.body!!)
+                uploadTehtavapankki(response.body!!, event)
             }.apply {
                 addDefaults("koealusta.importTehtavapankki")
                 addDatabaseLogs()
