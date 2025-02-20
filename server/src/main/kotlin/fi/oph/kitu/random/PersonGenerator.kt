@@ -2,6 +2,7 @@ package fi.oph.kitu.random
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.Sukupuoli
+import kotlin.random.Random
 
 data class Person(
     val oppijanumero: Oid,
@@ -21,11 +22,13 @@ fun generateRandomPerson(): Person {
     val sukupuoli = Sukupuoli.entries.toTypedArray().random()
     val oppijanumero = generateRandomUserOid()
     val etunimet = generateRandomFirstnames(sukupuoli)
+    val kutsumanimi = if (Random.nextBoolean()) etunimet.first else etunimet.second
     val sukunimi = surnames.random()
 
     val address = addresses.random()
     val kansalaisuus = countryCodes.random()
-    val nr = (1..20).random()
+    val katunumero = (1..20).random()
+    val randomId = (1..10).random()
     val hetu =
         generateRandomSsn(
             sex =
@@ -37,17 +40,17 @@ fun generateRandomPerson(): Person {
         )
 
     return Person(
-        oppijanumero = generateRandomUserOid(),
+        oppijanumero = oppijanumero,
         hetu = hetu,
         sukupuoli = sukupuoli,
         sukunimi = sukunimi,
         etunimet = "${etunimet.first} ${etunimet.second}",
-        kutsumanimi = etunimet.first,
+        kutsumanimi = kutsumanimi,
         kansalaisuus = kansalaisuus,
-        katuosoite = "${address.first} $nr",
+        katuosoite = "${address.first} $katunumero",
         postinumero = address.third,
         postitoimipaikka = address.second,
-        email = "${etunimet.first}.$sukunimi.$nr@mock.oph.fi",
+        email = "${etunimet.first}.$sukunimi.$randomId@mock.oph.fi",
     )
 }
 
@@ -58,9 +61,11 @@ fun generateRandomFirstnames(sukupuoli: Sukupuoli): Pair<String, String> {
         return Pair(maleNames.random(), maleNames.random())
     }
 
-    val bothnames = mutableListOf<String>()
-    bothnames.addAll(femaleNames)
-    bothnames.addAll(maleNames)
+    val bothnames =
+        mutableListOf<String>().apply {
+            addAll(femaleNames)
+            addAll(maleNames)
+        }
 
     return Pair(bothnames.random(), bothnames.random())
 }
