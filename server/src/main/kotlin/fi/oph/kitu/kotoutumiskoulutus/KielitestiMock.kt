@@ -1,7 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import fi.oph.kitu.random.cefrLanguages
-import fi.oph.kitu.random.cefrOptionalLanguages
+import fi.oph.kitu.random.cefrLanguageLevels
+import fi.oph.kitu.random.cefrOptionalLanguageLevels
 import fi.oph.kitu.random.generateRandomOrganizationOid
 import fi.oph.kitu.random.generateRandomPerson
 import fi.oph.kitu.random.getRandomInstant
@@ -36,15 +36,15 @@ fun generateRandomKielitestiSuoritus(): KielitestiSuoritus {
         schoolOid = generateRandomOrganizationOid(),
         courseid = (0..999999999).random(),
         coursename = kotoCourses.random(),
-        luetunYmmartaminenResultSystem = cefrLanguages.random(),
-        luetunYmmartaminenResultTeacher = cefrLanguages.random(),
-        kuullunYmmartaminenResultSystem = cefrLanguages.random(),
-        kuullunYmmartaminenResultTeacher = cefrLanguages.random(),
-        puheResultSystem = cefrOptionalLanguages.random(),
-        puheResultTeacher = cefrLanguages.random(),
-        kirjoittaminenResultSystem = cefrOptionalLanguages.random(),
-        kirjottaminenResultTeacher = cefrLanguages.random(),
-        totalEvaluationTeacher = cefrLanguages.random(),
-        totalEvaluationSystem = cefrLanguages.random(),
+        luetunYmmartaminenResultSystem = cefrLanguageLevels.random(),
+        luetunYmmartaminenResultTeacher = cefrLanguageLevels.random(),
+        kuullunYmmartaminenResultSystem = cefrLanguageLevels.random(),
+        kuullunYmmartaminenResultTeacher = cefrLanguageLevels.random(),
+        puheResultSystem = cefrOptionalLanguageLevels.random(),
+        puheResultTeacher = cefrLanguageLevels.random(),
+        kirjoittaminenResultSystem = cefrOptionalLanguageLevels.random(),
+        kirjottaminenResultTeacher = cefrLanguageLevels.random(),
+        totalEvaluationTeacher = cefrLanguageLevels.random(),
+        totalEvaluationSystem = cefrLanguageLevels.random(),
     )
 }

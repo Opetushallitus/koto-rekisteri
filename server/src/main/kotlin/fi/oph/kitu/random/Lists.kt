@@ -1,7 +1,7 @@
 package fi.oph.kitu.random
 
-val cefrLanguages = listOf("A1", "A2", "B1", "B2", "C1", "C2")
-val cefrOptionalLanguages = listOf(null, "A1", "A2", "B1", "B2", "C1", "C2")
+val cefrLanguageLevels = listOf("A1", "A2", "B1", "B2", "C1", "C2")
+val cefrOptionalLanguageLevels = listOf(null, "A1", "A2", "B1", "B2", "C1", "C2")
 
 /** list of most popular 100 given female first name in Finland. */
 @Suppress("ktlint:standard:argument-list-wrapping")
