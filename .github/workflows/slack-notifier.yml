@@ -21,6 +21,7 @@ jobs:
               repo: "${{ github.event.workflow_run.head_repository.name }}",
               run_id: "${{ github.event.workflow_run.id }}"
             })
+            console.log(run)
             return ({
               failedJobs: run.jobs.filter(job => job.conclusion === "failure").map(job => job.html_url)
             })
