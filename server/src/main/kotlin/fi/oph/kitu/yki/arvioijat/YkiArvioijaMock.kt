@@ -1,8 +1,8 @@
 package fi.oph.kitu.yki.arvioijat
 
-import fi.oph.kitu.random.generateRandomPerson
-import fi.oph.kitu.random.getRandomLocalDates
-import fi.oph.kitu.random.toOffsetDateTime
+import fi.oph.kitu.mock.generateRandomPerson
+import fi.oph.kitu.mock.getRandomLocalDates
+import fi.oph.kitu.mock.toOffsetDateTime
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.time.LocalDate
