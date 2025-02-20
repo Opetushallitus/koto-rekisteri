@@ -1,10 +1,9 @@
-package fi.oph.kitu.yki.arvioijat
+package fi.oph.kitu.mock
 
-import fi.oph.kitu.mock.generateRandomPerson
-import fi.oph.kitu.mock.getRandomLocalDates
-import fi.oph.kitu.mock.toOffsetDateTime
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import java.time.LocalDate
 import kotlin.random.Random
 

@@ -1,10 +1,8 @@
-package fi.oph.kitu.yki.suoritukset
+package fi.oph.kitu.mock
 
-import fi.oph.kitu.mock.generateRandomOrganizationOid
-import fi.oph.kitu.mock.generateRandomPerson
-import fi.oph.kitu.mock.getRandomLocalDates
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlin.random.Random

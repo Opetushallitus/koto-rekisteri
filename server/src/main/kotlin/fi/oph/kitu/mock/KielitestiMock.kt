@@ -1,11 +1,6 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.mock
 
-import fi.oph.kitu.mock.cefrLanguageLevels
-import fi.oph.kitu.mock.cefrOptionalLanguageLevels
-import fi.oph.kitu.mock.generateRandomOrganizationOid
-import fi.oph.kitu.mock.generateRandomPerson
-import fi.oph.kitu.mock.getRandomInstant
-import fi.oph.kitu.mock.toInstant
+import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
 import java.time.LocalDate
 
 val kotoCourses =
