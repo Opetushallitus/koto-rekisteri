@@ -4,10 +4,10 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
+import fi.oph.kitu.withJacksonStreamMaxStringLength
 import io.awspring.cloud.s3.S3Template
 import org.slf4j.LoggerFactory
 import org.slf4j.spi.LoggingEventBuilder
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter
 @Service
 @Profile("!ci & !e2e")
 class TehtavapankkiService(
-    @Qualifier("restClientBuilderForLargeResponses")
     private val restClientBuilder: RestClient.Builder,
     private val s3Template: S3Template,
 ) {
@@ -35,7 +34,12 @@ class TehtavapankkiService(
     @Value("\${kitu.kotoutumiskoulutus.tehtavapankki.bucket:#{null}}")
     var bucket: String? = null
 
-    private val restClient by lazy { restClientBuilder.baseUrl(koealustaBaseUrl).build() }
+    private val restClient by lazy {
+        restClientBuilder
+            .baseUrl(koealustaBaseUrl)
+            .withJacksonStreamMaxStringLength(200_000_000)
+            .build()
+    }
 
     fun dryRun(): Boolean = (bucket?.trim()?.length ?: 0) == 0
 
