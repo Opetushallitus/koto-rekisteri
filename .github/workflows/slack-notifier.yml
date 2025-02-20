@@ -21,5 +21,5 @@ jobs:
           errors: true
           payload: |
             name: "${{ github.event.workflow_run.name }}" 
-            title: "${{ github.event.workflow_run.title }}"
+            title: "${{ github.event.workflow_run.display_title }}"
             url: "${{ github.event.workflow_run.html_url }}"
