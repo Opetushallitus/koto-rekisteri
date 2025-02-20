@@ -2,13 +2,13 @@ package fi.oph.kitu.dev
 
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusRepository
-import fi.oph.kitu.kotoutumiskoulutus.generateRandomKielitestiSuoritus
+import fi.oph.kitu.mock.generateRandomKielitestiSuoritus
+import fi.oph.kitu.mock.generateRandomYkiArviointiEntity
+import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
-import fi.oph.kitu.yki.arvioijat.generateRandomYkiArviointiEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
-import fi.oph.kitu.yki.suoritukset.generateRandomYkiSuoritusEntity
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
