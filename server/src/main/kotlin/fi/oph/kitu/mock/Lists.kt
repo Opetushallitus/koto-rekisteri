@@ -1,4 +1,4 @@
-package fi.oph.kitu.random
+package fi.oph.kitu.mock
 
 val cefrLanguageLevels = listOf("A1", "A2", "B1", "B2", "C1", "C2")
 val cefrOptionalLanguageLevels = listOf(null, "A1", "A2", "B1", "B2", "C1", "C2")

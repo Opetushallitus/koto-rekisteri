@@ -1,6 +1,5 @@
-package fi.oph.kitu.random
+package fi.oph.kitu.mock
 
-import fi.oph.kitu.random.generateRandomUserOid
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue

@@ -1,4 +1,4 @@
-package fi.oph.kitu.random
+package fi.oph.kitu.mock
 
 import fi.oph.kitu.yki.Sukupuoli
 import java.time.LocalDate
