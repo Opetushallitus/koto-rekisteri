@@ -1,0 +1,151 @@
+{
+  "henkilö": {
+    "oid": "1.2.246.562.24.12345678910"
+  },
+  "opiskeluoikeudet": [
+    {
+      "lähdejärjestelmänId": {
+        "id": "yki:12345",
+        "lähdejärjestelmä": {
+          "koodiarvo": "kielitutkintorekisteri",
+          "koodistoUri": "lahdejarjestelma"
+        }
+      },
+      "tyyppi": {
+        "koodiarvo": "kielitutkinto",
+        "koodistoUri": "opiskeluoikeudentyyppi"
+      },
+      "tila": {
+        "opiskeluoikeusjaksot": [
+          {
+            "alku": "2025-01-01",
+            "tila": {
+              "koodiarvo": "lasna",
+              "koodistoUri": "koskiopiskeluoikeudentila"
+            }
+          },
+          {
+            "alku": "2025-01-03",
+            "tila": {
+              "koodiarvo": "hyvaksytystisuoritettu",
+              "koodistoUri": "koskiopiskeluoikeudentila"
+            }
+          }
+        ]
+      },
+      "suoritukset": [
+        {
+          "tyyppi": {
+            "koodiarvo": "yleinenkielitutkinto",
+            "koodistoUri": "suorituksentyyppi"
+          },
+          "koulutusmoduuli": {
+            "tunniste": {
+              "koodiarvo": "pt",
+              "koodistoUri": "ykitutkintotaso"
+            },
+            "kieli": {
+              "koodiarvo": "ENG",
+              "koodistoUri": "ykitutkintokieli"
+            }
+          },
+          "toimipiste": {
+            "oid": "1.2.246.562.10.12345678910"
+          },
+          "vahvistus": {
+            "päivä": "2025-01-03",
+            "myöntäjäOrganisaatio": {
+              "oid": "1.2.246.562.10.12345678910"
+            }
+          },
+          "osasuoritukset": [
+            {
+              "tyyppi": {
+                "koodiarvo": "yleisenkielitutkinnonosa",
+                "koodistoUri": "suorituksentyyppi"
+              },
+              "koulutusmoduuli": {
+                "tunniste": {
+                  "koodiarvo": "tekstinymmartaminen",
+                  "koodistoUri": "ykisuorituksenosa"
+                }
+              },
+              "arviointi": [
+                {
+                  "arvosana": {
+                    "koodiarvo": "2",
+                    "koodistoUri": "ykiarvosana"
+                  },
+                  "päivä": "2025-01-03"
+                }
+              ]
+            },
+            {
+              "tyyppi": {
+                "koodiarvo": "yleisenkielitutkinnonosa",
+                "koodistoUri": "suorituksentyyppi"
+              },
+              "koulutusmoduuli": {
+                "tunniste": {
+                  "koodiarvo": "kirjoittaminen",
+                  "koodistoUri": "ykisuorituksenosa"
+                }
+              },
+              "arviointi": [
+                {
+                  "arvosana": {
+                    "koodiarvo": "2",
+                    "koodistoUri": "ykiarvosana"
+                  },
+                  "päivä": "2025-01-03"
+                }
+              ]
+            },
+            {
+              "tyyppi": {
+                "koodiarvo": "yleisenkielitutkinnonosa",
+                "koodistoUri": "suorituksentyyppi"
+              },
+              "koulutusmoduuli": {
+                "tunniste": {
+                  "koodiarvo": "puheenymmartaminen",
+                  "koodistoUri": "ykisuorituksenosa"
+                }
+              },
+              "arviointi": [
+                {
+                  "arvosana": {
+                    "koodiarvo": "2",
+                    "koodistoUri": "ykiarvosana"
+                  },
+                  "päivä": "2025-01-03"
+                }
+              ]
+            },
+            {
+              "tyyppi": {
+                "koodiarvo": "yleisenkielitutkinnonosa",
+                "koodistoUri": "suorituksentyyppi"
+              },
+              "koulutusmoduuli": {
+                "tunniste": {
+                  "koodiarvo": "puhuminen",
+                  "koodistoUri": "ykisuorituksenosa"
+                }
+              },
+              "arviointi": [
+                {
+                  "arvosana": {
+                    "koodiarvo": "2",
+                    "koodistoUri": "ykiarvosana"
+                  },
+                  "päivä": "2025-01-03"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
