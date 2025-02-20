@@ -31,4 +31,4 @@ jobs:
             name: "${{ github.event.workflow_run.name }}" 
             title: "${{ github.event.workflow_run.display_title }}"
             url: "${{ github.event.workflow_run.html_url }}"
-            failed_jobs: "${{ steps.failed-jobs.outputs.result }}"
+            failed_jobs: ${{ steps.failed-jobs.outputs.result }}
