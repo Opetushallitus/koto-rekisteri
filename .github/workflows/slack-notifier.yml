@@ -10,7 +10,7 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-24.04
-    if: github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.conclusion == 'failure' || true)
+    if: github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'failure'
     steps:
       - uses: actions/github-script@v7
         id: failed-jobs
@@ -21,7 +21,7 @@ jobs:
               repo: "${{ github.event.workflow_run.head_repository.name }}",
               run_id: "${{ github.event.workflow_run.id }}"
             })
-            return run.data.jobs.filter(job => job.conclusion === "failure" || true).map(job => job.html_url).join(", ")
+            return run.data.jobs.filter(job => job.conclusion === "failure").map(job => job.html_url).join(", ")
       - uses: slackapi/slack-github-action@v2
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
