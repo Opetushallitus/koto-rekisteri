@@ -16,7 +16,7 @@ jobs:
         id: failed-jobs
         with:
           script: |
-            const run = await octokit.rest.actions.listJobsForWorkflowRun({
+            const run = await github.rest.actions.listJobsForWorkflowRun({
               owner: "${{ github.event.workflow_run.head_repository.owner.login }}",
               repo: "${{ github.event.workflow_run.head_repository.name }}",
               run_id: "${{ github.event.workflow_run.id }}"
