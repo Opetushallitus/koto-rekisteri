@@ -223,6 +223,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
     ): Iterable<YkiSuoritusEntity> {
         val searchStr = "%$searchBy%"
 
+        val columnName = ykiSuoritusEntityColumns.first { it == orderBy }
         if (orderByDirection != "ASC" && orderByDirection != "DESC") {
             throw IllegalArgumentException("Bad value orderByDirection '$orderByDirection'")
         }
@@ -234,7 +235,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 FROM yki_suoritus
                 ${whereQuery()}
                 ORDER BY suoritus_id, last_modified DESC)
-            ORDER BY :order_by $orderByDirection
+            ORDER BY $columnName $orderByDirection
             ${pagingQuery(limit, offset)}
             """.trimIndent()
 
