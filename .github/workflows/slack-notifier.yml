@@ -21,9 +21,7 @@ jobs:
               repo: "${{ github.event.workflow_run.head_repository.name }}",
               run_id: "${{ github.event.workflow_run.id }}"
             })
-            return ({
-              failedJobs: run.data.jobs.filter(job => job.conclusion === "failure" || true).map(job => job.html_url)
-            })
+            return run.data.jobs.filter(job => job.conclusion === "failure" || true).map(job => job.html_url).join(", ")
       - uses: slackapi/slack-github-action@v2
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -33,4 +31,4 @@ jobs:
             name: "${{ github.event.workflow_run.name }}" 
             title: "${{ github.event.workflow_run.display_title }}"
             url: "${{ github.event.workflow_run.html_url }}"
-            failed_jobs: "${{ join(steps.failed-jobs.outputs.failedJobs, ', ') }}"
+            failed_jobs: "${{ steps.failed-jobs.outputs.result }}"
