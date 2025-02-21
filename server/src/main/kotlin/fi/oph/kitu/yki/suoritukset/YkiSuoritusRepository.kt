@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.SortDirection
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -27,6 +28,7 @@ interface CustomYkiSuoritusRepository {
     fun find(
         searchBy: String = "",
         orderBy: String = "tutkintopaiva",
+        orderByDirection: SortDirection = SortDirection.DESC,
         distinct: Boolean = true,
         limit: Int? = null,
         offset: Int? = null,
@@ -215,11 +217,14 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
     override fun find(
         searchBy: String,
         orderBy: String,
+        orderByDirection: SortDirection,
         distinct: Boolean,
         limit: Int?,
         offset: Int?,
     ): Iterable<YkiSuoritusEntity> {
         val searchStr = "%$searchBy%"
+
+        val columnName = ykiSuoritusColumns.first { it.databaseColumn == orderBy }.databaseColumn
         val findAllQuerySql =
             """
             SELECT * FROM
@@ -227,17 +232,17 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 FROM yki_suoritus
                 ${whereQuery()}
                 ORDER BY suoritus_id, last_modified DESC)
-            ORDER BY :order_by DESC
+            ORDER BY $columnName $orderByDirection
             ${pagingQuery(limit, offset)}
             """.trimIndent()
 
         val params =
             mapOf(
                 "search_str" to searchStr,
-                "order_by" to orderBy,
                 "limit" to limit,
                 "offset" to offset,
             )
+
         return jdbcNamedParameterTemplate.query(findAllQuerySql, params) { rs, _ ->
             YkiSuoritusEntity.fromResultSet(rs)
         }
