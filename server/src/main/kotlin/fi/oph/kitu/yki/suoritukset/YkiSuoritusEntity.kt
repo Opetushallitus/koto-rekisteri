@@ -10,17 +10,6 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.time.LocalDate
 
-@Suppress("ktlint:standard:argument-list-wrapping")
-val ykiSuoritusEntityColumns =
-    listOf(
-        "id", "suorittajan_oid", "sukunimi", "etunimet", "tutkintopaiva", "tutkintokieli", "tutkintotaso",
-        "jarjestajan_tunnus_oid", "jarjestajan_nimi", "tekstin_ymmartaminen", "kirjoittaminen", "rakenteet_ja_sanasto",
-        "puheen_ymmartaminen", "puhuminen", "yleisarvosana", "hetu", "sukupuoli", "kansalaisuus", "katuosoite",
-        "postinumero", "postitoimipaikka", "email", "arviointipaiva", "suoritus_id", "last_modified",
-        "tarkistusarvioinnin_saapumis_pvm", "tarkistusarvioinnin_asiatunnus", "tarkistusarvioidut_osakokeet",
-        "arvosana_muuttui", "perustelu", "tarkistusarvioinnin_kasittely_pvm",
-    )
-
 @Table(name = "yki_suoritus")
 data class YkiSuoritusEntity(
     @Id
