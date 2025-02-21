@@ -24,27 +24,13 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
     <table>
       <thead>
         <tr>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=suorittajan_oid">Oppijanumero</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=sukunimi">Sukunimi</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=etunimet">Etunimet</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=sukupuoli">Sukupuoli</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=hetu">Henkilötunnus</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=kansalaisuus">Kansalaisuus</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=katuosoite">Osoite</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=email">Sähköposti</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=suoritus_id">Suorituksen tunniste</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=tutkintopaiva">Tutkintopäivä</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=tutkintokieli">Tutkintokieli</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=tutkintotaso">Tutkintotaso</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=jarjestajan_tunnus_oid">Järjestäjän OID</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=jarjestajan_nimi">Järjestäjän nimi</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=arviointipaiva">Arviointipäivä</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=tekstin_ymmartaminen">Tekstin ymmärtäminen</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=kirjoittaminen">Kirjoittaminen</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=rakenteet_ja_sanasto">Rakenteet ja sanasto</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=puheen_ymmartaminen">Puheen ymmärtämine</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=puhuminen">Puhuminen</a></th>
-          <th><a href="?search={{paging.searchStr}}&includeVersionHistory={{versionHistory}}&sortColumn=yleisarvosana">Yleisarvosana</a></th>
+          {{#header}}
+            <th>
+              <a href="?{{search}}&{{includeVersionHistory}}&{{sortColumn}}&{{sortDirection}}">
+                {{columnName}}
+              </a>
+            </th>
+          {{/header}}
         </tr>
       </thead>
       {{#suoritukset}}

@@ -7,11 +7,62 @@ import org.springframework.web.servlet.ModelAndView
 import java.net.URLEncoder
 import kotlin.math.ceil
 
+data class HeaderCell(
+    val search: String,
+    val includeVersionHistory: String,
+    val sortColumn: String,
+    val sortDirection: String,
+    val columnName: String,
+)
+
 @Controller
 @RequestMapping("yki")
 class YkiViewController(
     private val ykiService: YkiService,
 ) {
+    fun reverseSortDirection(sortDirection: String) = if (sortDirection == "ASC") "DESC" else "ASC"
+
+    fun generateHeader(
+        search: String,
+        currentColumn: String,
+        currentDirection: String,
+        versionHistory: Boolean,
+    ): List<HeaderCell> =
+        listOf(
+            // first:sortColumn - the value that is used to sort columns
+            // second:columnName  - the visible value in the header
+            Pair("suorittajan_oid", "Oppijanumero"),
+            Pair("sukunimi", "Sukunimi"),
+            Pair("etunimet", "Etunimi"),
+            Pair("sukupuoli", "Sukupuoli"),
+            Pair("hetu", "Henkilötunnus"),
+            Pair("kansalaisuus", "Kansalaisuus"),
+            Pair("katuosoite", "Osoite"),
+            Pair("email", "Sähköposti"),
+            Pair("suoritus_id", "Suorituksen tunniste"),
+            Pair("tutkintopaiva", "Tutkintopäivä"),
+            Pair("tutkintokieli", "Tutkintokieli"),
+            Pair("tutkintotaso", "Tutkintotaso"),
+            Pair("jarjestajan_tunnus_oid", "Järjestäjän OID"),
+            Pair("jarjestajan_nimi", "Järjestäjän nimi"),
+            Pair("arviointipaiva", "Arviointipäivä"),
+            Pair("tekstin_ymmartaminen", "Tekstin ymmärtäminen"),
+            Pair("kirjoittaminen", "Kirjoittaminen"),
+            Pair("rakenteet_ja_sanasto", "Rakenteet ja sanasto"),
+            Pair("puheen_ymmartaminen", "Puheen ymmärtämine"),
+            Pair("puhuminen", "Puhuminen"),
+            Pair("yleisarvosana", "Yleisarvosana"),
+        ).map { (sortColumn, columnName) ->
+            HeaderCell(
+                "search=$search",
+                "includeVersionHistory=$versionHistory",
+                "sortColumn=$sortColumn",
+                "sortDirection=" +
+                    if (currentColumn == sortColumn) reverseSortDirection(currentDirection) else currentDirection,
+                columnName,
+            )
+        }
+
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetView(
         search: String = "",
@@ -37,6 +88,7 @@ class YkiViewController(
                 "searchStr" to search,
                 "searchStrUrl" to searchStrUrl,
             )
+
         return ModelAndView("yki-suoritukset")
             .addObject(
                 "suoritukset",
@@ -48,7 +100,10 @@ class YkiViewController(
                     limit,
                     offset,
                 ),
-            ).addObject("paging", paging)
+            ).addObject("header", generateHeader(searchStrUrl, sortColumn, sortDirection, versionHistory))
+            .addObject("sortColumn", sortColumn)
+            .addObject("sortDirection", sortDirection)
+            .addObject("paging", paging)
             .addObject("versionHistory", versionHistory)
     }
 
