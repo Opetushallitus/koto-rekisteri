@@ -239,7 +239,6 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         val params =
             mapOf(
                 "search_str" to searchStr,
-                "order_by" to orderBy,
                 "limit" to limit,
                 "offset" to offset,
             )
