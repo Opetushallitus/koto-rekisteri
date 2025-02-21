@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.SortDirection
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -27,7 +28,7 @@ interface CustomYkiSuoritusRepository {
     fun find(
         searchBy: String = "",
         orderBy: String = "tutkintopaiva",
-        orderByDirection: String = "DESC",
+        orderByDirection: SortDirection = SortDirection.DESC,
         distinct: Boolean = true,
         limit: Int? = null,
         offset: Int? = null,
@@ -216,7 +217,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
     override fun find(
         searchBy: String,
         orderBy: String,
-        orderByDirection: String,
+        orderByDirection: SortDirection,
         distinct: Boolean,
         limit: Int?,
         offset: Int?,
@@ -224,10 +225,6 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         val searchStr = "%$searchBy%"
 
         val columnName = ykiSuoritusColumns.first { it.databaseColumn == orderBy }.databaseColumn
-        if (orderByDirection != "ASC" && orderByDirection != "DESC") {
-            throw IllegalArgumentException("Bad value orderByDirection '$orderByDirection'")
-        }
-
         val findAllQuerySql =
             """
             SELECT * FROM

@@ -1,5 +1,8 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.SortDirection
+import fi.oph.kitu.reverse
+import fi.oph.kitu.toSymbol
 import fi.oph.kitu.yki.suoritukset.ykiSuoritusColumns
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,35 +25,22 @@ data class HeaderCell(
 class YkiViewController(
     private val ykiService: YkiService,
 ) {
-    fun reverseSortDirection(sortDirection: String) =
-        when (sortDirection) {
-            "ASC" -> "DESC"
-            "DESC" -> "ASC"
-            else -> throw IllegalArgumentException("$sortDirection is not supported")
-        }
-
-    fun showSymbol(currentDirection: String): String =
-        when (currentDirection) {
-            "ASC" -> "▲"
-            "DESC" -> "▼"
-            else -> throw IllegalArgumentException("$currentDirection is not supported")
-        }
-
     fun generateHeader(
         search: String,
         currentColumn: String,
-        currentDirection: String,
+        currentDirection: SortDirection,
         versionHistory: Boolean,
     ): List<HeaderCell> =
         ykiSuoritusColumns.map { (databaseColumn, uiValue) ->
+            val sortDirection = if (currentColumn == databaseColumn) currentDirection.reverse() else currentDirection
+
             HeaderCell(
                 "search=$search",
                 "includeVersionHistory=$versionHistory",
                 "sortColumn=$databaseColumn",
-                "sortDirection=" +
-                    if (currentColumn == databaseColumn) reverseSortDirection(currentDirection) else currentDirection,
+                "sortDirection=$sortDirection",
                 uiValue,
-                if (currentColumn == databaseColumn) showSymbol(currentDirection) else "",
+                if (currentColumn == databaseColumn) currentDirection.toSymbol() else "",
             )
         }
 
@@ -61,7 +51,7 @@ class YkiViewController(
         limit: Int = 100,
         page: Int = 1,
         sortColumn: String = "tutkintopaiva",
-        sortDirection: String = "DESC",
+        sortDirection: SortDirection = SortDirection.DESC,
     ): ModelAndView {
         val suorituksetTotal = ykiService.countSuoritukset(search, versionHistory)
         val totalPages = ceil(suorituksetTotal.toDouble() / limit).toInt()
