@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
+import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
@@ -166,7 +167,7 @@ class YkiService(
     fun findSuorituksetPaged(
         searchStr: String = "",
         orderBy: String = "tutkintopaiva",
-        orderByDirection: String = "DESC",
+        orderByDirection: SortDirection,
         versionHistory: Boolean = false,
         limit: Int,
         offset: Int,
