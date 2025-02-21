@@ -26,7 +26,15 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
         <tr>
           {{#header}}
             <th>
-              <a href="?{{search}}&{{includeVersionHistory}}&{{sortColumn}}&{{sortDirection}}">
+              <a href="?search={{
+                paging.searchStr
+              }}&includeVersionHistory={{
+                versionHistory
+              }}&sortColumn={{
+                sortColumn
+              }}&sortDirection={{
+                sortDirection
+              }}">
                 {{columnName}} {{symbol}}
               </a>
             </th>
