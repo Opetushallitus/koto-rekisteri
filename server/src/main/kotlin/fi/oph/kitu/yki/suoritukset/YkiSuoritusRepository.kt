@@ -223,7 +223,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
     ): Iterable<YkiSuoritusEntity> {
         val searchStr = "%$searchBy%"
 
-        val columnName = ykiSuoritusEntityColumns.first { it == orderBy }
+        val columnName = ykiSuoritusColumns.first { it.databaseColumn == orderBy }.databaseColumn
         if (orderByDirection != "ASC" && orderByDirection != "DESC") {
             throw IllegalArgumentException("Bad value orderByDirection '$orderByDirection'")
         }
