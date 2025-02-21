@@ -88,20 +88,28 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
                 </tr>
                 <tr>
                   <td>
-                    {{#tarkistusarvioinninSaapumisPvm}}{{tarkistusarvioinninSaapumisPvm}}{{/tarkistusarvioinninSaapumisPvm}}
+                    {{#tarkistusarvioinninSaapumisPvm}}{{
+                      tarkistusarvioinninSaapumisPvm
+                    }}{{/tarkistusarvioinninSaapumisPvm}}
                   </td>
                   <td>
-                    {{#tarkistusarvioinninAsiatunnus}}{{tarkistusarvioinninAsiatunnus}}{{/tarkistusarvioinninAsiatunnus}}
+                    {{#tarkistusarvioinninAsiatunnus}}{{
+                      tarkistusarvioinninAsiatunnus
+                    }}{{/tarkistusarvioinninAsiatunnus}}
                   </td>
                   <td>
-                    {{#tarkistusarvioidutOsakokeet}}{{tarkistusarvioidutOsakokeet}}{{/tarkistusarvioidutOsakokeet}}
+                    {{#tarkistusarvioidutOsakokeet}}{{
+                      tarkistusarvioidutOsakokeet
+                    }}{{/tarkistusarvioidutOsakokeet}}
                   </td>
                   <td>
                     {{#arvosanaMuuttui}}{{arvosanaMuuttui}}{{/arvosanaMuuttui}}
                   </td>
                   <td>{{#perustelu}}{{perustelu}}{{/perustelu}}</td>
                   <td>
-                    {{#tarkistusarvioinninKasittelyPvm}}{{tarkistusarvioinninKasittelyPvm}}{{/tarkistusarvioinninKasittelyPvm}}
+                    {{#tarkistusarvioinninKasittelyPvm}}{{
+                      tarkistusarvioinninKasittelyPvm
+                    }}{{/tarkistusarvioinninKasittelyPvm}}
                   </td>
                 </tr>
               </table>
@@ -115,12 +123,35 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
     <nav aria-label="Suoritusten sivutus">
       <ul class="paging">
         <li>
-          {{#paging.previousPage}}<a href="?search={{paging.searchStrUrl}}&versionHistory={{versionHistory}}&page={{paging.previousPage}}" aria-label="Edellinen sivu"><</a>{{/paging.previousPage}}
+          {{! Navigate to previous page }}
+          {{#paging.previousPage}}<a href="?search={{
+            paging.searchStrUrl
+          }}&versionHistory={{
+            versionHistory
+          }}&page={{
+            paging.previousPage
+          }}&sortColumn={{
+            sortColumn
+          }}&sortDirection={{
+            sortDirection
+          }}" aria-label="Edellinen sivu"><</a>{{/paging.previousPage}}
           {{^paging.previousPage}}<{{/paging.previousPage}}
         </li>
+        {{! Show the number of the current page }}
         <li>{{paging.currentPage}}</li>
         <li>
-          {{#paging.nextPage}}<a href="?search={{paging.searchStrUrl}}&versionHistory={{versionHistory}}&page={{paging.nextPage}}" aria-label="Seuraava sivu">></a>{{/paging.nextPage}}
+          {{! Navigate to next page }}
+          {{#paging.nextPage}}<a href="?search={{
+            paging.searchStrUrl
+          }}&versionHistory={{
+            versionHistory
+          }}&page={{
+            paging.nextPage
+          }}&sortColumn={{
+            sortColumn
+          }}&sortDirection={{
+            sortDirection
+          }}" aria-label="Seuraava sivu">></a>{{/paging.nextPage}}
           {{^paging.nextPage}}>{{/paging.nextPage}}
         </li>
       </ul>
