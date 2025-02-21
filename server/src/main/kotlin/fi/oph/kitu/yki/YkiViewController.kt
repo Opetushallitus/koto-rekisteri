@@ -12,8 +12,6 @@ import java.net.URLEncoder
 import kotlin.math.ceil
 
 data class HeaderCell(
-    val search: String,
-    val includeVersionHistory: String,
     val sortColumn: String,
     val sortDirection: String,
     val columnName: String,
@@ -35,10 +33,8 @@ class YkiViewController(
             val sortDirection = if (currentColumn == databaseColumn) currentDirection.reverse() else currentDirection
 
             HeaderCell(
-                "search=$search",
-                "includeVersionHistory=$versionHistory",
-                "sortColumn=$databaseColumn",
-                "sortDirection=$sortDirection",
+                databaseColumn,
+                sortDirection.toString(),
                 uiValue,
                 if (currentColumn == databaseColumn) currentDirection.toSymbol() else "",
             )
