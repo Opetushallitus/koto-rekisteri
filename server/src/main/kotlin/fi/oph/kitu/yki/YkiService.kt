@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
+import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
@@ -10,6 +11,7 @@ import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
@@ -164,14 +166,22 @@ class YkiService(
     ): Long = suoritusRepository.countSuoritukset(searchBy = searchBy, distinct = !versionHistory)
 
     fun findSuorituksetPaged(
-        searcStr: String = "",
+        searchStr: String = "",
+        column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
+        direction: SortDirection,
         versionHistory: Boolean = false,
         limit: Int,
         offset: Int,
     ): List<YkiSuoritusEntity> =
         suoritusRepository
-            .find(searchBy = searcStr, distinct = !versionHistory, limit = limit, offset = offset)
-            .toList()
+            .find(
+                searchBy = searchStr,
+                column = column,
+                direction = direction,
+                distinct = !versionHistory,
+                limit = limit,
+                offset = offset,
+            ).toList()
             .also {
                 auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
                     arrayOf(
