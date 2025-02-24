@@ -3,7 +3,7 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.reverse
 import fi.oph.kitu.toSymbol
-import fi.oph.kitu.yki.suoritukset.ykiSuoritusColumns
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -29,14 +29,14 @@ class YkiViewController(
         currentDirection: SortDirection,
         versionHistory: Boolean,
     ): List<HeaderCell> =
-        ykiSuoritusColumns.map { (databaseColumn, uiValue) ->
-            val sortDirection = if (currentColumn == databaseColumn) currentDirection.reverse() else currentDirection
+        YkiSuoritusColumn.entries.map {
+            val sortDirection = if (currentColumn == it.dbColumn) currentDirection.reverse() else currentDirection
 
             HeaderCell(
-                databaseColumn,
+                it.dbColumn,
                 sortDirection.toString(),
-                uiValue,
-                if (currentColumn == databaseColumn) currentDirection.toSymbol() else "",
+                it.uiValue,
+                if (currentColumn == it.dbColumn) currentDirection.toSymbol() else "",
             )
         }
 
@@ -50,6 +50,7 @@ class YkiViewController(
         sortDirection: SortDirection = SortDirection.DESC,
     ): ModelAndView {
         val suorituksetTotal = ykiService.countSuoritukset(search, versionHistory)
+        val column = YkiSuoritusColumn.entries.find { it.dbColumn == sortColumn }!!
         val totalPages = ceil(suorituksetTotal.toDouble() / limit).toInt()
         val offset = limit * (page - 1)
         val nextPage = if (page >= totalPages) null else page + 1
@@ -71,7 +72,7 @@ class YkiViewController(
                 "suoritukset",
                 ykiService.findSuorituksetPaged(
                     search,
-                    sortColumn,
+                    column,
                     sortDirection,
                     versionHistory,
                     limit,

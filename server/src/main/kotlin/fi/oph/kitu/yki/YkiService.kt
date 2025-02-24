@@ -11,6 +11,7 @@ import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
@@ -166,8 +167,8 @@ class YkiService(
 
     fun findSuorituksetPaged(
         searchStr: String = "",
-        orderBy: String = "tutkintopaiva",
-        orderByDirection: SortDirection,
+        column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
+        direction: SortDirection,
         versionHistory: Boolean = false,
         limit: Int,
         offset: Int,
@@ -175,8 +176,8 @@ class YkiService(
         suoritusRepository
             .find(
                 searchBy = searchStr,
-                orderBy = orderBy,
-                orderByDirection = orderByDirection,
+                column = column,
+                direction = direction,
                 distinct = !versionHistory,
                 limit = limit,
                 offset = offset,
