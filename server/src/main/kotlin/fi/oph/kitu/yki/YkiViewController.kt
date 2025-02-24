@@ -12,9 +12,8 @@ import java.net.URLEncoder
 import kotlin.math.ceil
 
 data class HeaderCell(
-    val sortColumn: String,
+    val column: YkiSuoritusColumn,
     val sortDirection: String,
-    val columnName: String,
     val symbol: String,
 )
 
@@ -30,12 +29,9 @@ class YkiViewController(
         versionHistory: Boolean,
     ): List<HeaderCell> =
         YkiSuoritusColumn.entries.map {
-            val sortDirection = if (currentColumn == it.dbColumn) currentDirection.reverse() else currentDirection
-
             HeaderCell(
-                it.dbColumn,
-                sortDirection.toString(),
-                it.uiValue,
+                it,
+                (if (currentColumn == it.dbColumn) currentDirection.reverse() else currentDirection).toString(),
                 if (currentColumn == it.dbColumn) currentDirection.toSymbol() else "",
             )
         }
