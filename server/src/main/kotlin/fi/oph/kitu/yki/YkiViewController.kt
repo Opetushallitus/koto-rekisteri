@@ -13,7 +13,7 @@ import kotlin.math.ceil
 
 data class HeaderCell(
     val column: YkiSuoritusColumn,
-    val sortDirection: String,
+    val sortDirection: SortDirection,
     val symbol: String,
 )
 
@@ -31,7 +31,7 @@ class YkiViewController(
         YkiSuoritusColumn.entries.map {
             HeaderCell(
                 it,
-                (if (currentColumn == it) currentDirection.reverse() else currentDirection).toString(),
+                if (currentColumn == it) currentDirection.reverse() else currentDirection,
                 if (currentColumn == it) currentDirection.toSymbol() else "",
             )
         }
