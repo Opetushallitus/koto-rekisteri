@@ -74,7 +74,7 @@ class YkiViewController(
                     offset,
                 ),
             ).addObject("header", generateHeader(searchStrUrl, sortColumn, sortDirection, versionHistory))
-            .addObject("sortColumn", sortColumn.name)
+            .addObject("sortColumn", sortColumn.lowercaseName())
             .addObject("sortDirection", sortDirection)
             .addObject("paging", paging)
             .addObject("versionHistory", versionHistory)
