@@ -1,88 +1,91 @@
 package fi.oph.kitu.yki.arvioijat
 
 enum class YkiArvioijaColumn(
-    val dbColumn: String,
-    val uiValue: String,
+    val entityName: String,
+    val uiHeaderValue: String,
 ) {
     // id not added
 
     Oppijanumero(
-        dbColumn = "arvioijan_oppijanumero",
-        uiValue = "Oppijanumero",
+        entityName = "arvioijanOppijanumero",
+        uiHeaderValue = "Oppijanumero",
     ),
 
     Hetu(
-        dbColumn = "henkilotunnus",
-        uiValue = "Henkilötunnus",
+        entityName = "henkilotunnus",
+        uiHeaderValue = "Henkilötunnus",
     ),
 
     Sukunimi(
-        dbColumn = "sukunimi",
-        uiValue = "Sukunimi",
+        entityName = "sukunimi",
+        uiHeaderValue = "Sukunimi",
     ),
 
     Etunimet(
-        dbColumn = "etunimet",
-        uiValue = "Etunimet",
+        entityName = "etunimet",
+        uiHeaderValue = "Etunimet",
     ),
 
     Email(
-        dbColumn = "sahkopostiosoite",
-        uiValue = "",
+        entityName = "sahkopostiosoite",
+        uiHeaderValue = "Sähköposti",
     ),
 
     Katuosoite(
-        dbColumn = "katuosoite",
-        uiValue = "Osoite",
+        entityName = "katuosoite",
+        uiHeaderValue = "Osoite",
     ),
 
-    Postinumero(
-        dbColumn = "postinumero",
-        uiValue = "Postinumero",
-    ),
+    // Postinumero(
+    //     dbColumn = "postinumero",
+    //     uiHeaderValue = "Postinumero",
+    // ),
 
-    Postitoimipaikka(
-        dbColumn = "postitoimipaikka",
-        uiValue = "Postitoimipaikka",
-    ),
+    // Postitoimipaikka(
+    //     dbColumn = "postitoimipaikka",
+    //     uiHeaderValue = "Postitoimipaikka",
+    // ),
 
     Tila(
-        dbColumn = "tila",
-        uiValue = "Tila",
+        entityName = "tila",
+        uiHeaderValue = "Tila",
     ),
 
     Kieli(
-        dbColumn = "kieli",
-        uiValue = "Kieli",
+        entityName = "kieli",
+        uiHeaderValue = "Kieli",
     ),
 
     Tasot(
-        dbColumn = "tasot",
-        uiValue = "Tasot",
-    ),
-
-    Rekisteriintuontiaika(
-        dbColumn = "rekisteriintuontiaika",
-        uiValue = "Rekisteriintuontiaika",
-    ),
-
-    EnsimmainenRekisterointipaiva(
-        dbColumn = "ensimmainen_rekisterointipaiva",
-        uiValue = "Ensimmäinen Rekisteröintipäivä",
+        entityName = "tasot",
+        uiHeaderValue = "Tasot",
     ),
 
     KaudenAlkupaiva(
-        dbColumn = "kauden_alkupaiva",
-        uiValue = "Kauden Alkupäivä",
+        entityName = "kaudenAlkupaiva",
+        uiHeaderValue = "Kauden Alkupäivä",
     ),
 
     KaudenPaattymispaiva(
-        dbColumn = "kauden_paattymispaiva",
-        uiValue = "Kauden päättymispäivä",
+        entityName = "kaudenPaattymispaiva",
+        uiHeaderValue = "Kauden päättymispäivä",
     ),
 
     Jatkorekisterointi(
-        dbColumn = "jatkorekisterointi",
-        uiValue = "Jatkorekisteröinti",
+        entityName = "jatkorekisterointi",
+        uiHeaderValue = "Jatkorekisteröinti",
     ),
+
+    Rekisteriintuontiaika(
+        entityName = "rekisteriintuontiaika",
+        uiHeaderValue = "Rekisteriintuontiaika",
+    ),
+
+    // EnsimmainenRekisterointipaiva(
+    //    dbColumn = "ensimmainenRekisterointipaiva",
+    //    uiHeaderValue = "Ensimmäinen Rekisteröintipäivä",
+    // ),
+    ;
+
+    fun lowercaseName(): String = name.lowercase()
 }

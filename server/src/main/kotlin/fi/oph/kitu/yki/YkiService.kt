@@ -204,9 +204,7 @@ class YkiService(
             ).toList()
             .also {
                 auditLogger.logAll("Yki arvioija viewed", it) { arvioija ->
-                    arrayOf(
-                        "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
-                    )
+                    arrayOf("arvioija.oppijanumero" to arvioija.arvioijanOppijanumero)
                 }
             }
 

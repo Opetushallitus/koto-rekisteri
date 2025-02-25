@@ -7,19 +7,17 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - arvioijat
     <table>
       <thead>
         <tr>
-          <th>Oppijanumero</th>
-          <th>Henkilötunnus</th>
-          <th>Sukunimi</th>
-          <th>Etunimet</th>
-          <th>Sähköposti</th>
-          <th>Osoite</th>
-          <th>Tila</th>
-          <th>Kieli</th>
-          <th>Tasot</th>
-          <th>Kauden alkupäivä</th>
-          <th>Kauden päättymispäivä</th>
-          <th>Jatkorekisteröinti</th>
-          <th>Rekisteriintuontiaika</th>
+          {{#header}}
+            <th>
+              <a href="?sortColumn={{
+                  column.lowercaseName
+              }}&sortDirection={{
+                  sortDirection
+              }}">
+                {{column.uiHeaderValue}} {{symbol}}
+              </a>
+            </th>
+          {{/header}}
         </tr>
       </thead>
       <tbody>
