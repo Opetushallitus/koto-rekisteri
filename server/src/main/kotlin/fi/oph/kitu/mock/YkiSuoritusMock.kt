@@ -33,7 +33,7 @@ fun generateRandomYkiSuoritusEntity(): YkiSuoritusEntity {
         sukunimi = randomPerson.sukunimi,
         etunimet = randomPerson.etunimet,
         kansalaisuus = randomPerson.kansalaisuus,
-        katuosoite = randomPerson.kansalaisuus,
+        katuosoite = randomPerson.katuosoite,
         postinumero = randomPerson.postinumero,
         postitoimipaikka = randomPerson.postitoimipaikka,
         email = randomPerson.email,
