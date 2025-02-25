@@ -42,11 +42,10 @@ class YkiViewController(
         versionHistory: Boolean = false,
         limit: Int = 100,
         page: Int = 1,
-        sortColumn: String = "tutkintopaiva",
+        sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
     ): ModelAndView {
         val suorituksetTotal = ykiService.countSuoritukset(search, versionHistory)
-        val column = YkiSuoritusColumn.entries.find { it.entityName == sortColumn }!!
         val totalPages = ceil(suorituksetTotal.toDouble() / limit).toInt()
         val offset = limit * (page - 1)
         val nextPage = if (page >= totalPages) null else page + 1
@@ -68,14 +67,14 @@ class YkiViewController(
                 "suoritukset",
                 ykiService.findSuorituksetPaged(
                     search,
-                    column,
+                    sortColumn,
                     sortDirection,
                     versionHistory,
                     limit,
                     offset,
                 ),
-            ).addObject("header", generateHeader(searchStrUrl, column, sortDirection, versionHistory))
-            .addObject("sortColumn", sortColumn)
+            ).addObject("header", generateHeader(searchStrUrl, sortColumn, sortDirection, versionHistory))
+            .addObject("sortColumn", sortColumn.name)
             .addObject("sortDirection", sortDirection)
             .addObject("paging", paging)
             .addObject("versionHistory", versionHistory)
