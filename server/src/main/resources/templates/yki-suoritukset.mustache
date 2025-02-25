@@ -35,7 +35,7 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
               }}&sortDirection={{
                 sortDirection
               }}">
-                {{column.uiValue}} {{symbol}}
+                {{column.uiHeaderValue}} {{symbol}}
               </a>
             </th>
           {{/header}}
@@ -126,12 +126,12 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
           {{! Navigate to previous page }}
           {{#paging.previousPage}}<a href="?search={{
             paging.searchStrUrl
-          }}&versionHistory={{
+          }}&includeVersionHistory={{
             versionHistory
           }}&page={{
             paging.previousPage
           }}&sortColumn={{
-            sortColumn
+            sortColumn.lowercaseName
           }}&sortDirection={{
             sortDirection
           }}" aria-label="Edellinen sivu"><</a>{{/paging.previousPage}}
@@ -143,12 +143,12 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
           {{! Navigate to next page }}
           {{#paging.nextPage}}<a href="?search={{
             paging.searchStrUrl
-          }}&versionHistory={{
+          }}&includeVersionHistory={{
             versionHistory
           }}&page={{
             paging.nextPage
           }}&sortColumn={{
-            sortColumn
+            sortColumn.lowercaseName
           }}&sortDirection={{
             sortDirection
           }}" aria-label="Seuraava sivu">></a>{{/paging.nextPage}}

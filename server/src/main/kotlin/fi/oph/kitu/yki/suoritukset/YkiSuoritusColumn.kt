@@ -6,111 +6,111 @@ package fi.oph.kitu.yki.suoritukset
  */
 enum class YkiSuoritusColumn(
     val dbColumn: String,
-    val uiValue: String,
+    val uiHeaderValue: String,
 ) {
     SuorittajanOid(
         dbColumn = "suorittajan_oid",
-        uiValue = "Oppijanumero",
+        uiHeaderValue = "Oppijanumero",
     ),
 
     Sukunimi(
         dbColumn = "sukunimi",
-        uiValue = "Sukunimi",
+        uiHeaderValue = "Sukunimi",
     ),
 
     Etunimet(
         dbColumn = "etunimet",
-        uiValue = "Etunimi",
+        uiHeaderValue = "Etunimi",
     ),
 
     Sukupuoli(
         dbColumn = "sukupuoli",
-        uiValue = "Sukupuoli",
+        uiHeaderValue = "Sukupuoli",
     ),
 
     Hetu(
         dbColumn = "hetu",
-        uiValue = "Henkilötunnus",
+        uiHeaderValue = "Henkilötunnus",
     ),
 
     Kansalaisuus(
         dbColumn = "kansalaisuus",
-        uiValue = "Kansalaisuus",
+        uiHeaderValue = "Kansalaisuus",
     ),
 
     Katuosoite(
         dbColumn = "katuosoite",
-        uiValue = "Osoite",
+        uiHeaderValue = "Osoite",
     ),
 
     Email(
         dbColumn = "email",
-        uiValue = "Sähköposti",
+        uiHeaderValue = "Sähköposti",
     ),
 
     SuoritusId(
         dbColumn = "suoritus_id",
-        uiValue = "Suorituksen tunniste",
+        uiHeaderValue = "Suorituksen tunniste",
     ),
 
     Tutkintopaiva(
         dbColumn = "tutkintopaiva",
-        uiValue = "Tutkintopäivä",
+        uiHeaderValue = "Tutkintopäivä",
     ),
 
     Tutkintokieli(
         dbColumn = "tutkintokieli",
-        uiValue = "Tutkintokieli",
+        uiHeaderValue = "Tutkintokieli",
     ),
 
     Tutkintotaso(
         dbColumn = "tutkintotaso",
-        uiValue = "Tutkintotaso",
+        uiHeaderValue = "Tutkintotaso",
     ),
 
     JarjestajanTunnusOid(
         dbColumn = "jarjestajan_tunnus_oid",
-        uiValue = "Järjestäjän OID",
+        uiHeaderValue = "Järjestäjän OID",
     ),
 
     JarjestajanNimi(
         dbColumn = "jarjestajan_nimi",
-        uiValue = "Järjestäjän nimi",
+        uiHeaderValue = "Järjestäjän nimi",
     ),
 
     Arviointipaiva(
         dbColumn = "arviointipaiva",
-        uiValue = "Arviointipäivä",
+        uiHeaderValue = "Arviointipäivä",
     ),
 
     TekstinYmmartaminen(
         dbColumn = "tekstin_ymmartaminen",
-        uiValue = "Tekstin ymmärtäminen",
+        uiHeaderValue = "Tekstin ymmärtäminen",
     ),
 
     Kirjoittaminen(
         dbColumn = "kirjoittaminen",
-        uiValue = "Kirjoittaminen",
+        uiHeaderValue = "Kirjoittaminen",
     ),
 
     RakenteetJaSanasto(
         dbColumn = "rakenteet_ja_sanasto",
-        uiValue = "Rakenteet ja sanasto",
+        uiHeaderValue = "Rakenteet ja sanasto",
     ),
 
     PuheenYmmartamainen(
         dbColumn = "puheen_ymmartaminen",
-        uiValue = "Puheen ymmärtäminen",
+        uiHeaderValue = "Puheen ymmärtäminen",
     ),
 
     Puhuminen(
         dbColumn = "puhuminen",
-        uiValue = "Puhuminen",
+        uiHeaderValue = "Puhuminen",
     ),
 
     Yleisarvosana(
         dbColumn = "yleisarvosana",
-        uiValue = "Yleisarvosana",
+        uiHeaderValue = "Yleisarvosana",
     ),
     ;
 

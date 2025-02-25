@@ -12,24 +12,22 @@ import org.springframework.web.servlet.ModelAndView
 import java.net.URLEncoder
 import kotlin.math.ceil
 
-data class HeaderCell(
-    val column: YkiSuoritusColumn,
+data class HeaderCell<TEnum>(
+    val column: TEnum,
     val sortDirection: SortDirection,
     val symbol: String,
-)
+) where TEnum : Enum<TEnum>
 
 @Controller
 @RequestMapping("yki")
 class YkiViewController(
     private val ykiService: YkiService,
 ) {
-    fun generateHeader(
-        search: String,
-        currentColumn: YkiSuoritusColumn,
+    private final inline fun <reified T> generateHeader(
+        currentColumn: T,
         currentDirection: SortDirection,
-        versionHistory: Boolean,
-    ): List<HeaderCell> =
-        YkiSuoritusColumn.entries.map {
+    ): List<HeaderCell<T>> where T : Enum<T> =
+        enumValues<T>().map {
             HeaderCell(
                 it,
                 if (currentColumn == it) currentDirection.reverse() else currentDirection,
@@ -74,7 +72,7 @@ class YkiViewController(
                     limit,
                     offset,
                 ),
-            ).addObject("header", generateHeader(searchStrUrl, sortColumn, sortDirection, versionHistory))
+            ).addObject("header", generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection))
             .addObject("sortColumn", sortColumn.lowercaseName())
             .addObject("sortDirection", sortDirection)
             .addObject("paging", paging)
@@ -83,15 +81,12 @@ class YkiViewController(
 
     @GetMapping("/arvioijat")
     fun arvioijatView(
-        sortColumn: String = "rekisteriintuontiaika",
+        sortColumn: YkiArvioijaColumn = YkiArvioijaColumn.Rekisteriintuontiaika,
         sortDirection: SortDirection = SortDirection.DESC,
     ): ModelAndView =
         ModelAndView("yki-arvioijat")
-            .addObject(
-                "arvioijat",
-                ykiService.allArvioijat(
-                    orderBy = YkiArvioijaColumn.entries.find { it.entityName == sortColumn }!!,
-                    orderByDirection = sortDirection,
-                ),
-            )
+            .addObject("header", generateHeader<YkiArvioijaColumn>(sortColumn, sortDirection))
+            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortDirection", sortDirection)
+            .addObject("arvioijat", ykiService.allArvioijat(sortColumn, sortDirection))
 }
