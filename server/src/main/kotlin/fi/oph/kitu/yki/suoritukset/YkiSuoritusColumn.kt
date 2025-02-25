@@ -6,7 +6,7 @@ package fi.oph.kitu.yki.suoritukset
  */
 enum class YkiSuoritusColumn(
     val dbColumn: String,
-    val uiValue: String, // Idea doesn't know uiValue is used in mustache
+    val uiValue: String,
 ) {
     SuorittajanOid(
         dbColumn = "suorittajan_oid",

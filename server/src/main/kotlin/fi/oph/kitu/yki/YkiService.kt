@@ -8,6 +8,7 @@ import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
@@ -190,14 +191,24 @@ class YkiService(
                 }
             }
 
-    fun allArvioijat(): List<YkiArvioijaEntity> =
-        arvioijaRepository.findAll(Sort.by("rekisteriintuontiaika").descending()).toList().also {
-            auditLogger.logAll("Yki arvioija viewed", it) { arvioija ->
-                arrayOf(
-                    "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
-                )
+    fun allArvioijat(
+        orderBy: YkiArvioijaColumn = YkiArvioijaColumn.Rekisteriintuontiaika,
+        orderByDirection: SortDirection = SortDirection.DESC,
+    ): List<YkiArvioijaEntity> =
+        arvioijaRepository
+            .findAll(
+                when (orderByDirection) {
+                    SortDirection.ASC -> Sort.by(orderBy.entityName).ascending()
+                    SortDirection.DESC -> Sort.by(orderBy.entityName).descending()
+                },
+            ).toList()
+            .also {
+                auditLogger.logAll("Yki arvioija viewed", it) { arvioija ->
+                    arrayOf(
+                        "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
+                    )
+                }
             }
-        }
 
     sealed class Error(
         message: String,
