@@ -3,6 +3,7 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.reverse
 import fi.oph.kitu.toSymbol
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -81,7 +82,16 @@ class YkiViewController(
     }
 
     @GetMapping("/arvioijat")
-    fun arvioijatView(): ModelAndView =
+    fun arvioijatView(
+        sortColumn: String = "rekisteriintuontiaika",
+        sortDirection: SortDirection = SortDirection.DESC,
+    ): ModelAndView =
         ModelAndView("yki-arvioijat")
-            .addObject("arvioijat", ykiService.allArvioijat())
+            .addObject(
+                "arvioijat",
+                ykiService.allArvioijat(
+                    orderBy = YkiArvioijaColumn.entries.find { it.entityName == sortColumn }!!,
+                    orderByDirection = sortDirection,
+                ),
+            )
 }
