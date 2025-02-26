@@ -1,6 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.PeerService
+import fi.oph.kitu.SortDirection
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
@@ -8,6 +9,9 @@ import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.oppijanumero.addValidationExceptions
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.actuate.endpoint.web.EndpointMediaTypes
+import org.springframework.data.domain.Sort
+import org.springframework.data.relational.RelationalManagedTypes
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
@@ -20,6 +24,8 @@ class KoealustaService(
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val mappingService: KoealustaMappingService,
     private val auditLogger: AuditLogger,
+    private val endpointMediaTypes: EndpointMediaTypes,
+    private val jdbcManagedTypes: RelationalManagedTypes,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -31,14 +37,24 @@ class KoealustaService(
 
     private val restClient by lazy { restClientBuilder.baseUrl(koealustaBaseUrl).build() }
 
-    fun getSuoritukset() =
-        kielitestiSuoritusRepository.findAll().toList().also {
-            auditLogger.logAll("Kielitesti suoritus viewed", it) { suoritus ->
-                arrayOf(
-                    "suoritus.id" to suoritus.id,
-                )
+    fun getSuoritukset(
+        orderBy: KielitestiSuoritusColumn,
+        orderByDirection: SortDirection,
+    ): List<KielitestiSuoritus> =
+        kielitestiSuoritusRepository
+            .findAll(
+                when (orderByDirection) {
+                    SortDirection.ASC -> Sort.by(orderBy.entityName).ascending()
+                    SortDirection.DESC -> Sort.by(orderBy.entityName).descending()
+                },
+            ).toList()
+            .also {
+                auditLogger.logAll("Kielitesti suoritus viewed", it) { suoritus ->
+                    arrayOf(
+                        "suoritus.id" to suoritus.id,
+                    )
+                }
             }
-        }
 
     fun importSuoritukset(from: Instant) =
         logger

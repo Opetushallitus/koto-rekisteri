@@ -1,5 +1,6 @@
 package fi.oph.kitu.webmvc
 
+import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import org.springframework.context.annotation.Configuration
@@ -12,10 +13,11 @@ class WebConfig : WebMvcConfigurer {
         registry.apply {
             addEnumConverter<YkiSuoritusColumn>()
             addEnumConverter<YkiArvioijaColumn>()
+            addEnumConverter<KielitestiSuoritusColumn>()
         }
     }
 
-    final inline fun <reified E : Enum<E>> FormatterRegistry.addEnumConverter(ignoreCase: Boolean = true) {
+    private final inline fun <reified E : Enum<E>> FormatterRegistry.addEnumConverter(ignoreCase: Boolean = true) {
         this.addConverter(String::class.java, E::class.java) { source ->
             enumValues<E>().find {
                 it.name.equals(source, ignoreCase)

@@ -12,12 +12,17 @@ Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
 <table>
     <thead>
     <tr>
-        <th>Sukunimi</th>
-        <th>Etunimet</th>
-        <th>Sähköposti</th>
-        <th>Kurssin nimi</th>
-        <th>Suoritusaika</th>
-        <th>Kokonaisarvosana</th>
+      {{#header}}
+        <th>
+          <a href="?sortColumn={{
+              column.lowercaseName
+          }}&sortDirection={{
+              sortDirection
+          }}">
+            {{column.uiHeaderValue}} {{symbol}}
+          </a>
+        </th>
+      {{/header}}
     </tr>
     </thead>
     {{#suoritukset}}

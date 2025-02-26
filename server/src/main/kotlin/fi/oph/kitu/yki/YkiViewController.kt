@@ -1,8 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.reverse
-import fi.oph.kitu.toSymbol
+import fi.oph.kitu.generateHeader
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import org.springframework.stereotype.Controller
@@ -12,29 +11,11 @@ import org.springframework.web.servlet.ModelAndView
 import java.net.URLEncoder
 import kotlin.math.ceil
 
-data class HeaderCell<TEnum>(
-    val column: TEnum,
-    val sortDirection: SortDirection,
-    val symbol: String,
-) where TEnum : Enum<TEnum>
-
 @Controller
 @RequestMapping("yki")
 class YkiViewController(
     private val ykiService: YkiService,
 ) {
-    private final inline fun <reified T> generateHeader(
-        currentColumn: T,
-        currentDirection: SortDirection,
-    ): List<HeaderCell<T>> where T : Enum<T> =
-        enumValues<T>().map {
-            HeaderCell(
-                it,
-                if (currentColumn == it) currentDirection.reverse() else currentDirection,
-                if (currentColumn == it) currentDirection.toSymbol() else "",
-            )
-        }
-
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetView(
         search: String = "",
