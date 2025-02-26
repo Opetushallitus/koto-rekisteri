@@ -3,6 +3,7 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
@@ -20,7 +21,6 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
@@ -196,12 +196,8 @@ class YkiService(
         orderByDirection: SortDirection = SortDirection.DESC,
     ): List<YkiArvioijaEntity> =
         arvioijaRepository
-            .findAll(
-                when (orderByDirection) {
-                    SortDirection.ASC -> Sort.by(orderBy.entityName).ascending()
-                    SortDirection.DESC -> Sort.by(orderBy.entityName).descending()
-                },
-            ).toList()
+            .findAllSorted(orderBy.entityName, orderByDirection)
+            .toList()
             .also {
                 auditLogger.logAll("Yki arvioija viewed", it) { arvioija ->
                     arrayOf("arvioija.oppijanumero" to arvioija.arvioijanOppijanumero)
