@@ -1,18 +1,17 @@
 package fi.oph.kitu.koski
 
 import fi.oph.kitu.koski.KoskiRequest.Henkilo
-import fi.oph.kitu.koski.KoskiRequest.KoodistokoodiViite
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.KoskiKielitutkintoSuoritus
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.KoskiKielitutkintoSuoritus.KoulutusModuuli
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.KoskiKielitutkintoSuoritus.Organisaatio
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.KoskiKielitutkintoSuoritus.Osasuoritus
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.KoskiKielitutkintoSuoritus.Osasuoritus.Arvosana
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.KoskiKielitutkintoSuoritus.Osasuoritus.OsasuoritusKoulutusModuuli
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.KoskiKielitutkintoSuoritus.Vahvistus
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.LahdeJarjestelmanId
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.Tila
-import fi.oph.kitu.koski.KoskiRequest.KoskiOpiskeluoikeus.Tila.OpiskeluoikeusJakso
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.KoulutusModuuli
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Organisaatio
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Osasuoritus
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Osasuoritus.Arvosana
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Osasuoritus.OsasuoritusKoulutusModuuli
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Vahvistus
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
+import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import java.time.LocalDate
 
@@ -22,7 +21,7 @@ class KoskiRequestMapper {
             henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID),
             opiskeluoikeudet =
                 listOf(
-                    KoskiOpiskeluoikeus(
+                    Opiskeluoikeus(
                         lähdejärjestelmänId =
                             LahdeJarjestelmanId(
                                 id = ykiSuoritus.suoritusId.toString(),
@@ -33,41 +32,27 @@ class KoskiRequestMapper {
                                     listOf(
                                         OpiskeluoikeusJakso(
                                             alku = ykiSuoritus.tutkintopaiva,
-                                            tila =
-                                                KoodistokoodiViite(
-                                                    koodiarvo = "lasna",
-                                                    koodistoUri = "koskiopiskeluoikeudentila",
-                                                ),
+                                            tila = Koodisto.OpiskeluoikeudenTila.Lasna,
                                         ),
                                         OpiskeluoikeusJakso(
                                             alku = ykiSuoritus.arviointipaiva,
-                                            tila =
-                                                KoodistokoodiViite(
-                                                    koodiarvo = "hyvaksytystisuoritettu",
-                                                    koodistoUri = "koskiopiskeluoikeudentila",
-                                                ),
+                                            tila = Koodisto.OpiskeluoikeudenTila.HyvaksytystiSuoritettu,
                                         ),
                                     ),
                             ),
                         suoritukset =
                             listOf(
-                                KoskiKielitutkintoSuoritus(
-                                    tyyppi =
-                                        KoodistokoodiViite(
-                                            koodiarvo = "yleinenkielitutkinto",
-                                            koodistoUri = "suorituksentyyppi",
-                                        ),
+                                KielitutkintoSuoritus(
+                                    tyyppi = Koodisto.SuorituksenTyyppi.YleinenKielitutkinto,
                                     koulutusmoduuli =
                                         KoulutusModuuli(
                                             tunniste =
-                                                KoodistokoodiViite(
-                                                    koodiarvo = ykiSuoritus.tutkintotaso.name.lowercase(),
-                                                    koodistoUri = "ykitutkintotaso",
+                                                Koodisto.YkiTutkintotaso.valueOf(
+                                                    ykiSuoritus.tutkintotaso.name,
                                                 ),
                                             kieli =
-                                                KoodistokoodiViite(
-                                                    koodiarvo = ykiSuoritus.tutkintokieli.name,
-                                                    koodistoUri = "ykitutkintokieli",
+                                                Koodisto.YkiTutkintokieli.valueOf(
+                                                    ykiSuoritus.tutkintokieli.name,
                                                 ),
                                         ),
                                     toimipiste = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid),
@@ -88,47 +73,35 @@ class KoskiRequestMapper {
 
     private fun convertYkiSuoritusToKoskiOsasuoritukset(suoritusEntity: YkiSuoritusEntity): List<Osasuoritus> =
         mapOf(
-            "tekstinymmartaminen" to suoritusEntity.tekstinYmmartaminen,
-            "kirjoittaminen" to suoritusEntity.kirjoittaminen,
-            "puheenymmartaminen" to suoritusEntity.puheenYmmartaminen,
-            "puhuminen" to suoritusEntity.puhuminen,
-            "rakenteetjasanasto" to suoritusEntity.rakenteetJaSanasto,
-            "yleisarvosana" to suoritusEntity.yleisarvosana,
-        ).filterValues { it != null }
-            .map { (suorituksenNimi, arvosana) ->
+            Koodisto.YkiSuorituksenNimi.TekstinYmmartaminen to suoritusEntity.tekstinYmmartaminen,
+            Koodisto.YkiSuorituksenNimi.Kirjoittaminen to suoritusEntity.kirjoittaminen,
+            Koodisto.YkiSuorituksenNimi.PuheenYmmartaminen to suoritusEntity.puheenYmmartaminen,
+            Koodisto.YkiSuorituksenNimi.Puhuminen to suoritusEntity.puhuminen,
+            Koodisto.YkiSuorituksenNimi.RakenteetJaSanasto to suoritusEntity.rakenteetJaSanasto,
+            Koodisto.YkiSuorituksenNimi.Yleisarvosana to suoritusEntity.yleisarvosana,
+        ).mapNotNull { (suorituksenNimi, arvosana) ->
+            arvosana?.let {
                 yleisenKielitutkinnonOsa(
                     suorituksenNimi,
-                    arvosana!!,
+                    arvosana,
                     suoritusEntity.arviointipaiva,
                 )
             }
+        }
 
     private fun yleisenKielitutkinnonOsa(
-        suorituksenNimi: String,
+        suorituksenNimi: Koodisto.YkiSuorituksenNimi,
         arvosana: Int,
         arviointipaiva: LocalDate,
     ) = Osasuoritus(
-        tyyppi =
-            KoodistokoodiViite(
-                koodiarvo = "yleisenkielitutkinnonosa",
-                koodistoUri = "suorituksentyyppi",
-            ),
         koulutusmoduuli =
             OsasuoritusKoulutusModuuli(
-                tunniste =
-                    KoodistokoodiViite(
-                        koodiarvo = suorituksenNimi,
-                        koodistoUri = "ykisuorituksenosa",
-                    ),
+                tunniste = suorituksenNimi,
             ),
         arviointi =
             listOf(
                 Arvosana(
-                    arvosana =
-                        KoodistokoodiViite(
-                            koodiarvo = arvosana.toString(),
-                            koodistoUri = "ykiarvosana",
-                        ),
+                    arvosana = Koodisto.YkiArvosana.fromInt(arvosana),
                     päivä = arviointipaiva,
                 ),
             ),
