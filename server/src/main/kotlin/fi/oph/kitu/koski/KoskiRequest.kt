@@ -5,21 +5,21 @@ import java.time.LocalDate
 
 data class KoskiRequest(
     val henkilö: Henkilo,
-    val opiskeluoikeudet: List<KoskiOpiskeluoikeus>,
+    val opiskeluoikeudet: List<Opiskeluoikeus>,
 ) {
     data class Henkilo(
         val oid: String,
     )
 
-    data class KoskiOpiskeluoikeus(
+    data class Opiskeluoikeus(
         val lähdejärjestelmänId: LahdeJarjestelmanId,
-        val tyyppi: KoodistokoodiViite = KoodistokoodiViite("kielitutkinto", "opiskeluoikeudentyyppi"),
+        val tyyppi: Koodisto.OpiskeluoikeudenTyyppi = Koodisto.OpiskeluoikeudenTyyppi.Kielitutkinto,
         val tila: Tila,
-        val suoritukset: List<KoskiKielitutkintoSuoritus>,
+        val suoritukset: List<KielitutkintoSuoritus>,
     ) {
         data class LahdeJarjestelmanId(
             val id: String,
-            val lähdejärjestelmä: KoodistokoodiViite = KoodistokoodiViite("kielitutkintorekisteri", "lahdejarjestelma"),
+            val lähdejärjestelmä: Koodisto.LahdeJarjestelma = Koodisto.LahdeJarjestelma.Kielitutkintorekisteri,
         )
 
         data class Tila(
@@ -28,20 +28,20 @@ data class KoskiRequest(
             data class OpiskeluoikeusJakso(
                 @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
                 val alku: LocalDate,
-                val tila: KoodistokoodiViite,
+                val tila: Koodisto.OpiskeluoikeudenTila,
             )
         }
 
-        data class KoskiKielitutkintoSuoritus(
-            val tyyppi: KoodistokoodiViite,
+        data class KielitutkintoSuoritus(
+            val tyyppi: Koodisto.Koodiviite,
             val koulutusmoduuli: KoulutusModuuli,
             val toimipiste: Organisaatio,
             val vahvistus: Vahvistus,
             val osasuoritukset: List<Osasuoritus>,
         ) {
             data class KoulutusModuuli(
-                val tunniste: KoodistokoodiViite,
-                val kieli: KoodistokoodiViite,
+                val tunniste: Koodisto.Koodiviite,
+                val kieli: Koodisto.Koodiviite,
             )
 
             data class Organisaatio(
@@ -55,25 +55,20 @@ data class KoskiRequest(
             )
 
             data class Osasuoritus(
-                val tyyppi: KoodistokoodiViite,
+                val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.YleisenKieliTutkinnonOsa,
                 val koulutusmoduuli: OsasuoritusKoulutusModuuli,
                 val arviointi: List<Arvosana>,
             ) {
                 data class OsasuoritusKoulutusModuuli(
-                    val tunniste: KoodistokoodiViite,
+                    val tunniste: Koodisto.Koodiviite,
                 )
 
                 data class Arvosana(
-                    val arvosana: KoodistokoodiViite,
+                    val arvosana: Koodisto.Koodiviite,
                     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
                     val päivä: LocalDate,
                 )
             }
         }
     }
-
-    data class KoodistokoodiViite(
-        val koodiarvo: String,
-        val koodistoUri: String,
-    )
 }
