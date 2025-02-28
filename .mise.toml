@@ -3,14 +3,10 @@ SPRING_PROFILES_ACTIVE = 'local'
 KOTLIN_POST_PROCESS_FILE = "ktlint -F"
 AWS_PROFILE = "oph-ktr-dev"
 
-[alias]
-awscli = "asdf:MetricMike/asdf-awscli"
-
 [tools]
 node = "22.14.0"
 "npm:prettier" = "3.3.3"
 maven = "3.9.9"
-awscli = "ref:2.24.14"
 java = "corretto-21.0.6"
 shellcheck = "0.10.0"
 ktlint = "1.5.0"
@@ -18,3 +14,4 @@ go = "1.24.0"
 "npm:esbuild" = "0.24.0"
 "go:github.com/humanlogio/humanlog/cmd/humanlog" = "0.7.8"
 "ubi:karlderkaefer/cdk-notifier" = "2.13.6"
+awscli = "2.24.14"
