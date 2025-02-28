@@ -45,8 +45,8 @@
               "koodistoUri": "ykitutkintotaso"
             },
             "kieli": {
-              "koodiarvo": "ENG",
-              "koodistoUri": "ykitutkintokieli"
+              "koodiarvo": "EN",
+              "koodistoUri": "kieli"
             }
           },
           "toimipiste": {
