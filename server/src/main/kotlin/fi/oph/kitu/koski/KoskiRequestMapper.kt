@@ -51,7 +51,7 @@ class KoskiRequestMapper {
                                                     ykiSuoritus.tutkintotaso.name,
                                                 ),
                                             kieli =
-                                                Koodisto.YkiTutkintokieli.valueOf(
+                                                Koodisto.Tutkintokieli.valueOf(
                                                     ykiSuoritus.tutkintokieli.name,
                                                 ),
                                         ),

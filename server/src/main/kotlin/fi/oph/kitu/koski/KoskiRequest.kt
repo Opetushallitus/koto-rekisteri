@@ -41,7 +41,7 @@ data class KoskiRequest(
         ) {
             data class KoulutusModuuli(
                 val tunniste: Koodisto.Koodiviite,
-                val kieli: Koodisto.Koodiviite,
+                val kieli: Koodisto.Tutkintokieli,
             )
 
             data class Organisaatio(
@@ -55,7 +55,7 @@ data class KoskiRequest(
             )
 
             data class Osasuoritus(
-                val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.YleisenKieliTutkinnonOsa,
+                val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.YleisenKielitutkinnonOsa,
                 val koulutusmoduuli: OsasuoritusKoulutusModuuli,
                 val arviointi: List<Arvosana>,
             ) {
