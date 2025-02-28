@@ -28,7 +28,7 @@ object Koodisto {
         override val koodistoUri: String = "suorituksentyyppi",
     ) : Koodiviite {
         YleinenKielitutkinto("yleinenkielitutkinto"),
-        YleisenKieliTutkinnonOsa("yleisenkielitutkinnonosa"),
+        YleisenKielitutkinnonOsa("yleisenkielitutkinnonosa"),
     }
 
     enum class OpiskeluoikeudenTila(
@@ -50,17 +50,17 @@ object Koodisto {
 
     enum class YkiTutkintokieli(
         override val koodiarvo: String,
-        override val koodistoUri: String = "ykitutkintokieli",
+        override val koodistoUri: String = "kieli",
     ) : Koodiviite {
-        DEU("DEU"),
-        ENG("ENG"),
-        FIN("FIN"),
-        FRA("FRA"),
-        ITA("ITA"),
-        RUS("RUS"),
-        SME("SME"),
-        SPA("SPA"),
-        SWE("SWE"),
+        DEU("DE"),
+        ENG("EN"),
+        FIN("FI"),
+        FRA("FR"),
+        ITA("IT"),
+        RUS("RU"),
+        SME("SE"),
+        SPA("ES"),
+        SWE("SV"),
     }
 
     enum class YkiSuorituksenNimi(
