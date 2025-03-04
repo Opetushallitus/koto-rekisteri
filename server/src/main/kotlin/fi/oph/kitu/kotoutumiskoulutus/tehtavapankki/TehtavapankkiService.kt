@@ -18,7 +18,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-@Profile("!ci & !e2e")
+@Profile("!ci & !e2e & !test")
 class TehtavapankkiService(
     private val restClientBuilder: RestClient.Builder,
     private val s3Template: S3Template,
