@@ -81,12 +81,12 @@ class CsvParser(
     }
 
     /**
-     * Converts retrieved String response into a list that is the type of Body.
+     * Tries to convert retrieved String response into a list that is the type of Body.
      */
-    inline fun <reified T> convertCsvToData(csvString: String): List<T> {
+    inline fun <reified T> tryConvertCsvToData(csvString: String): Result<List<T>> {
         if (csvString.isBlank()) {
             event.add("serialization.isEmptyList" to true)
-            return emptyList()
+            return Result.success(emptyList())
         }
 
         event.add("serialization.isEmptyList" to false)
@@ -112,7 +112,7 @@ class CsvParser(
             }
 
         if (errors.isEmpty()) {
-            return data
+            return Result.success(data)
         }
 
         // add all errors to log
@@ -123,8 +123,15 @@ class CsvParser(
             }
         }
 
-        throw RuntimeException("Unable to convert string to csv, because the string had ${errors.count()} error(s).")
+        return Result.failure(
+            RuntimeException("Unable to convert string to csv, because the string had ${errors.count()} error(s)."),
+        )
     }
+
+    /**
+     * Converts retrieved String response into a list that is the type of Body.
+     */
+    inline fun <reified T> convertCsvToData(csvString: String): List<T> = tryConvertCsvToData<T>(csvString).getOrThrow()
 }
 
 fun <T> MappingIterator<T>.toDataWithErrorHandling(
