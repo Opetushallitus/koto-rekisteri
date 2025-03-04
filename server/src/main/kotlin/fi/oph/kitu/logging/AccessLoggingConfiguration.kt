@@ -23,11 +23,13 @@ class AccessLoggingConfiguration {
                 try {
                     filterChain.doFilter(request, response)
                 } finally {
-                    logger
-                        .atInfo()
-                        .addServletResponse(response)
-                        .addServletRequest(request)
-                        .log("HTTP ${request.method} ${request.requestURL}")
+                    if (request.requestURI != "/actuator/health") {
+                        logger
+                            .atInfo()
+                            .addServletResponse(response)
+                            .addServletRequest(request)
+                            .log("HTTP ${request.method} ${request.requestURL}")
+                    }
                 }
             }
         }
