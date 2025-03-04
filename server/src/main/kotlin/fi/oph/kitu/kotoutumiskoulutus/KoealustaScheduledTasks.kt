@@ -2,7 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import com.github.kagkarlsson.scheduler.task.Task
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import com.github.kagkarlsson.scheduler.task.schedule.Schedules
+import fi.oph.kitu.ExtendedSchedules
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -20,7 +20,7 @@ class KoealustaScheduledTasks {
         Tasks
             .recurring(
                 "Koto-import",
-                Schedules.parseSchedule(koealustaImportSchedule),
+                ExtendedSchedules.parse(koealustaImportSchedule),
                 Instant::class.java,
             ).initialData(Instant.EPOCH)
             .executeStateful { taskInstance, _ -> koealustaService.importSuoritukset(taskInstance.data) }
