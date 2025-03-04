@@ -13,7 +13,7 @@ services:
       - "127.0.0.1:5432:5432"
 
   collector:
-    image: otel/opentelemetry-collector:0.120.0
+    image: otel/opentelemetry-collector:0.121.0
     command: ["--config=/etc/otel-collector-config.yml"]
     volumes:
       - ./otel-config.yml:/etc/otel-collector-config.yml
