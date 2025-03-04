@@ -2,8 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus.tehtavapankki
 
 import com.github.kagkarlsson.scheduler.task.Task
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import com.github.kagkarlsson.scheduler.task.schedule.Schedules
-import com.github.kagkarlsson.scheduler.task.schedule.Schedules.UnrecognizableSchedule
+import fi.oph.kitu.ExtendedSchedules
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -22,10 +21,6 @@ class TehtavapankkiScheduledTasks {
         Tasks
             .recurring(
                 "Koto-import-tehtavapankki",
-                try {
-                    Schedules.parseSchedule(tehtavapankkiImportSchedule)
-                } catch (_: UnrecognizableSchedule) {
-                    Schedules.cron(tehtavapankkiImportSchedule)
-                },
+                ExtendedSchedules.parse(tehtavapankkiImportSchedule),
             ).execute { _, _ -> tehtavapankkiService.importTehtavapankki() }
 }
