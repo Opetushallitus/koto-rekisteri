@@ -72,7 +72,6 @@ object Koodisto {
         PuheenYmmartaminen("puheenymmartaminen"),
         Puhuminen("puhuminen"),
         RakenteetJaSanasto("rakenteetjasanasto"),
-        Yleisarvosana("yleisarvosana"),
     }
 
     enum class YkiArvosana(

@@ -78,7 +78,6 @@ class KoskiRequestMapper {
             Koodisto.YkiSuorituksenNimi.PuheenYmmartaminen to suoritusEntity.puheenYmmartaminen,
             Koodisto.YkiSuorituksenNimi.Puhuminen to suoritusEntity.puhuminen,
             Koodisto.YkiSuorituksenNimi.RakenteetJaSanasto to suoritusEntity.rakenteetJaSanasto,
-            Koodisto.YkiSuorituksenNimi.Yleisarvosana to suoritusEntity.yleisarvosana,
         ).mapNotNull { (suorituksenNimi, arvosana) ->
             arvosana?.let {
                 yleisenKielitutkinnonOsa(
