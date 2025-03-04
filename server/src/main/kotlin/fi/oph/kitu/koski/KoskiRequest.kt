@@ -33,7 +33,7 @@ data class KoskiRequest(
         }
 
         data class KielitutkintoSuoritus(
-            val tyyppi: Koodisto.Koodiviite,
+            val tyyppi: Koodisto.SuorituksenTyyppi,
             val koulutusmoduuli: KoulutusModuuli,
             val toimipiste: Organisaatio,
             val vahvistus: Vahvistus,
