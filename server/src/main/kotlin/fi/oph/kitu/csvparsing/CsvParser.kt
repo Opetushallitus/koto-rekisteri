@@ -81,18 +81,26 @@ class CsvParser(
     }
 
     /**
-     * Tries to convert retrieved String response into a list that is the type of Body.
+     * Converts retrieved String response into a list that is the type of Body.
+     * Returns a pair:
+     *  - first: the data
+     *  - second: errors
      */
-    inline fun <reified T> tryConvertCsvToData(csvString: String): Result<List<T>> {
+    inline fun <reified T> safeConvertCsvToData(csvString: String): Pair<List<T>, List<CsvExportError>> {
         if (csvString.isBlank()) {
             event.add("serialization.isEmptyList" to true)
-            return Result.success(emptyList())
+            return Pair(emptyList(), emptyList())
         }
 
         event.add("serialization.isEmptyList" to false)
 
         val csvMapper = getCsvMapper<T>()
         val schema = getSchema<T>(csvMapper)
+        val lineSeparator =
+            only(schema.lineSeparator)
+                ?: throw IllegalStateException(
+                    "Can't find only one line seperator from schema (${schema.lineSeparator}).",
+                )
 
         // the lines are needed to read line by line in order to distinguish all erroneous lines
         val errors = mutableListOf<CsvExportError>()
@@ -105,14 +113,16 @@ class CsvParser(
 
         val data =
             iterator.toDataWithErrorHandling { index, e ->
+                val context = runCatching { csvString.split(lineSeparator)[index] }.getOrNull()
+
                 when (e) {
-                    is InvalidFormatException -> errors.add(InvalidFormatCsvExportError(index, e))
-                    else -> errors.add(SimpleCsvExportError(index, e))
+                    is InvalidFormatException -> errors.add(InvalidFormatCsvExportError(index, context, e))
+                    else -> errors.add(SimpleCsvExportError(index, context, e))
                 }
             }
 
         if (errors.isEmpty()) {
-            return Result.success(data)
+            return Pair(data, emptyList())
         }
 
         // add all errors to log
@@ -123,16 +133,26 @@ class CsvParser(
             }
         }
 
-        return Result.failure(
-            RuntimeException("Unable to convert string to csv, because the string had ${errors.count()} error(s)."),
-        )
+        return Pair(data, errors)
     }
 
     /**
      * Converts retrieved String response into a list that is the type of Body.
      */
-    inline fun <reified T> convertCsvToData(csvString: String): List<T> = tryConvertCsvToData<T>(csvString).getOrThrow()
+    inline fun <reified T> convertCsvToData(csvString: String): List<T> {
+        val (data, errors) = safeConvertCsvToData<T>(csvString)
+        if (errors.isNotEmpty()) {
+            throw RuntimeException(
+                "Unable to convert string to csv, because the string had ${errors.count()} error(s).",
+            )
+        }
+
+        return data
+    }
 }
+
+/** Returns the only element in the object or throws an exception */
+fun only(list: CharArray): Char? = if (list.isEmpty() || list.size != 1) null else list[0]
 
 fun <T> MappingIterator<T>.toDataWithErrorHandling(
     onFailure: (index: Int, exception: Throwable) -> Unit = { _, _ -> },
