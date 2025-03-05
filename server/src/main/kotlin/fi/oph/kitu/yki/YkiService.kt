@@ -18,6 +18,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -34,6 +35,7 @@ class YkiService(
     @Qualifier("solkiRestClient")
     private val solkiRestClient: RestClient,
     private val suoritusRepository: YkiSuoritusRepository,
+    private val suoritusErrorService: YkiSuoritusErrorService,
     private val suoritusMapper: YkiSuoritusMappingService,
     private val arvioijaRepository: YkiArvioijaRepository,
     private val arvioijaMapper: YkiArvioijaMappingService,
@@ -67,9 +69,10 @@ class YkiService(
 
                 event.addHttpResponse(PeerService.Solki, "suoritukset", response)
 
-                val suoritukset =
-                    parser
-                        .convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
+                val (suoritukset, errors) = parser.safeConvertCsvToData<YkiSuoritusCsv>(response.body ?: "")
+                if (errors.isNotEmpty()) {
+                    suoritusErrorService.saveErrors(errors)
+                }
 
                 event.add("yki.suoritukset.receivedCount" to suoritukset.size)
 
@@ -103,8 +106,8 @@ class YkiService(
 
                 event.addHttpResponse(PeerService.Solki, "arvioijat", response)
 
-                val arvioijat =
-                    parser.convertCsvToData<SolkiArvioijaResponse>(
+                val (arvioijat) =
+                    parser.safeConvertCsvToData<SolkiArvioijaResponse>(
                         response.body ?: throw Error.EmptyArvioijatResponse(),
                     )
 

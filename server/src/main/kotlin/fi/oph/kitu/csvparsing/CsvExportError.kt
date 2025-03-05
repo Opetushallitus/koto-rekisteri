@@ -27,7 +27,7 @@ class SimpleCsvExportError(
 abstract class CsvExportError(
     lineNumber: Int,
     val context: String?,
-    exception: Throwable,
+    val exception: Throwable,
 ) {
     val keyValues =
         mutableListOf<Pair<String, Any>>(
