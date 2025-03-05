@@ -70,9 +70,7 @@ class YkiService(
                 event.addHttpResponse(PeerService.Solki, "suoritukset", response)
 
                 val (suoritukset, errors) = parser.safeConvertCsvToData<YkiSuoritusCsv>(response.body ?: "")
-                if (errors.isNotEmpty()) {
-                    suoritusErrorService.saveErrors(errors)
-                }
+                suoritusErrorService.handleErrors(event, errors)
 
                 event.add("yki.suoritukset.receivedCount" to suoritukset.size)
 
