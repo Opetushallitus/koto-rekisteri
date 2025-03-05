@@ -1,6 +1,8 @@
 package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.csvparsing.CsvExportError
+import fi.oph.kitu.logging.add
+import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.stereotype.Service
 
 @Service
@@ -8,12 +10,22 @@ class YkiSuoritusErrorService(
     private val mappingService: YkiSuoritusErrorMappingService,
     private val repository: YkiSuoritusErrorRepository,
 ) {
-    /**
-     * Save errors. Returns list of errors that were saved.
-     */
-    fun saveErrors(errors: List<CsvExportError>): Iterable<YkiSuoritusErrorEntity> {
-        val entities = mappingService.convertToEntityIterable(errors)
-        val savedEntities = repository.saveAll(entities)
-        return savedEntities
+    fun handleErrors(
+        event: LoggingEventBuilder,
+        errors: List<CsvExportError>,
+    ) {
+        event.add(
+            "errors.size" to errors.size,
+            "errors.truncate" to errors.isEmpty(),
+        )
+
+        if (errors.isEmpty()) {
+            repository.deleteAll()
+        } else {
+            val entities = mappingService.convertToEntityIterable(errors)
+            repository.saveAll(entities).also {
+                event.add("errors.addedSize" to it.count())
+            }
+        }
     }
 }
