@@ -71,6 +71,8 @@ class YkiService(
                     parser
                         .convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
 
+                event.add("yki.suoritukset.receivedCount" to suoritukset.size)
+
                 if (dryRun != true) {
                     val saved = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
                     event.add("importedSuorituksetSize" to saved.count())
