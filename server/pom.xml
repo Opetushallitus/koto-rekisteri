@@ -248,6 +248,11 @@
             <artifactId>opentelemetry-aws-sdk-2.2-autoconfigure</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.opentelemetry.contrib</groupId>
+            <artifactId>opentelemetry-aws-resources</artifactId>
+            <version>1.44.0-alpha</version>
+        </dependency>
+        <dependency>
             <groupId>no.bekk.db-scheduler-ui</groupId>
             <artifactId>db-scheduler-ui-starter</artifactId>
             <version>4.1.0</version>
