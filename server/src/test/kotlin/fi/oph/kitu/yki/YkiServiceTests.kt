@@ -6,10 +6,11 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -21,7 +22,6 @@ import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import java.lang.RuntimeException
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
 
@@ -30,7 +30,9 @@ import kotlin.test.assertEquals
 class YkiServiceTests(
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
+    @Autowired private val ykiSuoritusErrorService: YkiSuoritusErrorService,
     @Autowired private val auditLogger: AuditLogger,
+    @Autowired private val suoritusErrorRepository: YkiSuoritusErrorRepository,
 ) {
     @Suppress("unused")
     companion object {
@@ -74,6 +76,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
             )
 
@@ -83,10 +86,13 @@ class YkiServiceTests(
         // Assert
         val suoritukset = ykiSuoritusRepository.findAll()
         assertEquals(3, suoritukset.count())
+
+        val errors = suoritusErrorRepository.findAll()
+        assertEquals(0, errors.count())
     }
 
     @Test
-    fun `invalid oppijanumero throws exception`() {
+    fun `invalid oppijanumero is not added to suoritus, but logged as error`() {
         // Arrange
         val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
@@ -109,15 +115,18 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
             )
 
         // Act
-        assertThrows<RuntimeException> {
-            ykiService.importYkiSuoritukset(null, null, false)
-        }
+        ykiService.importYkiSuoritukset(null, null, false)
+
         val suoritukset = ykiSuoritusRepository.findAll()
         assertEquals(0, suoritukset.count())
+
+        val errors = suoritusErrorRepository.findAll()
+        assertEquals(1, errors.count())
     }
 
     @Test
@@ -146,6 +155,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
             )
 
@@ -199,6 +209,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
             )
 
@@ -245,6 +256,7 @@ class YkiServiceTests(
                 suoritusMapper = YkiSuoritusMappingService(),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
+                suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
             )
 
