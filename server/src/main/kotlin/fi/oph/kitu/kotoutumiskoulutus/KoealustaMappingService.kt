@@ -230,7 +230,7 @@ class KoealustaMappingService(
                 lastName = user.lastname,
                 preferredname = preferredName,
                 email = user.email,
-                oppijanumero = oppijanumero.toString(),
+                oppijanumero = oppijanumero,
                 timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
                 schoolOid = schoolOid,
                 courseid = completion.courseid,

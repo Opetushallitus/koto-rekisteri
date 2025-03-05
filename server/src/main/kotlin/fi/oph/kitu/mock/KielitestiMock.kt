@@ -25,7 +25,7 @@ fun generateRandomKielitestiSuoritus(): KielitestiSuoritus {
         firstNames = oppilas.etunimet,
         lastName = oppilas.sukunimi,
         preferredname = oppilas.kutsumanimi,
-        oppijanumero = oppilas.oppijanumero.toString(),
+        oppijanumero = oppilas.oppijanumero,
         email = oppilas.email,
         timeCompleted = getRandomInstant(LocalDate.of(2000, 1, 1).toInstant()),
         schoolOid = generateRandomOrganizationOid(),
