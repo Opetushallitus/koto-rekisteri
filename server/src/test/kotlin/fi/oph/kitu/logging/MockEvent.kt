@@ -100,3 +100,12 @@ class MockEvent : LoggingEventBuilder {
         logs.add(p0?.get() ?: defaultLogValue)
     }
 }
+
+fun <T> Iterable<T>.only(predicate: (T) -> Boolean): T {
+    val found = this.filter(predicate)
+    if (found.size != 1) {
+        throw IllegalStateException("List must have only 1 element, but it had ${found.size} element(s).")
+    }
+
+    return found.first()
+}
