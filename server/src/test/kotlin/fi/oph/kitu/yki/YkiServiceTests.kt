@@ -22,6 +22,7 @@ import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.time.Instant
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
 
@@ -56,7 +57,7 @@ class YkiServiceTests(
         val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
-            .expect(requestTo("suoritukset"))
+            .expect(requestTo("suoritukset?m=1970-01-01T00:00:00Z"))
             .andRespond(
                 withSuccess(
                     """
@@ -81,7 +82,7 @@ class YkiServiceTests(
             )
 
         // Act
-        ykiService.importYkiSuoritukset(null, null, false)
+        ykiService.importYkiSuoritukset(Instant.EPOCH, null, false)
 
         // Assert
         val suoritukset = ykiSuoritusRepository.findAll()
@@ -97,7 +98,7 @@ class YkiServiceTests(
         val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
-            .expect(requestTo("suoritukset"))
+            .expect(requestTo("suoritukset?m=1970-01-01T00:00:00Z"))
             .andRespond(
                 withSuccess(
                     """
@@ -120,8 +121,7 @@ class YkiServiceTests(
             )
 
         // Act
-        ykiService.importYkiSuoritukset(null, null, false)
-
+        ykiService.importYkiSuoritukset(Instant.EPOCH, null, false)
         val suoritukset = ykiSuoritusRepository.findAll()
         assertEquals(0, suoritukset.count())
 
@@ -135,7 +135,7 @@ class YkiServiceTests(
         val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
-            .expect(requestTo("suoritukset"))
+            .expect(requestTo("suoritukset?m=1970-01-01T00:00:00Z"))
             .andRespond(
                 withSuccess(
                     """
@@ -160,7 +160,7 @@ class YkiServiceTests(
             )
 
         // Act
-        val from = ykiService.importYkiSuoritukset(null, null, false)
+        val from = ykiService.importYkiSuoritukset(Instant.EPOCH, null, false)
 
         // Assert
         val firstSuoritukset = ykiSuoritusRepository.findAll()
