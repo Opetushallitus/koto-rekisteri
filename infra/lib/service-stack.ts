@@ -1,11 +1,4 @@
-import * as cdk from "aws-cdk-lib"
-import {
-  aws_ecs,
-  aws_secretsmanager,
-  Duration,
-  Stack,
-  StackProps,
-} from "aws-cdk-lib"
+import { aws_ecs, aws_secretsmanager, Stack, StackProps } from "aws-cdk-lib"
 import {
   Certificate,
   CertificateValidation,
@@ -34,6 +27,7 @@ import { ITopic } from "aws-cdk-lib/aws-sns"
 import { Construct } from "constructs"
 import { ManagedPolicy } from "aws-cdk-lib/aws-iam"
 import * as s3 from "aws-cdk-lib/aws-s3"
+import * as cdk from "aws-cdk-lib"
 
 export interface ServiceStackProps extends StackProps {
   auditLogGroup: ILogGroup
@@ -153,7 +147,6 @@ export class ServiceStack extends Stack {
       },
       cpu: 1024,
       memoryLimitMiB: 2048,
-      healthCheckGracePeriod: Duration.seconds(15),
       circuitBreaker: {
         enable: true,
         rollback: true,
@@ -165,25 +158,6 @@ export class ServiceStack extends Stack {
       certificate,
       sslPolicy: SslPolicy.RECOMMENDED_TLS,
     })
-
-    // The default target group health check for ALBs is {healthyThresholdCount: 5, interval: Duration.seconds(30)}.
-    // This means that a deployment takes at least 5*30 seconds = 2 minutes 30 seconds per container.
-    // Let's go faster.
-    this.service.targetGroup.configureHealthCheck({
-      enabled: true,
-      healthyThresholdCount: 2,
-      interval: Duration.seconds(5),
-    })
-
-    // The default load balancer configuration waits 300 seconds (5 minutes) before moving a container to UNUSED state.
-    // This means that a deployment can take 300 seconds to wait for a container to shut down.
-    // This value should be low enough that deployments are fast, and high enough that any large file transfers succeed.
-    // This only affects connections that are open when a new deployment occurs.
-    // Let's go faster.
-    this.service.loadBalancer.setAttribute(
-      "deregistration_delay.timeout_seconds",
-      "5",
-    )
 
     this.service.taskDefinition.addContainer("AwsOtelCollector", {
       image: ContainerImage.fromRegistry(
