@@ -44,22 +44,18 @@ class YkiService(
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     fun importYkiSuoritukset(
-        from: Instant? = null,
+        from: Instant,
         lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
-    ): Instant? =
+    ): Instant =
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
                 val parser = CsvParser(event)
                 event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
-                val url =
-                    if (from != null) {
-                        "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
-                    } else {
-                        "suoritukset"
-                    }
+                val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
+
                 val response =
                     solkiRestClient
                         .get()
