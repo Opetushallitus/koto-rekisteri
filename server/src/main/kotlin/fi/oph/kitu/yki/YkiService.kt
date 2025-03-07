@@ -66,7 +66,9 @@ class YkiService(
                 event.addHttpResponse(PeerService.Solki, "suoritukset", response)
 
                 val (suoritukset, errors) = parser.safeConvertCsvToData<YkiSuoritusCsv>(response.body ?: "")
+
                 suoritusErrorService.handleErrors(event, errors)
+                val nextSince = suoritusErrorService.findNextSearchRange(suoritukset, errors, from)
 
                 event.add("yki.suoritukset.receivedCount" to suoritukset.size)
 
@@ -80,7 +82,7 @@ class YkiService(
                         )
                     }
                 }
-                return@withEventAndPerformanceCheck suoritukset.maxOfOrNull { it.lastModified } ?: from
+                return@withEventAndPerformanceCheck nextSince
             }.apply {
                 addDefaults("yki.importSuoritukset")
                 addDatabaseLogs()
