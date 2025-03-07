@@ -2,8 +2,10 @@ package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.logging.add
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 @Service
 class YkiSuoritusErrorService(
@@ -28,4 +30,15 @@ class YkiSuoritusErrorService(
             }
         }
     }
+
+    fun findNextSearchRange(
+        suoritukset: List<YkiSuoritusCsv>,
+        errors: List<CsvExportError>,
+        from: Instant,
+    ): Instant =
+        if (errors.isEmpty()) {
+            suoritukset.maxOfOrNull { it.lastModified } ?: from
+        } else {
+            suoritukset.minOfOrNull { it.lastModified } ?: from
+        }
 }
