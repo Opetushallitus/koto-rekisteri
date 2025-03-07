@@ -1,5 +1,7 @@
 package fi.oph.kitu.dev
 
+import fi.oph.kitu.koski.KoskiResponse
+import fi.oph.kitu.koski.KoskiService
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusRepository
 import fi.oph.kitu.mock.generateRandomKielitestiSuoritus
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -31,6 +34,7 @@ class CreateMockDataController(
     private val suoritusRepository: YkiSuoritusRepository,
     private val arvioijaRepository: YkiArvioijaRepository,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+    private val koskiService: KoskiService,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -40,6 +44,12 @@ class CreateMockDataController(
             logger.error("Fatal error: CreateMockDataController loaded in a prod-like environment")
             exitProcess(SpringApplication.exit(applicationContext))
         }
+    }
+
+    @GetMapping("/koskitest")
+    fun sendYkiSuoritusToKoski(): ResponseEntity<KoskiResponse> {
+        val suoritus = suoritusRepository.findById(2).get()
+        return koskiService.sendYkiSuoritusToKoski(suoritus)
     }
 
     // Yki
