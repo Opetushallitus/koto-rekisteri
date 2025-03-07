@@ -35,7 +35,7 @@ WINDOW="otel-collector"
 tmux new-window -t $SESS_NAME -n "$WINDOW"
 tmux send-keys -t $SESS_NAME:"$WINDOW" "docker compose up collector" C-m
 
-# Window 2: OpenTelemetry collector
+# Window 2: OpenTelemetry tracing
 WINDOW="otel-tracing"
 tmux new-window -t $SESS_NAME -n "$WINDOW"
 tmux send-keys -t $SESS_NAME:"$WINDOW" "docker compose up jaeger" C-m
