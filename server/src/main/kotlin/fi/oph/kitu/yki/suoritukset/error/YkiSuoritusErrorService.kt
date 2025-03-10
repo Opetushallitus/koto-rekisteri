@@ -39,6 +39,6 @@ class YkiSuoritusErrorService(
         if (errors.isEmpty()) {
             suoritukset.maxOfOrNull { it.lastModified } ?: from
         } else {
-            suoritukset.minOfOrNull { it.lastModified } ?: from
+            from
         }
 }
