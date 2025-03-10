@@ -13,8 +13,10 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
+import org.springframework.stereotype.Service
 import java.time.LocalDate
 
+@Service
 class KoskiRequestMapper {
     fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): KoskiRequest =
         KoskiRequest(
