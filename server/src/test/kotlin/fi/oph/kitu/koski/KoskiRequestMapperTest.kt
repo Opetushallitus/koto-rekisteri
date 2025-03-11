@@ -44,4 +44,33 @@ class KoskiRequestMapperTest {
         val koskiRequestJson = objectMapper.writeValueAsString(koskiRequest)
         assertEquals(expectedJson, koskiRequestJson)
     }
+
+    @Test
+    fun `map yki suoritus with yleisarvosana to koski request`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                suorittajanOID = "1.2.246.562.24.12345678910",
+                suoritusId = 123456,
+                tutkintopaiva = LocalDate.of(2025, 1, 1),
+                arviointipaiva = LocalDate.of(2025, 1, 3),
+                tutkintotaso = Tutkintotaso.PT,
+                tutkintokieli = Tutkintokieli.ENG,
+                jarjestajanTunnusOid = "1.2.246.562.10.12345678910",
+                tekstinYmmartaminen = 2,
+                kirjoittaminen = 2,
+                puheenYmmartaminen = 2,
+                puhuminen = 2,
+                rakenteetJaSanasto = null,
+                yleisarvosana = 2,
+            )
+        val koskiRequest = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
+        val expectedJson =
+            objectMapper
+                .readValue(
+                    ClassPathResource("./koski-request-with-yleisarvosana.json").file,
+                    JsonNode::class.java,
+                ).toString()
+        val koskiRequestJson = objectMapper.writeValueAsString(koskiRequest)
+        assertEquals(expectedJson, koskiRequestJson)
+    }
 }

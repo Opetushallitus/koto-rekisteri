@@ -65,6 +65,7 @@ class KoskiRequestMapper {
                                                 ),
                                         ),
                                     osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus),
+                                    yleisarvosana = ykiSuoritus.yleisarvosana?.let { Koodisto.YkiArvosana.fromInt(it) },
                                 ),
                             ),
                     ),
