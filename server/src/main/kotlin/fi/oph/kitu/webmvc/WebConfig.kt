@@ -3,6 +3,7 @@ package fi.oph.kitu.webmvc
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import org.springframework.context.annotation.Configuration
 import org.springframework.format.FormatterRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -12,6 +13,7 @@ class WebConfig : WebMvcConfigurer {
     override fun addFormatters(registry: FormatterRegistry) {
         registry.apply {
             addEnumConverter<YkiSuoritusColumn>()
+            addEnumConverter<YkiSuoritusErrorColumn>()
             addEnumConverter<YkiArvioijaColumn>()
             addEnumConverter<KielitestiSuoritusColumn>()
         }
