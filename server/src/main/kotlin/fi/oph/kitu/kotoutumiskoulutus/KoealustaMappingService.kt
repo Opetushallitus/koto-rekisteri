@@ -208,12 +208,15 @@ class KoealustaMappingService(
         userId: Int,
         oid: String,
     ): Oid =
-        Oid.valueOf(oid)
-            ?: throw Error.Validation.MalformedField(
-                userId,
-                "schoolOID",
-                oid,
-            )
+        Oid
+            .parse(oid)
+            .onFailure {
+                throw Error.Validation.MalformedField(
+                    userId,
+                    "schoolOID",
+                    oid,
+                )
+            }.getOrThrow()
 
     fun completionToEntity(
         user: User,

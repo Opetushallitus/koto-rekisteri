@@ -11,6 +11,6 @@ class OidDeserializer : JsonDeserializer<Oid>() {
         context: DeserializationContext?,
     ): Oid? =
         parser?.valueAsString?.let {
-            Oid.valueOf(it)
+            Oid.parse(it).getOrNull()
         }
 }
