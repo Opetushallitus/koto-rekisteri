@@ -6,11 +6,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import fi.oph.kitu.Oid
 import fi.oph.kitu.logging.add
-import org.ietf.jgss.Oid
 import org.slf4j.spi.LoggingEventBuilder
 import java.io.ByteArrayOutputStream
-import java.lang.RuntimeException
 import kotlin.reflect.full.findAnnotation
 
 class CsvParser(
@@ -55,6 +54,7 @@ class CsvParser(
         this.registerModule(JavaTimeModule())
         val oidSerializerModule = SimpleModule()
         oidSerializerModule.addSerializer(Oid::class.java, OidSerializer())
+        oidSerializerModule.addDeserializer(Oid::class.java, OidDeserializer())
         this.registerModule(oidSerializerModule)
 
         return this

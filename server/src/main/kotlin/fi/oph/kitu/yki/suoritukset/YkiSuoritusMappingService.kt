@@ -1,7 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.Sukupuoli
-import org.ietf.jgss.Oid
 import org.springframework.stereotype.Service
 
 @Service
@@ -49,7 +49,7 @@ class YkiSuoritusMappingService {
 
     fun convertToResponse(entity: YkiSuoritusEntity): YkiSuoritusCsv =
         YkiSuoritusCsv(
-            suorittajanOID = Oid(entity.suorittajanOID),
+            suorittajanOID = Oid.valueOfOrThrow(entity.suorittajanOID),
             hetu = entity.hetu,
             sukupuoli = entity.sukupuoli,
             sukunimi = entity.sukunimi,
@@ -64,7 +64,7 @@ class YkiSuoritusMappingService {
             tutkintopaiva = entity.tutkintopaiva,
             tutkintokieli = entity.tutkintokieli,
             tutkintotaso = entity.tutkintotaso,
-            jarjestajanOID = Oid(entity.jarjestajanTunnusOid),
+            jarjestajanOID = Oid.valueOfOrThrow(entity.jarjestajanTunnusOid),
             jarjestajanNimi = entity.jarjestajanNimi,
             arviointipaiva = entity.arviointipaiva,
             tekstinYmmartaminen = entity.tekstinYmmartaminen,

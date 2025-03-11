@@ -5,12 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import fi.oph.kitu.Oid
 import fi.oph.kitu.csvparsing.Features
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.arvioijat.TutkintokieliDeserializer
-import org.ietf.jgss.Oid
 import java.time.Instant
 import java.time.LocalDate
 
