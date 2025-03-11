@@ -1,6 +1,6 @@
 package fi.oph.kitu.mock
 
-import org.ietf.jgss.Oid
+import fi.oph.kitu.Oid
 
 /**
  * Generates random user OID under node class 1.2.246.562.240.
@@ -8,14 +8,11 @@ import org.ietf.jgss.Oid
  * Note: Node class 240 is the correct class for users,
  * but these values should not be used in production.
  */
-fun generateRandomUserOid() =
-    fi.oph.kitu.Oid(
-        Oid(
-            "1.2.246.562.240.${(0..99999999999)
-                .random()
-                .toString()
-                .padStart(11, '0')}",
-        ),
+fun generateRandomUserOid(): Oid =
+    Oid.valueOfOrThrow(
+        "1.2.246.562.240.${
+            (0..99999999999).random().toString().padStart(11, '0')
+        }",
     )
 
 /**
@@ -25,13 +22,8 @@ fun generateRandomUserOid() =
  * but these values should not be used in production.
  */
 fun generateRandomOrganizationOid() =
-    fi.oph.kitu.Oid(
-        Oid(
-            "1.2.246.562.100.${
-                (0..99999999999)
-                    .random()
-                    .toString()
-                    .padStart(11, '0')
-            }",
-        ),
+    Oid.valueOfOrThrow(
+        "1.2.246.562.100.${
+            (0..99999999999).random().toString().padStart(11, '0')
+        }",
     )
