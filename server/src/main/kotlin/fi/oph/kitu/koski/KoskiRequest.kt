@@ -38,6 +38,7 @@ data class KoskiRequest(
             val toimipiste: Organisaatio,
             val vahvistus: Vahvistus,
             val osasuoritukset: List<Osasuoritus>,
+            val yleisarvosana: Koodisto.Koodiviite?,
         ) {
             data class KoulutusModuuli(
                 val tunniste: Koodisto.Koodiviite,

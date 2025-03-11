@@ -144,7 +144,7 @@
               ]
             }
           ],
-          "yleisarvosana": null
+          "yleisarvosana": { "koodiarvo": "2", "koodistoUri": "ykiarvosana" }
         }
       ]
     }
