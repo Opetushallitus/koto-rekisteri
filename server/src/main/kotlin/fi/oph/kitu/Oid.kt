@@ -2,7 +2,8 @@ package fi.oph.kitu
 
 import org.ietf.jgss.GSSException
 
-data class Oid(
+@ConsistentCopyVisibility
+data class Oid private constructor(
     private val value: org.ietf.jgss.Oid,
 ) {
     companion object {
