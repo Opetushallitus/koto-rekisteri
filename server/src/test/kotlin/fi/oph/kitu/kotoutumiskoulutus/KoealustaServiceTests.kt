@@ -131,7 +131,7 @@ class KoealustaServiceTests(
             actual = mervi.coursename,
         )
         assertEquals(
-            expected = Oid.valueOf("1.2.246.562.10.1234567890"),
+            expected = Oid.parse("1.2.246.562.10.1234567890").getOrThrow(),
             actual = mervi.schoolOid,
         )
     }

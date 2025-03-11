@@ -32,7 +32,7 @@ class CsvParsingTest {
 
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        assertEquals(Oid.valueOf("1.2.246.562.24.20281155246"), suoritus.suorittajanOID)
+        assertEquals(Oid.parse("1.2.246.562.24.20281155246").getOrNull(), suoritus.suorittajanOID)
         assertEquals("010180-9026", suoritus.hetu)
         assertEquals(Sukupuoli.N, suoritus.sukupuoli)
         assertEquals("Öhman-Testi", suoritus.sukunimi)
@@ -47,7 +47,7 @@ class CsvParsingTest {
         assertEquals("2024-09-01", suoritus.tutkintopaiva.format(dateFormatter))
         assertEquals(Tutkintokieli.FIN, suoritus.tutkintokieli)
         assertEquals(Tutkintotaso.YT, suoritus.tutkintotaso)
-        assertEquals(Oid.valueOf("1.2.246.562.10.14893989377"), suoritus.jarjestajanOID)
+        assertEquals(Oid.parse("1.2.246.562.10.14893989377").getOrNull(), suoritus.jarjestajanOID)
         assertEquals("Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus", suoritus.jarjestajanNimi)
         assertEquals("2024-11-14", suoritus.arviointipaiva.format(dateFormatter))
         assertEquals(5, suoritus.tekstinYmmartaminen)
@@ -126,7 +126,7 @@ class CsvParsingTest {
 
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        assertEquals(Oid.valueOf("1.2.246.562.24.20281155246"), suoritus.suorittajanOID)
+        assertEquals(Oid.parse("1.2.246.562.24.20281155246").getOrNull(), suoritus.suorittajanOID)
         assertEquals("010180-9026", suoritus.hetu)
         assertEquals(Sukupuoli.N, suoritus.sukupuoli)
         assertEquals("Öhman-Testi", suoritus.sukunimi)
@@ -141,7 +141,7 @@ class CsvParsingTest {
         assertEquals("2024-09-01", suoritus.tutkintopaiva.format(dateFormatter))
         assertEquals(Tutkintokieli.FIN, suoritus.tutkintokieli)
         assertEquals(Tutkintotaso.YT, suoritus.tutkintotaso)
-        assertEquals(Oid.valueOf("1.2.246.562.10.14893989377"), suoritus.jarjestajanOID)
+        assertEquals(Oid.parse("1.2.246.562.10.14893989377").getOrNull(), suoritus.jarjestajanOID)
         assertEquals("Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus", suoritus.jarjestajanNimi)
         assertEquals("2024-11-14", suoritus.arviointipaiva.format(dateFormatter))
         assertEquals(5, suoritus.tekstinYmmartaminen)
@@ -197,7 +197,7 @@ class CsvParsingTest {
     }
 
     @Test
-    fun `safe parsing returns valid throws`() {
+    fun `safe parsing returns valid rows`() {
         val event = MockEvent()
         val parser = CsvParser(event)
         val csv =
@@ -210,8 +210,8 @@ class CsvParsingTest {
 
         val (data, errors) = parser.safeConvertCsvToData<YkiSuoritusCsv>(csv)
 
-        assertTrue(data.size == 3)
-        assertTrue(errors.size == 1)
+        assertEquals(3, data.size)
+        assertEquals(1, errors.size)
     }
 
     @Test
@@ -222,7 +222,7 @@ class CsvParsingTest {
         val writable =
             listOf(
                 YkiSuoritusCsv(
-                    suorittajanOID = Oid.valueOfOrThrow("1.2.246.562.24.20281155246"),
+                    suorittajanOID = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                     hetu = "010180-9026",
                     sukupuoli = Sukupuoli.N,
                     sukunimi = "Öhman-Testi",
@@ -237,7 +237,7 @@ class CsvParsingTest {
                     tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                     tutkintokieli = Tutkintokieli.FIN,
                     tutkintotaso = Tutkintotaso.YT,
-                    jarjestajanOID = Oid.valueOfOrThrow("1.2.246.562.10.14893989377"),
+                    jarjestajanOID = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
                     jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                     arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                     tekstinYmmartaminen = 5,
@@ -273,7 +273,7 @@ class CsvParsingTest {
         val writable =
             listOf(
                 YkiSuoritusCsv(
-                    suorittajanOID = Oid.valueOfOrThrow("1.2.246.562.24.20281155246"),
+                    suorittajanOID = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                     hetu = "010180-9026",
                     sukupuoli = Sukupuoli.N,
                     sukunimi = "Öhman-Testi",
@@ -288,7 +288,7 @@ class CsvParsingTest {
                     tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                     tutkintokieli = Tutkintokieli.FIN,
                     tutkintotaso = Tutkintotaso.YT,
-                    jarjestajanOID = Oid.valueOfOrThrow("1.2.246.562.10.14893989377"),
+                    jarjestajanOID = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
                     jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                     arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                     tekstinYmmartaminen = null,

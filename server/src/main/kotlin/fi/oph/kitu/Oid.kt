@@ -7,15 +7,17 @@ data class Oid private constructor(
     private val value: org.ietf.jgss.Oid,
 ) {
     companion object {
-        fun valueOf(source: String): Oid? =
+        fun parse(source: String): Result<Oid> =
             try {
-                Oid(org.ietf.jgss.Oid(source))
+                Result.success(Oid(org.ietf.jgss.Oid(source)))
             } catch (_: GSSException) {
-                null
+                Result.failure(MalformedOidError(source))
             }
-
-        fun valueOfOrThrow(source: String): Oid = valueOf(source)!!
     }
 
     override fun toString(): String = value.toString()
 }
+
+data class MalformedOidError(
+    val source: String?,
+) : Exception("Malformed Oid \"$source\"")

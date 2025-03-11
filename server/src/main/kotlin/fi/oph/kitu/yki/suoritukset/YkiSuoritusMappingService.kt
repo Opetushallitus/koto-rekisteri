@@ -49,7 +49,7 @@ class YkiSuoritusMappingService {
 
     fun convertToResponse(entity: YkiSuoritusEntity): YkiSuoritusCsv =
         YkiSuoritusCsv(
-            suorittajanOID = Oid.valueOfOrThrow(entity.suorittajanOID),
+            suorittajanOID = Oid.parse(entity.suorittajanOID).getOrThrow(),
             hetu = entity.hetu,
             sukupuoli = entity.sukupuoli,
             sukunimi = entity.sukunimi,
@@ -64,7 +64,7 @@ class YkiSuoritusMappingService {
             tutkintopaiva = entity.tutkintopaiva,
             tutkintokieli = entity.tutkintokieli,
             tutkintotaso = entity.tutkintotaso,
-            jarjestajanOID = Oid.valueOfOrThrow(entity.jarjestajanTunnusOid),
+            jarjestajanOID = Oid.parse(entity.jarjestajanTunnusOid).getOrThrow(),
             jarjestajanNimi = entity.jarjestajanNimi,
             arviointipaiva = entity.arviointipaiva,
             tekstinYmmartaminen = entity.tekstinYmmartaminen,
