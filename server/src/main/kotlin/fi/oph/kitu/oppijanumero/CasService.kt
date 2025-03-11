@@ -17,10 +17,10 @@ class CasService(
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    @Value("\${kitu.oppijanumero.username}")
+    @Value("\${kitu.palvelukayttaja.username}")
     private lateinit var onrUsername: String
 
-    @Value("\${kitu.oppijanumero.password}")
+    @Value("\${kitu.palvelukayttaja.password}")
     private lateinit var onrPassword: String
 
     @Value("\${kitu.oppijanumero.casUrl}")
