@@ -12,6 +12,8 @@ data class Oid(
             } catch (_: GSSException) {
                 null
             }
+
+        fun valueOfOrThrow(source: String): Oid = valueOf(source)!!
     }
 
     override fun toString(): String = value.toString()
