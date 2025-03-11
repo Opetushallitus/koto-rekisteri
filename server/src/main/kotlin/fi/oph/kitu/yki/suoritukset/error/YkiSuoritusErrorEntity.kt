@@ -7,7 +7,7 @@ import java.time.Instant
 @Table(name = "yki_suoritus_error")
 data class YkiSuoritusErrorEntity(
     @Id
-    val id: Int?,
+    val id: Long?,
     val message: String,
     val context: String,
     val exceptionMessage: String,

@@ -1,6 +1,9 @@
 package fi.oph.kitu.yki.suoritukset.error
 
+import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
+import fi.oph.kitu.findAllSorted
+import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import org.slf4j.spi.LoggingEventBuilder
@@ -11,6 +14,7 @@ import java.time.Instant
 class YkiSuoritusErrorService(
     private val mappingService: YkiSuoritusErrorMappingService,
     private val repository: YkiSuoritusErrorRepository,
+    private val auditLogger: AuditLogger,
 ) {
     fun handleErrors(
         event: LoggingEventBuilder,
@@ -41,4 +45,17 @@ class YkiSuoritusErrorService(
         } else {
             from
         }
+
+    fun getErrors(
+        orderBy: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.Created,
+        orderByDirection: SortDirection = SortDirection.ASC,
+    ): List<YkiSuoritusErrorEntity> =
+        repository
+            .findAllSorted(orderBy.entityName, orderByDirection)
+            .toList()
+            .also {
+                auditLogger.logAll("Yki suoritus errors viewed", it) { error ->
+                    arrayOf("suoritus.error.id" to error.id)
+                }
+            }
 }

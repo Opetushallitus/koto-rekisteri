@@ -4,6 +4,8 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.generateHeader
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -15,6 +17,7 @@ import kotlin.math.ceil
 @RequestMapping("yki")
 class YkiViewController(
     private val ykiService: YkiService,
+    private val errorService: YkiSuoritusErrorService,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetView(
@@ -58,6 +61,20 @@ class YkiViewController(
             .addObject("sortDirection", sortDirection)
             .addObject("paging", paging)
             .addObject("versionHistory", versionHistory)
+    }
+
+    @GetMapping("/suoritukset/virheet", produces = ["text/html"])
+    fun view(
+        sortColumn: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.Created,
+        sortDirection: SortDirection = SortDirection.ASC,
+    ): ModelAndView {
+        val mav =
+            ModelAndView("yki-suoritukset-virheet")
+                .addObject("header", generateHeader<YkiSuoritusErrorColumn>(sortColumn, sortDirection))
+                .addObject("sortColumn", sortColumn.lowercaseName())
+                .addObject("sortDirection", sortDirection)
+                .addObject("virheet", errorService.getErrors(sortColumn, sortDirection))
+        return mav
     }
 
     @GetMapping("/arvioijat")
