@@ -2,19 +2,23 @@ import { test as baseTest } from "@playwright/test"
 import KielitestiSuorituksetPage from "../models/kotoutumiskoulutus/KielitestiSuorituksetPage"
 import IndexPage from "../models/IndexPage"
 import YkiSuorituksetPage from "../models/yki/YkiSuorituksetPage"
+import YkiSuorituksetErrorPage from "../models/yki/YkiSuorituksetErrorPage"
 import { createTestDatabase } from "../db/database"
 import * as kotoSuoritusFixture from "./kotoSuoritus"
 import * as ykiSuoritusFixture from "./ykiSuoritus"
+import * as ykiSuoritusErrorFixture from "./ykiSuoritusError"
 import BasePage from "../models/BasePage"
 import { Config, createConfig } from "../config"
 
 interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
+  ykiSuorituksetErrorPage: YkiSuorituksetErrorPage
   kielitestiSuorituksetPage: KielitestiSuorituksetPage
   indexPage: IndexPage
   basePage: BasePage
   kotoSuoritus: typeof kotoSuoritusFixture
   ykiSuoritus: typeof ykiSuoritusFixture
+  ykiSuoritusError: typeof ykiSuoritusErrorFixture
 }
 
 export type TestDB = ReturnType<typeof createTestDatabase>
@@ -44,6 +48,10 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
     const ykiSuorituksetPage = new YkiSuorituksetPage(page, config)
     await use(ykiSuorituksetPage)
   },
+  ykiSuorituksetErrorPage: async ({ page, config }, use) => {
+    const ykiSuorituksetErrorPage = new YkiSuorituksetErrorPage(page, config)
+    await use(ykiSuorituksetErrorPage)
+  },
   config: [
     async ({}, use) => {
       const workerIndex = parseInt(process.env.TEST_PARALLEL_INDEX)
@@ -64,6 +72,9 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   },
   ykiSuoritus: async ({}, use) => {
     await use({ ...ykiSuoritusFixture })
+  },
+  ykiSuoritusError: async ({}, use) => {
+    await use({ ...ykiSuoritusErrorFixture })
   },
 })
 
