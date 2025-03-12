@@ -61,6 +61,8 @@ class YkiViewController(
             .addObject("sortDirection", sortDirection)
             .addObject("paging", paging)
             .addObject("versionHistory", versionHistory)
+            // nullify 0 values for mustache
+            .addObject("errorsCount", errorService.countErrors().let { if (it == 0L) null else it })
     }
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])

@@ -5,6 +5,10 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
 {{$body}}
     <h1>Yleiset kielitutkinnot - suoritukset</h1>
 
+    {{#errorsCount}}
+      <a>Järjestelmässä on {{errorsCount}} virhettä. <a href="/yki/suoritukset/virheet"> Katso virheet</a> </p>
+    {{/errorsCount}}
+
     <form action="">
       <label>
         Oppijanumero, henkilötunnus tai hakusana:
