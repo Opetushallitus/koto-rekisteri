@@ -6,7 +6,7 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
     <h1>Yleiset kielitutkinnot - suoritukset</h1>
 
     {{#errorsCount}}
-      <a>Järjestelmässä on {{errorsCount}} virhettä. <a href="/yki/suoritukset/virheet"> Katso virheet</a> </p>
+      <p class="error-text">Järjestelmässä on {{errorsCount}} virhettä. <a href="/yki/suoritukset/virheet"> Katso virheet</a> </p>
     {{/errorsCount}}
 
     <form action="">
@@ -21,7 +21,7 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset
       <button type="submit" >Suodata</button>
     </form>
 
-    <a href="/yki/api/suoritukset?includeVersionHistory={{versionHistory}}" download>Lataa tiedot CSV:nä</a>
+    <a href="/yki/api/suoritukset?includeVersionHistory={{versionHistory}}" download>Lataa tiedot CSV:nä</p>
 
     <p>Suorituksia yhteensä: {{paging.totalEntries}}</p>
 

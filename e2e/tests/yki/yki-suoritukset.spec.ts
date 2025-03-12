@@ -4,11 +4,12 @@ import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 const fs = node_fs.promises
 
 describe('"YKI Suoritukset" -page', () => {
-  beforeEach(async ({ db, basePage, ykiSuoritus }) => {
+  beforeEach(async ({ db, basePage, ykiSuoritus, ykiSuoritusError }) => {
     await db.withEmptyDatabase()
     await ykiSuoritus.insert(db, "ranja")
     await ykiSuoritus.insert(db, "ranjaTarkistus")
     await ykiSuoritus.insert(db, "petro")
+    await ykiSuoritusError.insert(db, "first")
 
     await basePage.login()
   })
@@ -105,5 +106,15 @@ describe('"YKI Suoritukset" -page', () => {
     expect(csvContent).toContain(
       'suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"\n',
     ) // Validate headers
+  })
+
+  test("can navigate to errors", async ({
+    page,
+    ykiSuorituksetPage,
+    ykiSuorituksetErrorPage,
+  }) => {
+    await ykiSuorituksetPage.open()
+
+    await ykiSuorituksetPage.getErrorLink().click()
   })
 })
