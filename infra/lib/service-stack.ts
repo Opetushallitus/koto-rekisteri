@@ -122,11 +122,11 @@ export class ServiceStack extends Stack {
               "kielitesti-token",
             ),
           ),
-          OPPIJANUMERO_PASSWORD: aws_ecs.Secret.fromSecretsManager(
+          PALVELUKAYTTAJA_PASSWORD: aws_ecs.Secret.fromSecretsManager(
             aws_secretsmanager.Secret.fromSecretNameV2(
               this,
-              "OppijanumeroPassword",
-              "oppijanumero-password",
+              "PalvelukayttajaPassword",
+              "palvelukayttaja-password",
             ),
           ),
           YKI_API_PASSWORD: aws_ecs.Secret.fromSecretsManager(

@@ -23,7 +23,7 @@ is_env_variable_exported() {
 amount=0
 
 is_env_variable_exported "KIELITESTI_TOKEN" || amount=$((amount + 1))
-is_env_variable_exported "OPPIJANUMERO_PASSWORD" || amount=$((amount + 1))
+is_env_variable_exported "PALVELUKAYTTAJA_PASSWORD" || amount=$((amount + 1))
 is_env_variable_exported "YKI_API_USER" || amount=$((amount + 1))
 is_env_variable_exported "YKI_API_PASSWORD" || amount=$((amount + 1))
 
