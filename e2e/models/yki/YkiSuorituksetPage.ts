@@ -39,6 +39,10 @@ export default class YkiSuorituksetPage extends BasePage {
     return suorituksetTable.locator(".suoritus")
   }
 
+  getErrorLink() {
+    return this.getContent().locator(".error-text").getByRole("link")
+  }
+
   getCSVDownloadLink() {
     return this.getPageContent().getByRole("link", {
       name: "Lataa tiedot CSV:nä",
