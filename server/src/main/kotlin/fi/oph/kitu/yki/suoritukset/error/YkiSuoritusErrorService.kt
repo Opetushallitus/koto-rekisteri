@@ -16,6 +16,8 @@ class YkiSuoritusErrorService(
     private val repository: YkiSuoritusErrorRepository,
     private val auditLogger: AuditLogger,
 ) {
+    fun countErrors(): Long = repository.count()
+
     fun handleErrors(
         event: LoggingEventBuilder,
         errors: List<CsvExportError>,
