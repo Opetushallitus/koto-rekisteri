@@ -116,5 +116,7 @@ describe('"YKI Suoritukset" -page', () => {
     await ykiSuorituksetPage.open()
 
     await ykiSuorituksetPage.getErrorLink().click()
+
+    expect(page.url()).toContain(ykiSuorituksetErrorPage.url)
   })
 })
