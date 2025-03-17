@@ -9,5 +9,16 @@ export default class YkiSuorituksetErrorPage extends BasePage {
     super(page, config)
   }
 
-  async generateMockData(amount: number | undefined = undefined) {}
+  getContent() {
+    return this.getPageContent()
+  }
+
+  getErrorsTable() {
+    return this.getContent().getByRole("table")
+  }
+
+  async getErrorRow() {
+    const errorsTable = this.getErrorsTable()
+    return errorsTable.locator(".virheet")
+  }
 }

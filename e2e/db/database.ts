@@ -105,6 +105,7 @@ const withEmptyDatabase = (pool: pg.Pool) => async () => {
       TRUNCATE TABLE
         koto_suoritus,
         yki_suoritus,
+        yki_suoritus_error,
         yki_arvioija
       RESTART IDENTITY CASCADE
     `)
