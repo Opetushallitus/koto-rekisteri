@@ -1,6 +1,8 @@
 package fi.oph.kitu.koski
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -12,8 +14,9 @@ class KoskiService(
     @Qualifier("koskiRestClient")
     private val koskiRestClient: RestClient,
     private val koskiRequestMapper: KoskiRequestMapper,
+    private val ykiSuoritusRepository: YkiSuoritusRepository,
 ) {
-    fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): KoskiResponse {
+    fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): YkiSuoritusEntity {
         val koskiRequest = koskiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
         val koskiResponse =
             koskiRestClient
@@ -25,6 +28,14 @@ class KoskiService(
                 .retrieve()
                 .toEntity<KoskiResponse>()
 
-        return koskiResponse.body!!
+        val koskiOpiskeluoikeus =
+            koskiResponse.body!!
+                .opiskeluoikeudet
+                .first()
+                .oid
+
+        val suoritus = ykiSuoritusEntity.copy(koskiOpiskeluoikeus = Oid.parse(koskiOpiskeluoikeus).getOrThrow())
+        ykiSuoritusRepository.save(suoritus)
+        return suoritus
     }
 }

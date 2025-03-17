@@ -11,6 +11,7 @@ class YkiSuoritusMappingService {
     fun convertToEntity(
         csv: YkiSuoritusCsv,
         id: Int? = null,
+        koskiOpiskeluoikeus: String? = null,
     ) = YkiSuoritusEntity(
         id,
         csv.suorittajanOID.toString(),
@@ -43,6 +44,7 @@ class YkiSuoritusMappingService {
         csv.arvosanaMuuttui,
         csv.perustelu,
         csv.tarkistusarvioinninKasittelyPvm,
+        Oid.parse(koskiOpiskeluoikeus).getOrNull(),
     )
 
     fun convertToResponseIterable(iterable: Iterable<YkiSuoritusEntity>) = iterable.map { convertToResponse(it) }
