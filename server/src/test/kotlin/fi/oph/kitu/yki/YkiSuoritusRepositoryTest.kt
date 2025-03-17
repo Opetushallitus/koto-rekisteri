@@ -74,6 +74,7 @@ class YkiSuoritusRepositoryTest(
                 arvosanaMuuttui = 1,
                 perustelu = "Tarkistusarvioinnin testi",
                 tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
+                koskiOpiskeluoikeus = null,
             )
         val savedSuoritukset = ykiSuoritusRepository.saveAll(listOf(suoritus)).toList()
         assertEquals(suoritus, savedSuoritukset[0].copy(id = null))
@@ -116,6 +117,7 @@ class YkiSuoritusRepositoryTest(
                 arvosanaMuuttui = 1,
                 perustelu = "Tarkistusarvioinnin testi",
                 tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
+                koskiOpiskeluoikeus = null,
             )
         ykiSuoritusRepository.saveAll(listOf(initialSuoritus)).toList()
         val updatedSuoritus =
@@ -165,6 +167,7 @@ class YkiSuoritusRepositoryTest(
                 arvosanaMuuttui = null,
                 perustelu = null,
                 tarkistusarvioinninKasittelyPvm = null,
+                koskiOpiskeluoikeus = null,
             )
         val savedSuoritukset = ykiSuoritusRepository.saveAll(listOf(suoritus)).toList()
         assertEquals(suoritus, savedSuoritukset[0].copy(id = null))
@@ -207,6 +210,7 @@ class YkiSuoritusRepositoryTest(
                 arvosanaMuuttui = null,
                 perustelu = null,
                 tarkistusarvioinninKasittelyPvm = null,
+                koskiOpiskeluoikeus = null,
             )
         val suoritus2 =
             YkiSuoritusEntity(
@@ -241,6 +245,7 @@ class YkiSuoritusRepositoryTest(
                 arvosanaMuuttui = null,
                 perustelu = null,
                 tarkistusarvioinninKasittelyPvm = null,
+                koskiOpiskeluoikeus = null,
             )
         val updatedSuoritus =
             suoritus.copy(
@@ -302,6 +307,7 @@ class YkiSuoritusRepositoryTest(
                 arvosanaMuuttui = null,
                 perustelu = null,
                 tarkistusarvioinninKasittelyPvm = null,
+                koskiOpiskeluoikeus = null,
             )
         val suoritusENG11 = suoritusSWE10.copy(tutkintokieli = Tutkintokieli.ENG11, suoritusId = 12345)
         val suoritusENG12 = suoritusSWE10.copy(tutkintokieli = Tutkintokieli.ENG12, suoritusId = 54321)
@@ -347,6 +353,7 @@ class YkiSuoritusRepositoryTest(
                 arvosanaMuuttui = 1,
                 perustelu = "Tarkistusarvioinnin testi",
                 tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
+                koskiOpiskeluoikeus = null,
             )
         val suoritus2 =
             suoritus.copy(
@@ -403,6 +410,7 @@ class YkiSuoritusRepositoryTest(
                 arvosanaMuuttui = null,
                 perustelu = null,
                 tarkistusarvioinninKasittelyPvm = null,
+                koskiOpiskeluoikeus = null,
             )
         val suoritus2 =
             YkiSuoritusEntity(
@@ -437,6 +445,7 @@ class YkiSuoritusRepositoryTest(
                 arvosanaMuuttui = null,
                 perustelu = null,
                 tarkistusarvioinninKasittelyPvm = null,
+                koskiOpiskeluoikeus = null,
             )
         val updatedSuoritus =
             suoritus.copy(

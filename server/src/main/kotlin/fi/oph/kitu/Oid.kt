@@ -7,7 +7,7 @@ data class Oid private constructor(
     private val value: org.ietf.jgss.Oid,
 ) {
     companion object {
-        fun parse(source: String): Result<Oid> =
+        fun parse(source: String?): Result<Oid> =
             try {
                 Result.success(Oid(org.ietf.jgss.Oid(source)))
             } catch (_: GSSException) {

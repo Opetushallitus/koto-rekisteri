@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
@@ -75,7 +76,8 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         tarkistusarvioidut_osakokeet,
         arvosana_muuttui,
         perustelu,
-        tarkistusarvioinnin_kasittely_pvm
+        tarkistusarvioinnin_kasittely_pvm,
+        koski_opiskeluoikeus
         """.trimIndent()
 
     /**
@@ -115,8 +117,9 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 tarkistusarvioidut_osakokeet,
                 arvosana_muuttui,
                 perustelu,
-                tarkistusarvioinnin_kasittely_pvm
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                tarkistusarvioinnin_kasittely_pvm,
+                koski_opiskeluoikeus
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT ON CONSTRAINT unique_suoritus DO NOTHING;
             """.trimIndent()
         val pscf = PreparedStatementCreatorFactory(sql)
@@ -160,6 +163,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                     ps.setObject(28, suoritus.arvosanaMuuttui)
                     ps.setObject(29, suoritus.perustelu)
                     ps.setObject(30, suoritus.tarkistusarvioinninKasittelyPvm)
+                    ps.setString(31, suoritus.koskiOpiskeluoikeus?.toString())
                 }
 
                 override fun getBatchSize() = suoritukset.count()
@@ -305,6 +309,7 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getObject("arvosana_muuttui", Integer::class.java)?.toInt(),
         rs.getString("perustelu"),
         rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
+        Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),
     )
 
 @Repository

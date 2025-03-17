@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.Tutkintokieli
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -23,6 +24,7 @@ import kotlin.test.assertEquals
 @Testcontainers
 class KoskiServiceTest(
     @Autowired private val koskiRequestMapper: KoskiRequestMapper,
+    @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
 ) {
     private val objectMapper = jacksonObjectMapper().registerKotlinModule().registerModule(JavaTimeModule())
 
@@ -75,9 +77,9 @@ class KoskiServiceTest(
                 ),
             )
 
-        val service = KoskiService(mockRestClientBuilder.build(), koskiRequestMapper)
+        val service = KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository)
         val suoritus = generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.ENG)
-        val response = service.sendYkiSuoritusToKoski(suoritus)
-        assertEquals(objectMapper.readValue(expectedResponse, KoskiResponse::class.java), response)
+        val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus)
+        assertEquals("1.2.246.562.15.50209741037", updatedSuoritus.koskiOpiskeluoikeus.toString())
     }
 }

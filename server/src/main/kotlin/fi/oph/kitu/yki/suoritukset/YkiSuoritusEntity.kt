@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -61,6 +62,7 @@ data class YkiSuoritusEntity(
     val arvosanaMuuttui: Int?,
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
+    val koskiOpiskeluoikeus: Oid?,
 ) {
     companion object
 }
