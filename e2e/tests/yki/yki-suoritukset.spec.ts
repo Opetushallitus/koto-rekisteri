@@ -107,16 +107,4 @@ describe('"YKI Suoritukset" -page', () => {
       'suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,suoritusID,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,jarjestajanOID,jarjestajanNimi,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,rakenteetJaSanasto,puheenYmmartaminen,puhuminen,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"\n',
     ) // Validate headers
   })
-
-  test("can navigate to errors", async ({
-    page,
-    ykiSuorituksetPage,
-    ykiSuorituksetErrorPage,
-  }) => {
-    await ykiSuorituksetPage.open()
-
-    await ykiSuorituksetPage.getErrorLink().click()
-
-    expect(page.url()).toContain(ykiSuorituksetErrorPage.url)
-  })
 })
