@@ -7,6 +7,7 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.flatMap
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completion
+import fi.oph.kitu.mapFailure
 import fi.oph.kitu.oppijanumero.Oppija
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
@@ -113,143 +114,101 @@ class KoealustaMappingService(
         )
     }
 
-    fun getLuetunYmmartaminen(
+    private fun validate(
+        resultName: String,
         userId: Int,
         completion: Completion,
-    ): Completion.Result {
+        isSystemResultRequired: Boolean = true,
+    ): Result<Completion.Result> {
         val result =
             completion
                 .results
-                .find { it.name == "luetun ymm\u00e4rt\u00e4minen" }!!
-        if (result.quiz_result_system.isNullOrEmpty()) {
-            throw Error.Validation.MissingSystemResult(
-                userId,
-                completion.coursename,
+                .find { it.name == resultName }
+
+        if (isSystemResultRequired && result?.quiz_result_system.isNullOrEmpty()) {
+            return Result.failure(
+                Error.Validation.MissingSystemResult(
+                    userId,
+                    completion.coursename,
+                    resultName,
+                ),
             )
         }
-        if (result.quiz_result_teacher.isNullOrEmpty()) {
-            throw Error.Validation.MissingTeacherResult(
-                userId,
-                completion.coursename,
+        if (result?.quiz_result_teacher.isNullOrEmpty()) {
+            return Result.failure(
+                Error.Validation.MissingTeacherResult(
+                    userId,
+                    completion.coursename,
+                    resultName,
+                ),
             )
         }
 
-        return result
+        return Result.success(result)
     }
 
-    fun getKuullunYmmartaminen(
-        userId: Int,
-        completion: Completion,
-    ): Completion.Result {
-        val result =
-            completion
-                .results
-                .find { it.name == "kuullun ymm\u00e4rt\u00e4minen" }!!
-        if (result.quiz_result_system.isNullOrEmpty()) {
-            throw Error.Validation.MissingSystemResult(
-                userId,
-                completion.coursename,
-            )
-        }
-        if (result.quiz_result_teacher.isNullOrEmpty()) {
-            throw Error.Validation.MissingTeacherResult(
-                userId,
-                completion.coursename,
-            )
-        }
-
-        return result
-    }
-
-    fun getPuhe(
-        userId: Int,
-        completion: Completion,
-    ): Completion.Result {
-        val result =
-            completion
-                .results
-                .find { it.name == "puhe" }!!
-        // NOTE: It is OK to have null system result on "puhe"
-        if (result.quiz_result_teacher.isNullOrEmpty()) {
-            throw Error.Validation.MissingTeacherResult(
-                userId,
-                completion.coursename,
-            )
-        }
-
-        return result
-    }
-
-    fun getKirjoittaminen(
-        userId: Int,
-        completion: Completion,
-    ): Completion.Result {
-        val result =
-            completion
-                .results
-                .find { it.name == "kirjoittaminen" }!!
-        // NOTE: It is OK to have null system result on "kirjoittaminen"
-        if (result.quiz_result_teacher.isNullOrEmpty()) {
-            throw Error.Validation.MissingTeacherResult(
-                userId,
-                completion.coursename,
-            )
-        }
-
-        return result
-    }
-
-    fun getSchoolOid(
+    private fun validate(
+        fieldName: String,
         userId: Int,
         oid: String,
-    ): Oid =
+    ): Result<Oid> =
         Oid
             .parse(oid)
-            .onFailure {
-                throw Error.Validation.MalformedField(
-                    userId,
-                    "schoolOID",
-                    oid,
-                )
-            }.getOrThrow()
+            .mapFailure { Error.Validation.MalformedField(userId, fieldName, oid) }
+
+    private fun validateNonEmpty(
+        fieldName: String,
+        userId: Int,
+        value: String?,
+    ): Result<String> =
+        if (value.isNullOrEmpty()) {
+            Result.failure(Error.Validation.MissingField(fieldName, userId))
+        } else {
+            Result.success(value)
+        }
 
     fun completionToEntity(
         user: User,
         oppijanumero: String?,
         completion: Completion,
     ): KielitestiSuoritus {
-        val luetunYmmartaminen = getLuetunYmmartaminen(user.userid, completion)
-        val kuullunYmmartaminen = getKuullunYmmartaminen(user.userid, completion)
-        val puhe = getPuhe(user.userid, completion)
-        val kirjoittaminen = getKirjoittaminen(user.userid, completion)
-        val schoolOid = getSchoolOid(user.userid, completion.schoolOID)
+        val luetunYmmartaminen = validate("luetun ymm\u00e4rt\u00e4minen", user.userid, completion).getOrThrow()
+        val kuullunYmmartaminen = validate("kuullun ymm\u00e4rt\u00e4minen", user.userid, completion).getOrThrow()
+        val puhe = validate("puhe", user.userid, completion, false).getOrThrow()
+        val kirjoittaminen = validate("kirjoittaminen", user.userid, completion, false).getOrThrow()
 
-        if (user.preferredname.isNullOrEmpty()) {
-            throw Error.Validation.MissingField("preferred name", user.userid)
-        }
+        val schoolOid = validate("schoolOID", user.userid, completion.schoolOID).getOrThrow()
+        val preferredName = validateNonEmpty("preferredname", user.userid, user.preferredname).getOrThrow()
+        val validOppijanumero = validateNonEmpty("oppijanumero", user.userid, oppijanumero).getOrThrow()
 
-        if (oppijanumero.isNullOrEmpty()) {
-            throw Error.Validation.MissingField("oppijanumero", user.userid)
-        }
+        checkNotNull(luetunYmmartaminen.quiz_result_system)
+        checkNotNull(luetunYmmartaminen.quiz_result_teacher)
+        checkNotNull(kuullunYmmartaminen.quiz_result_system)
+        checkNotNull(kuullunYmmartaminen.quiz_result_teacher)
+        checkNotNull(puhe.quiz_result_teacher)
+        checkNotNull(kirjoittaminen.quiz_result_teacher)
+        checkNotNull(schoolOid)
+        checkNotNull(preferredName)
+        checkNotNull(validOppijanumero)
 
         return KielitestiSuoritus(
             firstNames = user.firstnames,
             lastName = user.lastname,
-            preferredname = user.preferredname,
+            preferredname = preferredName,
             email = user.email,
-            oppijanumero = oppijanumero,
+            oppijanumero = validOppijanumero,
             timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
             schoolOid = schoolOid,
             courseid = completion.courseid,
             coursename = completion.coursename,
-            luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system!!,
-            luetunYmmartaminenResultTeacher = luetunYmmartaminen.quiz_result_teacher!!,
-            kuullunYmmartaminenResultSystem = kuullunYmmartaminen.quiz_result_system!!,
-            kuullunYmmartaminenResultTeacher = kuullunYmmartaminen.quiz_result_teacher!!,
+            luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system,
+            luetunYmmartaminenResultTeacher = luetunYmmartaminen.quiz_result_teacher,
+            kuullunYmmartaminenResultSystem = kuullunYmmartaminen.quiz_result_system,
+            kuullunYmmartaminenResultTeacher = kuullunYmmartaminen.quiz_result_teacher,
             puheResultSystem = puhe.quiz_result_system,
-            puheResultTeacher = puhe.quiz_result_teacher!!,
+            puheResultTeacher = puhe.quiz_result_teacher,
             kirjoittaminenResultSystem = kirjoittaminen.quiz_result_system,
-            kirjottaminenResultTeacher = kirjoittaminen.quiz_result_teacher!!,
+            kirjottaminenResultTeacher = kirjoittaminen.quiz_result_teacher,
             totalEvaluationTeacher = completion.total_evaluation_teacher,
             totalEvaluationSystem = completion.total_evaluation_system,
         )
@@ -276,17 +235,19 @@ class KoealustaMappingService(
             class MissingSystemResult(
                 userId: Int,
                 courseName: String,
+                resultName: String,
             ) : Validation(
                     userId,
-                    "Unexpectedly missing quiz system result on course \"$courseName\" for user \"$userId\"",
+                    "Unexpectedly missing quiz system result \"$resultName\" on course \"$courseName\" for user \"$userId\"",
                 )
 
             class MissingTeacherResult(
                 userId: Int,
                 courseName: String,
+                resultName: String,
             ) : Validation(
                     userId,
-                    "Unexpectedly missing quiz teacher result on course \"$courseName\" for user \"$userId\"",
+                    "Unexpectedly missing quiz teacher result \"$resultName\" on course \"$courseName\" for user \"$userId\"",
                 )
 
             class MissingField(
