@@ -76,8 +76,8 @@ class KoealustaMappingService(
                                 completion,
                             ),
                         )
-                    } catch (ex: Error.Validation) {
-                        validationErrors.add(ex)
+                    } catch (ex: Error.SuoritusValidationFailure) {
+                        validationErrors.addAll(ex.validationErrors)
                         emptyList()
                     }
                 }
@@ -96,12 +96,25 @@ class KoealustaMappingService(
     }
 
     fun toOppija(koealustaUser: User): Result<Oppija> {
+        val errors = mutableListOf<Error.Validation>()
         if (koealustaUser.SSN.isNullOrEmpty()) {
-            return Result.failure(Error.Validation.MissingField("SSN", koealustaUser.userid))
+            errors.add(Error.Validation.MissingField("SSN", koealustaUser.userid))
         }
         if (koealustaUser.preferredname.isNullOrEmpty()) {
-            return Result.failure(Error.Validation.MissingField("preferredname", koealustaUser.userid))
+            errors.add(Error.Validation.MissingField("preferredname", koealustaUser.userid))
         }
+
+        if (errors.isNotEmpty()) {
+            return Result.failure(
+                Error.OppijaValidationFailure(
+                    "Validation failure on converting user \"${koealustaUser.userid}\" to oppija",
+                    errors,
+                ),
+            )
+        }
+
+        checkNotNull(koealustaUser.SSN)
+        checkNotNull(koealustaUser.preferredname)
 
         return Result.success(
             Oppija(
@@ -172,21 +185,50 @@ class KoealustaMappingService(
         oppijanumero: String?,
         completion: Completion,
     ): KielitestiSuoritus {
-        val luetunYmmartaminen = validate("luetun ymm\u00e4rt\u00e4minen", user.userid, completion).getOrThrow()
-        val kuullunYmmartaminen = validate("kuullun ymm\u00e4rt\u00e4minen", user.userid, completion).getOrThrow()
-        val puhe = validate("puhe", user.userid, completion, false).getOrThrow()
-        val kirjoittaminen = validate("kirjoittaminen", user.userid, completion, false).getOrThrow()
+        val errors = mutableListOf<Error.Validation>()
+        val luetunYmmartaminen =
+            validate("luetun ymm\u00e4rt\u00e4minen", user.userid, completion)
+                .onFailure { errors.add(it as Error.Validation) }
+                .getOrNull()
+        val kuullunYmmartaminen =
+            validate("kuullun ymm\u00e4rt\u00e4minen", user.userid, completion)
+                .onFailure { errors.add(it as Error.Validation) }
+                .getOrNull()
+        val puhe =
+            validate("puhe", user.userid, completion, isSystemResultRequired = false)
+                .onFailure { errors.add(it as Error.Validation) }
+                .getOrNull()
+        val kirjoittaminen =
+            validate("kirjoittaminen", user.userid, completion, isSystemResultRequired = false)
+                .onFailure { errors.add(it as Error.Validation) }
+                .getOrNull()
 
-        val schoolOid = validate("schoolOID", user.userid, completion.schoolOID).getOrThrow()
-        val preferredName = validateNonEmpty("preferredname", user.userid, user.preferredname).getOrThrow()
-        val validOppijanumero = validateNonEmpty("oppijanumero", user.userid, oppijanumero).getOrThrow()
+        val schoolOid =
+            validate("schoolOID", user.userid, completion.schoolOID)
+                .onFailure { errors.add(it as Error.Validation) }
+                .getOrNull()
+        val preferredName =
+            validateNonEmpty("preferredname", user.userid, user.preferredname)
+                .onFailure { errors.add(it as Error.Validation) }
+                .getOrNull()
+        val validOppijanumero =
+            validateNonEmpty("oppijanumero", user.userid, oppijanumero)
+                .onFailure { errors.add(it as Error.Validation) }
+                .getOrNull()
 
-        checkNotNull(luetunYmmartaminen.quiz_result_system)
+        if (errors.isNotEmpty()) {
+            throw Error.SuoritusValidationFailure(
+                "Validation failure on course completion on \"${completion.coursename}\" for user \"${user.userid}\"",
+                errors,
+            )
+        }
+
+        checkNotNull(luetunYmmartaminen?.quiz_result_system)
         checkNotNull(luetunYmmartaminen.quiz_result_teacher)
-        checkNotNull(kuullunYmmartaminen.quiz_result_system)
+        checkNotNull(kuullunYmmartaminen?.quiz_result_system)
         checkNotNull(kuullunYmmartaminen.quiz_result_teacher)
-        checkNotNull(puhe.quiz_result_teacher)
-        checkNotNull(kirjoittaminen.quiz_result_teacher)
+        checkNotNull(puhe?.quiz_result_teacher)
+        checkNotNull(kirjoittaminen?.quiz_result_teacher)
         checkNotNull(schoolOid)
         checkNotNull(preferredName)
         checkNotNull(validOppijanumero)
@@ -224,6 +266,11 @@ class KoealustaMappingService(
         ) : Error(message)
 
         class OppijaValidationFailure(
+            message: String,
+            val validationErrors: List<Validation>,
+        ) : Error(message)
+
+        class SuoritusValidationFailure(
             message: String,
             val validationErrors: List<Validation>,
         ) : Error(message)
