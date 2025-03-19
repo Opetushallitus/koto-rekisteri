@@ -151,8 +151,8 @@ export class ServiceStack extends Stack {
           ),
         },
       },
-      cpu: 1024,
-      memoryLimitMiB: 2048,
+      cpu: 2048,
+      memoryLimitMiB: 4096,
       healthCheckGracePeriod: Duration.seconds(90),
       circuitBreaker: {
         enable: true,
