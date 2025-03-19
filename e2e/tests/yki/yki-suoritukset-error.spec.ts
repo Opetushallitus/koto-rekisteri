@@ -7,6 +7,8 @@ describe('"YKI Suoritukset" -page', () => {
     await db.withEmptyDatabase()
 
     await ykiSuoritusError.insert(db, "first")
+
+    await basePage.login()
   })
 
   test("yki suoritukset error page is navigable via suoritukset - page", async ({
