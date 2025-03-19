@@ -51,12 +51,12 @@ class KoealustaServiceTests(
                     {
                       "users": [
                         {
-                          "firstnames": "Mervi-Marianne",
-                          "lastname": "Esimerkki",
-                          "preferredname": "Mervi", 
-                          "oppijanumero": "",
+                          "firstnames": "Ranja Testi",
+                          "lastname": "\u00f6hman-Testi",
+                          "preferredname": "Ranja", 
+                          "oppijanumero": "1.2.246.562.24.33342764709",
                           "SSN": "12345678901",
-                          "email": "mervi.esimerkki@oph.fi",
+                          "email": "ranja.testi@oph.fi",
                           "completions": [
                             {
                               "courseid": 32,
@@ -124,15 +124,15 @@ class KoealustaServiceTests(
             actual = lastSeen,
         )
 
-        val mervi = kielitestiSuoritusRepository.findById(1).get()
+        val ranja = kielitestiSuoritusRepository.findById(1).get()
 
         assertEquals(
             expected = "Integraatio testaus",
-            actual = mervi.coursename,
+            actual = ranja.coursename,
         )
         assertEquals(
             expected = Oid.parse("1.2.246.562.10.1234567890").getOrThrow(),
-            actual = mervi.schoolOid,
+            actual = ranja.schoolOid,
         )
     }
 }
