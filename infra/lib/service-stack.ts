@@ -153,7 +153,7 @@ export class ServiceStack extends Stack {
       },
       cpu: 1024,
       memoryLimitMiB: 2048,
-      healthCheckGracePeriod: Duration.seconds(15),
+      healthCheckGracePeriod: Duration.seconds(90),
       circuitBreaker: {
         enable: true,
         rollback: true,
