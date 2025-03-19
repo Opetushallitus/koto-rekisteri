@@ -67,19 +67,17 @@ class KoealustaMappingService(
                         // gather any/all validation errors before failing.
                         .getOrNull()
 
-                user.completions.flatMap { completion ->
-                    try {
-                        listOf(
-                            completionToEntity(
-                                user,
-                                oppijanumero,
-                                completion,
-                            ),
-                        )
-                    } catch (ex: Error.SuoritusValidationFailure) {
-                        validationErrors.addAll(ex.validationErrors)
-                        emptyList()
-                    }
+                user.completions.mapNotNull { completion ->
+                    completionToEntity(
+                        user,
+                        oppijanumero,
+                        completion,
+                    ).onFailure {
+                        when (it) {
+                            is Error.SuoritusValidationFailure -> validationErrors.addAll(it.validationErrors)
+                            else -> throw it
+                        }
+                    }.getOrNull()
                 }
             }
 
@@ -184,7 +182,7 @@ class KoealustaMappingService(
         user: User,
         oppijanumero: String?,
         completion: Completion,
-    ): KielitestiSuoritus {
+    ): Result<KielitestiSuoritus> {
         val errors = mutableListOf<Error.Validation>()
         val luetunYmmartaminen =
             validate("luetun ymm\u00e4rt\u00e4minen", user.userid, completion)
@@ -217,9 +215,11 @@ class KoealustaMappingService(
                 .getOrNull()
 
         if (errors.isNotEmpty()) {
-            throw Error.SuoritusValidationFailure(
-                "Validation failure on course completion on \"${completion.coursename}\" for user \"${user.userid}\"",
-                errors,
+            return Result.failure(
+                Error.SuoritusValidationFailure(
+                    "Validation failure on course completion on \"${completion.coursename}\" for user \"${user.userid}\"",
+                    errors,
+                ),
             )
         }
 
@@ -233,26 +233,28 @@ class KoealustaMappingService(
         checkNotNull(preferredName)
         checkNotNull(validOppijanumero)
 
-        return KielitestiSuoritus(
-            firstNames = user.firstnames,
-            lastName = user.lastname,
-            preferredname = preferredName,
-            email = user.email,
-            oppijanumero = validOppijanumero,
-            timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
-            schoolOid = schoolOid,
-            courseid = completion.courseid,
-            coursename = completion.coursename,
-            luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system,
-            luetunYmmartaminenResultTeacher = luetunYmmartaminen.quiz_result_teacher,
-            kuullunYmmartaminenResultSystem = kuullunYmmartaminen.quiz_result_system,
-            kuullunYmmartaminenResultTeacher = kuullunYmmartaminen.quiz_result_teacher,
-            puheResultSystem = puhe.quiz_result_system,
-            puheResultTeacher = puhe.quiz_result_teacher,
-            kirjoittaminenResultSystem = kirjoittaminen.quiz_result_system,
-            kirjottaminenResultTeacher = kirjoittaminen.quiz_result_teacher,
-            totalEvaluationTeacher = completion.total_evaluation_teacher,
-            totalEvaluationSystem = completion.total_evaluation_system,
+        return Result.success(
+            KielitestiSuoritus(
+                firstNames = user.firstnames,
+                lastName = user.lastname,
+                preferredname = preferredName,
+                email = user.email,
+                oppijanumero = validOppijanumero,
+                timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
+                schoolOid = schoolOid,
+                courseid = completion.courseid,
+                coursename = completion.coursename,
+                luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system,
+                luetunYmmartaminenResultTeacher = luetunYmmartaminen.quiz_result_teacher,
+                kuullunYmmartaminenResultSystem = kuullunYmmartaminen.quiz_result_system,
+                kuullunYmmartaminenResultTeacher = kuullunYmmartaminen.quiz_result_teacher,
+                puheResultSystem = puhe.quiz_result_system,
+                puheResultTeacher = puhe.quiz_result_teacher,
+                kirjoittaminenResultSystem = kirjoittaminen.quiz_result_system,
+                kirjottaminenResultTeacher = kirjoittaminen.quiz_result_teacher,
+                totalEvaluationTeacher = completion.total_evaluation_teacher,
+                totalEvaluationSystem = completion.total_evaluation_system,
+            ),
         )
     }
 
