@@ -5,7 +5,6 @@ import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusRepository
 import fi.oph.kitu.mock.generateRandomKielitestiSuoritus
 import fi.oph.kitu.mock.generateRandomYkiArviointiEntity
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
-import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
@@ -67,13 +66,15 @@ class CreateMockDataController(
     )
     fun createYkiSuoritusErrorsMockData(
         @PathVariable count: Int?,
-    ): Iterable<YkiSuoritusErrorEntity> =
-        suoritusErrorRepository
-            .saveAll(
-                List(count ?: 3) {
-                    generateRandomYkiSuoritusErrorEntity()
-                },
-            )
+    ): Iterable<YkiSuoritusErrorEntity> {
+        val data =
+            """
+            ,"010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "1.2.246.562.24.59267607404","010116A9518","CORRUPTED","Kivinen-Testi","Petro Testi","","Testikuja 10","40100","Testinsuu","testi.petro@testi.fi",183425,2024-10-30T13:55:09Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-10-30,6,6,,6,6,,,,0,0,,
+            """.trimIndent()
+
+        TODO()
+    }
 
     @GetMapping(
         "/mockdata/yki/arviointi/",
