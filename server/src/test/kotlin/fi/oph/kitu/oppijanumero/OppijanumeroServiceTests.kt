@@ -2,13 +2,17 @@ package fi.oph.kitu.oppijanumero
 
 import HttpResponseMock
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.oph.kitu.Oid
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import kotlin.test.assertEquals
 
 class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service returns identified user`() {
         // Facade
+        val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
         val response =
             Result.success(
                 HttpResponseMock(
@@ -17,7 +21,7 @@ class OppijanumeroServiceTests {
                         """
                         {
                             "oid": "1.2.246.562.24.33342764709",
-                            "oppijanumero": "1.2.246.562.24.33342764709"
+                            "oppijanumero": "$expectedOppijanumero"
                         }
                         """.trimIndent(),
                 ),
@@ -31,14 +35,19 @@ class OppijanumeroServiceTests {
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
-        oppijanumeroService.getOppijanumero(
-            Oppija(
-                "Magdalena Testi",
-                "Sallinen-Testi",
-                "Magdalena",
-                "010866-9260",
-            ),
-        )
+        val result =
+            assertDoesNotThrow {
+                oppijanumeroService
+                    .getOppijanumero(
+                        Oppija(
+                            "Magdalena Testi",
+                            "Sallinen-Testi",
+                            "Magdalena",
+                            "010866-9260",
+                        ),
+                    ).getOrThrow()
+            }
+        assertEquals(expectedOppijanumero.toString(), result)
     }
 
     @Test
@@ -67,14 +76,15 @@ class OppijanumeroServiceTests {
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
         assertThrows<OppijanumeroException.OppijaNotIdentifiedException> {
-            oppijanumeroService.getOppijanumero(
-                Oppija(
-                    "Magdalena Testi",
-                    "Sallinen-Testi",
-                    "Magdalena",
-                    "010866-9260",
-                ),
-            )
+            oppijanumeroService
+                .getOppijanumero(
+                    Oppija(
+                        "Magdalena Testi",
+                        "Sallinen-Testi",
+                        "Magdalena",
+                        "010866-9260",
+                    ),
+                ).getOrThrow()
         }
     }
 
@@ -106,14 +116,15 @@ class OppijanumeroServiceTests {
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
         assertThrows<OppijanumeroException.OppijaNotFoundException> {
-            oppijanumeroService.getOppijanumero(
-                Oppija(
-                    "Magdalena Testi",
-                    "Sallinen-Testi",
-                    "Magdalena",
-                    "010866-9260",
-                ),
-            )
+            oppijanumeroService
+                .getOppijanumero(
+                    Oppija(
+                        "Magdalena Testi",
+                        "Sallinen-Testi",
+                        "Magdalena",
+                        "010866-9260",
+                    ),
+                ).getOrThrow()
         }
     }
 }

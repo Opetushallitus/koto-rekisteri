@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.Oid
+import fi.oph.kitu.flatMap
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completion
 import fi.oph.kitu.oppijanumero.Oppija
@@ -49,19 +50,21 @@ class KoealustaMappingService(
         val suoritukset =
             suorituksetResponse.users.flatMap { user ->
                 val oppijanumero =
-                    try {
-                        oppijanumeroService.getOppijanumero(toOppija(user))
-                    } catch (ex: OppijanumeroException) {
-                        // NOTE: Only catch expected types of exceptions. Other kinds are internal programming errors,
-                        // and should fail-fast.
-                        oppijanumeroExceptions.add(ex)
-                        // The value is irrelevant, because if (any) error was thrown here,
-                        // the conversion will throw custom exception in this method.
-                        null
-                    } catch (error: Error.Validation) {
-                        validationErrors.add(error)
-                        null
-                    }
+                    toOppija(user)
+                        .flatMap { oppijanumeroService.getOppijanumero(it) }
+                        .onFailure {
+                            when (it) {
+                                // Only catch expected types of exceptions. Other kinds are internal programming errors,
+                                // and should fail-fast.
+                                is Error.OppijaValidationFailure -> validationErrors.addAll(it.validationErrors)
+                                is OppijanumeroException -> oppijanumeroExceptions.add(it)
+                                else -> throw it
+                            }
+                        }
+                        // Recover as null, to indicate a missing oppijanumero. This intentionally fails the validation
+                        // during the `completionToEntity` conversion. We do not throw the error (yet), as we want to
+                        // gather any/all validation errors before failing.
+                        .getOrNull()
 
                 user.completions.flatMap { completion ->
                     try {
@@ -91,20 +94,22 @@ class KoealustaMappingService(
         return suoritukset
     }
 
-    fun toOppija(koealustaUser: User): Oppija {
+    fun toOppija(koealustaUser: User): Result<Oppija> {
         if (koealustaUser.SSN.isNullOrEmpty()) {
-            throw Error.Validation.MissingField("SSN", koealustaUser.userid)
+            return Result.failure(Error.Validation.MissingField("SSN", koealustaUser.userid))
         }
         if (koealustaUser.preferredname.isNullOrEmpty()) {
-            throw Error.Validation.MissingField("preferredname", koealustaUser.userid)
+            return Result.failure(Error.Validation.MissingField("preferredname", koealustaUser.userid))
         }
 
-        return Oppija(
-            etunimet = koealustaUser.firstnames,
-            hetu = koealustaUser.SSN,
-            kutsumanimi = koealustaUser.preferredname,
-            sukunimi = koealustaUser.lastname,
-            oppijanumero = koealustaUser.oppijanumero?.ifEmpty { null }, // Nullify empty values
+        return Result.success(
+            Oppija(
+                etunimet = koealustaUser.firstnames,
+                hetu = koealustaUser.SSN,
+                kutsumanimi = koealustaUser.preferredname,
+                sukunimi = koealustaUser.lastname,
+                oppijanumero = koealustaUser.oppijanumero?.ifEmpty { null }, // Nullify empty values
+            ),
         )
     }
 
@@ -256,6 +261,11 @@ class KoealustaMappingService(
         class ValidationFailure(
             message: String,
             val oppijanumeroExceptions: List<OppijanumeroException>,
+            val validationErrors: List<Validation>,
+        ) : Error(message)
+
+        class OppijaValidationFailure(
+            message: String,
             val validationErrors: List<Validation>,
         ) : Error(message)
 

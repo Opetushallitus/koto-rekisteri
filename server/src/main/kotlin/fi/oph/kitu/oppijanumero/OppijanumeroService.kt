@@ -12,7 +12,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 interface OppijanumeroService {
-    fun getOppijanumero(oppija: Oppija): String
+    fun getOppijanumero(oppija: Oppija): Result<String>
 }
 
 @Service
@@ -25,7 +25,7 @@ class OppijanumeroServiceImpl(
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
-    override fun getOppijanumero(oppija: Oppija): String =
+    override fun getOppijanumero(oppija: Oppija): Result<String> =
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
@@ -79,7 +79,7 @@ class OppijanumeroServiceImpl(
                 return@withEventAndPerformanceCheck body.oppijanumero
             }.apply {
                 addDefaults("getOppijanumero")
-            }.getOrThrow()
+            }.result
 
     /**
      * Tries to convert HttpResponse<String> into the given T.
