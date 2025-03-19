@@ -43,7 +43,8 @@ class KoealustaMappingService(
         convertToEntity(tryParseMoodleResponse<KoealustaSuorituksetResponse>(body))
 
     fun convertToEntity(suorituksetResponse: KoealustaSuorituksetResponse): Iterable<KielitestiSuoritus> {
-        val exceptions = mutableListOf<Throwable>()
+        val oppijanumeroExceptions = mutableListOf<OppijanumeroException>()
+        val validationErrors = mutableListOf<Error.Validation>()
 
         val suoritukset =
             suorituksetResponse.users.flatMap { user ->
@@ -51,13 +52,15 @@ class KoealustaMappingService(
                     try {
                         oppijanumeroService.getOppijanumero(toOppija(user))
                     } catch (ex: OppijanumeroException) {
-                        exceptions.add(ex)
+                        // NOTE: Only catch expected types of exceptions. Other kinds are internal programming errors,
+                        // and should fail-fast.
+                        oppijanumeroExceptions.add(ex)
                         // The value is irrelevant, because if (any) error was thrown here,
                         // the conversion will throw custom exception in this method.
-                        ""
-                    } catch (ex: Error) {
-                        exceptions.add(ex)
-                        ""
+                        null
+                    } catch (error: Error.Validation) {
+                        validationErrors.add(error)
+                        null
                     }
 
                 user.completions.flatMap { completion ->
@@ -69,32 +72,19 @@ class KoealustaMappingService(
                                 completion,
                             ),
                         )
-                    } catch (ex: Error) {
-                        exceptions.add(ex)
+                    } catch (ex: Error.Validation) {
+                        validationErrors.add(ex)
                         emptyList()
                     }
                 }
             }
 
-        if (exceptions.isNotEmpty()) {
+        if (oppijanumeroExceptions.isNotEmpty() || validationErrors.isNotEmpty()) {
             throw Error.ValidationFailure(
-                "Unable to convert into list of KielitestiSuoritus, because there were ${exceptions.size} validation errors.",
-                exceptions
-                    .flatMap {
-                        if (it is OppijanumeroException) {
-                            listOf(it)
-                        } else {
-                            emptyList()
-                        }
-                    }.toList(),
-                exceptions
-                    .flatMap {
-                        if (it is Error.Validation) {
-                            listOf(it)
-                        } else {
-                            emptyList()
-                        }
-                    }.toList(),
+                "Parsing KielitestiSuoritus failed: There were ${validationErrors.size}" +
+                    " validation errors and ${oppijanumeroExceptions.size} oppijanumero failures.",
+                oppijanumeroExceptions,
+                validationErrors,
             )
         }
 
@@ -220,7 +210,7 @@ class KoealustaMappingService(
 
     fun completionToEntity(
         user: User,
-        oppijanumero: String,
+        oppijanumero: String?,
         completion: Completion,
     ): KielitestiSuoritus {
         val luetunYmmartaminen = getLuetunYmmartaminen(user.userid, completion)
@@ -231,6 +221,10 @@ class KoealustaMappingService(
 
         if (user.preferredname.isNullOrEmpty()) {
             throw Error.Validation.MissingField("preferred name", user.userid)
+        }
+
+        if (oppijanumero.isNullOrEmpty()) {
+            throw Error.Validation.MissingField("oppijanumero", user.userid)
         }
 
         return KielitestiSuoritus(
