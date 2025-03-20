@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
+import java.time.Instant
 import kotlin.system.exitProcess
 
 @RestController
@@ -32,6 +33,7 @@ class CreateMockDataController(
     private val applicationContext: WebApplicationContext,
     private val suoritusRepository: YkiSuoritusRepository,
     private val suoritusErrorRepository: YkiSuoritusErrorRepository,
+    private val ykiServiceMock: YkiServiceMock,
     private val arvioijaRepository: YkiArvioijaRepository,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
 ) {
@@ -73,7 +75,14 @@ class CreateMockDataController(
             "1.2.246.562.24.59267607404","010116A9518","CORRUPTED","Kivinen-Testi","Petro Testi","","Testikuja 10","40100","Testinsuu","testi.petro@testi.fi",183425,2024-10-30T13:55:09Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-10-30,6,6,,6,6,,,,0,0,,
             """.trimIndent()
 
-        TODO()
+        // Cause some fake data
+        ykiServiceMock.importYkiSuoritukset(
+            data,
+            Instant.MIN,
+            false,
+        )
+
+        return suoritusErrorRepository.findAll()
     }
 
     @GetMapping(
