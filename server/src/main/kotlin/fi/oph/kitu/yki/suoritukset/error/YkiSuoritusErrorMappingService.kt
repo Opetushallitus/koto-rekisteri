@@ -19,7 +19,7 @@ class YkiSuoritusErrorMappingService {
         message = data::class.simpleName!!,
         context = data.context!!,
         exceptionMessage = data.exception.message!!,
-        stackTrace = data.exception.stackTrace!!.toString(),
+        stackTrace = data.exception.stackTrace!!.joinToString("\n"),
         created = created,
     )
 }
