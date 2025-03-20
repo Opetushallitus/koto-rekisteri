@@ -14,4 +14,5 @@ data class YkiSuoritusErrorEntity(
     val stackTrace: String,
     val created: Instant,
     val sourceType: String,
+    val keyValues: String,
 )
