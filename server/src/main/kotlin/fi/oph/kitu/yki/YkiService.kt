@@ -67,7 +67,7 @@ class YkiService(
 
                 val (suoritukset, errors) = parser.safeConvertCsvToData<YkiSuoritusCsv>(response.body ?: "")
 
-                suoritusErrorService.handleErrors(event, errors)
+                suoritusErrorService.handleErrors<YkiSuoritusCsv>(event, errors)
                 val nextSince = suoritusErrorService.findNextSearchRange(suoritukset, errors, from)
 
                 event.add("yki.suoritukset.receivedCount" to suoritukset.size)
