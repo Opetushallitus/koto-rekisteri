@@ -23,7 +23,7 @@ class YkiScheduledTasks {
         Tasks
             .recurring("YKI-import", ExtendedSchedules.parse(ykiImportSchedule), Instant::class.java)
             .initialData(Instant.EPOCH)
-            .executeStateful { taskInstance, _ -> ykiService.importYkiSuoritukset(taskInstance.data) }
+            .executeStateful { taskInstance, _ -> ykiService.importYkiSuoritukset(taskInstance.data ?: Instant.now()) }
 
     @Bean
     fun arvioijatImport(ykiService: YkiService): Task<Void> =
