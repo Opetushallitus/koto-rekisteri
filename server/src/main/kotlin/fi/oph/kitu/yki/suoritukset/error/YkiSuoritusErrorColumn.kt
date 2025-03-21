@@ -4,11 +4,12 @@ enum class YkiSuoritusErrorColumn(
     val entityName: String,
     val uiHeaderValue: String,
 ) {
-    Message(entityName = "message", uiHeaderValue = "Viesti"),
-    Context(entityName = "context", uiHeaderValue = "Konteksti"),
-    ExceptionMessage(entityName = "exception", uiHeaderValue = "virhe"),
-    StackTrace(entityName = "stackTrace", uiHeaderValue = "stack trace"),
-    Created(entityName = "created", uiHeaderValue = "luontiaika"),
+    OID(entityName = "oid", uiHeaderValue = "OID"),
+    Hetu(entityName = "hetu", uiHeaderValue = "hetu"),
+    Nimi(entityName = "nimi", uiHeaderValue = "nimi"),
+    VirheellinenArvo(entityName = "virheellinenArvo", uiHeaderValue = "virheellinen arvo"),
+    VirheellinenSarake(entityName = "virheellinenSarake", uiHeaderValue = "virheellinen sarake"),
+    // Created(entityName = "created", uiHeaderValue = "luontiaika"),
     ;
 
     fun lowercaseName(): String = name.lowercase()

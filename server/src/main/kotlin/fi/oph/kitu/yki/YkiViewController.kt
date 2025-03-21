@@ -67,16 +67,16 @@ class YkiViewController(
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
     fun view(
-        sortColumn: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.Created,
+        // sortColumn: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.OID,
         sortDirection: SortDirection = SortDirection.ASC,
     ): ModelAndView {
-        val mav =
-            ModelAndView("yki-suoritukset-virheet")
-                .addObject("header", generateHeader<YkiSuoritusErrorColumn>(sortColumn, sortDirection))
-                .addObject("sortColumn", sortColumn.lowercaseName())
-                .addObject("sortDirection", sortDirection)
-                .addObject("virheet", errorService.getErrors(sortColumn, sortDirection))
-        return mav
+        val sortColumn = YkiSuoritusErrorColumn.OID
+
+        return ModelAndView("yki-suoritukset-virheet")
+            .addObject("header", generateHeader<YkiSuoritusErrorColumn>(sortColumn, sortDirection))
+            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortDirection", sortDirection)
+            .addObject("virheet", errorService.getErrors(sortColumn, sortDirection))
     }
 
     @GetMapping("/arvioijat")
