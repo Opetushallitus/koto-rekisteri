@@ -12,25 +12,26 @@ import java.time.Instant
 
 @Service
 class YkiSuoritusErrorService(
-    private val mappingService: YkiSuoritusErrorMappingService,
-    private val repository: YkiSuoritusErrorRepository,
-    private val auditLogger: AuditLogger,
+    val mappingService: YkiSuoritusErrorMappingService,
+    val repository: YkiSuoritusErrorRepository,
+    val auditLogger: AuditLogger,
 ) {
     fun countErrors(): Long = repository.count()
 
-    fun handleErrors(
+    final inline fun <reified T> handleErrors(
         event: LoggingEventBuilder,
         errors: List<CsvExportError>,
     ) {
         event.add(
             "errors.size" to errors.size,
             "errors.truncate" to errors.isEmpty(),
+            "errors.sourceType" to T::class.simpleName!!,
         )
 
         if (errors.isEmpty()) {
             repository.deleteAll()
         } else {
-            val entities = mappingService.convertToEntityIterable(errors)
+            val entities = mappingService.convertToEntityIterable<T>(errors)
             repository.saveAll(entities).also {
                 event.add("errors.addedSize" to it.count())
             }
