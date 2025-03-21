@@ -2,13 +2,14 @@ package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
-import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.stereotype.Service
 import java.time.Instant
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
 @Service
 class YkiSuoritusErrorService(
@@ -52,13 +53,36 @@ class YkiSuoritusErrorService(
     fun getErrors(
         orderBy: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.Created,
         orderByDirection: SortDirection = SortDirection.ASC,
-    ): List<YkiSuoritusErrorEntity> =
-        repository
-            .findAllSorted(orderBy.entityName, orderByDirection)
-            .toList()
-            .also {
-                auditLogger.logAll("Yki suoritus errors viewed", it) { error ->
-                    arrayOf("suoritus.error.id" to error.id)
+    ): List<YkiSuoritusErrorRow> {
+        val entities =
+            repository
+                .findAll()
+                .toList()
+                .also {
+                    auditLogger.logAll("Yki suoritus errors viewed", it) { error ->
+                        arrayOf("suoritus.error.id" to error.id)
+                    }
                 }
-            }
+
+        return mappingService
+            .convertEntityToRowIterable(entities)
+            .sortByProperty(orderBy.entityName, orderByDirection)
+    }
+
+    private inline fun <reified T : Any> Iterable<T>.sortByProperty(
+        propertyName: String,
+        sortDirection: SortDirection,
+    ): List<T> {
+        val kClass = T::class
+        val property =
+            kClass.memberProperties.find { it.name == propertyName }
+                ?: throw IllegalArgumentException(
+                    "No property '$propertyName' found on class '${kClass.simpleName}'",
+                )
+        property.isAccessible = true
+        return when (sortDirection) {
+            SortDirection.ASC -> this.sortedBy { property.get(it) as Comparable<Any>? }
+            SortDirection.DESC -> this.sortedByDescending { property.get(it) as Comparable<Any>? }
+        }
+    }
 }

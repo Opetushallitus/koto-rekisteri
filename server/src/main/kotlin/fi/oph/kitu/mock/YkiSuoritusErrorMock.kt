@@ -11,4 +11,6 @@ fun generateRandomYkiSuoritusErrorEntity(): YkiSuoritusErrorEntity =
         stackTrace = "\tat somewhere\n\tat somewhere",
         created = Instant.now(),
         exceptionMessage = "An error was occurred!",
+        sourceType = "",
+        keyValues = "",
     )
