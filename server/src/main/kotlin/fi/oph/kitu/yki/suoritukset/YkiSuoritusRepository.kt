@@ -34,6 +34,8 @@ interface CustomYkiSuoritusRepository {
         limit: Int? = null,
         offset: Int? = null,
     ): Iterable<YkiSuoritusEntity>
+
+    fun findSuorituksetWithNoKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity>
 }
 
 @Repository
@@ -246,6 +248,20 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
             )
 
         return jdbcNamedParameterTemplate.query(findAllQuerySql, params) { rs, _ ->
+            YkiSuoritusEntity.fromResultSet(rs)
+        }
+    }
+
+    override fun findSuorituksetWithNoKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> {
+        val sql =
+            """
+            SELECT * FROM
+                (SELECT DISTINCT ON (suoritus_id) $allColumns
+                FROM yki_suoritus
+                ORDER BY suoritus_id, last_modified DESC)
+            WHERE koski_opiskeluoikeus IS NULL
+            """.trimIndent()
+        return jdbcNamedParameterTemplate.query(sql) { rs, _ ->
             YkiSuoritusEntity.fromResultSet(rs)
         }
     }
