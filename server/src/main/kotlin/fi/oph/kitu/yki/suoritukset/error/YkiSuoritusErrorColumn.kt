@@ -7,7 +7,7 @@ enum class YkiSuoritusErrorColumn(
     OID(entityName = "oid", uiHeaderValue = "OID"),
     Hetu(entityName = "hetu", uiHeaderValue = "hetu"),
     Nimi(entityName = "nimi", uiHeaderValue = "nimi"),
-    VirheellinenKentta(entityName = "virheellineKentta", uiHeaderValue = "virheellinen kenttä"),
+    VirheellinenKentta(entityName = "virheellinenKentta", uiHeaderValue = "virheellinen kenttä"),
     VirheellinenArvo(entityName = "virheellinenArvo", uiHeaderValue = "virheellinen arvo"),
     VirheellinenSarake(entityName = "virheellinenSarake", uiHeaderValue = "virheellinen sarake"),
     Created(entityName = "virheenLuontiaika", uiHeaderValue = "virheen luontiaika"),

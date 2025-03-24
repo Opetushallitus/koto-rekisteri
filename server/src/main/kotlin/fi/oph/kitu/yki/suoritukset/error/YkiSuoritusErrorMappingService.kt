@@ -76,7 +76,8 @@ class YkiSuoritusErrorMappingService(
         return YkiSuoritusErrorRow(
             oid = csvData.getValueOrEmpty("suorittajanOID"),
             hetu = csvData.getValueOrEmpty("hetu"),
-            // TODO: We should probably use more common name generator and not hardcoded one
+            // TODO: There should be a more common way to convert sukinimi and etunimet into a full name.
+            //  Because other UI elements may handle naming differently and therefore show the result differently.
             nimi = csvData.getValueOrEmpty("sukunimi") + " " + csvData.getValueOrEmpty("etunimet"),
             virheellinenKentta = keyValues.getValueOrEmpty("field"),
             virheellinenArvo = keyValues.getValueOrEmpty("value"),
