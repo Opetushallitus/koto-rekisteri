@@ -84,25 +84,11 @@ object Koodisto {
         KT4("4"),
         YT5("5"),
         YT6("6"),
+        ALLE1("alle1"),
+        ALLE3("alle3"),
+        ALLE5("alle5"),
         EiVoiArvioida("9"),
         Keskeytetty("10"),
         Vilppi("11"),
-        ;
-
-        companion object {
-            fun fromInt(arvosana: Int) =
-                when (arvosana) {
-                    1 -> PT1
-                    2 -> PT2
-                    3 -> KT3
-                    4 -> KT4
-                    5 -> YT5
-                    6 -> YT6
-                    9 -> EiVoiArvioida
-                    10 -> Keskeytetty
-                    11 -> Vilppi
-                    else -> throw IllegalArgumentException("Invalid YKI arvosana $arvosana")
-                }
-        }
     }
 }
