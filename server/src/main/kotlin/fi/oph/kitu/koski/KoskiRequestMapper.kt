@@ -1,5 +1,6 @@
 package fi.oph.kitu.koski
 
+import fi.oph.kitu.koski.Koodisto.YkiArvosana
 import fi.oph.kitu.koski.KoskiRequest.Henkilo
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus
@@ -12,6 +13,7 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Vahvi
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
+import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -67,7 +69,13 @@ class KoskiRequestMapper {
                                                 ),
                                         ),
                                     osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus),
-                                    yleisarvosana = ykiSuoritus.yleisarvosana?.let { Koodisto.YkiArvosana.fromInt(it) },
+                                    yleisarvosana =
+                                        ykiSuoritus.yleisarvosana?.let {
+                                            koodistoYkiArvosana(
+                                                it,
+                                                ykiSuoritus.tutkintotaso,
+                                            )
+                                        },
                                 ),
                             ),
                     ),
@@ -86,6 +94,7 @@ class KoskiRequestMapper {
                 yleisenKielitutkinnonOsa(
                     suorituksenNimi,
                     arvosana,
+                    suoritusEntity.tutkintotaso,
                     suoritusEntity.arviointipaiva,
                 )
             }
@@ -94,6 +103,7 @@ class KoskiRequestMapper {
     private fun yleisenKielitutkinnonOsa(
         suorituksenNimi: Koodisto.YkiSuorituksenNimi,
         arvosana: Int,
+        tutkintotaso: Tutkintotaso,
         arviointipaiva: LocalDate,
     ) = Osasuoritus(
         koulutusmoduuli =
@@ -103,9 +113,45 @@ class KoskiRequestMapper {
         arviointi =
             listOf(
                 Arvosana(
-                    arvosana = Koodisto.YkiArvosana.fromInt(arvosana),
+                    arvosana = koodistoYkiArvosana(arvosana, tutkintotaso),
                     päivä = arviointipaiva,
                 ),
             ),
     )
+
+    private fun koodistoYkiArvosana(
+        arvosana: Int,
+        tutkintotaso: Tutkintotaso,
+    ) = when (tutkintotaso) {
+        Tutkintotaso.PT ->
+            when (arvosana) {
+                0 -> YkiArvosana.ALLE1
+                1 -> YkiArvosana.PT1
+                2 -> YkiArvosana.PT2
+                9 -> YkiArvosana.EiVoiArvioida
+                10 -> YkiArvosana.Keskeytetty
+                11 -> YkiArvosana.Vilppi
+                else -> throw IllegalArgumentException("Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso")
+            }
+        Tutkintotaso.KT ->
+            when (arvosana) {
+                3 -> YkiArvosana.KT3
+                4 -> YkiArvosana.KT4
+                0, 1, 2 -> YkiArvosana.ALLE3
+                9 -> YkiArvosana.EiVoiArvioida
+                10 -> YkiArvosana.Keskeytetty
+                11 -> YkiArvosana.Vilppi
+                else -> throw IllegalArgumentException("Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso")
+            }
+        Tutkintotaso.YT ->
+            when (arvosana) {
+                5 -> YkiArvosana.YT5
+                6 -> YkiArvosana.YT6
+                0, 1, 2, 3, 4 -> YkiArvosana.ALLE5
+                9 -> YkiArvosana.EiVoiArvioida
+                10 -> YkiArvosana.Keskeytetty
+                11 -> YkiArvosana.Vilppi
+                else -> throw IllegalArgumentException("Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso")
+            }
+    }
 }
