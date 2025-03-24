@@ -7,11 +7,14 @@ class InvalidFormatCsvExportError(
     context: String?,
     exception: InvalidFormatException,
 ) : CsvExportError(lineNumber, context, exception) {
+    private val field = exception.path.firstOrNull()?.fieldName ?: ""
+
     init {
         keyValues.addAll(
             listOf(
                 "value" to exception.value,
                 "path" to exception.path,
+                "field" to field,
                 "targetType" to exception.targetType,
             ),
         )

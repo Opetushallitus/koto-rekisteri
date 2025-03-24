@@ -9,6 +9,7 @@ data class YkiSuoritusErrorRow(
     val oid: String,
     val hetu: String,
     val nimi: String,
+    val virheellinenKentta: String,
     val virheellinenArvo: String,
     val virheellinenSarake: String,
     val virheenLuontiaika: Instant,
