@@ -6,7 +6,7 @@ describe('"YKI Suoritukset" -page', () => {
   beforeEach(async ({ db, basePage, ykiSuoritusError }) => {
     await db.withEmptyDatabase()
 
-    await ykiSuoritusError.insert(db, "first")
+    await ykiSuoritusError.insert(db, "invalidFormatCsvExportError")
 
     await basePage.login()
   })

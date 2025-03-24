@@ -9,7 +9,7 @@ describe('"YKI Suoritukset" -page', () => {
     await ykiSuoritus.insert(db, "ranja")
     await ykiSuoritus.insert(db, "ranjaTarkistus")
     await ykiSuoritus.insert(db, "petro")
-    await ykiSuoritusError.insert(db, "first")
+    await ykiSuoritusError.insert(db, "invalidFormatCsvExportError")
 
     await basePage.login()
   })
