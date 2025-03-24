@@ -11,5 +11,5 @@ data class YkiSuoritusErrorRow(
     val nimi: String,
     val virheellinenArvo: String,
     val virheellinenSarake: String,
-    val created: Instant,
+    val virheenLuontiaika: Instant,
 )

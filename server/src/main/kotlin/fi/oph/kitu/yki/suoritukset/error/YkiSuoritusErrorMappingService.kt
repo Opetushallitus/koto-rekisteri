@@ -76,7 +76,7 @@ class YkiSuoritusErrorMappingService(
             nimi = csvData.getValueOrNull("nimi") ?: "",
             virheellinenArvo = keyValues.getValueOrNull("value") ?: "",
             virheellinenSarake = entity.context,
-            created = entity.created,
+            virheenLuontiaika = entity.created,
         )
     }
 }

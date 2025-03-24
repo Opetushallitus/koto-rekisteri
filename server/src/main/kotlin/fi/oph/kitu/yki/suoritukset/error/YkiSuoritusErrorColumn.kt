@@ -9,7 +9,7 @@ enum class YkiSuoritusErrorColumn(
     Nimi(entityName = "nimi", uiHeaderValue = "nimi"),
     VirheellinenArvo(entityName = "virheellinenArvo", uiHeaderValue = "virheellinen arvo"),
     VirheellinenSarake(entityName = "virheellinenSarake", uiHeaderValue = "virheellinen sarake"),
-    Created(entityName = "created", uiHeaderValue = "luontiaika"),
+    Created(entityName = "virheenLuontiaika", uiHeaderValue = "virheen luontiaika"),
     ;
 
     fun lowercaseName(): String = name.lowercase()
