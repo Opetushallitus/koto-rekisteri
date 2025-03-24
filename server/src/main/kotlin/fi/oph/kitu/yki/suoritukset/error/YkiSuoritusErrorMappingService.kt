@@ -78,7 +78,7 @@ class YkiSuoritusErrorMappingService(
             hetu = csvData.getValueOrEmpty("hetu"),
             // TODO: We should probably use more common name generator and not hardcoded one
             nimi = csvData.getValueOrEmpty("sukunimi") + " " + csvData.getValueOrEmpty("etunimet"),
-            virheellinenKentta = csvData.getValueOrEmpty("field"),
+            virheellinenKentta = keyValues.getValueOrEmpty("field"),
             virheellinenArvo = keyValues.getValueOrEmpty("value"),
             virheellinenSarake = entity.context,
             virheenLuontiaika = entity.created,
