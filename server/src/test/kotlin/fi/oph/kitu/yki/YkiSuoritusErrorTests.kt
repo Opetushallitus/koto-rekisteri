@@ -3,7 +3,8 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.SimpleCsvExportError
 import fi.oph.kitu.logging.MockEvent
-import fi.oph.kitu.logging.only
+import fi.oph.kitu.only
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorEntity
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
@@ -56,11 +57,13 @@ class YkiSuoritusErrorTests(
                 exceptionMessage = "OldErrorException",
                 stackTrace = "123",
                 created = Instant.parse("2025-03-06T10:50:00.00Z"),
+                sourceType = "",
+                keyValues = "",
             ),
         )
 
         // Act
-        service.handleErrors(event, errors)
+        service.handleErrors<YkiSuoritusCsv>(event, errors)
 
         // Assert
         val errorsInDatabase = repository.findAll()
@@ -94,11 +97,13 @@ class YkiSuoritusErrorTests(
                 exceptionMessage = "OldErrorException",
                 stackTrace = "123",
                 created = Instant.parse("2025-03-06T10:50:00.00Z"),
+                sourceType = "",
+                keyValues = "",
             ),
         )
 
         // Act
-        service.handleErrors(event, errors)
+        service.handleErrors<YkiSuoritusCsv>(event, errors)
 
         // Assert
         val errorsInDatabase = repository.findAll()
