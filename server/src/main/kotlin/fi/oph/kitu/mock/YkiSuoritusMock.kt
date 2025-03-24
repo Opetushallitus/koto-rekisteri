@@ -25,6 +25,14 @@ fun generateRandomYkiSuoritusEntity(): YkiSuoritusEntity {
 
     val lastModified = lastModifiedLocalDate.atStartOfDay().toInstant(ZoneOffset.UTC)
 
+    val tutkintotaso = Tutkintotaso.entries.random()
+    val maxArvosana =
+        when (tutkintotaso) {
+            Tutkintotaso.PT -> 2
+            Tutkintotaso.KT -> 4
+            Tutkintotaso.YT -> 6
+        }
+
     return YkiSuoritusEntity(
         id = null,
         suorittajanOID = randomPerson.oppijanumero.toString(),
@@ -41,16 +49,16 @@ fun generateRandomYkiSuoritusEntity(): YkiSuoritusEntity {
         lastModified = lastModified,
         tutkintopaiva = tutkintopaiva,
         tutkintokieli = Tutkintokieli.entries.toTypedArray().random(),
-        tutkintotaso = Tutkintotaso.entries.random(),
+        tutkintotaso = tutkintotaso,
         jarjestajanTunnusOid = generateRandomOrganizationOid().toString(),
         jarjestajanNimi = "${randomPerson.postitoimipaikka}n yliopisto",
         arviointipaiva = arviointipaiva,
-        tekstinYmmartaminen = (1..5).random(),
-        kirjoittaminen = (1..5).random(),
-        rakenteetJaSanasto = (1..5).random(),
-        puheenYmmartaminen = (1..5).random(),
-        puhuminen = (1..5).random(),
-        yleisarvosana = (1..5).random(),
+        tekstinYmmartaminen = (0..maxArvosana).random(),
+        kirjoittaminen = (0..maxArvosana).random(),
+        rakenteetJaSanasto = (0..maxArvosana).random(),
+        puheenYmmartaminen = (0..maxArvosana).random(),
+        puhuminen = (0..maxArvosana).random(),
+        yleisarvosana = (0..maxArvosana).random(),
         tarkistusarvioinninSaapumisPvm = tarkistusarvioinninSaapumisPvm,
         tarkistusarvioinninAsiatunnus = (0..9999999999999).random().toString(),
         tarkistusarvioidutOsakokeet = 2,

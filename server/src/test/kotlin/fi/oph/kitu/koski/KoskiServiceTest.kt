@@ -3,16 +3,19 @@ package fi.oph.kitu.koski
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.Tutkintokieli
-import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.http.MediaType
+import org.springframework.test.web.client.ExpectedCount
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
+import org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
@@ -20,6 +23,7 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @SpringBootTest
 @Testcontainers
@@ -27,6 +31,8 @@ class KoskiServiceTest(
     @Autowired private val koskiRequestMapper: KoskiRequestMapper,
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
 ) {
+    @Autowired
+    private lateinit var ykiService: YkiService
     private val objectMapper = jacksonObjectMapper().registerKotlinModule().registerModule(JavaTimeModule())
 
     @Suppress("unused")
@@ -78,13 +84,96 @@ class KoskiServiceTest(
                 ),
             )
 
-        val service = KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository)
+        val service =
+            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository)
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(
                 tutkintokieli = Tutkintokieli.ENG,
-                tutkintotaso = Tutkintotaso.YT,
             )
-        val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus)
+        val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus).getOrThrow()
         assertEquals("1.2.246.562.15.50209741037", updatedSuoritus.koskiOpiskeluoikeus.toString())
+    }
+
+    @Test
+    fun `test failed koski request`() {
+        // Arrange
+        val expectedResponse =
+            """
+            [{"key": "notFound.oppijaaEiLöydy","message": "Oppijaa 1.2.246.562.24.00000000000 ei löydy."}]
+            """.trimIndent()
+        val mockRestClientBuilder = RestClient.builder()
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("oppija"))
+            .andRespond(
+                withBadRequest().body(expectedResponse),
+            )
+
+        val service =
+            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository)
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                id = 1,
+                tutkintokieli = Tutkintokieli.ENG,
+            )
+
+        val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus)
+        assertTrue(updatedSuoritus is TypedResult.Failure)
+        assertEquals(suoritus.id, updatedSuoritus.error.suoritusId)
+    }
+
+    @Test
+    fun `test sending all yki suoritukset to KOSKI`() {
+        val expectedResponse =
+            """
+            {
+              "henkilö": {
+                "oid": "1.2.246.562.24.20281155246"
+              },
+              "opiskeluoikeudet": [
+                {
+                  "oid": "1.2.246.562.15.50209741037",
+                  "versionumero": 1,
+                  "lähdejärjestelmänId": {
+                    "id": "183424",
+                    "lähdejärjestelmä": {
+                      "koodiarvo": "kielitutkintorekisteri",
+                      "nimi": {
+                        "fi": "Kielitutkintorekisteri"
+                      },
+                      "koodistoUri": "lahdejarjestelma",
+                      "koodistoVersio": 1
+                    }
+                  }
+                }
+              ]
+            }
+            """.trimIndent()
+        val mockRestClientBuilder = RestClient.builder()
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(ExpectedCount.times(3), requestTo("oppija"))
+            .andRespond(
+                withSuccess(
+                    expectedResponse,
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+        val service =
+            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository)
+
+        ykiSuoritusRepository.saveAll(
+            listOf(
+                generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.FRA),
+                generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.SPA),
+                generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.DEU),
+            ),
+        )
+        service.sendYkiSuorituksetToKoski()
+        val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
+        assertEquals(3, updatedSuoritukset.size)
+        updatedSuoritukset.forEach {
+            assertEquals("1.2.246.562.15.50209741037", it.koskiOpiskeluoikeus.toString())
+        }
     }
 }
