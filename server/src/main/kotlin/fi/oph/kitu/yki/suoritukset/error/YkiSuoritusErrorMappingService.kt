@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.csvparsing.CsvExportError
-import fi.oph.kitu.getValueOrNull
+import fi.oph.kitu.getValueOrEmpty
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -14,6 +14,39 @@ import kotlin.reflect.full.findAnnotation
 class YkiSuoritusErrorMappingService(
     val objectMapper: ObjectMapper,
 ) {
+    fun <Key, Value> convertListPairToJson(list: List<Pair<Key, Value>>): String =
+        objectMapper.writeValueAsString(list.map { mapOf(it.first to it.second.toString()) })
+
+    fun <Key, Value> convertJsonToListPair(json: String) =
+        objectMapper.readValue<List<Map<Key, Value>>>(json).flatMap { map ->
+            map.entries.map { entry -> entry.toPair() }
+        }
+
+    private final inline fun <reified T> mapCsvWithClass(csv: String): List<Pair<String?, String?>> {
+        val orderedPropertiesAnnotation =
+            T::class.findAnnotation<JsonPropertyOrder>()
+                ?: TODO("Currently only iterating through @JsonPropertyOrder - annotation is supported.")
+
+        val orderedProperties = orderedPropertiesAnnotation.value.toList()
+        val data = csv.split(",")
+
+        return List(maxOf(data.size, orderedProperties.size)) { index ->
+            val first = orderedProperties.getOrNull(index)
+            val second = data.getOrNull(index)
+
+            first to second
+        }
+    }
+
+    fun getListPairBySourceType(
+        sourceType: String,
+        csv: String,
+    ): List<Pair<String?, String?>> =
+        when (sourceType) {
+            YkiSuoritusCsv::class.simpleName!! -> mapCsvWithClass<YkiSuoritusCsv>(csv)
+            else -> TODO("source type '$sourceType' is not implemented yet.")
+        }
+
     final inline fun <reified T> convertToEntityIterable(
         iterable: Iterable<CsvExportError>,
         created: Instant = Instant.now(),
@@ -30,53 +63,23 @@ class YkiSuoritusErrorMappingService(
             exceptionMessage = data.exception.message!!,
             stackTrace = data.exception.stackTrace!!.joinToString("\n"),
             created = created,
-            keyValues =
-                objectMapper.writeValueAsString(
-                    data.keyValues.map { mapOf(it.first to it.second.toString()) },
-                ),
+            keyValues = convertListPairToJson(data.keyValues),
             sourceType = T::class.simpleName!!,
         )
 
     fun convertEntityToRowIterable(iterable: Iterable<YkiSuoritusErrorEntity>) = iterable.map { convertEntityToRow(it) }
 
-    final inline fun <reified T> mapCsvWithClass(csv: String): List<Pair<String?, String?>> {
-        val orderedPropertiesAnnotation =
-            T::class.findAnnotation<JsonPropertyOrder>()
-                ?: TODO("Currently only iterating through @JsonPropertyOrder - annotation is supported.")
-
-        val orderedProperties = orderedPropertiesAnnotation.value.toList()
-        val data = csv.split(",")
-        val resultSize = maxOf(data.size, orderedProperties.size)
-        val result =
-            List(resultSize) { index ->
-                val first = orderedProperties.getOrNull(index)
-                val second = data.getOrNull(index)
-
-                first to second
-            }
-
-        return result
-    }
-
     fun convertEntityToRow(entity: YkiSuoritusErrorEntity): YkiSuoritusErrorRow {
-        val keyValues =
-            objectMapper
-                .readValue<List<Map<String, String>>>(entity.keyValues)
-                .flatMap { map -> map.entries.map { entry -> entry.toPair() } }
-
-        val csvData =
-            when (entity.sourceType) {
-                YkiSuoritusCsv::class.simpleName!! -> mapCsvWithClass<YkiSuoritusCsv>(entity.context)
-                else -> TODO()
-            }
+        val keyValues = convertJsonToListPair<String, String>(entity.keyValues)
+        val csvData = getListPairBySourceType(entity.sourceType, entity.context)
 
         return YkiSuoritusErrorRow(
-            oid = csvData.getValueOrNull("suorittajanOID") ?: "",
-            hetu = csvData.getValueOrNull("hetu") ?: "",
+            oid = csvData.getValueOrEmpty("suorittajanOID"),
+            hetu = csvData.getValueOrEmpty("hetu"),
             // TODO: We should probably use more common name generator and not hardcoded one
-            nimi = csvData.getValueOrNull("sukunimi") + " " + csvData.getValueOrNull("etunimet"),
-            virheellinenKentta = csvData.getValueOrNull("field") ?: "",
-            virheellinenArvo = keyValues.getValueOrNull("value") ?: "",
+            nimi = csvData.getValueOrEmpty("sukunimi") + " " + csvData.getValueOrEmpty("etunimet"),
+            virheellinenKentta = csvData.getValueOrEmpty("field"),
+            virheellinenArvo = keyValues.getValueOrEmpty("value"),
             virheellinenSarake = entity.context,
             virheenLuontiaika = entity.created,
         )

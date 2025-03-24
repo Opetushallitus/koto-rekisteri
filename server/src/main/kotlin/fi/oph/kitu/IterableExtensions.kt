@@ -10,7 +10,9 @@ fun <T> Iterable<T>.only(predicate: (T) -> Boolean): T {
 }
 
 /**
- * Gets the value, pair.second by it's key, pair.first from list of pairs
+ * Gets the value, pair.second by it's key, pair.first from list of pairs.
+ *
+ * Returns null if the value is not found.
  */
 fun <TKey, TValue> Iterable<Pair<TKey, TValue>>.getValueOrNull(key: TKey): TValue? {
     val pairs = this.filter { pair -> pair.first == key }
@@ -23,3 +25,10 @@ fun <TKey, TValue> Iterable<Pair<TKey, TValue>>.getValueOrNull(key: TKey): TValu
 
     return pairs.firstOrNull { it.first == key }?.second
 }
+
+/**
+ * Gets the value, pair.second by it's key, pair.first from list of pairs.
+ *
+ * Returns an empty string value if the value is not found.
+ */
+fun <TKey> Iterable<Pair<TKey, String?>>.getValueOrEmpty(key: TKey): String = this.getValueOrNull(key) ?: ""
