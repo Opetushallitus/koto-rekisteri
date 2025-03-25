@@ -1,6 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addCondition
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
@@ -12,7 +13,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 interface OppijanumeroService {
-    fun getOppijanumero(oppija: Oppija): Result<String>
+    fun getOppijanumero(oppija: Oppija): TypedResult<String, OppijanumeroException>
 }
 
 @Service
@@ -25,7 +26,7 @@ class OppijanumeroServiceImpl(
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
-    override fun getOppijanumero(oppija: Oppija): Result<String> =
+    override fun getOppijanumero(oppija: Oppija): TypedResult<String, OppijanumeroException> =
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
@@ -80,12 +81,21 @@ class OppijanumeroServiceImpl(
             }.apply {
                 addDefaults("getOppijanumero")
             }.result
+            .fold(
+                onSuccess = { TypedResult.Success(it) },
+                onFailure = {
+                    when (it) {
+                        is OppijanumeroException -> TypedResult.Failure(it)
+                        else -> throw it
+                    }
+                },
+            )
 
     /**
      * Tries to convert HttpResponse<String> into the given T.
      * If the conversion fails, it checks whether the response was OppijanumeroServiceError.
      * In that case OppijanumeroException will be thrown.
-     * Otherwise the underlying exception will be thrown
+     * Otherwise, the underlying exception will be thrown
      */
     final inline fun <reified T> tryConvertToOppijanumeroResponse(
         oppija: Oppija,
