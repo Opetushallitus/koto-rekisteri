@@ -4,10 +4,11 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.Oid
-import fi.oph.kitu.flatMap
+import fi.oph.kitu.TypedResult
+import fi.oph.kitu.TypedResult.Failure
+import fi.oph.kitu.TypedResult.Success
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completion
-import fi.oph.kitu.mapFailure
 import fi.oph.kitu.oppijanumero.Oppija
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
@@ -52,32 +53,19 @@ class KoealustaMappingService(
             suorituksetResponse.users.flatMap { user ->
                 val oppijanumero =
                     toOppija(user)
-                        .flatMap { oppijanumeroService.getOppijanumero(it) }
-                        .onFailure {
-                            when (it) {
-                                // Only catch expected types of exceptions. Other kinds are internal programming errors,
-                                // and should fail-fast.
-                                is Error.OppijaValidationFailure -> validationErrors.addAll(it.validationErrors)
-                                is OppijanumeroException -> oppijanumeroExceptions.add(it)
-                                else -> throw it
-                            }
-                        }
-                        // Recover as null, to indicate a missing oppijanumero. This intentionally fails the validation
-                        // during the `completionToEntity` conversion. We do not throw the error (yet), as we want to
-                        // gather any/all validation errors before failing.
+                        .fold(
+                            onSuccess = { oppijanumeroService.getOppijanumero(it) },
+                            onFailure = {
+                                validationErrors.addAll(it.validationErrors)
+                                Success(null)
+                            },
+                        ).onFailure { oppijanumeroExceptions.add(it) }
                         .getOrNull()
 
                 user.completions.mapNotNull { completion ->
-                    completionToEntity(
-                        user,
-                        oppijanumero,
-                        completion,
-                    ).onFailure {
-                        when (it) {
-                            is Error.SuoritusValidationFailure -> validationErrors.addAll(it.validationErrors)
-                            else -> throw it
-                        }
-                    }.getOrNull()
+                    completionToEntity(user, oppijanumero, completion)
+                        .onFailure { validationErrors.addAll(it.validationErrors) }
+                        .getOrNull()
                 }
             }
 
@@ -93,7 +81,7 @@ class KoealustaMappingService(
         return suoritukset
     }
 
-    fun toOppija(koealustaUser: User): Result<Oppija> {
+    fun toOppija(koealustaUser: User): TypedResult<Oppija, Error.OppijaValidationFailure> {
         val errors = mutableListOf<Error.Validation>()
         if (koealustaUser.SSN.isNullOrEmpty()) {
             errors.add(Error.Validation.MissingField("SSN", koealustaUser.userid))
@@ -103,7 +91,7 @@ class KoealustaMappingService(
         }
 
         if (errors.isNotEmpty()) {
-            return Result.failure(
+            return Failure(
                 Error.OppijaValidationFailure(
                     "Validation failure on converting user \"${koealustaUser.userid}\" to oppija",
                     errors,
@@ -114,7 +102,7 @@ class KoealustaMappingService(
         checkNotNull(koealustaUser.SSN)
         checkNotNull(koealustaUser.preferredname)
 
-        return Result.success(
+        return Success(
             Oppija(
                 etunimet = koealustaUser.firstnames,
                 hetu = koealustaUser.SSN,
@@ -130,14 +118,14 @@ class KoealustaMappingService(
         userId: Int,
         completion: Completion,
         isSystemResultRequired: Boolean = true,
-    ): Result<Completion.Result> {
+    ): TypedResult<Completion.Result, Error.Validation> {
         val result =
             completion
                 .results
                 .find { it.name == resultName }
 
         if (isSystemResultRequired && result?.quiz_result_system.isNullOrEmpty()) {
-            return Result.failure(
+            return Failure(
                 Error.Validation.MissingSystemResult(
                     userId,
                     completion.coursename,
@@ -146,7 +134,7 @@ class KoealustaMappingService(
             )
         }
         if (result?.quiz_result_teacher.isNullOrEmpty()) {
-            return Result.failure(
+            return Failure(
                 Error.Validation.MissingTeacherResult(
                     userId,
                     completion.coursename,
@@ -155,67 +143,67 @@ class KoealustaMappingService(
             )
         }
 
-        return Result.success(result)
+        return Success(result)
     }
 
     private fun validate(
         fieldName: String,
         userId: Int,
         oid: String,
-    ): Result<Oid> =
+    ): TypedResult<Oid, Error.Validation> =
         Oid
-            .parse(oid)
+            .parseTyped(oid)
             .mapFailure { Error.Validation.MalformedField(userId, fieldName, oid) }
 
     private fun validateNonEmpty(
         fieldName: String,
         userId: Int,
         value: String?,
-    ): Result<String> =
+    ): TypedResult<String, Error.Validation> =
         if (value.isNullOrEmpty()) {
-            Result.failure(Error.Validation.MissingField(fieldName, userId))
+            Failure(Error.Validation.MissingField(fieldName, userId))
         } else {
-            Result.success(value)
+            Success(value)
         }
 
     fun completionToEntity(
         user: User,
         oppijanumero: String?,
         completion: Completion,
-    ): Result<KielitestiSuoritus> {
+    ): TypedResult<KielitestiSuoritus, Error.SuoritusValidationFailure> {
         val errors = mutableListOf<Error.Validation>()
         val luetunYmmartaminen =
             validate("luetun ymm\u00e4rt\u00e4minen", user.userid, completion)
-                .onFailure { errors.add(it as Error.Validation) }
+                .onFailure { errors.add(it) }
                 .getOrNull()
         val kuullunYmmartaminen =
             validate("kuullun ymm\u00e4rt\u00e4minen", user.userid, completion)
-                .onFailure { errors.add(it as Error.Validation) }
+                .onFailure { errors.add(it) }
                 .getOrNull()
         val puhe =
             validate("puhe", user.userid, completion, isSystemResultRequired = false)
-                .onFailure { errors.add(it as Error.Validation) }
+                .onFailure { errors.add(it) }
                 .getOrNull()
         val kirjoittaminen =
             validate("kirjoittaminen", user.userid, completion, isSystemResultRequired = false)
-                .onFailure { errors.add(it as Error.Validation) }
+                .onFailure { errors.add(it) }
                 .getOrNull()
 
         val schoolOid =
             validate("schoolOID", user.userid, completion.schoolOID)
-                .onFailure { errors.add(it as Error.Validation) }
+                .onFailure { errors.add(it) }
                 .getOrNull()
         val preferredName =
             validateNonEmpty("preferredname", user.userid, user.preferredname)
-                .onFailure { errors.add(it as Error.Validation) }
+                .onFailure { errors.add(it) }
                 .getOrNull()
         val validOppijanumero =
             validateNonEmpty("oppijanumero", user.userid, oppijanumero)
-                .onFailure { errors.add(it as Error.Validation) }
+                .onFailure { errors.add(it) }
                 .getOrNull()
 
         if (errors.isNotEmpty()) {
-            return Result.failure(
+            return Failure(
                 Error.SuoritusValidationFailure(
                     "Validation failure on course completion on \"${completion.coursename}\" for user \"${user.userid}\"",
                     errors,
@@ -233,7 +221,7 @@ class KoealustaMappingService(
         checkNotNull(preferredName)
         checkNotNull(validOppijanumero)
 
-        return Result.success(
+        return Success(
             KielitestiSuoritus(
                 firstNames = user.firstnames,
                 lastName = user.lastname,

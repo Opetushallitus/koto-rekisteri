@@ -1,5 +1,7 @@
 package fi.oph.kitu
 
+import fi.oph.kitu.TypedResult.Failure
+import fi.oph.kitu.TypedResult.Success
 import org.ietf.jgss.GSSException
 
 @ConsistentCopyVisibility
@@ -12,6 +14,13 @@ data class Oid private constructor(
                 Result.success(Oid(org.ietf.jgss.Oid(source)))
             } catch (_: GSSException) {
                 Result.failure(MalformedOidError(source))
+            }
+
+        fun parseTyped(source: String): TypedResult<Oid, MalformedOidError> =
+            try {
+                Success(Oid(org.ietf.jgss.Oid(source)))
+            } catch (_: GSSException) {
+                Failure(MalformedOidError(source))
             }
     }
 
