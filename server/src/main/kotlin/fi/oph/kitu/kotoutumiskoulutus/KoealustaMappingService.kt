@@ -51,16 +51,20 @@ class KoealustaMappingService(
 
         val suoritukset =
             suorituksetResponse.users.flatMap { user ->
-                val oppijanumero =
+                val oppija =
                     toOppija(user)
-                        .fold(
-                            onSuccess = { oppijanumeroService.getOppijanumero(it) },
-                            onFailure = {
-                                validationErrors.addAll(it.validationErrors)
-                                Success(null)
-                            },
-                        ).onFailure { oppijanumeroExceptions.add(it) }
+                        .onFailure { validationErrors.addAll(it.validationErrors) }
                         .getOrNull()
+
+                val oppijanumero =
+                    if (oppija != null) {
+                        oppijanumeroService
+                            .getOppijanumero(oppija)
+                            .onFailure { oppijanumeroExceptions.add(it) }
+                            .getOrNull()
+                    } else {
+                        null
+                    }
 
                 user.completions.mapNotNull { completion ->
                     completionToEntity(user, oppijanumero, completion)
