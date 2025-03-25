@@ -1,3 +1,4 @@
+
 package fi.oph.kitu.mock
 
 import fi.oph.kitu.yki.Tutkintokieli
