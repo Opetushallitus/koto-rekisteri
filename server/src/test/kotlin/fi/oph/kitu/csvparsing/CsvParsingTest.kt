@@ -177,7 +177,7 @@ class CsvParsingTest {
         val serializationErrors = event.keyValues.filter { kvp -> kvp.first?.startsWith("serialization.error") == true }
 
         val count = serializationErrors.size
-        assertTrue(count == 9)
+        assertTrue(count == 10)
 
         val exceptions =
             serializationErrors
