@@ -4,7 +4,7 @@ import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.SimpleCsvExportError
 import fi.oph.kitu.logging.MockEvent
 import fi.oph.kitu.logging.only
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorEntity
+import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import org.junit.jupiter.api.BeforeEach
@@ -49,13 +49,8 @@ class YkiSuoritusErrorTests(
         val errors = emptyList<CsvExportError>()
         repository.save(
             // Existing error
-            YkiSuoritusErrorEntity(
-                id = null,
-                message = "old error",
-                context = "1,2,3",
-                exceptionMessage = "OldErrorException",
-                stackTrace = "123",
-                created = Instant.parse("2025-03-06T10:50:00.00Z"),
+            generateRandomYkiSuoritusErrorEntity().copy(
+                virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
             ),
         )
 
@@ -80,20 +75,24 @@ class YkiSuoritusErrorTests(
         val errors =
             listOf(
                 SimpleCsvExportError(
-                    lineNumber = 1,
-                    context = "4,5,6",
-                    exception = RuntimeException("test"),
+                    lineNumber = 2,
+                    context =
+                        """
+                        ,\"010180-9026\",\"N\",\"Öhman-Testi\",\"Ranja Testi\",\"EST\",\"Testikuja 5\",\"40100\",\"Testilä\",\"testi@testi.fi\",183424,2024-10-30T13:53:56Z,2024-09-01,\"fin\",\"YT\",\"1.2.246.562.10.14893989377\",\"Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus\",2024-11-14,5,5,,5,5,,,,0,0,,
+                        """.trimIndent(),
+                    exception =
+                        RuntimeException(
+                            """
+                            Cannot construct instance of `fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv`, problem: Parameter specified as non-null is null: method fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv.<init>, parameter suorittajanOID
+                                at [Source: (StringReader); line: 3, column: 270]
+                            """.trimIndent(),
+                        ),
                 ),
             )
         repository.save(
             // Existing error
-            YkiSuoritusErrorEntity(
-                id = null,
-                message = "old error",
-                context = "1,2,3",
-                exceptionMessage = "OldErrorException",
-                stackTrace = "123",
-                created = Instant.parse("2025-03-06T10:50:00.00Z"),
+            generateRandomYkiSuoritusErrorEntity().copy(
+                virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
             ),
         )
 
