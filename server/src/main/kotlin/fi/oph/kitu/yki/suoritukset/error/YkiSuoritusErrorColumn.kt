@@ -4,7 +4,7 @@ enum class YkiSuoritusErrorColumn(
     val entityName: String,
     val uiHeaderValue: String,
 ) {
-    Oid(entityName = "oid", uiHeaderValue = "oi"),
+    SuorittajanOid(entityName = "suorittajanOid", uiHeaderValue = "oppijanumero"),
     Hetu(entityName = "hetu", uiHeaderValue = "hetu"),
     Nimi(entityName = "nimi", uiHeaderValue = "nimi"),
     LastModified(entityName = "lastModified", uiHeaderValue = "last modified"),

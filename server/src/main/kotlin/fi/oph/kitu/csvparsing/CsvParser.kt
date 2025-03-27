@@ -97,7 +97,7 @@ class CsvParser(
         val csvMapper = getCsvMapper<T>()
         val schema = getSchema<T>(csvMapper)
         val lineSeparator =
-            only(schema.lineSeparator)
+            onlyOrNull(schema.lineSeparator)
                 ?: throw IllegalStateException(
                     "Can't find only one line seperator from schema (${schema.lineSeparator}).",
                 )
@@ -151,8 +151,8 @@ class CsvParser(
     }
 }
 
-/** Returns the only element in the object or throws an exception */
-fun only(list: CharArray): Char? = if (list.isEmpty() || list.size != 1) null else list[0]
+/** Returns the only element in the object or null */
+fun onlyOrNull(list: CharArray): Char? = if (list.isEmpty() || list.size != 1) null else list[0]
 
 fun <T> MappingIterator<T>.toDataWithErrorHandling(
     onFailure: (index: Int, exception: Throwable) -> Unit = { _, _ -> },

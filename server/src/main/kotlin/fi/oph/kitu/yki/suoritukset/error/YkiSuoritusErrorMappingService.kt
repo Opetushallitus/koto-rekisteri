@@ -19,7 +19,7 @@ class YkiSuoritusErrorMappingService {
 
         return YkiSuoritusErrorEntity(
             id = null,
-            oid = csv[0],
+            suorittajanOid = csv[0],
             hetu = csv[1],
             nimi = csv[3] + " " + csv[4],
             lastModified = runCatching { Instant.parse(csv[11]) }.getOrNull(),

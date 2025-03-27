@@ -27,7 +27,7 @@ fun generateRandomYkiSuoritusErrorEntity(): YkiSuoritusErrorEntity {
 
     return YkiSuoritusErrorEntity(
         id = null,
-        oid = suoritusEntity.suorittajanOID,
+        suorittajanOid = suoritusEntity.suorittajanOID,
         hetu = suoritusEntity.hetu,
         nimi = "${suoritusEntity.sukunimi} ${suoritusEntity.etunimet}",
         lastModified = lastModified,

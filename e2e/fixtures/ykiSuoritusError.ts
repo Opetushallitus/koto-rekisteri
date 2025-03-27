@@ -3,7 +3,7 @@ import { TestDB } from "./baseFixture"
 import { OidQuoted } from "./kotoSuoritus"
 
 export interface YkiSuoritusError {
-  oid: OidQuoted | undefined
+  suorittajanOid: OidQuoted | undefined
   hetu: string | undefined
   nimi: string | undefined
   lastModified: string | undefined
@@ -16,7 +16,7 @@ export interface YkiSuoritusError {
 
 export const fixtureData = {
   missingOid: {
-    oid: undefined,
+    suorittajanOid: undefined,
     hetu: '"010180-9026"',
     nimi: '"Öhman-Testi" "Ranja Testi"',
     lastModified: "2024-10-30 13:53:56",
@@ -28,7 +28,7 @@ export const fixtureData = {
     virheenLuontiaika: "2025-03-27 07:29:53",
   } as YkiSuoritusError,
   invalidGender: {
-    oid: '"1.2.246.562.24.59267607404"',
+    suorittajanOid: '"1.2.246.562.24.59267607404"',
     hetu: '"010116A9518"',
     nimi: '"Kivinen-Testi" "Petro Testi"',
     lastModified: "2024-10-30 13:55:09",
@@ -43,7 +43,7 @@ export const fixtureData = {
 
 const insertQuery = (error: YkiSuoritusError) => SQL`
   INSERT INTO yki_suoritus_error(
-    oid,
+    suorittajan_oid,
     hetu,
     nimi,
     last_modified,
@@ -52,7 +52,7 @@ const insertQuery = (error: YkiSuoritusError) => SQL`
     virheellinen_rivi,
     virheen_rivinumero,
     virheen_luontiaika
-  ) VALUES (${error.oid},
+  ) VALUES (${error.suorittajanOid},
             ${error.hetu},
             ${error.nimi},
             ${error.lastModified},
