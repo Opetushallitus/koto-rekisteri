@@ -174,7 +174,7 @@ class CsvParsingTest {
             parser.convertCsvToData<YkiSuoritusCsv>(csv)
         }
 
-        val serializationErrors = event.keyValues.filter { kvp -> kvp.first?.startsWith("serialization.error") == true }
+        val serializationErrors = event.keyValues.filterKeys { it?.startsWith("serialization.error") == true }
 
         val count = serializationErrors.size
         assertEquals(10, count, "Unexpected number of serialization errors")
@@ -182,7 +182,8 @@ class CsvParsingTest {
         val exceptions =
             serializationErrors
                 //  Removes everything before last dot, from the keys.
-                .map { kvp -> Pair(kvp.first?.substringAfterLast("."), kvp.second) }
+                // as a side effect disassociate keys with the values
+                .map { kvp -> Pair(kvp.key?.substringAfterLast("."), kvp.value) }
                 .filter { it.first.equals("exception") }
                 .map { it.second }
 

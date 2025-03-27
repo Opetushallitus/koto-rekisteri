@@ -23,7 +23,7 @@ class EventLoggerTests {
         val result = logger.getOrThrow()
         assertNotNull(result)
 
-        val success = event.getValueOrNullByKey<Boolean>("success")
+        val success = event.keyValues["success"] as Boolean
         assertNotNull(success, "missing success")
         assertTrue(success, "success should be true")
 
@@ -61,7 +61,7 @@ class EventLoggerTests {
             logger.getOrThrow()
         }
 
-        val success = event.getValueOrNullByKey<Boolean>("success")
+        val success = event.keyValues["success"] as Boolean
         assertNotNull(success, "missing success")
         assertFalse(success, "success should be false")
 
@@ -104,7 +104,7 @@ class EventLoggerTests {
                 Thread.sleep(1)
             }.getOrThrow()
 
-        val durationMs = event.getValueOrNullByKey<Long>("duration_ms")
+        val durationMs = event.keyValues["duration_ms"] as Long
         assertNotNull(durationMs, "duration_ms should not be null")
         assertTrue(durationMs > 0, "duration_ms should be greater than 0")
     }
@@ -128,7 +128,7 @@ class EventLoggerTests {
                 }.getOrThrow()
         }
 
-        val durationMs = event.getValueOrNullByKey<Long>("duration_ms")
+        val durationMs = event.keyValues["duration_ms"] as Long
         assertNotNull(durationMs, "duration_ms should not be null")
         assertTrue(durationMs > 0, "duration_ms should be greater than 0")
     }

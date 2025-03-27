@@ -10,7 +10,7 @@ class InvalidFormatCsvExportError(
     val field = exception.path.firstOrNull()?.fieldName ?: ""
 
     init {
-        keyValues.addAll(
+        keyValues.putAll(
             listOf(
                 "value" to exception.value,
                 "path" to exception.path,
@@ -33,7 +33,7 @@ abstract class CsvExportError(
     val exception: Throwable,
 ) {
     val keyValues =
-        mutableListOf<Pair<String, Any>>(
+        mutableMapOf<String, Any>(
             "lineNumber" to lineNumber,
             "exception" to exception,
         )

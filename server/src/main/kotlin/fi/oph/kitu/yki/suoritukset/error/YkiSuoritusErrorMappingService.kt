@@ -6,20 +6,6 @@ import java.time.Instant
 
 @Service
 class YkiSuoritusErrorMappingService {
-    private inline fun <reified T> List<Pair<String, Any>>.getValueByKey(key: String?) =
-        this
-            .filter { it.first == key }
-            .map { it.second }
-            .filterIsInstance<T>()
-            .first()
-
-    private inline fun <reified T> List<Pair<String, Any>>.getValueOrNullByKey(key: String?) =
-        this
-            .filter { it.first == key }
-            .map { it.second }
-            .filterIsInstance<T>()
-            .firstOrNull()
-
     fun convertToEntityIterable(
         iterable: Iterable<CsvExportError>,
         created: Instant = Instant.now(),
@@ -37,10 +23,10 @@ class YkiSuoritusErrorMappingService {
             hetu = csv[1],
             nimi = csv[3] + " " + csv[4],
             lastModified = runCatching { Instant.parse(csv[11]) }.getOrNull(),
-            virheellinenKentta = data.keyValues.getValueOrNullByKey<String>("field"),
-            virheellinenArvo = data.keyValues.getValueOrNullByKey<Any>("value").toString(),
+            virheellinenKentta = data.keyValues["field"]?.toString(),
+            virheellinenArvo = data.keyValues["value"]?.toString(),
             virheellinenRivi = data.context,
-            virheenRivinumero = data.keyValues.getValueByKey<Int>("lineNumber"),
+            virheenRivinumero = data.keyValues["lineNumber"] as Int,
             virheenLuontiaika = Instant.now(),
         )
     }

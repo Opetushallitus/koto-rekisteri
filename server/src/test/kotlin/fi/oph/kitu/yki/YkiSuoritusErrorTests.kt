@@ -3,7 +3,6 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.SimpleCsvExportError
 import fi.oph.kitu.logging.MockEvent
-import fi.oph.kitu.logging.only
 import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
@@ -61,10 +60,11 @@ class YkiSuoritusErrorTests(
         val errorsInDatabase = repository.findAll()
         assertEquals(0, errorsInDatabase.count())
 
-        val (_, errorSize) = event.keyValues.only { kvp -> kvp.first == "errors.size" }
+        val errorSize = event.keyValues["errors.size"] as Int
+
         assertEquals(0, errorSize)
 
-        val (_, truncate) = event.keyValues.only { kvp -> kvp.first == "errors.truncate" }
+        val truncate = event.keyValues["errors.truncate"] as Boolean
         assertEquals(true, truncate)
     }
 
@@ -103,13 +103,13 @@ class YkiSuoritusErrorTests(
         val errorsInDatabase = repository.findAll()
         assertEquals(2, errorsInDatabase.count())
 
-        val (_, errorSize) = event.keyValues.only { kvp -> kvp.first == "errors.size" }
+        val errorSize = event.keyValues["errors.size"] as Int
         assertEquals(1, errorSize)
 
-        val (_, truncate) = event.keyValues.only { kvp -> kvp.first == "errors.truncate" }
+        val truncate = event.keyValues["errors.truncate"] as Boolean
         assertEquals(false, truncate)
 
-        val (_, addedSize) = event.keyValues.only { kvp -> kvp.first == "errors.addedSize" }
+        val addedSize = event.keyValues["errors.addedSize"] as Int
         assertEquals(1, addedSize)
     }
 }

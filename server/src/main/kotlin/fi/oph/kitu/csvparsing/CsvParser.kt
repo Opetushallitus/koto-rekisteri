@@ -129,7 +129,7 @@ class CsvParser(
         errors.forEachIndexed { i, error ->
             event.add("serialization.error[$i].index" to i)
             for (kvp in error.keyValues) {
-                event.add("serialization.error[$i].${kvp.first}" to kvp.second)
+                event.add("serialization.error[$i].${kvp.key}" to kvp.value)
             }
         }
 
