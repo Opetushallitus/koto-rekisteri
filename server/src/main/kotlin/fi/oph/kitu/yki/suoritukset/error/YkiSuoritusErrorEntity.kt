@@ -13,7 +13,7 @@ import java.time.Instant
 data class YkiSuoritusErrorEntity(
     @Id
     val id: Long?,
-    val oid: String?,
+    val suorittajanOid: String?,
     val hetu: String?,
     val nimi: String?,
     val lastModified: Instant?,

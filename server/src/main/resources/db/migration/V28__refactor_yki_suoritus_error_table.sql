@@ -4,7 +4,7 @@ DROP TABLE yki_suoritus_error;
 CREATE TABLE yki_suoritus_error
 (
     id                  SERIAL PRIMARY KEY,
-    oid                 TEXT,
+    suorittajan_oid     TEXT,
     hetu                TEXT,
     nimi                TEXT,
     last_modified       TIMESTAMP WITH TIME ZONE,
