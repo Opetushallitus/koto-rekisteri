@@ -5,20 +5,13 @@ import org.slf4j.spi.LoggingEventBuilder
 import java.util.function.Supplier
 
 class MockEvent : LoggingEventBuilder {
-    val keyValues = mutableListOf<Pair<String?, Any?>>()
+    val keyValues = mutableMapOf<String?, Any?>()
     val causes = mutableListOf<Throwable?>()
     val markers = mutableListOf<Marker?>()
     val arguments = mutableListOf<Any?>()
     val messages = mutableListOf<String?>()
     val logs = mutableListOf<String?>()
     val defaultLogValue: String = "NULL"
-
-    inline fun <reified T> getValueOrNullByKey(key: String?) =
-        keyValues
-            .filter { it.first == key }
-            .map { it.second }
-            .filterIsInstance<T>()
-            .firstOrNull()
 
     override fun setCause(p0: Throwable?): LoggingEventBuilder {
         causes.add(p0)
@@ -44,7 +37,7 @@ class MockEvent : LoggingEventBuilder {
         p0: String?,
         p1: Any?,
     ): LoggingEventBuilder {
-        keyValues.add(Pair(p0, p1))
+        keyValues[p0] = p1
         return this
     }
 
@@ -52,7 +45,7 @@ class MockEvent : LoggingEventBuilder {
         p0: String?,
         p1: Supplier<Any>?,
     ): LoggingEventBuilder {
-        keyValues.add(Pair(p0, p1?.get()))
+        keyValues[p0] = p1
         return this
     }
 
