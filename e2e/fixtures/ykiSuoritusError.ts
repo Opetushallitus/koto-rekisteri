@@ -27,7 +27,7 @@ export const fixtureData = {
     virheenRivinumero: 2,
     virheenLuontiaika: "2025-03-27 07:29:53",
   } as YkiSuoritusError,
-  invalidSex: {
+  invalidGender: {
     oid: '"1.2.246.562.24.59267607404"',
     hetu: '"010116A9518"',
     nimi: '"Kivinen-Testi" "Petro Testi"',
