@@ -23,11 +23,15 @@
       <tbody class="virheet">
       {{#virheet}}
         <tr>
-          <td>{{message}}</td>
-          <td>{{context}}</td>
-          <td>{{exceptionMessage}}</td>
-          <td>{{stackTrace}}</td>
-          <td>{{created}}</td>
+          <td>{{#oid}}{{oid}}{{/oid}}</td>
+          <td>{{#hetu}}{{hetu}}{{/hetu}}</td>
+          <td>{{#nimi}}{{nimi}}{{/nimi}}</td>
+          <td>{{#lastModified}}{{lastModified}}{{/lastModified}}</td>
+          <td>{{#virheellinenKentta}}{{virheellinenKentta}}{{/virheellinenKentta}}</td>
+          <td>{{#virheellinenArvo}}{{virheellinenArvo}}{{/virheellinenArvo}}</td>
+	      <td>{{virheellinenRivi}}</td>
+          <td>{{virheenRivinumero}}</td>
+          <td>{{virheenLuontiaika}}</td>
         </tr>
       {{/virheet}}
       </tbody>

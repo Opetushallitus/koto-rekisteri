@@ -2,6 +2,7 @@ import SQL from "sql-template-strings"
 import { TestDB } from "./baseFixture"
 
 export type Oid = `${number}.${number}.${number}.${number}.${number}.${number}`
+export type OidQuoted = `"${Oid}"`
 export type Email = `${string}@${string}.${string}`
 
 export interface KotoSuoritus {

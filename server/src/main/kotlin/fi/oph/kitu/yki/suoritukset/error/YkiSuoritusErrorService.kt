@@ -49,7 +49,7 @@ class YkiSuoritusErrorService(
         }
 
     fun getErrors(
-        orderBy: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.Created,
+        orderBy: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.VirheenLuontiaika,
         orderByDirection: SortDirection = SortDirection.ASC,
     ): List<YkiSuoritusErrorEntity> =
         repository
