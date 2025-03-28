@@ -7,7 +7,7 @@ class InvalidFormatCsvExportError(
     context: String?,
     exception: InvalidFormatException,
 ) : CsvExportError(lineNumber, context, exception) {
-    val field = exception.path.firstOrNull()?.fieldName ?: ""
+    private val fieldWithValidationError = exception.path.firstOrNull()?.fieldName ?: ""
 
     init {
         keyValues.putAll(
@@ -15,7 +15,7 @@ class InvalidFormatCsvExportError(
                 "value" to exception.value,
                 "path" to exception.path,
                 "targetType" to exception.targetType,
-                "field" to field,
+                "fieldWithValidationError" to fieldWithValidationError,
             ),
         )
     }
