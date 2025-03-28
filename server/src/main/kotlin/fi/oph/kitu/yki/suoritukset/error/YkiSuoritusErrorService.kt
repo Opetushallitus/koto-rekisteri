@@ -6,6 +6,8 @@ import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -16,6 +18,8 @@ class YkiSuoritusErrorService(
     private val repository: YkiSuoritusErrorRepository,
     private val auditLogger: AuditLogger,
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
+
     fun countErrors(): Long = repository.count()
 
     fun handleErrors(
@@ -27,6 +31,15 @@ class YkiSuoritusErrorService(
             "errors.truncate" to errors.isEmpty(),
         )
 
+        // add errors to technical logs
+        errors.forEachIndexed { i, error ->
+            event.add("serialization.error[$i].index" to i)
+            for (kvp in error.keyValues) {
+                event.add("serialization.error[$i].${kvp.key}" to kvp.value)
+            }
+        }
+
+        // add errors to database
         if (errors.isEmpty()) {
             repository.deleteAll()
         } else {
