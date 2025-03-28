@@ -14,9 +14,5 @@ CREATE TABLE yki_suoritus_error
     virheen_rivinumero  INTEGER                     NOT NULL,
     virheen_luontiaika  TIMESTAMP WITH TIME ZONE    NOT NULL,
 
-    CONSTRAINT unique_suoritus_error UNIQUE
-    (
-        virheellinen_rivi,
-        virheen_rivinumero
-    )
+    CONSTRAINT unique_suoritus_error_virheellinen_rivi_is_unique UNIQUE (virheellinen_rivi)
 )
