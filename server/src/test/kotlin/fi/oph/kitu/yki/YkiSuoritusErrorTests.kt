@@ -17,6 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.lang.RuntimeException
 import java.time.Instant
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // import java.util.
 
@@ -66,6 +67,14 @@ class YkiSuoritusErrorTests(
 
         val truncate = event.keyValues["errors.truncate"] as Boolean
         assertEquals(true, truncate)
+
+        // verify serialization errors (technical)
+        val serializationErrors =
+            event.keyValues.filterKeys {
+                it?.startsWith("serialization.error") == true
+            }
+
+        assertEquals(0, serializationErrors.size)
     }
 
     @Test
@@ -111,5 +120,25 @@ class YkiSuoritusErrorTests(
 
         val addedSize = event.keyValues["errors.addedSize"] as Int
         assertEquals(1, addedSize)
+
+        // verify serialization errors (technical)
+        val serializationErrors =
+            event.keyValues.filterKeys {
+                it?.startsWith("serialization.error") == true
+            }
+
+        assertEquals(3, serializationErrors.size)
+
+        val exception =
+            serializationErrors
+                //  Removes everything before last dot, from the keys.
+                // as a side effect disassociate keys with the values
+                .map { Pair(it.key?.substringAfterLast("."), it.value) }
+                .filter { it.first.equals("exception") }
+                .map { it.second }
+                .first()
+
+        assertTrue(exception is RuntimeException)
+        assertTrue(exception.message!!.contains("suorittajanOID"))
     }
 }
