@@ -11,6 +11,13 @@ class YkiSuoritusErrorMappingService {
         created: Instant = Instant.now(),
     ) = iterable.map { convertToEntity(it, created) }
 
+    /**
+     * Tries to convert raw CSV data into YkiSuoritusErrorEntity as well as possible.
+     *
+     * The method assumes the data was tried to be converted into an YkiSuoritusEntity and the conversion failed.
+     * Therefore the conversion of this function is done with the best effort. For example, it won't handle
+     * values inside double quotes or commas inside quoted fields correctly.
+     */
     fun convertToEntity(
         data: CsvExportError,
         created: Instant = Instant.now(),
