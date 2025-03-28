@@ -4,9 +4,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorEntity
 import java.time.Instant
-import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
 
 fun generateRandomYkiSuoritusErrorEntity(): YkiSuoritusErrorEntity {
     val lastModified = getRandomInstant(Instant.parse("2004-01-01T00:00:00Z"))
@@ -32,10 +30,33 @@ fun generateRandomYkiSuoritusErrorEntity(): YkiSuoritusErrorEntity {
 }
 
 fun YkiSuoritusCsv.toCsvString(): String =
-    this::class
-        .memberProperties
-        .onEach { it.isAccessible = true }
-        .joinToString(separator = ",") {
-            @Suppress("UNCHECKED_CAST")
-            (it as KProperty1<YkiSuoritusCsv, *>).get(this).toString()
-        }
+    this.suorittajanOID.toString() + "," +
+        this.hetu + "," +
+        this.sukupuoli + "," +
+        this.sukunimi + "," +
+        this.etunimet + "," +
+        this.kansalaisuus + "," +
+        this.katuosoite + "," +
+        this.postinumero + "," +
+        this.postitoimipaikka + "," +
+        this.email + "," +
+        this.suoritusID + "," +
+        this.lastModified + "," +
+        this.tutkintopaiva + "," +
+        this.tutkintokieli + "," +
+        this.tutkintotaso + "," +
+        this.jarjestajanOID + "," +
+        this.jarjestajanNimi + "," +
+        this.arviointipaiva + "," +
+        this.tekstinYmmartaminen + "," +
+        this.kirjoittaminen + "," +
+        this.rakenteetJaSanasto + "," +
+        this.puheenYmmartaminen + "," +
+        this.puhuminen + "," +
+        this.yleisarvosana + "," +
+        this.tarkistusarvioinninSaapumisPvm + "," +
+        this.tarkistusarvioinninAsiatunnus + "," +
+        this.tarkistusarvioidutOsakokeet + "," +
+        this.arvosanaMuuttui + "," +
+        this.perustelu + "," +
+        this.tarkistusarvioinninKasittelyPvm
