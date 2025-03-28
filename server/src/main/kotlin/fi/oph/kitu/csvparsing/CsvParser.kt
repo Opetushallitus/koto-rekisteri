@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import fi.oph.kitu.InclusiveTypedResult
 import fi.oph.kitu.Oid
 import fi.oph.kitu.logging.add
 import org.slf4j.spi.LoggingEventBuilder
@@ -82,14 +83,11 @@ class CsvParser(
 
     /**
      * Converts retrieved String response into a list that is the type of Body.
-     * Returns a pair:
-     *  - first: the data
-     *  - second: errors
      */
-    inline fun <reified T> safeConvertCsvToData(csvString: String): Pair<List<T>, List<CsvExportError>> {
+    inline fun <reified T> convertCsvToData(csvString: String): List<InclusiveTypedResult<T, CsvExportError>> {
         if (csvString.isBlank()) {
             event.add("serialization.isEmptyList" to true)
-            return Pair(emptyList(), emptyList())
+            return emptyList()
         }
 
         event.add("serialization.isEmptyList" to false)
@@ -98,71 +96,43 @@ class CsvParser(
         val schema = getSchema<T>(csvMapper)
         val lineSeparator =
             onlyOrNull(schema.lineSeparator)
+                // This error would be probably due to internal changes so we don't pass it to normal error handling.
                 ?: throw IllegalStateException(
                     "Can't find only one line seperator from schema (${schema.lineSeparator}).",
                 )
 
-        // the lines are needed to read line by line in order to distinguish all erroneous lines
-        val errors = mutableListOf<CsvExportError>()
-
-        val iterator =
-            csvMapper
-                .readerFor(T::class.java)
-                .with(schema)
-                .readValues<T?>(csvString)
-
-        val data =
-            iterator.toDataWithErrorHandling { index, e ->
+        return csvMapper
+            .readerFor(T::class.java)
+            .with(schema)
+            .readValues<T?>(csvString)
+            .toInclusiveTypedResults { index, e ->
                 val context = runCatching { csvString.split(lineSeparator)[index] }.getOrNull()
 
                 when (e) {
-                    is InvalidFormatException -> errors.add(InvalidFormatCsvExportError(index, context, e))
-                    else -> errors.add(SimpleCsvExportError(index, context, e))
+                    is InvalidFormatException -> InvalidFormatCsvExportError(index, context, e)
+                    else -> SimpleCsvExportError(index, context, e)
                 }
             }
-
-        if (errors.isEmpty()) {
-            return Pair(data, emptyList())
-        }
-
-        // add all errors to log
-        errors.forEachIndexed { i, error ->
-            event.add("serialization.error[$i].index" to i)
-            for (kvp in error.keyValues) {
-                event.add("serialization.error[$i].${kvp.key}" to kvp.value)
-            }
-        }
-
-        return Pair(data, errors)
-    }
-
-    /**
-     * Converts retrieved String response into a list that is the type of Body.
-     */
-    inline fun <reified T> convertCsvToData(csvString: String): List<T> {
-        val (data, errors) = safeConvertCsvToData<T>(csvString)
-        if (errors.isNotEmpty()) {
-            throw RuntimeException(
-                "Unable to convert string to csv, because the string had ${errors.count()} error(s).",
-            )
-        }
-
-        return data
     }
 }
 
 /** Returns the only element in the object or null */
 fun onlyOrNull(list: CharArray): Char? = if (list.isEmpty() || list.size != 1) null else list[0]
 
-fun <T> MappingIterator<T>.toDataWithErrorHandling(
-    onFailure: (index: Int, exception: Throwable) -> Unit = { _, _ -> },
-): List<T> {
-    val data = mutableListOf<T>()
+fun <Value, Error> MappingIterator<Value>.toInclusiveTypedResults(
+    mapFailure: (index: Int, exception: Throwable) -> Error,
+): List<InclusiveTypedResult<Value, Error>> {
+    val data = mutableListOf<InclusiveTypedResult<Value, Error>>()
     var index = 0
+
     while (this.hasNext()) {
-        runCatching { data.add(this.nextValue()) }
-            .onFailure { e -> onFailure(index, e) }
-            .also { index++ }
+        val result =
+            InclusiveTypedResult
+                .runCatching { this.nextValue() }
+                .mapFailure { e -> mapFailure(index, e) }
+                .also { index++ }
+
+        data.add(result)
     }
 
     return data
