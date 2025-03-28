@@ -23,12 +23,54 @@
       <tbody class="virheet">
       {{#virheet}}
         <tr>
-          <td>{{#suorittajanOid}}{{suorittajanOid}}{{/suorittajanOid}}</td>
-          <td>{{#hetu}}{{hetu}}{{/hetu}}</td>
-          <td>{{#nimi}}{{nimi}}{{/nimi}}</td>
-          <td>{{#lastModified}}{{lastModified}}{{/lastModified}}</td>
-          <td>{{#virheellinenKentta}}{{virheellinenKentta}}{{/virheellinenKentta}}</td>
-          <td>{{#virheellinenArvo}}{{virheellinenArvo}}{{/virheellinenArvo}}</td>
+          <td>
+              {{#suorittajanOid}}
+                  {{suorittajanOid}}
+              {{/suorittajanOid}}
+              {{^suorittajanOid}}
+                 arvo puuttuu
+              {{/suorittajanOid}}
+          </td>
+          <td>
+              {{#hetu}}
+                  {{hetu}}
+              {{/hetu}}
+              {{^hetu}}
+                  arvo puuttuu
+              {{/hetu}}
+          </td>
+          <td>
+              {{#nimi}}
+                {{nimi}}
+              {{/nimi}}
+              {{^nimi}}
+                  arvo puuttuu
+              {{/nimi}}
+          </td>
+          <td>
+              {{#lastModified}}
+                  {{lastModified}}
+              {{/lastModified}}
+              {{^lastModified}}
+                  arvo puuttuu
+              {{/lastModified}}
+          </td>
+          <td>
+              {{#virheellinenKentta}}
+                  {{virheellinenKentta}}
+              {{/virheellinenKentta}}
+              {{^virheellinenKentta}}
+                  arvo puuttuu
+              {{/virheellinenKentta}}
+          </td>
+          <td>
+              {{#virheellinenArvo}}
+                  {{virheellinenArvo}}
+              {{/virheellinenArvo}}
+              {{^virheellinenArvo}}
+                  arvo puuttuu
+              {{/virheellinenArvo}}
+          </td>
 	      <td>{{virheellinenRivi}}</td>
           <td>{{virheenRivinumero}}</td>
           <td>{{virheenLuontiaika}}</td>
