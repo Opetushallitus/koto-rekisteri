@@ -162,28 +162,36 @@ class CsvParsingTest {
     fun `parsing errors are logged `() {
         val event = MockEvent()
         val parser = CsvParser(event)
+        val hetus =
+            arrayOf(
+                "010180-9026",
+                "INVALID_HETU",
+            )
         val csv =
             """
-            "INVALID_OID","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            "1.2.246.562.24.20281155246","INVALID_HETU","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            "1.2.246.562.24.20281155246","010180-9026","INVALID_SEX","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","INVALID_NATIONALITY","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "INVALID_OID","${hetus[0]}","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "1.2.246.562.24.20281155246","${hetus[1]}","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "1.2.246.562.24.20281155246","${hetus[0]}","INVALID_SEX","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "1.2.246.562.24.20281155246","${hetus[0]}","N","Öhman-Testi","Ranja Testi","INVALID_NATIONALITY","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             """.trimIndent()
 
         assertThrows<RuntimeException> {
             parser.convertCsvToData<YkiSuoritusCsv>(csv)
         }
 
-        val serializationErrors = event.keyValues.filterKeys { it?.startsWith("serialization.error") == true }
+        val serializationErrors =
+            event.keyValues.filterKeys {
+                it?.startsWith("serialization.error") == true
+            }
 
         val count = serializationErrors.size
-        assertEquals(10, count, "Unexpected number of serialization errors")
+        assertEquals(8, count, "Unexpected number of serialization errors")
 
         val exceptions =
             serializationErrors
                 //  Removes everything before last dot, from the keys.
                 // as a side effect disassociate keys with the values
-                .map { kvp -> Pair(kvp.key?.substringAfterLast("."), kvp.value) }
+                .map { Pair(it.key?.substringAfterLast("."), it.value) }
                 .filter { it.first.equals("exception") }
                 .map { it.second }
 
@@ -195,6 +203,14 @@ class CsvParsingTest {
 
         assertTrue(invalidFormatException is InvalidFormatException)
         assertTrue(invalidFormatException.message!!.contains("INVALID_SEX"))
+
+        val foundHetus =
+            serializationErrors.values.mapNotNull { error ->
+                hetus.firstOrNull { hetu ->
+                    error.toString().contains(hetu)
+                }
+            }
+        assertEquals(0, foundHetus.size, "CSV parsaing should not log any hetu")
     }
 
     @Test
@@ -206,13 +222,14 @@ class CsvParsingTest {
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             "1.2.246.562.24.20281155246","INVALID_HETU","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             "1.2.246.562.24.20281155246","010180-9026","INVALID_SEX","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            "1.2.246.562.24.INVALID_OID","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             """.trimIndent()
 
         val (data, errors) = parser.safeConvertCsvToData<YkiSuoritusCsv>(csv)
 
         assertEquals(3, data.size)
-        assertEquals(1, errors.size)
+        assertEquals(2, errors.size)
     }
 
     @Test

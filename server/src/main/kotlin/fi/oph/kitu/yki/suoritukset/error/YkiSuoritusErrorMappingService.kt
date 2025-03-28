@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.csvparsing.CsvExportError
+import fi.oph.kitu.csvparsing.InvalidFormatCsvExportError
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -30,8 +31,8 @@ class YkiSuoritusErrorMappingService {
             hetu = csv[1],
             nimi = csv[3] + " " + csv[4],
             lastModified = runCatching { Instant.parse(csv[11]) }.getOrNull(),
-            virheellinenKentta = data.keyValues["field"]?.toString(),
-            virheellinenArvo = data.keyValues["value"]?.toString(),
+            virheellinenKentta = if (data is InvalidFormatCsvExportError) data.fieldWithValidationError else null,
+            virheellinenArvo = if (data is InvalidFormatCsvExportError) data.valueWithValidationError else null,
             virheellinenRivi = data.context,
             virheenRivinumero = data.keyValues["lineNumber"] as Int,
             virheenLuontiaika = Instant.now(),
