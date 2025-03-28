@@ -2,18 +2,16 @@ package fi.oph.kitu.csvparsing
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException
+import fi.oph.kitu.InclusiveTypedResult
 import fi.oph.kitu.Oid
 import fi.oph.kitu.logging.MockEvent
-import fi.oph.kitu.separateResultAndError
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.io.ByteArrayOutputStream
-import java.lang.RuntimeException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -29,7 +27,13 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             """.trimIndent()
-        val suoritus = parser.convertCsvToData<YkiSuoritusCsv>(csv).getOrThrow().first()
+        val result =
+            parser
+                .convertCsvToData<YkiSuoritusCsv>(csv)
+                .first()
+
+        assertTrue(result is InclusiveTypedResult.Success)
+        val suoritus = result.value
 
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
@@ -74,13 +78,15 @@ class CsvParsingTest {
         val csv =
             """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"$perustelut1",
 "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"$perustelut2","""
-        val suoritukset = parser.convertCsvToData<YkiSuoritusCsv>(csv).getOrThrow()
+        val results = parser.convertCsvToData<YkiSuoritusCsv>(csv)
 
-        val suoritus1 = suoritukset.first()
-        assertEquals(perustelut1, suoritus1.perustelu)
+        val result1 = results.first()
+        assertTrue(result1 is InclusiveTypedResult.Success)
+        assertEquals(perustelut1, result1.value.perustelu)
 
-        val suoritus2 = suoritukset.last()
-        assertEquals(perustelut2, suoritus2.perustelu)
+        val result2 = results.last()
+        assertTrue(result2 is InclusiveTypedResult.Success)
+        assertEquals(perustelut2, result2.value.perustelu)
     }
 
     @Test
@@ -90,8 +96,9 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"10","PT+KT"
             """.trimIndent()
-        val arvioija = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv).getOrThrow()[0]
-        assertEquals(Tutkintokieli.SWE10, arvioija.kieli)
+        val result = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv)[0]
+        assertTrue(result is InclusiveTypedResult.Success)
+        assertEquals(Tutkintokieli.SWE10, result.value.kieli)
     }
 
     @Test
@@ -101,8 +108,9 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"11","PT+KT"
             """.trimIndent()
-        val arvioija = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv).getOrThrow()[0]
-        assertEquals(Tutkintokieli.ENG11, arvioija.kieli)
+        val result = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv)[0]
+        assertTrue(result is InclusiveTypedResult.Success)
+        assertEquals(Tutkintokieli.ENG11, result.value.kieli)
     }
 
     @Test
@@ -112,8 +120,9 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"12","PT+KT"
             """.trimIndent()
-        val arvioija = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv).getOrThrow()[0]
-        assertEquals(Tutkintokieli.ENG12, arvioija.kieli)
+        val result = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv)[0]
+        assertTrue(result is InclusiveTypedResult.Success)
+        assertEquals(Tutkintokieli.ENG12, result.value.kieli)
     }
 
     @Test
@@ -123,7 +132,9 @@ class CsvParsingTest {
             """
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"Tarkistusarvioinnin perustelu\nJossa rivinvaihto",
             """.trimIndent()
-        val suoritus = parser.convertCsvToData<YkiSuoritusCsv>(csv).getOrThrow().first()
+        val result = parser.convertCsvToData<YkiSuoritusCsv>(csv).first()
+        assertTrue(result is InclusiveTypedResult.Success)
+        val suoritus = result.value
 
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
@@ -160,61 +171,6 @@ class CsvParsingTest {
     }
 
     @Test
-    fun `parsing errors are logged `() {
-        val event = MockEvent()
-        val parser = CsvParser(event)
-        val hetus =
-            arrayOf(
-                "010180-9026",
-                "INVALID_HETU",
-            )
-        val csv =
-            """
-            "INVALID_OID","${hetus[0]}","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            "1.2.246.562.24.20281155246","${hetus[1]}","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            "1.2.246.562.24.20281155246","${hetus[0]}","INVALID_SEX","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            "1.2.246.562.24.20281155246","${hetus[0]}","N","Öhman-Testi","Ranja Testi","INVALID_NATIONALITY","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-            """.trimIndent()
-
-        assertThrows<RuntimeException> {
-            parser.convertCsvToData<YkiSuoritusCsv>(csv)
-        }
-
-        val serializationErrors =
-            event.keyValues.filterKeys {
-                it?.startsWith("serialization.error") == true
-            }
-
-        val count = serializationErrors.size
-        assertEquals(8, count, "Unexpected number of serialization errors")
-
-        val exceptions =
-            serializationErrors
-                //  Removes everything before last dot, from the keys.
-                // as a side effect disassociate keys with the values
-                .map { Pair(it.key?.substringAfterLast("."), it.value) }
-                .filter { it.first.equals("exception") }
-                .map { it.second }
-
-        val valueInstantiationException = exceptions.first()
-        val invalidFormatException = exceptions.last()
-
-        assertTrue(valueInstantiationException is ValueInstantiationException)
-        assertTrue(valueInstantiationException.message!!.contains("OID"))
-
-        assertTrue(invalidFormatException is InvalidFormatException)
-        assertTrue(invalidFormatException.message!!.contains("INVALID_SEX"))
-
-        val foundHetus =
-            serializationErrors.values.mapNotNull { error ->
-                hetus.firstOrNull { hetu ->
-                    error.toString().contains(hetu)
-                }
-            }
-        assertEquals(0, foundHetus.size, "CSV parsaing should not log any hetu")
-    }
-
-    @Test
     fun `safe parsing returns valid rows`() {
         val event = MockEvent()
         val parser = CsvParser(event)
@@ -227,11 +183,31 @@ class CsvParsingTest {
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
             """.trimIndent()
 
-        val result = parser.convertCsvToData<YkiSuoritusCsv>(csv)
-        val (data, errors) = result.separateResultAndError()
+        val results = parser.convertCsvToData<YkiSuoritusCsv>(csv)
+        val row1 = results[0]
+        assertTrue(row1 is InclusiveTypedResult.Success)
 
-        assertEquals(3, data.size)
-        assertEquals(2, errors.size)
+        val row2 = results[1]
+        assertTrue(row2 is InclusiveTypedResult.Success)
+
+        val row3 = results[2]
+        assertTrue(row3 is InclusiveTypedResult.Failure)
+
+        val row3error = row3.error // have to set this variable, because smart cast fails otherwise
+        assertTrue(row3error is InvalidFormatCsvExportError)
+        assertTrue(row3error.exception is InvalidFormatException)
+        assertEquals(row3error.fieldWithValidationError, "sukupuoli")
+        assertEquals(row3error.valueWithValidationError, "INVALID_SEX")
+
+        val row4 = results[3]
+        assertTrue(row4 is InclusiveTypedResult.Failure)
+        val row4error = row4.error
+        assertTrue(row4error is SimpleCsvExportError)
+        assertTrue(row4error.exception is ValueInstantiationException)
+        assertEquals(row4error.keyValues.count(), 2)
+
+        val row5 = results[4]
+        assertTrue(row5 is InclusiveTypedResult.Success)
     }
 
     @Test
