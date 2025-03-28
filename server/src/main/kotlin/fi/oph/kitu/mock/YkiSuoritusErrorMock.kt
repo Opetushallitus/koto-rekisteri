@@ -15,15 +15,7 @@ fun generateRandomYkiSuoritusErrorEntity(): YkiSuoritusErrorEntity {
 
     val suoritusEntity = generateRandomYkiSuoritusEntity()
 
-    val csv =
-        try {
-            YkiSuoritusMappingService()
-                .convertToResponse(suoritusEntity)
-                .toCsvString()
-        } catch (e: Throwable) {
-            println(e)
-            throw e
-        }
+    val csv = YkiSuoritusMappingService().convertToResponse(suoritusEntity).toCsvString()
 
     return YkiSuoritusErrorEntity(
         id = null,
