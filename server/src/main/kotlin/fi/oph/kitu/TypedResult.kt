@@ -69,4 +69,27 @@ sealed class TypedResult<Value, Error> {
             onSuccess = { Success(it) },
             onFailure = { Failure(transform(it)) },
         )
+
+    companion object {
+        inline fun <Value> runCatching(block: () -> Value): TypedResult<Value, Throwable> =
+            try {
+                Success(block())
+            } catch (e: Throwable) {
+                Failure(e)
+            }
+    }
+}
+
+fun <Value, Error> Iterable<TypedResult<Value, Error>>.splitIntoValuesAndErrors(): Pair<List<Value>, List<Error>> {
+    val values =
+        this
+            .filterIsInstance<TypedResult.Success<Value, Error>>()
+            .map { it.value }
+
+    val errors =
+        this
+            .filterIsInstance<TypedResult.Failure<Value, Error>>()
+            .map { it.error }
+
+    return values to errors
 }

@@ -2,8 +2,8 @@ package fi.oph.kitu.csvparsing
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException
-import fi.oph.kitu.InclusiveTypedResult
 import fi.oph.kitu.Oid
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.MockEvent
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
@@ -32,7 +32,7 @@ class CsvParsingTest {
                 .convertCsvToData<YkiSuoritusCsv>(csv)
                 .first()
 
-        assertTrue(result is InclusiveTypedResult.Success)
+        assertTrue(result is TypedResult.Success)
         val suoritus = result.value
 
         val datePattern = "yyyy-MM-dd"
@@ -81,11 +81,11 @@ class CsvParsingTest {
         val results = parser.convertCsvToData<YkiSuoritusCsv>(csv)
 
         val result1 = results.first()
-        assertTrue(result1 is InclusiveTypedResult.Success)
+        assertTrue(result1 is TypedResult.Success)
         assertEquals(perustelut1, result1.value.perustelu)
 
         val result2 = results.last()
-        assertTrue(result2 is InclusiveTypedResult.Success)
+        assertTrue(result2 is TypedResult.Success)
         assertEquals(perustelut2, result2.value.perustelu)
     }
 
@@ -97,7 +97,7 @@ class CsvParsingTest {
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"10","PT+KT"
             """.trimIndent()
         val result = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv)[0]
-        assertTrue(result is InclusiveTypedResult.Success)
+        assertTrue(result is TypedResult.Success)
         assertEquals(Tutkintokieli.SWE10, result.value.kieli)
     }
 
@@ -109,7 +109,7 @@ class CsvParsingTest {
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"11","PT+KT"
             """.trimIndent()
         val result = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv)[0]
-        assertTrue(result is InclusiveTypedResult.Success)
+        assertTrue(result is TypedResult.Success)
         assertEquals(Tutkintokieli.ENG11, result.value.kieli)
     }
 
@@ -121,7 +121,7 @@ class CsvParsingTest {
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"12","PT+KT"
             """.trimIndent()
         val result = parser.convertCsvToData<SolkiArvioijaResponse>(arvioijaCsv)[0]
-        assertTrue(result is InclusiveTypedResult.Success)
+        assertTrue(result is TypedResult.Success)
         assertEquals(Tutkintokieli.ENG12, result.value.kieli)
     }
 
@@ -133,7 +133,7 @@ class CsvParsingTest {
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"Tarkistusarvioinnin perustelu\nJossa rivinvaihto",
             """.trimIndent()
         val result = parser.convertCsvToData<YkiSuoritusCsv>(csv).first()
-        assertTrue(result is InclusiveTypedResult.Success)
+        assertTrue(result is TypedResult.Success)
         val suoritus = result.value
 
         val datePattern = "yyyy-MM-dd"
@@ -185,13 +185,13 @@ class CsvParsingTest {
 
         val results = parser.convertCsvToData<YkiSuoritusCsv>(csv)
         val row1 = results[0]
-        assertTrue(row1 is InclusiveTypedResult.Success)
+        assertTrue(row1 is TypedResult.Success)
 
         val row2 = results[1]
-        assertTrue(row2 is InclusiveTypedResult.Success)
+        assertTrue(row2 is TypedResult.Success)
 
         val row3 = results[2]
-        assertTrue(row3 is InclusiveTypedResult.Failure)
+        assertTrue(row3 is TypedResult.Failure)
 
         val row3error = row3.error // have to set this variable, because smart cast fails otherwise
         assertTrue(row3error is InvalidFormatCsvExportError)
@@ -200,14 +200,14 @@ class CsvParsingTest {
         assertEquals(row3error.valueWithValidationError, "INVALID_SEX")
 
         val row4 = results[3]
-        assertTrue(row4 is InclusiveTypedResult.Failure)
+        assertTrue(row4 is TypedResult.Failure)
         val row4error = row4.error
         assertTrue(row4error is SimpleCsvExportError)
         assertTrue(row4error.exception is ValueInstantiationException)
         assertEquals(row4error.keyValues.count(), 2)
 
         val row5 = results[4]
-        assertTrue(row5 is InclusiveTypedResult.Success)
+        assertTrue(row5 is TypedResult.Success)
     }
 
     @Test
