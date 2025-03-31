@@ -8,7 +8,7 @@ import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
-import fi.oph.kitu.partitionInclusiveTypedResult
+import fi.oph.kitu.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
@@ -69,7 +69,7 @@ class YkiService(
                 val (suoritukset, errors) =
                     parser
                         .convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
-                        .partitionInclusiveTypedResult()
+                        .splitIntoValuesAndErrors()
 
                 suoritusErrorService.handleErrors(event, errors)
                 val nextSince = suoritusErrorService.findNextSearchRange(suoritukset, errors, from)
@@ -110,7 +110,7 @@ class YkiService(
                     parser
                         .convertCsvToData<SolkiArvioijaResponse>(
                             response.body ?: throw Error.EmptyArvioijatResponse(),
-                        ).partitionInclusiveTypedResult()
+                        ).splitIntoValuesAndErrors()
 
                 event.add("yki.arvioijat.receivedCount" to arvioijat.size)
 

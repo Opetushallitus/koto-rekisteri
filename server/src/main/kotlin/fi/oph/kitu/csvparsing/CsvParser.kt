@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import fi.oph.kitu.InclusiveTypedResult
 import fi.oph.kitu.Oid
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.add
 import org.slf4j.spi.LoggingEventBuilder
 import java.io.ByteArrayOutputStream
@@ -84,7 +84,7 @@ class CsvParser(
     /**
      * Converts retrieved String response into a list that is the type of Body.
      */
-    inline fun <reified T> convertCsvToData(csvString: String): List<InclusiveTypedResult<T, CsvExportError>> {
+    inline fun <reified T> convertCsvToData(csvString: String): List<TypedResult<T, CsvExportError>> {
         if (csvString.isBlank()) {
             event.add("serialization.isEmptyList" to true)
             return emptyList()
@@ -105,7 +105,7 @@ class CsvParser(
             .readerFor(T::class.java)
             .with(schema)
             .readValues<T?>(csvString)
-            .toInclusiveTypedResults { index, e ->
+            .toTypedResults { index, e ->
                 val context = runCatching { csvString.split(lineSeparator)[index] }.getOrNull()
 
                 when (e) {
@@ -119,15 +119,15 @@ class CsvParser(
 /** Returns the only element in the object or null */
 fun onlyOrNull(list: CharArray): Char? = if (list.isEmpty() || list.size != 1) null else list[0]
 
-fun <Value, Error> MappingIterator<Value>.toInclusiveTypedResults(
+fun <Value, Error> MappingIterator<Value>.toTypedResults(
     mapFailure: (index: Int, exception: Throwable) -> Error,
-): List<InclusiveTypedResult<Value, Error>> {
-    val data = mutableListOf<InclusiveTypedResult<Value, Error>>()
+): List<TypedResult<Value, Error>> {
+    val data = mutableListOf<TypedResult<Value, Error>>()
     var index = 0
 
     while (this.hasNext()) {
         val result =
-            InclusiveTypedResult
+            TypedResult
                 .runCatching { this.nextValue() }
                 .mapFailure { e -> mapFailure(index, e) }
                 .also { index++ }
