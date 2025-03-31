@@ -19,4 +19,12 @@ open class OppijanumeroException(
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
         cause: Throwable? = null,
     ) : OppijanumeroException(oppija, message, oppijanumeroServiceError, cause)
+
+    class MalformedOppijanumero(
+        oppija: Oppija,
+        oppijanumero: String?,
+        message: String = "Received a malformed oppijanumero \"$oppijanumero\" for ${oppija.henkilo_oid}",
+        oppijanumeroServiceError: OppijanumeroServiceError? = null,
+        cause: Throwable? = null,
+    ) : OppijanumeroException(oppija, message, oppijanumeroServiceError, cause)
 }

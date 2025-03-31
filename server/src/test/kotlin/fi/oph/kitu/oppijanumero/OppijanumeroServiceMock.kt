@@ -1,11 +1,13 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.TypedResult.Success
 
 class OppijanumeroServiceMock(
     private val oppijanumero: String,
 ) : OppijanumeroService {
-    override fun getOppijanumero(oppija: Oppija): TypedResult<String, OppijanumeroException> =
-        Success(this.oppijanumero)
+    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
+        Oid
+            .parseTyped(oppijanumero)
+            .mapFailure { OppijanumeroException.MalformedOppijanumero(oppija, oppijanumero) }
 }
