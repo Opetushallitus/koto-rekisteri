@@ -47,7 +47,7 @@ class OppijanumeroServiceTests {
                         ),
                     ).getOrThrow()
             }
-        assertEquals(expectedOppijanumero.toString(), result)
+        assertEquals(expectedOppijanumero, result)
     }
 
     @Test

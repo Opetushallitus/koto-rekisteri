@@ -105,7 +105,7 @@ class KoealustaServiceTests(
                 mappingService =
                     KoealustaMappingService(
                         objectMapper,
-                        OppijanumeroServiceMock("123"),
+                        OppijanumeroServiceMock("1.2.246.562.24.33342764709"),
                     ),
                 auditLogger = auditLogger,
             )

@@ -1,6 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addCondition
@@ -13,7 +14,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 interface OppijanumeroService {
-    fun getOppijanumero(oppija: Oppija): TypedResult<String, OppijanumeroException>
+    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
 }
 
 @Service
@@ -26,7 +27,7 @@ class OppijanumeroServiceImpl(
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
-    override fun getOppijanumero(oppija: Oppija): TypedResult<String, OppijanumeroException> =
+    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
@@ -36,7 +37,7 @@ class OppijanumeroServiceImpl(
                 require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
 
                 if (event.addCondition(key = "request.hasOppijanumero", condition = oppija.oppijanumero != null)) {
-                    return@withEventAndPerformanceCheck oppija.oppijanumero.toString()
+                    return@withEventAndPerformanceCheck oppija.oppijanumero
                 }
 
                 val endpoint = "$serviceUrl/yleistunniste/hae"
@@ -81,7 +82,16 @@ class OppijanumeroServiceImpl(
             }.apply {
                 addDefaults("getOppijanumero")
             }.result
-            .fold(
+            .map { oppijanumero ->
+                if (oppijanumero == null) {
+                    throw OppijanumeroException.MalformedOppijanumero(oppija, oppijanumero)
+                }
+
+                Oid
+                    .parseTyped(oppijanumero)
+                    .mapFailure { OppijanumeroException.MalformedOppijanumero(oppija, oppijanumero) }
+                    .getOrThrow()
+            }.fold(
                 onSuccess = { TypedResult.Success(it) },
                 onFailure = {
                     when (it) {

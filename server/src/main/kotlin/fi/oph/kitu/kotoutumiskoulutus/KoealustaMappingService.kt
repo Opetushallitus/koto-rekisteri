@@ -172,7 +172,7 @@ class KoealustaMappingService(
 
     fun completionToEntity(
         user: User,
-        oppijanumero: String?,
+        oppijanumero: Oid?,
         completion: Completion,
     ): TypedResult<KielitestiSuoritus, Error.SuoritusValidationFailure> {
         val errors = mutableListOf<Error.Validation>()
@@ -201,10 +201,9 @@ class KoealustaMappingService(
             validateNonEmpty("preferredname", user.userid, user.preferredname)
                 .onFailure { errors.add(it) }
                 .getOrNull()
-        val validOppijanumero =
-            validateNonEmpty("oppijanumero", user.userid, oppijanumero)
-                .onFailure { errors.add(it) }
-                .getOrNull()
+        if (oppijanumero == null) {
+            errors.add(Error.Validation.MissingField("oppijanumero", user.userid))
+        }
 
         if (errors.isNotEmpty()) {
             return Failure(
@@ -223,7 +222,7 @@ class KoealustaMappingService(
         checkNotNull(kirjoittaminen?.quiz_result_teacher)
         checkNotNull(schoolOid)
         checkNotNull(preferredName)
-        checkNotNull(validOppijanumero)
+        checkNotNull(oppijanumero)
 
         return Success(
             KielitestiSuoritus(
@@ -231,7 +230,7 @@ class KoealustaMappingService(
                 lastName = user.lastname,
                 preferredname = preferredName,
                 email = user.email,
-                oppijanumero = validOppijanumero,
+                oppijanumero = oppijanumero.toString(),
                 timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
                 schoolOid = schoolOid,
                 courseid = completion.courseid,
