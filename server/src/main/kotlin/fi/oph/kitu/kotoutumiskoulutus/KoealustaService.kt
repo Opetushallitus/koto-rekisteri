@@ -4,11 +4,9 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addHttpResponse
-import fi.oph.kitu.logging.withEventAndPerformanceCheck
-import fi.oph.kitu.oppijanumero.addValidationExceptions
-import org.slf4j.LoggerFactory
+import fi.oph.kitu.logging.setAttribute
+import fi.oph.kitu.logging.use
+import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -22,9 +20,9 @@ class KoealustaService(
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val mappingService: KoealustaMappingService,
     private val auditLogger: AuditLogger,
+    private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+    private val tracer: Tracer,
 ) {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
     lateinit var koealustaToken: String
 
@@ -48,63 +46,64 @@ class KoealustaService(
                 }
             }
 
-    fun importSuoritukset(from: Instant) =
-        logger
-            .atInfo()
-            .withEventAndPerformanceCheck { event ->
-                event.add(
-                    "function" to "local_completion_export_get_completions",
-                    "from" to from,
-                )
+    fun importSuoritukset(from: Instant): Instant =
+        tracer.spanBuilder("koealusta.import.suoritukset").startSpan().use { span ->
+            val remoteFunction = "local_completion_export_get_completions"
 
-                val response =
-                    restClient
-                        .get()
-                        .uri(
-                            "/webservice/rest/server.php?wstoken={token}&wsfunction={function}&moodlewsrestformat=json&from={from}",
-                            mapOf<String?, Any>(
-                                "token" to koealustaToken,
-                                "function" to "local_completion_export_get_completions",
-                                "from" to from.epochSecond,
-                            ),
-                        ).accept(MediaType.APPLICATION_JSON)
-                        .retrieve()
-                        .toEntity<String>()
+            span.setAttribute("function", remoteFunction)
+            span.setAttribute("from", from.toString())
 
-                event
-                    .add("request.token" to koealustaToken)
-                    .addHttpResponse(PeerService.Koealusta, uri = "/webservice/rest/server.php", response)
+            val response =
+                restClient
+                    .get()
+                    .uri(
+                        "/webservice/rest/server.php?wstoken={token}&wsfunction={function}&moodlewsrestformat=json&from={from}",
+                        mapOf<String?, Any>(
+                            "token" to koealustaToken,
+                            "function" to remoteFunction,
+                            "from" to from.epochSecond,
+                        ),
+                    ).accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .toEntity<String>()
 
-                if (response.body == null) {
-                    return@withEventAndPerformanceCheck from
-                }
+            if (response.body == null) {
+                return from
+            }
 
-                val suoritukset =
-                    try {
-                        mappingService.responseStringToEntity(response.body!!)
-                    } catch (ex: KoealustaMappingService.Error.ValidationFailure) {
-                        event.addValidationExceptions(ex.oppijanumeroExceptions, ex.validationErrors)
-                        throw ex
+            val (suoritukset, validationFailure) = mappingService.responseStringToEntity(response.body!!)
+
+            validationFailure?.let {
+                kielitestiSuoritusErrorRepository.saveAll(mappingService.convertErrors(it.validationErrors))
+                kielitestiSuoritusErrorRepository.saveAll(mappingService.convertErrors(it.oppijanumeroExceptions))
+
+                span.setAttribute("errors.db.saved", it.validationErrors.size + it.oppijanumeroExceptions.size)
+            }
+
+            val savedSuoritukset =
+                kielitestiSuoritusRepository
+                    .saveAll(suoritukset)
+                    .also {
+                        auditLogger.logAll("Kielitesti suoritus imported", it) { suoritus ->
+                            arrayOf(
+                                "suoritus.id" to suoritus.id,
+                                "principal" to "koealusta.import",
+                                "peer.service" to PeerService.Koealusta.value,
+                            )
+                        }
                     }
 
-                val savedSuoritukset =
-                    kielitestiSuoritusRepository
-                        .saveAll(suoritukset)
-                        .also {
-                            auditLogger.logAll("Kielitesti suoritus imported", it) { suoritus ->
-                                arrayOf(
-                                    "suoritus.id" to suoritus.id,
-                                    "principal" to "koealusta.import",
-                                    "peer.service" to PeerService.Koealusta.value,
-                                )
-                            }
-                        }
+            span.setAttribute("db.saved", savedSuoritukset.count())
 
-                event.add("db.saved" to savedSuoritukset.count())
+            if (validationFailure != null &&
+                (
+                    validationFailure.validationErrors.isNotEmpty() ||
+                        validationFailure.oppijanumeroExceptions.isNotEmpty()
+                )
+            ) {
+                return from
+            }
 
-                return@withEventAndPerformanceCheck suoritukset.maxOfOrNull { it.timeCompleted } ?: from
-            }.apply {
-                addDefaults("koealusta.importSuoritukset")
-                addDatabaseLogs()
-            }.getOrThrow()
+            return suoritukset.maxOfOrNull { it.timeCompleted } ?: from
+        }
 }
