@@ -80,7 +80,7 @@ sealed class TypedResult<Value, Error> {
     }
 }
 
-fun <Value, Error> Iterable<TypedResult<Value, Error>>.splitIntoValuesAndErrors(): Pair<List<Value>, List<Error>> {
+fun <Value, Error> Iterable<TypedResult<Value, out Error>>.splitIntoValuesAndErrors(): Pair<List<Value>, List<Error>> {
     val values =
         this
             .filterIsInstance<TypedResult.Success<Value, Error>>()

@@ -35,6 +35,7 @@ class KoealustaServiceTests(
     @Test
     fun `test import works`(
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired kielitestiSuoritusErrorsRepository: KielitestiSuoritusErrorsRepository,
         @Autowired objectMapper: ObjectMapper,
     ) {
         // Facade
@@ -108,6 +109,7 @@ class KoealustaServiceTests(
                         OppijanumeroServiceMock("1.2.246.562.24.33342764709"),
                     ),
                 auditLogger = auditLogger,
+                kielitestiSuoritusErrorsRepository = kielitestiSuoritusErrorsRepository,
             )
 
         koealustaService.koealustaToken = "token"

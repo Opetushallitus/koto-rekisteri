@@ -42,48 +42,38 @@ class KoealustaMappingService(
         }
     }
 
-    fun responseStringToEntity(body: String): Iterable<KielitestiSuoritus> =
+    /** Parse response JSON as a string to internal entities.
+     *
+     * @throws [MoodleException] or [RuntimeException] if an unexpected error occurs
+     */
+    fun responseStringToEntity(body: String): Iterable<TypedResult<KielitestiSuoritus, out Error>> =
         convertToEntity(tryParseMoodleResponse<KoealustaSuorituksetResponse>(body))
 
-    fun convertToEntity(suorituksetResponse: KoealustaSuorituksetResponse): Iterable<KielitestiSuoritus> {
-        val oppijanumeroExceptions = mutableListOf<OppijanumeroException>()
-        val validationErrors = mutableListOf<Error.Validation>()
-
-        val suoritukset =
-            suorituksetResponse.users.flatMap { user ->
-                val oppija =
-                    toOppija(user)
-                        .onFailure { validationErrors.addAll(it.validationErrors) }
-                        .getOrNull()
-
-                val oppijanumero =
-                    if (oppija != null) {
-                        oppijanumeroService
-                            .getOppijanumero(oppija)
-                            .onFailure { oppijanumeroExceptions.add(it) }
-                            .getOrNull()
-                    } else {
-                        null
-                    }
-
-                user.completions.mapNotNull { completion ->
+    fun convertToEntity(
+        suorituksetResponse: KoealustaSuorituksetResponse,
+    ): List<TypedResult<KielitestiSuoritus, out Error>> =
+        suorituksetResponse.users.flatMap { user ->
+            try {
+                val oppija: Oppija = toOppija(user).getOrThrow()
+                val oppijanumero: Oid = getOppijanumero(oppija).getOrThrow()
+                user.completions.map { completion ->
                     completionToEntity(user, oppijanumero, completion)
-                        .onFailure { validationErrors.addAll(it.validationErrors) }
-                        .getOrNull()
                 }
+            } catch (ex: Throwable) {
+                listOf(
+                    Failure(
+                        when (ex) {
+                            is Error.OppijaValidationFailure -> ex
+                            is Error.OppijanumeroFailure -> ex
+                            else -> throw ex // throw unexpected errors up
+                        },
+                    ),
+                )
             }
-
-        if (oppijanumeroExceptions.isNotEmpty() || validationErrors.isNotEmpty()) {
-            throw Error.ValidationFailure(
-                "Parsing KielitestiSuoritus failed: There were ${validationErrors.size}" +
-                    " validation errors and ${oppijanumeroExceptions.size} oppijanumero failures.",
-                oppijanumeroExceptions,
-                validationErrors,
-            )
         }
 
-        return suoritukset
-    }
+    private fun getOppijanumero(oppija: Oppija): TypedResult<Oid, Error.OppijanumeroFailure> =
+        oppijanumeroService.getOppijanumero(oppija).mapFailure(Error::OppijanumeroFailure)
 
     fun toOppija(koealustaUser: User): TypedResult<Oppija, Error.OppijaValidationFailure> {
         val errors = mutableListOf<Error.Validation>()
@@ -249,6 +239,10 @@ class KoealustaMappingService(
         )
     }
 
+    fun convertErrors(errors: Iterable<Error>): Iterable<KielitestiSuoritusError> {
+        TODO("Not yet implemented")
+    }
+
     sealed class Error(
         message: String,
     ) : Exception(message) {
@@ -257,6 +251,10 @@ class KoealustaMappingService(
             val oppijanumeroExceptions: List<OppijanumeroException>,
             val validationErrors: List<Validation>,
         ) : Error(message)
+
+        class OppijanumeroFailure(
+            val oppijanumeroException: OppijanumeroException,
+        ) : Error("ONR error")
 
         class OppijaValidationFailure(
             message: String,
@@ -278,7 +276,7 @@ class KoealustaMappingService(
                 resultName: String,
             ) : Validation(
                     userId,
-                    "Unexpectedly missing quiz system result \"$resultName\" on course \"$courseName\" for user \"$userId\"",
+                    """Unexpectedly missing quiz system result "$resultName" on course "$courseName" for user "$userId"""",
                 )
 
             class MissingTeacherResult(
@@ -287,19 +285,19 @@ class KoealustaMappingService(
                 resultName: String,
             ) : Validation(
                     userId,
-                    "Unexpectedly missing quiz teacher result \"$resultName\" on course \"$courseName\" for user \"$userId\"",
+                    """Unexpectedly missing quiz teacher result "$resultName" on course "$courseName" for user "$userId"""",
                 )
 
             class MissingField(
                 field: String,
                 userId: Int,
-            ) : Validation(userId, "Missing student \"$field\" for user \"$userId\"")
+            ) : Validation(userId, """Missing student "$field" for user "$userId"""")
 
             class MalformedField(
                 userId: Int,
                 field: String,
                 value: String,
-            ) : Validation(userId, "Malformed value \"$value\" in \"$field\" for user \"$userId\"")
+            ) : Validation(userId, """Malformed value "$value" in "$field" for user "$userId"""")
         }
     }
 }
