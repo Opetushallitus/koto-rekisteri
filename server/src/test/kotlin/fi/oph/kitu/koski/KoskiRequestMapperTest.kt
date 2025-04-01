@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import fi.oph.kitu.Oid
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -16,11 +17,13 @@ class KoskiRequestMapperTest {
     private val koskiRequestMapper = KoskiRequestMapper()
     private val objectMapper = jacksonObjectMapper().registerKotlinModule().registerModule(JavaTimeModule())
 
+    private val oid: Oid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
+
     @Test
     fun `map yki suoritus to koski request`() {
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(
-                suorittajanOID = "1.2.246.562.24.12345678910",
+                suorittajanOID = oid,
                 suoritusId = 123456,
                 tutkintopaiva = LocalDate.of(2025, 1, 1),
                 arviointipaiva = LocalDate.of(2025, 1, 3),
@@ -49,7 +52,7 @@ class KoskiRequestMapperTest {
     fun `map yki suoritus with yleisarvosana to koski request`() {
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(
-                suorittajanOID = "1.2.246.562.24.12345678910",
+                suorittajanOID = oid,
                 suoritusId = 123456,
                 tutkintopaiva = LocalDate.of(2025, 1, 1),
                 arviointipaiva = LocalDate.of(2025, 1, 3),

@@ -22,7 +22,7 @@ import java.time.LocalDate
 class KoskiRequestMapper {
     fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): KoskiRequest =
         KoskiRequest(
-            henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID),
+            henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID.toString()),
             opiskeluoikeudet =
                 listOf(
                     Opiskeluoikeus(

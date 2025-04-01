@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
@@ -37,6 +38,9 @@ class YkiSuoritusRepositoryTest(
         ykiSuoritusRepository.deleteAll()
     }
 
+    private val oidRanja = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
+    private val oidTesti = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
+
     @Test
     fun `suoritus is saved correctly`() {
         val datePattern = "yyyy-MM-dd"
@@ -44,7 +48,7 @@ class YkiSuoritusRepositoryTest(
         val suoritus =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
+                suorittajanOID = oidRanja,
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.N,
                 sukunimi = "Öhman-Testi",
@@ -87,7 +91,7 @@ class YkiSuoritusRepositoryTest(
         val initialSuoritus =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
+                suorittajanOID = oidRanja,
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.N,
                 sukunimi = "Öhman-Testi",
@@ -134,10 +138,11 @@ class YkiSuoritusRepositoryTest(
     fun `suoritus with null values is saved correctly`() {
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
+        val oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
         val suoritus =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
+                suorittajanOID = oid,
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.N,
                 sukunimi = "Öhman-Testi",
@@ -177,10 +182,11 @@ class YkiSuoritusRepositoryTest(
     fun `finding distinct suoritukset returns the latest suoritus of same suoritusId`() {
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
+        val oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
         val suoritus =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
+                suorittajanOID = oid,
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.N,
                 sukunimi = "Öhman-Testi",
@@ -215,7 +221,7 @@ class YkiSuoritusRepositoryTest(
         val suoritus2 =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.12345678910",
+                suorittajanOID = oidTesti,
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.E,
                 sukunimi = "Testinen",
@@ -277,7 +283,7 @@ class YkiSuoritusRepositoryTest(
         val suoritusSWE10 =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
+                suorittajanOID = oidRanja,
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.N,
                 sukunimi = "Öhman-Testi",
@@ -323,7 +329,7 @@ class YkiSuoritusRepositoryTest(
         val suoritus =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
+                suorittajanOID = oidRanja,
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.N,
                 sukunimi = "Öhman-Testi",
@@ -358,7 +364,7 @@ class YkiSuoritusRepositoryTest(
         val suoritus2 =
             suoritus.copy(
                 suoritusId = 123123,
-                suorittajanOID = "1.2.246.562.24.12345678910",
+                suorittajanOID = oidTesti,
                 etunimet = "Testi",
                 sukunimi = "Testilä",
             )
@@ -380,7 +386,7 @@ class YkiSuoritusRepositoryTest(
         val suoritus =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.20281155246",
+                suorittajanOID = oidRanja,
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.N,
                 sukunimi = "Öhman-Testi",
@@ -415,7 +421,7 @@ class YkiSuoritusRepositoryTest(
         val suoritus2 =
             YkiSuoritusEntity(
                 id = null,
-                suorittajanOID = "1.2.246.562.24.12345678910",
+                suorittajanOID = oidTesti,
                 hetu = "010180-9026",
                 sukupuoli = Sukupuoli.E,
                 sukunimi = "Testinen",
