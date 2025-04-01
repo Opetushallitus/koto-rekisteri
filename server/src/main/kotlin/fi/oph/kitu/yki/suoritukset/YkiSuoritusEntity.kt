@@ -15,7 +15,7 @@ import java.time.LocalDate
 data class YkiSuoritusEntity(
     @Id
     val id: Int?,
-    val suorittajanOID: String,
+    val suorittajanOID: Oid,
     val hetu: String,
     @Enumerated(EnumType.STRING)
     val sukupuoli: Sukupuoli,

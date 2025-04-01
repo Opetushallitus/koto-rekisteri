@@ -35,7 +35,7 @@ fun generateRandomYkiSuoritusEntity(): YkiSuoritusEntity {
 
     return YkiSuoritusEntity(
         id = null,
-        suorittajanOID = randomPerson.oppijanumero.toString(),
+        suorittajanOID = randomPerson.oppijanumero,
         hetu = randomPerson.hetu,
         sukupuoli = randomPerson.sukupuoli,
         sukunimi = randomPerson.sukunimi,

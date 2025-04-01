@@ -14,7 +14,7 @@ class YkiSuoritusMappingService {
         koskiOpiskeluoikeus: String? = null,
     ) = YkiSuoritusEntity(
         id,
-        csv.suorittajanOID.toString(),
+        csv.suorittajanOID,
         csv.hetu,
         csv.sukupuoli ?: Sukupuoli.E,
         csv.sukunimi,
@@ -51,7 +51,7 @@ class YkiSuoritusMappingService {
 
     fun convertToResponse(entity: YkiSuoritusEntity): YkiSuoritusCsv =
         YkiSuoritusCsv(
-            suorittajanOID = Oid.parse(entity.suorittajanOID).getOrThrow(),
+            suorittajanOID = entity.suorittajanOID,
             hetu = entity.hetu,
             sukupuoli = entity.sukupuoli,
             sukunimi = entity.sukunimi,

@@ -135,7 +135,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                     i: Int,
                 ) {
                     val suoritus = suoritukset.elementAt(i)
-                    ps.setString(1, suoritus.suorittajanOID)
+                    ps.setString(1, suoritus.suorittajanOID.toString())
                     ps.setString(2, suoritus.hetu)
                     ps.setString(3, suoritus.sukupuoli.toString())
                     ps.setString(4, suoritus.sukunimi)
@@ -295,7 +295,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
 fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity =
     YkiSuoritusEntity(
         rs.getInt("id"),
-        rs.getString("suorittajan_oid"),
+        Oid.parse(rs.getString("suorittajan_oid")).getOrThrow(),
         rs.getString("hetu"),
         Sukupuoli.valueOf(rs.getString("sukupuoli")),
         rs.getString("sukunimi"),
