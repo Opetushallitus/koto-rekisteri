@@ -42,48 +42,52 @@ class KoealustaMappingService(
         }
     }
 
-    fun responseStringToEntity(body: String): Iterable<KielitestiSuoritus> =
+    fun responseStringToEntity(body: String) =
         convertToEntity(tryParseMoodleResponse<KoealustaSuorituksetResponse>(body))
 
-    fun convertToEntity(suorituksetResponse: KoealustaSuorituksetResponse): Iterable<KielitestiSuoritus> {
-        val oppijanumeroExceptions = mutableListOf<OppijanumeroException>()
-        val validationErrors = mutableListOf<Error.Validation>()
+    fun convertToEntity(
+        suorituksetResponse: KoealustaSuorituksetResponse,
+    ): Pair<List<KielitestiSuoritus>, ValidationFailure?> {
+        val oppijanumeroExceptions = mutableListOf<Error>()
+        val validationErrors = mutableListOf<Error>()
 
         val suoritukset =
             suorituksetResponse.users.flatMap { user ->
                 val oppija =
                     toOppija(user)
-                        .onFailure { validationErrors.addAll(it.validationErrors) }
+                        .onFailure(validationErrors::add)
                         .getOrNull()
 
                 val oppijanumero =
-                    if (oppija != null) {
-                        oppijanumeroService
-                            .getOppijanumero(oppija)
-                            .onFailure { oppijanumeroExceptions.add(it) }
-                            .getOrNull()
-                    } else {
-                        null
-                    }
+                    oppija
+                        ?.let(::getOppijanumero)
+                        ?.onFailure { oppijanumeroExceptions.add(it) }
+                        ?.getOrNull()
 
                 user.completions.mapNotNull { completion ->
                     completionToEntity(user, oppijanumero, completion)
-                        .onFailure { validationErrors.addAll(it.validationErrors) }
+                        .onFailure { validationErrors.add(it) }
                         .getOrNull()
                 }
             }
 
-        if (oppijanumeroExceptions.isNotEmpty() || validationErrors.isNotEmpty()) {
-            throw Error.ValidationFailure(
-                "Parsing KielitestiSuoritus failed: There were ${validationErrors.size}" +
-                    " validation errors and ${oppijanumeroExceptions.size} oppijanumero failures.",
-                oppijanumeroExceptions,
-                validationErrors,
-            )
-        }
+        val validationFailure =
+            if (oppijanumeroExceptions.isNotEmpty() || validationErrors.isNotEmpty()) {
+                ValidationFailure(
+                    message =
+                        "Parsing KielitestiSuoritus failed: There were ${validationErrors.size} validation errors and ${oppijanumeroExceptions.size} oppijanumero failures.",
+                    oppijanumeroExceptions = oppijanumeroExceptions,
+                    validationErrors = validationErrors,
+                )
+            } else {
+                null
+            }
 
-        return suoritukset
+        return Pair(suoritukset, validationFailure)
     }
+
+    private fun getOppijanumero(oppija: Oppija): TypedResult<Oid, Error.OppijanumeroFailure> =
+        oppijanumeroService.getOppijanumero(oppija).mapFailure(Error::OppijanumeroFailure)
 
     fun toOppija(koealustaUser: User): TypedResult<Oppija, Error.OppijaValidationFailure> {
         val errors = mutableListOf<Error.Validation>()
@@ -98,6 +102,7 @@ class KoealustaMappingService(
             return Failure(
                 Error.OppijaValidationFailure(
                     "Validation failure on converting user \"${koealustaUser.userid}\" to oppija",
+                    koealustaUser,
                     errors,
                 ),
             )
@@ -112,7 +117,6 @@ class KoealustaMappingService(
                 hetu = koealustaUser.SSN,
                 kutsumanimi = koealustaUser.preferredname,
                 sukunimi = koealustaUser.lastname,
-                oppijanumero = koealustaUser.oppijanumero?.ifEmpty { null }, // Nullify empty values
             ),
         )
     }
@@ -208,8 +212,12 @@ class KoealustaMappingService(
         if (errors.isNotEmpty()) {
             return Failure(
                 Error.SuoritusValidationFailure(
-                    "Validation failure on course completion on \"${completion.coursename}\" for user \"${user.userid}\"",
-                    errors,
+                    message =
+                        """
+                        Validation failure on course completion on "${completion.coursename}" for user "${user.userid}"
+                        """.trimIndent(),
+                    koealustaUser = user,
+                    validationErrors = errors,
                 ),
             )
         }
@@ -249,57 +257,119 @@ class KoealustaMappingService(
         )
     }
 
+    fun convertErrors(errors: Iterable<Error>): Iterable<KielitestiSuoritusError> = errors.flatMap(::convertError)
+
+    fun convertError(error: Error): List<KielitestiSuoritusError> {
+        val now = Instant.now()
+        return when (error) {
+            is Error.ValidationFailure ->
+                error.validationErrors.map { validationError ->
+                    val (field, value) = parseValidationError(validationError)
+                    KielitestiSuoritusError(
+                        id = null,
+                        suorittajanOid = error.koealustaUser.oppijanumero,
+                        hetu = error.koealustaUser.SSN,
+                        nimi = "${error.koealustaUser.lastname} ${error.koealustaUser.firstnames}",
+                        virheenLuontiaika = now,
+                        viesti = validationError.message,
+                        virheellinenKentta = field,
+                        virheellinenArvo = value,
+                    )
+                }
+
+            is Error.OppijanumeroFailure ->
+                listOf(
+                    KielitestiSuoritusError(
+                        id = null,
+                        suorittajanOid = null,
+                        hetu = error.oppijanumeroException.request.hetu,
+                        nimi =
+                            "${error.oppijanumeroException.request.sukunimi} ${error.oppijanumeroException.request.etunimet}",
+                        virheenLuontiaika = now,
+                        viesti = error.oppijanumeroException.message ?: error.message ?: "Unknown ONR error",
+                        virheellinenKentta = null,
+                        virheellinenArvo = null,
+                    ),
+                )
+        }
+    }
+
+    data class FieldInfo(
+        val fieldName: String,
+        val fieldValue: String?,
+    )
+
+    fun parseValidationError(validationError: Error.Validation): FieldInfo =
+        when (validationError) {
+            is Error.Validation.MalformedField -> FieldInfo(validationError.field, validationError.value)
+            is Error.Validation.MissingField -> FieldInfo(validationError.field, null)
+            is Error.Validation.MissingSystemResult -> FieldInfo(validationError.resultName, null)
+            is Error.Validation.MissingTeacherResult -> FieldInfo(validationError.resultName, null)
+        }
+
+    class ValidationFailure(
+        message: String,
+        val oppijanumeroExceptions: List<Error>,
+        val validationErrors: List<Error>,
+    ) : Exception(message)
+
     sealed class Error(
         message: String,
     ) : Exception(message) {
-        class ValidationFailure(
+        class OppijanumeroFailure(
+            val oppijanumeroException: OppijanumeroException,
+        ) : Error("ONR error")
+
+        abstract class ValidationFailure(
             message: String,
-            val oppijanumeroExceptions: List<OppijanumeroException>,
+            val koealustaUser: User,
             val validationErrors: List<Validation>,
         ) : Error(message)
 
         class OppijaValidationFailure(
             message: String,
-            val validationErrors: List<Validation>,
-        ) : Error(message)
+            koealustaUser: User,
+            validationErrors: List<Validation>,
+        ) : ValidationFailure(message, koealustaUser, validationErrors)
 
         class SuoritusValidationFailure(
             message: String,
-            val validationErrors: List<Validation>,
-        ) : Error(message)
+            koealustaUser: User,
+            validationErrors: List<Validation>,
+        ) : ValidationFailure(message, koealustaUser, validationErrors)
 
         sealed class Validation(
             val userId: Int,
-            message: String,
-        ) : Error(message) {
+            val message: String,
+        ) {
             class MissingSystemResult(
                 userId: Int,
                 courseName: String,
-                resultName: String,
+                val resultName: String,
             ) : Validation(
                     userId,
-                    "Unexpectedly missing quiz system result \"$resultName\" on course \"$courseName\" for user \"$userId\"",
+                    """Unexpectedly missing quiz system result "$resultName" on course "$courseName" for user "$userId"""",
                 )
 
             class MissingTeacherResult(
                 userId: Int,
                 courseName: String,
-                resultName: String,
+                val resultName: String,
             ) : Validation(
                     userId,
-                    "Unexpectedly missing quiz teacher result \"$resultName\" on course \"$courseName\" for user \"$userId\"",
+                    """Unexpectedly missing quiz teacher result "$resultName" on course "$courseName" for user "$userId"""",
                 )
 
             class MissingField(
-                field: String,
+                val field: String,
                 userId: Int,
-            ) : Validation(userId, "Missing student \"$field\" for user \"$userId\"")
+            ) : Validation(userId, """Missing student "$field" for user "$userId"""")
 
             class MalformedField(
                 userId: Int,
-                field: String,
-                value: String,
-            ) : Validation(userId, "Malformed value \"$value\" in \"$field\" for user \"$userId\"")
+                val field: String,
+                val value: String,
+            ) : Validation(userId, """Malformed value "$value" in "$field" for user "$userId"""")
         }
     }
 }

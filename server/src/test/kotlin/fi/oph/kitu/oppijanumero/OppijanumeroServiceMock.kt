@@ -4,10 +4,17 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 
 class OppijanumeroServiceMock(
-    private val oppijanumero: String,
+    private val oppijat: Map<String, TypedResult<Oid, OppijanumeroException>>,
 ) : OppijanumeroService {
     override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
-        Oid
-            .parseTyped(oppijanumero)
-            .mapFailure { OppijanumeroException.MalformedOppijanumero(oppija, oppijanumero) }
+        oppijat[oppija.hetu] ?: TypedResult.Failure(
+            OppijanumeroException.OppijaNotFoundException(
+                YleistunnisteHaeRequest(
+                    etunimet = oppija.etunimet,
+                    hetu = oppija.hetu,
+                    kutsumanimi = oppija.kutsumanimi,
+                    sukunimi = oppija.sukunimi,
+                ),
+            ),
+        )
 }

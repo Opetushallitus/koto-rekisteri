@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addCondition
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -36,17 +35,16 @@ class OppijanumeroServiceImpl(
                 require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
                 require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
 
-                if (event.addCondition(key = "request.hasOppijanumero", condition = oppija.oppijanumero != null)) {
-                    return@withEventAndPerformanceCheck oppija.oppijanumero
-                }
-
                 val endpoint = "$serviceUrl/yleistunniste/hae"
+                val yleistunnisteHaeRequest =
+                    YleistunnisteHaeRequest(oppija.etunimet, oppija.hetu, oppija.kutsumanimi, oppija.sukunimi)
+
                 val httpRequest =
                     HttpRequest
                         .newBuilder(URI.create(endpoint))
                         .POST(
                             HttpRequest.BodyPublishers.ofString(
-                                objectMapper.writeValueAsString(oppija.toYleistunnisteHaeRequest()),
+                                objectMapper.writeValueAsString(yleistunnisteHaeRequest),
                             ),
                         ).header("Content-Type", "application/json")
 
@@ -57,15 +55,16 @@ class OppijanumeroServiceImpl(
                         .getOrLogAndThrowCasException(event)
 
                 if (stringResponse.statusCode() == 404) {
-                    throw OppijanumeroException.OppijaNotFoundException(oppija)
+                    throw OppijanumeroException.OppijaNotFoundException(yleistunnisteHaeRequest)
                 } else if (stringResponse.statusCode() != 200) {
                     throw OppijanumeroException(
-                        oppija,
+                        yleistunnisteHaeRequest,
                         "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
                     )
                 }
 
-                val body = tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(oppija, stringResponse)
+                val body =
+                    tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(yleistunnisteHaeRequest, stringResponse)
                 event.add(
                     "response.hasOppijanumero" to body.oppijanumero.isNullOrEmpty(),
                     "response.hasOid" to body.oid.isEmpty(),
@@ -73,25 +72,21 @@ class OppijanumeroServiceImpl(
                 )
 
                 if (body.oppijanumero.isNullOrEmpty()) {
-                    throw OppijanumeroException.OppijaNotIdentifiedException(
-                        oppija.withYleistunnisteHaeResponse(body),
-                    )
+                    throw OppijanumeroException.OppijaNotIdentifiedException(yleistunnisteHaeRequest)
                 }
 
-                return@withEventAndPerformanceCheck body.oppijanumero
+                return@withEventAndPerformanceCheck Oid
+                    .parseTyped(body.oppijanumero)
+                    .mapFailure {
+                        OppijanumeroException.MalformedOppijanumero(
+                            yleistunnisteHaeRequest,
+                            body.oppijanumero,
+                        )
+                    }.getOrThrow()
             }.apply {
                 addDefaults("getOppijanumero")
             }.result
-            .map { oppijanumero ->
-                if (oppijanumero == null) {
-                    throw OppijanumeroException.MalformedOppijanumero(oppija, oppijanumero)
-                }
-
-                Oid
-                    .parseTyped(oppijanumero)
-                    .mapFailure { OppijanumeroException.MalformedOppijanumero(oppija, oppijanumero) }
-                    .getOrThrow()
-            }.fold(
+            .fold(
                 onSuccess = { TypedResult.Success(it) },
                 onFailure = {
                     when (it) {
@@ -108,7 +103,7 @@ class OppijanumeroServiceImpl(
      * Otherwise, the underlying exception will be thrown
      */
     final inline fun <reified T> tryConvertToOppijanumeroResponse(
-        oppija: Oppija,
+        request: YleistunnisteHaeRequest,
         response: HttpResponse<String>,
     ): T =
         runCatching {
@@ -121,7 +116,7 @@ class OppijanumeroServiceImpl(
                     .getOrThrow()
 
             throw OppijanumeroException(
-                oppija,
+                request,
                 "Error from oppijanumero-service: ${error.error}",
                 error,
             )

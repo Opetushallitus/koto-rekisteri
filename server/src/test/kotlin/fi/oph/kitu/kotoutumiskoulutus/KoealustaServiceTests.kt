@@ -1,13 +1,19 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.Oid
+import fi.oph.kitu.TypedResult
+import fi.oph.kitu.mustBeSuccess
+import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.oppijanumero.OppijanumeroServiceMock
+import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.http.MediaType
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.convention.TestBean
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
@@ -19,6 +25,7 @@ import java.time.Instant
 import kotlin.test.assertEquals
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Testcontainers
 class KoealustaServiceTests {
     @Suppress("unused")
@@ -29,7 +36,25 @@ class KoealustaServiceTests {
         val postgres = PostgreSQLContainer("postgres:16")
 
         @JvmStatic
-        fun oppijanumeroService(): OppijanumeroService = OppijanumeroServiceMock("1.2.246.562.24.33342764709")
+        fun oppijanumeroService(): OppijanumeroService =
+            OppijanumeroServiceMock(
+                mapOf(
+                    "12345678901" to Oid.parseTyped("1.2.246.562.24.33342764709").mustBeSuccess(),
+                    "12345678902" to
+                        TypedResult.Failure(
+                            OppijanumeroException.OppijaNotIdentifiedException(
+                                request =
+                                    YleistunnisteHaeRequest(
+                                        etunimet = "Antero",
+                                        hetu = "12345678902",
+                                        kutsumanimi = "Antero",
+                                        sukunimi = "Testi-Moikka",
+                                    ),
+                                message = "virheviesti",
+                            ),
+                        ),
+                ),
+            )
     }
 
     @TestBean
@@ -37,8 +62,9 @@ class KoealustaServiceTests {
     private lateinit var oppijanumeroService: OppijanumeroService
 
     @Test
-    fun `test import works`(
+    fun `import with no errors`(
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
         // Facade
@@ -54,6 +80,7 @@ class KoealustaServiceTests {
                     {
                       "users": [
                         {
+                          "userid": 1,
                           "firstnames": "Ranja Testi",
                           "lastname": "\u00f6hman-Testi",
                           "preferredname": "Ranja", 
@@ -110,6 +137,8 @@ class KoealustaServiceTests {
         // Verification
         mockServer.verify()
 
+        assertEquals(0, kielitestiSuoritusErrorRepository.findAll().count())
+
         assertEquals(
             expected = Instant.parse("2024-10-15T05:12:11Z"),
             actual = lastSeen,
@@ -124,6 +153,108 @@ class KoealustaServiceTests {
         assertEquals(
             expected = Oid.parse("1.2.246.562.10.1234567890").getOrThrow(),
             actual = ranja.schoolOid,
+        )
+
+        assertEquals(0, kielitestiSuoritusErrorRepository.findAll().count())
+    }
+
+    @Test
+    fun `import with hetu name mismatch`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        koealusta
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [
+                        {
+                          "userid": 1,
+                          "firstnames": "Antero",
+                          "lastname": "Testi-Moikka",
+                          "preferredname": "Antero", 
+                          "SSN": "12345678902",
+                          "email": "ranja.testi@oph.fi",
+                          "completions": [
+                            {
+                              "courseid": 32,
+                              "coursename": "Integraatio testaus",
+                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "results": [
+                                {
+                                  "name": "luetun ymm\u00e4rt\u00e4minen",
+                                  "quiz_result_system": "A1",
+                                  "quiz_result_teacher": "A1"
+                                },
+                                {
+                                  "name": "kuullun ymm\u00e4rt\u00e4minen",
+                                  "quiz_result_system": "B1",
+                                  "quiz_result_teacher": "B1"
+                                },
+                                {
+                                  "name": "puhe",
+                                  "quiz_result_system": null,
+                                  "quiz_result_teacher": "A1"
+                                },
+                                {
+                                  "name": "kirjoittaminen",
+                                  "quiz_result_system": null,
+                                  "quiz_result_teacher": "A1"
+                                }
+                              ],
+                              "timecompleted": 1728969131,
+                              "total_evaluation_teacher": "47,5",
+                              "total_evaluation_system": "40"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        koealusta.verify()
+
+        assertEquals(
+            expected = Instant.parse("1970-01-01T00:00:00Z"),
+            actual = lastSeen,
+            message = "since an error was encountered, use the previous `from` parameter as the last seen date",
+        )
+
+        val errors = kielitestiSuoritusErrorRepository.findAll().toList()
+
+        // Jos emme saa ONR:stä oppijanumeroa, niin validaatiologiikka tuottaa virheen sekä oppijalle että jokaiselle suoritukselle.
+
+        val suoritusValidationFailure = errors[0]
+        val oppijaValidationFailure = errors[1]
+
+        assertAll(
+            fun() = assertEquals("""Missing student "oppijanumero" for user "1"""", suoritusValidationFailure.viesti),
+            fun() = assertEquals("12345678902", suoritusValidationFailure.hetu),
+            fun() = assertEquals("oppijanumero", suoritusValidationFailure.virheellinenKentta, "virheellinen kenttä"),
+            fun() = assertEquals(null, suoritusValidationFailure.virheellinenArvo, "virheellinen arvo"),
+            fun() = assertEquals("Testi-Moikka Antero", suoritusValidationFailure.nimi),
+        )
+
+        assertAll(
+            fun() = assertEquals("virheviesti", oppijaValidationFailure.viesti),
+            fun() = assertEquals("Testi-Moikka Antero", oppijaValidationFailure.nimi),
         )
     }
 }
