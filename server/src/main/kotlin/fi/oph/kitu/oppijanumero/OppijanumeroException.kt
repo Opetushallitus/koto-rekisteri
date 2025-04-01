@@ -1,30 +1,30 @@
 package fi.oph.kitu.oppijanumero
 
 open class OppijanumeroException(
-    val oppija: Oppija,
+    val request: YleistunnisteHaeRequest,
     message: String,
     val oppijanumeroServiceError: OppijanumeroServiceError? = null,
     cause: Throwable? = null,
 ) : Throwable(message, cause) {
     class OppijaNotFoundException(
-        oppija: Oppija,
+        request: YleistunnisteHaeRequest,
         message: String = "Oppija not found from oppijanumero-service",
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
         cause: Throwable? = null,
-    ) : OppijanumeroException(oppija, message, oppijanumeroServiceError, cause)
+    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
 
     class OppijaNotIdentifiedException(
-        oppija: Oppija,
-        message: String = "Oppija with oid ${oppija.henkilo_oid} is not identified in oppijanumero-service",
+        request: YleistunnisteHaeRequest,
+        message: String = "Oppija $request is not identified in oppijanumero service",
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
         cause: Throwable? = null,
-    ) : OppijanumeroException(oppija, message, oppijanumeroServiceError, cause)
+    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
 
     class MalformedOppijanumero(
-        oppija: Oppija,
+        request: YleistunnisteHaeRequest,
         oppijanumero: String?,
-        message: String = "Received a malformed oppijanumero \"$oppijanumero\" for ${oppija.henkilo_oid}",
+        message: String = "Received a malformed oppijanumero \"$oppijanumero\" for $request",
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
         cause: Throwable? = null,
-    ) : OppijanumeroException(oppija, message, oppijanumeroServiceError, cause)
+    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
 }

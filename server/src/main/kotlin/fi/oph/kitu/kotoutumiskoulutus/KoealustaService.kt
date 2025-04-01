@@ -7,7 +7,7 @@ import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
-import fi.oph.kitu.oppijanumero.addValidationExceptions
+import fi.oph.kitu.splitIntoValuesAndErrors
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -22,6 +22,7 @@ class KoealustaService(
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val mappingService: KoealustaMappingService,
     private val auditLogger: AuditLogger,
+    private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -79,17 +80,15 @@ class KoealustaService(
                     return@withEventAndPerformanceCheck from
                 }
 
-                val suoritukset =
-                    try {
-                        mappingService.responseStringToEntity(response.body!!)
-                    } catch (ex: KoealustaMappingService.Error.ValidationFailure) {
-                        event.addValidationExceptions(ex.oppijanumeroExceptions, ex.validationErrors)
-                        throw ex
-                    }
+                val suoritukset = mappingService.responseStringToEntity(response.body!!)
+
+                val (parsedSuoritukset, validationErrors) = suoritukset.splitIntoValuesAndErrors()
+
+                kielitestiSuoritusErrorRepository.saveAll(mappingService.convertErrors(validationErrors))
 
                 val savedSuoritukset =
                     kielitestiSuoritusRepository
-                        .saveAll(suoritukset)
+                        .saveAll(parsedSuoritukset)
                         .also {
                             auditLogger.logAll("Kielitesti suoritus imported", it) { suoritus ->
                                 arrayOf(
@@ -102,7 +101,14 @@ class KoealustaService(
 
                 event.add("db.saved" to savedSuoritukset.count())
 
-                return@withEventAndPerformanceCheck suoritukset.maxOfOrNull { it.timeCompleted } ?: from
+                val next =
+                    if (validationErrors.isEmpty()) {
+                        parsedSuoritukset.maxOfOrNull { it.timeCompleted } ?: from
+                    } else {
+                        from
+                    }
+
+                return@withEventAndPerformanceCheck next
             }.apply {
                 addDefaults("koealusta.importSuoritukset")
                 addDatabaseLogs()
