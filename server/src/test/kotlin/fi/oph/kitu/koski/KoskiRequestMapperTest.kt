@@ -18,6 +18,7 @@ class KoskiRequestMapperTest {
     private val objectMapper = jacksonObjectMapper().registerKotlinModule().registerModule(JavaTimeModule())
 
     private val oid: Oid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
+    private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.12345678910").getOrThrow()
 
     @Test
     fun `map yki suoritus to koski request`() {
@@ -29,7 +30,7 @@ class KoskiRequestMapperTest {
                 arviointipaiva = LocalDate.of(2025, 1, 3),
                 tutkintotaso = Tutkintotaso.PT,
                 tutkintokieli = Tutkintokieli.ENG,
-                jarjestajanTunnusOid = "1.2.246.562.10.12345678910",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 tekstinYmmartaminen = 2,
                 kirjoittaminen = 2,
                 puheenYmmartaminen = 2,
@@ -58,7 +59,7 @@ class KoskiRequestMapperTest {
                 arviointipaiva = LocalDate.of(2025, 1, 3),
                 tutkintotaso = Tutkintotaso.PT,
                 tutkintokieli = Tutkintokieli.ENG,
-                jarjestajanTunnusOid = "1.2.246.562.10.12345678910",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 tekstinYmmartaminen = 2,
                 kirjoittaminen = 2,
                 puheenYmmartaminen = 2,

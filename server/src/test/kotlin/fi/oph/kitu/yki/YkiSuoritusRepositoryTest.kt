@@ -41,6 +41,8 @@ class YkiSuoritusRepositoryTest(
     private val oidRanja = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
     private val oidTesti = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
 
+    private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.14893989377").getOrThrow()
+
     @Test
     fun `suoritus is saved correctly`() {
         val datePattern = "yyyy-MM-dd"
@@ -63,7 +65,7 @@ class YkiSuoritusRepositoryTest(
                 tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 5,
@@ -106,7 +108,7 @@ class YkiSuoritusRepositoryTest(
                 tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 5,
@@ -157,7 +159,7 @@ class YkiSuoritusRepositoryTest(
                 tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = null,
@@ -201,7 +203,7 @@ class YkiSuoritusRepositoryTest(
                 tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 1,
@@ -236,7 +238,7 @@ class YkiSuoritusRepositoryTest(
                 tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.ENG,
                 tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 1,
@@ -298,7 +300,7 @@ class YkiSuoritusRepositoryTest(
                 tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.SWE10,
                 tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = null,
@@ -344,7 +346,7 @@ class YkiSuoritusRepositoryTest(
                 tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 5,
@@ -401,7 +403,7 @@ class YkiSuoritusRepositoryTest(
                 tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.FIN,
                 tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 1,
@@ -436,7 +438,7 @@ class YkiSuoritusRepositoryTest(
                 tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
                 tutkintokieli = Tutkintokieli.ENG,
                 tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = "1.2.246.562.10.14893989377",
+                jarjestajanTunnusOid = jarjestajanOrganisaatio,
                 jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                 arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = 1,

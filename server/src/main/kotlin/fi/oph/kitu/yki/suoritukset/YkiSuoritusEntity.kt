@@ -33,7 +33,7 @@ data class YkiSuoritusEntity(
     val tutkintokieli: Tutkintokieli,
     @Enumerated(EnumType.STRING)
     val tutkintotaso: Tutkintotaso,
-    val jarjestajanTunnusOid: String,
+    val jarjestajanTunnusOid: Oid,
     val jarjestajanNimi: String,
     val arviointipaiva: LocalDate,
     val tekstinYmmartaminen: Int?,

@@ -50,7 +50,7 @@ fun generateRandomYkiSuoritusEntity(): YkiSuoritusEntity {
         tutkintopaiva = tutkintopaiva,
         tutkintokieli = Tutkintokieli.entries.toTypedArray().random(),
         tutkintotaso = tutkintotaso,
-        jarjestajanTunnusOid = generateRandomOrganizationOid().toString(),
+        jarjestajanTunnusOid = generateRandomOrganizationOid(),
         jarjestajanNimi = "${randomPerson.postitoimipaikka}n yliopisto",
         arviointipaiva = arviointipaiva,
         tekstinYmmartaminen = (0..maxArvosana).random(),

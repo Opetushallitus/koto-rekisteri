@@ -59,13 +59,13 @@ class KoskiRequestMapper {
                                                     ykiSuoritus.tutkintokieli.name,
                                                 ),
                                         ),
-                                    toimipiste = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid),
+                                    toimipiste = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid.toString()),
                                     vahvistus =
                                         Vahvistus(
                                             päivä = ykiSuoritus.arviointipaiva,
                                             myöntäjäOrganisaatio =
                                                 Organisaatio(
-                                                    ykiSuoritus.jarjestajanTunnusOid,
+                                                    ykiSuoritus.jarjestajanTunnusOid.toString(),
                                                 ),
                                         ),
                                     osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus),

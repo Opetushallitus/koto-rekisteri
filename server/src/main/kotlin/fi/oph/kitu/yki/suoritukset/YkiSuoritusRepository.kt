@@ -150,7 +150,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                     ps.setObject(13, suoritus.tutkintopaiva)
                     ps.setString(14, suoritus.tutkintokieli.toString())
                     ps.setString(15, suoritus.tutkintotaso.toString())
-                    ps.setString(16, suoritus.jarjestajanTunnusOid)
+                    ps.setString(16, suoritus.jarjestajanTunnusOid.toString())
                     ps.setString(17, suoritus.jarjestajanNimi)
                     ps.setObject(18, suoritus.arviointipaiva)
                     ps.setObject(19, suoritus.tekstinYmmartaminen)
@@ -310,7 +310,7 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getObject("tutkintopaiva", LocalDate::class.java),
         Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
         Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
-        rs.getString("jarjestajan_tunnus_oid"),
+        Oid.parse(rs.getString("jarjestajan_tunnus_oid")).getOrThrow(),
         rs.getString("jarjestajan_nimi"),
         rs.getObject("arviointipaiva", LocalDate::class.java),
         rs.getObject("tekstin_ymmartaminen", Integer::class.java)?.toInt(),
