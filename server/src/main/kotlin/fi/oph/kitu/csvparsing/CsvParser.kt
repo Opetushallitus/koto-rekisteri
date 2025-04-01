@@ -10,18 +10,12 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import kotlin.reflect.full.findAnnotation
 
-@Configuration
-class CsvParserConfiguration
-
 @Service
 class CsvParser(
-    @Qualifier("testTracer")
     val tracer: Tracer,
 ) {
     val columnSeparator: Char = ','
