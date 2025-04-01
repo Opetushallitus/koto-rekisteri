@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
@@ -34,6 +35,7 @@ class YkiServiceTests(
     @Autowired private val ykiSuoritusErrorService: YkiSuoritusErrorService,
     @Autowired private val auditLogger: AuditLogger,
     @Autowired private val suoritusErrorRepository: YkiSuoritusErrorRepository,
+    @Autowired private val parser: CsvParser,
 ) {
     @Suppress("unused")
     companion object {
@@ -80,6 +82,7 @@ class YkiServiceTests(
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
+                parser = parser,
             )
 
         // Act
@@ -119,6 +122,7 @@ class YkiServiceTests(
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
+                parser = parser,
             )
 
         // Act
@@ -158,6 +162,7 @@ class YkiServiceTests(
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
+                parser = parser,
             )
 
         // Act
@@ -212,6 +217,7 @@ class YkiServiceTests(
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
+                parser = parser,
             )
 
         assertDoesNotThrow {
@@ -259,6 +265,7 @@ class YkiServiceTests(
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
+                parser = parser,
             )
 
         assertDoesNotThrow {
@@ -333,6 +340,7 @@ class YkiServiceTests(
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
+                parser = parser,
             )
 
         // Since we got an error, the the range is considered an errorneus and will require re-import

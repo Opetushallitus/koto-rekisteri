@@ -10,7 +10,14 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
+import io.opentelemetry.api.trace.Tracer
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.time.LocalDate
@@ -19,10 +26,24 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class CsvParsingTest {
+@SpringBootTest
+@Testcontainers
+class CsvParsingTest(
+    @Autowired val tracer: Tracer,
+) {
+    @Suppress("unused")
+    companion object {
+        @JvmStatic
+        @Container
+        @ServiceConnection
+        val postgres =
+            PostgreSQLContainer("postgres:16")
+                .withUrlParam("stringtype", "unspecified")!!
+    }
+
     @Test
     fun `test yki suoritukset parsing`() {
-        val parser = CsvParser(MockEvent())
+        val parser = CsvParser(tracer)
         val csv =
             """
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
@@ -71,7 +92,7 @@ class CsvParsingTest {
 
     @Test
     fun `test line breaks`() {
-        val parser = CsvParser(MockEvent())
+        val parser = CsvParser(tracer)
         val perustelut1 = " - Hyvä kielioppi\n - Selkeä puhuminen\n - Ymmärtää hyvin puhetta\n"
         val perustelut2 = " - Hyvä kielioppi\r\n - Selkeä puhuminen\r\n - Ymmärtää hyvin puhetta\r\n"
         // you can't use trimIndent here, because the string contains CR (\r)
@@ -91,7 +112,7 @@ class CsvParsingTest {
 
     @Test
     fun `test legacy language code 10 parsing`() {
-        val parser = CsvParser(MockEvent())
+        val parser = CsvParser(tracer)
         val arvioijaCsv =
             """
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"10","PT+KT"
@@ -103,7 +124,7 @@ class CsvParsingTest {
 
     @Test
     fun `test legacy language code 11 parsing`() {
-        val parser = CsvParser(MockEvent())
+        val parser = CsvParser(tracer)
         val arvioijaCsv =
             """
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"11","PT+KT"
@@ -115,7 +136,7 @@ class CsvParsingTest {
 
     @Test
     fun `test legacy language code 12 parsing`() {
-        val parser = CsvParser(MockEvent())
+        val parser = CsvParser(tracer)
         val arvioijaCsv =
             """
             "1.2.246.562.24.24941612410","010180-922U","Torvinen-Testi","Anniina Testi","anniina.testi@yki.fi","Testiosoite 7357","00100","HELSINKI",1994-08-01,2019-06-29,2024-06-29,0,0,"12","PT+KT"
@@ -127,7 +148,7 @@ class CsvParsingTest {
 
     @Test
     fun `test parsing yki suoritus with newlines`() {
-        val parser = CsvParser(MockEvent())
+        val parser = CsvParser(tracer)
         val csv =
             """
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,"Tarkistusarvioinnin perustelu\nJossa rivinvaihto",
@@ -173,7 +194,7 @@ class CsvParsingTest {
     @Test
     fun `safe parsing returns valid rows`() {
         val event = MockEvent()
-        val parser = CsvParser(event)
+        val parser = CsvParser(tracer)
         val csv =
             """
             "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
@@ -214,7 +235,8 @@ class CsvParsingTest {
     fun `test writing csv`() {
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        val parser = CsvParser(MockEvent(), useHeader = true)
+        val parser = CsvParser(tracer).withUseHeader(true)
+
         val writable =
             listOf(
                 YkiSuoritusCsv(
@@ -265,7 +287,7 @@ class CsvParsingTest {
     fun `null values are written correctly to csv`() {
         val datePattern = "yyyy-MM-dd"
         val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        val parser = CsvParser(MockEvent(), useHeader = true)
+        val parser = CsvParser(tracer).withUseHeader(true)
         val writable =
             listOf(
                 YkiSuoritusCsv(
