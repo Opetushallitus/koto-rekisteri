@@ -55,7 +55,7 @@ class YkiSuoritusErrorTests(
         )
 
         // Act
-        service.handleErrors(event, errors)
+        service.handleErrors(errors)
 
         // Assert
         val errorsInDatabase = repository.findAll()
@@ -106,7 +106,7 @@ class YkiSuoritusErrorTests(
         )
 
         // Act
-        service.handleErrors(event, errors)
+        service.handleErrors(errors)
 
         // Assert
         val errorsInDatabase = repository.findAll()
