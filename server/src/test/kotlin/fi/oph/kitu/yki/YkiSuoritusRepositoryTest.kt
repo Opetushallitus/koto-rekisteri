@@ -39,7 +39,7 @@ class YkiSuoritusRepositoryTest(
     }
 
     private val oidRanja = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
-    private val oidTesti = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
+    private val oidTesti = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
 
     private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.14893989377").getOrThrow()
 
