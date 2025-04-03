@@ -9,6 +9,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
+import io.opentelemetry.api.trace.Tracer
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -39,6 +40,7 @@ class YkiServiceTests(
     @Autowired private val suoritusErrorRepository: YkiSuoritusErrorRepository,
     @Autowired private val parser: CsvParser,
     @Autowired private val mockRestClientBuilder: RestClient.Builder,
+    @Autowired private val tracer: Tracer,
 ) {
     @Suppress("unused")
     companion object {
@@ -85,6 +87,7 @@ class YkiServiceTests(
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
                 parser = parser,
+                tracer = tracer,
             )
 
         // Act
@@ -124,6 +127,7 @@ class YkiServiceTests(
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
                 parser = parser,
+                tracer = tracer,
             )
 
         // Act
@@ -169,6 +173,7 @@ class YkiServiceTests(
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
                 parser = parser,
+                tracer = tracer,
             )
 
         // Act
@@ -223,6 +228,7 @@ class YkiServiceTests(
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
                 parser = parser,
+                tracer = tracer,
             )
 
         assertDoesNotThrow {
@@ -270,6 +276,7 @@ class YkiServiceTests(
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
                 parser = parser,
+                tracer = tracer,
             )
 
         assertDoesNotThrow {
@@ -344,6 +351,7 @@ class YkiServiceTests(
                 suoritusErrorService = ykiSuoritusErrorService,
                 auditLogger = auditLogger,
                 parser = parser,
+                tracer = tracer,
             )
 
         assertThrows<RuntimeException>(
