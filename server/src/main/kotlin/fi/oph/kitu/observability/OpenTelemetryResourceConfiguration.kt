@@ -3,7 +3,6 @@ package fi.oph.kitu.observability
 import fi.oph.kitu.logging.add
 import io.opentelemetry.contrib.aws.resource.EcsResourceProvider
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties
-import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider
 import io.opentelemetry.sdk.resources.Resource
 import org.slf4j.Logger
@@ -16,7 +15,7 @@ class OpenTelemetryResourceConfiguration {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     @Bean
-    fun ecsResourceProvider(): ResourceProvider =
+    fun ecsResourceProvider(): ConditionalResourceProvider =
         object : ConditionalResourceProvider {
             private val ecsResourceProvider =
                 EcsResourceProvider().also { provider ->
