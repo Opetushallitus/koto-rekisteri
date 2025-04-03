@@ -40,7 +40,16 @@ class YkiScheduledTasks(
 
     @Bean
     fun arvioijatImport(ykiService: YkiService): Task<Void> =
-        Tasks
-            .recurring("YKI-import-arvioijat", ExtendedSchedules.parse(ykiImportArvioijatSchedule))
-            .execute { _, _ -> ykiService.importYkiArvioijat() }
+        tracer
+            .spanBuilder("scheduledtasks.import.yki.arvioijat")
+            .startSpan()
+            .use { span ->
+                return@use Tasks
+                    .recurring("YKI-import-arvioijat", ExtendedSchedules.parse(ykiImportArvioijatSchedule))
+                    .execute { _, _ ->
+                        span.makeCurrent().use {
+                            ykiService.importYkiArvioijat()
+                        }
+                    }
+            }
 }

@@ -6,7 +6,7 @@ import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addHttpResponse
+import fi.oph.kitu.logging.setAttribute
 import fi.oph.kitu.logging.use
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.splitIntoValuesAndErrors
@@ -79,7 +79,7 @@ class YkiService(
                 val hasErrors = suoritusErrorService.handleErrors(errors)
                 val nextSince = suoritusErrorService.findNextSearchRange(suoritukset, errors, from)
 
-                span.setAttribute("yki.suoritukset.receivedCount", suoritukset.size.toLong())
+                span.setAttribute("yki.suoritukset.receivedCount", suoritukset.size)
 
                 if (dryRun != true) {
                     val saved = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
@@ -100,9 +100,10 @@ class YkiService(
             }
 
     fun importYkiArvioijat(dryRun: Boolean = false) =
-        logger
-            .atInfo()
-            .withEventAndPerformanceCheck { event ->
+        tracer
+            .spanBuilder("yki.importArvioijat")
+            .startSpan()
+            .use { span ->
                 val response =
                     solkiRestClient
                         .get()
@@ -110,15 +111,13 @@ class YkiService(
                         .retrieve()
                         .toEntity<String>()
 
-                event.addHttpResponse(PeerService.Solki, "arvioijat", response)
-
                 val (arvioijat) =
                     parser
                         .convertCsvToData<SolkiArvioijaResponse>(
                             response.body ?: throw Error.EmptyArvioijatResponse(),
                         ).splitIntoValuesAndErrors()
 
-                event.add("yki.arvioijat.receivedCount" to arvioijat.size)
+                span.setAttribute("yki.arvioijat.receivedCount", arvioijat.size)
 
                 if (arvioijat.isEmpty()) {
                     throw Error.EmptyArvioijat()
@@ -129,7 +128,7 @@ class YkiService(
                         arvioijaRepository.saveAll(
                             arvioijaMapper.convertToEntityIterable(arvioijat),
                         )
-                    event.add("yki.arvioijat.importedCount" to importedArvioijat.count())
+                    span.setAttribute("yki.arvioijat.importedCount", importedArvioijat.count())
 
                     auditLogger.logAll("YKI arvioija imported", importedArvioijat) { arvioija ->
                         arrayOf(
@@ -139,10 +138,7 @@ class YkiService(
                         )
                     }
                 }
-            }.apply {
-                addDefaults("yki.importArvioijat")
-                addDatabaseLogs()
-            }.getOrThrow()
+            }
 
     fun generateSuorituksetCsvStream(includeVersionHistory: Boolean): ByteArrayOutputStream =
         logger
