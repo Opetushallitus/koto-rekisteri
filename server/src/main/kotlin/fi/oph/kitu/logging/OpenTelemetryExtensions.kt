@@ -15,3 +15,8 @@ inline fun <T> Span.use(block: (Span) -> T): T {
         this.end()
     }
 }
+
+inline fun Span.setAttribute(
+    key: String,
+    value: Int,
+) = this.setAttribute(key, value.toLong())

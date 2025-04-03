@@ -7,6 +7,7 @@ import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.addHttpResponse
+import fi.oph.kitu.logging.use
 import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
@@ -20,6 +21,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
+import io.opentelemetry.api.trace.Tracer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -31,6 +33,7 @@ import java.lang.RuntimeException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.io.use
 
 @Service
 class YkiService(
@@ -43,6 +46,7 @@ class YkiService(
     private val arvioijaMapper: YkiArvioijaMappingService,
     private val auditLogger: AuditLogger,
     private val parser: CsvParser,
+    private val tracer: Tracer,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -51,10 +55,12 @@ class YkiService(
         lastSeen: LocalDate? = null,
         dryRun: Boolean? = null,
     ): Instant =
-        logger
-            .atInfo()
-            .withEventAndPerformanceCheck { event ->
-                event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
+        tracer
+            .spanBuilder("yki.importSuoritukset")
+            .startSpan()
+            .use { span ->
+                span.setAttribute("dryRun", dryRun ?: false)
+                span.setAttribute("lastSeen", lastSeen.toString())
 
                 val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
 
@@ -65,21 +71,19 @@ class YkiService(
                         .retrieve()
                         .toEntity<String>()
 
-                event.addHttpResponse(PeerService.Solki, "suoritukset", response)
-
                 val (suoritukset, errors) =
                     parser
                         .convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
                         .splitIntoValuesAndErrors()
 
-                val hasErrors = suoritusErrorService.handleErrors(event, errors)
+                val hasErrors = suoritusErrorService.handleErrors(errors)
                 val nextSince = suoritusErrorService.findNextSearchRange(suoritukset, errors, from)
 
-                event.add("yki.suoritukset.receivedCount" to suoritukset.size)
+                span.setAttribute("yki.suoritukset.receivedCount", suoritukset.size.toLong())
 
                 if (dryRun != true) {
                     val saved = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
-                    event.add("importedSuorituksetSize" to saved.count())
+                    span.setAttribute("importedSuorituksetSize", saved.count().toLong())
                     auditLogger.logAll("YKI suoritus imported", saved) { suoritus ->
                         arrayOf(
                             "principal" to "yki.importSuoritukset",
@@ -92,11 +96,8 @@ class YkiService(
                     throw RuntimeException("Received ${errors.count()} errors.")
                 }
 
-                return@withEventAndPerformanceCheck nextSince
-            }.apply {
-                addDefaults("yki.importSuoritukset")
-                addDatabaseLogs()
-            }.getOrThrow()
+                return@use nextSince
+            }
 
     fun importYkiArvioijat(dryRun: Boolean = false) =
         logger
