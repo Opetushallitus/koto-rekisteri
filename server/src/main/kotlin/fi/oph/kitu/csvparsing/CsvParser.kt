@@ -16,7 +16,7 @@ import kotlin.reflect.full.findAnnotation
 
 @Service
 class CsvParser(
-    val tracer: Tracer,
+    final val tracer: Tracer,
 ) {
     val columnSeparator: Char = ','
     val lineSeparator: String = "\n"
@@ -40,21 +40,20 @@ class CsvParser(
             }
     }
 
-    final inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema {
+    final inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema =
         tracer
             .spanBuilder("CsvParser.getSchema")
             .startSpan()
             .use { span ->
                 span.setAttribute("serialization.schema.args.type", T::class.java.name)
-            }
 
-        return csvMapper
-            .typedSchemaFor(T::class.java)
-            .withColumnSeparator(columnSeparator)
-            .withLineSeparator(lineSeparator)
-            .withUseHeader(useHeader)
-            .withQuoteChar(quoteChar)
-    }
+                return@use csvMapper
+                    .typedSchemaFor(T::class.java)
+                    .withColumnSeparator(columnSeparator)
+                    .withLineSeparator(lineSeparator)
+                    .withUseHeader(useHeader)
+                    .withQuoteChar(quoteChar)
+            }
 
     final inline fun <reified T> CsvMapper.Builder.withFeatures(): CsvMapper.Builder {
         val mapperFeatures = T::class.findAnnotation<Features>()?.features
@@ -105,13 +104,10 @@ class CsvParser(
             .spanBuilder("CsvParser.convertCsvToData")
             .startSpan()
             .use { span ->
-
+                span.setAttribute("serialization.isEmptyList", csvString.isBlank())
                 if (csvString.isBlank()) {
-                    span.setAttribute("serialization.isEmptyList", true)
-                    return emptyList()
+                    return@use emptyList()
                 }
-
-                span.setAttribute("serialization.isEmptyList", false)
 
                 val csvMapper = getCsvMapper<T>()
                 val schema = getSchema<T>(csvMapper)
@@ -122,7 +118,7 @@ class CsvParser(
                             "Can't find only one line seperator from schema (${schema.lineSeparator}).",
                         )
 
-                return csvMapper
+                return@use csvMapper
                     .readerFor(T::class.java)
                     .with(schema)
                     .readValues<T?>(csvString)
