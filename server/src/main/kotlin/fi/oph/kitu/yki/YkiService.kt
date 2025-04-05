@@ -41,6 +41,7 @@ class YkiService(
     private val arvioijaRepository: YkiArvioijaRepository,
     private val arvioijaMapper: YkiArvioijaMappingService,
     private val auditLogger: AuditLogger,
+    private val parser: CsvParser,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -52,7 +53,6 @@ class YkiService(
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
-                val parser = CsvParser(event)
                 event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
                 val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
@@ -96,7 +96,6 @@ class YkiService(
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
-                val parser = CsvParser(event)
                 val response =
                     solkiRestClient
                         .get()
@@ -142,12 +141,12 @@ class YkiService(
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
-                val parser = CsvParser(event, useHeader = true)
+                val newParser = parser.withUseHeader(true)
                 val suoritukset = allSuoritukset(includeVersionHistory)
                 event.add("dataCount" to suoritukset.count())
                 val writableData = suoritusMapper.convertToResponseIterable(suoritukset)
                 val outputStream = ByteArrayOutputStream()
-                parser.streamDataAsCsv(outputStream, writableData)
+                newParser.streamDataAsCsv(outputStream, writableData)
 
                 return@withEventAndPerformanceCheck outputStream
             }.apply {
