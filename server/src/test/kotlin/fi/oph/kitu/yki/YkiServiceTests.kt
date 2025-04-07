@@ -12,6 +12,7 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.lang.RuntimeException
 import java.time.Instant
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
@@ -126,7 +128,13 @@ class YkiServiceTests(
             )
 
         // Act
-        ykiService.importYkiSuoritukset(Instant.EPOCH, null, false)
+        assertThrows<RuntimeException>(
+            message = { "Received 1 errors" },
+            executable = {
+                ykiService.importYkiSuoritukset(Instant.EPOCH, null, false)
+            },
+        )
+
         val suoritukset = ykiSuoritusRepository.findAll()
         assertEquals(0, suoritukset.count())
 
@@ -343,17 +351,25 @@ class YkiServiceTests(
                 parser = parser,
             )
 
-        // Since we got an error, the the range is considered an errorneus and will require re-import
-        val sinceWithError = ykiService.importYkiSuoritukset(since)
-
-        // Verify datetime is correct
-        assertEquals(sinceWithError, since)
+        assertThrows<RuntimeException>(
+            message = { "Received 1 errors" },
+            executable = {
+                // Since we got an error, the the range is considered an errorneus and will require re-import
+                ykiService.importYkiSuoritukset(since)
+            },
+        )
 
         // Verify non-erroneus data is saved
         assertEquals(2, ykiSuoritusRepository.findAll().count())
 
-        // The application will use the new timestamp
-        val sinceWithOk = ykiService.importYkiSuoritukset(sinceWithError)
+        // Since an Exception was thrown, spring boot won't update since - value
+        // the same value will be used in the next import (even if the run is on a different day)
+
+        // Now the date will be updated, because no error is thrown.
+        val sinceWithOk =
+            assertDoesNotThrow {
+                ykiService.importYkiSuoritukset(since)
+            }
 
         // Verify datetime is correct
         assertEquals(sinceWithOk, Instant.parse("2024-10-30T13:55:47Z"))

@@ -25,7 +25,7 @@ class YkiSuoritusErrorService(
     fun handleErrors(
         event: LoggingEventBuilder,
         errors: List<CsvExportError>,
-    ) {
+    ): Boolean {
         event.add(
             "errors.size" to errors.size,
             "errors.truncate" to errors.isEmpty(),
@@ -42,12 +42,15 @@ class YkiSuoritusErrorService(
         // add errors to database
         if (errors.isEmpty()) {
             repository.deleteAll()
-        } else {
-            val entities = mappingService.convertToEntityIterable(errors)
-            repository.saveAll(entities).also {
-                event.add("errors.addedSize" to it.count())
-            }
+            return false
         }
+
+        val entities = mappingService.convertToEntityIterable(errors)
+        repository.saveAll(entities).also {
+            event.add("errors.addedSize" to it.count())
+        }
+
+        return true
     }
 
     fun findNextSearchRange(

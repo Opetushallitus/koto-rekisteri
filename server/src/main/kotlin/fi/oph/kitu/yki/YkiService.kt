@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import java.io.ByteArrayOutputStream
+import java.lang.RuntimeException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -71,7 +72,7 @@ class YkiService(
                         .convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
                         .splitIntoValuesAndErrors()
 
-                suoritusErrorService.handleErrors(event, errors)
+                val hasErrors = suoritusErrorService.handleErrors(event, errors)
                 val nextSince = suoritusErrorService.findNextSearchRange(suoritukset, errors, from)
 
                 event.add("yki.suoritukset.receivedCount" to suoritukset.size)
@@ -86,6 +87,11 @@ class YkiService(
                         )
                     }
                 }
+
+                if (hasErrors) {
+                    throw RuntimeException("Received ${errors.count()} errors.")
+                }
+
                 return@withEventAndPerformanceCheck nextSince
             }.apply {
                 addDefaults("yki.importSuoritukset")
