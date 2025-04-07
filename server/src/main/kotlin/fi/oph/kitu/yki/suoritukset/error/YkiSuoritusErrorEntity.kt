@@ -22,4 +22,6 @@ data class YkiSuoritusErrorEntity(
     val virheellinenRivi: String,
     val virheenRivinumero: Int,
     val virheenLuontiaika: Instant,
-)
+) {
+    companion object
+}
