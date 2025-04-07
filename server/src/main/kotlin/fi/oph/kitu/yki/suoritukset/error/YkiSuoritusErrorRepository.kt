@@ -30,7 +30,7 @@ class CustomYkiSuoritusErrorRepositoryImpl(
         val sql =
             """
             INSERT INTO yki_suoritus_error (
-                oid, 
+                suorittajan_oid, 
                 hetu, 
                 nimi, 
                 last_modified, 
@@ -39,9 +39,8 @@ class CustomYkiSuoritusErrorRepositoryImpl(
                 virheellinen_rivi, 
                 virheen_rivinumero, 
                 virheen_luontiaika
-            ) VALUES (
-                ?,?,?,?,?,?,?,?,?
-            ) ON CONFLICT ON CONSTRAINT unique_suoritus_error DO NOTHING
+            ) VALUES (?,?,?,?,?,?,?,?,?) 
+            ON CONFLICT ON CONSTRAINT unique_suoritus_error_virheellinen_rivi_is_unique DO NOTHING;
             """.trimIndent()
 
         val pscf = PreparedStatementCreatorFactory(sql)
@@ -54,23 +53,29 @@ class CustomYkiSuoritusErrorRepositoryImpl(
                     ps: PreparedStatement,
                     i: Int,
                 ) {
-                    val error = errors.elementAt(i)
-                    ps.setString(1, error.suorittajanOid)
-                    ps.setString(2, error.hetu)
-                    ps.setString(3, error.nimi)
-                    ps.setTimestamp(
-                        4,
-                        if (error.lastModified == null) {
-                            null
-                        } else {
-                            Timestamp(error.lastModified.toEpochMilli())
-                        },
-                    )
-                    ps.setString(5, error.virheellinenKentta)
-                    ps.setString(6, error.virheellinenArvo)
-                    ps.setString(7, error.virheellinenRivi)
-                    ps.setInt(8, error.virheenRivinumero)
-                    ps.setTimestamp(9, Timestamp(error.virheenLuontiaika.toEpochMilli()))
+                    try {
+                        val error = errors.elementAt(i)
+                        ps.setString(1, error.suorittajanOid)
+                        ps.setString(2, error.hetu)
+                        ps.setString(3, error.nimi)
+                        ps.setTimestamp(
+                            4,
+                            if (error.lastModified == null) {
+                                null
+                            } else {
+                                Timestamp(error.lastModified.toEpochMilli())
+                            },
+                        )
+                        ps.setString(5, error.virheellinenKentta)
+                        ps.setString(6, error.virheellinenArvo)
+                        ps.setString(7, error.virheellinenRivi)
+                        ps.setInt(8, error.virheenRivinumero)
+                        ps.setTimestamp(9, Timestamp(error.virheenLuontiaika.toEpochMilli()))
+                    } catch (e: Throwable) {
+                        println("an error occurred in the row $i.")
+                        println(e)
+                        throw e
+                    }
                 }
 
                 override fun getBatchSize() = errors.count()
@@ -85,11 +90,20 @@ class CustomYkiSuoritusErrorRepositoryImpl(
         return if (savedErrors.isEmpty()) listOf() else findErrorsByIdList(savedErrors) as Iterable<S>
     }
 
-    private fun findErrorsByIdList(ids: List<Int>): Iterable<YkiSuoritusErrorEntity> =
-        jdbcTemplate
-            .query("SELECT * FROM yki_suoritus WHERE id IN (${ids.joinToString(",")})") { rs, _ ->
+    private fun findErrorsByIdList(ids: List<Int>): Iterable<YkiSuoritusErrorEntity> {
+        val errorIds = ids.joinToString(",")
+        val findSavedQuerySql =
+            """
+            SELECT *
+            FROM yki_suoritus_error
+            WHERE id IN ($errorIds)
+            """.trimIndent()
+
+        return jdbcTemplate
+            .query(findSavedQuerySql) { rs, _ ->
                 YkiSuoritusErrorEntity.fromResultSet(rs)
             }
+    }
 }
 
 fun YkiSuoritusErrorEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusErrorEntity =
