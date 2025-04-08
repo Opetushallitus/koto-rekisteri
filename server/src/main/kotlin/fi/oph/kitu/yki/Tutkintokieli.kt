@@ -21,6 +21,11 @@ enum class Tutkintokieli {
     SWE10,
     ENG11,
     ENG12,
+    ;
+
+    companion object {
+        fun legacyEntries() = setOf(SWE10, ENG11, ENG12)
+    }
 }
 
 fun ResultSet.getTutkintokieli(columnLabel: String): Tutkintokieli = Tutkintokieli.valueOf(getString(columnLabel))
