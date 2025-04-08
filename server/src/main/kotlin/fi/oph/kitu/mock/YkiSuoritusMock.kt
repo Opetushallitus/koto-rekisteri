@@ -48,7 +48,11 @@ fun generateRandomYkiSuoritusEntity(): YkiSuoritusEntity {
         suoritusId = Random.nextInt(100000, 999999),
         lastModified = lastModified,
         tutkintopaiva = tutkintopaiva,
-        tutkintokieli = Tutkintokieli.entries.toTypedArray().random(),
+        tutkintokieli =
+            Tutkintokieli.entries
+                .minus(Tutkintokieli.legacyEntries())
+                .toTypedArray()
+                .random(),
         tutkintotaso = tutkintotaso,
         jarjestajanTunnusOid = generateRandomOrganizationOid(),
         jarjestajanNimi = "${randomPerson.postitoimipaikka}n yliopisto",
