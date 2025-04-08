@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.Oid
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
+import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -13,7 +12,6 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.Instant
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -38,93 +36,16 @@ class YkiSuoritusRepositoryTest(
         ykiSuoritusRepository.deleteAll()
     }
 
-    private val oidRanja = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
-    private val oidTesti = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
-
-    private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.14893989377").getOrThrow()
-
     @Test
     fun `suoritus is saved correctly`() {
-        val datePattern = "yyyy-MM-dd"
-        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        val suoritus =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = oidRanja,
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.N,
-                sukunimi = "Öhman-Testi",
-                etunimet = "Ranja Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 5",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = "testi@testi.fi",
-                suoritusId = 183424,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = jarjestajanOrganisaatio,
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = 5,
-                kirjoittaminen = 4,
-                rakenteetJaSanasto = 3,
-                puheenYmmartaminen = 1,
-                puhuminen = 2,
-                yleisarvosana = 3,
-                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
-                tarkistusarvioinninAsiatunnus = "123123",
-                tarkistusarvioidutOsakokeet = 2,
-                arvosanaMuuttui = 1,
-                perustelu = "Tarkistusarvioinnin testi",
-                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
-                koskiOpiskeluoikeus = null,
-            )
+        val suoritus = generateRandomYkiSuoritusEntity()
         val savedSuoritukset = ykiSuoritusRepository.saveAll(listOf(suoritus)).toList()
         assertEquals(suoritus, savedSuoritukset[0].copy(id = null))
     }
 
     @Test
     fun `saveAll returns only the saved suoritus`() {
-        val datePattern = "yyyy-MM-dd"
-        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        val initialSuoritus =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = oidRanja,
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.N,
-                sukunimi = "Öhman-Testi",
-                etunimet = "Ranja Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 5",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = "testi@testi.fi",
-                suoritusId = 183424,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = jarjestajanOrganisaatio,
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = 5,
-                kirjoittaminen = 4,
-                rakenteetJaSanasto = 3,
-                puheenYmmartaminen = 1,
-                puhuminen = 2,
-                yleisarvosana = 3,
-                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
-                tarkistusarvioinninAsiatunnus = "123123",
-                tarkistusarvioidutOsakokeet = 2,
-                arvosanaMuuttui = 1,
-                perustelu = "Tarkistusarvioinnin testi",
-                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
-                koskiOpiskeluoikeus = null,
-            )
+        val initialSuoritus = generateRandomYkiSuoritusEntity()
         ykiSuoritusRepository.saveAll(listOf(initialSuoritus)).toList()
         val updatedSuoritus =
             initialSuoritus.copy(
@@ -138,30 +59,9 @@ class YkiSuoritusRepositoryTest(
 
     @Test
     fun `suoritus with null values is saved correctly`() {
-        val datePattern = "yyyy-MM-dd"
-        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        val oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
         val suoritus =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = oid,
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.N,
-                sukunimi = "Öhman-Testi",
-                etunimet = "Ranja Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 5",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
+            generateRandomYkiSuoritusEntity().copy(
                 email = null,
-                suoritusId = 183424,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = jarjestajanOrganisaatio,
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
                 tekstinYmmartaminen = null,
                 kirjoittaminen = null,
                 rakenteetJaSanasto = null,
@@ -182,79 +82,9 @@ class YkiSuoritusRepositoryTest(
 
     @Test
     fun `finding distinct suoritukset returns the latest suoritus of same suoritusId`() {
-        val datePattern = "yyyy-MM-dd"
-        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        val oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()
-        val suoritus =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = oid,
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.N,
-                sukunimi = "Öhman-Testi",
-                etunimet = "Ranja Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 5",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = "testi@testi.fi",
-                suoritusId = 183424,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = jarjestajanOrganisaatio,
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = 1,
-                kirjoittaminen = 1,
-                rakenteetJaSanasto = 1,
-                puheenYmmartaminen = 2,
-                puhuminen = 3,
-                yleisarvosana = 1,
-                tarkistusarvioinninSaapumisPvm = null,
-                tarkistusarvioinninAsiatunnus = null,
-                tarkistusarvioidutOsakokeet = null,
-                arvosanaMuuttui = null,
-                perustelu = null,
-                tarkistusarvioinninKasittelyPvm = null,
-                koskiOpiskeluoikeus = null,
-            )
-        val suoritus2 =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = oidTesti,
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.E,
-                sukunimi = "Testinen",
-                etunimet = "Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 2",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = "testi@testi.fi",
-                suoritusId = 123456,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.ENG,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = jarjestajanOrganisaatio,
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = 1,
-                kirjoittaminen = 1,
-                rakenteetJaSanasto = 1,
-                puheenYmmartaminen = 2,
-                puhuminen = 3,
-                yleisarvosana = 1,
-                tarkistusarvioinninSaapumisPvm = null,
-                tarkistusarvioinninAsiatunnus = null,
-                tarkistusarvioidutOsakokeet = null,
-                arvosanaMuuttui = null,
-                perustelu = null,
-                tarkistusarvioinninKasittelyPvm = null,
-                koskiOpiskeluoikeus = null,
-            )
+        val suoritus = generateRandomYkiSuoritusEntity()
+        val suoritus2 = generateRandomYkiSuoritusEntity()
+
         val updatedSuoritus =
             suoritus.copy(
                 lastModified = Instant.parse("2024-11-01T13:53:56Z"),
@@ -264,12 +94,12 @@ class YkiSuoritusRepositoryTest(
                 puheenYmmartaminen = 1,
                 puhuminen = 2,
                 yleisarvosana = 3,
-                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
+                tarkistusarvioinninSaapumisPvm = LocalDate.of(2024, 10, 1),
                 tarkistusarvioinninAsiatunnus = "123123",
                 tarkistusarvioidutOsakokeet = 2,
                 arvosanaMuuttui = 4,
                 perustelu = "Tarkistusarvioinnin testi",
-                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
+                tarkistusarvioinninKasittelyPvm = LocalDate.of(2024, 10, 15),
             )
         ykiSuoritusRepository.saveAll(listOf(suoritus, suoritus2, updatedSuoritus))
         val suoritukset = ykiSuoritusRepository.find(distinct = true).toList()
@@ -280,45 +110,9 @@ class YkiSuoritusRepositoryTest(
 
     @Test
     fun `suoritukset with legacy language codes are saved correctly`() {
-        val datePattern = "yyyy-MM-dd"
-        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        val suoritusSWE10 =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = oidRanja,
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.N,
-                sukunimi = "Öhman-Testi",
-                etunimet = "Ranja Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 5",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = null,
-                suoritusId = 183424,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.SWE10,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = jarjestajanOrganisaatio,
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = null,
-                kirjoittaminen = null,
-                rakenteetJaSanasto = null,
-                puheenYmmartaminen = null,
-                puhuminen = null,
-                yleisarvosana = null,
-                tarkistusarvioinninSaapumisPvm = null,
-                tarkistusarvioinninAsiatunnus = null,
-                tarkistusarvioidutOsakokeet = null,
-                arvosanaMuuttui = null,
-                perustelu = null,
-                tarkistusarvioinninKasittelyPvm = null,
-                koskiOpiskeluoikeus = null,
-            )
-        val suoritusENG11 = suoritusSWE10.copy(tutkintokieli = Tutkintokieli.ENG11, suoritusId = 12345)
-        val suoritusENG12 = suoritusSWE10.copy(tutkintokieli = Tutkintokieli.ENG12, suoritusId = 54321)
+        val suoritusSWE10 = generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.SWE10)
+        val suoritusENG11 = generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.ENG11)
+        val suoritusENG12 = generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.ENG12)
         val suoritukset = listOf(suoritusSWE10, suoritusENG11, suoritusENG12)
         val savedSuoritukset = ykiSuoritusRepository.saveAll(suoritukset).toList()
         assertTrue(savedSuoritukset.map { it.copy(id = null) }.containsAll(suoritukset))
@@ -326,47 +120,9 @@ class YkiSuoritusRepositoryTest(
 
     @Test
     fun `find suoritus with search term`() {
-        val datePattern = "yyyy-MM-dd"
-        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        val suoritus =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = oidRanja,
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.N,
-                sukunimi = "Öhman-Testi",
-                etunimet = "Ranja Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 5",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = "testi@testi.fi",
-                suoritusId = 183424,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = jarjestajanOrganisaatio,
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = 5,
-                kirjoittaminen = 4,
-                rakenteetJaSanasto = 3,
-                puheenYmmartaminen = 1,
-                puhuminen = 2,
-                yleisarvosana = 3,
-                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
-                tarkistusarvioinninAsiatunnus = "123123",
-                tarkistusarvioidutOsakokeet = 2,
-                arvosanaMuuttui = 1,
-                perustelu = "Tarkistusarvioinnin testi",
-                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
-                koskiOpiskeluoikeus = null,
-            )
+        val suoritus = generateRandomYkiSuoritusEntity().copy(etunimet = "Ranja Testi")
         val suoritus2 =
-            suoritus.copy(
-                suoritusId = 123123,
-                suorittajanOID = oidTesti,
+            generateRandomYkiSuoritusEntity().copy(
                 etunimet = "Testi",
                 sukunimi = "Testilä",
             )
@@ -383,78 +139,8 @@ class YkiSuoritusRepositoryTest(
 
     @Test
     fun `count suoritukset`() {
-        val datePattern = "yyyy-MM-dd"
-        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
-        val suoritus =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = oidRanja,
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.N,
-                sukunimi = "Öhman-Testi",
-                etunimet = "Ranja Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 5",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = "testi@testi.fi",
-                suoritusId = 183424,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = jarjestajanOrganisaatio,
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = 1,
-                kirjoittaminen = 1,
-                rakenteetJaSanasto = 1,
-                puheenYmmartaminen = 2,
-                puhuminen = 3,
-                yleisarvosana = 1,
-                tarkistusarvioinninSaapumisPvm = null,
-                tarkistusarvioinninAsiatunnus = null,
-                tarkistusarvioidutOsakokeet = null,
-                arvosanaMuuttui = null,
-                perustelu = null,
-                tarkistusarvioinninKasittelyPvm = null,
-                koskiOpiskeluoikeus = null,
-            )
-        val suoritus2 =
-            YkiSuoritusEntity(
-                id = null,
-                suorittajanOID = oidTesti,
-                hetu = "010180-9026",
-                sukupuoli = Sukupuoli.E,
-                sukunimi = "Testinen",
-                etunimet = "Testi",
-                kansalaisuus = "EST",
-                katuosoite = "Testikuja 2",
-                postinumero = "40100",
-                postitoimipaikka = "Testilä",
-                email = "testi@testi.fi",
-                suoritusId = 123456,
-                lastModified = Instant.parse("2024-10-30T13:53:56Z"),
-                tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
-                tutkintokieli = Tutkintokieli.ENG,
-                tutkintotaso = Tutkintotaso.YT,
-                jarjestajanTunnusOid = jarjestajanOrganisaatio,
-                jarjestajanNimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                arviointipaiva = LocalDate.parse("2024-11-14", dateFormatter),
-                tekstinYmmartaminen = 1,
-                kirjoittaminen = 1,
-                rakenteetJaSanasto = 1,
-                puheenYmmartaminen = 2,
-                puhuminen = 3,
-                yleisarvosana = 1,
-                tarkistusarvioinninSaapumisPvm = null,
-                tarkistusarvioinninAsiatunnus = null,
-                tarkistusarvioidutOsakokeet = null,
-                arvosanaMuuttui = null,
-                perustelu = null,
-                tarkistusarvioinninKasittelyPvm = null,
-                koskiOpiskeluoikeus = null,
-            )
+        val suoritus = generateRandomYkiSuoritusEntity().copy(etunimet = "Ranja Testi")
+        val suoritus2 = generateRandomYkiSuoritusEntity()
         val updatedSuoritus =
             suoritus.copy(
                 lastModified = Instant.parse("2024-11-01T13:53:56Z"),
@@ -464,12 +150,12 @@ class YkiSuoritusRepositoryTest(
                 puheenYmmartaminen = 1,
                 puhuminen = 2,
                 yleisarvosana = 3,
-                tarkistusarvioinninSaapumisPvm = LocalDate.parse("2024-10-01", dateFormatter),
+                tarkistusarvioinninSaapumisPvm = LocalDate.of(2024, 10, 1),
                 tarkistusarvioinninAsiatunnus = "123123",
                 tarkistusarvioidutOsakokeet = 2,
                 arvosanaMuuttui = 4,
                 perustelu = "Tarkistusarvioinnin testi",
-                tarkistusarvioinninKasittelyPvm = LocalDate.parse("2024-10-15", dateFormatter),
+                tarkistusarvioinninKasittelyPvm = LocalDate.of(2024, 10, 15),
             )
         ykiSuoritusRepository.saveAll(listOf(suoritus, suoritus2, updatedSuoritus))
         val countDistinct = ykiSuoritusRepository.countSuoritukset()
