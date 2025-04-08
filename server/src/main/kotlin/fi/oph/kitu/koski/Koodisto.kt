@@ -36,7 +36,7 @@ object Koodisto {
         override val koodistoUri: String = "koskiopiskeluoikeudentila",
     ) : Koodiviite {
         Lasna("lasna"),
-        HyvaksytystiSuoritettu("hyvaksytystisuoritettu"),
+        Paattynyt("paattynyt"),
     }
 
     enum class YkiTutkintotaso(
