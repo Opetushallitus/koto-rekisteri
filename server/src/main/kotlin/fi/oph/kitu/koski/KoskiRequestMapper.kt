@@ -40,7 +40,7 @@ class KoskiRequestMapper {
                                         ),
                                         OpiskeluoikeusJakso(
                                             alku = ykiSuoritus.arviointipaiva,
-                                            tila = Koodisto.OpiskeluoikeudenTila.HyvaksytystiSuoritettu,
+                                            tila = Koodisto.OpiskeluoikeudenTila.Paattynyt,
                                         ),
                                     ),
                             ),
