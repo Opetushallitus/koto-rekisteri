@@ -4,6 +4,7 @@ import fi.oph.kitu.TypedResult
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -39,6 +40,11 @@ class KoskiServiceTest(
         val postgres =
             PostgreSQLContainer("postgres:16")
                 .withUrlParam("stringtype", "unspecified")!!
+    }
+
+    @BeforeEach
+    fun nukeDb() {
+        ykiSuoritusRepository.deleteAll()
     }
 
     @Test
