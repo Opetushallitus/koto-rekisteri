@@ -43,6 +43,18 @@ skriptille voi antaa `--setup-only` parametrin. Tällöin suoritetaan kehitysymp
 
 ### IDEA
 
+#### Laajennukset
+
+1. Navigoi `Settings` -> `Plugins`
+2. Asenna tai varmista, että ainakin seuraavat pluginit on asennettu:
+   - Handlebars/Mustache
+   - Ktlint
+   - Kotlin
+   - Maven
+   - Flyway
+   - Spring
+   - Spring Boot
+
 #### Koodin tyyli ja muotoilu
 
 Sovelluksessa käytetään `ktlint` - teknologiaa kotlin - tiedostojen tyylittämiseen. `mise` asentaa Ktlintin
@@ -51,6 +63,11 @@ voi laittaa muotoilemaan koodin tallentamisen yhteydessä.
 
 1. Navigoi `Settings` -> `Tools` -> `KtLint`
 2. Tämän valikon alta, aseta `Mode: Distract free` ja varmista että `Format: on save` -valintaruutu on valittu.
+
+Sen lisäksi kotlinista on hyvä olla [K2](https://blog.jetbrains.com/idea/2024/11/k2-mode-becomes-stable/) - moodi päällä.
+
+1. Navigoi `Settings` -> `Language & Frameworks` -> `Kotlin`
+2. Täällä valitse `Enable K2 mode` - checkbox ja käynnistä IDEA uudelleen.
 
 ## Ympäristöt
 
