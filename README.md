@@ -66,7 +66,7 @@ voi laittaa muotoilemaan koodin tallentamisen yhteydessä.
 
 Sen lisäksi kotlinista on hyvä olla [K2](https://blog.jetbrains.com/idea/2024/11/k2-mode-becomes-stable/) - moodi päällä.
 
-1. Navigoi `Settings` -> `Language & Frameworks` -> `Kotlin`
+1. Navigoi `Settings` -> `Languages & Frameworks` -> `Kotlin`
 2. Täällä valitse `Enable K2 mode` - checkbox ja käynnistä IDEA uudelleen.
 
 ## Ympäristöt
