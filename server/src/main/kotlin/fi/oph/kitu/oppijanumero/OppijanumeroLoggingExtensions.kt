@@ -11,12 +11,10 @@ fun LoggingEventBuilder.addValidationExceptions(
     oppijanumeroExceptions.forEachIndexed { index, ex ->
         this.add(
             "error.oppijanumero[$index].index" to index,
-            "error.oppijanumero[$index].oppija.kutsumanimi" to ex.oppija.kutsumanimi,
-            "error.oppijanumero[$index].oppija.etunimet" to ex.oppija.etunimet,
-            "error.oppijanumero[$index].oppija.sukunimi" to ex.oppija.sukunimi,
-            "error.oppijanumero[$index].oppija.hetu" to ex.oppija.hetu,
-            "error.oppijanumero[$index].oppija.henkilo_oid" to ex.oppija.henkilo_oid,
-            "error.oppijanumero[$index].oppija.oppijanumero" to ex.oppija.oppijanumero,
+            "error.oppijanumero[$index].oppija.kutsumanimi" to ex.request.kutsumanimi,
+            "error.oppijanumero[$index].oppija.etunimet" to ex.request.etunimet,
+            "error.oppijanumero[$index].oppija.sukunimi" to ex.request.sukunimi,
+            "error.oppijanumero[$index].oppija.hetu" to ex.request.hetu,
         )
     }
     validationExceptions.forEachIndexed { index, ex ->
