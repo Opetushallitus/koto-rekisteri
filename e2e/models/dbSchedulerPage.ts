@@ -30,8 +30,4 @@ export default class DbSchedulerPage extends BasePage {
   getRefreshButton() {
     return this.page.getByRole("button", { name: "Refresh" })
   }
-
-  getNotificationIndicator() {
-    return this.getRefreshButton().locator("..").locator("text=1")
-  }
 }

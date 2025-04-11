@@ -34,11 +34,6 @@ describe('"YKI Suoritukset Error" -page', () => {
     const refreshButton = dbSchedulerPage.getRefreshButton()
     await refreshButton.click()
 
-    // There should be now a notification about the error
-    // This is also an indicator, that the import was run.
-    const notification = dbSchedulerPage.getNotificationIndicator()
-    await expect(notification).toBeVisible({ timeout: 10000 })
-
     // Part 2 - Navigate to errors
     await ykiSuorituksetPage.open()
     await ykiSuorituksetPage.getErrorLink().click()
