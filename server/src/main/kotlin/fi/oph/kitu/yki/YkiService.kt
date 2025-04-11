@@ -29,7 +29,6 @@ import org.springframework.web.client.toEntity
 import java.io.ByteArrayOutputStream
 import java.lang.RuntimeException
 import java.time.Instant
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -46,15 +45,10 @@ class YkiService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    fun importYkiSuoritukset(
-        from: Instant,
-        lastSeen: LocalDate? = null,
-        dryRun: Boolean? = null,
-    ): Instant =
+    fun importYkiSuoritukset(from: Instant): Instant =
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
-                event.add("dryRun" to dryRun, "lastSeen" to lastSeen)
 
                 val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
 
@@ -77,15 +71,13 @@ class YkiService(
 
                 event.add("yki.suoritukset.receivedCount" to suoritukset.size)
 
-                if (dryRun != true) {
-                    val saved = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
-                    event.add("importedSuorituksetSize" to saved.count())
-                    auditLogger.logAll("YKI suoritus imported", saved) { suoritus ->
-                        arrayOf(
-                            "principal" to "yki.importSuoritukset",
-                            "suoritus.id" to suoritus.suoritusId,
-                        )
-                    }
+                val saved = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
+                event.add("importedSuorituksetSize" to saved.count())
+                auditLogger.logAll("YKI suoritus imported", saved) { suoritus ->
+                    arrayOf(
+                        "principal" to "yki.importSuoritukset",
+                        "suoritus.id" to suoritus.suoritusId,
+                    )
                 }
 
                 if (hasErrors) {
@@ -98,7 +90,7 @@ class YkiService(
                 addDatabaseLogs()
             }.getOrThrow()
 
-    fun importYkiArvioijat(dryRun: Boolean = false) =
+    fun importYkiArvioijat() =
         logger
             .atInfo()
             .withEventAndPerformanceCheck { event ->
@@ -123,20 +115,18 @@ class YkiService(
                     throw Error.EmptyArvioijat()
                 }
 
-                if (!dryRun) {
-                    val importedArvioijat =
-                        arvioijaRepository.saveAll(
-                            arvioijaMapper.convertToEntityIterable(arvioijat),
-                        )
-                    event.add("yki.arvioijat.importedCount" to importedArvioijat.count())
+                val importedArvioijat =
+                    arvioijaRepository.saveAll(
+                        arvioijaMapper.convertToEntityIterable(arvioijat),
+                    )
+                event.add("yki.arvioijat.importedCount" to importedArvioijat.count())
 
-                    auditLogger.logAll("YKI arvioija imported", importedArvioijat) { arvioija ->
-                        arrayOf(
-                            "principal" to "yki.importArvioijat",
-                            "peer.service" to PeerService.Solki.value,
-                            "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
-                        )
-                    }
+                auditLogger.logAll("YKI arvioija imported", importedArvioijat) { arvioija ->
+                    arrayOf(
+                        "principal" to "yki.importArvioijat",
+                        "peer.service" to PeerService.Solki.value,
+                        "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
+                    )
                 }
             }.apply {
                 addDefaults("yki.importArvioijat")
