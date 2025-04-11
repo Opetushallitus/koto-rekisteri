@@ -4,11 +4,10 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.add
+import fi.oph.kitu.logging.setAttribute
+import fi.oph.kitu.logging.use
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.slf4j.spi.LoggingEventBuilder
+import io.opentelemetry.api.trace.Tracer
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -17,41 +16,39 @@ class YkiSuoritusErrorService(
     private val mappingService: YkiSuoritusErrorMappingService,
     private val repository: YkiSuoritusErrorRepository,
     private val auditLogger: AuditLogger,
+    private val tracer: Tracer,
 ) {
-    private val logger: Logger = LoggerFactory.getLogger(javaClass)
-
     fun countErrors(): Long = repository.count()
 
-    fun handleErrors(
-        event: LoggingEventBuilder,
-        errors: List<CsvExportError>,
-    ): Boolean {
-        event.add(
-            "errors.size" to errors.size,
-            "errors.truncate" to errors.isEmpty(),
-        )
+    fun handleErrors(errors: List<CsvExportError>): Boolean =
+        tracer
+            .spanBuilder("yki.suoritukset.errors")
+            .startSpan()
+            .use { span ->
+                span.setAttribute("errors.size", errors.size)
+                span.setAttribute("errors.truncate", errors.isEmpty())
 
-        // add errors to technical logs
-        errors.forEachIndexed { i, error ->
-            event.add("serialization.error[$i].index" to i)
-            for (kvp in error.keyValues) {
-                event.add("serialization.error[$i].${kvp.key}" to kvp.value)
+                // trace serialization errors
+                errors.forEachIndexed { i, error ->
+                    span.setAttribute("serialization.error[$i].index", i)
+                    for (kvp in error.keyValues) {
+                        span.setAttribute("serialization.error[$i].${kvp.key}", kvp.value.toString())
+                    }
+                }
+
+                // add actual errors to database
+                if (errors.isEmpty()) {
+                    repository.deleteAll()
+                    return@use false
+                }
+
+                val entities = mappingService.convertToEntityIterable(errors)
+                repository.saveAll(entities).also {
+                    span.setAttribute("errors.addedSize", it.count())
+                }
+
+                return@use true
             }
-        }
-
-        // add errors to database
-        if (errors.isEmpty()) {
-            repository.deleteAll()
-            return false
-        }
-
-        val entities = mappingService.convertToEntityIterable(errors)
-        repository.saveAll(entities).also {
-            event.add("errors.addedSize" to it.count())
-        }
-
-        return true
-    }
 
     fun findNextSearchRange(
         suoritukset: List<YkiSuoritusCsv>,
