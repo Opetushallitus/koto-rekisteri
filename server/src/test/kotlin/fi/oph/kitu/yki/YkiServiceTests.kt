@@ -88,7 +88,7 @@ class YkiServiceTests(
             )
 
         // Act
-        ykiService.importYkiSuoritukset(Instant.EPOCH, null, false)
+        ykiService.importYkiSuoritukset(Instant.EPOCH)
 
         // Assert
         val suoritukset = ykiSuoritusRepository.findAll()
@@ -131,7 +131,7 @@ class YkiServiceTests(
         assertThrows<RuntimeException>(
             message = { "Received 1 errors" },
             executable = {
-                ykiService.importYkiSuoritukset(Instant.EPOCH, null, false)
+                ykiService.importYkiSuoritukset(Instant.EPOCH)
             },
         )
 
@@ -174,7 +174,7 @@ class YkiServiceTests(
             )
 
         // Act
-        val from = ykiService.importYkiSuoritukset(Instant.EPOCH, null, false)
+        val from = ykiService.importYkiSuoritukset(Instant.EPOCH)
 
         // Assert
         val firstSuoritukset = ykiSuoritusRepository.findAll()
@@ -194,7 +194,7 @@ class YkiServiceTests(
             )
 
         // Act
-        ykiService.importYkiSuoritukset(from, null, false)
+        ykiService.importYkiSuoritukset(from)
 
         // Assert
         val suoritukset = ykiSuoritusRepository.findAll()
