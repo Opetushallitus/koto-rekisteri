@@ -9,13 +9,11 @@ import * as ykiSuoritusFixture from "./ykiSuoritus"
 import * as ykiSuoritusErrorFixture from "./ykiSuoritusError"
 import BasePage from "../models/BasePage"
 import { Config, createConfig } from "../config"
-import DbSchedulerPage from "../models/dbSchedulerPage"
 
 interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
   ykiSuorituksetErrorPage: YkiSuorituksetErrorPage
   kielitestiSuorituksetPage: KielitestiSuorituksetPage
-  dbSchedulerPage: DbSchedulerPage
   indexPage: IndexPage
   basePage: BasePage
   kotoSuoritus: typeof kotoSuoritusFixture
@@ -33,10 +31,6 @@ interface WorkerArgs {
 export const test = baseTest.extend<Fixtures, WorkerArgs>({
   basePage: async ({ page, config }, use) => {
     const basePage = new BasePage(page, config)
-    await use(basePage)
-  },
-  dbSchedulerPage: async ({ page, config }, use) => {
-    const basePage = new DbSchedulerPage(page, config)
     await use(basePage)
   },
   kielitestiSuorituksetPage: async ({ page, config }, use) => {
