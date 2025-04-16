@@ -12,6 +12,7 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.Instant
 import java.time.LocalDate
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -103,8 +104,10 @@ class YkiSuoritusRepositoryTest(
             )
         ykiSuoritusRepository.saveAll(listOf(suoritus, suoritus2, updatedSuoritus))
         val suoritukset = ykiSuoritusRepository.find(distinct = true).toList()
-        assertTrue(suoritukset.map { it.copy(id = null) }.containsAll(listOf(suoritus2, updatedSuoritus)))
-        assertFalse(suoritukset.map { it.copy(id = null) }.contains(suoritus))
+        val nulledSuoritukset = suoritukset.map { it.copy(id = null) }
+        assertContains(nulledSuoritukset, updatedSuoritus)
+        assertContains(nulledSuoritukset, suoritus2)
+        assertFalse(nulledSuoritukset.contains(suoritus))
         assertEquals(2, suoritukset.count())
     }
 
