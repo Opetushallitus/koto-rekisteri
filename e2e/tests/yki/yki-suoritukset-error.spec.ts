@@ -2,7 +2,7 @@ import * as node_fs from "node:fs"
 import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 
 const fs = node_fs.promises
-describe('"YKI Suoritukset Error" -page', () => {
+describe('"YKI Suoritukset" -page', () => {
   beforeEach(async ({ db, basePage, ykiSuoritusError }) => {
     await db.withEmptyDatabase()
 
