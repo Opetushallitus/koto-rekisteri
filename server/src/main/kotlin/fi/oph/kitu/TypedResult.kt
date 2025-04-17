@@ -77,10 +77,20 @@ sealed class TypedResult<Value, Error> {
             } catch (e: Throwable) {
                 Failure(e)
             }
+
+        fun <T, E> fromNullable(
+            value: T?,
+            error: () -> E,
+        ): TypedResult<T, E> =
+            if (value == null) {
+                Failure(error())
+            } else {
+                Success(value)
+            }
     }
 }
 
-fun <Value, Error> Iterable<TypedResult<Value, Error>>.splitIntoValuesAndErrors(): Pair<List<Value>, List<Error>> {
+fun <Value, Error> Iterable<TypedResult<Value, out Error>>.splitIntoValuesAndErrors(): Pair<List<Value>, List<Error>> {
     val values =
         this
             .filterIsInstance<TypedResult.Success<Value, Error>>()

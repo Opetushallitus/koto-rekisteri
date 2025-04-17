@@ -12,7 +12,10 @@ data class YleistunnisteHaeRequest(
     val kutsumanimi: String,
     @JsonProperty("sukunimi")
     val sukunimi: String,
-)
+) {
+    fun toOppija(response: YleistunnisteHaeResponse): TunnistettuOppija? =
+        response.oppijanumero?.let { TunnistettuOppija(etunimet, hetu, kutsumanimi, sukunimi, it) }
+}
 
 data class YleistunnisteHaeResponse(
     @JsonProperty("oid")
