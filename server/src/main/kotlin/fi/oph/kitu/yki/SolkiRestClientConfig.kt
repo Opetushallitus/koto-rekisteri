@@ -7,7 +7,9 @@ import org.springframework.web.client.RestClient
 import java.util.Base64
 
 @Configuration
-class SolkiRestClientConfig {
+class SolkiRestClientConfig(
+    private val restClientBuilder: RestClient.Builder,
+) {
     @Value("\${kitu.yki.baseUrl}")
     private lateinit var baseUrl: String
 
@@ -20,8 +22,7 @@ class SolkiRestClientConfig {
     @Bean("solkiRestClient")
     fun restClient(): RestClient {
         val basicAuthToken = Base64.getEncoder().encodeToString("$user:$password".toByteArray())
-        return RestClient
-            .builder()
+        return restClientBuilder
             .baseUrl(baseUrl)
             .defaultHeader("Authorization", "Basic $basicAuthToken")
             .build()

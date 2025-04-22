@@ -7,7 +7,9 @@ import org.springframework.web.client.RestClient
 import java.util.Base64
 
 @Configuration
-class KoskiRestClientConfig {
+class KoskiRestClientConfig(
+    private val restClientBuilder: RestClient.Builder,
+) {
     @Value("\${kitu.koski.baseUrl}")
     private lateinit var koskiBaseUrl: String
 
@@ -20,8 +22,7 @@ class KoskiRestClientConfig {
     @Bean("koskiRestClient")
     fun restClient(): RestClient {
         val basicAuthToken = Base64.getEncoder().encodeToString("$user:$password".toByteArray())
-        return RestClient
-            .builder()
+        return restClientBuilder
             .baseUrl(koskiBaseUrl)
             .defaultHeader("Authorization", "Basic $basicAuthToken")
             .build()
