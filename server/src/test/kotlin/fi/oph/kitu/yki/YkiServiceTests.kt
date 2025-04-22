@@ -38,6 +38,7 @@ class YkiServiceTests(
     @Autowired private val auditLogger: AuditLogger,
     @Autowired private val suoritusErrorRepository: YkiSuoritusErrorRepository,
     @Autowired private val parser: CsvParser,
+    @Autowired private val mockRestClientBuilder: RestClient.Builder,
 ) {
     @Suppress("unused")
     companion object {
@@ -59,7 +60,6 @@ class YkiServiceTests(
     @Test
     fun `test suoritukset import works`() {
         // Arrange
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("suoritukset?m=1970-01-01T00:00:00Z"))
@@ -101,7 +101,6 @@ class YkiServiceTests(
     @Test
     fun `invalid oppijanumero is not added to suoritus, but logged as error`() {
         // Arrange
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("suoritukset?m=1970-01-01T00:00:00Z"))
@@ -145,7 +144,6 @@ class YkiServiceTests(
     @Test
     fun `import of newest suoritukset ignores duplicates`() {
         // Arrange
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("suoritukset?m=1970-01-01T00:00:00Z"))
@@ -203,7 +201,6 @@ class YkiServiceTests(
 
     @Test
     fun `arvioijat import persists arvioijat to DB`() {
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("arvioijat"))
@@ -238,7 +235,6 @@ class YkiServiceTests(
 
     @Test
     fun `consecutive arvioijat import run inserts new and updated entries`() {
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("arvioijat"))
@@ -306,7 +302,6 @@ class YkiServiceTests(
     @Test
     fun `consecutive suoritukset imports with some failures decided next search range correctly`() {
         // Arrange
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
 
         val date = "2020-03-10T00:00:00Z"

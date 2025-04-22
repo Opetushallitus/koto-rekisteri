@@ -28,6 +28,7 @@ import kotlin.test.assertTrue
 class KoskiServiceTest(
     @Autowired private val koskiRequestMapper: KoskiRequestMapper,
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
+    @Autowired private val mockRestClientBuilder: RestClient.Builder,
 ) {
     @Autowired
     private lateinit var ykiService: YkiService
@@ -76,7 +77,6 @@ class KoskiServiceTest(
               ]
             }
             """.trimIndent()
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("oppija"))
@@ -100,7 +100,6 @@ class KoskiServiceTest(
             """
             [{"key": "notFound.oppijaaEiLöydy","message": "Oppijaa 1.2.246.562.24.00000000000 ei löydy."}]
             """.trimIndent()
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("oppija"))
@@ -145,7 +144,6 @@ class KoskiServiceTest(
               ]
             }
             """.trimIndent()
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(ExpectedCount.times(3), requestTo("oppija"))
@@ -200,7 +198,6 @@ class KoskiServiceTest(
               ]
             }
             """.trimIndent()
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("oppija"))

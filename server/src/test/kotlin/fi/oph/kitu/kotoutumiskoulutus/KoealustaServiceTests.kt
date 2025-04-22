@@ -23,6 +23,7 @@ import kotlin.test.assertEquals
 @Testcontainers
 class KoealustaServiceTests(
     @Autowired private val auditLogger: AuditLogger,
+    @Autowired private val mockRestClientBuilder: RestClient.Builder,
 ) {
     @Suppress("unused")
     companion object {
@@ -38,7 +39,6 @@ class KoealustaServiceTests(
         @Autowired objectMapper: ObjectMapper,
     ) {
         // Facade
-        val mockRestClientBuilder = RestClient.builder()
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(
