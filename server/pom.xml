@@ -184,6 +184,23 @@
             <version>2.10.0</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>3.12.1</version>
+        </dependency>
+
+        <!--
+            dependency by wiremock, for some reason this needs to be included.
+            Aatleast if WireMock is used in main-tree...
+           -->
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>2.5.2</version>
+        </dependency>
+
         <!-- https://github.com/Opetushallitus/koto-rekisteri/security/dependabot/27 -->
         <dependency>
             <groupId>net.minidev</groupId>

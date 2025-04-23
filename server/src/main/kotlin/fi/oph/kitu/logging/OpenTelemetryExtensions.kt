@@ -15,3 +15,14 @@ inline fun <T> Span.use(block: (Span) -> T): T {
         this.end()
     }
 }
+
+fun Span.setAttribute(
+    key: String,
+    values: Array<String>,
+): Span {
+    for ((index, value) in values.withIndex()) {
+        this.setAttribute("$key[$index]", value)
+    }
+
+    return this
+}
