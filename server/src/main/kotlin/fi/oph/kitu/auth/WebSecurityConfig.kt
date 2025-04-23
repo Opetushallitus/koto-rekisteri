@@ -42,7 +42,11 @@ class WebSecurityConfig {
             authorizeHttpRequests {
                 authorize("/actuator/health", permitAll)
 
-                if ((environment.activeProfiles.contains("local") || environment.activeProfiles.contains("e2e")) &&
+                if ((
+                        environment.activeProfiles.contains("local") ||
+                            environment.activeProfiles.contains("test") ||
+                            environment.activeProfiles.contains("e2e")
+                    ) &&
                     !environment.activeProfiles.any { it == "qa" || it.lowercase().contains("prod") }
                 ) {
                     authorize("/dev/**", permitAll)
