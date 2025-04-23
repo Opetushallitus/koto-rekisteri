@@ -25,7 +25,6 @@ import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import java.lang.RuntimeException
 import java.time.Instant
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
@@ -131,12 +130,9 @@ class YkiServiceTests(
             )
 
         // Act
-        assertThrows<RuntimeException>(
-            message = { "Received 1 errors" },
-            executable = {
-                ykiService.importYkiSuoritukset(Instant.EPOCH)
-            },
-        )
+        assertThrows<YkiService.Error.CsvConversionError> {
+            ykiService.importYkiSuoritukset(Instant.EPOCH)
+        }
 
         val suoritukset = ykiSuoritusRepository.findAll()
         assertEquals(0, suoritukset.count())
@@ -354,13 +350,10 @@ class YkiServiceTests(
                 tracer = tracer,
             )
 
-        assertThrows<RuntimeException>(
-            message = { "Received 1 errors" },
-            executable = {
-                // Since we got an error, the the range is considered an errorneus and will require re-import
-                ykiService.importYkiSuoritukset(since)
-            },
-        )
+        assertThrows<YkiService.Error.CsvConversionError> {
+            // Since we got an error, the the range is considered an errorneus and will require re-import
+            ykiService.importYkiSuoritukset(since)
+        }
 
         // Verify non-erroneus data is saved
         assertEquals(2, ykiSuoritusRepository.findAll().count())

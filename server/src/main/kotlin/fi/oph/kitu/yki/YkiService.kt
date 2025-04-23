@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
@@ -29,7 +30,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import java.io.ByteArrayOutputStream
-import java.lang.RuntimeException
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import kotlin.io.use
@@ -84,7 +84,7 @@ class YkiService(
                 }
 
                 if (hasErrors) {
-                    throw RuntimeException("Received ${errors.count()} errors.")
+                    throw Error.CsvConversionError("importYkiSuoritukset", errors)
                 }
 
                 return@use nextSince
@@ -211,5 +211,10 @@ class YkiService(
         class EmptyArvioijatResponse : Error("Empty body on arvioijat response")
 
         class EmptyArvioijat : Error("Unexpected empty list of arvioijat")
+
+        class CsvConversionError(
+            service: String,
+            errors: List<CsvExportError>,
+        ) : Error("service '$service' received ${errors.size} errors from csv conversion.")
     }
 }
