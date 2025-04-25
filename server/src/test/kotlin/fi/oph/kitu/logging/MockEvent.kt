@@ -4,6 +4,7 @@ import org.slf4j.Marker
 import org.slf4j.spi.LoggingEventBuilder
 import java.util.function.Supplier
 
+@Deprecated("replace with OpenTelemetry tracing")
 class MockEvent : LoggingEventBuilder {
     val keyValues = mutableMapOf<String?, Any?>()
     val causes = mutableListOf<Throwable?>()

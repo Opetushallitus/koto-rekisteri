@@ -2,15 +2,18 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.SimpleCsvExportError
-import fi.oph.kitu.logging.MockEvent
+import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -19,13 +22,13 @@ import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-// import java.util.
-
 @SpringBootTest
 @Testcontainers
+@Import(OpenTelemetryTestConfig::class)
 class YkiSuoritusErrorTests(
     @Autowired private val repository: YkiSuoritusErrorRepository,
     @Autowired private val service: YkiSuoritusErrorService,
+    @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
 ) {
     @Suppress("unused")
     companion object {
@@ -40,12 +43,12 @@ class YkiSuoritusErrorTests(
     @BeforeEach
     fun nukeDb() {
         repository.deleteAll()
+        inMemorySpanExporter.reset()
     }
 
     @Test
     fun `no csv errors will truncate errors`() {
         // Arrange
-        val event = MockEvent()
         val errors = emptyList<CsvExportError>()
         repository.save(
             // Existing error
@@ -58,21 +61,27 @@ class YkiSuoritusErrorTests(
         service.handleErrors(errors)
 
         // Assert
+        // verify errors visible to user
         val errorsInDatabase = repository.findAll()
         assertEquals(0, errorsInDatabase.count())
 
-        val errorSize = event.keyValues["errors.size"] as Int
+        val span =
+            inMemorySpanExporter
+                .finishedSpanItems
+                .find { it.name == "yki.suoritukset.errors" }
+        val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
 
         assertEquals(0, errorSize)
 
-        val truncate = event.keyValues["errors.truncate"] as Boolean
+        val truncate = span.attributes!!.get(AttributeKey.booleanKey("errors.truncate"))
         assertEquals(true, truncate)
 
-        // verify serialization errors (technical)
+        // verify serialization errors (technical errors)
         val serializationErrors =
-            event.keyValues.filterKeys {
-                it?.startsWith("serialization.error") == true
-            }
+            span.attributes
+                ?.asMap()
+                ?.filterKeys { at -> at.key.startsWith("serialization.error") }
+                ?: emptyMap()
 
         assertEquals(0, serializationErrors.size)
     }
@@ -80,7 +89,6 @@ class YkiSuoritusErrorTests(
     @Test
     fun `new csv error will be appended to database`() {
         // Arrange
-        val event = MockEvent()
         val errors =
             listOf(
                 SimpleCsvExportError(
@@ -112,20 +120,26 @@ class YkiSuoritusErrorTests(
         val errorsInDatabase = repository.findAll()
         assertEquals(2, errorsInDatabase.count())
 
-        val errorSize = event.keyValues["errors.size"] as Int
+        val span =
+            inMemorySpanExporter
+                .finishedSpanItems
+                .find { it.name == "yki.suoritukset.errors" }
+
+        val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
         assertEquals(1, errorSize)
 
-        val truncate = event.keyValues["errors.truncate"] as Boolean
+        val truncate = span.attributes!!.get(AttributeKey.booleanKey("errors.truncate"))
         assertEquals(false, truncate)
 
-        val addedSize = event.keyValues["errors.addedSize"] as Int
+        val addedSize = span.attributes!!.get(AttributeKey.longKey("errors.addedSize"))
         assertEquals(1, addedSize)
 
-        // verify serialization errors (technical)
+        // verify serialization errors (technical errors)
         val serializationErrors =
-            event.keyValues.filterKeys {
-                it?.startsWith("serialization.error") == true
-            }
+            span.attributes
+                ?.asMap()
+                ?.filterKeys { at -> at.key.startsWith("serialization.error") }
+                ?: emptyMap()
 
         assertEquals(3, serializationErrors.size)
 
@@ -133,12 +147,12 @@ class YkiSuoritusErrorTests(
             serializationErrors
                 //  Removes everything before last dot, from the keys.
                 // as a side effect disassociate keys with the values
-                .map { Pair(it.key?.substringAfterLast("."), it.value) }
-                .filter { it.first.equals("exception") }
+                .map { Pair(it.key.key.substringAfterLast("."), it.value) }
+                .filter { it.first == "exception" }
                 .map { it.second }
                 .first()
+                .toString()
 
-        assertTrue(exception is RuntimeException)
-        assertTrue(exception.message!!.contains("suorittajanOID"))
+        assertTrue(exception.contains("suorittajanOID"))
     }
 }
