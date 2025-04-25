@@ -253,6 +253,11 @@
             <version>1.44.0-alpha</version>
         </dependency>
         <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-testing</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>no.bekk.db-scheduler-ui</groupId>
             <artifactId>db-scheduler-ui-starter</artifactId>
             <version>4.1.0</version>
