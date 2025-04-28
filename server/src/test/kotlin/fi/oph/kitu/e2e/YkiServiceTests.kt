@@ -3,6 +3,7 @@ package fi.oph.kitu.e2e
 import fi.oph.kitu.dev.YkiController
 import fi.oph.kitu.yki.YkiService
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -43,7 +44,9 @@ class YkiServiceTests(
                 ),
         )
 
-        ykiService.importYkiSuoritukset(Instant.now())
+        assertDoesNotThrow {
+            ykiService.importYkiSuoritukset(Instant.now())
+        }
     }
 
     @Test
