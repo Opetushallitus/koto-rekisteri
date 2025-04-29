@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import fi.oph.kitu.ExtendedSchedules
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -22,36 +23,28 @@ class YkiScheduledTasks(
     @Value("\${kitu.yki.scheduling.importArvioijat.schedule}")
     lateinit var ykiImportArvioijatSchedule: String
 
+    @WithSpan
     @Bean
     fun dailyImport(ykiService: YkiService): Task<Instant?> =
-        tracer
-            .spanBuilder("Beans.dailyImport.init")
-            .startSpan()
-            .use {
-                Tasks
-                    .recurring("YKI-import", ExtendedSchedules.parse(ykiImportSchedule), Instant::class.java)
-                    .initialData(Instant.EPOCH)
-                    .executeStateful { taskInstance, _ ->
-                        tracer
-                            .spanBuilder("Beans.dailyImport.execute")
-                            .startSpan()
-                            .use { ykiService.importYkiSuoritukset(taskInstance.data) }
-                    }
+        Tasks
+            .recurring("YKI-import", ExtendedSchedules.parse(ykiImportSchedule), Instant::class.java)
+            .initialData(Instant.EPOCH)
+            .executeStateful { taskInstance, _ ->
+                tracer
+                    .spanBuilder("Beans.dailyImport.execute")
+                    .startSpan()
+                    .use { ykiService.importYkiSuoritukset(taskInstance.data) }
             }
 
+    @WithSpan
     @Bean
     fun arvioijatImport(ykiService: YkiService): Task<Void> =
-        tracer
-            .spanBuilder("Beans.arvijoijatImport.init")
-            .startSpan()
-            .use {
-                Tasks
-                    .recurring("YKI-import-arvioijat", ExtendedSchedules.parse(ykiImportArvioijatSchedule))
-                    .execute { _, _ ->
-                        tracer
-                            .spanBuilder("Beans.arvijoijatImport.execute")
-                            .startSpan()
-                            .use { ykiService.importYkiArvioijat() }
-                    }
+        Tasks
+            .recurring("YKI-import-arvioijat", ExtendedSchedules.parse(ykiImportArvioijatSchedule))
+            .execute { _, _ ->
+                tracer
+                    .spanBuilder("Beans.arvijoijatImport.execute")
+                    .startSpan()
+                    .use { ykiService.importYkiArvioijat() }
             }
 }
