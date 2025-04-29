@@ -5,6 +5,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
@@ -86,6 +87,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
      * Override to allow handling duplicates/conflicts. The default implementation from CrudRepository fails
      * due to the unique constraint. Overriding the implementation allows explicit handling of conflicts.
      */
+    @WithSpan
     override fun <S : YkiSuoritusEntity> saveAll(suoritukset: Iterable<S>): Iterable<S> {
         val sql =
             """

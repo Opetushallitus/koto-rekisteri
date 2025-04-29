@@ -1,5 +1,7 @@
 package fi.oph.kitu
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
+
 sealed class TypedResult<Value, Error> {
     data class Success<Value, Error>(
         val value: Value,
@@ -80,6 +82,7 @@ sealed class TypedResult<Value, Error> {
     }
 }
 
+@WithSpan
 fun <Value, Error> Iterable<TypedResult<Value, Error>>.splitIntoValuesAndErrors(): Pair<List<Value>, List<Error>> {
     val values =
         this

@@ -2,13 +2,15 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.Sukupuoli
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 
 @Service
 class YkiSuoritusMappingService {
+    @WithSpan
     fun convertToEntityIterable(iterable: Iterable<YkiSuoritusCsv>) = iterable.map { convertToEntity(it) }
 
-    fun convertToEntity(
+    private fun convertToEntity(
         csv: YkiSuoritusCsv,
         id: Int? = null,
         koskiOpiskeluoikeus: String? = null,
