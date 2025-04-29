@@ -18,7 +18,7 @@ import java.time.Instant
 
 @Service
 class KoealustaService(
-    private val restClientBuilder: RestClient.Builder,
+    val restClientBuilder: RestClient.Builder,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val mappingService: KoealustaMappingService,
     private val auditLogger: AuditLogger,
