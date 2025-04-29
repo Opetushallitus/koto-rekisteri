@@ -27,7 +27,10 @@ class OpenTelemetryTestConfig {
                 .builder()
                 .setTracerProvider(tracerProvider)
                 .build()
+
+        GlobalOpenTelemetry.resetForTest()
         GlobalOpenTelemetry.set(openTelemetry)
+
         return openTelemetry
     }
 }
