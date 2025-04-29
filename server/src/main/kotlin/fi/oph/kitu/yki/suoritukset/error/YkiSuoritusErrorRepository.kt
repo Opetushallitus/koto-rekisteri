@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.yki.suoritukset.fromResultSet
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
@@ -26,6 +27,7 @@ interface CustomYkiSuoritusErrorRepository {
 class CustomYkiSuoritusErrorRepositoryImpl(
     val jdbcTemplate: JdbcTemplate,
 ) : CustomYkiSuoritusErrorRepository {
+    @WithSpan
     override fun <S : YkiSuoritusErrorEntity> saveAll(errors: Iterable<S>): Iterable<S> {
         val sql =
             """
