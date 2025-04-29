@@ -1,18 +1,17 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
-import fi.oph.kitu.logging.AuditLogger
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.oppijanumero.OppijanumeroServiceMock
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.http.MediaType
+import org.springframework.test.context.bean.override.convention.TestBean
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
-import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -21,25 +20,29 @@ import kotlin.test.assertEquals
 
 @SpringBootTest
 @Testcontainers
-class KoealustaServiceTests(
-    @Autowired private val auditLogger: AuditLogger,
-    @Autowired private val mockRestClientBuilder: RestClient.Builder,
-) {
+class KoealustaServiceTests {
     @Suppress("unused")
     companion object {
         @JvmStatic
         @Container
         @ServiceConnection
         val postgres = PostgreSQLContainer("postgres:16")
+
+        @JvmStatic
+        fun oppijanumeroService(): OppijanumeroService = OppijanumeroServiceMock("1.2.246.562.24.33342764709")
     }
+
+    @TestBean
+    @Suppress("unused")
+    private lateinit var oppijanumeroService: OppijanumeroService
 
     @Test
     fun `test import works`(
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
-        @Autowired objectMapper: ObjectMapper,
+        @Autowired koealustaService: KoealustaService,
     ) {
         // Facade
-        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
         mockServer
             .expect(
                 requestTo(
@@ -98,18 +101,6 @@ class KoealustaServiceTests(
             )
 
         // System under test
-        val koealustaService =
-            KoealustaService(
-                restClientBuilder = mockRestClientBuilder,
-                kielitestiSuoritusRepository = kielitestiSuoritusRepository,
-                mappingService =
-                    KoealustaMappingService(
-                        objectMapper,
-                        OppijanumeroServiceMock("1.2.246.562.24.33342764709"),
-                    ),
-                auditLogger = auditLogger,
-            )
-
         koealustaService.koealustaToken = "token"
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
