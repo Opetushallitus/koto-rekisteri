@@ -30,6 +30,7 @@
         <java.version>21</java.version>
         <kotlin.version>2.1.20</kotlin.version>
         <kotlin.compiler.apiVersion>2.1</kotlin.compiler.apiVersion>
+        <springdoc.version>2.8.3</springdoc.version>
 
         <flyway.version>11.8.0</flyway.version>
         <jackson.version>2.19.0</jackson.version>
@@ -159,6 +160,13 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
+        </dependency>
+
+        <!-- Adds Swagger UI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
         <dependency>
@@ -363,6 +371,93 @@
                         <version>${kotlin.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>7.11.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/static/open-api.yaml</inputSpec>
+                            <output>${project.basedir}</output>
+
+                            <generatorName>kotlin-spring</generatorName>
+                            <!-- Enabled generators -->
+                            <generateModels>true</generateModels>
+                            <generateApis>true</generateApis>
+
+                            <!-- Disable generation of everything else -->
+                            <skipOperationExample>true</skipOperationExample>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+
+                            <!--
+                            Enable post-processing of generated sources. This allows e.g. auto-formatting with ktlint.
+
+                            Requires setting KOTLIN_POST_PROCESS_FILE environment variable for any post-processing to
+                            be performed. e.g.
+                            ```sh
+                            KOTLIN_POST_PROCESS_FILE="ktlint -F"
+                            ```
+                            -->
+                            <enablePostProcessFile>true</enablePostProcessFile>
+
+                            <!-- https://openapi-generator.tech/docs/generators/kotlin-spring/#config-options -->
+                            <configOptions>
+                                <sourceFolder>src/main/kotlin</sourceFolder>
+                                <modelPackage>fi.oph.kitu.generated.model</modelPackage>
+                                <apiPackage>fi.oph.kitu.generated.api</apiPackage>
+                                <gradleBuildFile>false</gradleBuildFile>
+
+                                <!-- Generate Spring Boot 3.x compatible APIs/models -->
+                                <library>spring-boot</library>
+                                <useSpringBoot3>true</useSpringBoot3>
+
+                                <!-- Don't generate the spring boot application entry-point etc. -->
+                                <interfaceOnly>true</interfaceOnly>
+                                <exceptionHandler>false</exceptionHandler>
+                                <useFeignClientUrl>false</useFeignClientUrl>
+
+                                <!-- Enable Swagger UI -->
+                                <useSwaggerUI>true</useSwaggerUI>
+
+                                <!--
+                                Don't add documentation annotations. Schema is generated from a provided OpenAPI spec,
+                                so the annotations contain only the information from the existing spec. Therefore, docs
+                                should be generated directly from the OpenAPI spec, removing any need for the doc
+                                annotations.
+                                -->
+                                <documentationProvider>none</documentationProvider>
+
+                                <!-- Use tags for determining controllers' names etc. -->
+                                <useTags>true</useTags>
+
+                                <!-- Disable some boilerplate on generated API interfaces -->
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <useBeanValidation>false</useBeanValidation>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <filesets>
+                        <!-- Delete generated OpenAPI sources when running `mvn clean` -->
+                        <fileset>
+                            <directory>${project.basedir}/src/main/kotlin</directory>
+                            <includes>
+                                **/generated/**/*.kt
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -41,6 +41,10 @@ class WebSecurityConfig {
             }
             authorizeHttpRequests {
                 authorize("/actuator/health", permitAll)
+                authorize("/swagger-ui.html", permitAll)
+                authorize("/swagger/*", permitAll)
+                authorize("/v3/api-docs/swagger-config", permitAll)
+                authorize("/open-api.yaml", permitAll)
 
                 if ((
                         environment.activeProfiles.contains("local") ||
