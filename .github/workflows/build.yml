@@ -66,6 +66,24 @@ jobs:
           directory: server
           ignore-maven-wrapper: "true"
 
+  check_generated_sources:
+    name: Check generated sources
+    runs-on: ubuntu-24.04
+    needs: update_tools_cache
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate sources
+        run: mvn generate-sources
+        working-directory: server
+      - name: Check for differences in generated sources
+        run: git diff --exit-code
+
   server_tests:
     name: Server tests
     runs-on: ubuntu-24.04
@@ -135,6 +153,7 @@ jobs:
     name: Build image
     runs-on: ubuntu-24.04
     needs:
+      - check_generated_sources
       - server_tests
       - frontend_tests
       - lint
