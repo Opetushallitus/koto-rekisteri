@@ -107,8 +107,11 @@ class YkiServiceTests(
         assertEquals(0, errors.count())
 
         val spans = inMemorySpanExporter.finishedSpanItems
-        val findNextErrorSpan = spans.find { it.name == "YkiSuoritusErrorService.findNextSearchRange" }
-        assertNotNull(findNextErrorSpan)
+        assertNotNull(spans.find { it.name == "YkiService.importSuoritukset" })
+        assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.findNextSearchRange" })
+        assertNotNull(spans.find { it.name == "CustomYkiSuoritusRepositoryImpl.saveAll" })
+        assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.handleErrors" })
+        assertNotNull(spans.find { it.name == "CsvParser.convertCsvToData" })
     }
 
     @Test
