@@ -10,6 +10,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.junit.jupiter.api.BeforeEach
@@ -251,6 +252,15 @@ class YkiServiceTests(
         val spans = inMemorySpanExporter.finishedSpanItems
         assertNotNull(spans.find { it.name == "CustomYkiArvioijaRepositoryImpl.saveAll" })
         assertNotNull(spans.find { it.name == "CsvParser.convertCsvToData" })
+
+        val ykiArvioijatSpan = spans.find { it.name == "YkiService.importYkiArvioijat" }
+        assertNotNull(ykiArvioijatSpan)
+
+        val receivedCount = ykiArvioijatSpan.attributes.get(AttributeKey.longKey("yki.arvioijat.receivedCount"))
+        assertEquals(1, receivedCount)
+
+        val importedCount = ykiArvioijatSpan.attributes.get(AttributeKey.longKey("yki.arvioijat.importedCount"))
+        assertEquals(1, importedCount)
     }
 
     @Test
