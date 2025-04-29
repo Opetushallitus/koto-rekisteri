@@ -6,10 +6,8 @@ import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.add
 import fi.oph.kitu.logging.setAttribute
 import fi.oph.kitu.logging.use
-import fi.oph.kitu.logging.withEventAndPerformanceCheck
 import fi.oph.kitu.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
@@ -132,21 +130,19 @@ class YkiService(
             }
 
     fun generateSuorituksetCsvStream(includeVersionHistory: Boolean): ByteArrayOutputStream =
-        logger
-            .atInfo()
-            .withEventAndPerformanceCheck { event ->
+        tracer
+            .spanBuilder("YkiService.generateSuorituksetCsvStream")
+            .startSpan()
+            .use { span ->
                 val newParser = parser.withUseHeader(true)
                 val suoritukset = allSuoritukset(includeVersionHistory)
-                event.add("dataCount" to suoritukset.count())
+                span.setAttribute("dataCount", suoritukset.count())
                 val writableData = suoritusMapper.convertToResponseIterable(suoritukset)
                 val outputStream = ByteArrayOutputStream()
                 newParser.streamDataAsCsv(outputStream, writableData)
 
-                return@withEventAndPerformanceCheck outputStream
-            }.apply {
-                addDefaults("yki.getSuorituksetCsv")
-                addDatabaseLogs()
-            }.getOrThrow()
+                return@use outputStream
+            }
 
     @WithSpan
     fun allSuoritukset(versionHistory: Boolean): List<YkiSuoritusEntity> =
