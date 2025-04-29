@@ -108,11 +108,22 @@ class YkiServiceTests(
         assertEquals(0, errors.count())
 
         val spans = inMemorySpanExporter.finishedSpanItems
-        assertNotNull(spans.find { it.name == "YkiService.importSuoritukset" })
         assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.findNextSearchRange" })
         assertNotNull(spans.find { it.name == "CustomYkiSuoritusRepositoryImpl.saveAll" })
         assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.handleErrors" })
         assertNotNull(spans.find { it.name == "CsvParser.convertCsvToData" })
+
+        val importSuorituksetSpan = spans.find { it.name == "YkiService.importSuoritukset" }
+        assertNotNull(importSuorituksetSpan)
+
+        val receivedCount = importSuorituksetSpan.attributes.get(AttributeKey.longKey("yki.suoritukset.receivedCount"))
+        assertEquals(3, receivedCount)
+
+        val importedSuorituksetSize =
+            importSuorituksetSpan.attributes.get(
+                AttributeKey.longKey("importedSuorituksetSize"),
+            )
+        assertEquals(3, importedSuorituksetSize)
     }
 
     @Test
