@@ -8,6 +8,7 @@ import fi.oph.kitu.logging.setAttribute
 import fi.oph.kitu.logging.use
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -50,6 +51,7 @@ class YkiSuoritusErrorService(
                 return@use true
             }
 
+    @WithSpan
     fun findNextSearchRange(
         suoritukset: List<YkiSuoritusCsv>,
         errors: List<CsvExportError>,
