@@ -68,7 +68,7 @@ class YkiSuoritusErrorTests(
         val span =
             inMemorySpanExporter
                 .finishedSpanItems
-                .find { it.name == "yki.suoritukset.errors" }
+                .find { it.name == "YkiSuoritusErrorService.handleErrors" }
         val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
 
         assertEquals(0, errorSize)
@@ -123,7 +123,7 @@ class YkiSuoritusErrorTests(
         val span =
             inMemorySpanExporter
                 .finishedSpanItems
-                .find { it.name == "yki.suoritukset.errors" }
+                .find { it.name == "YkiSuoritusErrorService.handleErrors" }
 
         val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
         assertEquals(1, errorSize)

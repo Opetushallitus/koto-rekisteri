@@ -51,7 +51,7 @@ class YkiService(
 
     fun importYkiSuoritukset(from: Instant): Instant =
         tracer
-            .spanBuilder("yki.importSuoritukset")
+            .spanBuilder("YkiService.importSuoritukset")
             .startSpan()
             .use { span ->
 

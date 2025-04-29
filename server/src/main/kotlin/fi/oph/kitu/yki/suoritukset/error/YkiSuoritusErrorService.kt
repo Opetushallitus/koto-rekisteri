@@ -22,7 +22,7 @@ class YkiSuoritusErrorService(
 
     fun handleErrors(errors: List<CsvExportError>): Boolean =
         tracer
-            .spanBuilder("yki.suoritukset.errors")
+            .spanBuilder("YkiSuoritusErrorService.handleErrors")
             .startSpan()
             .use { span ->
                 span.setAttribute("errors.size", errors.size)
