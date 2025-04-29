@@ -20,6 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.lang.RuntimeException
 import java.time.Instant
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -120,10 +121,15 @@ class YkiSuoritusErrorTests(
         val errorsInDatabase = repository.findAll()
         assertEquals(2, errorsInDatabase.count())
 
-        val span =
-            inMemorySpanExporter
-                .finishedSpanItems
-                .find { it.name == "YkiSuoritusErrorService.handleErrors" }
+        val spans = inMemorySpanExporter.finishedSpanItems
+        val span = spans.find { it.name == "YkiSuoritusErrorService.handleErrors" }
+        val mappingServiceConversionSpan =
+            spans.find {
+                it.name ==
+                    "YkiSuoritusErrorMappingService.convertToEntityIterable"
+            }
+
+        assertNotNull(mappingServiceConversionSpan)
 
         val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
         assertEquals(1, errorSize)

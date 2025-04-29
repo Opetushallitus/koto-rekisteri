@@ -2,11 +2,13 @@ package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.InvalidFormatCsvExportError
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.Instant
 
 @Service
 class YkiSuoritusErrorMappingService {
+    @WithSpan
     fun convertToEntityIterable(
         iterable: Iterable<CsvExportError>,
         created: Instant = Instant.now(),
