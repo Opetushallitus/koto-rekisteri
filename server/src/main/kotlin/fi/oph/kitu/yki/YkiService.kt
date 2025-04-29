@@ -23,6 +23,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -150,6 +151,7 @@ class YkiService(
                 addDatabaseLogs()
             }.getOrThrow()
 
+    @WithSpan
     fun allSuoritukset(versionHistory: Boolean): List<YkiSuoritusEntity> =
         suoritusRepository
             .find(distinct = !versionHistory)
@@ -162,11 +164,13 @@ class YkiService(
                 }
             }
 
+    @WithSpan
     fun countSuoritukset(
         searchBy: String = "",
         versionHistory: Boolean = false,
     ): Long = suoritusRepository.countSuoritukset(searchBy = searchBy, distinct = !versionHistory)
 
+    @WithSpan
     fun findSuorituksetPaged(
         searchStr: String = "",
         column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
@@ -192,6 +196,7 @@ class YkiService(
                 }
             }
 
+    @WithSpan
     fun allArvioijat(
         orderBy: YkiArvioijaColumn = YkiArvioijaColumn.Rekisteriintuontiaika,
         orderByDirection: SortDirection = SortDirection.DESC,
