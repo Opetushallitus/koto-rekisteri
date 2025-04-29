@@ -1,10 +1,12 @@
 package fi.oph.kitu.yki.arvioijat
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.OffsetDateTime
 
 @Service
 class YkiArvioijaMappingService {
+    @WithSpan
     fun convertToEntityIterable(iterable: Iterable<SolkiArvioijaResponse>) = iterable.map { convertToEntity(it) }
 
     fun convertToEntity(

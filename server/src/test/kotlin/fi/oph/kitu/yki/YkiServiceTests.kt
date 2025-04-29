@@ -247,6 +247,10 @@ class YkiServiceTests(
 
         val imported = ykiArvioijaRepository.findAll()
         assertEquals(1, imported.count())
+
+        val spans = inMemorySpanExporter.finishedSpanItems
+        assertNotNull(spans.find { it.name == "CustomYkiArvioijaRepositoryImpl.saveAll" })
+        assertNotNull(spans.find { it.name == "CsvParser.convertCsvToData" })
     }
 
     @Test

@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.getTutkintokieli
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
@@ -28,6 +29,7 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
      * Override to allow handling duplicates/conflicts. The default implementation from CrudRepository fails
      * due to the unique constraint. Overriding the implementation allows explicit handling of conflicts.
      */
+    @WithSpan
     override fun <S : YkiArvioijaEntity> saveAll(arvioijat: Iterable<S>): Iterable<S> {
         val sql =
             """
