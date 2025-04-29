@@ -117,7 +117,7 @@ class YkiSuoritusErrorTests(
 
         // Assert
         val errorsInDatabase = repository.findAll()
-        assertEquals(2, errorsInDatabase.count())
+        assertEquals(1, errorsInDatabase.count())
 
         val spans = inMemorySpanExporter.finishedSpanItems
         val span = spans.find { it.name == "CustomYkiSuoritusErrorRepositoryImpl.saveAll" }

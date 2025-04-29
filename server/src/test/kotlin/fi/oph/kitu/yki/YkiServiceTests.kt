@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.AuditLogger
+import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
@@ -10,6 +11,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
@@ -28,9 +31,11 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.Instant
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 @SpringBootTest
 @Testcontainers
+@Import(OpenTelemetryTestConfig::class)
 class YkiServiceTests(
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
@@ -40,6 +45,7 @@ class YkiServiceTests(
     @Autowired private val parser: CsvParser,
     @Autowired private val mockRestClientBuilder: RestClient.Builder,
     @Autowired private val tracer: Tracer,
+    @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
 ) {
     @Suppress("unused")
     companion object {
@@ -55,6 +61,7 @@ class YkiServiceTests(
     fun nukeDb() {
         ykiArvioijaRepository.deleteAll()
         ykiSuoritusRepository.deleteAll()
+        inMemorySpanExporter.reset()
     }
 
     // Happy path
@@ -98,6 +105,10 @@ class YkiServiceTests(
 
         val errors = suoritusErrorRepository.findAll()
         assertEquals(0, errors.count())
+
+        val spans = inMemorySpanExporter.finishedSpanItems
+        val findNextErrorSpan = spans.find { it.name == "YkiSuoritusErrorService.findNextSearchRange" }
+        assertNotNull(findNextErrorSpan)
     }
 
     @Test
