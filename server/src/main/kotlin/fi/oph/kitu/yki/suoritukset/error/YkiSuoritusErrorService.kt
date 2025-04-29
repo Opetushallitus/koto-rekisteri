@@ -63,6 +63,7 @@ class YkiSuoritusErrorService(
             from
         }
 
+    @WithSpan
     fun getErrors(
         orderBy: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.VirheenLuontiaika,
         orderByDirection: SortDirection = SortDirection.ASC,
