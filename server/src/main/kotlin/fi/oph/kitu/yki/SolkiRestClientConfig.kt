@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki
 
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,7 +19,6 @@ class SolkiRestClientConfig(
     @Value("\${kitu.yki.password}")
     private lateinit var password: String
 
-    @WithSpan
     @Bean("solkiRestClient")
     fun restClient(): RestClient {
         val basicAuthToken = Base64.getEncoder().encodeToString("$user:$password".toByteArray())

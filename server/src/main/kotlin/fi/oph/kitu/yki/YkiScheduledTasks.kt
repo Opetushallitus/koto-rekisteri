@@ -31,9 +31,12 @@ class YkiScheduledTasks(
             .initialData(Instant.EPOCH)
             .executeStateful { taskInstance, _ ->
                 tracer
-                    .spanBuilder("Beans.dailyImport.execute")
+                    .spanBuilder("YkiScheduledTasks.dailyImport.tasks.executeStateful")
                     .startSpan()
-                    .use { ykiService.importYkiSuoritukset(taskInstance.data) }
+                    .use { span ->
+                        span.setAttribute("task.name", "YKI-import")
+                        ykiService.importYkiSuoritukset(taskInstance.data)
+                    }
             }
 
     @WithSpan
@@ -43,8 +46,11 @@ class YkiScheduledTasks(
             .recurring("YKI-import-arvioijat", ExtendedSchedules.parse(ykiImportArvioijatSchedule))
             .execute { _, _ ->
                 tracer
-                    .spanBuilder("Beans.arvijoijatImport.execute")
+                    .spanBuilder("YkiScheduledTasks.arvioijatImport.tasks.execute")
                     .startSpan()
-                    .use { ykiService.importYkiArvioijat() }
+                    .use { span ->
+                        span.setAttribute("task.name", "YKI-import-arvioijat")
+                        ykiService.importYkiArvioijat()
+                    }
             }
 }

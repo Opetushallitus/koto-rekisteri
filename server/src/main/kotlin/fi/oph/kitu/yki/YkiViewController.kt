@@ -6,7 +6,6 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,7 +19,6 @@ class YkiViewController(
     private val ykiService: YkiService,
     private val errorService: YkiSuoritusErrorService,
 ) {
-    @WithSpan
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetView(
         search: String = "",
@@ -67,7 +65,6 @@ class YkiViewController(
             .addObject("errorsCount", errorService.countErrors().let { if (it == 0L) null else it })
     }
 
-    @WithSpan
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
     fun view(
         sortColumn: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.VirheenLuontiaika,
@@ -79,7 +76,6 @@ class YkiViewController(
             .addObject("sortDirection", sortDirection)
             .addObject("virheet", errorService.getErrors(sortColumn, sortDirection))
 
-    @WithSpan
     @GetMapping("/arvioijat")
     fun arvioijatView(
         sortColumn: YkiArvioijaColumn = YkiArvioijaColumn.Rekisteriintuontiaika,

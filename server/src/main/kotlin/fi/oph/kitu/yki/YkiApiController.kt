@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki
 
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
@@ -17,7 +16,6 @@ import java.io.ByteArrayInputStream
 class YkiApiController(
     private val service: YkiService,
 ) {
-    @WithSpan
     @GetMapping("/suoritukset", produces = ["text/csv"])
     @ResponseBody
     fun getSuorituksetAsCsv(
