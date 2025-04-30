@@ -15,11 +15,13 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
 @Service
 class KoskiRequestMapper {
+    @WithSpan
     fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): KoskiRequest =
         KoskiRequest(
             henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID.toString()),

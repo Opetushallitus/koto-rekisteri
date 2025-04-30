@@ -1,13 +1,17 @@
 package fi.oph.kitu.koski
 
 import fi.oph.kitu.TypedResult
+import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.client.ExpectedCount
 import org.springframework.test.web.client.MockRestServiceServer
@@ -21,14 +25,18 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
 @Testcontainers
+@Import(OpenTelemetryTestConfig::class)
 class KoskiServiceTest(
     @Autowired private val koskiRequestMapper: KoskiRequestMapper,
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @Autowired private val mockRestClientBuilder: RestClient.Builder,
+    @Autowired private val tracer: Tracer,
+    @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
 ) {
     @Autowired
     private lateinit var ykiService: YkiService
@@ -46,6 +54,7 @@ class KoskiServiceTest(
     @BeforeEach
     fun nukeDb() {
         ykiSuoritusRepository.deleteAll()
+        inMemorySpanExporter.reset()
     }
 
     @Test
@@ -88,9 +97,14 @@ class KoskiServiceTest(
             )
 
         val service =
-            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository)
+            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository, tracer)
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus).getOrThrow()
         assertEquals("1.2.246.562.15.50209741037", updatedSuoritus.koskiOpiskeluoikeus.toString())
+
+        val spans = inMemorySpanExporter.finishedSpanItems
+        assertNotNull(spans)
+        assertNotNull(spans.find { it.name == "KoskiService.sendYkiSuoritusToKoski" })
+        assertNotNull(spans.find { it.name == "KoskiRequestMapper.ykiSuoritusToKoskiRequest" })
     }
 
     @Test
@@ -108,7 +122,7 @@ class KoskiServiceTest(
             )
 
         val service =
-            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository)
+            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository, tracer)
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(id = 1)
 
@@ -154,7 +168,7 @@ class KoskiServiceTest(
                 ),
             )
         val service =
-            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository)
+            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository, tracer)
 
         ykiSuoritusRepository.saveAll(
             listOf(
@@ -216,7 +230,7 @@ class KoskiServiceTest(
             )
 
         val service =
-            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository)
+            KoskiService(mockRestClientBuilder.build(), koskiRequestMapper, ykiSuoritusRepository, tracer)
 
         ykiSuoritusRepository.saveAll(
             listOf(
