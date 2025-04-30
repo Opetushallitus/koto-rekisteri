@@ -1,13 +1,9 @@
 package fi.oph.kitu.kotoutumiskoulutus.tehtavapankki
 
-import fi.oph.kitu.PeerService
-import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.addHttpResponse
-import fi.oph.kitu.logging.withEventAndPerformanceCheck
+import fi.oph.kitu.logging.use
 import fi.oph.kitu.withJacksonStreamMaxStringLength
 import io.awspring.cloud.s3.S3Template
-import org.slf4j.LoggerFactory
-import org.slf4j.spi.LoggingEventBuilder
+import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
@@ -22,9 +18,8 @@ import java.time.format.DateTimeFormatter
 class TehtavapankkiService(
     private val restClientBuilder: RestClient.Builder,
     private val s3Template: S3Template,
+    private val tracer: Tracer,
 ) {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
     lateinit var koealustaToken: String
 
@@ -54,31 +49,31 @@ class TehtavapankkiService(
             .replace(Regex("\\W+"), "")
             .take(128)
 
-    fun uploadTehtavapankki(
-        response: TehtavapankkiResponse,
-        event: LoggingEventBuilder,
-    ) {
-        event.add("dryRun" to dryRun())
+    fun uploadTehtavapankki(response: TehtavapankkiResponse) =
+        tracer
+            .spanBuilder("TehtavapankkiService.uploadTehtavapankki")
+            .startSpan()
+            .use { span ->
+                span.setAttribute("dryRun", dryRun())
 
-        val now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-        response.questionbanks.forEachIndexed { index, (courseid, coursename, xml) ->
-            val sanitizedCoursename = sanitizeFilename(coursename)
-            val filename = "$courseid-$sanitizedCoursename/$now-$index.xml"
-            val stream = xml.byteInputStream(Charsets.UTF_8)
+                val now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                response.questionbanks.forEachIndexed { index, (courseid, coursename, xml) ->
+                    val sanitizedCoursename = sanitizeFilename(coursename)
+                    val filename = "$courseid-$sanitizedCoursename/$now-$index.xml"
+                    val stream = xml.byteInputStream(Charsets.UTF_8)
 
-            if (!dryRun()) {
-                s3Template.upload(bucket!!, filename, stream)
+                    if (!dryRun()) {
+                        s3Template.upload(bucket!!, filename, stream)
+                    }
+                }
             }
-        }
-    }
 
     fun importTehtavapankki() =
-        logger
-            .atInfo()
-            .withEventAndPerformanceCheck { event ->
-                event.add(
-                    "function" to "local_completion_export_export_question_bank",
-                )
+        tracer
+            .spanBuilder("TehtavapankkiService.importTehtavapankki")
+            .startSpan()
+            .use { span ->
+                span.setAttribute("function", "local_completion_export_export_question_bank")
 
                 val response =
                     restClient
@@ -93,13 +88,6 @@ class TehtavapankkiService(
                         .retrieve()
                         .toEntity<TehtavapankkiResponse>()
 
-                event
-                    .add("request.token" to koealustaToken)
-                    .addHttpResponse(PeerService.Koealusta, uri = "/webservice/rest/server.php", response)
-
-                uploadTehtavapankki(response.body!!, event)
-            }.apply {
-                addDefaults("koealusta.importTehtavapankki")
-                addDatabaseLogs()
-            }.getOrThrow()
+                uploadTehtavapankki(response.body!!)
+            }
 }
