@@ -49,6 +49,7 @@ class YkiSuoritusMappingService {
         Oid.parse(koskiOpiskeluoikeus).getOrNull(),
     )
 
+    @WithSpan
     fun convertToResponseIterable(iterable: Iterable<YkiSuoritusEntity>) = iterable.map { convertToResponse(it) }
 
     fun convertToResponse(entity: YkiSuoritusEntity): YkiSuoritusCsv =
