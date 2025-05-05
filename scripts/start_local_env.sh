@@ -8,8 +8,6 @@ require_command mise
 
 # Trust the mise configuration
 mise trust --quiet "$REPO_ROOT/.mise.toml"
-# Enable experimental features (npm backend is experimental)
-mise settings --quiet set experimental true
 
 # Ensure mise is activated
 if [ -z "${MISE_SHELL:-}" ]; then
