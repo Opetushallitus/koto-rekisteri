@@ -8,6 +8,9 @@ import { SlackBotStack } from "./slack-bot-stack"
 
 interface UtilityStageProps extends StageProps {
   allowPullsFromAccounts: string[]
+  slackChannelName: string
+  slackChannelId: string
+  slackWorkspaceId: string
 }
 
 export class UtilityStage extends Stage {
@@ -26,9 +29,9 @@ export class UtilityStage extends Stage {
 
     new SlackBotStack(this, "SlackBot", {
       env: props.env,
-      slackChannelName: "koto-rekisteri-alerts",
-      slackChannelId: "C07QPSYBY7L",
-      slackWorkspaceId: "T02C6SZL7KP",
+      slackChannelName: props.slackChannelName,
+      slackChannelId: props.slackChannelId,
+      slackWorkspaceId: props.slackWorkspaceId,
       alarmTopics: [alarmsStack.alarmSnsTopic],
     })
 
