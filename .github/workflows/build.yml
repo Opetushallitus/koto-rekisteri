@@ -31,6 +31,7 @@ jobs:
               - '.mise.*.toml'
             infra:
               - 'infra/**'
+              - '.github/workflows/**'
 
   update_tools_cache:
     name: Update tools cache if changed
