@@ -1,0 +1,34 @@
+{{<page}}
+  {{$title}}
+    Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
+  {{/title}}
+  {{$body}}
+    <h1>Kotoutumiskoulutuksen kielikokeet - virheet</h1>
+
+    <table>
+      <thead>
+      <tr>
+        {{#header}}
+          <th>
+            <a href="?sortColumn={{column.lowercaseName}}&sortDirection={{ sortDirection}}">
+            {{column.uiHeaderValue}} {{symbol}}
+            </a>
+          </th>
+        {{/header}}
+      </tr>
+      </thead>
+      <tbody class="virheet">
+      {{#virheet}}
+        <tr data-testid="virhe-summary-row">
+          <td>{{#hetu}}{{hetu}}{{/hetu}}</td>
+          <td>{{nimi}}</td>
+          <td>{{virheenLuontiaika}}</td>
+          <td>{{viesti}}</td>
+          <td>{{virheellinenKenttä}}</td>
+          <td>{{#virheellinenArvo}}{{virheellinenArvo}}{{/virheellinenArvo}}</td>
+        </tr>
+      {{/virheet}}
+      </tbody>
+    </table>
+  {{/body}}
+{{/page}}

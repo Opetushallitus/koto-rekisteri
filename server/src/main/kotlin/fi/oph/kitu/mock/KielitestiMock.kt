@@ -19,6 +19,7 @@ val kotoCourses =
 
 fun generateRandomKielitestiSuoritus(): KielitestiSuoritus {
     val oppilas = generateRandomPerson()
+    val teacher = generateRandomPerson()
 
     return KielitestiSuoritus(
         id = null,
@@ -31,15 +32,10 @@ fun generateRandomKielitestiSuoritus(): KielitestiSuoritus {
         schoolOid = generateRandomOrganizationOid(),
         courseid = (0..999999999).random(),
         coursename = kotoCourses.random(),
-        luetunYmmartaminenResultSystem = cefrLanguageLevels.random(),
-        luetunYmmartaminenResultTeacher = cefrLanguageLevels.random(),
-        kuullunYmmartaminenResultSystem = cefrLanguageLevels.random(),
-        kuullunYmmartaminenResultTeacher = cefrLanguageLevels.random(),
-        puheResultSystem = cefrOptionalLanguageLevels.random(),
-        puheResultTeacher = cefrLanguageLevels.random(),
-        kirjoittaminenResultSystem = cefrOptionalLanguageLevels.random(),
-        kirjottaminenResultTeacher = cefrLanguageLevels.random(),
-        totalEvaluationTeacher = cefrLanguageLevels.random(),
-        totalEvaluationSystem = cefrLanguageLevels.random(),
+        luetunYmmartaminenResult = cefrLanguageLevels.random(),
+        kuullunYmmartaminenResult = cefrLanguageLevels.random(),
+        puheResult = cefrLanguageLevels.random(),
+        kirjoittaminenResult = cefrLanguageLevels.random(),
+        teacherEmail = teacher.email,
     )
 }

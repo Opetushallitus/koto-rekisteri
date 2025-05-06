@@ -1,67 +1,74 @@
 {{<page}}
-{{$title}}
-Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
-{{/title}}
-{{$body}}
-<h1>Kotoutumiskoulutuksen kielikokeet - suoritukset</h1>
-<p>
-    Arvosanat on ilmoitettu muodossa <code>(laskennallinen tulos / opettajan tulos)</code>. Ensimmäinen sulkeiden
-    sisällä ilmoitettu luku on järjestelmän laskema tulos ja toinen luku on opettajan kirjaama tulos.
-</p>
+  {{$title}}
+    Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
+  {{/title}}
+  {{$body}}
+    <h1>Kotoutumiskoulutuksen kielikokeet - suoritukset</h1>
 
-<table>
-    <thead>
-    <tr>
-      {{#header}}
-        <th>
-          <a href="?sortColumn={{
-              column.lowercaseName
+    {{#errorsCount}}
+      <p class="error-text">Järjestelmässä on {{errorsCount}} virhettä. <a href="/koto-kielitesti/suoritukset/virheet">
+        Katso
+        virheet</a></p>
+    {{/errorsCount}}
+
+    <p>
+      Arvosanat on ilmoitettu muodossa <code>(laskennallinen tulos / opettajan tulos)</code>. Ensimmäinen sulkeiden
+      sisällä ilmoitettu luku on järjestelmän laskema tulos ja toinen luku on opettajan kirjaama tulos.
+    </p>
+
+    <table>
+      <thead>
+      <tr>
+        {{#header}}
+          <th>
+            <a href="?sortColumn={{
+          column.lowercaseName
           }}&sortDirection={{
-              sortDirection
+          sortDirection
           }}">
             {{column.uiHeaderValue}} {{symbol}}
-          </a>
-        </th>
-      {{/header}}
-    </tr>
-    </thead>
-    {{#suoritukset}}
-    <tbody class="suoritus">
-    <tr data-testid="suoritus-summary-row">
-        <td>{{lastName}}</td>
-        <td>{{firstNames}}</td>
-        <td>{{email}}</td>
-        <td>{{coursename}}</td>
-        <td>{{timeCompleted}}</td>
-        <td>({{totalEvaluationSystem}} / {{totalEvaluationTeacher}})</td>
-    </tr>
-    <tr data-testid="suoritus-details-row">
-        <td colspan="13">
+            </a>
+          </th>
+        {{/header}}
+      </tr>
+      </thead>
+      {{#suoritukset}}
+        <tbody class="suoritus">
+        <tr data-testid="suoritus-summary-row">
+          <td>{{lastName}}</td>
+          <td>{{firstNames}}</td>
+          <td>{{email}}</td>
+          <td>{{coursename}}</td>
+          <td>{{timeCompleted}}</td>
+          <td>({{totalEvaluationSystem}} / {{totalEvaluationTeacher}})</td>
+        </tr>
+        <tr data-testid="suoritus-details-row">
+          <td colspan="13">
             <details>
-                <summary>Näytä lisätiedot/tulokset</summary>
-                <table>
-                    <tr>
-                        <th>Oppijanumero</th>
-                        <th>Luetun Ymmärtäminen</th>
-                        <th>Kuullun Ymmärtäminen</th>
-                        <th>Puhe</th>
-                        <th>Kirjoittaminen</th>
-                        <th>Kokonaisarvosana</th>
-                    </tr>
-                    <tr>
-                        <td>{{oppijanumero}}</td>
-                        <td>({{luetunYmmartaminenResultSystem}} / {{luetunYmmartaminenResultTeacher}})</td>
-                        <td>({{kuullunYmmartaminenResultSystem}} / {{kuullunYmmartaminenResultTeacher}})</td>
-                        <td>{{puheResultTeacher}}</td>
-                        <td>{{kirjottaminenResultTeacher}}</td>
-                        <td>({{totalEvaluationSystem}} / {{totalEvaluationTeacher}})</td>
-                    </tr>
-                </table>
+              <summary>Näytä lisätiedot/tulokset</summary>
+              <table>
+                <tr>
+                  <th>Oppijanumero</th>
+                  <th>Luetun Ymmärtäminen</th>
+                  <th>Kuullun Ymmärtäminen</th>
+                  <th>Puhe</th>
+                  <th>Kirjoittaminen</th>
+                  <th>Kokonaisarvosana</th>
+                </tr>
+                <tr>
+                  <td>{{oppijanumero}}</td>
+                  <td>({{luetunYmmartaminenResultSystem}} / {{luetunYmmartaminenResultTeacher}})</td>
+                  <td>({{kuullunYmmartaminenResultSystem}} / {{kuullunYmmartaminenResultTeacher}})</td>
+                  <td>{{puheResultTeacher}}</td>
+                  <td>{{kirjottaminenResultTeacher}}</td>
+                  <td>({{totalEvaluationSystem}} / {{totalEvaluationTeacher}})</td>
+                </tr>
+              </table>
             </details>
-        </td>
-    </tr>
-    </tbody>
-    {{/suoritukset}}
-</table>
-{{/body}}
+          </td>
+        </tr>
+        </tbody>
+      {{/suoritukset}}
+    </table>
+  {{/body}}
 {{/page}}

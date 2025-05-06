@@ -21,5 +21,32 @@ class KielitestiViewController(
             .addObject("header", generateHeader<KielitestiSuoritusColumn>(sortColumn, sortDirection))
             .addObject("sortColumn", sortColumn.lowercaseName())
             .addObject("sortDirection", sortDirection)
-            .addObject("suoritukset", suoritusService.getSuoritukset(sortColumn, sortDirection))
+            .addObject(
+                "errorsCount",
+                suoritusService.getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection).count(),
+            ).addObject("suoritukset", suoritusService.getSuoritukset(sortColumn, sortDirection))
+
+    @GetMapping("/suoritukset/virheet")
+    fun virheetView(
+        sortColumn: KielitestiSuoritusErrorColumn = KielitestiSuoritusErrorColumn.VirheenLuontiaika,
+        sortDirection: SortDirection = SortDirection.DESC,
+    ): ModelAndView =
+        ModelAndView("koto-kielitesti-virheet")
+            .addObject("header", generateHeader<KielitestiSuoritusErrorColumn>(sortColumn, sortDirection))
+            .addObject("virheet", suoritusService.getErrors(sortColumn, sortDirection))
+
+    enum class KielitestiSuoritusErrorColumn(
+        val fieldName: String,
+        val uiHeaderValue: String,
+    ) {
+        Henkilötunnus("hetu", "Henkilötunnus"),
+        Nimi("nimi", "Nimi"),
+        VirheenLuontiaika("virheenLuontiaika", "Virheen luontiaika"),
+        Viesti("viesti", "Viesti"),
+        VirheellinenKenttä("virheellinenKenttä", "Virheellinen kenttä"),
+        VirheellinenArvo("virheellinenArvo", "Virheellinen arvo"),
+        ;
+
+        fun lowercaseName(): String = name.lowercase()
+    }
 }

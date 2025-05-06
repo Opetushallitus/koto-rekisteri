@@ -46,6 +46,11 @@ class KoealustaService(
                 }
             }
 
+    fun getErrors(
+        sortColumn: KielitestiViewController.KielitestiSuoritusErrorColumn,
+        sortDirection: SortDirection,
+    ) = kielitestiSuoritusErrorRepository.findAll()
+
     fun importSuoritukset(from: Instant): Instant =
         tracer.spanBuilder("koealusta.import.suoritukset").startSpan().use { span ->
             val remoteFunction = "local_completion_export_get_completions"
