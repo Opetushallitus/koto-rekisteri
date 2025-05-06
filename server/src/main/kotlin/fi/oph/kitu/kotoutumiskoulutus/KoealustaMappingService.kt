@@ -125,25 +125,15 @@ class KoealustaMappingService(
         resultName: String,
         userId: Int,
         completion: Completion,
-        isSystemResultRequired: Boolean = true,
     ): TypedResult<Completion.Result, Error.Validation> {
         val result =
             completion
                 .results
                 .find { it.name == resultName }
 
-        if (isSystemResultRequired && result?.quiz_result_system.isNullOrEmpty()) {
+        if (result?.quiz_grade.isNullOrEmpty()) {
             return Failure(
-                Error.Validation.MissingSystemResult(
-                    userId,
-                    completion.coursename,
-                    resultName,
-                ),
-            )
-        }
-        if (result?.quiz_result_teacher.isNullOrEmpty()) {
-            return Failure(
-                Error.Validation.MissingTeacherResult(
+                Error.Validation.MissingGrade(
                     userId,
                     completion.coursename,
                     resultName,
@@ -189,16 +179,16 @@ class KoealustaMappingService(
                 .onFailure { errors.add(it) }
                 .getOrNull()
         val puhe =
-            validate("puhe", user.userid, completion, isSystemResultRequired = false)
+            validate("puhe", user.userid, completion)
                 .onFailure { errors.add(it) }
                 .getOrNull()
         val kirjoittaminen =
-            validate("kirjoittaminen", user.userid, completion, isSystemResultRequired = false)
+            validate("kirjoittaminen", user.userid, completion)
                 .onFailure { errors.add(it) }
                 .getOrNull()
 
         val schoolOid =
-            validate("schoolOID", user.userid, completion.schoolOID)
+            validate("schoolOID", user.userid, completion.schoolOID ?: "")
                 .onFailure { errors.add(it) }
                 .getOrNull()
         val preferredName =
@@ -222,12 +212,10 @@ class KoealustaMappingService(
             )
         }
 
-        checkNotNull(luetunYmmartaminen?.quiz_result_system)
-        checkNotNull(luetunYmmartaminen.quiz_result_teacher)
-        checkNotNull(kuullunYmmartaminen?.quiz_result_system)
-        checkNotNull(kuullunYmmartaminen.quiz_result_teacher)
-        checkNotNull(puhe?.quiz_result_teacher)
-        checkNotNull(kirjoittaminen?.quiz_result_teacher)
+        checkNotNull(luetunYmmartaminen?.quiz_grade)
+        checkNotNull(kuullunYmmartaminen?.quiz_grade)
+        checkNotNull(puhe?.quiz_grade)
+        checkNotNull(kirjoittaminen?.quiz_grade)
         checkNotNull(schoolOid)
         checkNotNull(preferredName)
         checkNotNull(oppijanumero)
@@ -243,16 +231,11 @@ class KoealustaMappingService(
                 schoolOid = schoolOid,
                 courseid = completion.courseid,
                 coursename = completion.coursename,
-                luetunYmmartaminenResultSystem = luetunYmmartaminen.quiz_result_system,
-                luetunYmmartaminenResultTeacher = luetunYmmartaminen.quiz_result_teacher,
-                kuullunYmmartaminenResultSystem = kuullunYmmartaminen.quiz_result_system,
-                kuullunYmmartaminenResultTeacher = kuullunYmmartaminen.quiz_result_teacher,
-                puheResultSystem = puhe.quiz_result_system,
-                puheResultTeacher = puhe.quiz_result_teacher,
-                kirjoittaminenResultSystem = kirjoittaminen.quiz_result_system,
-                kirjottaminenResultTeacher = kirjoittaminen.quiz_result_teacher,
-                totalEvaluationTeacher = completion.total_evaluation_teacher,
-                totalEvaluationSystem = completion.total_evaluation_system,
+                luetunYmmartaminenResult = luetunYmmartaminen.quiz_grade,
+                kuullunYmmartaminenResult = kuullunYmmartaminen.quiz_grade,
+                puheResult = puhe.quiz_grade,
+                kirjoittaminenResult = kirjoittaminen.quiz_grade,
+                teacherEmail = completion.teacheremail,
             ),
         )
     }
@@ -303,8 +286,7 @@ class KoealustaMappingService(
         when (validationError) {
             is Error.Validation.MalformedField -> FieldInfo(validationError.field, validationError.value)
             is Error.Validation.MissingField -> FieldInfo(validationError.field, null)
-            is Error.Validation.MissingSystemResult -> FieldInfo(validationError.resultName, null)
-            is Error.Validation.MissingTeacherResult -> FieldInfo(validationError.resultName, null)
+            is Error.Validation.MissingGrade -> FieldInfo(validationError.resultName, null)
         }
 
     class ValidationFailure(
@@ -342,22 +324,13 @@ class KoealustaMappingService(
             val userId: Int,
             val message: String,
         ) {
-            class MissingSystemResult(
+            class MissingGrade(
                 userId: Int,
                 courseName: String,
                 val resultName: String,
             ) : Validation(
                     userId,
-                    """Unexpectedly missing quiz system result "$resultName" on course "$courseName" for user "$userId"""",
-                )
-
-            class MissingTeacherResult(
-                userId: Int,
-                courseName: String,
-                val resultName: String,
-            ) : Validation(
-                    userId,
-                    """Unexpectedly missing quiz teacher result "$resultName" on course "$courseName" for user "$userId"""",
+                    """Unexpectedly missing quiz grade "$resultName" on course "$courseName" for user "$userId"""",
                 )
 
             class MissingField(

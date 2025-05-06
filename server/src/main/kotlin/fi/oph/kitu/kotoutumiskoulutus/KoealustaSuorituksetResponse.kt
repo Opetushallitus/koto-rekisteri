@@ -16,16 +16,14 @@ data class KoealustaSuorituksetResponse(
         data class Completion(
             val courseid: Int,
             val coursename: String,
-            val schoolOID: String,
+            val schoolOID: String?,
             val results: List<Result>,
             val timecompleted: Long,
-            val total_evaluation_teacher: String,
-            val total_evaluation_system: String,
+            val teacheremail: String?,
         ) {
             data class Result(
                 val name: String,
-                val quiz_result_system: String?,
-                val quiz_result_teacher: String?,
+                val quiz_grade: String?,
             )
         }
     }
