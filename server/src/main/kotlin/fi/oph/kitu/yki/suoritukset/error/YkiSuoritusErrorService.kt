@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
+import fi.oph.kitu.csvparsing.setSerializationErrorToAttributes
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.setAttribute
@@ -26,16 +27,7 @@ class YkiSuoritusErrorService(
             .spanBuilder("YkiSuoritusErrorService.handleErrors")
             .startSpan()
             .use { span ->
-                span.setAttribute("errors.size", errors.size)
-                span.setAttribute("errors.truncate", errors.isEmpty())
-
-                // trace serialization errors
-                errors.forEachIndexed { i, error ->
-                    span.setAttribute("serialization.error[$i].index", i)
-                    for (kvp in error.keyValues) {
-                        span.setAttribute("serialization.error[$i].${kvp.key}", kvp.value.toString())
-                    }
-                }
+                span.setSerializationErrorToAttributes(errors)
 
                 // add actual errors to database
                 if (errors.isEmpty()) {
