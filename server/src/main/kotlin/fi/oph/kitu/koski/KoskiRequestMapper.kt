@@ -1,6 +1,7 @@
 package fi.oph.kitu.koski
 
-import fi.oph.kitu.koski.Koodisto.YkiArvosana
+import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.koodisto.Koodisto.YkiArvosana
 import fi.oph.kitu.koski.KoskiRequest.Henkilo
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus
@@ -53,9 +54,10 @@ class KoskiRequestMapper {
                                     koulutusmoduuli =
                                         KoulutusModuuli(
                                             tunniste =
-                                                Koodisto.YkiTutkintotaso.valueOf(
-                                                    ykiSuoritus.tutkintotaso.name,
-                                                ),
+                                                Koodisto.YkiTutkintotaso
+                                                    .valueOf(
+                                                        ykiSuoritus.tutkintotaso.name,
+                                                    ).toKoski(),
                                             kieli =
                                                 Koodisto.Tutkintokieli.valueOf(
                                                     ykiSuoritus.tutkintokieli.name,
@@ -76,7 +78,7 @@ class KoskiRequestMapper {
                                             koodistoYkiArvosana(
                                                 it,
                                                 ykiSuoritus.tutkintotaso,
-                                            )
+                                            ).toKoski()
                                         },
                                 ),
                             ),
@@ -110,12 +112,12 @@ class KoskiRequestMapper {
     ) = Osasuoritus(
         koulutusmoduuli =
             OsasuoritusKoulutusModuuli(
-                tunniste = suorituksenNimi,
+                tunniste = suorituksenNimi.toKoski(),
             ),
         arviointi =
             listOf(
                 Arvosana(
-                    arvosana = koodistoYkiArvosana(arvosana, tutkintotaso),
+                    arvosana = koodistoYkiArvosana(arvosana, tutkintotaso).toKoski(),
                     päivä = arviointipaiva,
                 ),
             ),

@@ -1,6 +1,7 @@
 package fi.oph.kitu.koski
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import fi.oph.kitu.koodisto.Koodisto
 import java.time.LocalDate
 
 data class KoskiRequest(
@@ -38,10 +39,10 @@ data class KoskiRequest(
             val toimipiste: Organisaatio,
             val vahvistus: Vahvistus,
             val osasuoritukset: List<Osasuoritus>,
-            val yleisarvosana: Koodisto.Koodiviite?,
+            val yleisarvosana: Koodisto.KoskiKoodiviite?,
         ) {
             data class KoulutusModuuli(
-                val tunniste: Koodisto.Koodiviite,
+                val tunniste: Koodisto.KoskiKoodiviite,
                 val kieli: Koodisto.Tutkintokieli,
             )
 
@@ -61,11 +62,11 @@ data class KoskiRequest(
                 val arviointi: List<Arvosana>,
             ) {
                 data class OsasuoritusKoulutusModuuli(
-                    val tunniste: Koodisto.Koodiviite,
+                    val tunniste: Koodisto.KoskiKoodiviite,
                 )
 
                 data class Arvosana(
-                    val arvosana: Koodisto.Koodiviite,
+                    val arvosana: Koodisto.KoskiKoodiviite,
                     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
                     val päivä: LocalDate,
                 )

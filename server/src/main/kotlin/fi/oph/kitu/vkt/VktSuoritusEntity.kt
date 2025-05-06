@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.Oid
+import fi.oph.kitu.koodisto.Koodisto
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.MappedCollection
 import org.springframework.data.relational.core.mapping.Table
@@ -15,10 +16,10 @@ data class VktSuoritusEntity(
     val suorittajanOppijanumero: Oid,
     val etunimi: String,
     val sukunimi: String,
-    val tutkintokieli: Tutkintokieli,
+    val tutkintokieli: Koodisto.Tutkintokieli,
     val ilmoittautumisenTila: String,
-    val suorituskaupunki: String,
-    val taitotaso: Taitotaso,
+    val suorituspaikkakunta: String?,
+    val taitotaso: Koodisto.VktTaitotaso,
     val suorituksenVastaanottaja: String?,
     @MappedCollection(idColumn = "suoritus_id")
     val osakokeet: Set<VktOsakoe>,
@@ -26,52 +27,22 @@ data class VktSuoritusEntity(
     val tutkinnot: Set<VktTutkinto>,
     val createdAt: OffsetDateTime? = null,
 ) {
-    enum class Tutkintokieli {
-        SWE,
-        FIN,
-    }
-
-    enum class Taitotaso {
-        Erinomainen,
-        HyväJaTyydyttävä,
-    }
-
-    enum class Arvosana {
-        Erinomainen,
-        Hyvä,
-        Tyydyttävä,
-        Hylätty,
-    }
-
     @Table(name = "vkt_osakoe")
     data class VktOsakoe(
         @Id
         val id: Int? = null,
-        val tyyppi: OsakokeenTyyppi,
+        val tyyppi: Koodisto.VktOsakoe,
         val tutkintopaiva: LocalDate,
         val arviointipaiva: LocalDate?,
-        val arvosana: Arvosana?,
-    ) {
-        enum class OsakokeenTyyppi {
-            Puhuminen,
-            Kirjoittaminen,
-            PuheenYmmärtäminen,
-            TekstinYmmärtäminen,
-        }
-    }
+        val arvosana: Koodisto.VktArvosana?,
+    )
 
     @Table(name = "vkt_tutkinto")
     data class VktTutkinto(
         @Id
         val id: Int? = null,
-        val tyyppi: TutkinnonTyyppi,
+        val tyyppi: Koodisto.VktKielitaito,
         val arviointipaiva: LocalDate?,
-        val arvosana: Arvosana?,
-    ) {
-        enum class TutkinnonTyyppi {
-            SuullinenTaito,
-            KirjallinenTaito,
-            YmmärtämisenTaito,
-        }
-    }
+        val arvosana: Koodisto.VktArvosana?,
+    )
 }

@@ -1,12 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.vkt.VktSuoritusEntity.Taitotaso
-import fi.oph.kitu.vkt.VktSuoritusEntity.Tutkintokieli
-import fi.oph.kitu.vkt.VktSuoritusEntity.VktOsakoe
-import fi.oph.kitu.vkt.VktSuoritusEntity.VktOsakoe.OsakokeenTyyppi
-import fi.oph.kitu.vkt.VktSuoritusEntity.VktTutkinto
-import fi.oph.kitu.vkt.VktSuoritusEntity.VktTutkinto.TutkinnonTyyppi
+import fi.oph.kitu.koodisto.Koodisto
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -47,21 +42,21 @@ class VKTSuoritusRepositoryTest(
                 suorittajanOppijanumero = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
                 etunimi = "Testi",
                 sukunimi = "Testinen",
-                tutkintokieli = Tutkintokieli.FIN,
+                tutkintokieli = Koodisto.Tutkintokieli.FIN,
                 ilmoittautumisenTila = "COMPLETED",
-                suorituskaupunki = "Helsinki",
-                taitotaso = Taitotaso.Erinomainen,
+                suorituspaikkakunta = "Helsinki",
+                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
                 suorituksenVastaanottaja = null,
                 osakokeet =
                     setOf(
-                        VktOsakoe(
-                            tyyppi = OsakokeenTyyppi.Puhuminen,
+                        VktSuoritusEntity.VktOsakoe(
+                            tyyppi = Koodisto.VktOsakoe.Puhuminen,
                             tutkintopaiva = LocalDate.of(2025, 1, 1),
                             arviointipaiva = null,
                             arvosana = null,
                         ),
-                        VktOsakoe(
-                            tyyppi = OsakokeenTyyppi.PuheenYmmärtäminen,
+                        VktSuoritusEntity.VktOsakoe(
+                            tyyppi = Koodisto.VktOsakoe.PuheenYmmärtäminen,
                             tutkintopaiva = LocalDate.of(2025, 1, 1),
                             arviointipaiva = null,
                             arvosana = null,
@@ -69,8 +64,8 @@ class VKTSuoritusRepositoryTest(
                     ),
                 tutkinnot =
                     setOf(
-                        VktTutkinto(
-                            tyyppi = TutkinnonTyyppi.SuullinenTaito,
+                        VktSuoritusEntity.VktTutkinto(
+                            tyyppi = Koodisto.VktKielitaito.Suullinen,
                             arviointipaiva = null,
                             arvosana = null,
                         ),
