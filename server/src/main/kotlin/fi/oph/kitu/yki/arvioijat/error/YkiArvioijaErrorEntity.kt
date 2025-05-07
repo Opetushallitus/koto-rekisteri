@@ -16,7 +16,6 @@ data class YkiArvioijaErrorEntity(
     val arvioijanOid: String?,
     val hetu: String?,
     val nimi: String?,
-    val lastModified: Instant?,
     val virheellinenKentta: String?,
     val virheellinenArvo: String?,
     val virheellinenRivi: String,

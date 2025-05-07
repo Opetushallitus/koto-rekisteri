@@ -20,7 +20,6 @@ fun generateRandomYkiArvioijaErrorEntity(): YkiArvioijaErrorEntity {
         arvioijanOid = arvioijaEntity.arvioijanOppijanumero.toString(),
         hetu = arvioijaEntity.henkilotunnus,
         nimi = "${arvioijaEntity.sukunimi} ${arvioijaEntity.etunimet}",
-        lastModified = lastModified,
         virheellinenKentta = virheellinenKentta,
         virheellinenArvo = "virheellinen_arvo",
         virheellinenRivi = csv,
