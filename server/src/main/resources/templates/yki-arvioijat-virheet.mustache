@@ -1,0 +1,82 @@
+{{<page}}
+  {{$title}}
+    Kielitutkintorekisteri - Yleiset kielitutkinnot - arvioija - virheet
+  {{/title}}
+  {{$body}}
+    <h1>Yleiset kielitutkinnot - arvioija - virheet</h1>
+    <table>
+      <thead>
+      <tr>
+        {{#header}}
+          <th>
+            <a href="?sortColumn={{
+              column.lowercaseName
+            }}&sortDirection={{
+              sortDirection
+            }}">
+              {{column.uiHeaderValue}} {{symbol}}
+            </a>
+          </th>
+        {{/header}}
+      </tr>
+      </thead>
+      <tbody class="virheet">
+      {{#virheet}}
+        <tr>
+          <td>
+              {{#arvioijanOid}}
+                  {{arvioijanOid}}
+              {{/arvioijanOid}}
+              {{^arvioijanOid}}
+                 arvo puuttuu
+              {{/arvioijanOid}}
+          </td>
+          <td>
+              {{#hetu}}
+                  {{hetu}}
+              {{/hetu}}
+              {{^hetu}}
+                  arvo puuttuu
+              {{/hetu}}
+          </td>
+          <td>
+              {{#nimi}}
+                {{nimi}}
+              {{/nimi}}
+              {{^nimi}}
+                  arvo puuttuu
+              {{/nimi}}
+          </td>
+          <td>
+              {{#lastModified}}
+                  {{lastModified}}
+              {{/lastModified}}
+              {{^lastModified}}
+                  arvo puuttuu
+              {{/lastModified}}
+          </td>
+          <td>
+              {{#virheellinenKentta}}
+                  {{virheellinenKentta}}
+              {{/virheellinenKentta}}
+              {{^virheellinenKentta}}
+                  arvo puuttuu
+              {{/virheellinenKentta}}
+          </td>
+          <td>
+              {{#virheellinenArvo}}
+                  {{virheellinenArvo}}
+              {{/virheellinenArvo}}
+              {{^virheellinenArvo}}
+                  arvo puuttuu
+              {{/virheellinenArvo}}
+          </td>
+	      <td>{{virheellinenRivi}}</td>
+          <td>{{virheenRivinumero}}</td>
+          <td>{{virheenLuontiaika}}</td>
+        </tr>
+      {{/virheet}}
+      </tbody>
+    </table>
+  {{/body}}
+{{/page}}
