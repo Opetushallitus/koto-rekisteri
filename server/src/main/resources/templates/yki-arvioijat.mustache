@@ -4,6 +4,11 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - arvioijat
 {{/title}}
 {{$body}}
     <h1>Yleiset kielitutkinnot - arvioijat</h1>
+
+    {{#errorsCount}}
+        <p class="error-text">Järjestelmässä on {{errorsCount}} virhettä. <a href="/yki/arvioijat/virheet"> Katso virheet</a> </p>
+    {{/errorsCount}}
+
     <table>
       <thead>
         <tr>

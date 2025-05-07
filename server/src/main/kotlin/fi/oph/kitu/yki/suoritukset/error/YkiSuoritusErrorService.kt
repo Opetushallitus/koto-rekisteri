@@ -20,6 +20,7 @@ class YkiSuoritusErrorService(
     private val auditLogger: AuditLogger,
     private val tracer: Tracer,
 ) {
+    @WithSpan
     fun countErrors(): Long = repository.count()
 
     fun handleErrors(errors: List<CsvExportError>): Boolean =
