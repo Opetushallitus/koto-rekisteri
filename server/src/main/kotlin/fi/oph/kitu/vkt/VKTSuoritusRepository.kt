@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface VKTSuoritusRepository :
-    CrudRepository<VKTSuoritusEntity, Int>,
-    PagingAndSortingRepository<VKTSuoritusEntity, Int>
+    CrudRepository<VktSuoritusEntity, Int>,
+    PagingAndSortingRepository<VktSuoritusEntity, Int>

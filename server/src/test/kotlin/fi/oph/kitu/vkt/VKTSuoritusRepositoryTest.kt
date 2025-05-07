@@ -11,8 +11,6 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-
 
 @SpringBootTest
 @Testcontainers
@@ -36,31 +34,50 @@ class VKTSuoritusRepositoryTest(
 
     @Test
     fun `save VKT suoritus`() {
-        val suoritus = VKTSuoritusEntity(
-            ilmoittautumisenId = 1,
-            suorittajanOppijanumero = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
-            etunimi = "Testi",
-            sukunimi = "Testinen",
-            tutkintokieli = Tutkintokieli.FIN,
-            tutkintopaiva = LocalDate.of(2025, 1, 1),
-            ilmoittautumisenTila = "COMPLETED",
-            ilmoittautunutPuhuminen = true,
-            ilmoittautunutPuheenYmmartaminen = true,
-            ilmoittautunutKirjoittaminen = true,
-            ilmoittautunutTekstinYmmartaminen = true,
-            suorituskaupunki = "Helsinki",
-            taitotaso = Taitotaso.Erinomainen,
-            suorituksenVastaanottaja = null,
-            puhuminen = null,
-            puheenYmmartaminen = null,
-            kirjoittaminen = null,
-            tekstinYmmartaminen = null,
-            suullinenTaito = null,
-            kirjallinenTaito = null,
-            ymmartamisenTaito = null
-        )
+        val suoritus =
+            VktSuoritusEntity(
+                ilmoittautumisenId = 1,
+                suorittajanOppijanumero = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                etunimi = "Testi",
+                sukunimi = "Testinen",
+                tutkintokieli = Tutkintokieli.FIN,
+                ilmoittautumisenTila = "COMPLETED",
+                suorituskaupunki = "Helsinki",
+                taitotaso = Taitotaso.Erinomainen,
+                suorituksenVastaanottaja = null,
+                osakokeet =
+                    setOf(
+                        VktOsakoe(
+                            tyyppi = OsakokeenTyyppi.Puhuminen,
+                            tutkintopaiva = LocalDate.of(2025, 1, 1),
+                            arviointipaiva = null,
+                            arvosana = null,
+                        ),
+                        VktOsakoe(
+                            tyyppi = OsakokeenTyyppi.PuheenYmmärtäminen,
+                            tutkintopaiva = LocalDate.of(2025, 1, 1),
+                            arviointipaiva = null,
+                            arvosana = null,
+                        ),
+                    ),
+                tutkinnot =
+                    setOf(
+                        VktTutkinto(
+                            tyyppi = TutkinnonTyyppi.SuullinenTaito,
+                            tutkintopaiva = LocalDate.of(2025, 1, 1),
+                            arviointipaiva = null,
+                            arvosana = null,
+                        ),
+                    ),
+            )
         val saved = repository.save(suoritus)
-        assertNotNull(saved.id)
-        assertEquals(suoritus, saved.copy(id = null))
+        assertEquals(
+            suoritus,
+            saved.copy(
+                id = null,
+                osakokeet = saved.osakokeet.map { it.copy(id = null) }.toSet(),
+                tutkinnot = saved.tutkinnot.map { it.copy(id = null) }.toSet(),
+            ),
+        )
     }
 }
