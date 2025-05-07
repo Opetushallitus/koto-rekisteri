@@ -35,13 +35,12 @@ class CustomYkiArvioijaErrorRepositoryImpl(
                 arvioijan_oid, 
                 hetu, 
                 nimi, 
-                last_modified, 
                 virheellinen_kentta, 
                 virheellinen_arvo, 
                 virheellinen_rivi, 
                 virheen_rivinumero, 
                 virheen_luontiaika
-            ) VALUES (?,?,?,?,?,?,?,?,?) 
+            ) VALUES (?,?,?,?,?,?,?,?) 
             ON CONFLICT ON CONSTRAINT unique_arvioija_error_virheellinen_rivi_is_unique DO NOTHING;
             """.trimIndent()
 
@@ -60,19 +59,11 @@ class CustomYkiArvioijaErrorRepositoryImpl(
                         ps.setString(1, error.arvioijanOid)
                         ps.setString(2, error.hetu)
                         ps.setString(3, error.nimi)
-                        ps.setTimestamp(
-                            4,
-                            if (error.lastModified == null) {
-                                null
-                            } else {
-                                Timestamp(error.lastModified.toEpochMilli())
-                            },
-                        )
-                        ps.setString(5, error.virheellinenKentta)
-                        ps.setString(6, error.virheellinenArvo)
-                        ps.setString(7, error.virheellinenRivi)
-                        ps.setInt(8, error.virheenRivinumero)
-                        ps.setTimestamp(9, Timestamp(error.virheenLuontiaika.toEpochMilli()))
+                        ps.setString(4, error.virheellinenKentta)
+                        ps.setString(5, error.virheellinenArvo)
+                        ps.setString(6, error.virheellinenRivi)
+                        ps.setInt(7, error.virheenRivinumero)
+                        ps.setTimestamp(8, Timestamp(error.virheenLuontiaika.toEpochMilli()))
                     } catch (e: Throwable) {
                         println("an error occurred in the row $i.")
                         println(e)
@@ -114,7 +105,6 @@ fun YkiArvioijaErrorEntity.Companion.fromResultSet(rs: ResultSet): YkiArvioijaEr
         rs.getString("arvioijan_oid"),
         rs.getString("hetu"),
         rs.getString("nimi"),
-        rs.getTimestamp("last_modified").toInstant(),
         rs.getString("virheellinen_kentta"),
         rs.getString("virheellinen_arvo"),
         rs.getString("virheellinen_rivi"),
