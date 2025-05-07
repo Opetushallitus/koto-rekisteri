@@ -9,7 +9,7 @@ import java.time.Instant
 @Service
 class YkiArvioijaErrorMappingService {
     @WithSpan
-    fun convertToEntityIterable(iterable: Iterable<CsvExportError>) = iterable.map { convertToEntity(it) }
+    fun convertToEntityIterable(iterable: Iterable<CsvExportError>) = iterable.map(::convertToEntity)
 
     /**
      * Tries to convert raw CSV data into YkiArvioijaErrorEntity as well as possible.
@@ -25,7 +25,6 @@ class YkiArvioijaErrorMappingService {
             arvioijanOid = csv[0],
             hetu = csv[1],
             nimi = csv[3] + " " + csv[4],
-            lastModified = runCatching { Instant.parse(csv[11]) }.getOrNull(),
             virheellinenKentta = if (data is InvalidFormatCsvExportError) data.fieldWithValidationError else null,
             virheellinenArvo = if (data is InvalidFormatCsvExportError) data.valueWithValidationError else null,
             virheellinenRivi = data.context,

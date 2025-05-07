@@ -5,7 +5,6 @@ CREATE TABLE yki_arvioija_error
     arvioijan_oid       TEXT,
     hetu                TEXT,
     nimi                TEXT,
-    last_modified       TIMESTAMP WITH TIME ZONE,
     virheellinen_kentta TEXT,
     virheellinen_arvo   TEXT,
     virheellinen_rivi   TEXT                        NOT NULL,
