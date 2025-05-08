@@ -9,10 +9,7 @@ import java.time.Instant
 @Service
 class YkiSuoritusErrorMappingService {
     @WithSpan
-    fun convertToEntityIterable(
-        iterable: Iterable<CsvExportError>,
-        created: Instant = Instant.now(),
-    ) = iterable.map { convertToEntity(it, created) }
+    fun convertToEntityIterable(iterable: Iterable<CsvExportError>) = iterable.map { convertToEntity(it) }
 
     /**
      * Tries to convert raw CSV data into YkiSuoritusErrorEntity as well as possible.
@@ -21,10 +18,7 @@ class YkiSuoritusErrorMappingService {
      * Therefore the conversion of this function is done with the best effort. For example, it won't handle
      * values inside double quotes or commas inside quoted fields correctly.
      */
-    fun convertToEntity(
-        data: CsvExportError,
-        created: Instant = Instant.now(),
-    ): YkiSuoritusErrorEntity {
+    fun convertToEntity(data: CsvExportError): YkiSuoritusErrorEntity {
         val csv = data.context!!.split(",")
 
         return YkiSuoritusErrorEntity(
