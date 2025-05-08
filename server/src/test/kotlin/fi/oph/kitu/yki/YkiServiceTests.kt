@@ -6,6 +6,7 @@ import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
+import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
@@ -39,8 +40,9 @@ import kotlin.test.assertNotNull
 @Import(OpenTelemetryTestConfig::class)
 class YkiServiceTests(
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
-    @Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
     @Autowired private val ykiSuoritusErrorService: YkiSuoritusErrorService,
+    @Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
+    @Autowired private val ykiArvioijaErrorService: YkiArvioijaErrorService,
     @Autowired private val auditLogger: AuditLogger,
     @Autowired private val suoritusErrorRepository: YkiSuoritusErrorRepository,
     @Autowired private val parser: CsvParser,
@@ -95,6 +97,7 @@ class YkiServiceTests(
                 auditLogger = auditLogger,
                 parser = parser,
                 tracer = tracer,
+                arvioijaErrorService = ykiArvioijaErrorService,
             )
 
         // Act
@@ -153,6 +156,7 @@ class YkiServiceTests(
                 auditLogger = auditLogger,
                 parser = parser,
                 tracer = tracer,
+                arvioijaErrorService = ykiArvioijaErrorService,
             )
 
         // Act
@@ -196,6 +200,7 @@ class YkiServiceTests(
                 auditLogger = auditLogger,
                 parser = parser,
                 tracer = tracer,
+                arvioijaErrorService = ykiArvioijaErrorService,
             )
 
         // Act
@@ -251,6 +256,7 @@ class YkiServiceTests(
                 auditLogger = auditLogger,
                 parser = parser,
                 tracer = tracer,
+                arvioijaErrorService = ykiArvioijaErrorService,
             )
 
         assertDoesNotThrow {
@@ -312,6 +318,7 @@ class YkiServiceTests(
                 auditLogger = auditLogger,
                 parser = parser,
                 tracer = tracer,
+                arvioijaErrorService = ykiArvioijaErrorService,
             )
 
         assertDoesNotThrow {
@@ -387,6 +394,7 @@ class YkiServiceTests(
                 auditLogger = auditLogger,
                 parser = parser,
                 tracer = tracer,
+                arvioijaErrorService = ykiArvioijaErrorService,
             )
 
         assertThrows<YkiService.Error.CsvConversionError> {
