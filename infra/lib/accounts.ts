@@ -36,7 +36,7 @@ export const deploymentAccounts: {
     databaseName: "kios",
     productionQuality: false,
     slackWorkspaceId: "T02C6SZL7KP",
-    slackChannelName: "koto-rekisteri-alerts-dev-test",
+    slackChannelName: "kielitutkintorekisteri-alerts-dev-test",
     slackChannelId: "C08E14CRZ3J",
   },
   test: {
@@ -51,7 +51,7 @@ export const deploymentAccounts: {
     databaseName: "kios",
     productionQuality: false,
     slackWorkspaceId: "T02C6SZL7KP",
-    slackChannelName: "koto-rekisteri-alerts-dev-test",
+    slackChannelName: "kielitutkintorekisteri-alerts-dev-test",
     slackChannelId: "C08E14CRZ3J",
   },
   prod: {
@@ -66,7 +66,7 @@ export const deploymentAccounts: {
     databaseName: "kios",
     productionQuality: true,
     slackWorkspaceId: "T02C6SZL7KP",
-    slackChannelName: "koto-rekisteri-alerts",
+    slackChannelName: "kielitutkintorekisteri-alerts",
     slackChannelId: "C07QPSYBY7L",
   },
 }
@@ -75,4 +75,7 @@ export const utilityAccount = {
   name: "util",
   account: "961341524988",
   region: "eu-west-1",
+  slackChannelName: "kielitutkintorekisteri-alerts",
+  slackChannelId: "C07QPSYBY7L",
+  slackWorkspaceId: "T02C6SZL7KP",
 }
