@@ -32,4 +32,23 @@ class YkiArvioijaMappingService {
         response.kieli,
         tasot = response.tasot.toSet(),
     )
+
+    fun convertToResponse(entity: YkiArvioijaEntity) =
+        SolkiArvioijaResponse(
+            arvioijanOppijanumero = entity.arvioijanOppijanumero,
+            henkilotunnus = entity.henkilotunnus,
+            sukunimi = entity.sukunimi,
+            etunimet = entity.etunimet,
+            sahkopostiosoite = entity.sahkopostiosoite,
+            katuosoite = entity.katuosoite,
+            postinumero = entity.postinumero,
+            postitoimipaikka = entity.postitoimipaikka,
+            ensimmainenRekisterointipaiva = entity.ensimmainenRekisterointipaiva,
+            kaudenAlkupaiva = entity.kaudenAlkupaiva,
+            kaudenPaattymispaiva = entity.kaudenPaattymispaiva,
+            jatkorekisterointi = entity.jatkorekisterointi,
+            tila = entity.tila.ordinal,
+            kieli = entity.kieli,
+            tasot = entity.tasot,
+        )
 }
