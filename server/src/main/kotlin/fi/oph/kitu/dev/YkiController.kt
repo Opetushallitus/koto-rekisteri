@@ -48,11 +48,11 @@ class YkiController(
             ResponseEntity.ok(
                 """
                 "1.2.246.562.24.20281155246","010180-9026","Öhman-Testi","Ranja Testi","devnull-1@oph.fi","Saanatunturi","99490","Enontekiö",1994-08-01,2019-06-29,2024-06-29,0,0,"fin","PT+KT+YT"
-                "1.2.246.562.24.59267607404","010116A9518","Kivinen-Testi","Petro Testi","devnull-2@oph.fi","Haltin vanha autiotupa","99490","Enontekiö",2005-01-21,2015-12-07,2020-12-07,0,0,"fin","PT+KT+YT"
-                "1.2.246.562.24.74064782358",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"deu","PT+KT+YT"
-                "1.2.246.562.24.74064782358",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"fin","PT+KT+YT"
+                "1.2.246.562.24.59267607404",,"Kivinen-Testi","Petro Testi","devnull-2@oph.fi","Haltin vanha autiotupa","99490","Enontekiö",2005-01-21,2015-12-07,2020-12-07,0,0,"fin","PT+KT+YT"
+                "1.2.246.562.24.74064782358",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"nonexistentlanguagecode","PT+KT+YT"
+                "1.2.246.562.24.74064782358",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"fin","nonexistenttaso"
                 "1.2.246.562.24.74064782358",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"rus","PT+KT+YT"
-                "1.2.246.562.24.74064782358",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"swe","KT"
+                "DELETED",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"swe","KT"
                 """.trimIndent(),
             ),
         )
