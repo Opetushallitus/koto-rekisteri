@@ -69,7 +69,8 @@ class YkiSuoritusErrorTests(
         val span =
             inMemorySpanExporter
                 .finishedSpanItems
-                .find { it.name == "YkiSuoritusErrorService.handleErrors" }
+                .find { it.name == "SimpleErrorHandler.handleErrors" }
+
         val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
 
         assertEquals(0, errorSize)
@@ -125,7 +126,7 @@ class YkiSuoritusErrorTests(
     }
 
     @Test
-    fun `handleErrors will append new csv errors to the database`() {
+    fun `suoritus handleErrors will append new csv errors to the database`() {
         // Arrange
         val errors =
             listOf(
@@ -159,14 +160,10 @@ class YkiSuoritusErrorTests(
         assertEquals(2, errorsInDatabase.count())
 
         val spans = inMemorySpanExporter.finishedSpanItems
-        val span = spans.find { it.name == "YkiSuoritusErrorService.handleErrors" }
-        val mappingServiceConversionSpan =
-            spans.find {
-                it.name ==
-                    "YkiSuoritusErrorMappingService.convertToEntityIterable"
-            }
 
-        assertNotNull(mappingServiceConversionSpan)
+        val span = spans.find { it.name == "SimpleErrorHandler.handleErrors" }
+        assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.handleErrors" })
+        assertNotNull(spans.find { it.name == "YkiSuoritusErrorMappingService.convertToEntityIterable" })
 
         val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
         assertEquals(1, errorSize)

@@ -2,12 +2,9 @@ package fi.oph.kitu.yki.arvioijat.error
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
-import fi.oph.kitu.csvparsing.setSerializationErrorToAttributes
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.setAttribute
-import fi.oph.kitu.logging.use
-import io.opentelemetry.api.trace.Tracer
+import fi.oph.kitu.yki.SimpleErrorHandler
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 
@@ -15,32 +12,19 @@ import org.springframework.stereotype.Service
 class YkiArvioijaErrorService(
     private val mappingService: YkiArvioijaErrorMappingService,
     private val repository: YkiArvioijaErrorRepository,
-    private val tracer: Tracer,
     private val auditLogger: AuditLogger,
+    private val errorHandler: SimpleErrorHandler,
 ) {
     @WithSpan
     fun countErrors(): Long = repository.count()
 
+    @WithSpan
     fun handleErrors(errors: List<CsvExportError>): Boolean =
-        tracer
-            .spanBuilder("YkiArvioijaErrorService.handleErrors")
-            .startSpan()
-            .use { span ->
-                span.setSerializationErrorToAttributes(errors)
-
-                // add actual errors to database
-                if (errors.isEmpty()) {
-                    repository.deleteAll()
-                    return@use false
-                }
-
-                val entities = mappingService.convertToEntityIterable(errors)
-                repository.saveAll(entities).also {
-                    span.setAttribute("errors.addedSize", it.count())
-                }
-
-                return@use true
-            }
+        errorHandler.handleErrors(
+            repository,
+            errors,
+            mappingService.convertToEntityIterable(errors),
+        )
 
     @WithSpan
     fun getErrors(
