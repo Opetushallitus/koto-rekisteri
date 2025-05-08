@@ -54,21 +54,15 @@ class CustomYkiArvioijaErrorRepositoryImpl(
                     ps: PreparedStatement,
                     i: Int,
                 ) {
-                    try {
-                        val error = errors.elementAt(i)
-                        ps.setString(1, error.arvioijanOid)
-                        ps.setString(2, error.hetu)
-                        ps.setString(3, error.nimi)
-                        ps.setString(4, error.virheellinenKentta)
-                        ps.setString(5, error.virheellinenArvo)
-                        ps.setString(6, error.virheellinenRivi)
-                        ps.setInt(7, error.virheenRivinumero)
-                        ps.setTimestamp(8, Timestamp(error.virheenLuontiaika.toEpochMilli()))
-                    } catch (e: Throwable) {
-                        println("an error occurred in the row $i.")
-                        println(e)
-                        throw e
-                    }
+                    val error = errors.elementAt(i)
+                    ps.setString(1, error.arvioijanOid)
+                    ps.setString(2, error.hetu)
+                    ps.setString(3, error.nimi)
+                    ps.setString(4, error.virheellinenKentta)
+                    ps.setString(5, error.virheellinenArvo)
+                    ps.setString(6, error.virheellinenRivi)
+                    ps.setInt(7, error.virheenRivinumero)
+                    ps.setTimestamp(8, Timestamp(error.virheenLuontiaika.toEpochMilli()))
                 }
 
                 override fun getBatchSize() = errors.count()
