@@ -55,29 +55,23 @@ class CustomYkiSuoritusErrorRepositoryImpl(
                     ps: PreparedStatement,
                     i: Int,
                 ) {
-                    try {
-                        val error = errors.elementAt(i)
-                        ps.setString(1, error.suorittajanOid)
-                        ps.setString(2, error.hetu)
-                        ps.setString(3, error.nimi)
-                        ps.setTimestamp(
-                            4,
-                            if (error.lastModified == null) {
-                                null
-                            } else {
-                                Timestamp(error.lastModified.toEpochMilli())
-                            },
-                        )
-                        ps.setString(5, error.virheellinenKentta)
-                        ps.setString(6, error.virheellinenArvo)
-                        ps.setString(7, error.virheellinenRivi)
-                        ps.setInt(8, error.virheenRivinumero)
-                        ps.setTimestamp(9, Timestamp(error.virheenLuontiaika.toEpochMilli()))
-                    } catch (e: Throwable) {
-                        println("an error occurred in the row $i.")
-                        println(e)
-                        throw e
-                    }
+                    val error = errors.elementAt(i)
+                    ps.setString(1, error.suorittajanOid)
+                    ps.setString(2, error.hetu)
+                    ps.setString(3, error.nimi)
+                    ps.setTimestamp(
+                        4,
+                        if (error.lastModified == null) {
+                            null
+                        } else {
+                            Timestamp(error.lastModified.toEpochMilli())
+                        },
+                    )
+                    ps.setString(5, error.virheellinenKentta)
+                    ps.setString(6, error.virheellinenArvo)
+                    ps.setString(7, error.virheellinenRivi)
+                    ps.setInt(8, error.virheenRivinumero)
+                    ps.setTimestamp(9, Timestamp(error.virheenLuontiaika.toEpochMilli()))
                 }
 
                 override fun getBatchSize() = errors.count()
