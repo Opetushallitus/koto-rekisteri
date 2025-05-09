@@ -1,8 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
-import fi.oph.kitu.PeerService
-import fi.oph.kitu.logging.addHttpResponse
-import org.slf4j.LoggerFactory
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -15,8 +13,6 @@ import java.net.http.HttpResponse
 class CasService(
     private val httpClient: HttpClient,
 ) {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     @Value("\${kitu.palvelukayttaja.username}")
     private lateinit var onrUsername: String
 
@@ -29,16 +25,17 @@ class CasService(
     @Value("\${kitu.oppijanumero.service.url}")
     private lateinit var serviceUrl: String
 
+    @WithSpan
     fun sendAuthenticationRequest(serviceTicket: String) {
         val authRequest =
             HttpRequest
                 .newBuilder(URI.create("$serviceUrl/j_spring_cas_security_check?ticket=$serviceTicket"))
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build()
-        val authResponse = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addHttpResponse(PeerService.Oppijanumero, authRequest.uri().toString(), authResponse).log()
+        httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
     }
 
+    @WithSpan
     fun getServiceTicket(ticketGrantingTicket: String): String {
         val request =
             HttpRequest
@@ -51,7 +48,6 @@ class CasService(
                 .build()
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addHttpResponse(PeerService.Cas, request.uri().toString(), response).log()
 
         if (response.statusCode() != 200) {
             throw CasException(response, "Ticket service did not respond with 200 status code.")
@@ -61,6 +57,7 @@ class CasService(
         return ticket
     }
 
+    @WithSpan
     fun getGrantingTicket(): String {
         // Step 2 - form a request
         val username = URLEncoder.encode(onrUsername, "UTF-8")
@@ -74,7 +71,6 @@ class CasService(
 
         // Step 3 - Get the response
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addHttpResponse(PeerService.Cas, request.uri().toString(), response).log()
 
         val statusCode = response.statusCode()
 

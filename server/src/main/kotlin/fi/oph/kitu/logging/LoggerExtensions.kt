@@ -1,6 +1,5 @@
 package fi.oph.kitu.logging
 
-import fi.oph.kitu.PeerService
 import fi.oph.kitu.auth.CasUserDetails
 import io.opentelemetry.semconv.HttpAttributes
 import io.opentelemetry.semconv.UrlAttributes
@@ -10,9 +9,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.http.HttpHeaders
-import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
-import java.net.http.HttpResponse
 
 fun LoggingEventBuilder.addServletRequest(request: HttpServletRequest): LoggingEventBuilder =
     add(
@@ -28,31 +25,6 @@ fun LoggingEventBuilder.addServletResponse(response: HttpServletResponse): Loggi
         HttpAttributes.HTTP_RESPONSE_STATUS_CODE.toString() to response.status,
         HttpIncubatingAttributes.HTTP_RESPONSE_BODY_SIZE.toString() to
             response.getHeader(HttpHeaders.CONTENT_LENGTH),
-    )
-
-fun LoggingEventBuilder.addHttpResponse(
-    peerService: PeerService,
-    uri: String,
-    response: HttpResponse<*>,
-): LoggingEventBuilder = addHttpResponse(peerService, uri, response.statusCode(), response.headers())
-
-fun LoggingEventBuilder.addHttpResponse(
-    peerService: PeerService,
-    uri: String,
-    response: ResponseEntity<*>,
-): LoggingEventBuilder = addHttpResponse(peerService, uri, response.statusCode, response.headers)
-
-fun LoggingEventBuilder.addHttpResponse(
-    peerService: PeerService,
-    uri: String,
-    status: Any,
-    headers: Any,
-): LoggingEventBuilder =
-    this.add(
-        "peer.service" to peerService.value,
-        "response.uri" to uri,
-        "response.status" to status,
-        "response.headers" to headers,
     )
 
 fun LoggingEventBuilder.addCondition(

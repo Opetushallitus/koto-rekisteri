@@ -1,8 +1,8 @@
 package fi.oph.kitu.oppijanumero
 
-import fi.oph.kitu.PeerService
-import fi.oph.kitu.logging.addHttpResponse
-import org.slf4j.LoggerFactory
+import fi.oph.kitu.logging.use
+import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -19,19 +19,23 @@ class CasAuthenticatedServiceImpl(
     @Qualifier("oppijanumeroHttpClient")
     private val httpClient: HttpClient,
     private val casService: CasService,
+    private val tracer: Tracer,
 ) : CasAuthenticatedService {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     @Value("\${kitu.oppijanumero.callerid}")
     private lateinit var callerId: String
 
-    private fun authenticateToCas() {
-        val grantingTicket = casService.getGrantingTicket()
-        val serviceTicket = casService.getServiceTicket(grantingTicket)
+    private fun authenticateToCas() =
+        tracer
+            .spanBuilder("CasAuthenticatedServiceImpl.authenticateToCas")
+            .startSpan()
+            .use {
+                val grantingTicket = casService.getGrantingTicket()
+                val serviceTicket = casService.getServiceTicket(grantingTicket)
 
-        casService.sendAuthenticationRequest(serviceTicket)
-    }
+                casService.sendAuthenticationRequest(serviceTicket)
+            }
 
+    @WithSpan
     override fun sendRequest(requestBuilder: HttpRequest.Builder): Result<HttpResponse<String>> {
         requestBuilder
             .header("Caller-Id", callerId)
@@ -39,7 +43,6 @@ class CasAuthenticatedServiceImpl(
             .header("Cookie", "CSRF=CSRF")
         val request = requestBuilder.build()
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        logger.atInfo().addHttpResponse(PeerService.Oppijanumero, request.uri().toString(), response).log()
 
         if (isLoginToCas(response)) {
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
@@ -47,10 +50,6 @@ class CasAuthenticatedServiceImpl(
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
             val authenticatedRequest = requestBuilder.build()
             val authenticatedResponse = httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
-            logger
-                .atInfo()
-                .addHttpResponse(PeerService.Oppijanumero, authenticatedRequest.uri().toString(), authenticatedResponse)
-                .log()
 
             return Result.success(authenticatedResponse)
         } else if (response.statusCode() == 401) {
@@ -59,10 +58,7 @@ class CasAuthenticatedServiceImpl(
             authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
             val authenticatedRequest = requestBuilder.build()
             val authenticatedResponse = httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
-            logger
-                .atInfo()
-                .addHttpResponse(PeerService.Oppijanumero, authenticatedRequest.uri().toString(), authenticatedResponse)
-                .log()
+
             return Result.success(authenticatedResponse)
         }
 
