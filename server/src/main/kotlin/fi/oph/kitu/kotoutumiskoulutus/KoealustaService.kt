@@ -68,7 +68,7 @@ class KoealustaService(
                     .toEntity<String>()
 
             if (response.body == null) {
-                return from
+                return@use from
             }
 
             val (suoritukset, validationFailure) = mappingService.responseStringToEntity(response.body!!)
@@ -101,9 +101,9 @@ class KoealustaService(
                         validationFailure.oppijanumeroExceptions.isNotEmpty()
                 )
             ) {
-                return from
+                return@use from
             }
 
-            return suoritukset.maxOfOrNull { it.timeCompleted } ?: from
+            return@use suoritukset.maxOfOrNull { it.timeCompleted } ?: from
         }
 }
