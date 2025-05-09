@@ -1,10 +1,12 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.TypedResult
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 class CasAuthenticatedServiceMock(
-    private val mockResponse: Result<HttpResponse<String>>,
+    private val mockResponse: TypedResult<HttpResponse<String>, CasError>,
 ) : CasAuthenticatedService {
-    override fun sendRequest(requestBuilder: HttpRequest.Builder): Result<HttpResponse<String>> = mockResponse
+    override fun sendRequest(requestBuilder: HttpRequest.Builder): TypedResult<HttpResponse<String>, CasError> =
+        mockResponse
 }
