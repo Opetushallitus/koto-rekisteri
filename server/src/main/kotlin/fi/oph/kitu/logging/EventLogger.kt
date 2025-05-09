@@ -6,6 +6,7 @@ import org.springframework.dao.DuplicateKeyException
 /**
  * A class to specify what to log to an event before, during or after, the specified lambda call.
  */
+@Deprecated("Replace with OpenTelemetry traces")
 class EventLogger<T>(
     /** Result of an action that will be wrapped with event logs. */
     val result: Result<T>,
@@ -102,6 +103,7 @@ class EventLogger<T>(
 }
 
 /** Runs the given lambda action and measure it's performance */
+@Deprecated("Replace with OpenTelemetry traces")
 fun <T> LoggingEventBuilder.withEventAndPerformanceCheck(action: (LoggingEventBuilder) -> T): EventLogger<T> {
     val start = System.currentTimeMillis()
     val result =
