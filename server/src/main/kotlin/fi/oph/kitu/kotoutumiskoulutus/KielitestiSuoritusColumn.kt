@@ -29,11 +29,6 @@ enum class KielitestiSuoritusColumn(
         uiHeaderValue = "Suoritusaika",
     ),
 
-    Kokonaisarvosana(
-        entityName = "totalEvaluationTeacher",
-        uiHeaderValue = "Kokonaisarvosana",
-    ),
-
     ;
 
     fun lowercaseName(): String = name.lowercase()
