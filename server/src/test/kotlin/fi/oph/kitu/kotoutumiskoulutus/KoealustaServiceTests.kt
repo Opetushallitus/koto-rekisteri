@@ -95,28 +95,23 @@ class KoealustaServiceTests {
                               "results": [
                                 {
                                   "name": "luetun ymm\u00e4rt\u00e4minen",
-                                  "quiz_result_system": "A1",
-                                  "quiz_result_teacher": "A1"
+                                  "quiz_grade": "A1"
                                 },
                                 {
                                   "name": "kuullun ymm\u00e4rt\u00e4minen",
-                                  "quiz_result_system": "B1",
-                                  "quiz_result_teacher": "B1"
+                                  "quiz_grade": "B1"
                                 },
                                 {
                                   "name": "puhe",
-                                  "quiz_result_system": null,
-                                  "quiz_result_teacher": "A1"
+                                  "quiz_grade": "A1"
                                 },
                                 {
                                   "name": "kirjoittaminen",
-                                  "quiz_result_system": null,
-                                  "quiz_result_teacher": "A1"
+                                  "quiz_grade": "A1"
                                 }
                               ],
                               "timecompleted": 1728969131,
-                              "total_evaluation_teacher": "47,5",
-                              "total_evaluation_system": "40"
+                              "teacheremail": "opettaja@testi.oph.fi"
                             }
                           ]
                         }
@@ -137,7 +132,7 @@ class KoealustaServiceTests {
         // Verification
         mockServer.verify()
 
-        assertEquals(0, kielitestiSuoritusErrorRepository.findAll().count())
+        assertEquals(emptyList(), kielitestiSuoritusErrorRepository.findAll())
 
         assertEquals(
             expected = Instant.parse("2024-10-15T05:12:11Z"),
@@ -190,28 +185,23 @@ class KoealustaServiceTests {
                               "results": [
                                 {
                                   "name": "luetun ymm\u00e4rt\u00e4minen",
-                                  "quiz_result_system": "A1",
-                                  "quiz_result_teacher": "A1"
+                                  "quiz_grade": "A1"
                                 },
                                 {
                                   "name": "kuullun ymm\u00e4rt\u00e4minen",
-                                  "quiz_result_system": "B1",
-                                  "quiz_result_teacher": "B1"
+                                  "quiz_grade": "B1"
                                 },
                                 {
                                   "name": "puhe",
-                                  "quiz_result_system": null,
-                                  "quiz_result_teacher": "A1"
+                                  "quiz_grade": "B1"
                                 },
                                 {
                                   "name": "kirjoittaminen",
-                                  "quiz_result_system": null,
-                                  "quiz_result_teacher": "A1"
+                                  "quiz_grade": "B1"
                                 }
                               ],
                               "timecompleted": 1728969131,
-                              "total_evaluation_teacher": "47,5",
-                              "total_evaluation_system": "40"
+                              "teacheremail": "opettaja@testi.oph.fi"
                             }
                           ]
                         }
