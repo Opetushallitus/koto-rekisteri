@@ -1,23 +1,8 @@
 package fi.oph.kitu.koodisto
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonValue
 
 object Koodisto {
-    @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-    data class KoskiKoodiviite(
-        val koodiarvo: String,
-        val koodistoUri: String,
-    ) {
-        companion object {
-            fun from(viite: Koodiviite): KoskiKoodiviite =
-                KoskiKoodiviite(
-                    koodiarvo = viite.koodiarvo,
-                    koodistoUri = viite.koodistoUri,
-                )
-        }
-    }
-
     interface Koodiviite {
         @get:JsonValue
         val koodiarvo: String

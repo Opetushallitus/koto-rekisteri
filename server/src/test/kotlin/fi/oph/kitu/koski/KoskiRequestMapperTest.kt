@@ -1,9 +1,6 @@
 package fi.oph.kitu.koski
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
@@ -16,7 +13,7 @@ import kotlin.test.assertEquals
 
 class KoskiRequestMapperTest {
     private val koskiRequestMapper = KoskiRequestMapper()
-    private val objectMapper = jacksonObjectMapper().registerKotlinModule().registerModule(JavaTimeModule())
+    private val objectMapper = KoskiRequestMapper.getObjectMapper()
 
     private val oid: Oid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
     private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.12345678910").getOrThrow()
