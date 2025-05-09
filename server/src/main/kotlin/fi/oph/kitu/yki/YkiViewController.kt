@@ -3,6 +3,8 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.generateHeader
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
+import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
+import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
@@ -17,7 +19,8 @@ import kotlin.math.ceil
 @RequestMapping("yki")
 class YkiViewController(
     private val ykiService: YkiService,
-    private val errorService: YkiSuoritusErrorService,
+    private val suoritusErrorService: YkiSuoritusErrorService,
+    private val arvioijaErrorService: YkiArvioijaErrorService,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetView(
@@ -62,11 +65,11 @@ class YkiViewController(
             .addObject("paging", paging)
             .addObject("versionHistory", versionHistory)
             // nullify 0 values for mustache
-            .addObject("errorsCount", errorService.countErrors().let { if (it == 0L) null else it })
+            .addObject("errorsCount", suoritusErrorService.countErrors().let { if (it == 0L) null else it })
     }
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
-    fun view(
+    fun suorituksetVirheetView(
         sortColumn: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.VirheenLuontiaika,
         sortDirection: SortDirection = SortDirection.ASC,
     ): ModelAndView =
@@ -74,7 +77,7 @@ class YkiViewController(
             .addObject("header", generateHeader<YkiSuoritusErrorColumn>(sortColumn, sortDirection))
             .addObject("sortColumn", sortColumn.lowercaseName())
             .addObject("sortDirection", sortDirection)
-            .addObject("virheet", errorService.getErrors(sortColumn, sortDirection))
+            .addObject("virheet", suoritusErrorService.getErrors(sortColumn, sortDirection))
 
     @GetMapping("/arvioijat")
     fun arvioijatView(
@@ -86,4 +89,17 @@ class YkiViewController(
             .addObject("sortColumn", sortColumn.lowercaseName())
             .addObject("sortDirection", sortDirection)
             .addObject("arvioijat", ykiService.allArvioijat(sortColumn, sortDirection))
+            // nullify 0 values for mustache
+            .addObject("errorsCount", arvioijaErrorService.countErrors().let { if (it == 0L) null else it })
+
+    @GetMapping("/arvioijat/virheet", produces = ["text/html"])
+    fun arvioijatVirheetView(
+        sortColumn: YkiArvioijaErrorColumn = YkiArvioijaErrorColumn.VirheenLuontiaika,
+        sortDirection: SortDirection = SortDirection.ASC,
+    ): ModelAndView =
+        ModelAndView("yki-arvioijat-virheet")
+            .addObject("header", generateHeader<YkiArvioijaErrorColumn>(sortColumn, sortDirection))
+            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortDirection", sortDirection)
+            .addObject("virheet", arvioijaErrorService.getErrors(sortColumn, sortDirection))
 }

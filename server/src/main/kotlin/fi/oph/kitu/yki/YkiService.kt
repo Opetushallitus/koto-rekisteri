@@ -14,6 +14,7 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
@@ -42,6 +43,7 @@ class YkiService(
     private val suoritusMapper: YkiSuoritusMappingService,
     private val arvioijaRepository: YkiArvioijaRepository,
     private val arvioijaMapper: YkiArvioijaMappingService,
+    private val arvioijaErrorService: YkiArvioijaErrorService,
     private val auditLogger: AuditLogger,
     private val parser: CsvParser,
     private val tracer: Tracer,
@@ -101,11 +103,13 @@ class YkiService(
                         .retrieve()
                         .toEntity<String>()
 
-                val (arvioijat) =
+                val (arvioijat, errors) =
                     parser
                         .convertCsvToData<SolkiArvioijaResponse>(
                             response.body ?: throw Error.EmptyArvioijatResponse(),
                         ).splitIntoValuesAndErrors()
+
+                arvioijaErrorService.handleErrors(errors)
 
                 span.setAttribute("yki.arvioijat.receivedCount", arvioijat.size)
 

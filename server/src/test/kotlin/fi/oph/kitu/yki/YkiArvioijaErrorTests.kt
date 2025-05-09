@@ -3,9 +3,9 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.SimpleCsvExportError
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
-import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
+import fi.oph.kitu.mock.generateRandomYkiArvioijaErrorEntity
+import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorRepository
+import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.junit.jupiter.api.BeforeEach
@@ -26,9 +26,9 @@ import kotlin.test.assertTrue
 @SpringBootTest
 @Testcontainers
 @Import(OpenTelemetryTestConfig::class)
-class YkiSuoritusErrorTests(
-    @Autowired private val repository: YkiSuoritusErrorRepository,
-    @Autowired private val service: YkiSuoritusErrorService,
+class YkiArvioijaErrorTests(
+    @Autowired private val repository: YkiArvioijaErrorRepository,
+    @Autowired private val service: YkiArvioijaErrorService,
     @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
 ) {
     @Suppress("unused")
@@ -53,9 +53,10 @@ class YkiSuoritusErrorTests(
         val errors = emptyList<CsvExportError>()
         repository.save(
             // Existing error
-            generateRandomYkiSuoritusErrorEntity().copy(
-                virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
-            ),
+            generateRandomYkiArvioijaErrorEntity()
+                .copy(
+                    virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
+                ),
         )
 
         // Act
@@ -70,7 +71,6 @@ class YkiSuoritusErrorTests(
             inMemorySpanExporter
                 .finishedSpanItems
                 .find { it.name == "SimpleErrorHandler.handleErrors" }
-
         val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
 
         assertEquals(0, errorSize)
@@ -101,7 +101,7 @@ class YkiSuoritusErrorTests(
                     exception =
                         RuntimeException(
                             """
-                            Cannot construct instance of `fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv`, problem: Parameter specified as non-null is null: method fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv.<init>, parameter suorittajanOID
+                            Cannot construct instance of `fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse`, problem: Parameter specified as non-null is null: method fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse.<init>, parameter suorittajanOID
                                 at [Source: (StringReader); line: 3, column: 270]
                             """.trimIndent(),
                         ),
@@ -111,7 +111,7 @@ class YkiSuoritusErrorTests(
         // Act
         repository.save(
             // Existing error
-            generateRandomYkiSuoritusErrorEntity().copy(
+            generateRandomYkiArvioijaErrorEntity().copy(
                 virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
             ),
         )
@@ -121,12 +121,12 @@ class YkiSuoritusErrorTests(
         assertEquals(1, errorsInDatabase.count())
 
         val spans = inMemorySpanExporter.finishedSpanItems
-        val span = spans.find { it.name == "CustomYkiSuoritusErrorRepositoryImpl.saveAll" }
+        val span = spans.find { it.name == "CustomYkiArvioijaErrorRepositoryImpl.saveAll" }
         assertNotNull(spans)
     }
 
     @Test
-    fun `suoritus handleErrors will append new csv errors to the database`() {
+    fun `arvioija handleErrors will append new csv errors to the database`() {
         // Arrange
         val errors =
             listOf(
@@ -139,7 +139,7 @@ class YkiSuoritusErrorTests(
                     exception =
                         RuntimeException(
                             """
-                            Cannot construct instance of `fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv`, problem: Parameter specified as non-null is null: method fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv.<init>, parameter suorittajanOID
+                            Cannot construct instance of `fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse`, problem: Parameter specified as non-null is null: method fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse.<init>, parameter suorittajanOID
                                 at [Source: (StringReader); line: 3, column: 270]
                             """.trimIndent(),
                         ),
@@ -147,7 +147,7 @@ class YkiSuoritusErrorTests(
             )
         repository.save(
             // Existing error
-            generateRandomYkiSuoritusErrorEntity().copy(
+            generateRandomYkiArvioijaErrorEntity().copy(
                 virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
             ),
         )
@@ -160,10 +160,10 @@ class YkiSuoritusErrorTests(
         assertEquals(2, errorsInDatabase.count())
 
         val spans = inMemorySpanExporter.finishedSpanItems
-
         val span = spans.find { it.name == "SimpleErrorHandler.handleErrors" }
-        assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.handleErrors" })
-        assertNotNull(spans.find { it.name == "YkiSuoritusErrorMappingService.convertToEntityIterable" })
+
+        assertNotNull(spans.find { it.name == "YkiArvioijaErrorService.handleErrors" })
+        assertNotNull(spans.find { it.name == "YkiArvioijaErrorMappingService.convertToEntityIterable" })
 
         val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
         assertEquals(1, errorSize)

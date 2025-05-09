@@ -1,19 +1,17 @@
-package fi.oph.kitu.yki.suoritukset.error
+package fi.oph.kitu.yki.arvioijat.error
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.yki.SimpleErrorHandler
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 @Service
-class YkiSuoritusErrorService(
-    private val mappingService: YkiSuoritusErrorMappingService,
-    private val repository: YkiSuoritusErrorRepository,
+class YkiArvioijaErrorService(
+    private val mappingService: YkiArvioijaErrorMappingService,
+    private val repository: YkiArvioijaErrorRepository,
     private val auditLogger: AuditLogger,
     private val errorHandler: SimpleErrorHandler,
 ) {
@@ -29,28 +27,16 @@ class YkiSuoritusErrorService(
         )
 
     @WithSpan
-    fun findNextSearchRange(
-        suoritukset: List<YkiSuoritusCsv>,
-        errors: List<CsvExportError>,
-        from: Instant,
-    ): Instant =
-        if (errors.isEmpty()) {
-            suoritukset.maxOfOrNull { it.lastModified } ?: from
-        } else {
-            from
-        }
-
-    @WithSpan
     fun getErrors(
-        orderBy: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.VirheenLuontiaika,
+        orderBy: YkiArvioijaErrorColumn = YkiArvioijaErrorColumn.VirheenLuontiaika,
         orderByDirection: SortDirection = SortDirection.ASC,
-    ): List<YkiSuoritusErrorEntity> =
+    ): List<YkiArvioijaErrorEntity> =
         repository
             .findAllSorted(orderBy.entityName, orderByDirection)
             .toList()
             .also {
-                auditLogger.logAll("Yki suoritus errors viewed", it) { error ->
-                    arrayOf("suoritus.error.id" to error.id)
+                auditLogger.logAll("Yki arvioija errors viewed", it) { error ->
+                    arrayOf("arvioija.error.id" to error.id)
                 }
             }
 }
