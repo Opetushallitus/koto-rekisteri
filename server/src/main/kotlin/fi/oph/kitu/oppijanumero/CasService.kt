@@ -27,13 +27,15 @@ class CasService(
     private lateinit var serviceUrl: String
 
     @WithSpan
-    fun sendAuthenticationRequest(serviceTicket: String) {
+    fun sendAuthenticationRequest(serviceTicket: String): TypedResult<Unit, CasError> {
         val authRequest =
             HttpRequest
                 .newBuilder(URI.create("$serviceUrl/j_spring_cas_security_check?ticket=$serviceTicket"))
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build()
         httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
+
+        return TypedResult.Success(Unit)
     }
 
     @WithSpan

@@ -52,7 +52,7 @@ class OppijanumeroServiceImpl(
                 val stringResponse =
                     casAuthenticatedService
                         .sendRequest(httpRequest)
-                        .getOrLogAndThrowCasException(event)
+                        .getOrThrow()
 
                 if (stringResponse.statusCode() == 404) {
                     throw OppijanumeroException.OppijaNotFoundException(yleistunnisteHaeRequest)

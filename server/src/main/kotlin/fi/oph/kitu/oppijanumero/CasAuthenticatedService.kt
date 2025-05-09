@@ -12,7 +12,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 interface CasAuthenticatedService {
-    fun sendRequest(requestBuilder: HttpRequest.Builder): Result<HttpResponse<String>>
+    fun sendRequest(requestBuilder: HttpRequest.Builder): TypedResult<HttpResponse<String>, CasError>
 }
 
 @Service
@@ -63,11 +63,14 @@ class CasAuthenticatedServiceImpl(
         } else if (response.statusCode() == 401) {
             // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
             // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
-            authenticateToCas().getOrThrow() // gets JSESSIONID Cookie and it will be used in the next request below
-            val authenticatedRequest = requestBuilder.build()
-            val authenticatedResponse = httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
+            authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
+                .flatMap {
+                    val authenticatedRequest = requestBuilder.build()
+                    val authenticatedResponse =
+                        httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
 
-            return TypedResult.Success(authenticatedResponse)
+                    TypedResult.Success(authenticatedResponse)
+                }
         }
 
         // loput statuskoodit oletetaan johtuvan kutsuttuvasta rajapinnasta
