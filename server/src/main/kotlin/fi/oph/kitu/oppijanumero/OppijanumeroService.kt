@@ -3,8 +3,8 @@ package fi.oph.kitu.oppijanumero
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.logging.add
-import fi.oph.kitu.logging.withEventAndPerformanceCheck
+import fi.oph.kitu.logging.use
+import io.opentelemetry.api.trace.Tracer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -20,6 +20,7 @@ interface OppijanumeroService {
 class OppijanumeroServiceImpl(
     private val casAuthenticatedService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
+    private val tracer: Tracer,
 ) : OppijanumeroService {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -27,9 +28,10 @@ class OppijanumeroServiceImpl(
     lateinit var serviceUrl: String
 
     override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
-        logger
-            .atInfo()
-            .withEventAndPerformanceCheck { event ->
+        tracer
+            .spanBuilder("OppijanumeroServiceImpl.getOppijanumero")
+            .startSpan()
+            .use { span ->
                 require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
                 require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
                 require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
@@ -49,52 +51,54 @@ class OppijanumeroServiceImpl(
                         ).header("Content-Type", "application/json")
 
                 // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
-                val stringResponse =
-                    casAuthenticatedService
-                        .sendRequest(httpRequest)
-                        .getOrThrow()
+                val authResult = casAuthenticatedService.sendRequest(httpRequest)
+                if (authResult !is TypedResult.Success) {
+                    // CAS errors are caused by the oppija data, and thus
+                    // should be handling outside default error handling flow.
+                    throw (authResult as TypedResult.Failure).error
+                }
 
+                val stringResponse = authResult.value
                 if (stringResponse.statusCode() == 404) {
-                    throw OppijanumeroException.OppijaNotFoundException(yleistunnisteHaeRequest)
+                    return@use TypedResult.Failure(
+                        OppijanumeroException.OppijaNotFoundException(yleistunnisteHaeRequest),
+                    )
                 } else if (stringResponse.statusCode() != 200) {
-                    throw OppijanumeroException(
-                        yleistunnisteHaeRequest,
-                        "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
+                    return@use TypedResult.Failure(
+                        OppijanumeroException(
+                            yleistunnisteHaeRequest,
+                            "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
+                        ),
                     )
                 }
 
-                val body =
+                val onrResult =
                     tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(yleistunnisteHaeRequest, stringResponse)
-                event.add(
-                    "response.hasOppijanumero" to body.oppijanumero.isNullOrEmpty(),
-                    "response.hasOid" to body.oid.isEmpty(),
-                    "response.areOppijanumeroAndOidSame" to (body.oppijanumero == body.oid),
-                )
 
-                if (body.oppijanumero.isNullOrEmpty()) {
-                    throw OppijanumeroException.OppijaNotIdentifiedException(yleistunnisteHaeRequest)
+                if (onrResult is TypedResult.Failure) {
+                    return@use TypedResult.Failure(onrResult.error)
                 }
 
-                return@withEventAndPerformanceCheck Oid
+                val body = (onrResult as TypedResult.Success).value
+                span.setAttribute("response.hasOppijanumero", body.oppijanumero.isNullOrEmpty())
+                span.setAttribute("response.hasOid", body.oid.isEmpty())
+                span.setAttribute("response.areOppijanumeroAndOidSame", (body.oppijanumero == body.oid))
+
+                if (body.oppijanumero.isNullOrEmpty()) {
+                    return@use TypedResult.Failure(
+                        OppijanumeroException.OppijaNotIdentifiedException(yleistunnisteHaeRequest),
+                    )
+                }
+
+                return@use Oid
                     .parseTyped(body.oppijanumero)
                     .mapFailure {
                         OppijanumeroException.MalformedOppijanumero(
                             yleistunnisteHaeRequest,
                             body.oppijanumero,
                         )
-                    }.getOrThrow()
-            }.apply {
-                addDefaults("getOppijanumero")
-            }.result
-            .fold(
-                onSuccess = { TypedResult.Success(it) },
-                onFailure = {
-                    when (it) {
-                        is OppijanumeroException -> TypedResult.Failure(it)
-                        else -> throw it
                     }
-                },
-            )
+            }
 
     /**
      * Tries to convert HttpResponse<String> into the given T.
@@ -105,20 +109,16 @@ class OppijanumeroServiceImpl(
     final inline fun <reified T> tryConvertToOppijanumeroResponse(
         request: YleistunnisteHaeRequest,
         response: HttpResponse<String>,
-    ): T =
-        runCatching {
-            objectMapper.readValue(response.body(), T::class.java)
-        }.onFailure { exception ->
-            val error =
-                runCatching {
-                    objectMapper.readValue(response.body(), OppijanumeroServiceError::class.java)
-                }.onFailure { _ -> throw exception }
-                    .getOrThrow()
-
-            throw OppijanumeroException(
-                request,
-                "Error from oppijanumero-service: ${error.error}",
-                error,
-            )
-        }.getOrThrow()
+    ): TypedResult<T, OppijanumeroException> =
+        TypedResult
+            .runCatching {
+                objectMapper.readValue(response.body(), T::class.java)
+            }.mapFailure {
+                val error = objectMapper.readValue(response.body(), OppijanumeroServiceError::class.java)
+                OppijanumeroException(
+                    request,
+                    "Error from oppijanumero-service: ${error.error}",
+                    error,
+                )
+            }
 }
