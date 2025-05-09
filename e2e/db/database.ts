@@ -104,6 +104,7 @@ const withEmptyDatabase = (pool: pg.Pool) => async () => {
     await client.query(SQL`
       TRUNCATE TABLE
         koto_suoritus,
+        koto_suoritus_error,
         yki_suoritus,
         yki_suoritus_error,
         yki_arvioija
