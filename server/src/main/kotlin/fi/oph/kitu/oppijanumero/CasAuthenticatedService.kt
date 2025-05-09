@@ -1,5 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -24,19 +25,19 @@ class CasAuthenticatedServiceImpl(
     @Value("\${kitu.oppijanumero.callerid}")
     private lateinit var callerId: String
 
-    private fun authenticateToCas() =
+    private fun authenticateToCas(): TypedResult<Unit, CasError> =
         tracer
             .spanBuilder("CasAuthenticatedServiceImpl.authenticateToCas")
             .startSpan()
             .use {
-                val grantingTicket = casService.getGrantingTicket()
-                val serviceTicket = casService.getServiceTicket(grantingTicket)
-
-                casService.sendAuthenticationRequest(serviceTicket)
+                casService
+                    .getGrantingTicket()
+                    .flatMap(casService::getServiceTicket)
+                    .flatMap(casService::sendAuthenticationRequest)
             }
 
     @WithSpan
-    override fun sendRequest(requestBuilder: HttpRequest.Builder): Result<HttpResponse<String>> {
+    override fun sendRequest(requestBuilder: HttpRequest.Builder): TypedResult<HttpResponse<String>, CasError> {
         requestBuilder
             .header("Caller-Id", callerId)
             .header("CSRF", "CSRF")
@@ -47,23 +48,30 @@ class CasAuthenticatedServiceImpl(
         if (isLoginToCas(response)) {
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
             // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
-            authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-            val authenticatedRequest = requestBuilder.build()
-            val authenticatedResponse = httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
+            authenticateToCas()
+                // gets JSESSIONID Cookie and it will be used in the next request below
+                .flatMap {
+                    val authenticatedRequest = requestBuilder.build()
+                    val authenticatedResponse =
+                        httpClient.send(
+                            authenticatedRequest,
+                            HttpResponse.BodyHandlers.ofString(),
+                        )
 
-            return Result.success(authenticatedResponse)
+                    TypedResult.Success(authenticatedResponse)
+                }
         } else if (response.statusCode() == 401) {
             // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
             // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
-            authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
+            authenticateToCas().getOrThrow() // gets JSESSIONID Cookie and it will be used in the next request below
             val authenticatedRequest = requestBuilder.build()
             val authenticatedResponse = httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
 
-            return Result.success(authenticatedResponse)
+            return TypedResult.Success(authenticatedResponse)
         }
 
         // loput statuskoodit oletetaan johtuvan kutsuttuvasta rajapinnasta
-        return Result.success(response)
+        return TypedResult.Success(response)
     }
 
     private fun isLoginToCas(response: HttpResponse<*>): Boolean {

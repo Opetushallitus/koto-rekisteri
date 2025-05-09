@@ -1,5 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.TypedResult
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -36,7 +37,7 @@ class CasService(
     }
 
     @WithSpan
-    fun getServiceTicket(ticketGrantingTicket: String): String {
+    fun getServiceTicket(ticketGrantingTicket: String): TypedResult<String, CasError> {
         val request =
             HttpRequest
                 .newBuilder(URI.create("$casUrl/v1/tickets/$ticketGrantingTicket"))
@@ -48,17 +49,15 @@ class CasService(
                 .build()
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-
-        if (response.statusCode() != 200) {
-            throw CasException(response, "Ticket service did not respond with 200 status code.")
+        return if (response.statusCode() == 201) {
+            TypedResult.Success(response.body())
+        } else {
+            TypedResult.Failure(CasError.ServiceTicketError("Unable to get service ticket"))
         }
-
-        val ticket = response.body()
-        return ticket
     }
 
     @WithSpan
-    fun getGrantingTicket(): String {
+    fun getGrantingTicket(): TypedResult<String, CasError> {
         // Step 2 - form a request
         val username = URLEncoder.encode(onrUsername, "UTF-8")
         val password = URLEncoder.encode(onrPassword, "UTF-8")
@@ -72,13 +71,14 @@ class CasService(
         // Step 3 - Get the response
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
 
-        val statusCode = response.statusCode()
-
-        if (statusCode != 201) {
-            throw CasException(response, "Ticket granting service did not respond with 201 status code.")
+        return if (response.statusCode() == 201) {
+            TypedResult.Success(
+                response.headers().firstValue("Location").get().let {
+                    it.substring(it.lastIndexOf("/") + 1)
+                },
+            )
+        } else {
+            TypedResult.Failure(CasError.GrantingTicketError("Unable to get granting ticket"))
         }
-
-        val location = response.headers().firstValue("Location").get()
-        return location.substring(location.lastIndexOf("/") + 1)
     }
 }
