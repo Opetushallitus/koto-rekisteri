@@ -43,7 +43,7 @@ class KielitestiViewController(
         Nimi("nimi", "Nimi"),
         VirheenLuontiaika("virheenLuontiaika", "Virheen luontiaika"),
         Viesti("viesti", "Viesti"),
-        VirheellinenKenttä("virheellinenKenttä", "Virheellinen kenttä"),
+        VirheellinenKentta("virheellinenKentta", "Virheellinen kenttä"),
         VirheellinenArvo("virheellinenArvo", "Virheellinen arvo"),
         ;
 
