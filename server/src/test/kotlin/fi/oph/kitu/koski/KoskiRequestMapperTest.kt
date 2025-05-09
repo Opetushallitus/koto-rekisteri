@@ -1,10 +1,8 @@
 package fi.oph.kitu.koski
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import fi.oph.kitu.Oid
+import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -15,7 +13,7 @@ import kotlin.test.assertEquals
 
 class KoskiRequestMapperTest {
     private val koskiRequestMapper = KoskiRequestMapper()
-    private val objectMapper = jacksonObjectMapper().registerKotlinModule().registerModule(JavaTimeModule())
+    private val objectMapper = KoskiRequestMapper.getObjectMapper()
 
     private val oid: Oid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
     private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.12345678910").getOrThrow()
@@ -99,16 +97,16 @@ class KoskiRequestMapperTest {
                 .first()
                 .suoritukset
                 .first()
-        assertEquals(Koodisto.YkiArvosana.PT1, koskiSuoritus.yleisarvosana)
+        assertEquals(Koodisto.YkiArvosana.PT1.toKoski(), koskiSuoritus.yleisarvosana)
         val arvosanat =
             koskiSuoritus.osasuoritukset.associate {
                 it.koulutusmoduuli.tunniste.koodiarvo to it.arviointi.first().arvosana
             }
-        assertEquals(Koodisto.YkiArvosana.ALLE1, arvosanat["tekstinymmartaminen"])
-        assertEquals(Koodisto.YkiArvosana.ALLE1, arvosanat["kirjoittaminen"])
-        assertEquals(Koodisto.YkiArvosana.ALLE1, arvosanat["puheenymmartaminen"])
-        assertEquals(Koodisto.YkiArvosana.ALLE1, arvosanat["puhuminen"])
-        assertEquals(Koodisto.YkiArvosana.PT2, arvosanat["rakenteetjasanasto"])
+        assertEquals(Koodisto.YkiArvosana.ALLE1.toKoski(), arvosanat["tekstinymmartaminen"])
+        assertEquals(Koodisto.YkiArvosana.ALLE1.toKoski(), arvosanat["kirjoittaminen"])
+        assertEquals(Koodisto.YkiArvosana.ALLE1.toKoski(), arvosanat["puheenymmartaminen"])
+        assertEquals(Koodisto.YkiArvosana.ALLE1.toKoski(), arvosanat["puhuminen"])
+        assertEquals(Koodisto.YkiArvosana.PT2.toKoski(), arvosanat["rakenteetjasanasto"])
     }
 
     @Test
@@ -132,17 +130,17 @@ class KoskiRequestMapperTest {
                 .first()
                 .suoritukset
                 .first()
-        assertEquals(Koodisto.YkiArvosana.ALLE3, koskiSuoritus.yleisarvosana)
+        assertEquals(Koodisto.YkiArvosana.ALLE3.toKoski(), koskiSuoritus.yleisarvosana)
         val arvosanat =
             koskiSuoritus.osasuoritukset.associate {
                 it.koulutusmoduuli.tunniste.koodiarvo to it.arviointi.first().arvosana
             }
 
-        assertEquals(Koodisto.YkiArvosana.ALLE3, arvosanat["tekstinymmartaminen"])
-        assertEquals(Koodisto.YkiArvosana.ALLE3, arvosanat["kirjoittaminen"])
-        assertEquals(Koodisto.YkiArvosana.KT3, arvosanat["puheenymmartaminen"])
-        assertEquals(Koodisto.YkiArvosana.KT4, arvosanat["puhuminen"])
-        assertEquals(Koodisto.YkiArvosana.ALLE3, arvosanat["rakenteetjasanasto"])
+        assertEquals(Koodisto.YkiArvosana.ALLE3.toKoski(), arvosanat["tekstinymmartaminen"])
+        assertEquals(Koodisto.YkiArvosana.ALLE3.toKoski(), arvosanat["kirjoittaminen"])
+        assertEquals(Koodisto.YkiArvosana.KT3.toKoski(), arvosanat["puheenymmartaminen"])
+        assertEquals(Koodisto.YkiArvosana.KT4.toKoski(), arvosanat["puhuminen"])
+        assertEquals(Koodisto.YkiArvosana.ALLE3.toKoski(), arvosanat["rakenteetjasanasto"])
     }
 
     @Test
@@ -166,16 +164,16 @@ class KoskiRequestMapperTest {
                 .first()
                 .suoritukset
                 .first()
-        assertEquals(Koodisto.YkiArvosana.ALLE5, koskiSuoritus.yleisarvosana)
+        assertEquals(Koodisto.YkiArvosana.ALLE5.toKoski(), koskiSuoritus.yleisarvosana)
         val arvosanat =
             koskiSuoritus.osasuoritukset.associate {
                 it.koulutusmoduuli.tunniste.koodiarvo to it.arviointi.first().arvosana
             }
 
-        assertEquals(Koodisto.YkiArvosana.YT5, arvosanat["tekstinymmartaminen"])
-        assertEquals(Koodisto.YkiArvosana.YT6, arvosanat["kirjoittaminen"])
-        assertEquals(Koodisto.YkiArvosana.ALLE5, arvosanat["puheenymmartaminen"])
-        assertEquals(Koodisto.YkiArvosana.ALLE5, arvosanat["puhuminen"])
-        assertEquals(Koodisto.YkiArvosana.ALLE5, arvosanat["rakenteetjasanasto"])
+        assertEquals(Koodisto.YkiArvosana.YT5.toKoski(), arvosanat["tekstinymmartaminen"])
+        assertEquals(Koodisto.YkiArvosana.YT6.toKoski(), arvosanat["kirjoittaminen"])
+        assertEquals(Koodisto.YkiArvosana.ALLE5.toKoski(), arvosanat["puheenymmartaminen"])
+        assertEquals(Koodisto.YkiArvosana.ALLE5.toKoski(), arvosanat["puhuminen"])
+        assertEquals(Koodisto.YkiArvosana.ALLE5.toKoski(), arvosanat["rakenteetjasanasto"])
     }
 }
