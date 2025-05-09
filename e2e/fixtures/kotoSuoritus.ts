@@ -13,16 +13,11 @@ export interface KotoSuoritus {
   schoolOid: Oid
   email: Email
   timeCompleted: string
-  luetunYmmartaminenResultSystem: string
-  luetunYmmartaminenResultTeacher: string
-  kuullunYmmartaminenResultSystem: string
-  kuullunYmmartaminenResultTeacher: string
-  puheResultSystem: null
-  puheResultTeacher: string
-  kirjoittaminenResultSystem: null
-  kirjoittaminenResultTeacher: string
-  totalEvaluationTeacher: string
-  totalEvaluationSystem: string
+  luetunYmmartaminenResult: string
+  kuullunYmmartaminenResult: string
+  puheResult: string
+  kirjoittaminenResult: string
+  teacherEmail: string
   courseId: number
   courseName: string
 }
@@ -34,14 +29,11 @@ const createSuoritus = ({
   schoolOid = "1.2.3.4.5.6",
   email,
   preferredName,
-  luetunYmmartaminenResultSystem = "34",
-  luetunYmmartaminenResultTeacher = "33",
-  kuullunYmmartaminenResultSystem = "34",
-  kuullunYmmartaminenResultTeacher = "33",
-  puheResultTeacher = "75",
-  kirjoittaminenResultTeacher = "90",
-  totalEvaluationTeacher = "62,33",
-  totalEvaluationSystem = "37,78",
+  luetunYmmartaminenResult = "A1",
+  kuullunYmmartaminenResult = "B1",
+  puheResult = "75",
+  kirjoittaminenResult = "B1",
+  teacherEmail = "opettaja@testi.oph.fi",
   timeCompleted = "2024-11-22 10:49:49",
   courseId = 32,
   courseName = "Integraatio testaus",
@@ -53,16 +45,11 @@ const createSuoritus = ({
   schoolOid,
   email,
   timeCompleted,
-  luetunYmmartaminenResultSystem,
-  luetunYmmartaminenResultTeacher,
-  kuullunYmmartaminenResultSystem,
-  kuullunYmmartaminenResultTeacher,
-  puheResultTeacher,
-  kirjoittaminenResultTeacher,
-  totalEvaluationTeacher,
-  totalEvaluationSystem,
-  puheResultSystem: null,
-  kirjoittaminenResultSystem: null,
+  luetunYmmartaminenResult,
+  kuullunYmmartaminenResult,
+  kirjoittaminenResult,
+  puheResult,
+  teacherEmail,
   courseId,
   courseName,
 })
@@ -149,42 +136,32 @@ export const fixtureData = {
 } as const
 
 const insertQuery = (suoritus: KotoSuoritus) => SQL`
-    INSERT INTO koto_suoritus (first_names,
-                               last_name,
-                               oppijanumero,
-                               school_oid,
-                               email,
-                               time_completed,
-                               luetun_ymmartaminen_result_system,
-                               luetun_ymmartaminen_result_teacher,
-                               kuullun_ymmartaminen_result_system,
-                               kuullun_ymmartaminen_result_teacher,
-                               puhe_result_system,
-                               puhe_result_teacher,
-                               kirjoittaminen_result_system,
-                               kirjottaminen_result_teacher,
-                               total_evaluation_teacher,
-                               total_evaluation_system,
-                               courseid,
-                               coursename)
-    VALUES (${suoritus.firstNames},
-            ${suoritus.lastName},
-            ${suoritus.oppijanumero},
-            ${suoritus.schoolOid},
-            ${suoritus.email},
-            ${suoritus.timeCompleted},
-            ${suoritus.luetunYmmartaminenResultSystem},
-            ${suoritus.luetunYmmartaminenResultTeacher},
-            ${suoritus.kuullunYmmartaminenResultSystem},
-            ${suoritus.kuullunYmmartaminenResultTeacher},
-            ${suoritus.puheResultSystem},
-            ${suoritus.puheResultTeacher},
-            ${suoritus.kirjoittaminenResultSystem},
-            ${suoritus.kirjoittaminenResultTeacher},
-            ${suoritus.totalEvaluationTeacher},
-            ${suoritus.totalEvaluationSystem},
-            ${suoritus.courseId},
-            ${suoritus.courseName})
+  INSERT INTO koto_suoritus (first_names,
+                             last_name,
+                             oppijanumero,
+                             school_oid,
+                             email,
+                             time_completed,
+                             luetun_ymmartaminen_result,
+                             kuullun_ymmartaminen_result,
+                             puhe_result,
+                             kirjoittaminen_result,
+                             teacher_email,
+                             courseid,
+                             coursename)
+  VALUES (${suoritus.firstNames},
+          ${suoritus.lastName},
+          ${suoritus.oppijanumero},
+          ${suoritus.schoolOid},
+          ${suoritus.email},
+          ${suoritus.timeCompleted},
+          ${suoritus.luetunYmmartaminenResult},
+          ${suoritus.kuullunYmmartaminenResult},
+          ${suoritus.puheResult},
+          ${suoritus.kirjoittaminenResult},
+          ${suoritus.teacherEmail},
+          ${suoritus.courseId},
+          ${suoritus.courseName})
 `
 
 export type KotoSuorittajaName = keyof typeof fixtureData
