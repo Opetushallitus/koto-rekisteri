@@ -70,6 +70,12 @@ sealed class TypedResult<Value, Error> {
             onFailure = { Failure(transform(it)) },
         )
 
+    fun <NewValue> flatMap(transform: (Value) -> TypedResult<NewValue, Error>): TypedResult<NewValue, Error> =
+        when (this) {
+            is Success<Value, Error> -> transform(this.value)
+            is Failure<Value, Error> -> Failure(this.error)
+        }
+
     companion object {
         inline fun <Value> runCatching(block: () -> Value): TypedResult<Value, Throwable> =
             try {

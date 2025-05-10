@@ -3,9 +3,12 @@ package fi.oph.kitu.oppijanumero
 import HttpResponseMock
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
+import fi.oph.kitu.TypedResult
+import fi.oph.kitu.logging.MockTracer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import java.net.http.HttpResponse
 import kotlin.test.assertEquals
 
 class OppijanumeroServiceTests {
@@ -13,8 +16,8 @@ class OppijanumeroServiceTests {
     fun `oppijanumero service returns identified user`() {
         // Facade
         val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
-        val response =
-            Result.success(
+        val response: TypedResult<HttpResponse<String>, CasError> =
+            TypedResult.Success(
                 HttpResponseMock(
                     statusCode = 200,
                     body =
@@ -32,6 +35,7 @@ class OppijanumeroServiceTests {
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
                 objectMapper = ObjectMapper(),
+                tracer = MockTracer(),
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
@@ -53,8 +57,8 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service returns unidentified user`() {
         // Facade
-        val response =
-            Result.success(
+        val response: TypedResult<HttpResponse<String>, CasError> =
+            TypedResult.Success(
                 HttpResponseMock(
                     statusCode = 200,
                     body =
@@ -72,6 +76,7 @@ class OppijanumeroServiceTests {
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
                 objectMapper = ObjectMapper(),
+                tracer = MockTracer(),
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
@@ -91,8 +96,8 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service returns error`() {
         // Facade
-        val response =
-            Result.success(
+        val response: TypedResult<HttpResponse<String>, CasError> =
+            TypedResult.Success(
                 HttpResponseMock(
                     statusCode = 404,
                     body =
@@ -112,6 +117,7 @@ class OppijanumeroServiceTests {
                 casAuthenticatedService =
                     CasAuthenticatedServiceMock(response),
                 objectMapper = ObjectMapper(),
+                tracer = MockTracer(),
             )
         oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
