@@ -34,123 +34,89 @@ class MockSpanContext : SpanContext {
 
 class MockSpan : Span {
     override fun <T : Any?> setAttribute(
-        key: AttributeKey<T?>,
-        value: T & Any,
+        p0: AttributeKey<T?>,
+        p1: T?,
     ): Span? = MockSpan()
 
     override fun addEvent(
         name: String,
         attributes: Attributes,
-    ): Span? {
-        TODO("Not yet implemented")
-    }
+    ): Span? = MockSpan()
 
     override fun addEvent(
         name: String,
         attributes: Attributes,
         timestamp: Long,
         unit: TimeUnit,
-    ): Span? {
-        TODO("Not yet implemented")
-    }
+    ): Span? = MockSpan()
 
     override fun setStatus(
         statusCode: StatusCode,
         description: String,
-    ): Span? {
-        TODO("Not yet implemented")
-    }
+    ): Span? = MockSpan()
 
     override fun recordException(
         exception: Throwable,
         additionalAttributes: Attributes,
     ): Span? = MockSpan()
 
-    override fun updateName(name: String): Span? {
-        TODO("Not yet implemented")
-    }
+    override fun updateName(name: String): Span? = MockSpan()
 
     override fun end() {}
 
     override fun end(
         timestamp: Long,
         unit: TimeUnit,
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
     override fun getSpanContext(): SpanContext? = MockSpanContext()
 
-    override fun isRecording(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isRecording(): Boolean = false
 }
 
 class MockSpanbuilder : SpanBuilder {
-    override fun setParent(context: Context): SpanBuilder? {
-        TODO("setParent: Not yet implemented")
-    }
+    override fun setParent(context: Context): SpanBuilder? = this
 
-    override fun setNoParent(): SpanBuilder? {
-        TODO("setNoParent: Not yet implemented")
-    }
+    override fun setNoParent(): SpanBuilder? = this
 
-    override fun addLink(spanContext: SpanContext): SpanBuilder? {
-        TODO("addLink: Not yet implemented")
-    }
+    override fun addLink(spanContext: SpanContext): SpanBuilder? = this
 
     override fun addLink(
         spanContext: SpanContext,
         attributes: Attributes,
-    ): SpanBuilder? {
-        TODO("addLink2: Not yet implemented")
-    }
+    ): SpanBuilder? = this
 
     override fun setAttribute(
         key: String,
         value: String,
-    ): SpanBuilder? {
-        TODO("setAttribute: Not yet implemented")
-    }
+    ): SpanBuilder? = this
 
     override fun setAttribute(
         key: String,
         value: Long,
-    ): SpanBuilder? {
-        TODO("setAttribute2: Not yet implemented")
-    }
+    ): SpanBuilder? = this
 
     override fun setAttribute(
         key: String,
         value: Double,
-    ): SpanBuilder? {
-        TODO("setAttribute3: Not yet implemented")
-    }
+    ): SpanBuilder? = this
 
     override fun setAttribute(
         key: String,
         value: Boolean,
-    ): SpanBuilder? {
-        TODO("setAttribute4: Not yet implemented")
-    }
+    ): SpanBuilder? = this
 
     override fun <T : Any?> setAttribute(
         key: AttributeKey<T?>,
         value: T & Any,
-    ): SpanBuilder? {
-        TODO("setAttribute5: Not yet implemented")
-    }
+    ): SpanBuilder? = this
 
-    override fun setSpanKind(spanKind: SpanKind): SpanBuilder? {
-        TODO("setSpanKind: Not yet implemented")
-    }
+    override fun setSpanKind(spanKind: SpanKind): SpanBuilder? = this
 
     override fun setStartTimestamp(
         startTimestamp: Long,
         unit: TimeUnit,
-    ): SpanBuilder? {
-        TODO("setStartTimestamp: Not yet implemented")
-    }
+    ): SpanBuilder? = this
 
     override fun startSpan(): Span? = MockSpan()
 }
