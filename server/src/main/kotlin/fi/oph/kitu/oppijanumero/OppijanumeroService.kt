@@ -53,7 +53,7 @@ class OppijanumeroServiceImpl(
                 // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
                 val authResult = casAuthenticatedService.sendRequest(httpRequest)
                 if (authResult !is TypedResult.Success) {
-                    // CAS errors are caused by the oppija data, and thus
+                    // CAS errors are not caused by the oppija data, and thus
                     // should be handling outside default error handling flow.
                     throw (authResult as TypedResult.Failure).error
                 }
@@ -64,11 +64,11 @@ class OppijanumeroServiceImpl(
                         OppijanumeroException.OppijaNotFoundException(yleistunnisteHaeRequest),
                     )
                 } else if (stringResponse.statusCode() != 200) {
-                    return@use TypedResult.Failure(
-                        OppijanumeroException(
-                            yleistunnisteHaeRequest,
-                            "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
-                        ),
+                    // Other non 200 ONR errors are not caused by the oppija data, and thus
+                    // should be handling outside default error handling flow.
+                    throw OppijanumeroException(
+                        yleistunnisteHaeRequest,
+                        "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
                     )
                 }
 
