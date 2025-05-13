@@ -2,9 +2,14 @@
   {{$title}}
     Kielitutkintorekisteri - Yleiset kielitutkinnot - suoritukset - virheet
   {{/title}}
+  {{$breadcrumbs}}
+    <li><a href="/yki/suoritukset">Yleiset kielitutkinnot</a></li>
+    <li><a href="/yki/suoritukset">Suoritukset</a></li>
+    <li><a href="/yki/suoritukset/virheet">Virheet</a></li>
+  {{/breadcrumbs}}
   {{$body}}
-    <h1>Yleiset kielitutkinnot - suoritukset - virheet</h1>
-    <table>
+    <article class="overflow-auto">
+    <table class="compact striped">
       <thead>
       <tr>
         {{#header}}
@@ -78,5 +83,6 @@
       {{/virheet}}
       </tbody>
     </table>
+    </article>
   {{/body}}
 {{/page}}

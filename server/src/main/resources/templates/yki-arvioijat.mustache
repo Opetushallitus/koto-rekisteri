@@ -2,14 +2,20 @@
 {{$title}}
 Kielitutkintorekisteri - Yleiset kielitutkinnot - arvioijat
 {{/title}}
+{{$$breadcrumbs}}
+  <li><a href="/yki/arvioijat">Yleiset kielitutkinnot</a></li>
+  <li><a href="/yki/arvioijat">Arvioijat</a></li>
+{{/$breadcrumbs}}
 {{$body}}
-    <h1>Yleiset kielitutkinnot - arvioijat</h1>
-
     {{#errorsCount}}
-        <p class="error-text">Järjestelmässä on {{errorsCount}} virhettä. <a href="/yki/arvioijat/virheet"> Katso virheet</a> </p>
+        <article class="error-text">
+          Järjestelmässä on {{errorsCount}} virhettä.
+          <a href="/yki/arvioijat/virheet"> Katso virheet</a>
+        </article>
     {{/errorsCount}}
 
-    <table>
+    <article class="overflow-auto">
+    <table class="compact striped">
       <thead>
         <tr>
           {{#header}}
@@ -45,5 +51,6 @@ Kielitutkintorekisteri - Yleiset kielitutkinnot - arvioijat
         {{/arvioijat}}
       </tbody>
     </table>
+    </article>
 {{/body}}
 {{/page}}

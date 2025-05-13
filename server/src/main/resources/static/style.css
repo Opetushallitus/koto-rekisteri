@@ -1,191 +1,148 @@
 :root {
-  --dark-blue: #040066;
-  --dark-blue-accent: #484890;
-  --light-blue: #e0f3ff;
-  --light-blue-accent: #f6fcff;
-  --white: #ffffff;
+  --oph-grey900: #1d1d1d;
+  --oph-grey800: #454545;
+  --oph-grey700: #4c4c4c;
+  --oph-grey600: #5d5d5d;
+  --oph-grey500: #6d6d6d;
+  --oph-grey400: #b2b2b2;
+  --oph-grey300: #c8c8c8;
+  --oph-grey200: #dfdfdf;
+  --oph-grey100: #ededed;
+  --oph-grey50: #f6f6f6;
+  --oph-black: #000000;
+  --oph-white: #ffffff;
+  --oph-blue1: #000066;
+  --oph-blue2: #0033cc;
+  --oph-blue3: #0041dc;
+  --oph-cyan1: #006699;
+  --oph-cyan2: #66cccc;
+  --oph-cyan3: #99ffff;
+  --oph-lightBlue1: #82d4ff;
+  --oph-lightBlue2: #c1eaff;
+  --oph-green1: #254905;
+  --oph-green2: #378703;
+  --oph-green3: #5bca13;
+  --oph-green4: #9cff5a;
+  --oph-green5: #ccffcc;
+  --oph-red1: #990066;
+  --oph-red2: #e60895;
+  --oph-orange1: #663300;
+  --oph-orange2: #993300;
+  --oph-orange3: #cc3300;
+  --oph-orange4: #ff5500;
+  --oph-yellow1: #ffcc33;
+  --oph-yellow2: #ffd900;
+  --oph-yellow3: #ffff33;
+  --oph-pink1: #ff66cc;
+  --oph-pink2: #ffccff;
+  --oph-pink3: #fdf2f2;
+  --oph-purple1: #660066;
+  --oph-purple2: #660099;
+  --oph-purple3: #c227b9;
+  --oph-purple4: #cc99ff;
 
-  --main-bg-color: #f6f4f0;
-  --content-bg-color: var(--white);
-
-  --nav-bg-color: var(--dark-blue);
-  --nav-link-separator-color: var(--dark-blue-accent);
-  --nav-link-bg-color-hover: var(--light-blue);
-  --nav-link-bg-color-active: var(--light-blue-accent);
-  --nav-link-bg-color: var(--white);
-  --nav-color: var(--white);
-
-  --table-border-color: lightgrey;
-
-  font-family: sans-serif;
+  --pico-font-size: 90%;
+  --pico-line-height: 1.2;
 }
 
-body {
+[data-theme="light"],
+:root:not([data-theme="dark"]) {
+  --pico-primary: var(--oph-blue3);
+  --pico-primary-background: var(--oph-blue3);
+  --pico-primary-border: var(--oph-blue3);
+  --pico-primary-hover: var(--oph-blue2);
+  --pico-primary-hover-background: var(--oph-blue2);
+  --pico-primary-hover-border: var(--oph-blue2);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  --pico-font-weight: 200;
+}
+
+nav.main {
+  margin-top: calc(-1 * var(--pico-block-spacing-vertical));
+  margin-bottom: var(--pico-block-spacing-vertical);
+
+  padding: var(--pico-block-spacing-vertical)
+    var(--pico-block-spacing-horizontal);
+  background: var(--pico-card-background-color);
+  box-shadow: var(--pico-card-box-shadow);
+}
+
+nav.main a {
+  color: var(--oph-grey800);
+}
+
+nav.main h1 {
   margin: 0;
-  background-color: var(--main-bg-color);
 }
 
-code {
-  background-color: lightgrey;
+nav.main ul.breadcrumb {
+  display: block;
+  padding-left: var(--pico-block-spacing-horizontal);
 }
 
-details[open] {
-  margin-bottom: 0.5em;
+nav.main ul.breadcrumb li {
+  padding: 0;
 }
 
-details[open] > summary {
-  margin-bottom: 0.5em;
+nav.main ul.breadcrumb li::before {
+  content: "/";
+  color: var(--oph-grey400);
+  margin: 0 1ex;
 }
 
-header.main {
-  display: flex;
-  flex-direction: row;
+nav.main ul.breadcrumbs li:first-child::before,
+nav.main ul.breadcrumbs li:nth-child(2)::before {
+  content: none;
+}
+
+nav.main ul.breadcrumbs li:first-child {
+  display: block;
+}
+
+.page-title {
+  --page-title-spacing-vertical: calc(3 * var(--pico-block-spacing-vertical));
+  margin-top: var(--page-title-spacing-vertical);
+  margin-bottom: var(--page-title-spacing-vertical);
+}
+
+.grid.center-vertically {
   align-items: center;
-  justify-items: start;
-
-  padding: 1rem 1.5rem 0;
-
-  color: var(--nav-color);
-  background-color: var(--nav-bg-color);
 }
 
-.main.content {
-  padding: 2rem 0.5rem;
+article.error-text {
+  color: var(--oph-orange1);
+  border: solid 2px var(--oph-orange4);
+  background: #ffe9e1;
 }
 
-header.main h1 {
-  margin: 0;
+article.error-text a {
+  color: var(--oph-orange1);
 }
 
-header.main h1 a {
+table.compact {
+  margin: calc(-1 * var(--pico-block-spacing-vertical));
+}
+
+table.compact td {
+  white-space: nowrap;
+}
+
+table.compact th,
+table.compact th a {
+  white-space: nowrap;
   text-decoration: none;
-  color: var(--nav-color);
 }
 
-header.main > * + * {
-  margin-left: 1.5rem;
-}
-
-header.main nav {
-  display: grid;
-  place-items: center;
-}
-
-header.main ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-}
-
-header.main li {
-  padding: 0;
-}
-
-header.main nav > ul {
-  border-collapse: collapse;
-  grid-auto-flow: column;
-}
-
-header.main nav > ul > li + li {
-  border-left: 1px solid var(--nav-link-separator-color);
-}
-
-/* Clear native button styles from clickable dropdown titles */
-button.dropdown__title {
-  background-color: transparent;
-  border: none;
-  font-family: inherit;
-  color: var(--nav-color);
-}
-
-/* All navigation links */
-header.main nav > ul > li .dropdown__title,
-header.main nav > ul > li a {
-  text-decoration: none;
-  text-align: left;
-  vertical-align: top;
-  font-family: inherit;
-  font-size: 1.125em;
-  display: inline-block;
-
-  padding: 0.75rem 0.75rem;
-}
-
-/* Top-level navigation links only */
-header.main nav > ul > li > .dropdown__title,
-header.main nav > ul > li > a {
-  padding-bottom: 0.5rem;
-}
-
-.dropdown {
-  position: relative;
-
-  min-width: 15ch;
-}
-
-.dropdown .dropdown__menu,
-.dropdown .dropdown__title {
-  min-width: 100%;
-}
-
-/* Show all dropdown menus when hovering over the nav (mimics virkailija-raamit behaviour) */
-nav:hover .dropdown .dropdown__menu,
-nav:focus-within .dropdown .dropdown__menu {
-  display: revert;
-  visibility: visible;
-}
-
-.dropdown .dropdown__menu {
-  background-color: var(--nav-link-bg-color);
-
-  position: absolute;
-
-  display: none;
-  visibility: hidden;
-}
-
-/* Highlight the active dropdown menu */
-.dropdown:hover .dropdown__menu,
-.dropdown:focus-within .dropdown__menu {
-  background-color: var(--nav-link-bg-color-active);
-}
-
-/* Extra highlight for the hover/focused nav link within the active dropdown menu */
-.dropdown .dropdown__menu li:hover,
-.dropdown .dropdown__menu li:focus-within {
-  background-color: var(--nav-link-bg-color-hover);
-}
-
-.dropdown .dropdown__menu a {
-  display: block;
-  font-size: 1em;
-}
-
-ul.paging > li {
-  display: inline-block;
-  padding: 0.5em;
-}
-
-table {
-  background-color: var(--content-bg-color);
-  border-collapse: collapse;
-  border-radius: 2px;
-  display: block;
-  max-width: fit-content;
-  overflow-x: auto;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-table th {
-  text-align: left;
-  padding: 0.75em 0.5em;
-}
-
-table td {
-  padding: 0.5em;
-}
-
-tbody.suoritus {
-  border-top: 1px solid var(--table-border-color);
+table.compact .truncated {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

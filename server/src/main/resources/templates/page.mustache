@@ -1,41 +1,51 @@
 <!doctype html>
-<html lang="fi">
+<html lang="fi" data-theme="light">
 <head>
-    <title>
-        {{$title}}
-        Kielitutkintorekisteri
-        {{/title}}
-    </title>
-    <link href="/style.css" rel="stylesheet"/>
+  <title>
+    {{$title}}
+      Kielitutkintorekisteri
+    {{/title}}
+  </title>
+  <link href="/pico.min.css" rel="stylesheet" />
+  <link href="/style.css" rel="stylesheet" />
 </head>
 <body data-testid="page-body">
-<header data-testid="page-main-nav-header" class="main">
-    <h1><a href="/">Kielitutkintorekisteri</a></h1>
-    <nav aria-label="Päänavigaatio">
-        <ul>
-            <li class="dropdown">
-                <button type="button" class="dropdown__title" aria-controls="yki-dropdown">
-                    Yleiset kielitutkinnot
-                </button>
-                <ul class="dropdown__menu" id="yki-dropdown">
-                    <li><a href="/yki/suoritukset">Suoritukset</a></li>
-                    <li><a href="/yki/arvioijat">Arvioijat</a></li>
-                </ul>
-            </li>
-            <li class="dropdown">
-                <button type="button" class="dropdown__title" aria-controls="koto-dropdown">
-                    Kotoutumiskoulutuksen kielikokeet
-                </button>
-                <ul class="dropdown__menu" id="koto-dropdown">
-                    <li><a href="/koto-kielitesti/suoritukset">Suoritukset</a></li>
-                </ul>
-            </li>
+<main>
+  <nav class="container-fluid main" data-testid="page-main-nav-header">
+    <ul>
+      <li>
+        <ul class="breadcrumbs" data-testid="breadcrumbs">
+          <li><a href="/"><strong>Kielitutkintorekisteri</strong></a></li>
+          {{$breadcrumbs}}
+          {{/breadcrumbs}}
         </ul>
-    </nav>
-</header>
-<section data-testid="page-content" class="main content">
+      </li>
+    </ul>
+    <ul data-testid="main-nav">
+      <li>
+        <details class="dropdown">
+          <summary>Yleiset kielitutkinnot</summary>
+          <ul dir="rtl">
+            <li><a href="/yki/suoritukset">Suoritukset</a></li>
+            <li><a href="/yki/arvioijat">Arvioijat</a></li>
+          </ul>
+        </details>
+      </li>
+      <li>
+        <details class="dropdown">
+          <summary>Kotoutumiskoulutuksen kielikokeet</summary>
+          <ul dir="rtl">
+            <li><a href="/koto-kielitesti/suoritukset">Suoritukset</a></li>
+          </ul>
+        </details>
+      </li>
+    </ul>
+  </nav>
+
+  <section data-testid="page-content" class="container-fluid">
     {{$body}}
     {{/body}}
-</section>
+  </section>
+</main>
 </body>
 </html>

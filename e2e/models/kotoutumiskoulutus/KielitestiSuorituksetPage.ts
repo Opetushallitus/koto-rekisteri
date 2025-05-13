@@ -18,8 +18,8 @@ export default class KielitestiSuorituksetPage extends BasePage {
     )
   }
 
-  getHeading() {
-    return this.getPageContent().getByRole("heading", { level: 1 })
+  getBreadcrumbs() {
+    return this.page.getByTestId("breadcrumbs").getByRole("listitem")
   }
 
   getContent() {
