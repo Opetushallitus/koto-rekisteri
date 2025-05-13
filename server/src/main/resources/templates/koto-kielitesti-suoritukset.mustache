@@ -2,70 +2,75 @@
   {{$title}}
     Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
   {{/title}}
+  {{$breadcrumbs}}
+    <li><a href="/koto-kielitesti/suoritukset">Kotoutumiskoulutuksen kielikokeet</a></li>
+    <li><a href="/koto-kielitesti/suoritukset">Suoritukset</a></li>
+  {{/breadcrumbs}}
   {{$body}}
-    <h1>Kotoutumiskoulutuksen kielikokeet - suoritukset</h1>
-
     {{#errorsCount}}
-      <p class="error-text">Järjestelmässä on {{errorsCount}} virhettä. <a href="/koto-kielitesti/suoritukset/virheet">
-        Katso
-        virheet</a></p>
+      <article class="error-text">
+        Järjestelmässä on {{errorsCount}} virhettä.
+        <a href="/koto-kielitesti/suoritukset/virheet">Katso virheet</a>
+      </article>
     {{/errorsCount}}
 
-    <p>
-      Arvosanat on ilmoitettu muodossa <code>(laskennallinen tulos / opettajan tulos)</code>. Ensimmäinen sulkeiden
-      sisällä ilmoitettu luku on järjestelmän laskema tulos ja toinen luku on opettajan kirjaama tulos.
-    </p>
+    <article class="overflow-auto">
+      <header>
+        Arvosanat on ilmoitettu muodossa <code>(laskennallinen tulos / opettajan tulos)</code>. Ensimmäinen sulkeiden
+        sisällä ilmoitettu luku on järjestelmän laskema tulos ja toinen luku on opettajan kirjaama tulos.
+      </header>
 
-    <table>
-      <thead>
-      <tr>
-        {{#header}}
-          <th>
-            <a href="?sortColumn={{
-          column.lowercaseName
-          }}&sortDirection={{
-          sortDirection
-          }}">
-            {{column.uiHeaderValue}} {{symbol}}
-            </a>
-          </th>
-        {{/header}}
-      </tr>
-      </thead>
-      {{#suoritukset}}
-        <tbody class="suoritus">
-        <tr data-testid="suoritus-summary-row">
-          <td>{{lastName}}</td>
-          <td>{{firstNames}}</td>
-          <td>{{email}}</td>
-          <td>{{coursename}}</td>
-          <td>{{timeCompleted}}</td>
+      <table class="compact striped">
+        <thead>
+        <tr>
+          {{#header}}
+            <th>
+              <a href="?sortColumn={{
+            column.lowercaseName
+            }}&sortDirection={{
+            sortDirection
+            }}">
+              {{column.uiHeaderValue}} {{symbol}}
+              </a>
+            </th>
+          {{/header}}
         </tr>
-        <tr data-testid="suoritus-details-row">
-          <td colspan="13">
-            <details>
-              <summary>Näytä lisätiedot/tulokset</summary>
-              <table>
-                <tr>
-                  <th>Oppijanumero</th>
-                  <th>Luetun Ymmärtäminen</th>
-                  <th>Kuullun Ymmärtäminen</th>
-                  <th>Puhe</th>
-                  <th>Kirjoittaminen</th>
-                </tr>
-                <tr>
-                  <td>{{oppijanumero}}</td>
-                  <td>({{luetunYmmartaminenResult}})</td>
-                  <td>({{kuullunYmmartaminenResult}})</td>
-                  <td>{{puheResult}}</td>
-                  <td>{{kirjoittaminenResult}}</td>
-                </tr>
-              </table>
-            </details>
-          </td>
-        </tr>
-        </tbody>
-      {{/suoritukset}}
-    </table>
+        </thead>
+        {{#suoritukset}}
+          <tbody class="suoritus">
+          <tr data-testid="suoritus-summary-row">
+            <td>{{lastName}}</td>
+            <td>{{firstNames}}</td>
+            <td>{{email}}</td>
+            <td>{{coursename}}</td>
+            <td>{{timeCompleted}}</td>
+          </tr>
+          <tr data-testid="suoritus-details-row">
+            <td colspan="13">
+              <details>
+                <summary>Näytä lisätiedot/tulokset</summary>
+                <table>
+                  <tr>
+                    <th>Oppijanumero</th>
+                    <th>Luetun Ymmärtäminen</th>
+                    <th>Kuullun Ymmärtäminen</th>
+                    <th>Puhe</th>
+                    <th>Kirjoittaminen</th>
+                  </tr>
+                  <tr>
+                    <td>{{oppijanumero}}</td>
+                    <td>({{luetunYmmartaminenResult}})</td>
+                    <td>({{kuullunYmmartaminenResult}})</td>
+                    <td>{{puheResult}}</td>
+                    <td>{{kirjoittaminenResult}}</td>
+                  </tr>
+                </table>
+              </details>
+            </td>
+          </tr>
+          </tbody>
+        {{/suoritukset}}
+      </table>
+    </article>
   {{/body}}
 {{/page}}

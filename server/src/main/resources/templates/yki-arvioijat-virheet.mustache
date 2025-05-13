@@ -2,9 +2,14 @@
   {{$title}}
     Kielitutkintorekisteri - Yleiset kielitutkinnot - arvioija - virheet
   {{/title}}
+  {{$breadcrumbs}}
+    <li><a href="/yki/arvioijat">Yleiset kielitutkinnot</a></li>
+    <li><a href="/yki/arvioijat">Arvioijat</a></li>
+    <li><a href="/yki/suoritukset/virheet">Virheet</a></li>
+  {{/breadcrumbs}}
   {{$body}}
-    <h1>Yleiset kielitutkinnot - arvioija - virheet</h1>
-    <table>
+    <article class="overflow-auto">
+    <table class="compact striped">
       <thead>
       <tr>
         {{#header}}
@@ -70,5 +75,6 @@
       {{/virheet}}
       </tbody>
     </table>
+    </article>
   {{/body}}
 {{/page}}

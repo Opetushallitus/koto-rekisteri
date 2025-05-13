@@ -18,19 +18,12 @@ export default class BasePage {
   }
 
   protected async gotoFromMainNav(dropdownTitle: string, navLinkText: string) {
-    const navigation = this.getMainNavigationHeader().getByRole("navigation")
-
-    const navDropdownOpenButton = navigation.getByRole("button", {
-      name: dropdownTitle,
-    })
-    await navDropdownOpenButton.click()
-
-    const navDropdownSubmenu = navigation
+    const navigation = this.getMainNavigationHeader().getByTestId("main-nav")
+    const dropdown = navigation
       .getByRole("listitem")
-      .filter({ hasText: "Yleiset kielitutkinnot" })
-    const navLink = navDropdownSubmenu.getByRole("link", { name: navLinkText })
-
-    await navLink.click()
+      .filter({ hasText: dropdownTitle })
+    await dropdown.click()
+    await dropdown.getByText(navLinkText).click()
   }
 
   async login() {

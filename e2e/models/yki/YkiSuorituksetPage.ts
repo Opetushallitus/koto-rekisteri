@@ -20,10 +20,12 @@ export default class YkiSuorituksetPage extends BasePage {
     const pageContent = this.getPageContent()
     await expect(pageContent).toBeVisible()
 
-    const contentHeading = pageContent.getByRole("heading", {
-      name: "Yleiset kielitutkinnot - suoritukset",
-    })
-    await expect(contentHeading).toBeVisible()
+    const breadcrumbs = this.page
+      .getByTestId("breadcrumbs")
+      .getByRole("listitem")
+    await expect(
+      breadcrumbs.filter({ hasText: "Yleiset kielitutkinnot" }),
+    ).toBeVisible()
   }
 
   getContent() {
@@ -57,7 +59,8 @@ export default class YkiSuorituksetPage extends BasePage {
 
   async setSearchTerm(search: string) {
     await this.getContent()
-      .getByLabel("Oppijanumero, henkilötunnus tai hakusana:")
+      .getByRole("search")
+      .getByPlaceholder("Oppijanumero, henkilötunnus tai hakusana")
       .fill(search)
   }
 

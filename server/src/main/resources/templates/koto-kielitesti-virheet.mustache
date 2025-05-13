@@ -2,33 +2,42 @@
   {{$title}}
     Kielitutkintorekisteri - Kotoutumiskoulutuksen kielikokeet - suoritukset
   {{/title}}
+  {{$breadcrumbs}}
+    <li><a href="/koto-kielitesti/suoritukset">Kotoutumiskoulutuksen kielikokeet</a></li>
+    <li><a href="/koto-kielitesti/suoritukset">Suoritukset</a></li>
+    <li><a href="/koto-kielitesti/suoritukset/virheet">Virheet</a></li>
+  {{/breadcrumbs}}
   {{$body}}
-    <h1>Kotoutumiskoulutuksen kielikokeet - virheet</h1>
-
-    <table>
-      <thead>
-      <tr>
-        {{#header}}
-          <th>
-            <a href="?sortColumn={{column.lowercaseName}}&sortDirection={{ sortDirection}}">
-            {{column.uiHeaderValue}} {{symbol}}
-            </a>
-          </th>
-        {{/header}}
-      </tr>
-      </thead>
-      <tbody class="virheet">
-      {{#virheet}}
-        <tr data-testid="virhe-summary-row">
-          <td>{{#hetu}}{{hetu}}{{/hetu}}</td>
-          <td>{{nimi}}</td>
-          <td>{{virheenLuontiaika}}</td>
-          <td>{{viesti}}</td>
-          <td>{{virheellinenKentta}}</td>
-          <td>{{#virheellinenArvo}}{{virheellinenArvo}}{{/virheellinenArvo}}</td>
+    <article class="overflow-auto">
+      <table class="compact striped">
+        <thead>
+        <tr>
+          {{#header}}
+            <th>
+              <a href="?sortColumn={{column.lowercaseName}}&sortDirection={{ sortDirection}}">
+              {{column.uiHeaderValue}} {{symbol}}
+              </a>
+            </th>
+          {{/header}}
         </tr>
-      {{/virheet}}
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="virheet">
+        {{#virheet}}
+          <tr data-testid="virhe-summary-row">
+            <td class="truncated">
+              {{#hetu}}
+                <span title="{{hetu}}">{{hetu}}</span>
+              {{/hetu}}
+            </td>
+            <td>{{nimi}}</td>
+            <td>{{virheenLuontiaika}}</td>
+            <td>{{viesti}}</td>
+            <td>{{#virheellinenKentta}}{{virheellinenKentta}}{{/virheellinenKentta}}</td>
+            <td>{{#virheellinenArvo}}{{virheellinenArvo}}{{/virheellinenArvo}}</td>
+          </tr>
+        {{/virheet}}
+        </tbody>
+      </table>
+    </article>
   {{/body}}
 {{/page}}

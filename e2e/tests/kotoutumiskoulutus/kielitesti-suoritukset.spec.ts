@@ -23,7 +23,11 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
   }) => {
     await kielitestiSuorituksetPage.open()
 
-    await expect(kielitestiSuorituksetPage.getHeading()).toBeVisible()
+    await expect(
+      kielitestiSuorituksetPage
+        .getBreadcrumbs()
+        .filter({ hasText: "Kotoutumiskoulutuksen kielikokeet" }),
+    ).toBeVisible()
     await expect(kielitestiSuorituksetPage.getContent()).toBeVisible()
   })
 
@@ -34,7 +38,11 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     await indexPage.open()
     await kielitestiSuorituksetPage.openFromNavigation()
 
-    await expect(kielitestiSuorituksetPage.getHeading()).toBeVisible()
+    await expect(
+      kielitestiSuorituksetPage
+        .getBreadcrumbs()
+        .filter({ hasText: "Kotoutumiskoulutuksen kielikokeet" }),
+    ).toBeVisible()
     await expect(kielitestiSuorituksetPage.getContent()).toBeVisible()
   })
 
