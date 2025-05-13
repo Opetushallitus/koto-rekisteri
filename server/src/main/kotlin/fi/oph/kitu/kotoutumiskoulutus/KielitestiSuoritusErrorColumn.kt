@@ -7,7 +7,7 @@ enum class KielitestiSuoritusErrorColumn(
     Henkilötunnus("hetu", "Henkilötunnus"),
     Nimi("nimi", "Nimi"),
     VirheenLuontiaika("virheenLuontiaika", "Virheen luontiaika"),
-    Viesti("viesti", "Viesti"),
+    Viesti("viesti", "Virheviesti"),
     VirheellinenKentta("virheellinenKentta", "Virheellinen kenttä"),
     VirheellinenArvo("virheellinenArvo", "Virheellinen arvo"),
     ;
