@@ -47,7 +47,7 @@ class KoealustaService(
             }
 
     fun getErrors(
-        sortColumn: KielitestiViewController.KielitestiSuoritusErrorColumn,
+        sortColumn: KielitestiSuoritusErrorColumn,
         sortDirection: SortDirection,
     ) = kielitestiSuoritusErrorRepository.findAll()
 
