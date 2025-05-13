@@ -1,5 +1,8 @@
 package fi.oph.kitu
 
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
+
 sealed class TypedResult<Value, Error> {
     data class Success<Value, Error>(
         val value: Value,
@@ -8,6 +11,9 @@ sealed class TypedResult<Value, Error> {
     data class Failure<Value, Error>(
         val error: Error,
     ) : TypedResult<Value, Error>()
+
+    val isSuccess: Boolean get() = this is Success
+    val isFailure: Boolean get() = this is Failure
 
     fun getOrNull(): Value? =
         when (this) {
@@ -83,6 +89,16 @@ sealed class TypedResult<Value, Error> {
             } catch (e: Throwable) {
                 Failure(e)
             }
+    }
+}
+
+fun <T> Span.setAttributesForTypedResult(result: T) {
+    this.setAttribute("isTypedResult", result is TypedResult<*, *>)
+    if (result is TypedResult<*, *>) {
+        this.setAttribute("TypedResult.isSuccess", result.isSuccess)
+        if (result.isFailure) {
+            this.setStatus(StatusCode.ERROR)
+        }
     }
 }
 
