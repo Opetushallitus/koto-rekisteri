@@ -2,7 +2,7 @@ package fi.oph.kitu.oppijanumero
 
 sealed class CasError(
     message: String,
-) : Exception(message) {
+) : Throwable(message) {
     class GrantingTicketError(
         message: String,
     ) : CasError(message)
