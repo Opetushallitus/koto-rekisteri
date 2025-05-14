@@ -98,6 +98,10 @@ fun <T> Span.setAttributesForTypedResult(result: T) {
         this.setAttribute("TypedResult.isSuccess", result.isSuccess)
         if (result.isFailure) {
             this.setStatus(StatusCode.ERROR)
+            val error = (result as TypedResult.Failure<*, *>).error
+            if (error is Throwable) {
+                this.recordException(error)
+            }
         }
     }
 }
