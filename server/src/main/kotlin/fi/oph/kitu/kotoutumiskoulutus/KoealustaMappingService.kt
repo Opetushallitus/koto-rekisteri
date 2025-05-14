@@ -12,6 +12,7 @@ import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completi
 import fi.oph.kitu.oppijanumero.Oppija
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -42,6 +43,7 @@ class KoealustaMappingService(
         }
     }
 
+    @WithSpan
     fun responseStringToEntity(body: String) =
         convertToEntity(tryParseMoodleResponse<KoealustaSuorituksetResponse>(body))
 
@@ -57,6 +59,9 @@ class KoealustaMappingService(
                     toOppija(user)
                         .onFailure(validationErrors::add)
                         .getOrNull()
+                        ?.let { oppija ->
+                            Pair(user.userid.toString(), oppija)
+                        }
 
                 val oppijanumero =
                     oppija
@@ -86,8 +91,8 @@ class KoealustaMappingService(
         return Pair(suoritukset, validationFailure)
     }
 
-    private fun getOppijanumero(oppija: Oppija): TypedResult<Oid, Error.OppijanumeroFailure> =
-        oppijanumeroService.getOppijanumero(oppija).mapFailure(Error::OppijanumeroFailure)
+    private fun getOppijanumero(oppija: Pair<String, Oppija>): TypedResult<Oid, Error.OppijanumeroFailure> =
+        oppijanumeroService.getOppijanumero(oppija.second, oppija.first).mapFailure(Error::OppijanumeroFailure)
 
     fun toOppija(koealustaUser: User): TypedResult<Oppija, Error.OppijaValidationFailure> {
         val errors = mutableListOf<Error.Validation>()

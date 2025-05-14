@@ -13,7 +13,10 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 interface OppijanumeroService {
-    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
+    fun getOppijanumero(
+        oppija: Oppija,
+        sourceId: String,
+    ): TypedResult<Oid, OppijanumeroException>
 }
 
 @Service
@@ -27,7 +30,10 @@ class OppijanumeroServiceImpl(
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
-    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
+    override fun getOppijanumero(
+        oppija: Oppija,
+        sourceId: String,
+    ): TypedResult<Oid, OppijanumeroException> =
         tracer
             .spanBuilder("OppijanumeroServiceImpl.getOppijanumero")
             .startSpan()
@@ -67,6 +73,7 @@ class OppijanumeroServiceImpl(
                     return@use TypedResult.Failure(
                         OppijanumeroException.BadRequestToOppijanumero(
                             yleistunnisteHaeRequest,
+                            "Oppijanumero-service can't identify a person with id '$sourceId'.",
                         ),
                     )
                 } else if (stringResponse.statusCode() != 200) {
