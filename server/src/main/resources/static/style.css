@@ -82,16 +82,16 @@ nav.main h1 {
   margin: 0;
 }
 
-nav.main ul.breadcrumb {
+nav.main ul.breadcrumbs {
   display: block;
   padding-left: var(--pico-block-spacing-horizontal);
 }
 
-nav.main ul.breadcrumb li {
+nav.main ul.breadcrumbs li {
   padding: 0;
 }
 
-nav.main ul.breadcrumb li::before {
+nav.main ul.breadcrumbs li::before {
   content: "/";
   color: var(--oph-grey400);
   margin: 0 1ex;
