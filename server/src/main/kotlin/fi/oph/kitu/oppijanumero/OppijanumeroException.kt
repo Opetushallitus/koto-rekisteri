@@ -6,7 +6,12 @@ open class OppijanumeroException(
     val oppijanumeroServiceError: OppijanumeroServiceError? = null,
     cause: Throwable? = null,
 ) : Throwable(message, cause) {
-    class LoginFailed
+    class BadRequestToOppijanumero(
+        request: YleistunnisteHaeRequest,
+        message: String = "Bad Request to oppijanumero",
+        oppijanumeroServiceError: OppijanumeroServiceError? = null,
+        cause: Throwable? = null,
+    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
 
     class OppijaNotFoundException(
         request: YleistunnisteHaeRequest,
