@@ -49,10 +49,7 @@ class CasAuthenticatedServiceImpl(
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
             // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
             return authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-                .flatMap { it ->
-                    val body = it.body()
-                    println(body)
-
+                .flatMap {
                     val authenticatedRequest = requestBuilder.build()
                     val authenticatedResponse =
                         httpClient.send(
@@ -60,7 +57,7 @@ class CasAuthenticatedServiceImpl(
                             HttpResponse.BodyHandlers.ofString(),
                         )
 
-                    TypedResult.Success<HttpResponse<String>, CasError>(authenticatedResponse)
+                    TypedResult.Success(authenticatedResponse)
                 }
         } else if (response.statusCode() == 401) {
             // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.

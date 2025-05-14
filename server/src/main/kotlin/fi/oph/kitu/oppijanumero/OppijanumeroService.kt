@@ -63,6 +63,12 @@ class OppijanumeroServiceImpl(
                     return@use TypedResult.Failure(
                         OppijanumeroException.OppijaNotFoundException(yleistunnisteHaeRequest),
                     )
+                } else if (400 <= stringResponse.statusCode() && stringResponse.statusCode() < 500) {
+                    return@use TypedResult.Failure(
+                        OppijanumeroException.BadRequestToOppijanumero(
+                            yleistunnisteHaeRequest,
+                        ),
+                    )
                 } else if (stringResponse.statusCode() != 200) {
                     // Other non 200 ONR errors are not caused by the oppija data, and thus
                     // should be handling outside default error handling flow.
