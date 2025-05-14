@@ -27,15 +27,14 @@ class CasService(
     private lateinit var serviceUrl: String
 
     @WithSpan
-    fun sendAuthenticationRequest(serviceTicket: String): TypedResult<Unit, CasError> {
+    fun sendAuthenticationRequest(serviceTicket: String): TypedResult<HttpResponse<String>, CasError> {
         val authRequest =
             HttpRequest
                 .newBuilder(URI.create("$serviceUrl/j_spring_cas_security_check?ticket=$serviceTicket"))
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build()
-        httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString())
 
-        return TypedResult.Success(Unit)
+        return TypedResult.Success(httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString()))
     }
 
     @WithSpan
@@ -51,7 +50,7 @@ class CasService(
                 .build()
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        return if (response.statusCode() == 201) {
+        return if (response.statusCode() == 200) {
             TypedResult.Success(response.body())
         } else {
             TypedResult.Failure(CasError.ServiceTicketError("Unable to get service ticket"))

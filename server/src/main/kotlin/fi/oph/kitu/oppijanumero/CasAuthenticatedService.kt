@@ -25,7 +25,7 @@ class CasAuthenticatedServiceImpl(
     @Value("\${kitu.oppijanumero.callerid}")
     private lateinit var callerId: String
 
-    private fun authenticateToCas(): TypedResult<Unit, CasError> =
+    private fun authenticateToCas(): TypedResult<HttpResponse<String>, CasError> =
         tracer
             .spanBuilder("CasAuthenticatedServiceImpl.authenticateToCas")
             .startSpan()
@@ -49,7 +49,10 @@ class CasAuthenticatedServiceImpl(
             // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
             // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
             return authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-                .flatMap {
+                .flatMap { it ->
+                    val body = it.body()
+                    println(body)
+
                     val authenticatedRequest = requestBuilder.build()
                     val authenticatedResponse =
                         httpClient.send(

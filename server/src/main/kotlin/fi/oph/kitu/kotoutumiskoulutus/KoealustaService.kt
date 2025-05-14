@@ -7,6 +7,7 @@ import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.setAttribute
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -46,6 +47,7 @@ class KoealustaService(
                 }
             }
 
+    @WithSpan
     fun getErrors(
         sortColumn: KielitestiSuoritusErrorColumn,
         sortDirection: SortDirection,
