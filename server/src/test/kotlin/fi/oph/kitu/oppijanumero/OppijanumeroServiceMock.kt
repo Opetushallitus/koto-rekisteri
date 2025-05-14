@@ -6,7 +6,10 @@ import fi.oph.kitu.TypedResult
 class OppijanumeroServiceMock(
     private val oppijat: Map<String, TypedResult<Oid, OppijanumeroException>>,
 ) : OppijanumeroService {
-    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
+    override fun getOppijanumero(
+        oppija: Oppija,
+        sourceId: String,
+    ): TypedResult<Oid, OppijanumeroException> =
         oppijat[oppija.hetu] ?: TypedResult.Failure(
             OppijanumeroException.OppijaNotFoundException(
                 YleistunnisteHaeRequest(
