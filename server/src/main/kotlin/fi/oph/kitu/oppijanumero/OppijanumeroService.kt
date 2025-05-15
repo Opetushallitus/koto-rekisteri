@@ -64,6 +64,8 @@ class OppijanumeroServiceImpl(
                     throw (authResult as TypedResult.Failure).error
                 }
 
+                // At this point, CAS-authentication is done succesfully,
+                // but we still need to check yleistunniste/hae - specific statuses
                 val stringResponse = authResult.value
                 if (stringResponse.statusCode() == 404) {
                     return@use TypedResult.Failure(
@@ -73,7 +75,7 @@ class OppijanumeroServiceImpl(
                     return@use TypedResult.Failure(
                         OppijanumeroException.BadRequestToOppijanumero(
                             yleistunnisteHaeRequest,
-                            "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän '$sourceId' tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä.",
+                            "Oppijanumeron haku epäonnistui (${stringResponse.statusCode()}): Jotkin Moodle-käyttäjän '$sourceId' tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä.",
                         ),
                     )
                 } else if (stringResponse.statusCode() != 200) {
