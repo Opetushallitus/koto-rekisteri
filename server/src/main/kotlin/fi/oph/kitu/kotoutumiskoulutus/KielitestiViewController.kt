@@ -2,6 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.generateHeader
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -27,6 +28,7 @@ class KielitestiViewController(
             ).addObject("suoritukset", suoritusService.getSuoritukset(sortColumn, sortDirection))
 
     @GetMapping("/suoritukset/virheet")
+    @WithSpan
     fun virheetView(
         sortColumn: KielitestiSuoritusErrorColumn = KielitestiSuoritusErrorColumn.VirheenLuontiaika,
         sortDirection: SortDirection = SortDirection.DESC,
