@@ -73,7 +73,7 @@ class OppijanumeroServiceImpl(
                     return@use TypedResult.Failure(
                         OppijanumeroException.BadRequestToOppijanumero(
                             yleistunnisteHaeRequest,
-                            "Oppijanumero-service can't identify a person with id '$sourceId'.",
+                            "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän '$sourceId' tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä.",
                         ),
                     )
                 } else if (stringResponse.statusCode() != 200) {
