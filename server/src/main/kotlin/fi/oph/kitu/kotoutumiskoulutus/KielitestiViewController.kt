@@ -35,5 +35,7 @@ class KielitestiViewController(
     ): ModelAndView =
         ModelAndView("koto-kielitesti-virheet")
             .addObject("header", generateHeader<KielitestiSuoritusErrorColumn>(sortColumn, sortDirection))
+            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortDirection", sortDirection)
             .addObject("virheet", suoritusService.getErrors(sortColumn, sortDirection))
 }
