@@ -1,14 +1,17 @@
 package fi.oph.kitu.oppijanumero
 
+import java.net.http.HttpResponse
+
 open class OppijanumeroException(
     val request: YleistunnisteHaeRequest,
     message: String,
     val oppijanumeroServiceError: OppijanumeroServiceError? = null,
     cause: Throwable? = null,
 ) : Throwable(message, cause) {
-    class BadRequestToOppijanumero(
+    class UnexpectedError(
         request: YleistunnisteHaeRequest,
-        message: String = "Bad Request to oppijanumero",
+        val response: HttpResponse<String>,
+        message: String = "Unexpected error in oppijanumero-service",
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
         cause: Throwable? = null,
     ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)

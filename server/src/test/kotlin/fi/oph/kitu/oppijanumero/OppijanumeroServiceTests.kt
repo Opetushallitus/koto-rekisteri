@@ -50,7 +50,6 @@ class OppijanumeroServiceTests {
                             "Magdalena",
                             "010866-9260",
                         ),
-                        "123",
                     ).getOrThrow()
             }
         assertEquals(expectedOppijanumero, result)
@@ -91,7 +90,6 @@ class OppijanumeroServiceTests {
                         "Magdalena",
                         "010866-9260",
                     ),
-                    "123",
                 ).getOrThrow()
         }
     }
@@ -133,7 +131,6 @@ class OppijanumeroServiceTests {
                         "Magdalena",
                         "010866-9260",
                     ),
-                    "123",
                 ).getOrThrow()
         }
     }
@@ -174,12 +171,11 @@ class OppijanumeroServiceTests {
                     "Magdalena",
                     "010866-9260",
                 ),
-                "123",
             )
 
-        assertFailureIsThrowable<OppijanumeroException>(
+        assertFailureIsThrowable<OppijanumeroException.UnexpectedError>(
             result,
-            "Oppijanumeron haku epäonnistui (409): Jotkin Moodle-käyttäjän '123' tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä.",
+            "Unexpected error in oppijanumero-service",
         )
     }
 }
