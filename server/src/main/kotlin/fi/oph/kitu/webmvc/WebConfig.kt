@@ -25,11 +25,10 @@ class WebConfig : WebMvcConfigurer {
 
     private final inline fun <reified E : Enum<E>> FormatterRegistry.addEnumFromUrlParamParser(
         crossinline urlParamFieldGetter: (E) -> String,
-        ignoreCase: Boolean = true,
     ) {
         this.addConverter(String::class.java, E::class.java) { source ->
             enumValues<E>().find {
-                source.equals(urlParamFieldGetter(it), ignoreCase)
+                source.equals(urlParamFieldGetter(it), ignoreCase = true)
             }
         }
     }
