@@ -13,10 +13,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 interface OppijanumeroService {
-    fun getOppijanumero(
-        oppija: Oppija,
-        sourceId: String,
-    ): TypedResult<Oid, OppijanumeroException>
+    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
 }
 
 @Service
@@ -30,10 +27,7 @@ class OppijanumeroServiceImpl(
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
-    override fun getOppijanumero(
-        oppija: Oppija,
-        sourceId: String,
-    ): TypedResult<Oid, OppijanumeroException> =
+    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
         tracer
             .spanBuilder("OppijanumeroServiceImpl.getOppijanumero")
             .startSpan()
@@ -57,38 +51,34 @@ class OppijanumeroServiceImpl(
                         ).header("Content-Type", "application/json")
 
                 // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
-                val authResult = casAuthenticatedService.sendRequest(httpRequest)
-                if (authResult !is TypedResult.Success) {
+                val rawResult = casAuthenticatedService.sendRequest(httpRequest)
+                if (rawResult !is TypedResult.Success) {
                     // CAS errors are not caused by the oppija data, and thus
                     // should be handling outside default error handling flow.
-                    throw (authResult as TypedResult.Failure).error
+                    throw (rawResult as TypedResult.Failure).error
                 }
 
                 // At this point, CAS-authentication is done succesfully,
                 // but we still need to check yleistunniste/hae - specific statuses
-                val stringResponse = authResult.value
-                if (stringResponse.statusCode() == 404) {
+                val rawResponse = rawResult.value
+                if (rawResponse.statusCode() == 404) {
                     return@use TypedResult.Failure(
                         OppijanumeroException.OppijaNotFoundException(yleistunnisteHaeRequest),
                     )
-                } else if (400 <= stringResponse.statusCode() && stringResponse.statusCode() < 500) {
+                } else if (400 <= rawResponse.statusCode() && rawResponse.statusCode() < 500) {
                     return@use TypedResult.Failure(
-                        OppijanumeroException.BadRequestToOppijanumero(
+                        OppijanumeroException.UnexpectedError(
                             yleistunnisteHaeRequest,
-                            "Oppijanumeron haku epäonnistui (${stringResponse.statusCode()}): Jotkin Moodle-käyttäjän '$sourceId' tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä.",
+                            rawResponse,
                         ),
                     )
-                } else if (stringResponse.statusCode() != 200) {
-                    // Other non 200 ONR errors are not caused by the oppija data, and thus
-                    // should be handling outside default error handling flow.
-                    throw OppijanumeroException(
-                        yleistunnisteHaeRequest,
-                        "Oppijanumero-service returned unexpected status code ${stringResponse.statusCode()}",
-                    )
+                } else if (rawResponse.statusCode() != 200) {
+                    // If test environment throws 504, it might be actually 400
+                    throw OppijanumeroException.UnexpectedError(yleistunnisteHaeRequest, rawResponse)
                 }
 
                 val onrResult =
-                    tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(yleistunnisteHaeRequest, stringResponse)
+                    tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(yleistunnisteHaeRequest, rawResponse)
 
                 if (onrResult is TypedResult.Failure) {
                     return@use TypedResult.Failure(onrResult.error)
