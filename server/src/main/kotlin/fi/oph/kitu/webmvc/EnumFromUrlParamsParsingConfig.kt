@@ -10,21 +10,23 @@ import org.springframework.format.FormatterRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
-class WebConfig : WebMvcConfigurer {
+class EnumFromUrlParamsParsingConfig : WebMvcConfigurer {
     override fun addFormatters(registry: FormatterRegistry) {
         registry.apply {
-            addEnumConverter<YkiSuoritusColumn>()
-            addEnumConverter<YkiSuoritusErrorColumn>()
-            addEnumConverter<YkiArvioijaColumn>()
-            addEnumConverter<KielitestiSuoritusColumn>()
-            addEnumConverter<KielitestiSuoritusErrorColumn>()
+            addEnumFromUrlParamParser<YkiSuoritusColumn>(YkiSuoritusColumn::urlParam)
+            addEnumFromUrlParamParser<YkiSuoritusErrorColumn>(YkiSuoritusErrorColumn::urlParam)
+            addEnumFromUrlParamParser<YkiArvioijaColumn>(YkiArvioijaColumn::urlParam)
+            addEnumFromUrlParamParser<KielitestiSuoritusColumn>(KielitestiSuoritusColumn::urlParam)
+            addEnumFromUrlParamParser<KielitestiSuoritusErrorColumn>(KielitestiSuoritusErrorColumn::urlParam)
         }
     }
 
-    private final inline fun <reified E : Enum<E>> FormatterRegistry.addEnumConverter(ignoreCase: Boolean = true) {
+    private final inline fun <reified E : Enum<E>> FormatterRegistry.addEnumFromUrlParamParser(
+        crossinline urlParamFieldGetter: (E) -> String,
+    ) {
         this.addConverter(String::class.java, E::class.java) { source ->
             enumValues<E>().find {
-                it.name.equals(source, ignoreCase)
+                source.equals(urlParamFieldGetter(it), ignoreCase = true)
             }
         }
     }
