@@ -99,9 +99,6 @@ class KoealustaMappingService(
         if (koealustaUser.SSN.isNullOrEmpty()) {
             errors.add(Error.Validation.MissingField("SSN", koealustaUser.userid))
         }
-        if (koealustaUser.preferredname.isNullOrEmpty()) {
-            errors.add(Error.Validation.MissingField("preferredname", koealustaUser.userid))
-        }
 
         if (errors.isNotEmpty()) {
             return Failure(
@@ -116,11 +113,19 @@ class KoealustaMappingService(
         checkNotNull(koealustaUser.SSN)
         checkNotNull(koealustaUser.preferredname)
 
+        // NOTE(mankelointi): Jos kutsumanimi puuttuu, mankeloidaan sen paikalle ensimmäinen etunimi.
+        val guessedKutsumanimi =
+            if (koealustaUser.preferredname.isBlank()) {
+                koealustaUser.firstnames.split(" ").first()
+            } else {
+                koealustaUser.preferredname
+            }
+
         return Success(
             Oppija(
                 etunimet = koealustaUser.firstnames,
                 hetu = koealustaUser.SSN,
-                kutsumanimi = koealustaUser.preferredname,
+                kutsumanimi = guessedKutsumanimi,
                 sukunimi = koealustaUser.lastname,
             ),
         )
