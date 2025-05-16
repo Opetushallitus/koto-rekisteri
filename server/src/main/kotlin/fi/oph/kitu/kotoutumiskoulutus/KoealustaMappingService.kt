@@ -258,6 +258,13 @@ class KoealustaMappingService(
                         suorittajanOid = error.koealustaUser.oppijanumero,
                         hetu = error.koealustaUser.SSN,
                         nimi = "${error.koealustaUser.lastname} ${error.koealustaUser.firstnames}",
+                        schoolOid =
+                            Oid
+                                .parse(
+                                    error.koealustaUser.completions
+                                        .first()
+                                        .schoolOID,
+                                ).getOrNull(),
                         virheenLuontiaika = now,
                         viesti = validationError.message,
                         virheellinenKentta = field,
@@ -273,6 +280,7 @@ class KoealustaMappingService(
                         hetu = error.oppijanumeroException.request.hetu,
                         nimi =
                             "${error.oppijanumeroException.request.sukunimi} ${error.oppijanumeroException.request.etunimet}",
+                        schoolOid = null,
                         virheenLuontiaika = now,
                         viesti = error.oppijanumeroException.message ?: error.message ?: "Unknown ONR error",
                         virheellinenKentta = null,
