@@ -7,6 +7,7 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.TypedResult.Failure
 import fi.oph.kitu.TypedResult.Success
+import fi.oph.kitu.kotoutumiskoulutus.KoealustaMappingService.Error
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completion
 import fi.oph.kitu.oppijanumero.Oppija
@@ -59,14 +60,21 @@ class KoealustaMappingService(
                     toOppija(user)
                         .onFailure(validationErrors::add)
                         .getOrNull()
-                        ?.let { oppija ->
-                            Pair(user.userid.toString(), oppija)
-                        }
 
                 val oppijanumero =
                     oppija
-                        ?.let(::getOppijanumero)
-                        ?.onFailure { oppijanumeroExceptions.add(it) }
+                        ?.let(oppijanumeroService::getOppijanumero)
+                        ?.mapFailure {
+                            when (it) {
+                                is OppijanumeroException.UnexpectedError ->
+                                    Error.OppijanumeroFailure(
+                                        it,
+                                        "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän '${user.userid}' tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä.",
+                                    )
+
+                                else -> Error.OppijanumeroFailure(it)
+                            }
+                        }?.onFailure { oppijanumeroExceptions.add(it) }
                         ?.getOrNull()
 
                 user.completions.mapNotNull { completion ->
@@ -90,9 +98,6 @@ class KoealustaMappingService(
 
         return Pair(suoritukset, validationFailure)
     }
-
-    private fun getOppijanumero(oppija: Pair<String, Oppija>): TypedResult<Oid, Error.OppijanumeroFailure> =
-        oppijanumeroService.getOppijanumero(oppija.second, oppija.first).mapFailure(Error::OppijanumeroFailure)
 
     fun toOppija(koealustaUser: User): TypedResult<Oppija, Error.OppijaValidationFailure> {
         val errors = mutableListOf<Error.Validation>()
@@ -313,7 +318,8 @@ class KoealustaMappingService(
     ) : Exception(message) {
         class OppijanumeroFailure(
             val oppijanumeroException: OppijanumeroException,
-        ) : Error("ONR error")
+            message: String = "ONR error",
+        ) : Error(message)
 
         abstract class ValidationFailure(
             message: String,
