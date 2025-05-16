@@ -10,7 +10,7 @@ import org.springframework.format.FormatterRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
-class WebConfig : WebMvcConfigurer {
+class EnumFromUrlParamsParsingConfig : WebMvcConfigurer {
     override fun addFormatters(registry: FormatterRegistry) {
         registry.apply {
             addEnumFromUrlParamParser<YkiSuoritusColumn>(YkiSuoritusColumn::urlParam)
