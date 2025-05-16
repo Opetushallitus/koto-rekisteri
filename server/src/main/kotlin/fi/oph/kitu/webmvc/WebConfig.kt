@@ -14,16 +14,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class WebConfig : WebMvcConfigurer {
     override fun addFormatters(registry: FormatterRegistry) {
         registry.apply {
-            addEnumConverter<YkiSuoritusColumn>(YkiSuoritusColumn::urlParam)
-            addEnumConverter<YkiSuoritusErrorColumn>(YkiSuoritusErrorColumn::urlParam)
-            addEnumConverter<YkiArvioijaColumn>(YkiArvioijaColumn::urlParam)
-            addEnumConverter<KielitestiSuoritusColumn>(KielitestiSuoritusColumn::urlParam)
-            addEnumConverter<KielitestiSuoritusErrorColumn>(KielitestiSuoritusErrorColumn::urlParam)
-            addEnumConverter<VktIlmoittautuneet.Column>(VktIlmoittautuneet.Column::urlParam)
+            addEnumFromUrlParamParser<YkiSuoritusColumn>(YkiSuoritusColumn::urlParam)
+            addEnumFromUrlParamParser<YkiSuoritusErrorColumn>(YkiSuoritusErrorColumn::urlParam)
+            addEnumFromUrlParamParser<YkiArvioijaColumn>(YkiArvioijaColumn::urlParam)
+            addEnumFromUrlParamParser<KielitestiSuoritusColumn>(KielitestiSuoritusColumn::urlParam)
+            addEnumFromUrlParamParser<KielitestiSuoritusErrorColumn>(KielitestiSuoritusErrorColumn::urlParam)
+            addEnumFromUrlParamParser<VktIlmoittautuneet.Column>(VktIlmoittautuneet.Column::urlParam)
         }
     }
 
-    private final inline fun <reified E : Enum<E>> FormatterRegistry.addEnumConverter(
+    private final inline fun <reified E : Enum<E>> FormatterRegistry.addEnumFromUrlParamParser(
         crossinline urlParamFieldGetter: (E) -> String,
         ignoreCase: Boolean = true,
     ) {
