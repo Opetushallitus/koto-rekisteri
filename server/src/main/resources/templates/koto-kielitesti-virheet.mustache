@@ -13,8 +13,8 @@
         <thead>
         <tr>
           {{#header}}
-            <th id="{{column.lowercaseName}}">
-              <a href="?sortColumn={{column.lowercaseName}}&sortDirection={{sortDirection}}">
+            <th id="{{column.urlParam}}">
+              <a href="?sortColumn={{column.urlParam}}&sortDirection={{sortDirection}}">
               {{column.uiHeaderValue}} {{symbol}}
               </a>
             </th>
