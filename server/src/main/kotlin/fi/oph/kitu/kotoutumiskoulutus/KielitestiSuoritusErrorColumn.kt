@@ -3,14 +3,12 @@ package fi.oph.kitu.kotoutumiskoulutus
 enum class KielitestiSuoritusErrorColumn(
     val fieldName: String,
     val uiHeaderValue: String,
+    val urlParam: String,
 ) {
-    Henkilötunnus("hetu", "Henkilötunnus"),
-    Nimi("nimi", "Nimi"),
-    VirheenLuontiaika("virheenLuontiaika", "Virheen luontiaika"),
-    Viesti("viesti", "Virheviesti"),
-    VirheellinenKentta("virheellinenKentta", "Virheellinen kenttä"),
-    VirheellinenArvo("virheellinenArvo", "Virheellinen arvo"),
-    ;
-
-    fun lowercaseName(): String = name.lowercase()
+    Henkilötunnus("hetu", "Henkilötunnus", "henkilötunnus"),
+    Nimi("nimi", "Nimi", "nimi"),
+    VirheenLuontiaika("virheenLuontiaika", "Virheen luontiaika", "virheenluontiaika"),
+    Viesti("viesti", "Virheviesti", "viesti"),
+    VirheellinenKentta("virheellinenKentta", "Virheellinen kenttä", "virheellinenkentta"),
+    VirheellinenArvo("virheellinenArvo", "Virheellinen arvo", "virheellinenarvo"),
 }
