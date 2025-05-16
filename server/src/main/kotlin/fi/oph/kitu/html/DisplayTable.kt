@@ -23,13 +23,12 @@ interface DisplayTableEnum {
     val name: String
     val dbColumn: String?
     val uiHeaderValue: String
-
-    fun toLowercase(): String = name.lowercase()
+    val urlParam: String
 
     fun <T> withValue(renderValue: FlowContent.(T) -> Unit) =
         DisplayTableColumn(
             label = uiHeaderValue,
-            sortKey = dbColumn?.let { toLowercase() },
+            sortKey = urlParam,
             renderValue = renderValue,
         )
 }
@@ -41,7 +40,7 @@ fun <T> FlowContent.displayTable(
     sortDirection: SortDirection? = null,
     compact: Boolean = false,
 ) {
-    val sortedByKey = sortedBy?.toLowercase()
+    val sortedByKey = sortedBy?.urlParam
 
     table(classes = "${if (compact) "compact" else ""} striped") {
         debugTrace()

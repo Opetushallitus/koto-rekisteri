@@ -27,7 +27,7 @@ class KielitestiViewController(
 
         return ModelAndView("koto-kielitesti-suoritukset")
             .addObject("header", generateHeader<KielitestiSuoritusColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortColumn", sortColumn.urlParam)
             .addObject("sortDirection", sortDirection)
             .addObject(
                 "errorsCount",
@@ -43,7 +43,7 @@ class KielitestiViewController(
     ): ModelAndView =
         ModelAndView("koto-kielitesti-virheet")
             .addObject("header", generateHeader<KielitestiSuoritusErrorColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortColumn", sortColumn.urlParam)
             .addObject("sortDirection", sortDirection)
             .addObject("virheet", suoritusService.getErrors(sortColumn, sortDirection))
 }

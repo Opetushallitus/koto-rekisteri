@@ -60,7 +60,7 @@ class YkiViewController(
                     offset,
                 ),
             ).addObject("header", generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortColumn", sortColumn.urlParam)
             .addObject("sortDirection", sortDirection)
             .addObject("paging", paging)
             .addObject("versionHistory", versionHistory)
@@ -75,7 +75,7 @@ class YkiViewController(
     ): ModelAndView =
         ModelAndView("yki-suoritukset-virheet")
             .addObject("header", generateHeader<YkiSuoritusErrorColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortColumn", sortColumn.urlParam)
             .addObject("sortDirection", sortDirection)
             .addObject("virheet", suoritusErrorService.getErrors(sortColumn, sortDirection))
 
@@ -86,7 +86,7 @@ class YkiViewController(
     ): ModelAndView =
         ModelAndView("yki-arvioijat")
             .addObject("header", generateHeader<YkiArvioijaColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortColumn", sortColumn.urlParam)
             .addObject("sortDirection", sortDirection)
             .addObject("arvioijat", ykiService.allArvioijat(sortColumn, sortDirection))
             // nullify 0 values for mustache
@@ -99,7 +99,7 @@ class YkiViewController(
     ): ModelAndView =
         ModelAndView("yki-arvioijat-virheet")
             .addObject("header", generateHeader<YkiArvioijaErrorColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.lowercaseName())
+            .addObject("sortColumn", sortColumn.urlParam)
             .addObject("sortDirection", sortDirection)
             .addObject("virheet", arvioijaErrorService.getErrors(sortColumn, sortDirection))
 }
