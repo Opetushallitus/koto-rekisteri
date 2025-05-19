@@ -70,17 +70,25 @@ class KoealustaMappingService(
                                     Error.OppijanumeroFailure(
                                         it,
                                         "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän '${user.userid}' tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä.",
+                                        Oid.parse(user.completions.first().schoolOID).getOrNull(),
+                                        user.completions.first().teacheremail,
                                     )
 
-                                else -> Error.OppijanumeroFailure(it)
+                                else ->
+                                    Error.OppijanumeroFailure(
+                                        it,
+                                        schoolOid = Oid.parse(user.completions.first().schoolOID).getOrNull(),
+                                        teacherEmail = user.completions.first().teacheremail,
+                                    )
                             }
                         }?.onFailure { oppijanumeroExceptions.add(it) }
                         ?.getOrNull()
 
                 user.completions.mapNotNull { completion ->
                     completionToEntity(user, oppijanumero, completion)
-                        .onFailure { validationErrors.add(it) }
-                        .getOrNull()
+                        .onFailure {
+                            validationErrors.add(it)
+                        }.getOrNull()
                 }
             }
 
@@ -112,6 +120,8 @@ class KoealustaMappingService(
             return Failure(
                 Error.OppijaValidationFailure(
                     "Validation failure on converting user \"${koealustaUser.userid}\" to oppija",
+                    schoolOid = Oid.parse(koealustaUser.completions.first().schoolOID).getOrNull(),
+                    teacherEmail = koealustaUser.completions.first().teacheremail,
                     koealustaUser,
                     errors,
                 ),
@@ -141,17 +151,17 @@ class KoealustaMappingService(
                 .results
                 .find { it.name == resultName }
 
-        if (result?.quiz_grade.isNullOrEmpty()) {
-            return Failure(
+        return if (result?.quiz_grade.isNullOrEmpty()) {
+            Failure(
                 Error.Validation.MissingGrade(
                     userId,
                     completion.coursename,
                     resultName,
                 ),
             )
+        } else {
+            Success(result)
         }
-
-        return Success(result)
     }
 
     private fun validate(
@@ -216,6 +226,8 @@ class KoealustaMappingService(
                         """
                         Validation failure on course completion on "${completion.coursename}" for user "${user.userid}"
                         """.trimIndent(),
+                    schoolOid = Oid.parse(completion.schoolOID).getOrNull(),
+                    teacherEmail = completion.teacheremail,
                     koealustaUser = user,
                     validationErrors = errors,
                 ),
@@ -263,13 +275,8 @@ class KoealustaMappingService(
                         suorittajanOid = error.koealustaUser.oppijanumero,
                         hetu = error.koealustaUser.SSN,
                         nimi = "${error.koealustaUser.lastname} ${error.koealustaUser.firstnames}",
-                        schoolOid =
-                            Oid
-                                .parse(
-                                    error.koealustaUser.completions
-                                        .first()
-                                        .schoolOID,
-                                ).getOrNull(),
+                        schoolOid = error.schoolOid,
+                        teacherEmail = error.teacherEmail,
                         virheenLuontiaika = now,
                         viesti = validationError.message,
                         virheellinenKentta = field,
@@ -285,7 +292,8 @@ class KoealustaMappingService(
                         hetu = error.oppijanumeroException.request.hetu,
                         nimi =
                             "${error.oppijanumeroException.request.sukunimi} ${error.oppijanumeroException.request.etunimet}",
-                        schoolOid = null,
+                        schoolOid = error.schoolOid,
+                        teacherEmail = error.teacherEmail,
                         virheenLuontiaika = now,
                         viesti = error.oppijanumeroException.message ?: error.message ?: "Unknown ONR error",
                         virheellinenKentta = null,
@@ -315,29 +323,39 @@ class KoealustaMappingService(
 
     sealed class Error(
         message: String,
+        val schoolOid: Oid?,
+        val teacherEmail: String?,
     ) : Exception(message) {
         class OppijanumeroFailure(
             val oppijanumeroException: OppijanumeroException,
             message: String = "ONR error",
-        ) : Error(message)
+            schoolOid: Oid?,
+            teacherEmail: String?,
+        ) : Error(message, schoolOid, teacherEmail)
 
         abstract class ValidationFailure(
             message: String,
+            schoolOid: Oid?,
+            teacherEmail: String?,
             val koealustaUser: User,
             val validationErrors: List<Validation>,
-        ) : Error(message)
+        ) : Error(message, schoolOid, teacherEmail)
 
         class OppijaValidationFailure(
             message: String,
+            schoolOid: Oid?,
+            teacherEmail: String?,
             koealustaUser: User,
             validationErrors: List<Validation>,
-        ) : ValidationFailure(message, koealustaUser, validationErrors)
+        ) : ValidationFailure(message, schoolOid, teacherEmail, koealustaUser, validationErrors)
 
         class SuoritusValidationFailure(
             message: String,
+            schoolOid: Oid?,
+            teacherEmail: String?,
             koealustaUser: User,
             validationErrors: List<Validation>,
-        ) : ValidationFailure(message, koealustaUser, validationErrors)
+        ) : ValidationFailure(message, schoolOid, teacherEmail, koealustaUser, validationErrors)
 
         sealed class Validation(
             val userId: Int,
