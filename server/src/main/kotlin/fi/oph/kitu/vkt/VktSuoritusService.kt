@@ -13,16 +13,21 @@ class VktSuoritusService(
     fun getIlmoittautuneet(
         sortColumn: VktIlmoittautuneet.Column,
         sortDirection: SortDirection,
-    ): List<Henkilosuoritus<VktSuoritus>> {
-        val rows =
-            if (sortColumn.dbColumn != null) {
-                repository.findAllSorted(
+    ): List<Henkilosuoritus<VktSuoritus>> =
+        if (sortColumn == VktIlmoittautuneet.Column.Tutkintopaiva) {
+            repository
+                .findAllSorted(
+                    VktIlmoittautuneet.Column.Sukunimi.dbColumn!!,
+                    SortDirection.ASC,
+                ).map { Henkilosuoritus.from(it) }
+                .sortedBy { it.suoritus.tutkintopaiva }
+        } else if (sortColumn.dbColumn != null) {
+            repository
+                .findAllSorted(
                     sortColumn.dbColumn,
                     sortDirection,
-                )
-            } else {
-                repository.findAll()
-            }
-        return rows.map { Henkilosuoritus.from(it) }
-    }
+                ).map { Henkilosuoritus.from(it) }
+        } else {
+            repository.findAll().map { Henkilosuoritus.from(it) }
+        }
 }

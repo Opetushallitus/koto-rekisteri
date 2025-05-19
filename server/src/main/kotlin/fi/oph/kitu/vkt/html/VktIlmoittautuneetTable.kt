@@ -34,7 +34,7 @@ object VktIlmoittautuneet {
         Etunimet("etunimi", "Etunimet"),
         Kieli("tutkintokieli", "Tutkintokieli"),
         Taitotaso("taitotaso", "Taitotaso"),
-        Tutkintopaiva(null, "Tutkintopäivä"),
+        Tutkintopaiva("tutkintopaiva", "Tutkintopäivä"),
     }
 }
 
