@@ -16,6 +16,14 @@ open class OppijanumeroException(
         cause: Throwable? = null,
     ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
 
+    class BadRequest(
+        request: YleistunnisteHaeRequest,
+        val response: HttpResponse<String>,
+        message: String = "Bad request to oppijanumero-service",
+        oppijanumeroServiceError: OppijanumeroServiceError? = null,
+        cause: Throwable? = null,
+    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
+
     class OppijaNotFoundException(
         request: YleistunnisteHaeRequest,
         message: String = "Oppija not found from oppijanumero-service",
