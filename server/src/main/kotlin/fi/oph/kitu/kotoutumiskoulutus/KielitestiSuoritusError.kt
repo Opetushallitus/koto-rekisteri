@@ -13,6 +13,7 @@ data class KielitestiSuoritusError(
     val hetu: String?,
     val nimi: String,
     val schoolOid: Oid?,
+    val teacherEmail: String?,
     val virheenLuontiaika: Instant,
     val viesti: String,
     val virheellinenKentta: String?,
