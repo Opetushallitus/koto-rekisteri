@@ -27,13 +27,14 @@ object VktIlmoittautuneet {
         }
 
     enum class Column(
-        override val dbColumn: String,
+        override val dbColumn: String?,
         override val uiHeaderValue: String,
     ) : DisplayTableEnum {
         Sukunimi("sukunimi", "Sukunimi"),
-        Etunimet("etunimet", "Etunimet"),
-        Kieli("kieli", "Kieli"),
+        Etunimet("etunimi", "Etunimet"),
+        Kieli("tutkintokieli", "Tutkintokieli"),
         Taitotaso("taitotaso", "Taitotaso"),
+        Tutkintopaiva(null, "Tutkintopäivä"),
     }
 }
 
@@ -49,6 +50,7 @@ fun FlowContent.vktIlmoittautuneetTable(
             VktIlmoittautuneet.Column.Etunimet.withValue { it.henkilo.etunimet },
             VktIlmoittautuneet.Column.Kieli.withValue { it.suoritus.kieli.koodiarvo },
             VktIlmoittautuneet.Column.Taitotaso.withValue { it.suoritus.taitotaso.koodiarvo },
+            VktIlmoittautuneet.Column.Tutkintopaiva.withValue { it.suoritus.tutkintopaiva?.toString() ?: "" },
         ),
         sortedBy = sortedBy,
         sortDirection = sortDirection,

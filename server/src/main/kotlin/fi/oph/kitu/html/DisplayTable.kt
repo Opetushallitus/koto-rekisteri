@@ -16,21 +16,21 @@ import org.apereo.cas.client.util.CommonUtils.urlEncode
 
 data class DisplayTableColumn<T>(
     val label: String,
-    val key: String,
+    val sortKey: String? = null,
     val getValue: (T) -> String?,
 )
 
 interface DisplayTableEnum {
     val name: String
-    val dbColumn: String
+    val dbColumn: String?
     val uiHeaderValue: String
 
     fun toLowercase(): String = name.lowercase()
 
     fun <T> withValue(getValue: (T) -> String?) =
-        DisplayTableColumn<T>(
+        DisplayTableColumn(
             label = uiHeaderValue,
-            key = dbColumn,
+            sortKey = dbColumn?.let { toLowercase() },
             getValue = getValue,
         )
 }
@@ -48,27 +48,30 @@ fun <T> FlowContent.displayTable(
             thead {
                 tr {
                     columns.forEach {
-                        val isSortedColumn = it.key == sortedByKey
                         th {
-                            a(
-                                href =
-                                    httpParams(
-                                        mapOf(
-                                            "sortColumn" to it.key,
-                                            "sortDirection" to
-                                                if (isSortedColumn) {
-                                                    sortDirection.reverse().name
-                                                } else {
-                                                    sortDirection.name
-                                                },
+                            if (it.sortKey != null) {
+                                val isSortedColumn = it.sortKey == sortedByKey
+                                a(
+                                    href =
+                                        httpParams(
+                                            mapOf(
+                                                "sortColumn" to it.sortKey,
+                                                "sortDirection" to
+                                                    if (isSortedColumn) {
+                                                        sortDirection.reverse().name
+                                                    } else {
+                                                        sortDirection.name
+                                                    },
+                                            ),
                                         ),
-                                    ),
-                            ) {
-                                +it.label
-                                if (isSortedColumn) {
-                                    +" "
-                                    +sortDirection.toSymbol()
+                                ) {
+                                    +it.label
+                                    if (isSortedColumn) {
+                                        +" ${sortDirection.toSymbol()}"
+                                    }
                                 }
+                            } else {
+                                +it.label
                             }
                         }
                     }

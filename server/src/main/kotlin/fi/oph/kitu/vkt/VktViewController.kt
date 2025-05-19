@@ -18,7 +18,7 @@ class VktViewController(
         sortColumn: VktIlmoittautuneet.Column = VktIlmoittautuneet.Column.Sukunimi,
         sortDirection: SortDirection = SortDirection.ASC,
     ): String {
-        val ilmoittautuneet = vktSuoritukset.getIlmoittautuneet()
+        val ilmoittautuneet = vktSuoritukset.getIlmoittautuneet(sortColumn, sortDirection)
         return VktIlmoittautuneet.render(ilmoittautuneet, sortColumn, sortDirection)
     }
 }
