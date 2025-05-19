@@ -2,6 +2,7 @@ package fi.oph.kitu.webmvc
 
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusColumn
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusErrorColumn
+import fi.oph.kitu.vkt.html.VktIlmoittautuneet
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
@@ -18,6 +19,7 @@ class WebConfig : WebMvcConfigurer {
             addEnumConverter<YkiArvioijaColumn>()
             addEnumConverter<KielitestiSuoritusColumn>()
             addEnumConverter<KielitestiSuoritusErrorColumn>()
+            addEnumConverter<VktIlmoittautuneet.Column>()
         }
     }
 
