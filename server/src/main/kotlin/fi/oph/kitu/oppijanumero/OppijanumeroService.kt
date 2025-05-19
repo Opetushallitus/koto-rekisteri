@@ -5,7 +5,6 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -22,8 +21,6 @@ class OppijanumeroServiceImpl(
     val objectMapper: ObjectMapper,
     private val tracer: Tracer,
 ) : OppijanumeroService {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
@@ -67,7 +64,7 @@ class OppijanumeroServiceImpl(
                     )
                 } else if (400 <= rawResponse.statusCode() && rawResponse.statusCode() < 500) {
                     return@use TypedResult.Failure(
-                        OppijanumeroException.UnexpectedError(
+                        OppijanumeroException.BadRequest(
                             yleistunnisteHaeRequest,
                             rawResponse,
                         ),

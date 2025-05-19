@@ -66,7 +66,7 @@ class KoealustaMappingService(
                         ?.let(oppijanumeroService::getOppijanumero)
                         ?.mapFailure {
                             when (it) {
-                                is OppijanumeroException.UnexpectedError ->
+                                is OppijanumeroException.BadRequest ->
                                     Error.OppijanumeroFailure(
                                         it,
                                         "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän '${user.userid}' tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä.",
