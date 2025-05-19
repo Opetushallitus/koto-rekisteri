@@ -173,9 +173,9 @@ class OppijanumeroServiceTests {
                 ),
             )
 
-        assertFailureIsThrowable<OppijanumeroException.UnexpectedError>(
+        assertFailureIsThrowable<OppijanumeroException.BadRequest>(
             result,
-            "Unexpected error in oppijanumero-service",
+            "Bad request to oppijanumero-service",
         )
     }
 }
