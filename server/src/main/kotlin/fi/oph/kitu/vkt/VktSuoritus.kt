@@ -37,6 +37,11 @@ data class VktSuoritus(
         ).filter { it.osat.isNotEmpty() }
     }
 
+    @get:JsonIgnore
+    val tutkintopaiva: LocalDate? by lazy {
+        osat.maxOfOrNull { it.tutkintopaiva }
+    }
+
     fun toVktSuoritusEntity(oppija: OidOppija): VktSuoritusEntity =
         VktSuoritusEntity(
             ilmoittautumisenId = lahdejarjestelmanId.toString(),
