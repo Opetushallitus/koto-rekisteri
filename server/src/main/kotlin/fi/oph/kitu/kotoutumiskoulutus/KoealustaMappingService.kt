@@ -184,7 +184,7 @@ class KoealustaMappingService(
                 .onFailure { errors.add(it) }
                 .getOrNull()
         val puhe =
-            validate("puhe", user.userid, completion)
+            validate("puhuminen", user.userid, completion)
                 .onFailure { errors.add(it) }
                 .getOrNull()
         val kirjoittaminen =
