@@ -65,7 +65,16 @@ class KoealustaMappingService(
                     oppija
                         ?.let(oppijanumeroService::getOppijanumero)
                         ?.mapFailure {
-                            when (it) {
+                            Error.OppijanumeroFailure(
+                                it,
+                                "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. ($it)",
+                                Oid.parse(user.completions.first().schoolOID).getOrNull(),
+                                moodleId = user.userid.toString(),
+                                user.completions.first().teacheremail,
+                            )
+
+                            /*when (it) {
+                                s OppijanumeroException.OppijaNotFoundException -> "oppija not found"
                                 is OppijanumeroException.BadRequest ->
                                     Error.OppijanumeroFailure(
                                         it,
@@ -80,7 +89,7 @@ class KoealustaMappingService(
                                         schoolOid = Oid.parse(user.completions.first().schoolOID).getOrNull(),
                                         teacherEmail = user.completions.first().teacheremail,
                                     )
-                            }
+                            }*/
                         }?.onFailure { oppijanumeroExceptions.add(it) }
                         ?.getOrNull()
 
@@ -330,6 +339,7 @@ class KoealustaMappingService(
             val oppijanumeroException: OppijanumeroException,
             message: String = "ONR error",
             schoolOid: Oid?,
+            moodleId: String?,
             teacherEmail: String?,
         ) : Error(message, schoolOid, teacherEmail)
 

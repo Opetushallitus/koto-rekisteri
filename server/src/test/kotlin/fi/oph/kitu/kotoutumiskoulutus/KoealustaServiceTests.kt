@@ -1,5 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
+import HttpResponseMock
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.mustBeSuccess
@@ -51,6 +52,34 @@ class KoealustaServiceTests {
                                         sukunimi = "Testi-Moikka",
                                     ),
                                 message = "virheviesti",
+                            ),
+                        ),
+                    "12345678903" to
+                        TypedResult.Failure(
+                            OppijanumeroException.BadRequest(
+                                request =
+                                    YleistunnisteHaeRequest(
+                                        etunimet = "Antero",
+                                        hetu = "12345678902",
+                                        kutsumanimi = "Antero",
+                                        sukunimi = "Testi-Moikka",
+                                    ),
+                                message = "Bad request",
+                                response = HttpResponseMock(400, "Bad request"),
+                            ),
+                        ),
+                    "12345678904" to
+                        TypedResult.Failure(
+                            OppijanumeroException.UnexpectedError(
+                                request =
+                                    YleistunnisteHaeRequest(
+                                        etunimet = "Antero",
+                                        hetu = "12345678902",
+                                        kutsumanimi = "Antero",
+                                        sukunimi = "Testi-Moikka",
+                                    ),
+                                message = "Server Error",
+                                response = HttpResponseMock(500, "Server Error"),
                             ),
                         ),
                 ),
@@ -246,5 +275,170 @@ class KoealustaServiceTests {
             fun() = assertEquals("virheviesti", oppijaValidationFailure.viesti),
             fun() = assertEquals("Testi-Moikka Antero", oppijaValidationFailure.nimi),
         )
+    }
+
+    @Test
+    fun `import with person information mismatch`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        koealusta
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [
+                        {
+                          "userid": 1,
+                          "firstnames": "Antero",
+                          "lastname": "Testi-Moikka",
+                          "preferredname": "Antero", 
+                          "SSN": "12345678903",
+                          "email": "ranja.testi@oph.fi",
+                          "completions": [
+                            {
+                              "courseid": 32,
+                              "coursename": "Integraatio testaus",
+                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "results": [
+                                {
+                                  "name": "luetun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "A1"
+                                },
+                                {
+                                  "name": "kuullun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "B1"
+                                },
+                                {
+                                  "name": "puhuminen",
+                                  "quiz_grade": "B1"
+                                },
+                                {
+                                  "name": "kirjoittaminen",
+                                  "quiz_grade": "B1"
+                                }
+                              ],
+                              "timecompleted": 1728969131,
+                              "teacheremail": "opettaja@testi.oph.fi"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        koealusta.verify()
+
+        assertEquals(
+            expected = Instant.parse("1970-01-01T00:00:00Z"),
+            actual = lastSeen,
+            message = "since an error was encountered, use the previous `from` parameter as the last seen date",
+        )
+
+        val errors = kielitestiSuoritusErrorRepository.findAll().toList()
+
+        // Jos emme saa ONR:stä oppijanumeroa, niin validaatiologiikka tuottaa virheen sekä oppijalle että jokaiselle suoritukselle.
+
+        val suoritusValidationFailure = errors[0]
+        val oppijaValidationFailure = errors[1]
+
+        assertAll(
+            fun() = assertEquals("""Missing student "oppijanumero" for user "1"""", suoritusValidationFailure.viesti),
+            fun() = assertEquals("12345678903", suoritusValidationFailure.hetu),
+            fun() = assertEquals("oppijanumero", suoritusValidationFailure.virheellinenKentta, "virheellinen kenttä"),
+            fun() = assertEquals(null, suoritusValidationFailure.virheellinenArvo, "virheellinen arvo"),
+            fun() = assertEquals("Testi-Moikka Antero", suoritusValidationFailure.nimi),
+        )
+
+        assertAll(
+            fun() = assertEquals("virheviesti", oppijaValidationFailure.viesti),
+            fun() = assertEquals("Testi-Moikka Antero", oppijaValidationFailure.nimi),
+        )
+    }
+
+    @Test
+    fun `import with suoritus validation error saves schoolOID and teacherEmail to error`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        koealusta
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [
+                        {
+                          "userid": 1,
+                          "firstnames": "Antero",
+                          "lastname": "Testi-Moikka",
+                          "preferredname": "Antero", 
+                          "SSN": "12345678902",
+                          "email": "ranja.testi@oph.fi",
+                          "completions": [
+                            {
+                              "courseid": 32,
+                              "coursename": "Integraatio testaus",
+                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "results": [
+                                {
+                                  "name": "luetun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "A1"
+                                },
+                                {
+                                  "name": "kuullun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "B1"
+                                },
+                                {
+                                  "name": "kirjoittaminen",
+                                  "quiz_grade": "B1"
+                                }
+                              ],
+                              "timecompleted": 1728969131,
+                              "teacheremail": "opettaja@testi.oph.fi"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        koealusta.verify()
+
+        val errors = kielitestiSuoritusErrorRepository.findAll().toList()
+        val suoritusValidationFailure = errors[0]
+        assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString())
+        assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail)
     }
 }
