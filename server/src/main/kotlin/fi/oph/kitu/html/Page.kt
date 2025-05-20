@@ -8,6 +8,7 @@ import kotlinx.html.stream.createHTML
 object Page {
     fun renderHtml(
         breadcrumbs: List<MenuItem>,
+        wideContent: Boolean = false,
         renderBody: SECTION.() -> Unit,
     ): String {
         val pageTitle = "Kielitutkintorekisteri - " + breadcrumbs.joinToString(" - ") { it.title }
@@ -30,7 +31,7 @@ object Page {
                                     testId("breadcrumbs")
                                     li { a(href = "/") { strong { +"Kielitutkintorekisteri" } } }
                                     breadcrumbs.forEach {
-                                        li { a(href = it.href) { +it.title } }
+                                        li { a(href = it.ref) { +it.title } }
                                     }
                                 }
                             }
@@ -41,7 +42,7 @@ object Page {
                         }
                     }
 
-                    section(classes = "container-fluid") {
+                    section(classes = if (wideContent) "container-fluid" else "container") {
                         testId("page-content")
                         renderBody()
                     }

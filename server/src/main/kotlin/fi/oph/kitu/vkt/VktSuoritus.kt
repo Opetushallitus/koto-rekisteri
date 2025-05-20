@@ -24,6 +24,7 @@ data class VktSuoritus(
     @get:JsonProperty("osakokeet")
     override val osat: List<VktOsakoe>,
     override val lahdejarjestelmanId: LahdejarjestelmanTunniste,
+    val internalId: Int?,
 ) : KielitutkinnonSuoritus,
     Osasuorituksellinen {
     override val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.ValtionhallinnonKielitutkinto
@@ -66,6 +67,7 @@ data class VktSuoritus(
                 suorituspaikkakunta = entity.suorituspaikkakunta,
                 osat = entity.osakokeet.map { VktOsakoe.from(it) },
                 lahdejarjestelmanId = LahdejarjestelmanTunniste.Companion.from(entity.ilmoittautumisenId),
+                internalId = entity.id,
             )
     }
 }
@@ -179,6 +181,7 @@ data class VktYmmartamisenKielitaito(
 interface VktOsakoe :
     Osasuoritus,
     Arvioitava {
+    val internalId: Int?
     override val tyyppi: Koodisto.VktOsakoe
 
     @get:JsonProperty("tutkintopäivä")
@@ -196,18 +199,30 @@ interface VktOsakoe :
     companion object {
         fun from(row: VktSuoritusEntity.VktOsakoe) =
             when (row.tyyppi) {
-                Koodisto.VktOsakoe.Kirjoittaminen -> VktKirjoittamisenKoe(row.tutkintopaiva, VktArvionti.from(row))
+                Koodisto.VktOsakoe.Kirjoittaminen ->
+                    VktKirjoittamisenKoe(
+                        row.tutkintopaiva,
+                        VktArvionti.from(row),
+                        row.id,
+                    )
                 Koodisto.VktOsakoe.TekstinYmmärtäminen ->
                     VktTekstinYmmartamisenKoe(
                         row.tutkintopaiva,
                         VktArvionti.from(row),
+                        row.id,
                     )
 
-                Koodisto.VktOsakoe.Puhuminen -> VktPuhumisenKoe(row.tutkintopaiva, VktArvionti.from(row))
+                Koodisto.VktOsakoe.Puhuminen ->
+                    VktPuhumisenKoe(
+                        row.tutkintopaiva,
+                        VktArvionti.from(row),
+                        row.id,
+                    )
                 Koodisto.VktOsakoe.PuheenYmmärtäminen ->
                     VktPuheenYmmartamisenKoe(
                         row.tutkintopaiva,
                         VktArvionti.from(row),
+                        row.id,
                     )
             }
     }
@@ -222,6 +237,7 @@ interface VktYmmartamisenKielitaidonKoe : VktOsakoe
 data class VktKirjoittamisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
+    override val internalId: Int? = null,
 ) : VktKirjallisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.Kirjoittaminen
 }
@@ -229,6 +245,7 @@ data class VktKirjoittamisenKoe(
 data class VktTekstinYmmartamisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
+    override val internalId: Int? = null,
 ) : VktKirjallisenKielitaidonKoe,
     VktYmmartamisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.TekstinYmmärtäminen
@@ -237,6 +254,7 @@ data class VktTekstinYmmartamisenKoe(
 data class VktPuhumisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
+    override val internalId: Int? = null,
 ) : VktSuullisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.Puhuminen
 }
@@ -244,6 +262,7 @@ data class VktPuhumisenKoe(
 data class VktPuheenYmmartamisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
+    override val internalId: Int? = null,
 ) : VktSuullisenKielitaidonKoe,
     VktYmmartamisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.PuheenYmmärtäminen
