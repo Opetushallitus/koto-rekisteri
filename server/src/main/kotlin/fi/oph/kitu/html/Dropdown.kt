@@ -19,7 +19,7 @@ fun FlowContent.dropdown(
                 ul {
                     attributes["dir"] = "rtl"
                     items.forEach {
-                        li { a(href = it.href) { +it.title } }
+                        li { a(href = it.ref) { +it.title } }
                     }
                 }
             }

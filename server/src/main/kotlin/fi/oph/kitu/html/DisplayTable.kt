@@ -5,7 +5,6 @@ import fi.oph.kitu.reverse
 import fi.oph.kitu.toSymbol
 import kotlinx.html.FlowContent
 import kotlinx.html.a
-import kotlinx.html.article
 import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
@@ -17,7 +16,7 @@ import org.apereo.cas.client.util.CommonUtils.urlEncode
 data class DisplayTableColumn<T>(
     val label: String,
     val sortKey: String? = null,
-    val getValue: (T) -> String?,
+    val renderValue: FlowContent.(T) -> Unit,
 )
 
 interface DisplayTableEnum {
@@ -27,64 +26,62 @@ interface DisplayTableEnum {
 
     fun toLowercase(): String = name.lowercase()
 
-    fun <T> withValue(getValue: (T) -> String?) =
+    fun <T> withValue(renderValue: FlowContent.(T) -> Unit) =
         DisplayTableColumn(
             label = uiHeaderValue,
             sortKey = dbColumn?.let { toLowercase() },
-            getValue = getValue,
+            renderValue = renderValue,
         )
 }
 
 fun <T> FlowContent.displayTable(
     rows: List<T>,
     columns: List<DisplayTableColumn<T>>,
-    sortedBy: DisplayTableEnum,
-    sortDirection: SortDirection,
+    sortedBy: DisplayTableEnum? = null,
+    sortDirection: SortDirection? = null,
+    compact: Boolean = false,
 ) {
-    val sortedByKey = sortedBy.toLowercase()
+    val sortedByKey = sortedBy?.toLowercase()
 
-    article(classes = "overflow-auto") {
-        table(classes = "compact striped") {
-            thead {
-                tr {
-                    columns.forEach {
-                        th {
-                            if (it.sortKey != null) {
-                                val isSortedColumn = it.sortKey == sortedByKey
-                                a(
-                                    href =
-                                        httpParams(
-                                            mapOf(
-                                                "sortColumn" to it.sortKey,
-                                                "sortDirection" to
-                                                    if (isSortedColumn) {
-                                                        sortDirection.reverse().name
-                                                    } else {
-                                                        sortDirection.name
-                                                    },
-                                            ),
+    table(classes = "${if (compact) "compact" else ""} striped") {
+        debugTrace()
+        thead {
+            tr {
+                columns.forEach {
+                    th {
+                        if (it.sortKey != null && sortedBy != null && sortDirection != null) {
+                            val isSortedColumn = it.sortKey == sortedByKey
+                            a(
+                                href =
+                                    httpParams(
+                                        mapOf(
+                                            "sortColumn" to it.sortKey,
+                                            "sortDirection" to
+                                                if (isSortedColumn) {
+                                                    sortDirection.reverse().name
+                                                } else {
+                                                    sortDirection.name
+                                                },
                                         ),
-                                ) {
-                                    +it.label
-                                    if (isSortedColumn) {
-                                        +" ${sortDirection.toSymbol()}"
-                                    }
-                                }
-                            } else {
+                                    ),
+                            ) {
                                 +it.label
+                                if (isSortedColumn) {
+                                    +" ${sortDirection.toSymbol()}"
+                                }
                             }
+                        } else {
+                            +it.label
                         }
                     }
                 }
             }
-            tbody {
-                rows.forEach { row ->
-                    tr {
-                        columns.forEach { column ->
-                            td {
-                                +(column.getValue(row) ?: "")
-                            }
-                        }
+        }
+        tbody {
+            rows.forEach { row ->
+                tr {
+                    columns.forEach { column ->
+                        td { column.renderValue(this, row) }
                     }
                 }
             }
