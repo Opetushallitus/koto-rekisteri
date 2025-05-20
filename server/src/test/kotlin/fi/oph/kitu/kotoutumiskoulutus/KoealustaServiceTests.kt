@@ -102,7 +102,7 @@ class KoealustaServiceTests {
                                   "quiz_grade": "B1"
                                 },
                                 {
-                                  "name": "puhe",
+                                  "name": "puhuminen",
                                   "quiz_grade": "A1"
                                 },
                                 {
@@ -192,7 +192,7 @@ class KoealustaServiceTests {
                                   "quiz_grade": "B1"
                                 },
                                 {
-                                  "name": "puhe",
+                                  "name": "puhuminen",
                                   "quiz_grade": "B1"
                                 },
                                 {
