@@ -288,6 +288,146 @@ class KoealustaServiceTests {
     }
 
     @Test
+    fun `import with suoritus validation error saves schoolOID and teacherEmail to error`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        koealusta
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [
+                        {
+                          "userid": 1,
+                          "firstnames": "Antero",
+                          "lastname": "Testi-Moikka",
+                          "preferredname": "Antero", 
+                          "SSN": "12345678902",
+                          "email": "ranja.testi@oph.fi",
+                          "completions": [
+                            {
+                              "courseid": 32,
+                              "coursename": "Integraatio testaus",
+                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "results": [
+                                {
+                                  "name": "luetun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "A1"
+                                },
+                                {
+                                  "name": "kuullun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "B1"
+                                },
+                                {
+                                  "name": "kirjoittaminen",
+                                  "quiz_grade": "B1"
+                                }
+                              ],
+                              "timecompleted": 1728969131,
+                              "teacheremail": "opettaja@testi.oph.fi"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        koealusta.verify()
+
+        val errors = kielitestiSuoritusErrorRepository.findAll().toList()
+        val suoritusValidationFailure = errors[0]
+        assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString())
+        assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail)
+    }
+
+    @Test
+    fun `import with oppija validation error saves schoolOID and teacherEmail to error`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        koealusta
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [
+                        {
+                          "userid": 1,
+                          "firstnames": "Antero",
+                          "lastname": "Testi-Moikka",
+                          "preferredname": "Antero",
+                          "SSN": "",
+                          "email": "ranja.testi@oph.fi",
+                          "completions": [
+                            {
+                              "courseid": 32,
+                              "coursename": "Integraatio testaus",
+                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "results": [
+                                {
+                                  "name": "luetun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "A1"
+                                },
+                                {
+                                  "name": "kuullun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "B1"
+                                },
+                                {
+                                  "name": "kirjoittaminen",
+                                  "quiz_grade": "B1"
+                                }
+                              ],
+                              "timecompleted": 1728969131,
+                              "teacheremail": "opettaja@testi.oph.fi"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        koealusta.verify()
+
+        val errors = kielitestiSuoritusErrorRepository.findAll().toList()
+        val validationFailure = errors[0]
+        assertEquals("1.2.246.562.10.1234567890", validationFailure.schoolOid.toString())
+        assertEquals("opettaja@testi.oph.fi", validationFailure.teacherEmail)
+    }
+
+    @Test
     fun `import with person information mismatch`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired koealustaService: KoealustaService,
@@ -384,75 +524,5 @@ class KoealustaServiceTests {
                 ),
             fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
         )
-    }
-
-    @Test
-    fun `import with suoritus validation error saves schoolOID and teacherEmail to error`(
-        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
-    ) {
-        // Facade
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
-        koealusta
-            .expect(
-                requestTo(
-                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
-                ),
-            ).andRespond(
-                withSuccess(
-                    """
-                    {
-                      "users": [
-                        {
-                          "userid": 1,
-                          "firstnames": "Antero",
-                          "lastname": "Testi-Moikka",
-                          "preferredname": "Antero", 
-                          "SSN": "12345678902",
-                          "email": "ranja.testi@oph.fi",
-                          "completions": [
-                            {
-                              "courseid": 32,
-                              "coursename": "Integraatio testaus",
-                              "schoolOID": "1.2.246.562.10.1234567890",
-                              "results": [
-                                {
-                                  "name": "luetun ymm\u00e4rt\u00e4minen",
-                                  "quiz_grade": "A1"
-                                },
-                                {
-                                  "name": "kuullun ymm\u00e4rt\u00e4minen",
-                                  "quiz_grade": "B1"
-                                },
-                                {
-                                  "name": "kirjoittaminen",
-                                  "quiz_grade": "B1"
-                                }
-                              ],
-                              "timecompleted": 1728969131,
-                              "teacheremail": "opettaja@testi.oph.fi"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                    """.trimIndent(),
-                    MediaType.APPLICATION_JSON,
-                ),
-            )
-
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
-
-        // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
-
-        // Verification
-        koealusta.verify()
-
-        val errors = kielitestiSuoritusErrorRepository.findAll().toList()
-        val suoritusValidationFailure = errors[0]
-        assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString())
-        assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail)
     }
 }
