@@ -39,4 +39,8 @@ export default class KielitestiSuorituksetPage extends BasePage {
     const suorituksetTable = this.getSuorituksetTable()
     return suorituksetTable.getByTestId("suoritus-details-row")
   }
+
+  getErrorLink() {
+    return this.getContent().locator(".error-text").getByRole("link")
+  }
 }
