@@ -14,6 +14,8 @@ object Page {
         val pageTitle = "Kielitutkintorekisteri - " + breadcrumbs.joinToString(" - ") { it.title }
 
         return createHTML().html {
+            lang = "fi"
+
             head {
                 title { +pageTitle }
                 link(href = "/pico.min.css", rel = "stylesheet")

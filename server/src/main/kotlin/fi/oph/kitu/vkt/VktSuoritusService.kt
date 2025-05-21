@@ -6,6 +6,7 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.schema.Henkilosuoritus
 import fi.oph.kitu.vkt.html.VktIlmoittautuneet
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 import java.util.Optional
 
 @Service
@@ -42,5 +43,6 @@ class VktSuoritusService(
     fun setOsakoeArvosana(
         id: Int,
         arvosana: Koodisto.VktArvosana?,
-    ) = osakoeRepository.updateArvosana(id, arvosana)
+        arviointipaiva: LocalDate? = null,
+    ) = osakoeRepository.updateArvosana(id, arvosana, arviointipaiva)
 }
