@@ -286,7 +286,7 @@ class KoealustaMappingService(
                         schoolOid = error.schoolOid,
                         teacherEmail = error.teacherEmail,
                         virheenLuontiaika = now,
-                        viesti = error.oppijanumeroException.message ?: error.message ?: "Unknown ONR error",
+                        viesti = error.message ?: error.oppijanumeroException.message ?: "Unknown ONR error",
                         virheellinenKentta = null,
                         virheellinenArvo = null,
                     ),
