@@ -67,29 +67,11 @@ class KoealustaMappingService(
                         ?.mapFailure {
                             Error.OppijanumeroFailure(
                                 it,
-                                "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. ($it)",
+                                "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (${it.message})",
                                 Oid.parse(user.completions.first().schoolOID).getOrNull(),
                                 moodleId = user.userid.toString(),
                                 user.completions.first().teacheremail,
                             )
-
-                            /*when (it) {
-                                s OppijanumeroException.OppijaNotFoundException -> "oppija not found"
-                                is OppijanumeroException.BadRequest ->
-                                    Error.OppijanumeroFailure(
-                                        it,
-                                        "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän '${user.userid}' tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä.",
-                                        Oid.parse(user.completions.first().schoolOID).getOrNull(),
-                                        user.completions.first().teacheremail,
-                                    )
-
-                                else ->
-                                    Error.OppijanumeroFailure(
-                                        it,
-                                        schoolOid = Oid.parse(user.completions.first().schoolOID).getOrNull(),
-                                        teacherEmail = user.completions.first().teacheremail,
-                                    )
-                            }*/
                         }?.onFailure { oppijanumeroExceptions.add(it) }
                         ?.getOrNull()
 

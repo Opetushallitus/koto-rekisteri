@@ -366,7 +366,7 @@ class KoealustaServiceTests {
         // Jos emme saa ONR:stä oppijanumeroa, niin validaatiologiikka tuottaa virheen sekä oppijalle että jokaiselle suoritukselle.
 
         val suoritusValidationFailure = errors[0]
-        val oppijaValidationFailure = errors[1]
+        val onrBadRequestFailure = errors[1]
 
         assertAll(
             fun() = assertEquals("""Missing student "oppijanumero" for user "1"""", suoritusValidationFailure.viesti),
@@ -377,8 +377,8 @@ class KoealustaServiceTests {
         )
 
         assertAll(
-            fun() = assertEquals("virheviesti", oppijaValidationFailure.viesti),
-            fun() = assertEquals("Testi-Moikka Antero", oppijaValidationFailure.nimi),
+            fun() = assertEquals("Bad request", onrBadRequestFailure.viesti),
+            fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
         )
     }
 
