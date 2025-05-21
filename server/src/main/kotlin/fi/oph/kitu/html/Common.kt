@@ -7,12 +7,12 @@ import kotlinx.html.unsafe
 data class MenuItem(
     val title: String,
     val ref: String,
-    val active: Boolean = false,
+    val current: Boolean = false,
 )
 
-fun List<MenuItem>.activate(ref: String?) =
+fun List<MenuItem>.setCurrentItem(ref: String?) =
     if (ref != null) {
-        this.map { it.copy(active = it.ref == ref) }
+        this.map { it.copy(current = it.ref == ref) }
     } else {
         this
     }
