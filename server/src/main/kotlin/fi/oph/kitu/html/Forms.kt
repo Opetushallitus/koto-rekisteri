@@ -7,6 +7,7 @@ import kotlinx.html.InputType
 import kotlinx.html.form
 import kotlinx.html.input
 import org.springframework.security.web.csrf.CsrfToken
+import java.time.LocalDate
 
 fun FlowContent.formPost(
     action: String,
@@ -17,6 +18,15 @@ fun FlowContent.formPost(
         debugTrace()
         hiddenValue(csrfToken.parameterName, csrfToken.token)
         content()
+    }
+}
+
+fun FlowContent.dateInput(
+    name: String,
+    date: LocalDate?,
+) {
+    input(type = InputType.date, name = name) {
+        value = date?.toString() ?: ""
     }
 }
 

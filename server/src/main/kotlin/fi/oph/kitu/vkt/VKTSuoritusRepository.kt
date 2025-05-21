@@ -6,6 +6,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 
 @Repository
 interface VKTSuoritusRepository :
@@ -20,6 +21,7 @@ class VKTOsakoeRepository {
     fun updateArvosana(
         id: Int,
         arvosana: Koodisto.VktArvosana?,
+        arviointipaiva: LocalDate?,
     ) {
         val sql =
             if (arvosana != null) {
@@ -27,10 +29,8 @@ class VKTOsakoeRepository {
                 UPDATE vkt_osakoe
                 SET
                     arvosana = :arvosana,
-                    arviointipaiva = now()
-                WHERE
-                    id = :id
-                    AND (arvosana <> :arvosana OR arvosana IS NULL)
+                    arviointipaiva = COALESCE(:arviointipaiva, now())
+                WHERE id = :id
                 """.trimIndent()
             } else {
                 """
@@ -38,8 +38,7 @@ class VKTOsakoeRepository {
                 SET
                     arvosana = null,
                     arviointipaiva = null
-                WHERE
-                    id = :id
+                WHERE id = :id
                 """.trimIndent()
             }
 
@@ -47,6 +46,7 @@ class VKTOsakoeRepository {
             mapOf(
                 "id" to id,
                 "arvosana" to arvosana?.name,
+                "arviointipaiva" to arviointipaiva,
             )
 
         jdbcNamedParameterTemplate.update(sql, params)

@@ -146,3 +146,20 @@ table.compact .truncated {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+article > table {
+  width: 100%;
+}
+
+table tr:last-child td {
+  border-bottom: none;
+}
+
+table.info-table th {
+  width: 25%;
+}
+
+table td select,
+table td input {
+  margin-bottom: 0 !important;
+}

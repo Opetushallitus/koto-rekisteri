@@ -5,6 +5,7 @@ import fi.oph.kitu.html.MenuItem
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.activate
 import fi.oph.kitu.html.card
+import fi.oph.kitu.html.dateInput
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.hiddenValue
@@ -16,8 +17,9 @@ import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.footer
-import kotlinx.html.h2
+import kotlinx.html.h1
 import org.springframework.security.web.csrf.CsrfToken
+import java.time.LocalDate
 
 object VktErinomaisenArviointi {
     fun render(
@@ -28,15 +30,15 @@ object VktErinomaisenArviointi {
             listOf(
                 MenuItem("Valtionhallinnon kielitutkinto", "/vkt/ilmoittautuneet"),
                 MenuItem("Ilmoittautuneet", "/vkt/ilmoittautuneet"),
+                MenuItem(data.henkilo.kokoNimi(), "/vkt/ilmoittautuneet/${data.suoritus.internalId}"),
             ),
         ) {
-            formPost("/vkt/ilmoittautuneet/${data.suoritus.internalId}", csrfToken = csrfToken) {
-                h2 {
-                    +(data.henkilo.etunimet ?: "")
-                    +" "
-                    +(data.henkilo.sukunimi ?: "")
-                }
+            h1 { +data.henkilo.kokoNimi() }
 
+            vktSuorituksenTiedot(data)
+            vktTutkinnot(data)
+
+            formPost("/vkt/ilmoittautuneet/${data.suoritus.internalId}", csrfToken = csrfToken) {
                 card(overflowAuto = true) {
                     vktErinomainenOsakoeTable(data.suoritus.osat)
                     footer {
@@ -46,14 +48,28 @@ object VktErinomaisenArviointi {
             }
         }
 
-    data class ArvosanaForm(
+    data class ArvosanaFormData(
         val id: List<Int>,
         val arvosana: List<Koodisto.VktArvosana?>,
+        val arviointipaiva: List<LocalDate?>,
     ) {
-        fun toEntries(): List<Pair<Int, Koodisto.VktArvosana?>> =
+        fun toEntries(): List<ArvosanaFormEntry> =
             id
                 .zip(arvosana)
-                .map { it.first to it.second }
+                .zip(arviointipaiva)
+                .map {
+                    ArvosanaFormEntry(
+                        id = it.first.first,
+                        arvosana = it.first.second,
+                        arviointipaiva = it.second,
+                    )
+                }
+
+        data class ArvosanaFormEntry(
+            val id: Int,
+            val arvosana: Koodisto.VktArvosana?,
+            val arviointipaiva: LocalDate?,
+        )
     }
 }
 
@@ -61,8 +77,12 @@ fun FlowContent.vktErinomainenOsakoeTable(osat: List<VktOsakoe>) {
     displayTable(
         osat.sortedBy { it.tutkintopaiva }.reversed(),
         listOf(
-            DisplayTableColumn("Osakoe") { +it.tyyppi.koodiarvo },
-            DisplayTableColumn("Tutkintopäivä") { +it.tutkintopaiva.toString() },
+            DisplayTableColumn("Osakoe") {
+                +it.tyyppi.koodiarvo
+            },
+            DisplayTableColumn("Tutkintopäivä") {
+                +it.tutkintopaiva.toString()
+            },
             DisplayTableColumn("Arvosana") {
                 hiddenValue("id", it.internalId?.toString() ?: "")
                 itemSelect(
@@ -75,8 +95,11 @@ fun FlowContent.vktErinomainenOsakoeTable(osat: List<VktOsakoe>) {
                         ).activate(it.arviointi?.arvosana?.name),
                 )
             },
-            DisplayTableColumn("Arviointipäivä") { +(it.arviointi?.paivamaara?.toString() ?: "") },
+            DisplayTableColumn("Arviointipäivä") {
+                dateInput("arviointipaiva", it.arviointi?.paivamaara)
+            },
         ),
+        compact = true,
     )
 }
 

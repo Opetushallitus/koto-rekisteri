@@ -44,10 +44,10 @@ class VktViewController(
     @ResponseBody
     fun saveIlmoittautuneenArviointi(
         @PathVariable id: Int,
-        @ModelAttribute form: VktErinomaisenArviointi.ArvosanaForm,
+        @ModelAttribute form: VktErinomaisenArviointi.ArvosanaFormData,
     ): RedirectView {
-        form.toEntries().forEach { (osakoeId, arvosana) ->
-            vktSuoritukset.setOsakoeArvosana(osakoeId, arvosana)
+        form.toEntries().forEach {
+            vktSuoritukset.setOsakoeArvosana(it.id, it.arvosana, it.arviointipaiva)
         }
         return RedirectView("/vkt/ilmoittautuneet/$id")
     }
