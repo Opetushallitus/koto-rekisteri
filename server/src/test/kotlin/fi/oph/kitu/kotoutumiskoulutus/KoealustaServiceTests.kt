@@ -8,6 +8,7 @@ import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.oppijanumero.OppijanumeroServiceMock
 import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
@@ -89,6 +90,15 @@ class KoealustaServiceTests {
     @TestBean
     @Suppress("unused")
     private lateinit var oppijanumeroService: OppijanumeroService
+
+    @BeforeEach
+    fun nukeDb(
+        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+    ) {
+        kielitestiSuoritusRepository.deleteAll()
+        kielitestiSuoritusErrorRepository.deleteAll()
+    }
 
     @Test
     fun `import with no errors`(
