@@ -13,7 +13,7 @@
         <thead>
         <tr>
           {{#header}}
-            <th>
+            <th id="{{column.lowercaseName}}">
               <a href="?sortColumn={{column.lowercaseName}}&sortDirection={{sortDirection}}">
               {{column.uiHeaderValue}} {{symbol}}
               </a>
@@ -24,17 +24,18 @@
         <tbody class="virheet">
         {{#virheet}}
           <tr data-testid="virhe-summary-row">
-            <td class="truncated">
+            <td class="truncated" headers="hetu">
               {{#hetu}}
                 <span title="{{hetu}}">{{hetu}}</span>
               {{/hetu}}
             </td>
-            <td>{{nimi}}</td>
-            <td>{{#schoolOid}}{{schoolOid}}{{/schoolOid}}</td>
-            <td>{{virheenLuontiaika}}</td>
-            <td>{{viesti}}</td>
-            <td>{{#virheellinenKentta}}{{virheellinenKentta}}{{/virheellinenKentta}}</td>
-            <td>{{#virheellinenArvo}}{{virheellinenArvo}}{{/virheellinenArvo}}</td>
+            <td headers="nimi">{{nimi}}</td>
+            <td headers="schoolOid">{{#schoolOid}}{{schoolOid}}{{/schoolOid}}</td>
+            <td headers="teacherEmail">{{#teacherEmail}}{{teacherEmail}}{{/teacherEmail}}</td>
+            <td headers="virheenLuontiaika">{{virheenLuontiaika}}</td>
+            <td headers="viesti">{{viesti}}</td>
+            <td headers="virheellinenKentta">{{#virheellinenKentta}}{{virheellinenKentta}}{{/virheellinenKentta}}</td>
+            <td headers="virheellinenArvo">{{#virheellinenArvo}}{{virheellinenArvo}}{{/virheellinenArvo}}</td>
           </tr>
         {{/virheet}}
         </tbody>

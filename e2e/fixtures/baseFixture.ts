@@ -7,18 +7,22 @@ import { createTestDatabase } from "../db/database"
 import * as kotoSuoritusFixture from "./kotoSuoritus"
 import * as ykiSuoritusFixture from "./ykiSuoritus"
 import * as ykiSuoritusErrorFixture from "./ykiSuoritusError"
+import * as kotoSuoritusErrorFixture from "./kotoError"
 import BasePage from "../models/BasePage"
 import { Config, createConfig } from "../config"
+import KielitestiErrorPage from "../models/kotoutumiskoulutus/KielitestiErrorPage";
 
 interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
   ykiSuorituksetErrorPage: YkiSuorituksetErrorPage
   kielitestiSuorituksetPage: KielitestiSuorituksetPage
+  kielitestiErrorPage: KielitestiErrorPage
   indexPage: IndexPage
   basePage: BasePage
   kotoSuoritus: typeof kotoSuoritusFixture
   ykiSuoritus: typeof ykiSuoritusFixture
   ykiSuoritusError: typeof ykiSuoritusErrorFixture
+  kotoSuoritusError: typeof kotoSuoritusErrorFixture
 }
 
 export type TestDB = ReturnType<typeof createTestDatabase>
@@ -39,6 +43,13 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
       config,
     )
     await use(kielitestiSuorituksetPage)
+  },
+  kielitestiErrorPage:  async ({ page, config }, use) => {
+    const kielitestiErrorPage = new KielitestiErrorPage(
+        page,
+        config,
+    )
+    await use(kielitestiErrorPage)
   },
   indexPage: async ({ page, config }, use) => {
     const indexPage = new IndexPage(page, config)
@@ -75,6 +86,9 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   },
   ykiSuoritusError: async ({}, use) => {
     await use({ ...ykiSuoritusErrorFixture })
+  },
+  kotoSuoritusError:  async ({}, use) => {
+    await use({ ...kotoSuoritusErrorFixture })
   },
 })
 

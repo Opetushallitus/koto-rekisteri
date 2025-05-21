@@ -282,7 +282,11 @@ class KoealustaServiceTests {
         )
 
         assertAll(
-            fun() = assertEquals("virheviesti", oppijaValidationFailure.viesti),
+            fun() =
+                assertEquals(
+                    "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (virheviesti)",
+                    oppijaValidationFailure.viesti,
+                ),
             fun() = assertEquals("Testi-Moikka Antero", oppijaValidationFailure.nimi),
         )
     }
@@ -353,8 +357,11 @@ class KoealustaServiceTests {
 
         val errors = kielitestiSuoritusErrorRepository.findAll().toList()
         val suoritusValidationFailure = errors[0]
-        assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString())
-        assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail)
+        assertAll(
+            fun() = assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString()),
+            fun() = assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail),
+            fun() = assertEquals("viesti", suoritusValidationFailure.viesti),
+        )
     }
 
     @Test
@@ -422,9 +429,17 @@ class KoealustaServiceTests {
         koealusta.verify()
 
         val errors = kielitestiSuoritusErrorRepository.findAll().toList()
-        val validationFailure = errors[0]
-        assertEquals("1.2.246.562.10.1234567890", validationFailure.schoolOid.toString())
-        assertEquals("opettaja@testi.oph.fi", validationFailure.teacherEmail)
+        val suoritusValidationFailure = errors[0]
+        val oppijaValidationFailure = errors[1]
+
+        assertAll(
+            fun() = assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString()),
+            fun() = assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail),
+        )
+        assertAll(
+            fun() = assertEquals("1.2.246.562.10.1234567890", oppijaValidationFailure.schoolOid.toString()),
+            fun() = assertEquals("opettaja@testi.oph.fi", oppijaValidationFailure.teacherEmail),
+        )
     }
 
     @Test
