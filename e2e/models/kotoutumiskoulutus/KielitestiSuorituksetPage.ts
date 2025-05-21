@@ -40,6 +40,15 @@ export default class KielitestiSuorituksetPage extends BasePage {
     return suorituksetTable.getByTestId("suoritus-details-row")
   }
 
+  getSuoritusColumn(rowIndex: number, columnIndex: number) {
+    const row = this.getSuoritusRow().nth(rowIndex)
+    return row.getByRole("cell").nth(columnIndex)
+  }
+
+  getTableColumnHeaderLink(text: string) {
+    return this.getSuorituksetTable().getByRole("link", { name: text })
+  }
+
   getErrorLink() {
     return this.getContent().locator(".error-text").getByRole("link")
   }
