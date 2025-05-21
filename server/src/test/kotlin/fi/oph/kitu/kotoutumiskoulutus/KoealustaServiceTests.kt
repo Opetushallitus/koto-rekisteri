@@ -377,7 +377,11 @@ class KoealustaServiceTests {
         )
 
         assertAll(
-            fun() = assertEquals("Bad request", onrBadRequestFailure.viesti),
+            fun() =
+                assertEquals(
+                    "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (Bad request)",
+                    onrBadRequestFailure.viesti,
+                ),
             fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
         )
     }
