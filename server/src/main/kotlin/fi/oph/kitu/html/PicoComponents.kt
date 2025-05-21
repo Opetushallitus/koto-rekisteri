@@ -30,7 +30,7 @@ fun FlowContent.itemSelect(
         items.forEach {
             option {
                 value = it.ref
-                selected = it.active
+                selected = it.current
                 +it.title
             }
         }

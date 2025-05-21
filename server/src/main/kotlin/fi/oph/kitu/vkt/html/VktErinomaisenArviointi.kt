@@ -3,13 +3,13 @@ package fi.oph.kitu.vkt.html
 import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.MenuItem
 import fi.oph.kitu.html.Page
-import fi.oph.kitu.html.activate
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.dateInput
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.hiddenValue
 import fi.oph.kitu.html.itemSelect
+import fi.oph.kitu.html.setCurrentItem
 import fi.oph.kitu.html.submitButton
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.schema.Henkilosuoritus
@@ -92,7 +92,7 @@ fun FlowContent.vktErinomainenOsakoeTable(osat: List<VktOsakoe>) {
                         listOf(
                             MenuItem("Erinomainen", Koodisto.VktArvosana.Erinomainen.name),
                             MenuItem("Hylätty", Koodisto.VktArvosana.Hylätty.name),
-                        ).activate(it.arviointi?.arvosana?.name),
+                        ).setCurrentItem(it.arviointi?.arvosana?.name),
                 )
             },
             DisplayTableColumn("Arviointipäivä") {
