@@ -49,6 +49,16 @@ export const fixtureData = {
     virheellinenKentta: "puhuminen",
     virheellinenArvo: "virheellinen arvosana",
   }),
+  withNullValues: createError({
+    suorittajanOid: null,
+    hetu: null,
+    nimi: " ",
+    schoolOid: null,
+    teacherEmail: null,
+    viesti: "Unexpected error",
+    virheellinenKentta: null,
+    virheellinenArvo: null,
+  }),
 } as const
 
 const insertQuery = (virhe: KotoError) => SQL`
