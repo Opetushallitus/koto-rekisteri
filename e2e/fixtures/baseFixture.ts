@@ -10,7 +10,7 @@ import * as ykiSuoritusErrorFixture from "./ykiSuoritusError"
 import * as kotoSuoritusErrorFixture from "./kotoError"
 import BasePage from "../models/BasePage"
 import { Config, createConfig } from "../config"
-import KielitestiErrorPage from "../models/kotoutumiskoulutus/KielitestiErrorPage";
+import KielitestiErrorPage from "../models/kotoutumiskoulutus/KielitestiErrorPage"
 
 interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
@@ -44,11 +44,8 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
     )
     await use(kielitestiSuorituksetPage)
   },
-  kielitestiErrorPage:  async ({ page, config }, use) => {
-    const kielitestiErrorPage = new KielitestiErrorPage(
-        page,
-        config,
-    )
+  kielitestiErrorPage: async ({ page, config }, use) => {
+    const kielitestiErrorPage = new KielitestiErrorPage(page, config)
     await use(kielitestiErrorPage)
   },
   indexPage: async ({ page, config }, use) => {
@@ -87,7 +84,7 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   ykiSuoritusError: async ({}, use) => {
     await use({ ...ykiSuoritusErrorFixture })
   },
-  kotoSuoritusError:  async ({}, use) => {
+  kotoSuoritusError: async ({}, use) => {
     await use({ ...kotoSuoritusErrorFixture })
   },
 })
