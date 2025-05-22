@@ -56,6 +56,7 @@ class MockLoginController(
                         SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI"),
                         SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_READ"),
                         SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_READ_1.2.246.562.10.00000000001"),
+                        SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_VKT"),
                     ),
             )
         val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
