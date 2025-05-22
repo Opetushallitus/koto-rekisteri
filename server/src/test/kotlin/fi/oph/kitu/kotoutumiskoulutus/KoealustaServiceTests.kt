@@ -61,7 +61,7 @@ class KoealustaServiceTests {
                                 request =
                                     YleistunnisteHaeRequest(
                                         etunimet = "Antero",
-                                        hetu = "12345678902",
+                                        hetu = "12345678903",
                                         kutsumanimi = "Antero",
                                         sukunimi = "Testi-Moikka",
                                     ),
@@ -75,7 +75,7 @@ class KoealustaServiceTests {
                                 request =
                                     YleistunnisteHaeRequest(
                                         etunimet = "Antero",
-                                        hetu = "12345678902",
+                                        hetu = "12345678904",
                                         kutsumanimi = "Antero",
                                         sukunimi = "Testi-Moikka",
                                     ),
@@ -272,20 +272,12 @@ class KoealustaServiceTests {
 
         val errors = kielitestiSuoritusErrorRepository.findAll().toList()
 
-        // Jos emme saa ONR:stä oppijanumeroa, niin validaatiologiikka tuottaa virheen sekä oppijalle että jokaiselle suoritukselle.
+        assertEquals(1, errors.size)
 
-        val suoritusValidationFailure = errors[0]
-        val oppijaValidationFailure = errors[1]
-
-        assertAll(
-            fun() = assertEquals("""Missing student "oppijanumero" for user "1"""", suoritusValidationFailure.viesti),
-            fun() = assertEquals("12345678902", suoritusValidationFailure.hetu),
-            fun() = assertEquals("oppijanumero", suoritusValidationFailure.virheellinenKentta, "virheellinen kenttä"),
-            fun() = assertEquals(null, suoritusValidationFailure.virheellinenArvo, "virheellinen arvo"),
-            fun() = assertEquals("Testi-Moikka Antero", suoritusValidationFailure.nimi),
-        )
+        val oppijaValidationFailure = errors.first()
 
         assertAll(
+            fun() = assertEquals("12345678902", oppijaValidationFailure.hetu),
             fun() =
                 assertEquals(
                     "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (virheviesti)",
@@ -447,7 +439,8 @@ class KoealustaServiceTests {
         koealusta.verify()
 
         val errors = kielitestiSuoritusErrorRepository.findAll().toList()
-        val oppijaValidationFailure = errors[0]
+        assertEquals(1, errors.size)
+        val oppijaValidationFailure = errors.first()
 
         assertAll(
             fun() = assertEquals("1.2.246.562.10.1234567890", oppijaValidationFailure.schoolOid.toString()),
@@ -532,29 +525,19 @@ class KoealustaServiceTests {
         )
 
         val errors = kielitestiSuoritusErrorRepository.findAll().toList()
-
-        // Jos emme saa ONR:stä oppijanumeroa, niin validaatiologiikka tuottaa virheen sekä oppijalle että jokaiselle suoritukselle.
-
-        val suoritusValidationFailure = errors[0]
-        val onrBadRequestFailure = errors[1]
+        assertEquals(1, errors.size)
+        val onrBadRequestFailure = errors.first()
 
         assertAll(
-            fun() = assertEquals("""Missing student "oppijanumero" for user "1"""", suoritusValidationFailure.viesti),
-            fun() = assertEquals("12345678903", suoritusValidationFailure.hetu),
-            fun() = assertEquals("oppijanumero", suoritusValidationFailure.virheellinenKentta, "virheellinen kenttä"),
-            fun() = assertEquals(null, suoritusValidationFailure.virheellinenArvo, "virheellinen arvo"),
-            fun() = assertEquals("Testi-Moikka Antero", suoritusValidationFailure.nimi),
-            fun() = assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString()),
-            fun() = assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail),
-        )
-
-        assertAll(
+            fun() = assertEquals("12345678903", onrBadRequestFailure.hetu),
             fun() =
                 assertEquals(
                     "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (Bad request)",
                     onrBadRequestFailure.viesti,
                 ),
             fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
+            fun() = assertEquals("1.2.246.562.10.1234567890", onrBadRequestFailure.schoolOid.toString()),
+            fun() = assertEquals("opettaja@testi.oph.fi", onrBadRequestFailure.teacherEmail),
         )
     }
 }
