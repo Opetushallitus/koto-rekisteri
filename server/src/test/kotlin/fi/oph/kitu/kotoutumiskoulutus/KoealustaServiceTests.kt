@@ -123,7 +123,6 @@ class KoealustaServiceTests {
                           "firstnames": "Ranja Testi",
                           "lastname": "\u00f6hman-Testi",
                           "preferredname": "Ranja", 
-                          "oppijanumero": "1.2.246.562.24.33342764709",
                           "SSN": "12345678901",
                           "email": "ranja.testi@oph.fi",
                           "completions": [
@@ -187,6 +186,11 @@ class KoealustaServiceTests {
         assertEquals(
             expected = Oid.parse("1.2.246.562.10.1234567890").getOrThrow(),
             actual = ranja.schoolOid,
+        )
+
+        assertEquals(
+            expected = Oid.parse("1.2.246.562.24.33342764709").getOrThrow(),
+            actual = ranja.oppijanumero,
         )
 
         assertEquals(0, kielitestiSuoritusErrorRepository.findAll().count())
@@ -292,7 +296,7 @@ class KoealustaServiceTests {
     }
 
     @Test
-    fun `import with suoritus validation error saves schoolOID and teacherEmail to error`(
+    fun `import with suoritus validation error`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
@@ -313,7 +317,7 @@ class KoealustaServiceTests {
                           "firstnames": "Antero",
                           "lastname": "Testi-Moikka",
                           "preferredname": "Antero", 
-                          "SSN": "12345678902",
+                          "SSN": "12345678901",
                           "email": "ranja.testi@oph.fi",
                           "completions": [
                             {
@@ -357,42 +361,25 @@ class KoealustaServiceTests {
 
         val errors = kielitestiSuoritusErrorRepository.findAll().toList()
 
+        assertEquals(1, errors.size)
+
         val missingPuhuminenError = errors[0]
         assertAll(
+            fun() = assertEquals("Testi-Moikka Antero", missingPuhuminenError.nimi),
+            fun() = assertEquals("12345678901", missingPuhuminenError.hetu),
             fun() = assertEquals("1.2.246.562.10.1234567890", missingPuhuminenError.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", missingPuhuminenError.teacherEmail),
+            fun() = assertEquals("puhuminen", missingPuhuminenError.virheellinenKentta),
             fun() =
                 assertEquals(
                     "Unexpectedly missing quiz grade \"puhuminen\" on course \"Integraatio testaus\" for user \"1\"",
                     missingPuhuminenError.viesti,
                 ),
         )
-
-        val missingOppijanumeroError = errors[1]
-        assertAll(
-            fun() = assertEquals("1.2.246.562.10.1234567890", missingOppijanumeroError.schoolOid.toString()),
-            fun() = assertEquals("opettaja@testi.oph.fi", missingOppijanumeroError.teacherEmail),
-            fun() =
-                assertEquals(
-                    "Missing student \"oppijanumero\" for user \"1\"",
-                    missingOppijanumeroError.viesti,
-                ),
-        )
-
-        val onrRequestError = errors[2]
-        assertAll(
-            fun() = assertEquals("1.2.246.562.10.1234567890", onrRequestError.schoolOid.toString()),
-            fun() = assertEquals("opettaja@testi.oph.fi", onrRequestError.teacherEmail),
-            fun() =
-                assertEquals(
-                    "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (virheviesti)",
-                    onrRequestError.viesti,
-                ),
-        )
     }
 
     @Test
-    fun `import with oppija validation error saves schoolOID and teacherEmail to error`(
+    fun `import with oppija validation error`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
@@ -430,6 +417,10 @@ class KoealustaServiceTests {
                                   "quiz_grade": "B1"
                                 },
                                 {
+                                  "name": "puhuminen",
+                                  "quiz_grade": "B1"
+                                },
+                                {
                                   "name": "kirjoittaminen",
                                   "quiz_grade": "B1"
                                 }
@@ -456,16 +447,13 @@ class KoealustaServiceTests {
         koealusta.verify()
 
         val errors = kielitestiSuoritusErrorRepository.findAll().toList()
-        val suoritusValidationFailure = errors[0]
-        val oppijaValidationFailure = errors[1]
+        val oppijaValidationFailure = errors[0]
 
-        assertAll(
-            fun() = assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString()),
-            fun() = assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail),
-        )
         assertAll(
             fun() = assertEquals("1.2.246.562.10.1234567890", oppijaValidationFailure.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", oppijaValidationFailure.teacherEmail),
+            fun() = assertEquals("Missing student \"SSN\" for user \"1\"", oppijaValidationFailure.viesti),
+            fun() = assertEquals("SSN", oppijaValidationFailure.virheellinenKentta),
         )
     }
 
@@ -556,6 +544,8 @@ class KoealustaServiceTests {
             fun() = assertEquals("oppijanumero", suoritusValidationFailure.virheellinenKentta, "virheellinen kenttä"),
             fun() = assertEquals(null, suoritusValidationFailure.virheellinenArvo, "virheellinen arvo"),
             fun() = assertEquals("Testi-Moikka Antero", suoritusValidationFailure.nimi),
+            fun() = assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString()),
+            fun() = assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail),
         )
 
         assertAll(
