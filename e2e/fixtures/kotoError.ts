@@ -22,7 +22,7 @@ const createError = ({
   nimi,
   schoolOid,
   teacherEmail = "opettaja@testi.oph.fi",
-  virheenLuontiaika = "2024-11-22 10:49:49",
+  virheenLuontiaika = "2024-11-22T10:49:49Z",
   viesti,
   virheellinenKentta,
   virheellinenArvo,
@@ -47,7 +47,7 @@ export const fixtureData = {
     viesti:
       'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
     virheellinenKentta: "puhuminen",
-    virheellinenArvo: "",
+    virheellinenArvo: "virheellinen arvosana",
   }),
 } as const
 
@@ -66,12 +66,11 @@ const insertQuery = (virhe: KotoError) => SQL`
              ${virhe.suorittajanOid},
              ${virhe.hetu},
              ${virhe.nimi},
-             ${virhe.nimi},
              ${virhe.viesti},
              ${virhe.virheenLuontiaika},
              ${virhe.virheellinenKentta},
-             ${virhe.virheellinenArvo}
-                 ${virhe.schoolOid},
+             ${virhe.virheellinenArvo},
+             ${virhe.schoolOid},
              ${virhe.teacherEmail})
 `
 

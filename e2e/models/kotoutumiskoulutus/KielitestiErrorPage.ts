@@ -9,6 +9,10 @@ export default class KielitestiErrorPage extends BasePage {
     super(page, config)
   }
 
+  async open() {
+    await this.goto(this.url)
+  }
+
   getContent() {
     return this.getPageContent()
   }
