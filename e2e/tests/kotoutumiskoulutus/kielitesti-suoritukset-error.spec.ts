@@ -22,8 +22,8 @@ describe('"Koto Suoritukset" -page', () => {
 
     expect(page.url()).toContain(kielitestiErrorPage.url)
 
-    const errors = await kielitestiErrorPage.getErrorRow()
-    await expect(errors).toHaveCount(1)
+    const errors = await kielitestiErrorPage.getErrorRows()
+    await expect(errors.length).toEqual(1)
   })
 
   test("koto suoritus error is displayed properly", async ({
@@ -32,10 +32,9 @@ describe('"Koto Suoritukset" -page', () => {
   }) => {
     await kielitestiErrorPage.open()
 
-    const errors = await kielitestiErrorPage.getErrorRow()
+    const errors = await kielitestiErrorPage.getErrorTableBody()
 
     const virheFixture = fixtureData.suoritusVirhe
-    const hetuSpan = await errors.getByText(virheFixture.hetu)
     const hetuCell = await errors.getByRole("cell", { name: virheFixture.hetu })
     const nimiCell = await errors.getByText(virheFixture.nimi)
     const schoolOidCell = await errors.getByText(virheFixture.schoolOid)
@@ -68,5 +67,20 @@ describe('"Koto Suoritukset" -page', () => {
     expect(await virheellinenArvoCell.getAttribute("headers")).toEqual(
       "virheellinenArvo",
     )
+  })
+
+  test("koto suoritukset error page handles null values in error properly", async ({
+    page,
+    kielitestiErrorPage,
+    db,
+    kotoSuoritusError,
+  }) => {
+    await kotoSuoritusError.insert(db, "withNullValues")
+    await kielitestiErrorPage.open()
+
+    expect(page.url()).toContain(kielitestiErrorPage.url)
+
+    const errors = await kielitestiErrorPage.getErrorRows()
+    await expect(errors.length).toEqual(2)
   })
 })

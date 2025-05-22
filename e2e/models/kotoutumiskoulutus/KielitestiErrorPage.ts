@@ -21,8 +21,12 @@ export default class KielitestiErrorPage extends BasePage {
     return this.getContent().getByRole("table")
   }
 
-  async getErrorRow() {
+  async getErrorTableBody() {
     const errorsTable = this.getErrorsTable()
     return errorsTable.locator(".virheet")
+  }
+
+  async getErrorRows() {
+    return this.getContent().getByTestId("virhe-summary-row").all()
   }
 }
