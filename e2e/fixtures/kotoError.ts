@@ -1,57 +1,55 @@
-import SQL from "sql-template-strings";
-import {TestDB} from "./baseFixture";
-import {YkiSuorittajaErrorName} from "./ykiSuoritusError";
+import SQL from "sql-template-strings"
+import { TestDB } from "./baseFixture"
+import { YkiSuorittajaErrorName } from "./ykiSuoritusError"
 
 export type Oid = `${number}.${number}.${number}.${number}.${number}.${number}`
 
 export interface KotoError {
-    suorittajanOid: string,
-    hetu: string,
-    nimi: string,
-    schoolOid: Oid,
-    teacherEmail: string,
-    virheenLuontiaika: string,
-    viesti: string,
-    virheellinenKentta: string,
-    virheellinenArvo: string,
+  suorittajanOid: string
+  hetu: string
+  nimi: string
+  schoolOid: Oid
+  teacherEmail: string
+  virheenLuontiaika: string
+  viesti: string
+  virheellinenKentta: string
+  virheellinenArvo: string
 }
 
 const createError = ({
-    suorittajanOid = "1.2.246.562.24.33342764709",
-    hetu,
-    nimi,
-    schoolOid,
-    teacherEmail = "opettaja@testi.oph.fi",
-    virheenLuontiaika = "2024-11-22 10:49:49",
-    viesti,
-    virheellinenKentta,
-    virheellinenArvo,
+  suorittajanOid = "1.2.246.562.24.33342764709",
+  hetu,
+  nimi,
+  schoolOid,
+  teacherEmail = "opettaja@testi.oph.fi",
+  virheenLuontiaika = "2024-11-22 10:49:49",
+  viesti,
+  virheellinenKentta,
+  virheellinenArvo,
 }: Partial<KotoError>) => ({
-    suorittajanOid,
-    hetu,
-    nimi,
-    schoolOid,
-    teacherEmail,
-    virheenLuontiaika,
-    viesti,
-    virheellinenKentta,
-    virheellinenArvo,
+  suorittajanOid,
+  hetu,
+  nimi,
+  schoolOid,
+  teacherEmail,
+  virheenLuontiaika,
+  viesti,
+  virheellinenKentta,
+  virheellinenArvo,
 })
 
 export const fixtureData = {
-    suoritusVirhe: createError({
-        hetu: "010180-9026",
-        nimi: "Öhman Testi Ranja Testi",
-        schoolOid: "1.2.246.562.10.1234567890",
-        teacherEmail: "opettaja@testi.oph.fi",
-        viesti: "Unexpectedly missing quiz grade \"puhuminen\" on course \"Integraatio testaus\" for user \"1\"",
-        virheellinenKentta: "puhuminen",
-        virheellinenArvo: ""
-        }
-    )
+  suoritusVirhe: createError({
+    hetu: "010180-9026",
+    nimi: "Öhman Testi Ranja Testi",
+    schoolOid: "1.2.246.562.10.1234567890",
+    teacherEmail: "opettaja@testi.oph.fi",
+    viesti:
+      'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
+    virheellinenKentta: "puhuminen",
+    virheellinenArvo: "",
+  }),
 } as const
-
-
 
 const insertQuery = (virhe: KotoError) => SQL`
   INSERT INTO koto_suoritus_error (
@@ -80,4 +78,4 @@ const insertQuery = (virhe: KotoError) => SQL`
 export type KotoErrorName = keyof typeof fixtureData
 
 export const insert = async (db: TestDB, error: KotoErrorName) =>
-    await db.dbClient.query(insertQuery(fixtureData[error]))
+  await db.dbClient.query(insertQuery(fixtureData[error]))
