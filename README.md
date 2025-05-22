@@ -14,6 +14,9 @@ perustusta, joten sen ajaminen erikseen ei ole tarpeen. Ajantasainen lista asenn
 
 ## Kehittäminen
 
+Idea: Configure Command-line launcher
+   -> Lisää .zshrc tms PATH:iin
+   
 ### Salaisuudet paikallisessa kehityksessä
 
 Sovellus hakee salaisuudet AWS Secrets Managerista `start_local_env.sh` tai
