@@ -2,6 +2,8 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.koodisto.Koodisto
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Sort
+import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -9,12 +11,34 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDate
 
 @Repository
-interface VKTSuoritusRepository :
+interface VktSuoritusRepository :
     CrudRepository<VktSuoritusEntity, Int>,
-    PagingAndSortingRepository<VktSuoritusEntity, Int>
+    PagingAndSortingRepository<VktSuoritusEntity, Int> {
+    @Query(
+        """
+        WITH ranked_rows AS (
+        	SELECT
+        		id,
+        		row_number() OVER (PARTITION BY ilmoittautumisen_id ORDER BY created_at DESC) rn
+        	FROM vkt_suoritus
+        )
+        SELECT id
+        FROM ranked_rows
+        WHERE rn = 1
+        """,
+    )
+    fun findIdsOfLatestVersions(): List<Int>
+
+    fun findAllByIdIn(ids: List<Int>): List<VktSuoritusEntity>
+
+    fun findAllSortedByIdIn(
+        ids: List<Int>,
+        sort: Sort,
+    ): List<VktSuoritusEntity>
+}
 
 @Repository
-class VKTOsakoeRepository {
+class VktOsakoeRepository {
     @Autowired
     private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
 
