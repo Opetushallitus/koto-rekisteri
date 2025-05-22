@@ -1,6 +1,5 @@
 package fi.oph.kitu.schema
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -13,13 +12,13 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusEntity
+import fi.oph.kitu.vkt.VktValidation
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
-    @get:JsonProperty("henkilö")
     val henkilo: OidOppija,
     val suoritus: T,
 ) {
@@ -77,6 +76,14 @@ interface KielitutkinnonSuoritus :
     PolymorphicByTyyppi,
     Lahdejarjestelmallinen {
     override val tyyppi: Koodisto.SuorituksenTyyppi
+
+    companion object {
+        fun validateAndEnrich(suoritus: KielitutkinnonSuoritus): Result<KielitutkinnonSuoritus> =
+            when (suoritus) {
+                is VktSuoritus -> VktValidation.validateAndEnrich(suoritus)
+                else -> Result.success(suoritus)
+            }
+    }
 }
 
 interface Osasuoritus : PolymorphicByTyyppi
@@ -91,7 +98,5 @@ interface Arvioitava {
 
 interface Arviointi {
     val arvosana: Koodisto.Koodiviite
-
-    @get:JsonProperty("päivämäärä")
     val paivamaara: LocalDate
 }
