@@ -77,9 +77,9 @@ class KoealustaMappingService(
 
                 user.completions.mapNotNull { completion ->
                     completionToEntity(user, oppijanumero, completion)
-                        .onFailure {
+                        ?.onFailure {
                             validationErrors.add(it)
-                        }.getOrNull()
+                        }?.getOrNull()
                 }
             }
 
@@ -179,7 +179,7 @@ class KoealustaMappingService(
         user: User,
         oppijanumero: Oid?,
         completion: Completion,
-    ): TypedResult<KielitestiSuoritus, Error.SuoritusValidationFailure> {
+    ): TypedResult<KielitestiSuoritus, Error.SuoritusValidationFailure>? {
         val errors = mutableListOf<Error.Validation>()
         val luetunYmmartaminen =
             validate("luetun ymm\u00e4rt\u00e4minen", user.userid, completion)
@@ -202,13 +202,6 @@ class KoealustaMappingService(
             validate("schoolOID", user.userid, completion.schoolOID ?: "")
                 .onFailure { errors.add(it) }
                 .getOrNull()
-        val preferredName =
-            validateNonEmpty("preferredname", user.userid, user.preferredname)
-                .onFailure { errors.add(it) }
-                .getOrNull()
-        if (oppijanumero == null) {
-            errors.add(Error.Validation.MissingField("oppijanumero", user.userid))
-        }
 
         if (errors.isNotEmpty()) {
             return Failure(
@@ -225,19 +218,19 @@ class KoealustaMappingService(
             )
         }
 
+        if (user.preferredname == null || oppijanumero == null) return null
+
         checkNotNull(luetunYmmartaminen?.quiz_grade)
         checkNotNull(kuullunYmmartaminen?.quiz_grade)
         checkNotNull(puhe?.quiz_grade)
         checkNotNull(kirjoittaminen?.quiz_grade)
         checkNotNull(schoolOid)
-        checkNotNull(preferredName)
-        checkNotNull(oppijanumero)
 
         return Success(
             KielitestiSuoritus(
                 firstNames = user.firstnames,
                 lastName = user.lastname,
-                preferredname = preferredName,
+                preferredname = user.preferredname,
                 email = user.email,
                 oppijanumero = oppijanumero,
                 timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
