@@ -2,8 +2,11 @@ package fi.oph.kitu.e2e
 
 import fi.oph.kitu.dev.YkiController
 import fi.oph.kitu.yki.YkiService
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -13,12 +16,15 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.Instant
+import kotlin.test.assertEquals
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @Testcontainers
 class YkiServiceTests(
     @Autowired val ykiService: YkiService,
     @Autowired val ykiDevController: YkiController,
+    @Autowired val ykiSuoritusErrorRepository: YkiSuoritusErrorRepository,
+    @Autowired val ykiSuoritusRepository: YkiSuoritusRepository,
 ) {
     @Suppress("unused")
     companion object {
@@ -28,6 +34,12 @@ class YkiServiceTests(
         val postgres =
             PostgreSQLContainer("postgres:16")
                 .withUrlParam("stringtype", "unspecified")!!
+    }
+
+    @BeforeEach
+    fun nukeDb() {
+        ykiSuoritusErrorRepository.deleteAll()
+        ykiSuoritusRepository.deleteAll()
     }
 
     @Test
@@ -44,9 +56,12 @@ class YkiServiceTests(
                 ),
         )
 
-        assertDoesNotThrow {
-            ykiService.importYkiSuoritukset(Instant.now())
-        }
+        ykiService.importYkiSuoritukset(Instant.now())
+
+        assertAll(
+            fun() = assertEquals(0, ykiSuoritusErrorRepository.findAll().count()),
+            fun() = assertEquals(3, ykiSuoritusRepository.findAll().count()),
+        )
     }
 
     @Test
@@ -67,5 +82,10 @@ class YkiServiceTests(
         assertThrows<YkiService.Error.CsvConversionError> {
             ykiService.importYkiSuoritukset(Instant.now())
         }
+
+        assertAll(
+            fun() = assertEquals(2, ykiSuoritusErrorRepository.findAll().count()),
+            fun() = assertEquals(2, ykiSuoritusRepository.findAll().count()),
+        )
     }
 }

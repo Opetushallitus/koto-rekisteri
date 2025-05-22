@@ -69,7 +69,7 @@ class YkiSuoritusErrorTests(
         val span =
             inMemorySpanExporter
                 .finishedSpanItems
-                .find { it.name == "SimpleErrorHandler.handleErrors" }
+                .find { it.name == "YkiSuoritusErrorService.handleErrors" }
 
         val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
 
@@ -88,7 +88,8 @@ class YkiSuoritusErrorTests(
         assertEquals(0, serializationErrors.size)
     }
 
-    @Test fun `saving errors work correctly`() {
+    @Test
+    fun `saving errors work correctly`() {
         // Arrange
         val errors =
             listOf(
@@ -126,12 +127,26 @@ class YkiSuoritusErrorTests(
     }
 
     @Test
-    fun `suoritus handleErrors will append new csv errors to the database`() {
+    fun `arvioija handleErrors will replace old errors`() {
         // Arrange
         val errors =
             listOf(
                 SimpleCsvExportError(
                     lineNumber = 2,
+                    context =
+                        """
+                        ,\"010180-9026\",\"N\",\"Öhman-Testi\",\"Ranja Testi\",\"EST\",\"Testikuja 5\",\"40100\",\"Testilä\",\"testi@testi.fi\",183424,2024-10-30T13:53:56Z,2024-09-01,\"fin\",\"YT\",\"1.2.246.562.10.14893989377\",\"Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus\",2024-11-14,4,4,,4,4,,,,0,0,,
+                        """.trimIndent(),
+                    exception =
+                        RuntimeException(
+                            """
+                            Cannot construct instance of `fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv`, problem: Parameter specified as non-null is null: method fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv.<init>, parameter suorittajanOID
+                                at [Source: (StringReader); line: 2, column: 270]
+                            """.trimIndent(),
+                        ),
+                ),
+                SimpleCsvExportError(
+                    lineNumber = 3,
                     context =
                         """
                         ,\"010180-9026\",\"N\",\"Öhman-Testi\",\"Ranja Testi\",\"EST\",\"Testikuja 5\",\"40100\",\"Testilä\",\"testi@testi.fi\",183424,2024-10-30T13:53:56Z,2024-09-01,\"fin\",\"YT\",\"1.2.246.562.10.14893989377\",\"Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus\",2024-11-14,5,5,,5,5,,,,0,0,,
@@ -145,11 +160,13 @@ class YkiSuoritusErrorTests(
                         ),
                 ),
             )
-        repository.save(
+        repository.saveAll(
             // Existing error
-            generateRandomYkiSuoritusErrorEntity().copy(
-                virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
-            ),
+            (1..5).map {
+                generateRandomYkiSuoritusErrorEntity().copy(
+                    virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
+                )
+            },
         )
 
         // Act
@@ -161,18 +178,17 @@ class YkiSuoritusErrorTests(
 
         val spans = inMemorySpanExporter.finishedSpanItems
 
-        val span = spans.find { it.name == "SimpleErrorHandler.handleErrors" }
-        assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.handleErrors" })
+        val span = spans.find { it.name == "YkiSuoritusErrorService.handleErrors" }
         assertNotNull(spans.find { it.name == "YkiSuoritusErrorMappingService.convertToEntityIterable" })
 
         val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
-        assertEquals(1, errorSize)
+        assertEquals(2, errorSize)
 
         val truncate = span.attributes!!.get(AttributeKey.booleanKey("errors.truncate"))
         assertEquals(false, truncate)
 
         val addedSize = span.attributes!!.get(AttributeKey.longKey("errors.addedSize"))
-        assertEquals(1, addedSize)
+        assertEquals(2, addedSize)
 
         // verify serialization errors (technical errors)
         val serializationErrors =
@@ -181,7 +197,7 @@ class YkiSuoritusErrorTests(
                 ?.filterKeys { at -> at.key.startsWith("serialization.error") }
                 ?: emptyMap()
 
-        assertEquals(3, serializationErrors.size)
+        assertEquals(6, serializationErrors.size)
 
         val exception =
             serializationErrors
