@@ -184,7 +184,6 @@ interface VktOsakoe :
     val internalId: Int?
     override val tyyppi: Koodisto.VktOsakoe
 
-    @get:JsonProperty("tutkintopäivä")
     val tutkintopaiva: LocalDate
     override val arviointi: VktArvionti?
 
