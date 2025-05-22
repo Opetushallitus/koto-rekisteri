@@ -32,7 +32,10 @@ class WebSecurityConfig {
     ): SecurityFilterChain {
         http {
             csrf {
-                ignoringRequestMatchers("/api/*", "/db-scheduler-api/**")
+                ignoringRequestMatchers(
+                    "/api/**",
+                    "/db-scheduler-api/**",
+                )
             }
             logout {
                 logoutSuccessUrl = casConfig.getCasLogoutUrl()
@@ -52,6 +55,7 @@ class WebSecurityConfig {
                     authorize("/dev/**", permitAll)
                 }
 
+                // authorize("/api/vkt/kios", hasRole("APP_KIELITUTKINTOREKISTERI_VKT"))
                 authorize(anyRequest, hasRole("APP_KIELITUTKINTOREKISTERI_READ"))
             }
             exceptionHandling {
