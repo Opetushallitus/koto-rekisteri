@@ -356,11 +356,38 @@ class KoealustaServiceTests {
         koealusta.verify()
 
         val errors = kielitestiSuoritusErrorRepository.findAll().toList()
-        val suoritusValidationFailure = errors[0]
+
+        val missingPuhuminenError = errors[0]
         assertAll(
-            fun() = assertEquals("1.2.246.562.10.1234567890", suoritusValidationFailure.schoolOid.toString()),
-            fun() = assertEquals("opettaja@testi.oph.fi", suoritusValidationFailure.teacherEmail),
-            fun() = assertEquals("viesti", suoritusValidationFailure.viesti),
+            fun() = assertEquals("1.2.246.562.10.1234567890", missingPuhuminenError.schoolOid.toString()),
+            fun() = assertEquals("opettaja@testi.oph.fi", missingPuhuminenError.teacherEmail),
+            fun() =
+                assertEquals(
+                    "Unexpectedly missing quiz grade \"puhuminen\" on course \"Integraatio testaus\" for user \"1\"",
+                    missingPuhuminenError.viesti,
+                ),
+        )
+
+        val missingOppijanumeroError = errors[1]
+        assertAll(
+            fun() = assertEquals("1.2.246.562.10.1234567890", missingOppijanumeroError.schoolOid.toString()),
+            fun() = assertEquals("opettaja@testi.oph.fi", missingOppijanumeroError.teacherEmail),
+            fun() =
+                assertEquals(
+                    "Missing student \"oppijanumero\" for user \"1\"",
+                    missingOppijanumeroError.viesti,
+                ),
+        )
+
+        val onrRequestError = errors[2]
+        assertAll(
+            fun() = assertEquals("1.2.246.562.10.1234567890", onrRequestError.schoolOid.toString()),
+            fun() = assertEquals("opettaja@testi.oph.fi", onrRequestError.teacherEmail),
+            fun() =
+                assertEquals(
+                    "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (virheviesti)",
+                    onrRequestError.viesti,
+                ),
         )
     }
 
