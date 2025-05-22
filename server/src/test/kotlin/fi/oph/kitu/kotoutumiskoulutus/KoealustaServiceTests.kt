@@ -170,30 +170,19 @@ class KoealustaServiceTests {
         // Verification
         mockServer.verify()
 
-        assertEquals(emptyList(), kielitestiSuoritusErrorRepository.findAll())
-
-        assertEquals(
-            expected = Instant.parse("2024-10-15T05:12:11Z"),
-            actual = lastSeen,
+        assertAll(
+            fun () = assertEquals(emptyList(), kielitestiSuoritusErrorRepository.findAll()),
+            fun () = assertEquals(Instant.parse("2024-10-15T05:12:11Z"), lastSeen),
         )
 
         val ranja = kielitestiSuoritusRepository.findById(1).get()
 
-        assertEquals(
-            expected = "Integraatio testaus",
-            actual = ranja.coursename,
+        assertAll(
+            fun () = assertEquals("Integraatio testaus", ranja.coursename),
+            fun () = assertEquals(Oid.parse("1.2.246.562.10.1234567890").getOrThrow(), ranja.schoolOid),
+            fun () = assertEquals(Oid.parse("1.2.246.562.24.33342764709").getOrThrow(), ranja.oppijanumero),
+            fun () = assertEquals(0, kielitestiSuoritusErrorRepository.findAll().count()),
         )
-        assertEquals(
-            expected = Oid.parse("1.2.246.562.10.1234567890").getOrThrow(),
-            actual = ranja.schoolOid,
-        )
-
-        assertEquals(
-            expected = Oid.parse("1.2.246.562.24.33342764709").getOrThrow(),
-            actual = ranja.oppijanumero,
-        )
-
-        assertEquals(0, kielitestiSuoritusErrorRepository.findAll().count())
     }
 
     @Test

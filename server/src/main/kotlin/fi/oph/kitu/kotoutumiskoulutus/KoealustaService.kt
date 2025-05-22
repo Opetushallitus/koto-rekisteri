@@ -3,6 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.findAllSorted
+import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.setAttribute
 import fi.oph.kitu.logging.use
@@ -80,22 +81,10 @@ class KoealustaService(
 
             val (suoritukset, validationFailure) = mappingService.responseStringToEntity(response.body!!)
 
-            if (validationFailure != null) {
-                kielitestiSuoritusErrorRepository.saveAll(
-                    mappingService.convertErrors(validationFailure.validationErrors),
-                )
-                kielitestiSuoritusErrorRepository.saveAll(
-                    mappingService.convertErrors(validationFailure.oppijanumeroExceptions),
-                )
-
-                span.setAttribute(
-                    "errors.db.saved",
-                    validationFailure.validationErrors.size + validationFailure.oppijanumeroExceptions.size,
-                )
-            } else {
-                span.setAttribute("errors.db.saved", 0)
-                kielitestiSuoritusErrorRepository.deleteAll()
-            }
+            kielitestiSuoritusErrorRepository.replaceAll(
+                mappingService.convertErrors(validationFailure?.validationErrors ?: listOf()) +
+                    mappingService.convertErrors(validationFailure?.oppijanumeroExceptions ?: listOf()),
+            )
 
             val savedSuoritukset =
                 kielitestiSuoritusRepository
