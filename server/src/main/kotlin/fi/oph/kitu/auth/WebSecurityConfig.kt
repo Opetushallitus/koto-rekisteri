@@ -55,7 +55,7 @@ class WebSecurityConfig {
                     authorize("/dev/**", permitAll)
                 }
 
-                // authorize("/api/vkt/kios", hasRole("APP_KIELITUTKINTOREKISTERI_VKT"))
+                authorize("/api/vkt/**", hasRole("APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS"))
                 authorize(anyRequest, hasRole("APP_KIELITUTKINTOREKISTERI_READ"))
             }
             exceptionHandling {
