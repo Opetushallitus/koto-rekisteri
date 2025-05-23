@@ -17,15 +17,23 @@ class KielitestiViewController(
     fun suorituksetView(
         sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): ModelAndView =
-        ModelAndView("koto-kielitesti-suoritukset")
+    ): ModelAndView {
+        // Convert 0 errors to null so the view knows to hide the error message
+        val errorsCount =
+            suoritusService
+                .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
+                .count()
+                .let { if (it == 0) null else it }
+
+        return ModelAndView("koto-kielitesti-suoritukset")
             .addObject("header", generateHeader<KielitestiSuoritusColumn>(sortColumn, sortDirection))
             .addObject("sortColumn", sortColumn.lowercaseName())
             .addObject("sortDirection", sortDirection)
             .addObject(
                 "errorsCount",
-                suoritusService.getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection).count(),
+                errorsCount,
             ).addObject("suoritukset", suoritusService.getSuoritukset(sortColumn, sortDirection))
+    }
 
     @GetMapping("/suoritukset/virheet")
     @WithSpan
