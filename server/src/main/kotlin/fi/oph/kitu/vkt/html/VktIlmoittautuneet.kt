@@ -33,12 +33,13 @@ object VktIlmoittautuneet {
     enum class Column(
         override val dbColumn: String?,
         override val uiHeaderValue: String,
+        override val urlParam: String,
     ) : DisplayTableEnum {
-        Sukunimi("sukunimi", "Sukunimi"),
-        Etunimet("etunimi", "Etunimet"),
-        Kieli("tutkintokieli", "Tutkintokieli"),
-        Taitotaso("taitotaso", "Taitotaso"),
-        Tutkintopaiva("tutkintopaiva", "Tutkintopäivä"),
+        Sukunimi("sukunimi", "Sukunimi", "sukunimi"),
+        Etunimet("etunimi", "Etunimet", "etunimet"),
+        Kieli("tutkintokieli", "Tutkintokieli", "kieli"),
+        Taitotaso("taitotaso", "Taitotaso", "taitotaso"),
+        Tutkintopaiva("tutkintopaiva", "Tutkintopäivä", "tutkintopaiva"),
     }
 }
 
