@@ -1,6 +1,5 @@
 package fi.oph.kitu.schema
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -10,16 +9,18 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import fi.oph.kitu.Validation
+import fi.oph.kitu.ValidationResult
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusEntity
+import fi.oph.kitu.vkt.VktValidation
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
-    @get:JsonProperty("henkilö")
     val henkilo: OidOppija,
     val suoritus: T,
 ) {
@@ -77,6 +78,14 @@ interface KielitutkinnonSuoritus :
     PolymorphicByTyyppi,
     Lahdejarjestelmallinen {
     override val tyyppi: Koodisto.SuorituksenTyyppi
+
+    companion object {
+        fun validateAndEnrich(suoritus: KielitutkinnonSuoritus): ValidationResult<KielitutkinnonSuoritus> =
+            when (suoritus) {
+                is VktSuoritus -> VktValidation.validateAndEnrich(suoritus)
+                else -> Validation.ok(suoritus)
+            }
+    }
 }
 
 interface Osasuoritus : PolymorphicByTyyppi
@@ -91,7 +100,5 @@ interface Arvioitava {
 
 interface Arviointi {
     val arvosana: Koodisto.Koodiviite
-
-    @get:JsonProperty("päivämäärä")
     val paivamaara: LocalDate
 }

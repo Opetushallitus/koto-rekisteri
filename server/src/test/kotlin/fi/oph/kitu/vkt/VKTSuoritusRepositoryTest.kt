@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Testcontainers
 class VKTSuoritusRepositoryTest(
-    @Autowired private var repository: VKTSuoritusRepository,
+    @Autowired private var repository: VktSuoritusRepository,
 ) {
     @Suppress("unused")
     companion object {

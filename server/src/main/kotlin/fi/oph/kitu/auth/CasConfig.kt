@@ -10,6 +10,7 @@ import org.springframework.security.cas.ServiceProperties
 import org.springframework.security.cas.authentication.CasAuthenticationProvider
 import org.springframework.security.cas.web.CasAuthenticationEntryPoint
 import org.springframework.security.cas.web.CasAuthenticationFilter
+import org.springframework.security.cas.web.authentication.ServiceAuthenticationDetailsSource
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.web.AuthenticationEntryPoint
 
@@ -36,35 +37,34 @@ class CasConfig {
     fun casAuthenticationFilter(
         authenticationConfiguration: AuthenticationConfiguration,
         serviceProperties: ServiceProperties,
-    ): CasAuthenticationFilter {
-        val casAuthenticationFilter = CasAuthenticationFilter()
-        casAuthenticationFilter.setAuthenticationManager(authenticationConfiguration.authenticationManager)
-        casAuthenticationFilter.setFilterProcessesUrl("/j_spring_cas_security_check")
-        casAuthenticationFilter.setServiceProperties(serviceProperties)
-        return casAuthenticationFilter
-    }
+    ): CasAuthenticationFilter =
+        CasAuthenticationFilter().apply {
+            setAuthenticationManager(authenticationConfiguration.authenticationManager)
+            setFilterProcessesUrl("/j_spring_cas_security_check")
+            setServiceProperties(serviceProperties)
+            setAuthenticationDetailsSource(ServiceAuthenticationDetailsSource(serviceProperties))
+        }
 
     @Bean
     fun casAuthenticationProvider(
         serviceProperties: ServiceProperties?,
         ticketValidator: TicketValidator?,
-    ): AuthenticationProvider {
-        val casAuthenticationProvider = CasAuthenticationProvider()
-        casAuthenticationProvider.setAuthenticationUserDetailsService(CasUserDetailsService())
-        casAuthenticationProvider.setServiceProperties(serviceProperties)
-        casAuthenticationProvider.setTicketValidator(ticketValidator)
-        casAuthenticationProvider.setKey("kitu")
-        return casAuthenticationProvider
-    }
+    ): AuthenticationProvider =
+        CasAuthenticationProvider().apply {
+            setAuthenticationUserDetailsService(CasUserDetailsService())
+            setServiceProperties(serviceProperties)
+            setTicketValidator(ticketValidator)
+            setStatelessTicketCache(CasStatelessTicketCache())
+            setKey("kitu")
+        }
 
     @Bean
     fun casTicketValidator(): TicketValidator = Cas30ServiceTicketValidator("https://$opintopolkuHostname/cas")
 
     @Bean
-    fun authenticationEntryPoint(serviceProperties: ServiceProperties): AuthenticationEntryPoint {
-        val entryPoint = CasAuthenticationEntryPoint()
-        entryPoint.loginUrl = "https://$opintopolkuHostname/cas/login"
-        entryPoint.serviceProperties = serviceProperties
-        return entryPoint
-    }
+    fun authenticationEntryPoint(serviceProperties: ServiceProperties): AuthenticationEntryPoint =
+        CasAuthenticationEntryPoint().apply {
+            loginUrl = "https://$opintopolkuHostname/cas/login"
+            setServiceProperties(serviceProperties)
+        }
 }
