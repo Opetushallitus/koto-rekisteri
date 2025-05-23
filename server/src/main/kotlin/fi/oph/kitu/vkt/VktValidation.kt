@@ -1,8 +1,9 @@
 package fi.oph.kitu.vkt
 
+import fi.oph.kitu.Validation
+import fi.oph.kitu.ValidationResult
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.schema.OidString
-import fi.oph.kitu.schema.Validation
 
 object VktValidation : Validation<VktSuoritus> {
     override fun enrich(s: VktSuoritus): VktSuoritus =
@@ -18,24 +19,24 @@ object VktValidation : Validation<VktSuoritus> {
             s
         }
 
-    override fun validationAfterEnrichment(value: VktSuoritus): Validation.Status =
+    override fun validationAfterEnrichment(value: VktSuoritus): ValidationResult<VktSuoritus> =
         Validation.fold(
             value,
             { validateSuorituspaikkakunta(it) },
             { validateSuorituksenVastaanottaja(it) },
         )
 
-    private fun validateSuorituspaikkakunta(s: VktSuoritus): Validation.Status =
+    private fun validateSuorituspaikkakunta(s: VktSuoritus): ValidationResult<VktSuoritus> =
         if (s.suorituspaikkakunta == null) {
-            Validation.Failure(listOf("Suorituspaikkakunta puuttuu"))
+            Validation.fail("Suorituspaikkakunta puuttuu")
         } else {
-            Validation.Success()
+            Validation.ok(s)
         }
 
-    private fun validateSuorituksenVastaanottaja(s: VktSuoritus): Validation.Status =
+    private fun validateSuorituksenVastaanottaja(s: VktSuoritus): ValidationResult<VktSuoritus> =
         if (s.suorituksenVastaanottaja == null) {
-            Validation.Failure(listOf("Suorituksen vastaanottaja puuttuu"))
+            Validation.fail("Suorituksen vastaanottaja puuttuu")
         } else {
-            Validation.Success()
+            Validation.ok(s)
         }
 }

@@ -9,6 +9,8 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import fi.oph.kitu.Validation
+import fi.oph.kitu.ValidationResult
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusEntity
@@ -78,10 +80,10 @@ interface KielitutkinnonSuoritus :
     override val tyyppi: Koodisto.SuorituksenTyyppi
 
     companion object {
-        fun validateAndEnrich(suoritus: KielitutkinnonSuoritus): Result<KielitutkinnonSuoritus> =
+        fun validateAndEnrich(suoritus: KielitutkinnonSuoritus): ValidationResult<KielitutkinnonSuoritus> =
             when (suoritus) {
                 is VktSuoritus -> VktValidation.validateAndEnrich(suoritus)
-                else -> Result.success(suoritus)
+                else -> Validation.ok(suoritus)
             }
     }
 }
