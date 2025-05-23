@@ -7,7 +7,10 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlin.random.Random
 
-fun generateRandomYkiSuoritusEntity(): YkiSuoritusEntity {
+fun generateRandomYkiSuoritusEntity(
+    minDate: LocalDate = LocalDate.of(2000, 1, 1),
+    maxDate: LocalDate = LocalDate.now().minusDays(28),
+): YkiSuoritusEntity {
     val randomPerson = generateRandomPerson()
 
     val (
@@ -16,12 +19,7 @@ fun generateRandomYkiSuoritusEntity(): YkiSuoritusEntity {
         tarkistusarvioinninSaapumisPvm,
         tarkistusarvioinninKasittelyPvm,
         lastModifiedLocalDate,
-    ) =
-        getRandomLocalDates(
-            5,
-            LocalDate.of(2000, 1, 1),
-            LocalDate.now().minusDays(28),
-        ).sorted()
+    ) = getRandomLocalDates(5, minDate, maxDate).sorted()
 
     val lastModified = lastModifiedLocalDate.atStartOfDay().toInstant(ZoneOffset.UTC)
 

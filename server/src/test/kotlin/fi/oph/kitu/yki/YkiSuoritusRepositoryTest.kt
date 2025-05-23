@@ -4,6 +4,7 @@ import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -83,8 +84,8 @@ class YkiSuoritusRepositoryTest(
 
     @Test
     fun `finding distinct suoritukset returns the latest suoritus of same suoritusId`() {
-        val suoritus = generateRandomYkiSuoritusEntity()
-        val suoritus2 = generateRandomYkiSuoritusEntity()
+        val suoritus = generateRandomYkiSuoritusEntity(maxDate = LocalDate.of(2024, 9, 1))
+        val suoritus2 = generateRandomYkiSuoritusEntity(maxDate = LocalDate.of(2024, 9, 1))
 
         val updatedSuoritus =
             suoritus.copy(
@@ -103,12 +104,19 @@ class YkiSuoritusRepositoryTest(
                 tarkistusarvioinninKasittelyPvm = LocalDate.of(2024, 10, 15),
             )
         ykiSuoritusRepository.saveAll(listOf(suoritus, suoritus2, updatedSuoritus))
-        val suoritukset = ykiSuoritusRepository.find(distinct = true).toList()
-        val nulledSuoritukset = suoritukset.map { it.copy(id = null) }
-        assertContains(nulledSuoritukset, updatedSuoritus)
-        assertContains(nulledSuoritukset, suoritus2)
-        assertFalse(nulledSuoritukset.contains(suoritus))
-        assertEquals(2, suoritukset.count())
+
+        val suoritukset =
+            ykiSuoritusRepository
+                .find(distinct = true)
+                .map { it.copy(id = null) }
+                .toList()
+
+        assertAll(
+            fun() = assertContains(suoritukset, updatedSuoritus),
+            fun() = assertContains(suoritukset, suoritus2),
+            fun() = assertFalse(suoritukset.contains(suoritus)),
+            fun() = assertEquals(2, suoritukset.count()),
+        )
     }
 
     @Test
