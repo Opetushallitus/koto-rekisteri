@@ -24,9 +24,15 @@ fun FlowContent.vktTutkinnot(data: Henkilosuoritus<VktSuoritus>) {
             rows = data.suoritus.tutkinnot,
             columns =
                 listOf(
-                    DisplayTableColumn("Tutkinto") { +it.tyyppi.koodiarvo },
-                    DisplayTableColumn("Viimeisin tutkintopäivä") { +(it.viimeisinTutkintopaiva()?.toString() ?: "") },
-                    DisplayTableColumn("Arvosana") { +(it.arviointi()?.arvosana?.koodiarvo ?: "") },
+                    DisplayTableColumn("Tutkinto", width = "25%") {
+                        +it.tyyppi.koodiarvo
+                    },
+                    DisplayTableColumn("Viimeisin tutkintopäivä", width = "25%") {
+                        +(it.viimeisinTutkintopaiva()?.toString() ?: "")
+                    },
+                    DisplayTableColumn("Arvosana", width = "50%") {
+                        +(it.arviointi()?.arvosana?.koodiarvo ?: "")
+                    },
                 ),
             compact = true,
         )
