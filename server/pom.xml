@@ -274,7 +274,7 @@
         <dependency>
             <groupId>no.bekk.db-scheduler-ui</groupId>
             <artifactId>db-scheduler-ui-starter</artifactId>
-            <version>4.1.0</version>
+            <version>4.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
