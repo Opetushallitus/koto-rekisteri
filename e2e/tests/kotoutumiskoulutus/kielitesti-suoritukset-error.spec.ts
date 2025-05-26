@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 import { fixtureData } from "../../fixtures/kotoError"
+import { enumerate } from "../../util/arrays"
 
 describe('"Koto Suoritukset" -page', () => {
   beforeEach(async ({ db, basePage, kotoSuoritusError }) => {
@@ -79,4 +80,101 @@ describe('"Koto Suoritukset" -page', () => {
     const errors = await kielitestiErrorPage.getErrorRows()
     expect(errors).toHaveLength(2)
   })
+
+  const sortTestCases = [
+    {
+      column: "Henkilötunnus",
+      tableColumnIndex: 0,
+      order: Array<string>("010866-9260", "010180-9026", "010116A9518"),
+    },
+    {
+      column: "Nimi",
+      tableColumnIndex: 1,
+      order: Array<string>(
+        "Sallinen-Testi Magdalena Testi",
+        "Öhman Testi Ranja Testi",
+        "Kivinen-Testi Petro Testi",
+      ),
+    },
+    {
+      column: "Organisaation OID",
+      tableColumnIndex: 2,
+      order: Array<string>(
+        "1.2.246.562.10.1234567891",
+        "1.2.246.562.10.1234567890",
+        "1.2.246.562.10.0987654321",
+      ),
+    },
+    {
+      column: "Opettajan sähköpostiosoite",
+      tableColumnIndex: 3,
+      order: Array<string>(
+        "yksi-opettajista@testi.oph.fi",
+        "toinen-opettaja@testi.oph.fi",
+        "opettaja@testi.oph.fi",
+      ),
+    },
+    {
+      column: "Virheen luontiaika",
+      tableColumnIndex: 4,
+      order: Array<string>(
+        "2024-11-22T10:49:49Z",
+        "2025-05-26T12:34:56Z",
+        "2042-12-22T22:42:42Z",
+      ),
+    },
+    {
+      column: "Virheviesti",
+      tableColumnIndex: 5,
+      order: Array<string>(
+        'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
+        "testiviesti, ei tekstiviesti",
+        'Malformed quiz grade "kirjoittaminen" on course "Integraatio testaus" for user "2"',
+      ),
+    },
+    {
+      column: "Virheellinen kenttä",
+      tableColumnIndex: 6,
+      order: Array<string>("yksi niistä", "puhuminen", "kirjoittaminen"),
+    },
+    {
+      column: "Virheellinen arvo",
+      tableColumnIndex: 7,
+      order: Array<string>(
+        "virheellinen arvosana",
+        "tyhjää täynnä",
+        "en kerro, arvaa!",
+      ),
+    },
+  ] as const
+  for (const testCase of sortTestCases) {
+    const { column, tableColumnIndex, order } = testCase
+    const reverseOrder = [...order].reverse()
+
+    test(`registry data can be sorted by "${column}"`, async ({
+      kielitestiErrorPage: page,
+      kotoSuoritusError,
+      db,
+    }) => {
+      await kotoSuoritusError.insert(db, "virheMagdalena")
+      await kotoSuoritusError.insert(db, "virhePetro")
+
+      await page.open()
+
+      const sortByLink = page.getTableColumnHeaderLink(column)
+      await sortByLink.click()
+
+      for (const [expected, row] of enumerate(order)) {
+        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+        await expect(actualValue).toHaveText(expected)
+      }
+
+      await sortByLink.click()
+
+      for (const [expected, row] of enumerate(reverseOrder)) {
+        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+        await expect(actualValue).toHaveText(expected)
+      }
+    })
+  }
 })

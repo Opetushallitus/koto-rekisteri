@@ -21,12 +21,25 @@ export default class KielitestiErrorPage extends BasePage {
     return this.getContent().getByRole("table")
   }
 
+  getErrorRow() {
+    return this.getContent().getByTestId("virhe-summary-row")
+  }
+
   async getErrorTableBody() {
     const errorsTable = this.getErrorsTable()
     return errorsTable.locator(".virheet")
   }
 
   async getErrorRows() {
-    return this.getContent().getByTestId("virhe-summary-row").all()
+    return this.getErrorRow().all()
+  }
+
+  getSuoritusColumn(rowIndex: number, columnIndex: number) {
+    const row = this.getErrorRow().nth(rowIndex)
+    return row.getByRole("cell").nth(columnIndex)
+  }
+
+  getTableColumnHeaderLink(text: string) {
+    return this.getErrorsTable().getByRole("link", { name: text })
   }
 }
