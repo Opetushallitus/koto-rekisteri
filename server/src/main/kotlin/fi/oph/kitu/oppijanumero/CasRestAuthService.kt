@@ -2,7 +2,6 @@ package fi.oph.kitu.oppijanumero
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
@@ -22,17 +21,6 @@ class CasRestAuthService(
     val restCient: RestClient,
     val objectMapper: ObjectMapper,
 ) {
-    fun authenticateToCas(): TypedResult<*, CasError> =
-        tracer
-            .spanBuilder("CasAuthenticatedServiceImpl.authenticateToCas")
-            .startSpan()
-            .use {
-                casService
-                    .getGrantingTicket()
-                    .flatMap(casService::getServiceTicket)
-                    .flatMap(casService::sendAuthenticationRequest)
-            }
-
     final inline fun <Request : Any, reified Response : Any> authenticatedPost(
         uri: URI,
         body: Request,
@@ -53,17 +41,30 @@ class CasRestAuthService(
                 .retrieve()
                 .toEntity<Response>()
 
-        if (isLoginToCas(response)) {
-            println("Authenticate to CAS")
-        } else if (response.statusCode == HttpStatus.UNAUTHORIZED) {
-            println("Authenticate to CAS")
+        if (!requiresLogin(response)) {
+            return TypedResult.Success(response)
         }
 
-        return TypedResult.Success(response)
+        casService
+            .getGrantingTicket()
+            .flatMap(casService::getServiceTicket)
+            .flatMap(casService::sendAuthenticationRequest)
+            .flatMap {
+                restCient
+                    .post()
+                    .uri(uri)
+                    .body(bodyAsString)
+                    .accept(accept)
+                    .retrieve()
+                    .toEntity<Response>()
+            }
     }
 
     /** Check if the service that was called, redirected the response into CAS */
-    fun isLoginToCas(response: ResponseEntity<*>): Boolean {
+    fun requiresLogin(response: ResponseEntity<*>): Boolean {
+        // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
+        // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
+        // authentication gets JSESSIONID Cookie and it will be used in the next request below
         if (response.statusCode == HttpStatus.FOUND) {
             val location = response.headers.getFirst(HttpHeaders.LOCATION)
             if (location == null) {
@@ -73,6 +74,9 @@ class CasRestAuthService(
             val hasCasLogin = location.contains("/cas/login")
             return hasCasLogin
         }
-        return false
+
+        // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
+        // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
+        return response.statusCode == HttpStatus.UNAUTHORIZED
     }
 }
