@@ -5,6 +5,7 @@ import fi.oph.kitu.reverse
 import fi.oph.kitu.toSymbol
 import kotlinx.html.FlowContent
 import kotlinx.html.a
+import kotlinx.html.style
 import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
@@ -16,6 +17,7 @@ import org.apereo.cas.client.util.CommonUtils.urlEncode
 data class DisplayTableColumn<T>(
     val label: String,
     val sortKey: String? = null,
+    val width: String? = null,
     val renderValue: FlowContent.(T) -> Unit,
 )
 
@@ -48,6 +50,9 @@ fun <T> FlowContent.displayTable(
             tr {
                 columns.forEach {
                     th {
+                        if (it.width != null) {
+                            style = "width: ${it.width};"
+                        }
                         if (it.sortKey != null && sortedBy != null && sortDirection != null) {
                             val isSortedColumn = it.sortKey == sortedByKey
                             a(

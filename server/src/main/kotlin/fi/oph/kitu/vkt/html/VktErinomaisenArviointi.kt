@@ -18,6 +18,7 @@ import fi.oph.kitu.vkt.VktSuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.footer
 import kotlinx.html.h1
+import kotlinx.html.h2
 import org.springframework.security.web.csrf.CsrfToken
 import java.time.LocalDate
 
@@ -36,8 +37,11 @@ object VktErinomaisenArviointi {
             h1 { +data.henkilo.kokoNimi() }
 
             vktSuorituksenTiedot(data)
+
+            h2 { +"Tutkinnot" }
             vktTutkinnot(data)
 
+            h2 { +"Osakokeet" }
             formPost("/vkt/ilmoittautuneet/${data.suoritus.internalId}", csrfToken = csrfToken) {
                 card(overflowAuto = true) {
                     vktErinomainenOsakoeTable(data.suoritus.osat)
@@ -77,13 +81,13 @@ fun FlowContent.vktErinomainenOsakoeTable(osat: List<VktOsakoe>) {
     displayTable(
         osat.sortedBy { it.tutkintopaiva }.reversed(),
         listOf(
-            DisplayTableColumn("Osakoe") {
+            DisplayTableColumn("Osakoe", width = "25%") {
                 +it.tyyppi.koodiarvo
             },
-            DisplayTableColumn("Tutkintopäivä") {
+            DisplayTableColumn("Tutkintopäivä", width = "25%") {
                 +it.tutkintopaiva.toString()
             },
-            DisplayTableColumn("Arvosana") {
+            DisplayTableColumn("Arvosana", width = "25%") {
                 hiddenValue("id", it.internalId?.toString() ?: "")
                 itemSelect(
                     inputName = "arvosana",
@@ -95,7 +99,7 @@ fun FlowContent.vktErinomainenOsakoeTable(osat: List<VktOsakoe>) {
                         ).setCurrentItem(it.arviointi?.arvosana?.name),
                 )
             },
-            DisplayTableColumn("Arviointipäivä") {
+            DisplayTableColumn("Arviointipäivä", width = "25%") {
                 dateInput("arviointipaiva", it.arviointi?.paivamaara)
             },
         ),
