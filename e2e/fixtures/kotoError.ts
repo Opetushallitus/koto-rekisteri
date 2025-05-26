@@ -1,6 +1,5 @@
 import SQL from "sql-template-strings"
 import { TestDB } from "./baseFixture"
-import { YkiSuorittajaErrorName } from "./ykiSuoritusError"
 
 export type Oid = `${number}.${number}.${number}.${number}.${number}.${number}`
 
@@ -41,6 +40,7 @@ const createError = ({
 export const fixtureData = {
   suoritusVirhe: createError({
     hetu: "010180-9026",
+    suorittajanOid: "1.2.246.562.24.20281155246",
     nimi: "Öhman Testi Ranja Testi",
     schoolOid: "1.2.246.562.10.1234567890",
     teacherEmail: "opettaja@testi.oph.fi",
@@ -48,6 +48,30 @@ export const fixtureData = {
       'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
     virheellinenKentta: "puhuminen",
     virheellinenArvo: "virheellinen arvosana",
+    virheenLuontiaika: "2024-11-22T10:49:49Z",
+  }),
+  virhePetro: createError({
+    hetu: "010116A9518",
+    suorittajanOid: "1.2.246.562.24.59267607404",
+    nimi: "Kivinen-Testi Petro Testi",
+    schoolOid: "1.2.246.562.10.1234567891",
+    teacherEmail: "toinen-opettaja@testi.oph.fi",
+    viesti:
+      'Malformed quiz grade "kirjoittaminen" on course "Integraatio testaus" for user "2"',
+    virheellinenKentta: "kirjoittaminen",
+    virheellinenArvo: "tyhjää täynnä",
+    virheenLuontiaika: "2025-05-26T12:34:56Z",
+  }),
+  virheMagdalena: createError({
+    hetu: "010866-9260",
+    suorittajanOid: "1.2.246.562.24.33342764709",
+    nimi: "Sallinen-Testi Magdalena Testi",
+    schoolOid: "1.2.246.562.10.0987654321",
+    teacherEmail: "yksi-opettajista@testi.oph.fi",
+    viesti: "testiviesti, ei tekstiviesti",
+    virheellinenKentta: "yksi niistä",
+    virheellinenArvo: "en kerro, arvaa!",
+    virheenLuontiaika: "2042-12-22T22:42:42Z",
   }),
   withNullValues: createError({
     suorittajanOid: null,
