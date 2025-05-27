@@ -65,7 +65,7 @@ class YkiServiceTests(
     }
 
     @Test
-    fun `two bad row makes YKi suoritukset response throw an exception`() {
+    fun `two bad rows makes Yki suoritukset response throw an exception`() {
         ykiDevController.setResponse(
             endpoint = "/yki/import/suoritukset",
             response =
