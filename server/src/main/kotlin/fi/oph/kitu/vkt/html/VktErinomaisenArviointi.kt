@@ -11,6 +11,8 @@ import fi.oph.kitu.html.hiddenValue
 import fi.oph.kitu.html.itemSelect
 import fi.oph.kitu.html.setCurrentItem
 import fi.oph.kitu.html.submitButton
+import fi.oph.kitu.i18n.Translations
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
@@ -26,6 +28,7 @@ object VktErinomaisenArviointi {
     fun render(
         data: Henkilosuoritus<VktSuoritus>,
         csrfToken: CsrfToken,
+        translations: Translations,
     ): String =
         Page.renderHtml(
             listOf(
@@ -36,15 +39,15 @@ object VktErinomaisenArviointi {
         ) {
             h1 { +data.henkilo.kokoNimi() }
 
-            vktSuorituksenTiedot(data)
+            vktSuorituksenTiedot(data, translations)
 
             h2 { +"Tutkinnot" }
-            vktTutkinnot(data)
+            vktTutkinnot(data, translations)
 
             h2 { +"Osakokeet" }
             formPost("/vkt/ilmoittautuneet/${data.suoritus.internalId}", csrfToken = csrfToken) {
                 card(overflowAuto = true) {
-                    vktErinomainenOsakoeTable(data.suoritus.osat)
+                    vktErinomainenOsakoeTable(data.suoritus.osat, translations)
                     footer {
                         submitButton()
                     }
@@ -77,15 +80,18 @@ object VktErinomaisenArviointi {
     }
 }
 
-fun FlowContent.vktErinomainenOsakoeTable(osat: List<VktOsakoe>) {
+fun FlowContent.vktErinomainenOsakoeTable(
+    osat: List<VktOsakoe>,
+    t: Translations,
+) {
     displayTable(
         osat.sortedBy { it.tutkintopaiva }.reversed(),
         listOf(
             DisplayTableColumn("Osakoe", width = "25%") {
-                +it.tyyppi.koodiarvo
+                +t.get(it.tyyppi)
             },
             DisplayTableColumn("Tutkintopäivä", width = "25%") {
-                +it.tutkintopaiva.toString()
+                finnishDate(it.tutkintopaiva)
             },
             DisplayTableColumn("Arvosana", width = "25%") {
                 hiddenValue("id", it.internalId?.toString() ?: "")

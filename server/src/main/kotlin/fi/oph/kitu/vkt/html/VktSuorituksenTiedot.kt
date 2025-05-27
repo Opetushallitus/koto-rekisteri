@@ -4,34 +4,42 @@ import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.infoTable
+import fi.oph.kitu.i18n.Translations
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 
-fun FlowContent.vktSuorituksenTiedot(data: Henkilosuoritus<VktSuoritus>) {
+fun FlowContent.vktSuorituksenTiedot(
+    data: Henkilosuoritus<VktSuoritus>,
+    t: Translations,
+) {
     card {
         infoTable(
-            "Tutkinnon taso" to { +data.suoritus.taitotaso.koodiarvo },
-            "Kieli" to { +data.suoritus.kieli.koodiarvo },
-            "Suorituspaikkakunta" to { +data.suoritus.suorituspaikkakunta.toString() },
+            "Tutkinnon taso" to { +t.get(data.suoritus.taitotaso) },
+            "Kieli" to { +t.get(data.suoritus.kieli) },
+            "Suorituspaikkakunta" to { +t.getByKoodiviite("kunta", data.suoritus.suorituspaikkakunta) },
         )
     }
 }
 
-fun FlowContent.vktTutkinnot(data: Henkilosuoritus<VktSuoritus>) {
+fun FlowContent.vktTutkinnot(
+    data: Henkilosuoritus<VktSuoritus>,
+    t: Translations,
+) {
     card {
         displayTable(
             rows = data.suoritus.tutkinnot,
             columns =
                 listOf(
                     DisplayTableColumn("Tutkinto", width = "25%") {
-                        +it.tyyppi.koodiarvo
+                        +t.get(it.tyyppi)
                     },
                     DisplayTableColumn("Viimeisin tutkintopäivä", width = "25%") {
-                        +(it.viimeisinTutkintopaiva()?.toString() ?: "")
+                        it.viimeisinTutkintopaiva()?.let { finnishDate(it) }
                     },
                     DisplayTableColumn("Arvosana", width = "50%") {
-                        +(it.arviointi()?.arvosana?.koodiarvo ?: "")
+                        +t.get(it.arviointi()?.arvosana)
                     },
                 ),
             compact = true,
