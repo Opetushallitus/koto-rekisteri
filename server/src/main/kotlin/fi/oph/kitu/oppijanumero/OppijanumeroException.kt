@@ -2,7 +2,7 @@ package fi.oph.kitu.oppijanumero
 
 import java.net.http.HttpResponse
 
-open class OppijanumeroException(
+sealed class OppijanumeroException(
     val request: YleistunnisteHaeRequest,
     message: String,
     val oppijanumeroServiceError: OppijanumeroServiceError? = null,
@@ -12,8 +12,21 @@ open class OppijanumeroException(
         request: YleistunnisteHaeRequest,
         val response: HttpResponse<String>,
         message: String = "Unexpected error in oppijanumero-service",
-        oppijanumeroServiceError: OppijanumeroServiceError? = null,
-        cause: Throwable? = null,
+    ) : OppijanumeroException(request, message)
+
+    class MalformedResponse(
+        request: YleistunnisteHaeRequest,
+        val response: HttpResponse<String>,
+        message: String = "Malformed response from oppijanumero-service",
+        cause: Throwable,
+    ) : OppijanumeroException(request, message, cause = cause)
+
+    class BadResponse(
+        request: YleistunnisteHaeRequest,
+        val response: HttpResponse<String>,
+        message: String = "Bad response from oppijanumero-service",
+        oppijanumeroServiceError: OppijanumeroServiceError,
+        cause: Throwable,
     ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
 
     class BadRequest(
