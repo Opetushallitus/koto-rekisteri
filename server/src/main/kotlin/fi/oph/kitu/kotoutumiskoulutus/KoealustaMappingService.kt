@@ -67,7 +67,7 @@ class KoealustaMappingService(
                         ?.mapFailure {
                             Error.OppijanumeroFailure(
                                 it,
-                                "Oppijanumeron haku epäonnistui: ${it.oppijanumeroServiceError?.error ?: "ei tarkempia tietoja"}",
+                                "Oppijanumeron haku epäonnistui: ${it.oppijanumeroServiceError?.error ?: it.message ?: "ei tarkempia tietoja"}",
                                 Oid.parse(user.completions.first().schoolOID).getOrNull(),
                                 moodleId = user.userid.toString(),
                                 user.completions.first().teacheremail,
@@ -279,7 +279,7 @@ class KoealustaMappingService(
                         schoolOid = error.schoolOid,
                         teacherEmail = error.teacherEmail,
                         virheenLuontiaika = now,
-                        viesti = error.message ?: error.oppijanumeroException.message ?: "Unknown ONR error",
+                        viesti = error.message,
                         virheellinenKentta = null,
                         virheellinenArvo = null,
                     ),
@@ -312,7 +312,7 @@ class KoealustaMappingService(
     ) : Exception(message) {
         class OppijanumeroFailure(
             val oppijanumeroException: OppijanumeroException,
-            message: String = "ONR error",
+            override val message: String,
             schoolOid: Oid?,
             moodleId: String?,
             teacherEmail: String?,
