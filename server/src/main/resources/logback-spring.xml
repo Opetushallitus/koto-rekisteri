@@ -3,25 +3,27 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/structured-console-appender.xml"/>
 
-    <appender name="AUDIT_LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/audit.log</file>
-        <encoder class="org.springframework.boot.logging.logback.StructuredLogEncoder">
-            <format>${FILE_LOG_STRUCTURED_FORMAT}</format>
-            <charset>${FILE_LOG_CHARSET}</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/audit.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-    </appender>
-
-    <logger name="auditLogger" level="INFO" additivity="false">
-        <appender-ref ref="AUDIT_LOCAL"/>
-    </logger>
-
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
+
+    <springProfile name="!(untuva | qa | prod)">
+        <appender name="AUDIT_LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/audit.log</file>
+            <encoder class="org.springframework.boot.logging.logback.StructuredLogEncoder">
+                <format>${FILE_LOG_STRUCTURED_FORMAT}</format>
+                <charset>${FILE_LOG_CHARSET}</charset>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/audit.%d{yyyy-MM-dd}.log</fileNamePattern>
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+        </appender>
+
+        <logger name="auditLogger" level="INFO" additivity="false">
+            <appender-ref ref="AUDIT_LOCAL"/>
+        </logger>
+    </springProfile>
 
     <springProfile name="untuva | qa | prod">
         <appender name="AUDIT_CLOUDWATCH" class="fi.oph.kitu.logging.CloudwatchAppender">
