@@ -7,13 +7,13 @@ import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.Instant
 
 @Configuration
-@ConditionalOnProperty(name = ["kitu.yki.scheduling.enabled"], matchIfMissing = false)
+@ConditionalOnBooleanProperty(name = ["kitu.yki.scheduling.enabled"])
 class YkiScheduledTasks(
     private val tracer: Tracer,
 ) {

@@ -6,14 +6,14 @@ import fi.oph.kitu.ExtendedSchedules
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
 @Configuration
 @Profile("!ci & !e2e & !test")
-@ConditionalOnProperty(name = ["kitu.kotoutumiskoulutus.koealusta.scheduling.enabled"], matchIfMissing = false)
+@ConditionalOnBooleanProperty(name = ["kitu.kotoutumiskoulutus.koealusta.scheduling.enabled"])
 class TehtavapankkiScheduledTasks(
     private val tracer: Tracer,
 ) {

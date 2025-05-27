@@ -6,12 +6,12 @@ import fi.oph.kitu.ExtendedSchedules
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@ConditionalOnProperty(name = ["kitu.koski.scheduling.enabled"], matchIfMissing = false)
+@ConditionalOnBooleanProperty(name = ["kitu.koski.scheduling.enabled"])
 class KoskiScheduledTask(
     private val tracer: Tracer,
 ) {
