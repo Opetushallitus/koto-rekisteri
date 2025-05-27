@@ -348,6 +348,7 @@ class KoealustaServiceTests {
         assertAll(
             fun() = assertEquals("Testi-Moikka Antero", missingPuhuminenError.nimi),
             fun() = assertEquals("12345678901", missingPuhuminenError.hetu),
+            fun() = assertEquals("1.2.246.562.24.33342764709", missingPuhuminenError.suorittajanOid),
             fun() = assertEquals("1.2.246.562.10.1234567890", missingPuhuminenError.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", missingPuhuminenError.teacherEmail),
             fun() = assertEquals("puhuminen", missingPuhuminenError.virheellinenKentta),
