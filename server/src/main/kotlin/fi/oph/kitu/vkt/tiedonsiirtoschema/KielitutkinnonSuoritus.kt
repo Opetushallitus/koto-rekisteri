@@ -1,4 +1,4 @@
-package fi.oph.kitu.schema
+package fi.oph.kitu.vkt.tiedonsiirtoschema
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo

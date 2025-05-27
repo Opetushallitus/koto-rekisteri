@@ -2,9 +2,9 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.schema.Henkilosuoritus
 import fi.oph.kitu.sortedWithDirectionBy
 import fi.oph.kitu.vkt.html.VktIlmoittautuneet
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.Optional

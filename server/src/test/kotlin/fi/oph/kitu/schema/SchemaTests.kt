@@ -6,6 +6,11 @@ import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Lahdejarjestelma
+import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
+import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals

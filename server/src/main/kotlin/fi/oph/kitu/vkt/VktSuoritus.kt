@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.schema.Arviointi
-import fi.oph.kitu.schema.Arvioitava
-import fi.oph.kitu.schema.KielitutkinnonSuoritus
-import fi.oph.kitu.schema.LahdejarjestelmanTunniste
-import fi.oph.kitu.schema.OidOppija
-import fi.oph.kitu.schema.OidString
-import fi.oph.kitu.schema.Osasuorituksellinen
-import fi.oph.kitu.schema.Osasuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Arviointi
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Arvioitava
+import fi.oph.kitu.vkt.tiedonsiirtoschema.KielitutkinnonSuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
+import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Osasuorituksellinen
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Osasuoritus
 import java.time.LocalDate
 
 // Päätason suoritus

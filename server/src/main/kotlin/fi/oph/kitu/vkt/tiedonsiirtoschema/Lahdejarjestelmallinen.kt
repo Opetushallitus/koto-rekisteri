@@ -1,4 +1,4 @@
-package fi.oph.kitu.schema
+package fi.oph.kitu.vkt.tiedonsiirtoschema
 
 interface Lahdejarjestelmallinen {
     val lahdejarjestelmanId: LahdejarjestelmanTunniste
