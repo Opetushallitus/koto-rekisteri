@@ -12,55 +12,57 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class SchemaTests {
-    val tutkintopäivä = LocalDate.of(2025, 1, 1)
-    val originalData =
-        Henkilosuoritus(
-            henkilo =
-                OidOppija(
-                    oid = OidString("1.2.246.562.10.1234567890"),
-                    etunimet = "Kalle",
-                    sukunimi = "Testaaja",
-                ),
-            suoritus =
-                VktSuoritus(
-                    osat =
-                        listOf(
-                            VktKirjoittamisenKoe(tutkintopäivä),
-                            VktTekstinYmmartamisenKoe(tutkintopäivä),
-                            VktPuhumisenKoe(tutkintopäivä),
-                            VktPuheenYmmartamisenKoe(tutkintopäivä),
-                        ),
-                    suorituksenVastaanottaja = null,
-                    suorituspaikkakunta = null,
-                    taitotaso = Koodisto.VktTaitotaso.Erinomainen,
-                    kieli = Koodisto.Tutkintokieli.FIN,
-                    lahdejarjestelmanId =
-                        LahdejarjestelmanTunniste(
-                            id = "123",
-                            lahde = Lahdejarjestelma.KIOS,
-                        ),
-                ),
-        )
+    companion object {
+        val vktTutkintopaiva = LocalDate.of(2025, 1, 1)
+        val vktHenkilosuoritus =
+            Henkilosuoritus(
+                henkilo =
+                    OidOppija(
+                        oid = OidString("1.2.246.562.10.1234567890"),
+                        etunimet = "Kalle",
+                        sukunimi = "Testaaja",
+                    ),
+                suoritus =
+                    VktSuoritus(
+                        osat =
+                            listOf(
+                                VktKirjoittamisenKoe(vktTutkintopaiva),
+                                VktTekstinYmmartamisenKoe(vktTutkintopaiva),
+                                VktPuhumisenKoe(vktTutkintopaiva),
+                                VktPuheenYmmartamisenKoe(vktTutkintopaiva),
+                            ),
+                        suorituksenVastaanottaja = null,
+                        suorituspaikkakunta = null,
+                        taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                        kieli = Koodisto.Tutkintokieli.FIN,
+                        lahdejarjestelmanId =
+                            LahdejarjestelmanTunniste(
+                                id = "123",
+                                lahde = Lahdejarjestelma.KIOS,
+                            ),
+                    ),
+            )
+    }
 
     @Test
     fun `VKTSuoritus can be serialized and deserialized`() {
         val objectMapper = Henkilosuoritus.getDefaultObjectMapper()
 
-        val json = objectMapper.writeValueAsString(originalData)
+        val json = objectMapper.writeValueAsString(vktHenkilosuoritus)
 
         print(json)
 
         val decodedData = objectMapper.readValue(json, Henkilosuoritus::class.java)
 
-        assertEquals(expected = originalData, actual = decodedData)
+        assertEquals(expected = vktHenkilosuoritus, actual = decodedData)
     }
 
     @Test
     fun `Conversion to database entity and back does not change content`() {
-        val entity = originalData.toVktSuoritusEntity()
+        val entity = vktHenkilosuoritus.toVktSuoritusEntity()
         assertNotNull(entity)
 
         val restoredData = Henkilosuoritus.from(entity)
-        assertEquals(expected = originalData, actual = restoredData)
+        assertEquals(expected = vktHenkilosuoritus, actual = restoredData)
     }
 }
