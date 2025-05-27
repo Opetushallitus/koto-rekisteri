@@ -66,7 +66,7 @@ class KoealustaMappingService(
                         ?.mapFailure {
                             Error.OppijanumeroFailure(
                                 it,
-                                "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (${it.message})",
+                                "Oppijanumeron haku epäonnistui: ${it.oppijanumeroServiceError?.error ?: "ei tarkempia tietoja"}",
                                 Oid.parse(user.completions.first().schoolOID).getOrNull(),
                                 moodleId = user.userid.toString(),
                                 user.completions.first().teacheremail,

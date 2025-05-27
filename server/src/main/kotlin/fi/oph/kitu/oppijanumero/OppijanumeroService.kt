@@ -70,7 +70,6 @@ class OppijanumeroServiceImpl(
                         ),
                     )
                 } else if (rawResponse.statusCode() != 200) {
-                    // If test environment throws 504, it might be actually 400
                     throw OppijanumeroException.UnexpectedError(yleistunnisteHaeRequest, rawResponse)
                 }
 
@@ -103,9 +102,9 @@ class OppijanumeroServiceImpl(
             }
 
     /**
-     * Tries to convert HttpResponse<String> into the given T.
+     * Tries to convert `HttpResponse<String>` into the given `T`.
      * If the conversion fails, it checks whether the response was OppijanumeroServiceError.
-     * In that case OppijanumeroException will be thrown.
+     * In that case [OppijanumeroException.BadResponse] will be thrown.
      * Otherwise, the underlying exception will be thrown
      */
     final inline fun <reified T> tryConvertToOppijanumeroResponse(
@@ -115,12 +114,29 @@ class OppijanumeroServiceImpl(
         TypedResult
             .runCatching {
                 objectMapper.readValue(response.body(), T::class.java)
-            }.mapFailure {
-                val error = objectMapper.readValue(response.body(), OppijanumeroServiceError::class.java)
-                OppijanumeroException(
-                    request,
-                    "Error from oppijanumero-service: ${error.error}",
-                    error,
-                )
+            }.mapFailure { decodeError ->
+                TypedResult
+                    .runCatching {
+                        objectMapper.readValue(
+                            response.body(),
+                            OppijanumeroServiceError::class.java,
+                        )
+                    }.fold(
+                        onSuccess = { onrError ->
+                            OppijanumeroException.BadResponse(
+                                request = request,
+                                response = response,
+                                oppijanumeroServiceError = onrError,
+                                cause = decodeError,
+                            )
+                        },
+                        onFailure = { _ ->
+                            OppijanumeroException.MalformedResponse(
+                                request = request,
+                                response = response,
+                                cause = decodeError,
+                            )
+                        },
+                    )
             }
 }
