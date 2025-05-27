@@ -269,7 +269,7 @@ class KoealustaServiceTests {
             fun() = assertEquals("12345678902", oppijaValidationFailure.hetu),
             fun() =
                 assertEquals(
-                    "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (virheviesti)",
+                    "Oppijanumeron haku epäonnistui: virheviesti",
                     oppijaValidationFailure.viesti,
                 ),
             fun() = assertEquals("Testi-Moikka Antero", oppijaValidationFailure.nimi),
@@ -521,7 +521,7 @@ class KoealustaServiceTests {
             fun() = assertEquals("12345678903", onrBadRequestFailure.hetu),
             fun() =
                 assertEquals(
-                    "Oppijanumeron haku epäonnistui: Jotkin Moodle-käyttäjän tunnistetiedoista (hetu, etunimet, kutsumanimi, sukunimi) ovat virheellisiä. (Bad request)",
+                    "Oppijanumeron haku epäonnistui: Bad request",
                     onrBadRequestFailure.viesti,
                 ),
             fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
