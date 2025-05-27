@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointi
 import fi.oph.kitu.vkt.html.VktIlmoittautuneet
 import org.springframework.security.web.csrf.CsrfToken
@@ -18,6 +19,7 @@ import kotlin.jvm.optionals.getOrNull
 @RequestMapping("/vkt")
 class VktViewController(
     private val vktSuoritukset: VktSuoritusService,
+    private val localizationService: LocalizationService,
 ) {
     @GetMapping("/ilmoittautuneet", produces = ["text/html"])
     @ResponseBody
@@ -26,7 +28,12 @@ class VktViewController(
         sortDirection: SortDirection = SortDirection.ASC,
     ): String {
         val ilmoittautuneet = vktSuoritukset.getIlmoittautuneet(sortColumn, sortDirection)
-        return VktIlmoittautuneet.render(ilmoittautuneet, sortColumn, sortDirection)
+        val translations =
+            localizationService
+                .translationBuilder()
+                .koodistot("kieli", "vkttutkintotaso")
+                .build()
+        return VktIlmoittautuneet.render(ilmoittautuneet, sortColumn, sortDirection, translations)
     }
 
     @GetMapping("/ilmoittautuneet/{id}", produces = ["text/html"])
@@ -37,8 +44,19 @@ class VktViewController(
     ): String? =
         vktSuoritukset
             .getSuoritus(id)
-            .map { VktErinomaisenArviointi.render(it, csrfToken) }
-            .getOrNull()
+            .map {
+                val translations =
+                    localizationService
+                        .translationBuilder()
+                        .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
+                        .build()
+
+                VktErinomaisenArviointi.render(
+                    it,
+                    csrfToken,
+                    translations,
+                )
+            }.getOrNull()
 
     @PostMapping("/ilmoittautuneet/{id}", produces = ["text/html"])
     @ResponseBody
