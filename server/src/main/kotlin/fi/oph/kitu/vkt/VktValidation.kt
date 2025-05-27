@@ -3,7 +3,7 @@ package fi.oph.kitu.vkt
 import fi.oph.kitu.Validation
 import fi.oph.kitu.ValidationResult
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.schema.OidString
+import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 
 object VktValidation : Validation<VktSuoritus> {
     override fun enrich(s: VktSuoritus): VktSuoritus =

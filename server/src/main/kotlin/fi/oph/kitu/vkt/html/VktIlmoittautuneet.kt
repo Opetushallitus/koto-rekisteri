@@ -8,8 +8,8 @@ import fi.oph.kitu.html.MenuItem
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
-import fi.oph.kitu.schema.Henkilosuoritus
 import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.*
 
 object VktIlmoittautuneet {

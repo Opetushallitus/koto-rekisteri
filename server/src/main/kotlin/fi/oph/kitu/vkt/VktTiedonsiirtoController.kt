@@ -2,10 +2,10 @@ package fi.oph.kitu.vkt
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import fi.oph.kitu.Validation
-import fi.oph.kitu.schema.Henkilosuoritus
-import fi.oph.kitu.schema.KielitutkinnonSuoritus
-import fi.oph.kitu.schema.TiedonsiirtoFailure
-import fi.oph.kitu.schema.TiedonsiirtoSuccess
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.KielitutkinnonSuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.TiedonsiirtoFailure
+import fi.oph.kitu.vkt.tiedonsiirtoschema.TiedonsiirtoSuccess
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PutMapping

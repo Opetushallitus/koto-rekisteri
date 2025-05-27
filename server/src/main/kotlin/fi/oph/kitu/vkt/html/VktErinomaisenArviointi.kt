@@ -12,9 +12,9 @@ import fi.oph.kitu.html.itemSelect
 import fi.oph.kitu.html.setCurrentItem
 import fi.oph.kitu.html.submitButton
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.schema.Henkilosuoritus
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.footer
 import kotlinx.html.h1
