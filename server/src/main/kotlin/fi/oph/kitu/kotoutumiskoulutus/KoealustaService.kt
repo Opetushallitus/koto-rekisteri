@@ -79,7 +79,13 @@ class KoealustaService(
                 return@use from
             }
 
-            val (suoritukset, validationFailure) = mappingService.responseStringToEntity(response.body!!)
+            val (suoritukset, validationFailure) =
+                try {
+                    mappingService.responseStringToEntity(response.body!!)
+                } catch (e: Throwable) {
+                    println(e)
+                    throw e
+                }
 
             kielitestiSuoritusErrorRepository.replaceAll(
                 mappingService.convertErrors(validationFailure?.validationErrors ?: listOf()) +

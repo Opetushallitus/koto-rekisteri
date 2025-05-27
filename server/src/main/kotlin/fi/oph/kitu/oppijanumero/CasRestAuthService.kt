@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
+import java.net.CookieManager
 import java.net.URI
 
 @Service
@@ -20,6 +21,7 @@ class CasRestAuthService(
     @Qualifier("casRestClient")
     val restCient: RestClient,
     val objectMapper: ObjectMapper,
+    val cookieManager: CookieManager,
 ) {
     final inline fun <Request : Any, reified Response : Any> authenticatedPost(
         uri: URI,
@@ -32,32 +34,48 @@ class CasRestAuthService(
         // and the restClient should take those into considerations.
         val bodyAsString = objectMapper.writeValueAsString(body)
 
+        print("authenticatedPost 1. cookieStore: ")
+        cookieManager.cookieStore.cookies.forEach(::println)
+
         val response =
             restCient
                 .post()
                 .uri(uri)
                 .body(bodyAsString)
                 .accept(accept)
+                // TODO: Use exchange instead of retrieve, because retrieve throws an exception when non 2xx status-code
                 .retrieve()
                 .toEntity<Response>()
 
-        if (!requiresLogin(response)) {
-            return TypedResult.Success(response)
-        }
+        print("authenticatedPost 1. cookieStore: ")
+        cookieManager.cookieStore.cookies.forEach(::println)
 
-        casService
-            .getGrantingTicket()
-            .flatMap(casService::getServiceTicket)
-            .flatMap(casService::sendAuthenticationRequest)
-            .flatMap {
-                restCient
-                    .post()
-                    .uri(uri)
-                    .body(bodyAsString)
-                    .accept(accept)
-                    .retrieve()
-                    .toEntity<Response>()
+        try {
+            return if (requiresLogin(response)) {
+                casService
+                    .getGrantingTicket()
+                    .flatMap(casService::getServiceTicket)
+                    .flatMap(casService::sendAuthenticationRequest)
+                    .flatMap {
+                        println("Got response: $it")
+                        TypedResult.Success(
+                            restCient
+                                .post()
+                                .uri(uri)
+                                .body(bodyAsString)
+                                .accept(accept)
+                                .retrieve()
+                                .toEntity<Response>(),
+                        )
+                    }
+            } else {
+                TypedResult.Success(response)
             }
+        } catch (e: Throwable) {
+            println(e)
+            e.printStackTrace()
+            throw e
+        }
     }
 
     /** Check if the service that was called, redirected the response into CAS */
@@ -66,13 +84,10 @@ class CasRestAuthService(
         // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
         // authentication gets JSESSIONID Cookie and it will be used in the next request below
         if (response.statusCode == HttpStatus.FOUND) {
-            val location = response.headers.getFirst(HttpHeaders.LOCATION)
-            if (location == null) {
-                return false
-            }
-
-            val hasCasLogin = location.contains("/cas/login")
-            return hasCasLogin
+            return response.headers
+                .getFirst(HttpHeaders.LOCATION)
+                ?.contains("/cas/login")
+                ?: false
         }
 
         // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
