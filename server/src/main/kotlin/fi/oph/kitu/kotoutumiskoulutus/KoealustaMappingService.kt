@@ -7,7 +7,6 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.TypedResult.Failure
 import fi.oph.kitu.TypedResult.Success
-import fi.oph.kitu.kotoutumiskoulutus.KoealustaMappingService.Error
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completion
 import fi.oph.kitu.oppijanumero.Oppija
@@ -214,6 +213,7 @@ class KoealustaMappingService(
                     teacherEmail = completion.teacheremail,
                     koealustaUser = user,
                     validationErrors = errors,
+                    oppijanumero = oppijanumero,
                 ),
             )
         }
@@ -256,7 +256,7 @@ class KoealustaMappingService(
                     val (field, value) = parseValidationError(validationError)
                     KielitestiSuoritusError(
                         id = null,
-                        suorittajanOid = error.koealustaUser.oppijanumero,
+                        suorittajanOid = error.oppijanumero.toString(),
                         hetu = error.koealustaUser.SSN,
                         nimi = "${error.koealustaUser.lastname} ${error.koealustaUser.firstnames}",
                         schoolOid = error.schoolOid,
@@ -324,6 +324,7 @@ class KoealustaMappingService(
             teacherEmail: String?,
             val koealustaUser: User,
             val validationErrors: List<Validation>,
+            val oppijanumero: Oid? = null,
         ) : Error(message, schoolOid, teacherEmail)
 
         class OppijaValidationFailure(
@@ -340,7 +341,8 @@ class KoealustaMappingService(
             teacherEmail: String?,
             koealustaUser: User,
             validationErrors: List<Validation>,
-        ) : ValidationFailure(message, schoolOid, teacherEmail, koealustaUser, validationErrors)
+            oppijanumero: Oid?,
+        ) : ValidationFailure(message, schoolOid, teacherEmail, koealustaUser, validationErrors, oppijanumero)
 
         sealed class Validation(
             val userId: Int,
