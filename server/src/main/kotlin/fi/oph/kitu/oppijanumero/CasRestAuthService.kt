@@ -2,6 +2,8 @@ package fi.oph.kitu.oppijanumero
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.TypedResult
+import fi.oph.kitu.printCookies
+import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
@@ -10,7 +12,6 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import org.springframework.web.client.toEntity
 import java.net.CookieManager
 import java.net.URI
 
@@ -26,7 +27,7 @@ class CasRestAuthService(
     final inline fun <Request : Any, reified Response : Any> authenticatedPost(
         uri: URI,
         body: Request,
-        accept: MediaType,
+        contentType: MediaType,
     ): TypedResult<ResponseEntity<Response>, CasError> {
         // TODO: Stop using objectMapper.writeValueAsString
         // It's from old implement, when the http client did not support generic Body
@@ -34,39 +35,45 @@ class CasRestAuthService(
         // and the restClient should take those into considerations.
         val bodyAsString = objectMapper.writeValueAsString(body)
 
-        print("authenticatedPost 1. cookieStore: ")
-        cookieManager.cookieStore.cookies.forEach(::println)
-
+        cookieManager.printCookies("authenticatedPost 1. cookieStore:\n")
         val response =
             restCient
                 .post()
                 .uri(uri)
                 .body(bodyAsString)
-                .accept(accept)
-                // TODO: Use exchange instead of retrieve, because retrieve throws an exception when non 2xx status-code
-                .retrieve()
-                .toEntity<Response>()
+                .contentType(contentType)
+                .retrieveEntitySafely<Response>()
+        if (response == null) {
+            // TODO: Don't use ServiceTicketError
+            return TypedResult.Failure(CasError.ServiceTicketError("Received null ResponseEntity on the first request"))
+        }
 
-        print("authenticatedPost 1. cookieStore: ")
-        cookieManager.cookieStore.cookies.forEach(::println)
+        cookieManager.printCookies("authenticatedPost 2. cookieStore:\n")
 
         try {
             return if (requiresLogin(response)) {
                 casService
                     .getGrantingTicket()
                     .flatMap(casService::getServiceTicket)
-                    .flatMap(casService::sendAuthenticationRequest)
+                    .flatMap(casService::verifyServiceTicket)
                     .flatMap {
                         println("Got response: $it")
-                        TypedResult.Success(
+                        val response =
                             restCient
                                 .post()
                                 .uri(uri)
                                 .body(bodyAsString)
-                                .accept(accept)
-                                .retrieve()
-                                .toEntity<Response>(),
-                        )
+                                .contentType(contentType)
+                                .retrieveEntitySafely<Response>()
+
+                        if (response == null) {
+                            // TODO: Don't use service ticket error
+                            TypedResult.Failure(
+                                CasError.ServiceTicketError("Received null ResponseEntity after authentication"),
+                            )
+                        } else {
+                            TypedResult.Success(response)
+                        }
                     }
             } else {
                 TypedResult.Success(response)
