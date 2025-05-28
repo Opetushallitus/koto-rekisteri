@@ -1,6 +1,5 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import HttpResponseMock
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.mustBeSuccess
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.convention.TestBean
 import org.springframework.test.web.client.MockRestServiceServer
@@ -66,7 +66,7 @@ class KoealustaServiceTests {
                                         sukunimi = "Testi-Moikka",
                                     ),
                                 message = "Bad request",
-                                response = HttpResponseMock(400, "Bad request"),
+                                response = ResponseEntity.badRequest().body("Bad request"),
                             ),
                         ),
                     "12345678904" to
@@ -80,7 +80,7 @@ class KoealustaServiceTests {
                                         sukunimi = "Testi-Moikka",
                                     ),
                                 message = "Server Error",
-                                response = HttpResponseMock(500, "Server Error"),
+                                response = ResponseEntity.internalServerError().body("Internal Server Error"),
                             ),
                         ),
                 ),

@@ -15,12 +15,12 @@ import org.springframework.web.client.RestClient
  *  - response body is null (eg. HTTP 204 No Content)
  *  - Serialization issue converting into `T`.
  */
-inline fun <reified T> RestClient.RequestBodySpec.retrieveEntitySafely(): ResponseEntity<T>? =
+fun <T> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): ResponseEntity<T>? =
     this.exchange { request, response ->
         ResponseEntity
             .status(response.statusCode)
             .headers(response.headers)
-            .body(response.bodyTo(T::class.java))
+            .body(response.bodyTo(type))
     }
 
 // 200 000 000 is 10x the default

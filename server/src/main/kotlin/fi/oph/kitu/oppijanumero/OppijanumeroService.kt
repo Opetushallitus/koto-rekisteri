@@ -18,9 +18,8 @@ interface OppijanumeroService {
 
 @Service
 class OppijanumeroServiceImpl(
-    private val casAuthenticatedService: CasAuthenticatedService,
     private val tracer: Tracer,
-    private val casRestService: CasAuthenticatedService,
+    private val casService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
 ) : OppijanumeroService {
     @Value("\${kitu.oppijanumero.service.url}")
@@ -41,10 +40,11 @@ class OppijanumeroServiceImpl(
                     YleistunnisteHaeRequest(oppija.etunimet, oppija.hetu, oppija.kutsumanimi, oppija.sukunimi)
 
                 val rawResult =
-                    casRestService.authenticatedPost<YleistunnisteHaeRequest, String>(
+                    casService.authenticatedPost(
                         URI.create(endpoint),
                         yleistunnisteHaeRequest,
                         MediaType.APPLICATION_JSON,
+                        String::class.java,
                     )
 
                 if (rawResult !is TypedResult.Success) {
