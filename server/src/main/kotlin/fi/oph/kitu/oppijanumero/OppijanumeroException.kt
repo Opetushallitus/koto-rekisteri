@@ -16,14 +16,14 @@ sealed class OppijanumeroException(
 
     class MalformedResponse(
         request: YleistunnisteHaeRequest,
-        val response: HttpResponse<String>,
+        val response: ResponseEntity<String>,
         message: String = "Malformed response from oppijanumero-service",
         cause: Throwable,
     ) : OppijanumeroException(request, message, cause = cause)
 
     class BadResponse(
         request: YleistunnisteHaeRequest,
-        val response: HttpResponse<String>,
+        val response: ResponseEntity<String>,
         message: String = "Bad response from oppijanumero-service",
         oppijanumeroServiceError: OppijanumeroServiceError,
         cause: Throwable,

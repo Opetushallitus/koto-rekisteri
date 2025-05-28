@@ -61,7 +61,7 @@ class CasService(
                 .uri("$casUrl/v1/tickets/$ticketGrantingTicket")
                 .body("service=$serviceUrl/j_spring_cas_security_check")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .retrieveEntitySafely<String>()
+                .retrieveEntitySafely(String::class.java)
 
         return if (response?.statusCode == HttpStatus.OK) {
             TypedResult.Success(response.body.toString())
@@ -83,7 +83,7 @@ class CasService(
                 .uri("$casUrl/v1/tickets")
                 .body(body)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .retrieveEntitySafely<String>()
+                .retrieveEntitySafely(String::class.java)
 
         val ticket =
             response

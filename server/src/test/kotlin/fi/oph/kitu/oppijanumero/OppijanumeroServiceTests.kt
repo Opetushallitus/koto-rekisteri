@@ -13,6 +13,11 @@ import java.net.http.HttpResponse
 import kotlin.test.assertEquals
 
 class OppijanumeroServiceTests {
+    fun casService(): CasAuthenticatedService {
+        TODO()
+        // CasAuthenticatedServiceMock(response)
+    }
+
     @Test
     fun `oppijanumero service returns identified user`() {
         // Facade
@@ -33,8 +38,7 @@ class OppijanumeroServiceTests {
         // System under test
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedServiceMock(response),
+                casService = casService(),
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
             )
@@ -74,8 +78,7 @@ class OppijanumeroServiceTests {
         // System under test
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedServiceMock(response),
+                casService = casService(),
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
             )
@@ -115,8 +118,7 @@ class OppijanumeroServiceTests {
         // System under test
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedServiceMock(response),
+                casService = casService(),
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
             )
@@ -156,8 +158,7 @@ class OppijanumeroServiceTests {
         // System under test
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedServiceMock(response),
+                casService = casService(),
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
             )

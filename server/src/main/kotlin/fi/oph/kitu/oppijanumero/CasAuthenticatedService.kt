@@ -13,32 +13,41 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import java.net.URI
 
+interface CasAuthenticatedService {
+    fun <Request : Any, Response : Any> authenticatedPost(
+        uri: URI,
+        body: Request,
+        contentType: MediaType,
+        responseType: Class<Response>,
+    ): TypedResult<ResponseEntity<Response>, CasError>
+}
+
 @Service
-class CasAuthenticatedService(
+class CasAuthenticatedServiceImpl(
     val tracer: Tracer,
     val casService: CasService,
     @Qualifier("casRestClient")
     val restCient: RestClient,
     val objectMapper: ObjectMapper,
-) {
-    final inline fun <Request : Any, reified Response : Any> authenticatedPost(
+) : CasAuthenticatedService {
+    override fun <Request : Any, Response : Any> authenticatedPost(
         uri: URI,
         body: Request,
         contentType: MediaType,
+        responseType: Class<Response>,
     ): TypedResult<ResponseEntity<Response>, CasError> {
         // TODO: Stop using objectMapper.writeValueAsString
         // It's from old implement, when the http client did not support generic Body
         // Our objectMapper probably use some custom serialization rules,
         // and the restClient should take those into considerations.
         val bodyAsString = objectMapper.writeValueAsString(body)
-
         val response =
             restCient
                 .post()
                 .uri(uri)
                 .body(bodyAsString)
                 .contentType(contentType)
-                .retrieveEntitySafely<Response>()
+                .retrieveEntitySafely(responseType)
         if (response == null) {
             return TypedResult.Failure(
                 CasError.CasAuthServiceError("Received null ResponseEntity on the first request"),
@@ -59,7 +68,7 @@ class CasAuthenticatedService(
                             .uri(newUri)
                             .body(bodyAsString)
                             .contentType(contentType)
-                            .retrieveEntitySafely<Response>()
+                            .retrieveEntitySafely(responseType)
 
                     if (response == null) {
                         TypedResult.Failure(
