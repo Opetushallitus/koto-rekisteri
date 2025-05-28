@@ -11,7 +11,6 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import java.net.CookieManager
 import java.net.URI
 
 @Service
@@ -21,7 +20,6 @@ class CasRestAuthService(
     @Qualifier("casRestClient")
     val restCient: RestClient,
     val objectMapper: ObjectMapper,
-    val cookieManager: CookieManager,
 ) {
     final inline fun <Request : Any, reified Response : Any> authenticatedPost(
         uri: URI,
@@ -42,8 +40,9 @@ class CasRestAuthService(
                 .contentType(contentType)
                 .retrieveEntitySafely<Response>()
         if (response == null) {
-            // TODO: Don't use ServiceTicketError
-            return TypedResult.Failure(CasError.ServiceTicketError("Received null ResponseEntity on the first request"))
+            return TypedResult.Failure(
+                CasError.CasAuthServiceError("Received null ResponseEntity on the first request"),
+            )
         }
 
         return if (!requiresLogin(response)) {
@@ -63,9 +62,8 @@ class CasRestAuthService(
                             .retrieveEntitySafely<Response>()
 
                     if (response == null) {
-                        // TODO: Don't use service ticket error
                         TypedResult.Failure(
-                            CasError.ServiceTicketError("Received null ResponseEntity after authentication"),
+                            CasError.CasAuthServiceError("Received null ResponseEntity after authentication"),
                         )
                     } else {
                         TypedResult.Success(response)

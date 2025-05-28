@@ -48,8 +48,7 @@ class CasRestService(
         return if (response?.statusCode == HttpStatus.FOUND && response.headers.location != null) {
             TypedResult.Success(response.headers.location!!)
         } else {
-            // TODO: Improve failure. Create new CasError, don't use ServiceTicket
-            TypedResult.Failure(CasError.ServiceTicketError("Received status code ${response?.statusCode}"))
+            TypedResult.Failure(CasError.VerifyTicketError("Received status code ${response?.statusCode}"))
         }
     }
 
