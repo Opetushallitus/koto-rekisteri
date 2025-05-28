@@ -8,6 +8,8 @@ import fi.oph.kitu.html.MenuItem
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
+import fi.oph.kitu.i18n.Translations
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.*
@@ -17,6 +19,7 @@ object VktIlmoittautuneet {
         ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
         sortedBy: Column,
         sortDirection: SortDirection,
+        translations: Translations,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -27,7 +30,7 @@ object VktIlmoittautuneet {
                 ),
         ) {
             h1 { +"Ilmoittautuneet" }
-            vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection)
+            vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, translations)
         }
 
     enum class Column(
@@ -47,6 +50,7 @@ fun FlowContent.vktIlmoittautuneetTable(
     ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
     sortedBy: VktIlmoittautuneet.Column,
     sortDirection: SortDirection,
+    t: Translations,
 ) {
     card(overflowAuto = true) {
         fun getHref(id: Int?) = id?.let { "/vkt/ilmoittautuneet/$it" } ?: "#"
@@ -60,9 +64,11 @@ fun FlowContent.vktIlmoittautuneetTable(
                     }
                 },
                 VktIlmoittautuneet.Column.Etunimet.withValue { +(it.henkilo.etunimet ?: "") },
-                VktIlmoittautuneet.Column.Kieli.withValue { +it.suoritus.kieli.koodiarvo },
-                VktIlmoittautuneet.Column.Taitotaso.withValue { +it.suoritus.taitotaso.koodiarvo },
-                VktIlmoittautuneet.Column.Tutkintopaiva.withValue { +(it.suoritus.tutkintopaiva?.toString() ?: "") },
+                VktIlmoittautuneet.Column.Kieli.withValue { +t.get(it.suoritus.kieli) },
+                VktIlmoittautuneet.Column.Taitotaso.withValue { +t.get(it.suoritus.taitotaso) },
+                VktIlmoittautuneet.Column.Tutkintopaiva.withValue {
+                    it.suoritus.tutkintopaiva?.let { finnishDate(it) }
+                },
             ),
             sortedBy = sortedBy,
             sortDirection = sortDirection,
