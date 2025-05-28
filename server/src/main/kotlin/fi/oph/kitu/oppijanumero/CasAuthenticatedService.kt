@@ -1,86 +1,91 @@
 package fi.oph.kitu.oppijanumero
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-
-interface CasAuthenticatedService {
-    fun sendRequest(requestBuilder: HttpRequest.Builder): TypedResult<HttpResponse<String>, CasError>
-}
+import org.springframework.web.client.RestClient
+import java.net.URI
 
 @Service
-class CasAuthenticatedServiceImpl(
-    @Qualifier("casHttpClient")
-    private val httpClient: HttpClient,
-    private val casService: CasService,
-    private val tracer: Tracer,
-) : CasAuthenticatedService {
-    @Value("\${kitu.oppijanumero.callerid}")
-    private lateinit var callerId: String
+class CasAuthenticatedService(
+    val tracer: Tracer,
+    val casService: CasService,
+    @Qualifier("casRestClient")
+    val restCient: RestClient,
+    val objectMapper: ObjectMapper,
+) {
+    final inline fun <Request : Any, reified Response : Any> authenticatedPost(
+        uri: URI,
+        body: Request,
+        contentType: MediaType,
+    ): TypedResult<ResponseEntity<Response>, CasError> {
+        // TODO: Stop using objectMapper.writeValueAsString
+        // It's from old implement, when the http client did not support generic Body
+        // Our objectMapper probably use some custom serialization rules,
+        // and the restClient should take those into considerations.
+        val bodyAsString = objectMapper.writeValueAsString(body)
 
-    private fun authenticateToCas(): TypedResult<HttpResponse<String>, CasError> =
-        tracer
-            .spanBuilder("CasAuthenticatedServiceImpl.authenticateToCas")
-            .startSpan()
-            .use {
-                casService
-                    .getGrantingTicket()
-                    .flatMap(casService::getServiceTicket)
-                    .flatMap(casService::sendAuthenticationRequest)
-            }
-
-    @WithSpan
-    override fun sendRequest(requestBuilder: HttpRequest.Builder): TypedResult<HttpResponse<String>, CasError> {
-        requestBuilder
-            .header("Caller-Id", callerId)
-            .header("CSRF", "CSRF")
-            .header("Cookie", "CSRF=CSRF")
-        val request = requestBuilder.build()
-        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-
-        if (isLoginToCas(response)) {
-            // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
-            // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
-            return authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-                .flatMap {
-                    val authenticatedRequest = requestBuilder.build()
-                    val authenticatedResponse =
-                        httpClient.send(
-                            authenticatedRequest,
-                            HttpResponse.BodyHandlers.ofString(),
-                        )
-
-                    TypedResult.Success(authenticatedResponse)
-                }
-        } else if (response.statusCode() == 401) {
-            // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
-            // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
-            return authenticateToCas() // gets JSESSIONID Cookie and it will be used in the next request below
-                .flatMap {
-                    val authenticatedRequest = requestBuilder.build()
-                    val authenticatedResponse =
-                        httpClient.send(authenticatedRequest, HttpResponse.BodyHandlers.ofString())
-
-                    TypedResult.Success(authenticatedResponse)
-                }
+        val response =
+            restCient
+                .post()
+                .uri(uri)
+                .body(bodyAsString)
+                .contentType(contentType)
+                .retrieveEntitySafely<Response>()
+        if (response == null) {
+            return TypedResult.Failure(
+                CasError.CasAuthServiceError("Received null ResponseEntity on the first request"),
+            )
         }
 
-        // loput statuskoodit oletetaan johtuvan kutsuttuvasta rajapinnasta
-        return TypedResult.Success(response)
+        return if (!requiresLogin(response)) {
+            TypedResult.Success(response)
+        } else {
+            casService
+                .getGrantingTicket()
+                .flatMap(casService::getServiceTicket)
+                .flatMap(casService::verifyServiceTicket)
+                .flatMap { newUri ->
+                    val response =
+                        restCient
+                            .post()
+                            .uri(newUri)
+                            .body(bodyAsString)
+                            .contentType(contentType)
+                            .retrieveEntitySafely<Response>()
+
+                    if (response == null) {
+                        TypedResult.Failure(
+                            CasError.CasAuthServiceError("Received null ResponseEntity after authentication"),
+                        )
+                    } else {
+                        TypedResult.Success(response)
+                    }
+                }
+        }
     }
 
-    private fun isLoginToCas(response: HttpResponse<*>): Boolean {
-        if (response.statusCode() == 302) {
-            val header = response.headers().firstValue("Location")
-            return header.map { location: String -> location.contains("/cas/login") }.orElse(false)
+    /** Check if the service that was called, redirected the response into CAS */
+    fun requiresLogin(response: ResponseEntity<*>): Boolean {
+        // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
+        // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
+        // authentication gets JSESSIONID Cookie and it will be used in the next request below
+        if (response.statusCode == HttpStatus.FOUND) {
+            return response.headers
+                .getFirst(HttpHeaders.LOCATION)
+                ?.contains("/cas/login")
+                ?: false
         }
-        return false
+
+        // Oppijanumerorekisteri vastaa HTTP 401 kun sessio on vanhentunut.
+        // HUOM! Oppijanumerorekisteri vastaa HTTP 401 myös jos käyttöoikeudet eivät riitä.
+        return response.statusCode == HttpStatus.UNAUTHORIZED
     }
 }

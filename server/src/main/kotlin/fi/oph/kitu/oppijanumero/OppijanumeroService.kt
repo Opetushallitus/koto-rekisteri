@@ -20,7 +20,7 @@ interface OppijanumeroService {
 class OppijanumeroServiceImpl(
     private val casAuthenticatedService: CasAuthenticatedService,
     private val tracer: Tracer,
-    private val casRestService: CasRestAuthService,
+    private val casRestService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
 ) : OppijanumeroService {
     @Value("\${kitu.oppijanumero.service.url}")
