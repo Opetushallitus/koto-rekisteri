@@ -41,17 +41,11 @@ class OppijanumeroServiceImpl(
                     YleistunnisteHaeRequest(oppija.etunimet, oppija.hetu, oppija.kutsumanimi, oppija.sukunimi)
 
                 val rawResult =
-                    try {
-                        casRestService.authenticatedPost<YleistunnisteHaeRequest, String>(
-                            URI.create(endpoint),
-                            yleistunnisteHaeRequest,
-                            MediaType.APPLICATION_JSON,
-                        )
-                    } catch (e: Throwable) {
-                        println(e)
-                        e.printStackTrace()
-                        throw e
-                    }
+                    casRestService.authenticatedPost<YleistunnisteHaeRequest, String>(
+                        URI.create(endpoint),
+                        yleistunnisteHaeRequest,
+                        MediaType.APPLICATION_JSON,
+                    )
 
                 if (rawResult !is TypedResult.Success) {
                     // CAS errors are not caused by the oppija data, and thus
