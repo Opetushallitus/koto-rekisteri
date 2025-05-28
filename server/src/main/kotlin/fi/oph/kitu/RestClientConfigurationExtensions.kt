@@ -17,16 +17,6 @@ import org.springframework.web.client.RestClient
  */
 inline fun <reified T> RestClient.RequestBodySpec.retrieveEntitySafely(): ResponseEntity<T>? =
     this.exchange { request, response ->
-        println(" - Request headers:")
-        request.headers.forEach { header ->
-            println("   -- ${header.key}: ${header.value}")
-        }
-
-        println(" - Response headers:")
-        response.headers.forEach { header ->
-            println("   -- ${header.key}: ${header.value}")
-        }
-
         ResponseEntity
             .status(response.statusCode)
             .headers(response.headers)

@@ -2,7 +2,6 @@ package fi.oph.kitu.oppijanumero
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.printCookies
 import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Qualifier
@@ -35,7 +34,6 @@ class CasRestAuthService(
         // and the restClient should take those into considerations.
         val bodyAsString = objectMapper.writeValueAsString(body)
 
-        cookieManager.printCookies("authenticatedPost 1. cookieStore:\n")
         val response =
             restCient
                 .post()
@@ -48,40 +46,31 @@ class CasRestAuthService(
             return TypedResult.Failure(CasError.ServiceTicketError("Received null ResponseEntity on the first request"))
         }
 
-        cookieManager.printCookies("authenticatedPost 2. cookieStore:\n")
+        return if (!requiresLogin(response)) {
+            TypedResult.Success(response)
+        } else {
+            casService
+                .getGrantingTicket()
+                .flatMap(casService::getServiceTicket)
+                .flatMap(casService::verifyServiceTicket)
+                .flatMap { newUri ->
+                    val response =
+                        restCient
+                            .post()
+                            .uri(newUri)
+                            .body(bodyAsString)
+                            .contentType(contentType)
+                            .retrieveEntitySafely<Response>()
 
-        try {
-            return if (requiresLogin(response)) {
-                casService
-                    .getGrantingTicket()
-                    .flatMap(casService::getServiceTicket)
-                    .flatMap(casService::verifyServiceTicket)
-                    .flatMap {
-                        println("Got response: $it")
-                        val response =
-                            restCient
-                                .post()
-                                .uri(uri)
-                                .body(bodyAsString)
-                                .contentType(contentType)
-                                .retrieveEntitySafely<Response>()
-
-                        if (response == null) {
-                            // TODO: Don't use service ticket error
-                            TypedResult.Failure(
-                                CasError.ServiceTicketError("Received null ResponseEntity after authentication"),
-                            )
-                        } else {
-                            TypedResult.Success(response)
-                        }
+                    if (response == null) {
+                        // TODO: Don't use service ticket error
+                        TypedResult.Failure(
+                            CasError.ServiceTicketError("Received null ResponseEntity after authentication"),
+                        )
+                    } else {
+                        TypedResult.Success(response)
                     }
-            } else {
-                TypedResult.Success(response)
-            }
-        } catch (e: Throwable) {
-            println(e)
-            e.printStackTrace()
-            throw e
+                }
         }
     }
 
