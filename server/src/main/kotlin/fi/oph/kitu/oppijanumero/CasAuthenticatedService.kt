@@ -11,11 +11,10 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import java.net.URI
 
 interface CasAuthenticatedService {
     fun <Request : Any, Response : Any> authenticatedPost(
-        uri: URI,
+        uri: String,
         body: Request,
         contentType: MediaType,
         responseType: Class<Response>,
@@ -26,12 +25,12 @@ interface CasAuthenticatedService {
 class CasAuthenticatedServiceImpl(
     val tracer: Tracer,
     val casService: CasService,
-    @Qualifier("casRestClient")
+    @Qualifier("oppijanumeroRestClient")
     val restCient: RestClient,
     val objectMapper: ObjectMapper,
 ) : CasAuthenticatedService {
     override fun <Request : Any, Response : Any> authenticatedPost(
-        uri: URI,
+        uri: String,
         body: Request,
         contentType: MediaType,
         responseType: Class<Response>,

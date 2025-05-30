@@ -34,13 +34,21 @@ class OppijanumeroServiceTests(
                 .withUrlParam("stringtype", "unspecified")!!
     }
 
+    fun mockCas(): MockRestServiceServer {
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("/oppijanumero"))
+        return mockServer
+    }
+
     @Test
     fun `oppijanumero service returns identified user`(
         @Autowired oppijanumeroService: OppijanumeroService,
     ) {
         // Facade
         val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
-        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+
+        val mockServer = mockCas()
         mockServer
             .expect(requestTo("yleistunniste/hae"))
             .andRespond(

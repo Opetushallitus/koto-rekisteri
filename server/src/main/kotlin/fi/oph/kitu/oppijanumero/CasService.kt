@@ -25,18 +25,18 @@ class CasService(
     @Value("\${kitu.palvelukayttaja.password}")
     private lateinit var onrPassword: String
 
-    @Value("\${kitu.oppijanumero.casUrl}")
-    private lateinit var casUrl: String
-
-    @Value("\${kitu.oppijanumero.service.url}")
-    private lateinit var serviceUrl: String
+    @Value("\${kitu.oppijanumero.url}")
+    private lateinit var baseUrl: String
 
     @WithSpan
-    fun verifyServiceTicket(serviceTicket: String): TypedResult<URI, CasError> {
+    fun verifyServiceTicket(
+        service: String,
+        ticket: String,
+    ): TypedResult<URI, CasError> {
         val response =
             restClient
                 .get()
-                .uri("$serviceUrl/j_spring_cas_security_check?ticket=$serviceTicket")
+                .uri("/$service/j_spring_cas_security_check?ticket=$ticket")
                 .exchange { request, response -> response }
 
         return if (response?.statusCode == HttpStatus.FOUND && response.headers.location != null) {
@@ -47,13 +47,16 @@ class CasService(
     }
 
     @WithSpan
-    fun getServiceTicket(ticketGrantingTicket: String): TypedResult<String, CasError> {
+    fun getServiceTicket(
+        service: String,
+        ticketGrantingTicket: String,
+    ): TypedResult<String, CasError> {
         // Step 3 - Get the response
         val response =
             restClient
                 .post()
-                .uri("$casUrl/v1/tickets/$ticketGrantingTicket")
-                .body("service=$serviceUrl/j_spring_cas_security_check")
+                .uri("cas/v1/tickets/$ticketGrantingTicket")
+                .body("service=$baseUrl/$service/j_spring_cas_security_check")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .retrieveEntitySafely(String::class.java)
 
@@ -74,7 +77,7 @@ class CasService(
         val response =
             restClient
                 .post()
-                .uri("$casUrl/v1/tickets")
+                .uri("cas/v1/tickets")
                 .body(body)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .retrieveEntitySafely(String::class.java)
