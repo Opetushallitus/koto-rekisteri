@@ -56,7 +56,6 @@ class KoealustaService(
 
     fun importSuoritukset(from: Instant): Instant =
         tracer.spanBuilder("koealusta.import.suoritukset").startSpan().use { span ->
-            val from = Instant.MIN
             val remoteFunction = "local_completion_export_get_completions"
 
             span.setAttribute("function", remoteFunction)

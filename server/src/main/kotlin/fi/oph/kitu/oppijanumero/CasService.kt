@@ -52,11 +52,12 @@ class CasService(
         ticketGrantingTicket: String,
     ): TypedResult<String, CasError> {
         // Step 3 - Get the response
+        val body = "service=$baseUrl$service/j_spring_cas_security_check"
         val response =
             restClient
                 .post()
                 .uri("cas/v1/tickets/$ticketGrantingTicket")
-                .body("service=$baseUrl/$service/j_spring_cas_security_check")
+                .body(body)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .retrieveEntitySafely(String::class.java)
 
