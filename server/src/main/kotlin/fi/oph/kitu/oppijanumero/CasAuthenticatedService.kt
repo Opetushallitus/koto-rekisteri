@@ -85,7 +85,6 @@ class CasAuthenticatedServiceImpl(
     fun requiresLogin(response: ResponseEntity<*>): Boolean {
         // Oppijanumerorekisteri ohjaa CAS kirjautumissivulle, jos autentikaatiota
         // ei ole tehty. Luodaan uusi CAS ticket ja yritetään uudelleen.
-        // authentication gets JSESSIONID Cookie and it will be used in the next request below
         if (response.statusCode == HttpStatus.FOUND) {
             return response.headers
                 .getFirst(HttpHeaders.LOCATION)

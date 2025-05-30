@@ -37,13 +37,7 @@ class CasService(
             restClient
                 .get()
                 .uri("$serviceUrl/j_spring_cas_security_check?ticket=$serviceTicket")
-                .headers {
-                    it["JSESSIONID"] =
-                        cookieManager.cookieStore
-                            .get(URI.create(serviceUrl))
-                            .find { c -> c.name == "JSESSIONID" }
-                            ?.value
-                }.exchange { request, response -> response }
+                .exchange { request, response -> response }
 
         return if (response?.statusCode == HttpStatus.FOUND && response.headers.location != null) {
             TypedResult.Success(response.headers.location!!)
