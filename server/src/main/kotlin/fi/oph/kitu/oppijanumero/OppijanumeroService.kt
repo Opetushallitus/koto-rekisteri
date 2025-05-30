@@ -35,6 +35,7 @@ class OppijanumeroServiceImpl(
 
                 val rawResult =
                     casService.authenticatedPost(
+                        "oppijanumerorekisteri-service",
                         "yleistunniste/hae",
                         yleistunnisteHaeRequest,
                         MediaType.APPLICATION_JSON,

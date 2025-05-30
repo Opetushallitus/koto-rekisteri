@@ -14,7 +14,8 @@ import org.springframework.web.client.RestClient
 
 interface CasAuthenticatedService {
     fun <Request : Any, Response : Any> authenticatedPost(
-        uri: String,
+        service: String,
+        endpoint: String,
         body: Request,
         contentType: MediaType,
         responseType: Class<Response>,
@@ -25,12 +26,13 @@ interface CasAuthenticatedService {
 class CasAuthenticatedServiceImpl(
     val tracer: Tracer,
     val casService: CasService,
-    @Qualifier("oppijanumeroRestClient")
+    @Qualifier("casRestClient")
     val restCient: RestClient,
     val objectMapper: ObjectMapper,
 ) : CasAuthenticatedService {
     override fun <Request : Any, Response : Any> authenticatedPost(
-        uri: String,
+        service: String,
+        endpoint: String,
         body: Request,
         contentType: MediaType,
         responseType: Class<Response>,
@@ -43,7 +45,7 @@ class CasAuthenticatedServiceImpl(
         val response =
             restCient
                 .post()
-                .uri(uri)
+                .uri("$service/$endpoint")
                 .body(bodyAsString)
                 .contentType(contentType)
                 .retrieveEntitySafely(responseType)
@@ -58,8 +60,8 @@ class CasAuthenticatedServiceImpl(
         } else {
             casService
                 .getGrantingTicket()
-                .flatMap(casService::getServiceTicket)
-                .flatMap(casService::verifyServiceTicket)
+                .flatMap { ticket -> casService.getServiceTicket(service, ticket) }
+                .flatMap { ticket -> casService.verifyServiceTicket(service, ticket) }
                 .flatMap { newUri ->
                     val response =
                         restCient
