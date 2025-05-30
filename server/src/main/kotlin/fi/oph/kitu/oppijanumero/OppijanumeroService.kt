@@ -5,12 +5,10 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import java.net.URI
 
 interface OppijanumeroService {
     fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
@@ -22,9 +20,6 @@ class OppijanumeroServiceImpl(
     private val casService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
 ) : OppijanumeroService {
-    @Value("\${kitu.oppijanumero.service.url}")
-    lateinit var serviceUrl: String
-
     override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
         tracer
             .spanBuilder("OppijanumeroServiceImpl.getOppijanumero")
@@ -35,13 +30,12 @@ class OppijanumeroServiceImpl(
                 require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
                 require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
 
-                val endpoint = "$serviceUrl/yleistunniste/hae"
                 val yleistunnisteHaeRequest =
                     YleistunnisteHaeRequest(oppija.etunimet, oppija.hetu, oppija.kutsumanimi, oppija.sukunimi)
 
                 val rawResult =
                     casService.authenticatedPost(
-                        URI.create(endpoint),
+                        "yleistunniste/hae",
                         yleistunnisteHaeRequest,
                         MediaType.APPLICATION_JSON,
                         String::class.java,

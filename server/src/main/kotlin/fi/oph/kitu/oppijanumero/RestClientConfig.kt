@@ -9,10 +9,10 @@ import org.springframework.web.client.RestClient
 import java.net.http.HttpClient
 
 @Configuration
-class CasRestClientConfig(
+class RestClientConfig(
     private val restClientBuilder: RestClient.Builder,
 ) {
-    @Value("\${kitu.oppijanumero.casUrl}")
+    @Value("\${kitu.oppijanumero.url}")
     private lateinit var baseUrl: String
 
     @Value("\${kitu.oppijanumero.callerid}")
