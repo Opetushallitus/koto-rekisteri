@@ -197,11 +197,16 @@ export class ServiceStack extends Stack {
       }),
     })
 
-    // EMF exporter created log group
+    // EMF exporter-created log group.
+    // This is configured in the default adot config file, and changing it would require providing our own configuration file to the adot sidecar. For now let's just follow the default configuration. In the future we could create the log group ourselves in the log groups stack and then configure adot to use it. Another option would be to disable the EMF exporter.
     const metricsLogGroup = LogGroup.fromLogGroupName(
       this,
       "MetricsLogGroup",
       "/metrics/kitu",
+    )
+    metricsLogGroup.grant(
+      this.service.taskDefinition.taskRole,
+      "logs:CreateLogGroup",
     )
     metricsLogGroup.grantWrite(this.service.taskDefinition.taskRole)
 
