@@ -27,7 +27,7 @@ import {
   HttpCodeTarget,
   SslPolicy,
 } from "aws-cdk-lib/aws-elasticloadbalancingv2"
-import { ILogGroup } from "aws-cdk-lib/aws-logs"
+import { ILogGroup, LogGroup } from "aws-cdk-lib/aws-logs"
 import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { HostedZone } from "aws-cdk-lib/aws-route53"
 import { ITopic } from "aws-cdk-lib/aws-sns"
@@ -193,7 +193,15 @@ export class ServiceStack extends Stack {
       ),
     })
 
-    props.auditLogGroup.grantWrite(this.service.service.taskDefinition.taskRole)
+    // EMF exporter created log group
+    const metricsLogGroup = LogGroup.fromLogGroupName(
+      this,
+      "MetricsLogGroup",
+      "/metrics/kitu",
+    )
+    metricsLogGroup.grantWrite(this.service.taskDefinition.taskRole)
+
+    props.auditLogGroup.grantWrite(this.service.taskDefinition.taskRole)
 
     // Ref: https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AWSXrayWriteOnlyAccess.html
     this.service.taskDefinition.taskRole.addManagedPolicy(
