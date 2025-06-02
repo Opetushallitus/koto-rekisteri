@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: kitu
       PGUSER: kitu
     ports:
-      - "127.0.0.1:5432:5432"
+      - "5432:5432"
 
   collector:
     image: otel/opentelemetry-collector:0.128.0
