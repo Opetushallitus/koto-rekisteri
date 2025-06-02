@@ -191,6 +191,10 @@ export class ServiceStack extends Stack {
         // renovate: datasource=docker
         "public.ecr.aws/aws-observability/aws-otel-collector:v0.43.3",
       ),
+      logging: LogDriver.awsLogs({
+        logGroup: props.logGroup,
+        streamPrefix: "AwsOtelCollector",
+      }),
     })
 
     props.auditLogGroup.grantWrite(this.service.service.taskDefinition.taskRole)
