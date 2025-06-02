@@ -9,6 +9,10 @@ export default class YkiSuorituksetErrorPage extends BasePage {
     super(page, config)
   }
 
+  async open() {
+    await this.goto(this.url)
+  }
+
   getContent() {
     return this.getPageContent()
   }
@@ -17,8 +21,17 @@ export default class YkiSuorituksetErrorPage extends BasePage {
     return this.getContent().getByRole("table")
   }
 
-  async getErrorRow() {
+  getErrorRow() {
     const errorsTable = this.getErrorsTable()
     return errorsTable.locator(".virheet")
+  }
+
+  getSuoritusColumn(rowIndex: number, columnIndex: number) {
+    const row = this.getErrorsTable().getByTestId("error-row").nth(rowIndex)
+    return row.getByRole("cell").nth(columnIndex)
+  }
+
+  getTableColumnHeaderLink(text: string) {
+    return this.getErrorsTable().getByRole("link", { name: text })
   }
 }

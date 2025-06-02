@@ -39,6 +39,18 @@ export const fixtureData = {
     virheenRivinumero: 3,
     virheenLuontiaika: "2025-03-27 07:29:53",
   } as YkiSuoritusError,
+  weirdError: {
+    suorittajanOid: '"1.2.246.562.24.33342764709"',
+    hetu: '"010866-9260"',
+    nimi: '"Sallinen-Testi" "Magdalena Testi"',
+    lastModified: "2042-12-22T22:42:42Z",
+    virheellinenKentta: "yksi niistä",
+    virheellinenArvo: "en kerro, arvaa!",
+    virheellinenRivi:
+      '"1.2.246.562.24.33342764709","010866-9260","N","Sallinen-Testi","Magdalena-Testi","FIN","Testaamo 10","Testikylä","devnull-14@oph.fi",721388,2023-11-30T12:34:56Z,2024-10-01,"fin","PT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-10-30,6,6,,6,6,,,,0,0,,',
+    virheenRivinumero: 5,
+    virheenLuontiaika: "2023-11-30T12:34:56Z",
+  } as YkiSuoritusError,
 }
 
 const insertQuery = (error: YkiSuoritusError) => SQL`
