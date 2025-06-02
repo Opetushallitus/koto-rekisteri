@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import java.net.CookieManager
 import java.net.URI
 import java.net.URLEncoder
 
@@ -17,7 +16,6 @@ import java.net.URLEncoder
 class CasService(
     @Qualifier("casRestClient")
     val restClient: RestClient,
-    val cookieManager: CookieManager,
 ) {
     @Value("\${kitu.palvelukayttaja.username}")
     private lateinit var onrUsername: String

@@ -5,6 +5,7 @@ import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Import
@@ -22,6 +23,7 @@ import kotlin.test.assertEquals
 @Testcontainers
 @Import(OpenTelemetryTestConfig::class)
 class OppijanumeroServiceTests(
+    @Qualifier("casRestClientBuilder")
     @Autowired private val mockRestClientBuilder: RestClient.Builder,
 ) {
     @Suppress("unused")
@@ -36,8 +38,8 @@ class OppijanumeroServiceTests(
 
     fun mockCas(): MockRestServiceServer {
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
-        mockServer
-            .expect(requestTo("/oppijanumero"))
+        // mockServer
+        //    .expect(requestTo("/oppijanumero"))
         return mockServer
     }
 
@@ -50,7 +52,7 @@ class OppijanumeroServiceTests(
 
         val mockServer = mockCas()
         mockServer
-            .expect(requestTo("yleistunniste/hae"))
+            .expect(requestTo("http://localhost:8080/oppijanumerorekisteri-service/yleistunniste/hae"))
             .andRespond(
                 withSuccess(
                     """

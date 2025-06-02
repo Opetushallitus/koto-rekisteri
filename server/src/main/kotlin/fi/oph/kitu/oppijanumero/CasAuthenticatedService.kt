@@ -42,10 +42,11 @@ class CasAuthenticatedServiceImpl(
         // Our objectMapper probably use some custom serialization rules,
         // and the restClient should take those into considerations.
         val bodyAsString = objectMapper.writeValueAsString(body)
+        val url = "$service/$endpoint"
         val response =
             restCient
                 .post()
-                .uri("$service/$endpoint")
+                .uri(url)
                 .body(bodyAsString)
                 .contentType(contentType)
                 .retrieveEntitySafely(responseType)
