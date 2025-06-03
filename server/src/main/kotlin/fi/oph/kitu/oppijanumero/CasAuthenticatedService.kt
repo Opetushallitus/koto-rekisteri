@@ -3,36 +3,55 @@ package fi.oph.kitu.oppijanumero
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.http.client.JdkClientHttpRequestFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
+import java.net.CookieManager
+import java.net.http.HttpClient
+import java.time.Duration
 
-interface CasAuthenticatedService {
+@Service
+class CasAuthenticatedService(
+    val restClientBuilder: RestClient.Builder,
+    private val casService: CasService,
+) {
+    @Value("\${kitu.oppijanumero.service.url}")
+    private lateinit var serviceUrl: String
+
+    @Value("\${kitu.oppijanumero.callerid}")
+    private lateinit var callerId: String
+
+    private val restClient by lazy {
+        restClientBuilder
+            .requestFactory(
+                JdkClientHttpRequestFactory(
+                    HttpClient
+                        .newBuilder()
+                        .cookieHandler(CookieManager()) // sends JSESSIONID Cookie between the requests
+                        .connectTimeout(Duration.ofSeconds(10))
+                        .build(),
+                ),
+            ).baseUrl(serviceUrl)
+            .defaultHeaders { headers ->
+                headers["Caller-Id"] = callerId
+                headers["CSRF"] = "CSRF"
+                headers["Cookie"] = "CSRF=CSRF"
+            }.build()
+    }
+
+    @WithSpan
     fun <Request : Any, Response> post(
         endpoint: String,
         body: Request,
         contentType: MediaType,
         responseType: Class<Response>,
-    ): TypedResult<ResponseEntity<Response>, CasError>
-}
-
-@Service
-class CasAuthenticatedServiceImpl(
-    @Qualifier("oppijanumeroRestClient")
-    private val restClient: RestClient,
-    private val casService: CasService,
-) : CasAuthenticatedService {
-    @WithSpan
-    override fun <Request : Any, Response> post(
-        endpoint: String,
-        body: Request,
-        contentType: MediaType,
-        responseType: Class<Response>,
     ): TypedResult<ResponseEntity<Response>, CasError> {
+        println("test")
         val response =
             restClient
                 .post()
