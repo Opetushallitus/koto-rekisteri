@@ -274,12 +274,9 @@ data class VktArvionti(
     override val paivamaara: LocalDate,
 ) : Arviointi,
     Comparable<VktArvionti> {
-    override fun compareTo(other: VktArvionti): Int =
-        ComparisonOrder.indexOf(arvosana) - ComparisonOrder.indexOf(other.arvosana)
+    override fun compareTo(other: VktArvionti): Int = Koodisto.ArvosanaKoodiviite.compare(this.arvosana, other.arvosana)
 
     companion object {
-        private val ComparisonOrder = Koodisto.VktArvosana.entries.toTypedArray()
-
         fun from(row: VktSuoritusEntity.VktOsakoe) =
             if (row.arvosana != null &&
                 row.arviointipaiva != null

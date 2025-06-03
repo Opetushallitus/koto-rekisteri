@@ -11,6 +11,17 @@ object Koodisto {
         fun toKoski(): KoskiKoodiviite = KoskiKoodiviite(koodiarvo, koodistoUri)
     }
 
+    interface ArvosanaKoodiviite : Koodiviite {
+        val order: Int
+
+        companion object {
+            fun <T : ArvosanaKoodiviite> compare(
+                a: T,
+                b: T,
+            ): Int = a.order - b.order
+        }
+    }
+
     enum class OpiskeluoikeudenTyyppi(
         override val koodiarvo: String,
     ) : Koodiviite {
@@ -148,11 +159,12 @@ object Koodisto {
 
     enum class VktArvosana(
         override val koodiarvo: String,
-    ) : Koodiviite {
-        Erinomainen("erinomainen"),
-        Hyvä("hyva"),
-        Tyydyttävä("tyydyttava"),
-        Hylätty("hylatty"),
+        override val order: Int,
+    ) : ArvosanaKoodiviite {
+        Erinomainen("erinomainen", 3),
+        Hyvä("hyva", 2),
+        Tyydyttävä("tyydyttava", 1),
+        Hylätty("hylatty", -1),
         ;
 
         override val koodistoUri: String = "vktarvosana"
