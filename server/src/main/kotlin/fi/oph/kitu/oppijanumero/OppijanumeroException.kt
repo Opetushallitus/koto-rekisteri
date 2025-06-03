@@ -1,6 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
-import java.net.http.HttpResponse
+import org.springframework.http.ResponseEntity
 
 sealed class OppijanumeroException(
     val request: YleistunnisteHaeRequest,
@@ -10,20 +10,20 @@ sealed class OppijanumeroException(
 ) : Throwable(message, cause) {
     class UnexpectedError(
         request: YleistunnisteHaeRequest,
-        val response: HttpResponse<String>,
+        val response: ResponseEntity<String>,
         message: String = "Unexpected error in oppijanumero-service",
     ) : OppijanumeroException(request, message)
 
     class MalformedResponse(
         request: YleistunnisteHaeRequest,
-        val response: HttpResponse<String>,
+        val response: ResponseEntity<String>,
         message: String = "Malformed response from oppijanumero-service",
         cause: Throwable,
     ) : OppijanumeroException(request, message, cause = cause)
 
     class BadResponse(
         request: YleistunnisteHaeRequest,
-        val response: HttpResponse<String>,
+        val response: ResponseEntity<String>,
         message: String = "Bad response from oppijanumero-service",
         oppijanumeroServiceError: OppijanumeroServiceError,
         cause: Throwable,
@@ -31,7 +31,7 @@ sealed class OppijanumeroException(
 
     class BadRequest(
         request: YleistunnisteHaeRequest,
-        val response: HttpResponse<String>,
+        val response: ResponseEntity<String>,
         message: String = "Bad request to oppijanumero-service",
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
         cause: Throwable? = null,

@@ -14,4 +14,8 @@ sealed class CasError(
     class VerifyTicketError(
         message: String,
     ) : CasError(message)
+
+    class CasAuthServiceError(
+        message: String,
+    ) : CasError(message)
 }

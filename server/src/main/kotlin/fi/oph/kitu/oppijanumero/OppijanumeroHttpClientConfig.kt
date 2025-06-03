@@ -37,6 +37,9 @@ class OppijanumeroRestClientConfig(
     @Value("\${kitu.oppijanumero.service.url}")
     private lateinit var serviceUrl: String
 
+    @Value("\${kitu.oppijanumero.callerid}")
+    private lateinit var callerId: String
+
     @Bean("oppijanumeroRestClient")
     fun oppijanumeroRestClient(
         @Qualifier("oppijanumeroHttpClient")
@@ -45,5 +48,9 @@ class OppijanumeroRestClientConfig(
         restClientBuilder
             .requestFactory(JdkClientHttpRequestFactory(httpClient))
             .baseUrl(serviceUrl)
-            .build()
+            .defaultHeaders { headers ->
+                headers["Caller-Id"] = callerId
+                headers["CSRF"] = "CSRF"
+                headers["Cookie"] = "CSRF=CSRF"
+            }.build()
 }
