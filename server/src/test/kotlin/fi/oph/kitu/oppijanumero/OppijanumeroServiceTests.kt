@@ -1,14 +1,13 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
-import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
@@ -19,7 +18,7 @@ import kotlin.test.assertEquals
 
 @SpringBootTest
 @Testcontainers
-@Import(OpenTelemetryTestConfig::class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class OppijanumeroServiceTests {
     @Suppress("unused")
     companion object {
@@ -67,6 +66,9 @@ class OppijanumeroServiceTests {
             .yleisTunniste("/oppijanumero-service/yleistunniste/hae")
             .yleisTunniste("http://localhost:8080/yleistunniste/hae")
             .yleisTunniste("http://localhost:8080/oppijanumero-service/yleistunniste/hae")
+
+        casAuthenticatedService.serviceUrl = "http://localhost:8080/oppijanumero-service"
+        casAuthenticatedService.callerId = "123"
 
         val result =
             assertDoesNotThrow {
