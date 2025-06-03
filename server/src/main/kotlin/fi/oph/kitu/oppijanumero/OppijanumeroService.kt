@@ -6,10 +6,10 @@ import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import java.net.URI
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 
 interface OppijanumeroService {
     fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
@@ -34,21 +34,17 @@ class OppijanumeroServiceImpl(
                 require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
                 require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
 
-                val endpoint = "$serviceUrl/yleistunniste/hae"
                 val yleistunnisteHaeRequest =
                     YleistunnisteHaeRequest(oppija.etunimet, oppija.hetu, oppija.kutsumanimi, oppija.sukunimi)
 
-                val httpRequest =
-                    HttpRequest
-                        .newBuilder(URI.create(endpoint))
-                        .POST(
-                            HttpRequest.BodyPublishers.ofString(
-                                objectMapper.writeValueAsString(yleistunnisteHaeRequest),
-                            ),
-                        ).header("Content-Type", "application/json")
-
                 // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
-                val rawResult = casAuthenticatedService.sendRequest(httpRequest)
+                val rawResult =
+                    casAuthenticatedService.post(
+                        "/yleistunniste/hae",
+                        yleistunnisteHaeRequest,
+                        MediaType.APPLICATION_JSON,
+                        String::class.java,
+                    )
                 if (rawResult !is TypedResult.Success) {
                     // CAS errors are not caused by the oppija data, and thus
                     // should be handling outside default error handling flow.
@@ -58,18 +54,18 @@ class OppijanumeroServiceImpl(
                 // At this point, CAS-authentication is done succesfully,
                 // but we still need to check yleistunniste/hae - specific statuses
                 val rawResponse = rawResult.value
-                if (rawResponse.statusCode() == 404) {
+                if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
                     return@use TypedResult.Failure(
                         OppijanumeroException.OppijaNotFoundException(yleistunnisteHaeRequest),
                     )
-                } else if (400 <= rawResponse.statusCode() && rawResponse.statusCode() < 500) {
+                } else if (rawResponse.statusCode.is4xxClientError) {
                     return@use TypedResult.Failure(
                         OppijanumeroException.BadRequest(
                             yleistunnisteHaeRequest,
                             rawResponse,
                         ),
                     )
-                } else if (rawResponse.statusCode() != 200) {
+                } else if (!rawResponse.statusCode.is2xxSuccessful) {
                     throw OppijanumeroException.UnexpectedError(yleistunnisteHaeRequest, rawResponse)
                 }
 
@@ -109,16 +105,16 @@ class OppijanumeroServiceImpl(
      */
     final inline fun <reified T> tryConvertToOppijanumeroResponse(
         request: YleistunnisteHaeRequest,
-        response: HttpResponse<String>,
+        response: ResponseEntity<String>,
     ): TypedResult<T, OppijanumeroException> =
         TypedResult
             .runCatching {
-                objectMapper.readValue(response.body(), T::class.java)
+                objectMapper.readValue(response.body, T::class.java)
             }.mapFailure { decodeError ->
                 TypedResult
                     .runCatching {
                         objectMapper.readValue(
-                            response.body(),
+                            response.body,
                             OppijanumeroServiceError::class.java,
                         )
                     }.fold(
