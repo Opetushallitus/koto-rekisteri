@@ -7,7 +7,7 @@ data class OidOppija(
     val etunimet: String? = null,
     val sukunimi: String? = null,
 ) {
-    fun kokoNimi(): String = "$sukunimi $etunimet"
+    fun kokoNimi(): String = "$sukunimi, $etunimet"
 
     companion object {
         fun from(entity: VktSuoritusEntity) =

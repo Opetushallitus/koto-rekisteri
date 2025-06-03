@@ -73,6 +73,8 @@ fun FlowContent.vktIlmoittautuneetTable(
             sortedBy = sortedBy,
             sortDirection = sortDirection,
             compact = true,
+            testId = "ilmoittautuneet",
+            rowTestId = { it.suoritus.lahdejarjestelmanId.toString() },
         )
     }
 }

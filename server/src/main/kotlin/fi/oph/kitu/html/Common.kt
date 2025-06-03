@@ -1,6 +1,7 @@
 package fi.oph.kitu.html
 
 import kotlinx.html.FlowContent
+import kotlinx.html.Tag
 import kotlinx.html.script
 import kotlinx.html.unsafe
 
@@ -17,15 +18,15 @@ fun List<MenuItem>.setCurrentItem(ref: String?) =
         this
     }
 
-fun FlowContent.data(
+fun Tag.data(
     key: String,
     value: String,
 ) {
     attributes["data-$key"] = value
 }
 
-fun FlowContent.testId(id: String) {
-    data("testid", id)
+fun Tag.testId(id: String?) {
+    if (id != null) data("testid", id)
 }
 
 fun FlowContent.javascript(code: String) {
