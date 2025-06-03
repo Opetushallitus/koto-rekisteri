@@ -54,11 +54,14 @@ fun generateRandomPerson(): Person {
     )
 }
 
-fun generateRandomFirstnames(sukupuoli: Sukupuoli): Pair<String, String> {
+fun generateRandomFirstnames(
+    sukupuoli: Sukupuoli,
+    random: Random = Random,
+): Pair<String, String> {
     if (sukupuoli == Sukupuoli.N) {
-        return Pair(femaleNames.random(), femaleNames.random())
+        return Pair(femaleNames.random(random), femaleNames.random(random))
     } else if (sukupuoli == Sukupuoli.M) {
-        return Pair(maleNames.random(), maleNames.random())
+        return Pair(maleNames.random(random), maleNames.random(random))
     }
 
     val bothnames =
@@ -67,5 +70,5 @@ fun generateRandomFirstnames(sukupuoli: Sukupuoli): Pair<String, String> {
             addAll(maleNames)
         }
 
-    return Pair(bothnames.random(), bothnames.random())
+    return Pair(bothnames.random(random), bothnames.random(random))
 }

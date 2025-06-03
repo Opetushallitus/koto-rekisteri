@@ -2,10 +2,13 @@ package fi.oph.kitu.dev
 
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusRepository
+import fi.oph.kitu.mock.VktSuoritusMockGenerator
 import fi.oph.kitu.mock.generateRandomKielitestiSuoritus
 import fi.oph.kitu.mock.generateRandomYkiArviointiEntity
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
+import fi.oph.kitu.vkt.VktSuoritusEntity
+import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
@@ -35,6 +38,7 @@ class CreateMockDataController(
     private val suoritusErrorRepository: YkiSuoritusErrorRepository,
     private val arvioijaRepository: YkiArvioijaRepository,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+    private val vktSuoritusRepository: VktSuoritusRepository,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -101,4 +105,20 @@ class CreateMockDataController(
                 generateRandomKielitestiSuoritus()
             },
         )
+
+    // Vkt
+    @GetMapping(
+        "/mockdata/vkt/suoritus/",
+        "/mockdata/vkt/suoritus/{count}",
+    )
+    fun createVktSuoritusMockData(
+        @PathVariable count: Int?,
+    ): Iterable<VktSuoritusEntity> {
+        val generator = VktSuoritusMockGenerator()
+        return vktSuoritusRepository.saveAll(
+            List(count ?: 1000) {
+                generator.generateRandomVktSuoritusEntity()
+            },
+        )
+    }
 }
