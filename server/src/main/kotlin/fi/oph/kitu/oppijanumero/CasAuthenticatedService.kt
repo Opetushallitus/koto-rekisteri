@@ -7,6 +7,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -25,7 +26,7 @@ class CasAuthenticatedServiceImpl(
     @Value("\${kitu.oppijanumero.callerid}")
     private lateinit var callerId: String
 
-    private fun authenticateToCas(): TypedResult<HttpResponse<String>, CasError> =
+    private fun authenticateToCas(): TypedResult<URI, CasError> =
         tracer
             .spanBuilder("CasAuthenticatedServiceImpl.authenticateToCas")
             .startSpan()
@@ -33,7 +34,7 @@ class CasAuthenticatedServiceImpl(
                 casService
                     .getGrantingTicket()
                     .flatMap(casService::getServiceTicket)
-                    .flatMap(casService::sendAuthenticationRequest)
+                    .flatMap(casService::verifyServiceTicket)
             }
 
     @WithSpan

@@ -1,18 +1,23 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.TypedResult
+import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestClient
 import java.net.URI
 import java.net.URLEncoder
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 
 @Service
 class CasService(
-    private val httpClient: HttpClient,
+    @Qualifier("casRestClient")
+    private val casRestClient: RestClient,
+    @Qualifier("oppijanumeroRestClient")
+    private val oppijanumeroRestClient: RestClient,
 ) {
     @Value("\${kitu.palvelukayttaja.username}")
     private lateinit var onrUsername: String
@@ -20,40 +25,42 @@ class CasService(
     @Value("\${kitu.palvelukayttaja.password}")
     private lateinit var onrPassword: String
 
-    @Value("\${kitu.oppijanumero.casUrl}")
-    private lateinit var casUrl: String
-
     @Value("\${kitu.oppijanumero.service.url}")
     private lateinit var serviceUrl: String
 
     @WithSpan
-    fun sendAuthenticationRequest(serviceTicket: String): TypedResult<HttpResponse<String>, CasError> {
-        val authRequest =
-            HttpRequest
-                .newBuilder(URI.create("$serviceUrl/j_spring_cas_security_check?ticket=$serviceTicket"))
-                .method("GET", HttpRequest.BodyPublishers.noBody())
-                .build()
+    fun verifyServiceTicket(serviceTicket: String): TypedResult<URI, CasError> {
+        val response =
+            oppijanumeroRestClient
+                .get()
+                .uri("/j_spring_cas_security_check?ticket=$serviceTicket")
+                .exchange { request, response -> response }
 
-        return TypedResult.Success(httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString()))
+        return if (response?.statusCode == HttpStatus.FOUND && response.headers.location != null) {
+            TypedResult.Success(response.headers.location!!)
+        } else {
+            TypedResult.Failure(CasError.VerifyTicketError("Received status code ${response?.statusCode}"))
+        }
     }
 
     @WithSpan
     fun getServiceTicket(ticketGrantingTicket: String): TypedResult<String, CasError> {
-        val request =
-            HttpRequest
-                .newBuilder(URI.create("$casUrl/v1/tickets/$ticketGrantingTicket"))
-                .POST(
-                    HttpRequest.BodyPublishers.ofString(
-                        "service=$serviceUrl/j_spring_cas_security_check",
-                    ),
-                ).header("Content-Type", "application/x-www-form-urlencoded")
-                .build()
+        // Step 3 - Get the response
+        val body = "service=$serviceUrl/j_spring_cas_security_check"
+        val response =
+            casRestClient
+                .post()
+                .uri("/v1/tickets/$ticketGrantingTicket")
+                .body(body)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .retrieveEntitySafely(String::class.java)
 
-        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        return if (response.statusCode() == 200) {
-            TypedResult.Success(response.body())
+        return if (response?.statusCode == HttpStatus.OK) {
+            TypedResult.Success(response.body.toString())
         } else {
-            TypedResult.Failure(CasError.ServiceTicketError("Unable to get service ticket"))
+            TypedResult.Failure(
+                CasError.ServiceTicketError("Unable to get the service ticket (Status: ${response?.statusCode})."),
+            )
         }
     }
 
@@ -62,24 +69,27 @@ class CasService(
         // Step 2 - form a request
         val username = URLEncoder.encode(onrUsername, "UTF-8")
         val password = URLEncoder.encode(onrPassword, "UTF-8")
-        val request =
-            HttpRequest
-                .newBuilder(URI.create("$casUrl/v1/tickets"))
-                .POST(HttpRequest.BodyPublishers.ofString("username=$username&password=$password"))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .build()
+        val body = "username=$username&password=$password"
 
-        // Step 3 - Get the response
-        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        val response =
+            casRestClient
+                .post()
+                .uri("/v1/tickets")
+                .body(body)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .retrieveEntitySafely(String::class.java)
 
-        return if (response.statusCode() == 201) {
-            TypedResult.Success(
-                response.headers().firstValue("Location").get().let {
-                    it.substring(it.lastIndexOf("/") + 1)
-                },
-            )
+        val ticket =
+            response
+                ?.headers
+                ?.location
+                ?.path
+                ?.substringAfterLast("/")
+
+        return if (response?.statusCode == HttpStatus.CREATED && ticket != null) {
+            TypedResult.Success(ticket)
         } else {
-            TypedResult.Failure(CasError.GrantingTicketError("Unable to get granting ticket"))
+            TypedResult.Failure(CasError.ServiceTicketError("Unable to get service ticket"))
         }
     }
 }
