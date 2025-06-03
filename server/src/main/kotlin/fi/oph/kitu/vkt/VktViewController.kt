@@ -2,7 +2,9 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.i18n.LocalizationService
+import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointi
+import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkastelu
 import fi.oph.kitu.vkt.html.VktIlmoittautuneet
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
@@ -51,11 +53,11 @@ class VktViewController(
                         .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
                         .build()
 
-                VktErinomaisenArviointi.render(
-                    it,
-                    csrfToken,
-                    translations,
-                )
+                if (it.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
+                    VktErinomaisenArviointi.render(it, csrfToken, translations)
+                } else {
+                    VktHyvaJaTyydyttavaTarkastelu.render(it, translations)
+                }
             }.getOrNull()
 
     @PostMapping("/ilmoittautuneet/{id}", produces = ["text/html"])
