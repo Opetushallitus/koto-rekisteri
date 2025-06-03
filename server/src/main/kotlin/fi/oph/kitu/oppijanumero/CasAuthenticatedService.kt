@@ -21,10 +21,10 @@ class CasAuthenticatedService(
     private val casService: CasService,
 ) {
     @Value("\${kitu.oppijanumero.service.url}")
-    private lateinit var serviceUrl: String
+    lateinit var serviceUrl: String
 
     @Value("\${kitu.oppijanumero.callerid}")
-    private lateinit var callerId: String
+    lateinit var callerId: String
 
     private val restClient by lazy {
         restClientBuilder
