@@ -112,5 +112,3 @@ fun FlowContent.vktErinomainenOsakoeTable(
         compact = true,
     )
 }
-
-// fun FlowContent.vktErinomainenTutkintoTable(tutk)
