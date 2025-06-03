@@ -24,8 +24,10 @@ fun FlowContent.formPost(
 fun FlowContent.dateInput(
     name: String,
     date: LocalDate?,
+    testId: String? = null,
 ) {
     input(type = InputType.date, name = name) {
+        testId(testId)
         value = date?.toString() ?: ""
     }
 }

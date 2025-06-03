@@ -32,17 +32,19 @@ fun FlowContent.vktTutkinnot(
             rows = data.suoritus.tutkinnot,
             columns =
                 listOf(
-                    DisplayTableColumn("Tutkinto", width = "25%") {
+                    DisplayTableColumn("Tutkinto", width = "25%", testId = "tutkinto") {
                         +t.get(it.tyyppi)
                     },
-                    DisplayTableColumn("Viimeisin tutkintopäivä", width = "25%") {
+                    DisplayTableColumn("Viimeisin tutkintopäivä", width = "25%", testId = "tutkintopaiva") {
                         it.viimeisinTutkintopaiva()?.let { finnishDate(it) }
                     },
-                    DisplayTableColumn("Arvosana", width = "50%") {
+                    DisplayTableColumn("Arvosana", width = "50%", testId = "arvosana") {
                         +t.get(it.arviointi()?.arvosana)
                     },
                 ),
             compact = true,
+            testId = "tutkinnot",
+            rowTestId = { it.tyyppi.koodiarvo },
         )
     }
 }

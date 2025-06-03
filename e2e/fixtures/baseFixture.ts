@@ -8,9 +8,12 @@ import * as kotoSuoritusFixture from "./kotoSuoritus"
 import * as ykiSuoritusFixture from "./ykiSuoritus"
 import * as ykiSuoritusErrorFixture from "./ykiSuoritusError"
 import * as kotoSuoritusErrorFixture from "./kotoError"
+import * as vktSuoritusFixture from "./vktSuoritus"
 import BasePage from "../models/BasePage"
 import { Config, createConfig } from "../config"
 import KielitestiErrorPage from "../models/kotoutumiskoulutus/KielitestiErrorPage"
+import VktIlmoittautuneetPage from "../models/vkt/VktIlmoittautuneetPage"
+import VktSuorituksenTiedotPage from "../models/vkt/VktSuorituksenTiedotPage"
 
 interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
@@ -23,6 +26,9 @@ interface Fixtures {
   ykiSuoritus: typeof ykiSuoritusFixture
   ykiSuoritusError: typeof ykiSuoritusErrorFixture
   kotoSuoritusError: typeof kotoSuoritusErrorFixture
+  vktIlmoittautuneetPage: VktIlmoittautuneetPage
+  vktSuorituksenTiedotPage: VktSuorituksenTiedotPage
+  vktSuoritus: typeof vktSuoritusFixture
 }
 
 export type TestDB = ReturnType<typeof createTestDatabase>
@@ -86,6 +92,15 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   },
   kotoSuoritusError: async ({}, use) => {
     await use({ ...kotoSuoritusErrorFixture })
+  },
+  vktIlmoittautuneetPage: async ({ page, config }, use) => {
+    await use(new VktIlmoittautuneetPage(page, config))
+  },
+  vktSuorituksenTiedotPage: async ({ page, config }, use) => {
+    await use(new VktSuorituksenTiedotPage(page, config))
+  },
+  vktSuoritus: async ({}, use) => {
+    await use({ ...vktSuoritusFixture })
   },
 })
 

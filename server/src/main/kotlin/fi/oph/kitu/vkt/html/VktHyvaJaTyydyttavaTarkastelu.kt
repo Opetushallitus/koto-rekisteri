@@ -66,5 +66,6 @@ fun FlowContent.vktHyvaJaTyydyttavaOsakoeTable(
             },
         ),
         compact = true,
+        testId = "osakokeet",
     )
 }

@@ -42,6 +42,7 @@ class VktSuoritusMockGenerator(
                     getRandomLocalDate(
                         LocalDate.of(2000, 1, 1),
                         LocalDate.of(2025, 1, 1),
+                        random,
                     ),
                 ),
             lahdejarjestelmanId =

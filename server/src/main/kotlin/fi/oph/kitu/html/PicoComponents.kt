@@ -21,9 +21,11 @@ fun FlowContent.itemSelect(
     inputName: String,
     items: List<MenuItem>,
     includeBlank: Boolean = false,
+    testId: String? = null,
 ) {
     select {
         name = inputName
+        testId(testId)
         if (includeBlank) {
             option {}
         }

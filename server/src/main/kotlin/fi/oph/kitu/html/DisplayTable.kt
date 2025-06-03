@@ -18,6 +18,7 @@ data class DisplayTableColumn<T>(
     val label: String,
     val sortKey: String? = null,
     val width: String? = null,
+    val testId: String? = null,
     val renderValue: FlowContent.(T) -> Unit,
 )
 
@@ -41,10 +42,13 @@ fun <T> FlowContent.displayTable(
     sortedBy: DisplayTableEnum? = null,
     sortDirection: SortDirection? = null,
     compact: Boolean = false,
+    testId: String? = null,
+    rowTestId: ((T) -> String)? = null,
 ) {
     val sortedByKey = sortedBy?.urlParam
 
     table(classes = "${if (compact) "compact" else ""} striped") {
+        testId(testId)
         debugTrace()
         thead {
             tr {
@@ -84,8 +88,12 @@ fun <T> FlowContent.displayTable(
         tbody {
             rows.forEach { row ->
                 tr {
+                    testId(rowTestId?.let { it(row) })
                     columns.forEach { column ->
-                        td { column.renderValue(this, row) }
+                        td {
+                            testId(column.testId)
+                            column.renderValue(this, row)
+                        }
                     }
                 }
             }
