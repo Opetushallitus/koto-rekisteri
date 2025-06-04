@@ -33,6 +33,7 @@ interface DisplayTableEnum {
             label = uiHeaderValue,
             sortKey = urlParam,
             renderValue = renderValue,
+            testId = dbColumn,
         )
 }
 
@@ -54,6 +55,7 @@ fun <T> FlowContent.displayTable(
             tr {
                 columns.forEach {
                     th {
+                        testId(it.testId)
                         if (it.width != null) {
                             style = "width: ${it.width};"
                         }
@@ -68,7 +70,7 @@ fun <T> FlowContent.displayTable(
                                                 if (isSortedColumn) {
                                                     sortDirection.reverse().name
                                                 } else {
-                                                    sortDirection.name
+                                                    SortDirection.ASC.name
                                                 },
                                         ),
                                     ),
