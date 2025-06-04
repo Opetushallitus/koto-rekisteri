@@ -8,12 +8,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.http.client.JdkClientHttpRequestFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import java.net.CookieManager
-import java.net.http.HttpClient
-import java.time.Duration
 
 @Service
 class CasAuthenticatedService(
@@ -28,15 +24,7 @@ class CasAuthenticatedService(
 
     private val restClient by lazy {
         restClientBuilder
-            .requestFactory(
-                JdkClientHttpRequestFactory(
-                    HttpClient
-                        .newBuilder()
-                        .cookieHandler(CookieManager()) // sends JSESSIONID Cookie between the requests
-                        .connectTimeout(Duration.ofSeconds(10))
-                        .build(),
-                ),
-            ).baseUrl(serviceUrl)
+            .baseUrl(serviceUrl)
             .defaultHeaders { headers ->
                 headers["Caller-Id"] = callerId
                 headers["CSRF"] = "CSRF"
