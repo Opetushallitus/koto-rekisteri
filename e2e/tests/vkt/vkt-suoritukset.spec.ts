@@ -45,6 +45,35 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     )
   })
 
+  test("Sorting works", async ({ page, vktIlmoittautuneetPage }) => {
+    const table = vktIlmoittautuneetPage.table
+    const firstRow = table.rows.first()
+    const lastRow = table.rows.last()
+
+    const testSorting = async (
+      columnId: string,
+      expectedFirstText: string,
+      expectedLastText: string,
+    ) => {
+      await table.head.getByTestId(columnId).getByRole("link").click()
+      await expect(firstRow.getByTestId(columnId)).toHaveText(expectedFirstText)
+      await expect(lastRow.getByTestId(columnId)).toHaveText(expectedLastText)
+    }
+
+    // Oletussorttaus on sukunimen perusteella, joten järjestys kääntyy päinvastaiseksi
+    await testSorting("sukunimi", "Viitanen", "Eriksson")
+
+    // Testataan loputkin kentät
+    await testSorting("etunimi", "Aatos Juho", "Viola Minna")
+    await testSorting("tutkintokieli", "<kieli:FI>", "<kieli:SV>")
+    await testSorting(
+      "taitotaso",
+      "<vkttutkintotaso:erinomainen>",
+      "<vkttutkintotaso:hyvajatyydyttava>",
+    )
+    await testSorting("tutkintopaiva", "26.4.2000", "17.3.2025")
+  })
+
   test("Details page shows correct information of hyvä ja tyydyttävä taso", async ({
     vktIlmoittautuneetPage,
     vktSuorituksenTiedotPage,
