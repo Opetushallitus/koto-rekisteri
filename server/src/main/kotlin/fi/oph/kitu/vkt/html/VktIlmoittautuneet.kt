@@ -6,8 +6,10 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.html.MenuItem
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
+import fi.oph.kitu.html.pagination
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.vkt.VktSuoritus
@@ -19,6 +21,7 @@ object VktIlmoittautuneet {
         ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
         sortedBy: Column,
         sortDirection: SortDirection,
+        pagination: Pagination,
         translations: Translations,
     ): String =
         Page.renderHtml(
@@ -29,8 +32,8 @@ object VktIlmoittautuneet {
                     MenuItem("Ilmoittautuneet", "/vkt/ilmoittautuneet"),
                 ),
         ) {
-            h1 { +"Ilmoittautuneet" }
-            vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, translations)
+            h1 { +"Erinomaisen taitotason ilmoittautuneet" }
+            vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, pagination, translations)
         }
 
     enum class Column(
@@ -50,6 +53,7 @@ fun FlowContent.vktIlmoittautuneetTable(
     ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
     sortedBy: VktIlmoittautuneet.Column,
     sortDirection: SortDirection,
+    pagination: Pagination,
     t: Translations,
 ) {
     card(overflowAuto = true) {
@@ -65,7 +69,6 @@ fun FlowContent.vktIlmoittautuneetTable(
                 },
                 VktIlmoittautuneet.Column.Etunimet.withValue { +(it.henkilo.etunimet ?: "") },
                 VktIlmoittautuneet.Column.Kieli.withValue { +t.get(it.suoritus.kieli) },
-                VktIlmoittautuneet.Column.Taitotaso.withValue { +t.get(it.suoritus.taitotaso) },
                 VktIlmoittautuneet.Column.Tutkintopaiva.withValue {
                     it.suoritus.tutkintopaiva?.let { finnishDate(it) }
                 },
@@ -77,4 +80,6 @@ fun FlowContent.vktIlmoittautuneetTable(
             rowTestId = { it.suoritus.lahdejarjestelmanId.toString() },
         )
     }
+
+    pagination(pagination)
 }
