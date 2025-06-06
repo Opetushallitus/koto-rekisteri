@@ -163,3 +163,40 @@ table td select,
 table td input {
   margin-bottom: 0 !important;
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+}
+
+.pagination ul {
+  column-gap: calc(2 * var(--pico-block-spacing-vertical));
+}
+
+.pagination li {
+  display: block;
+}
+
+.pagination li a {
+  display: flex;
+  height: calc(2 * var(--pico-block-spacing-vertical));
+  min-width: calc(2 * var(--pico-block-spacing-vertical));
+  align-content: center;
+  justify-content: center;
+  border-radius: 99999px;
+  line-height: 1em;
+  text-decoration: none;
+}
+
+.pagination li a[disabled] {
+  color: var(--oph-grey400);
+}
+
+.pagination li a:hover:not([disabled]) {
+  background: var(--oph-grey100);
+}
+
+.pagination li.current a {
+  color: var(--oph-white);
+  background: var(--pico-primary);
+}
