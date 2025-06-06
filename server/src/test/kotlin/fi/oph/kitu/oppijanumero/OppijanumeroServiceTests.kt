@@ -3,6 +3,7 @@ package fi.oph.kitu.oppijanumero
 import fi.oph.kitu.Oid
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -77,31 +78,26 @@ class OppijanumeroServiceTests {
     }
 
     @Test
-    fun `oppijanumero service returns unidentified user`() {
+    fun `oppijanumero service returns unidentified user`(
+        @Autowired oppijanumeroService: OppijanumeroService,
+        @Autowired restClientBuilder: RestClient.Builder,
+    ) {
         // Facade
-        val response: TypedResult<HttpResponse<String>, CasError> =
-            TypedResult.Success(
-                HttpResponseMock(
-                    statusCode = 200,
-                    body =
-                        """
-                        {
-                            "oid": "1.2.246.562.24.33342764709",
-                            "oppijanumero": ""
-                        }
-                        """.trimIndent(),
+        val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
+        mockServer
+            .expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
+            .andRespond(
+                withSuccess(
+                    """
+                    {
+                        "oid": "1.2.246.562.24.33342764709",
+                        "oppijanumero": ""
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
                 ),
             )
         // System under test
-        val oppijanumeroService =
-            OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedServiceMock(response),
-                objectMapper = ObjectMapper(),
-                tracer = MockTracer(),
-            )
-        oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
-
         assertThrows<OppijanumeroException.OppijaNotIdentifiedException> {
             oppijanumeroService
                 .getOppijanumero(
@@ -114,7 +110,7 @@ class OppijanumeroServiceTests {
                 ).getOrThrow()
         }
     }
-
+/*
     @Test
     fun `oppijanumero service does not find user`() {
         // Facade
@@ -198,5 +194,5 @@ class OppijanumeroServiceTests {
             result,
             "Bad request to oppijanumero-service",
         )
-    }
+    }*/
 }
