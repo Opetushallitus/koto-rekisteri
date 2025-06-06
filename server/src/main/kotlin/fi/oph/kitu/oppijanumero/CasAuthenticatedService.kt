@@ -39,7 +39,6 @@ class CasAuthenticatedService(
         contentType: MediaType,
         responseType: Class<Response>,
     ): TypedResult<ResponseEntity<Response>, CasError> {
-        println("test")
         val response =
             restClient
                 .post()
