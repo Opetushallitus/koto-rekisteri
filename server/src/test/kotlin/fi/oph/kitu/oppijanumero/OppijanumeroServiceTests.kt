@@ -4,7 +4,6 @@ import fi.oph.kitu.Oid
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -40,12 +39,16 @@ class OppijanumeroServiceTests {
                 .withUrlParam("stringtype", "unspecified")!!
     }
 
-    @Value("\${kitu.oppijanumero.service.url}")
-    lateinit var oppijanumeroUrl: String
-
-    fun MockRestServiceServer.yleisTunniste(url: String): MockRestServiceServer {
-        this
-            .expect(requestTo("$oppijanumeroUrl/$url"))
+    @Test
+    fun `oppijanumero service returns identified user`(
+        @Autowired oppijanumeroService: OppijanumeroService,
+        @Autowired restClientBuilder: RestClient.Builder,
+    ) {
+        // Facade
+        val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
+        val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
+        mockServer
+            .expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
             .andRespond(
                 withSuccess(
                     """
@@ -57,26 +60,6 @@ class OppijanumeroServiceTests {
                     MediaType.APPLICATION_JSON,
                 ),
             )
-
-        return this
-    }
-
-    @Test
-    fun `oppijanumero service returns identified user`(
-        @Autowired oppijanumeroService: OppijanumeroService,
-        @Autowired restClientBuilder: RestClient.Builder,
-    ) {
-        // Facade
-        val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
-        val server = MockRestServiceServer.bindTo(restClientBuilder).build()
-
-        server
-            .yleisTunniste("hae")
-            .yleisTunniste("/hae")
-            .yleisTunniste("yleistunniste/hae")
-            .yleisTunniste("/yleistunniste/hae")
-            .yleisTunniste("oppijanumero-service/yleistunniste/hae")
-            .yleisTunniste("/oppijanumero-service/yleistunniste/hae")
 
         val result =
             assertDoesNotThrow {
