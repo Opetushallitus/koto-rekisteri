@@ -26,16 +26,30 @@ class VktViewController(
     @GetMapping("/ilmoittautuneet", produces = ["text/html"])
     @ResponseBody
     fun ilmoittautuneetView(
+        page: Int = 1,
         sortColumn: VktIlmoittautuneet.Column = VktIlmoittautuneet.Column.Sukunimi,
         sortDirection: SortDirection = SortDirection.ASC,
     ): String {
-        val ilmoittautuneet = vktSuoritukset.getIlmoittautuneet(sortColumn, sortDirection)
+        val (ilmoittautuneet, pagination) =
+            vktSuoritukset.getIlmoittautuneetAndPagination(
+                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                arvioidut = false,
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                pageNumber = page,
+            )
         val translations =
             localizationService
                 .translationBuilder()
                 .koodistot("kieli", "vkttutkintotaso")
                 .build()
-        return VktIlmoittautuneet.render(ilmoittautuneet, sortColumn, sortDirection, translations)
+        return VktIlmoittautuneet.render(
+            ilmoittautuneet = ilmoittautuneet,
+            sortedBy = sortColumn,
+            sortDirection = sortDirection,
+            pagination = pagination,
+            translations = translations,
+        )
     }
 
     @GetMapping("/ilmoittautuneet/{id}", produces = ["text/html"])
