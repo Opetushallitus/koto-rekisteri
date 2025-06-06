@@ -1,8 +1,7 @@
-import node_fs from "node:fs"
 import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 import { fixtureData } from "../../fixtures/kotoError"
+import { enumerate } from "../../util/arrays"
 
-const fs = node_fs.promises
 describe('"Koto Suoritukset" -page', () => {
   beforeEach(async ({ db, basePage, kotoSuoritusError }) => {
     await db.withEmptyDatabase()
@@ -23,11 +22,10 @@ describe('"Koto Suoritukset" -page', () => {
     expect(page.url()).toContain(kielitestiErrorPage.url)
 
     const errors = await kielitestiErrorPage.getErrorRows()
-    await expect(errors.length).toEqual(1)
+    expect(errors).toHaveLength(1)
   })
 
   test("koto suoritus error is displayed properly", async ({
-    page,
     kielitestiErrorPage,
   }) => {
     await kielitestiErrorPage.open()
@@ -35,36 +33,35 @@ describe('"Koto Suoritukset" -page', () => {
     const errors = await kielitestiErrorPage.getErrorTableBody()
 
     const virheFixture = fixtureData.suoritusVirhe
-    const hetuCell = await errors.getByRole("cell", { name: virheFixture.hetu })
-    const nimiCell = await errors.getByText(virheFixture.nimi)
-    const schoolOidCell = await errors.getByText(virheFixture.schoolOid)
-    const teacherEmailCell = await errors.getByText(virheFixture.teacherEmail)
-    const virheenLuontiaikaCell = await errors.getByText(
+    const hetuCell = errors.getByRole("cell", { name: virheFixture.hetu })
+    const nimiCell = errors.getByText(virheFixture.nimi)
+    const schoolOidCell = errors.getByText(virheFixture.schoolOid)
+    const teacherEmailCell = errors.getByText(virheFixture.teacherEmail)
+    const virheenLuontiaikaCell = errors.getByText(
       virheFixture.virheenLuontiaika,
     )
-    const viestiCell = await errors.getByText(virheFixture.viesti)
-    const virheellinenKenttaCell = await errors.getByText(
+    const viestiCell = errors.getByText(virheFixture.viesti)
+    const virheellinenKenttaCell = errors.getByText(
       virheFixture.virheellinenKentta,
       { exact: true },
     )
-    const virheellinenArvoCell = await errors.getByText(
-      virheFixture.virheellinenArvo,
-    )
+    const virheellinenArvoCell = errors.getByText(virheFixture.virheellinenArvo)
 
-    expect(await hetuCell.getAttribute("headers")).toEqual("hetu")
-    expect(await nimiCell.getAttribute("headers")).toEqual("nimi")
-    expect(await schoolOidCell.getAttribute("headers")).toEqual("schoolOid")
-    expect(await teacherEmailCell.getAttribute("headers")).toEqual(
-      "teacherEmail",
-    )
-    expect(await virheenLuontiaikaCell.getAttribute("headers")).toEqual(
+    await expect(hetuCell).toHaveAttribute("headers", "hetu")
+    await expect(nimiCell).toHaveAttribute("headers", "nimi")
+    await expect(schoolOidCell).toHaveAttribute("headers", "schoolOid")
+    await expect(teacherEmailCell).toHaveAttribute("headers", "teacherEmail")
+    await expect(virheenLuontiaikaCell).toHaveAttribute(
+      "headers",
       "virheenLuontiaika",
     )
-    expect(await viestiCell.getAttribute("headers")).toEqual("viesti")
-    expect(await virheellinenKenttaCell.getAttribute("headers")).toEqual(
+    await expect(viestiCell).toHaveAttribute("headers", "viesti")
+    await expect(virheellinenKenttaCell).toHaveAttribute(
+      "headers",
       "virheellinenKentta",
     )
-    expect(await virheellinenArvoCell.getAttribute("headers")).toEqual(
+    await expect(virheellinenArvoCell).toHaveAttribute(
+      "headers",
       "virheellinenArvo",
     )
   })
@@ -81,6 +78,103 @@ describe('"Koto Suoritukset" -page', () => {
     expect(page.url()).toContain(kielitestiErrorPage.url)
 
     const errors = await kielitestiErrorPage.getErrorRows()
-    await expect(errors.length).toEqual(2)
+    expect(errors).toHaveLength(2)
   })
+
+  const sortTestCases = [
+    {
+      column: "Henkilötunnus",
+      tableColumnIndex: 0,
+      order: Array<string>("010866-9260", "010180-9026", "010116A9518"),
+    },
+    {
+      column: "Nimi",
+      tableColumnIndex: 1,
+      order: Array<string>(
+        "Sallinen-Testi Magdalena Testi",
+        "Öhman Testi Ranja Testi",
+        "Kivinen-Testi Petro Testi",
+      ),
+    },
+    {
+      column: "Organisaation OID",
+      tableColumnIndex: 2,
+      order: Array<string>(
+        "1.2.246.562.10.1234567891",
+        "1.2.246.562.10.1234567890",
+        "1.2.246.562.10.0987654321",
+      ),
+    },
+    {
+      column: "Opettajan sähköpostiosoite",
+      tableColumnIndex: 3,
+      order: Array<string>(
+        "yksi-opettajista@testi.oph.fi",
+        "toinen-opettaja@testi.oph.fi",
+        "opettaja@testi.oph.fi",
+      ),
+    },
+    {
+      column: "Virheen luontiaika",
+      tableColumnIndex: 4,
+      order: Array<string>(
+        "2024-11-22T10:49:49Z",
+        "2025-05-26T12:34:56Z",
+        "2042-12-22T22:42:42Z",
+      ),
+    },
+    {
+      column: "Virheviesti",
+      tableColumnIndex: 5,
+      order: Array<string>(
+        'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
+        "testiviesti, ei tekstiviesti",
+        'Malformed quiz grade "kirjoittaminen" on course "Integraatio testaus" for user "2"',
+      ),
+    },
+    {
+      column: "Virheellinen kenttä",
+      tableColumnIndex: 6,
+      order: Array<string>("yksi niistä", "puhuminen", "kirjoittaminen"),
+    },
+    {
+      column: "Virheellinen arvo",
+      tableColumnIndex: 7,
+      order: Array<string>(
+        "virheellinen arvosana",
+        "tyhjää täynnä",
+        "en kerro, arvaa!",
+      ),
+    },
+  ] as const
+  for (const testCase of sortTestCases) {
+    const { column, tableColumnIndex, order } = testCase
+    const reverseOrder = [...order].reverse()
+
+    test(`registry data can be sorted by "${column}"`, async ({
+      kielitestiErrorPage: page,
+      kotoSuoritusError,
+      db,
+    }) => {
+      await kotoSuoritusError.insert(db, "virheMagdalena")
+      await kotoSuoritusError.insert(db, "virhePetro")
+
+      await page.open()
+
+      const sortByLink = page.getTableColumnHeaderLink(column)
+      await sortByLink.click()
+
+      for (const [expected, row] of enumerate(order)) {
+        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+        await expect(actualValue).toHaveText(expected)
+      }
+
+      await sortByLink.click()
+
+      for (const [expected, row] of enumerate(reverseOrder)) {
+        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+        await expect(actualValue).toHaveText(expected)
+      }
+    })
+  }
 })
