@@ -15,6 +15,8 @@ import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import fi.oph.kitu.yki.Sukupuoli
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import kotlin.random.Random
 
@@ -23,6 +25,7 @@ class VktSuoritusMockGenerator(
 ) {
     private val random = Random(seed)
     private var index = 0
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     fun generateRandomVktSuoritusEntity(): VktSuoritusEntity {
         index += 1

@@ -63,12 +63,11 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     }
 
     // Oletussorttaus on sukunimen perusteella, joten järjestys kääntyy päinvastaiseksi
-    await testSorting("sukunimi", "Valtonen", "Hänninen")
+    await testSorting("sukunimi", "Voutilainen", "Salo")
 
     // Testataan loputkin kentät
-    await testSorting("etunimi", "Adele Jenni", "Vilho Teemu")
-    await testSorting("tutkintokieli", "<kieli:FI>", "<kieli:SV>")
-    await testSorting("tutkintopaiva", "26.4.2000", "26.5.2021")
+    await testSorting("etunimi", "Aarni Eino", "Eero Hugo")
+    await testSorting("tutkintopaiva", "27.2.2000", "13.3.2003")
   })
 
   test("Details page shows correct information of hyvä ja tyydyttävä taso", async ({
