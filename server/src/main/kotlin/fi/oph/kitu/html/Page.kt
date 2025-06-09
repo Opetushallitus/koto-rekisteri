@@ -12,7 +12,12 @@ object Page {
         wideContent: Boolean = false,
         renderBody: SECTION.() -> Unit,
     ): String {
-        val pageTitle = "Kielitutkintorekisteri - " + breadcrumbs.joinToString(" - ") { it.title }
+        val pageTitle =
+            listOf(
+                "Kielitutkintorekisteri",
+                breadcrumbs.joinToString(" - ") { it.title },
+            ).filter { it.isNotEmpty() }
+                .joinToString(" - ")
 
         return createHTML().html {
             lang = "fi"
