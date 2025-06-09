@@ -9,7 +9,7 @@ import kotlinx.html.ul
 
 fun FlowContent.dropdown(
     title: String,
-    items: List<MenuItem>,
+    items: List<Navigation.MenuItem>,
 ) {
     ul {
         testId("main-nav")

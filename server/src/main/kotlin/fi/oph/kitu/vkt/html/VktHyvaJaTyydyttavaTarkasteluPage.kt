@@ -1,31 +1,31 @@
 package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.html.DisplayTableColumn
-import fi.oph.kitu.html.MenuItem
+import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
-import fi.oph.kitu.html.submitButton
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
-import kotlinx.html.footer
 import kotlinx.html.h1
 import kotlinx.html.h2
 
-object VktHyvaJaTyydyttavaTarkastelu {
+object VktHyvaJaTyydyttavaTarkasteluPage {
     fun render(
         data: Henkilosuoritus<VktSuoritus>,
         translations: Translations,
     ): String =
         Page.renderHtml(
-            listOf(
-                MenuItem("Valtionhallinnon kielitutkinto", "/vkt/ilmoittautuneet"),
-                MenuItem("Ilmoittautuneet", "/vkt/ilmoittautuneet"),
-                MenuItem(data.henkilo.kokoNimi(), "/vkt/ilmoittautuneet/${data.suoritus.internalId}"),
+            Navigation.getBreadcrumbs(
+                "/vkt/hyvajatyydyttava/suoritukset",
+                Navigation.MenuItem(
+                    data.henkilo.kokoNimi(),
+                    "/vkt/suoritukset/${data.suoritus.internalId}",
+                ),
             ),
         ) {
             h1 { +data.henkilo.kokoNimi() }
@@ -38,9 +38,6 @@ object VktHyvaJaTyydyttavaTarkastelu {
             h2 { +"Osakokeet" }
             card(overflowAuto = true) {
                 vktHyvaJaTyydyttavaOsakoeTable(data.suoritus.osat, translations)
-                footer {
-                    submitButton()
-                }
             }
         }
 }

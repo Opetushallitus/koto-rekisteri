@@ -19,7 +19,7 @@ export default class VktSuorituksenTiedotPage extends BasePage {
   }
 
   async open(id: number) {
-    await this.goto(`/vkt/ilmoittautuneet/${id}`)
+    await this.goto(`/vkt/suoritukset/${id}`)
   }
 
   heading() {
