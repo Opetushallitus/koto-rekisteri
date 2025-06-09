@@ -107,7 +107,8 @@ const withEmptyDatabase = (pool: pg.Pool) => async () => {
         koto_suoritus_error,
         yki_suoritus,
         yki_suoritus_error,
-        yki_arvioija
+        yki_arvioija,
+        vkt_suoritus
       RESTART IDENTITY CASCADE
     `)
   } finally {
