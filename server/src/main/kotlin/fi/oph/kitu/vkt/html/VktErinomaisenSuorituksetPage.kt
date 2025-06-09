@@ -33,7 +33,7 @@ object VktErinomaisenSuorituksetPage {
         ) {
             h1 { +title }
             vktSearch(searchQuery)
-            vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, pagination, translations)
+            vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, pagination, translations, searchQuery)
         }
 }
 
@@ -43,6 +43,7 @@ fun FlowContent.vktIlmoittautuneetTable(
     sortDirection: SortDirection,
     pagination: Pagination,
     t: Translations,
+    searchQuery: String?,
 ) {
     card(overflowAuto = true) {
         fun getHref(id: Int?) = id?.let { "/vkt/suoritukset/$it" } ?: "#"
@@ -66,6 +67,7 @@ fun FlowContent.vktIlmoittautuneetTable(
             compact = true,
             testId = "ilmoittautuneet",
             rowTestId = { it.suoritus.lahdejarjestelmanId.toString() },
+            urlParams = mapOf("search" to searchQuery),
         )
     }
 

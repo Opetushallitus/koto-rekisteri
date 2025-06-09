@@ -31,7 +31,7 @@ object VktHyvaJaTyydyttavaSuorituksetPage {
         ) {
             h1 { +"Hyvän ja tyydyttävän taitotason suoritukset" }
             vktSearch(searchQuery)
-            vktHyvaJaTyydyttavaTable(suoritukset, sortedBy, sortDirection, pagination, translations)
+            vktHyvaJaTyydyttavaTable(suoritukset, sortedBy, sortDirection, pagination, translations, searchQuery)
         }
 }
 
@@ -41,6 +41,7 @@ fun FlowContent.vktHyvaJaTyydyttavaTable(
     sortDirection: SortDirection,
     pagination: Pagination,
     t: Translations,
+    searchQuery: String?,
 ) {
     card(overflowAuto = true) {
         fun getHref(id: Int?) = id?.let { "/vkt/suoritukset/$it" } ?: "#"
@@ -64,6 +65,7 @@ fun FlowContent.vktHyvaJaTyydyttavaTable(
             compact = true,
             testId = "suoritukset",
             rowTestId = { it.suoritus.lahdejarjestelmanId.toString() },
+            urlParams = mapOf("search" to searchQuery),
         )
     }
 
