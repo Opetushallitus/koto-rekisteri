@@ -16,8 +16,10 @@ import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.*
 
-object VktErinomaisenIlmoittautuneetPage {
+object VktErinomaisenSuorituksetPage {
     fun render(
+        title: String,
+        ref: String,
         ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
         sortedBy: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
@@ -27,9 +29,9 @@ object VktErinomaisenIlmoittautuneetPage {
     ): String =
         Page.renderHtml(
             wideContent = true,
-            breadcrumbs = Navigation.getBreadcrumbs("/vkt/erinomainen/ilmoittautuneet"),
+            breadcrumbs = Navigation.getBreadcrumbs(ref),
         ) {
-            h1 { +"Erinomaisen taitotason ilmoittautuneet" }
+            h1 { +title }
             vktSearch(searchQuery)
             vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, pagination, translations)
         }
