@@ -19,7 +19,7 @@ fun FlowContent.card(
 // https://picocss.com/docs/forms/select
 fun FlowContent.itemSelect(
     inputName: String,
-    items: List<MenuItem>,
+    items: List<Navigation.MenuItem>,
     includeBlank: Boolean = false,
     testId: String? = null,
 ) {

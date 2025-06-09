@@ -3,7 +3,7 @@
 package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.MenuItem
+import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.card
@@ -16,7 +16,7 @@ import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.*
 
-object VktHyvaJaTyydyttavaSuoritukset {
+object VktHyvaJaTyydyttavaSuorituksetPage {
     fun render(
         suoritukset: List<Henkilosuoritus<VktSuoritus>>,
         sortedBy: CustomVktSuoritusRepository.Column,
@@ -27,11 +27,7 @@ object VktHyvaJaTyydyttavaSuoritukset {
     ): String =
         Page.renderHtml(
             wideContent = true,
-            breadcrumbs =
-                listOf(
-                    MenuItem("Valtionhallinnon kielitutkinto", "/vkt/hyvajatyydyttava/ilmoittautuneet"),
-                    MenuItem("Suoritukset", "/vkt/hyvajatyydyttava/suoritukset"),
-                ),
+            breadcrumbs = Navigation.getBreadcrumbs("/vkt/hyvajatyydyttava/suoritukset"),
         ) {
             h1 { +"Hyvän ja tyydyttävän taitotason suoritukset" }
             vktSearch(searchQuery)
@@ -47,7 +43,7 @@ fun FlowContent.vktHyvaJaTyydyttavaTable(
     t: Translations,
 ) {
     card(overflowAuto = true) {
-        fun getHref(id: Int?) = id?.let { "/vkt/ilmoittautuneet/$it" } ?: "#"
+        fun getHref(id: Int?) = id?.let { "/vkt/suoritukset/$it" } ?: "#"
 
         displayTable(
             suoritukset,

@@ -3,10 +3,10 @@ package fi.oph.kitu.vkt
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.vkt.html.VktErinomaisenArviointi
-import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuoritukset
-import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkastelu
-import fi.oph.kitu.vkt.html.VktIlmoittautuneet
+import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
+import fi.oph.kitu.vkt.html.VktErinomaisenIlmoittautuneetPage
+import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
+import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -46,7 +46,7 @@ class VktViewController(
                 .translationBuilder()
                 .koodistot("kieli", "vkttutkintotaso")
                 .build()
-        return VktIlmoittautuneet.render(
+        return VktErinomaisenIlmoittautuneetPage.render(
             ilmoittautuneet = ilmoittautuneet,
             sortedBy = sortColumn,
             sortDirection = sortDirection,
@@ -78,7 +78,7 @@ class VktViewController(
                 .translationBuilder()
                 .koodistot("kieli", "vkttutkintotaso")
                 .build()
-        return VktHyvaJaTyydyttavaSuoritukset.render(
+        return VktHyvaJaTyydyttavaSuorituksetPage.render(
             suoritukset = suoritukset,
             sortedBy = sortColumn,
             sortDirection = sortDirection,
@@ -88,7 +88,7 @@ class VktViewController(
         )
     }
 
-    @GetMapping("/ilmoittautuneet/{id}", produces = ["text/html"])
+    @GetMapping("/suoritukset/{id}", produces = ["text/html"])
     @ResponseBody
     fun ilmoittautuneenArviointiView(
         @PathVariable id: Int,
@@ -104,21 +104,21 @@ class VktViewController(
                         .build()
 
                 if (it.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
-                    VktErinomaisenArviointi.render(it, csrfToken, translations)
+                    VktErinomaisenArviointiPage.render(it, csrfToken, translations)
                 } else {
-                    VktHyvaJaTyydyttavaTarkastelu.render(it, translations)
+                    VktHyvaJaTyydyttavaTarkasteluPage.render(it, translations)
                 }
             }.getOrNull()
 
-    @PostMapping("/ilmoittautuneet/{id}", produces = ["text/html"])
+    @PostMapping("/suoritukset/{id}", produces = ["text/html"])
     @ResponseBody
     fun saveIlmoittautuneenArviointi(
         @PathVariable id: Int,
-        @ModelAttribute form: VktErinomaisenArviointi.ArvosanaFormData,
+        @ModelAttribute form: VktErinomaisenArviointiPage.ArvosanaFormData,
     ): RedirectView {
         form.toEntries().forEach {
             vktSuoritukset.setOsakoeArvosana(it.id, it.arvosana, it.arviointipaiva)
         }
-        return RedirectView("/vkt/ilmoittautuneet/$id")
+        return RedirectView("/vkt/suoritukset/$id")
     }
 }

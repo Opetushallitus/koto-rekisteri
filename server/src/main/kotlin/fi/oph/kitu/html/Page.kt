@@ -2,12 +2,13 @@
 
 package fi.oph.kitu.html
 
+import fi.oph.kitu.html.Navigation.mainNavigation
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 
 object Page {
     fun renderHtml(
-        breadcrumbs: List<MenuItem>,
+        breadcrumbs: List<Navigation.MenuItem>,
         wideContent: Boolean = false,
         renderBody: SECTION.() -> Unit,
     ): String {
@@ -27,6 +28,7 @@ object Page {
 
                 main {
                     nav(classes = "container-fluid main") {
+                        testId("page-main-nav-header")
                         ul {
                             li {
                                 ul(classes = "breadcrumbs") {
@@ -40,7 +42,7 @@ object Page {
                         }
                         ul {
                             testId("main-nav")
-                            mainNavigation.forEach { (title, items) -> dropdown(title, items) }
+                            mainNavigation.forEach { group -> dropdown(group.name, group.children) }
                         }
                     }
 
@@ -52,22 +54,4 @@ object Page {
             }
         }
     }
-
-    val mainNavigation =
-        mapOf(
-            "Yleiset kielitutkinnot" to
-                listOf(
-                    MenuItem("Suoritukset", "/yki/suoritukset"),
-                    MenuItem("Arvioijat", "/yki/arvioijat"),
-                ),
-            "Kotoutumiskoulutuksen kielikokeet" to
-                listOf(
-                    MenuItem("Suoritukset", "/koto-kielitesti/suoritukset"),
-                ),
-            "Valtionhallinnon kielitutkinto" to
-                listOf(
-                    MenuItem("Erinomaisen tason ilmoittautuneet", "/vkt/erinomainen/ilmoittautuneet"),
-                    MenuItem("Hyvän ja tyydyttävän tason suoritukset", "/vkt/hyvajatyydyttava/suoritukset"),
-                ),
-        )
 }

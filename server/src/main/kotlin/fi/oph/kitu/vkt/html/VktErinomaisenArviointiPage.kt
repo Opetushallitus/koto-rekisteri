@@ -1,7 +1,8 @@
 package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.html.DisplayTableColumn
-import fi.oph.kitu.html.MenuItem
+import fi.oph.kitu.html.Navigation
+import fi.oph.kitu.html.Navigation.setCurrentItem
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.dateInput
@@ -9,7 +10,6 @@ import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.hiddenValue
 import fi.oph.kitu.html.itemSelect
-import fi.oph.kitu.html.setCurrentItem
 import fi.oph.kitu.html.submitButton
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
@@ -24,17 +24,19 @@ import kotlinx.html.h2
 import org.springframework.security.web.csrf.CsrfToken
 import java.time.LocalDate
 
-object VktErinomaisenArviointi {
+object VktErinomaisenArviointiPage {
     fun render(
         data: Henkilosuoritus<VktSuoritus>,
         csrfToken: CsrfToken,
         translations: Translations,
     ): String =
         Page.renderHtml(
-            listOf(
-                MenuItem("Valtionhallinnon kielitutkinto", "/vkt/ilmoittautuneet"),
-                MenuItem("Ilmoittautuneet", "/vkt/ilmoittautuneet"),
-                MenuItem(data.henkilo.kokoNimi(), "/vkt/ilmoittautuneet/${data.suoritus.internalId}"),
+            Navigation.getBreadcrumbs(
+                "/vkt/erinomainen/ilmoittautuneet",
+                Navigation.MenuItem(
+                    data.henkilo.kokoNimi(),
+                    "/vkt/suoritukset/${data.suoritus.internalId}",
+                ),
             ),
         ) {
             h1 { +data.henkilo.kokoNimi() }
@@ -45,7 +47,7 @@ object VktErinomaisenArviointi {
             vktTutkinnot(data, translations)
 
             h2 { +"Osakokeet" }
-            formPost("/vkt/ilmoittautuneet/${data.suoritus.internalId}", csrfToken = csrfToken) {
+            formPost("/vkt/suoritukset/${data.suoritus.internalId}", csrfToken = csrfToken) {
                 card(overflowAuto = true) {
                     vktErinomainenOsakoeTable(data.suoritus.osat, translations)
                     footer {
@@ -100,8 +102,8 @@ fun FlowContent.vktErinomainenOsakoeTable(
                     includeBlank = true,
                     items =
                         listOf(
-                            MenuItem("Erinomainen", Koodisto.VktArvosana.Erinomainen.name),
-                            MenuItem("Hylätty", Koodisto.VktArvosana.Hylätty.name),
+                            Navigation.MenuItem("Erinomainen", Koodisto.VktArvosana.Erinomainen.name),
+                            Navigation.MenuItem("Hylätty", Koodisto.VktArvosana.Hylätty.name),
                         ).setCurrentItem(it.arviointi?.arvosana?.name),
                     testId = "arvosana",
                 )

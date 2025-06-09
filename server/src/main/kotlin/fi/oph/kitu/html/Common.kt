@@ -5,19 +5,6 @@ import kotlinx.html.Tag
 import kotlinx.html.script
 import kotlinx.html.unsafe
 
-data class MenuItem(
-    val title: String,
-    val ref: String,
-    val current: Boolean = false,
-)
-
-fun List<MenuItem>.setCurrentItem(ref: String?) =
-    if (ref != null) {
-        this.map { it.copy(current = it.ref == ref) }
-    } else {
-        this
-    }
-
 fun Tag.data(
     key: String,
     value: String,

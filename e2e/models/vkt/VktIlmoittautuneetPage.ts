@@ -12,7 +12,7 @@ export default class VktIlmoittautuneetPage extends BasePage {
   }
 
   async open() {
-    await this.goto("/vkt/ilmoittautuneet")
+    await this.goto("/vkt/erinomainen/ilmoittautuneet")
   }
 
   async openFromNavigation() {
