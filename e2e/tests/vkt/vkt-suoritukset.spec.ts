@@ -15,13 +15,14 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
   beforeEach(async ({ db, vktSuoritus, vktIlmoittautuneetPage }) => {
     await db.withEmptyDatabase()
     await vktSuoritus.create()
-    await vktIlmoittautuneetPage.login()
-    await vktIlmoittautuneetPage.open()
   })
 
   test("Ilmoittauneet page shows a table with content", async ({
     vktIlmoittautuneetPage,
   }) => {
+    await vktIlmoittautuneetPage.login()
+    await vktIlmoittautuneetPage.open()
+
     const table = vktIlmoittautuneetPage.table
 
     await expectToHaveTexts(
@@ -29,23 +30,24 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       "Sukunimi ▲",
       "Etunimet",
       "Tutkintokieli",
-      "Taitotaso",
       "Tutkintopäivä",
     )
 
-    await expect(table.rows).toHaveCount(100)
+    await expect(table.rows).toHaveCount(50)
 
     await testForEach(
-      table.getCellsOfRow("KIOS:7"),
-      expectToHaveText("Eriksson"),
-      expectToHaveText("Fiona Konsta"),
+      table.getCellsOfRow("KIOS:12"),
+      expectToHaveText("Halonen"),
+      expectToHaveText("Vilho Eero"),
       expectToHaveKoodiviite("kieli", "SV"),
-      expectToHaveKoodiviite("vkttutkintotaso", "hyvajatyydyttava"),
-      expectToHaveText("22.12.2007"),
+      expectToHaveText("23.11.2006"),
     )
   })
 
   test("Sorting works", async ({ page, vktIlmoittautuneetPage }) => {
+    await vktIlmoittautuneetPage.login()
+    await vktIlmoittautuneetPage.open()
+
     const table = vktIlmoittautuneetPage.table
     const firstRow = table.rows.first()
     const lastRow = table.rows.last()
@@ -61,25 +63,22 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     }
 
     // Oletussorttaus on sukunimen perusteella, joten järjestys kääntyy päinvastaiseksi
-    await testSorting("sukunimi", "Viitanen", "Eriksson")
+    await testSorting("sukunimi", "Valtonen", "Hänninen")
 
     // Testataan loputkin kentät
-    await testSorting("etunimi", "Aatos Juho", "Viola Minna")
+    await testSorting("etunimi", "Adele Jenni", "Vilho Teemu")
     await testSorting("tutkintokieli", "<kieli:FI>", "<kieli:SV>")
-    await testSorting(
-      "taitotaso",
-      "<vkttutkintotaso:erinomainen>",
-      "<vkttutkintotaso:hyvajatyydyttava>",
-    )
-    await testSorting("tutkintopaiva", "26.4.2000", "17.3.2025")
+    await testSorting("tutkintopaiva", "26.4.2000", "26.5.2021")
   })
 
   test("Details page shows correct information of hyvä ja tyydyttävä taso", async ({
-    vktIlmoittautuneetPage,
+    vktHjtSuorituksetPage,
     vktSuorituksenTiedotPage,
   }) => {
     // Varmista että ollaan oikeassa fikstuurissa
-    await vktIlmoittautuneetPage.followLinkOfRow("KIOS:7")
+    await vktHjtSuorituksetPage.login()
+    await vktHjtSuorituksetPage.open()
+    await vktHjtSuorituksetPage.followLinkOfRow("KIOS:7")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Fiona Konsta",
     )
@@ -119,11 +118,13 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
   })
 
   test("Details page shows correct information of erinomainen taso", async ({
-    vktIlmoittautuneetPage,
+    vktArvioidutSuorituksetPage,
     vktSuorituksenTiedotPage,
   }) => {
     // Varmista että ollaan oikeassa fikstuurissa
-    await vktIlmoittautuneetPage.followLinkOfRow("KIOS:63")
+    await vktArvioidutSuorituksetPage.login()
+    await vktArvioidutSuorituksetPage.open()
+    await vktArvioidutSuorituksetPage.followLinkOfRow("KIOS:63")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Daniel Ville",
     )
@@ -165,8 +166,11 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
   test("Arvosana can be set", async ({
     vktIlmoittautuneetPage,
     vktSuorituksenTiedotPage,
+    vktArvioidutSuorituksetPage,
   }) => {
     // Varmista että ollaan oikeassa fikstuurissa
+    await vktIlmoittautuneetPage.login()
+    await vktIlmoittautuneetPage.open()
     await vktIlmoittautuneetPage.followLinkOfRow("KIOS:12")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Halonen, Vilho Eero",
