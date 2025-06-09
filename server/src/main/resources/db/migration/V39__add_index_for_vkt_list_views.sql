@@ -1,0 +1,1 @@
+CREATE INDEX vkt_suoritus_taitotaso_ilmoittautumisen_id_idx ON vkt_suoritus(taitotaso enum_ops,ilmoittautumisen_id text_ops);
