@@ -23,6 +23,7 @@ object VktIlmoittautuneet {
         sortDirection: SortDirection,
         pagination: Pagination,
         translations: Translations,
+        searchQuery: String?,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -33,6 +34,7 @@ object VktIlmoittautuneet {
                 ),
         ) {
             h1 { +"Erinomaisen taitotason ilmoittautuneet" }
+            vktIlmoittautuneetSearch(searchQuery)
             vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, pagination, translations)
         }
 

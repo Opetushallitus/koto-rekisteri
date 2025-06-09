@@ -32,7 +32,10 @@ class CustomVktSuoritusRepository {
         direction: SortDirection,
         limit: Int? = null,
         offset: Int? = null,
+        searchQuery: String? = null,
     ): List<Henkilosuoritus<VktSuoritus>> {
+        val (prefilter, prefilterParams) = listViewPrefilter(taitotaso, searchQuery)
+
         val query =
             """
             WITH suoritus AS (
@@ -40,7 +43,7 @@ class CustomVktSuoritusRepository {
             		*,
             		row_number() OVER (PARTITION BY ilmoittautumisen_id ORDER BY created_at DESC) rn
             	FROM vkt_suoritus
-            	WHERE taitotaso = :taitotaso
+            	$prefilter
             ),
             viimeisin_tutkintopaiva AS (
             	SELECT
@@ -70,10 +73,9 @@ class CustomVktSuoritusRepository {
 
         val params =
             mapOf(
-                "taitotaso" to taitotaso?.name,
                 "limit" to limit,
                 "offset" to offset,
-            )
+            ) + prefilterParams
 
         return jdbcNamedParameterTemplate.query(query, params) { rs, _ ->
             val henkilo =
@@ -106,7 +108,9 @@ class CustomVktSuoritusRepository {
     fun numberOfRowsForListView(
         taitotaso: Koodisto.VktTaitotaso,
         arvioidut: Boolean?,
+        searchQuery: String?,
     ): Int {
+        val (prefilter, prefilterParams) = listViewPrefilter(taitotaso, searchQuery)
         val query =
             """
             WITH suoritus AS (
@@ -114,7 +118,7 @@ class CustomVktSuoritusRepository {
                     id,
                     row_number() OVER (PARTITION BY ilmoittautumisen_id ORDER BY created_at DESC) rn
                 FROM vkt_suoritus
-                WHERE taitotaso = :taitotaso
+                $prefilter
             )
             SELECT count(*)
             FROM suoritus
@@ -127,12 +131,7 @@ class CustomVktSuoritusRepository {
                 )
             """.trimIndent()
 
-        val params =
-            mapOf(
-                "taitotaso" to taitotaso.name,
-            )
-
-        return jdbcNamedParameterTemplate.queryForObject(query, params, Int::class.java)!!
+        return jdbcNamedParameterTemplate.queryForObject(query, prefilterParams, Int::class.java)!!
     }
 
     private fun whereAll(vararg conditions: String?): String {
@@ -148,6 +147,41 @@ class CustomVktSuoritusRepository {
         arvioidut?.let {
             "vkt_osakoe.arvosana IS ${if (arvioidut) "NOT" else ""} null"
         }
+
+    private fun listViewPrefilter(
+        taitotaso: Koodisto.VktTaitotaso,
+        query: String?,
+    ): Pair<String, Map<String, String>> {
+        val searchTokens =
+            query
+                ?.trim()
+                ?.let { it.ifEmpty { null } }
+                ?.split(" ")
+                ?.mapIndexed { index, s ->
+                    "search${index + 1}" to s
+                }
+
+        val sql =
+            whereAll(
+                *
+                    arrayOf("taitotaso = :taitotaso") +
+                        (
+                            searchTokens?.map { token ->
+                                listOf(
+                                    "etunimi ILIKE",
+                                    "sukunimi ILIKE",
+                                    "suorittajan_oppijanumero LIKE",
+                                ).joinToString(" OR ") { "($it '%' || :${token.first} || '%')" }
+                            } ?: emptyList()
+                        ),
+            )
+
+        return Pair(
+            sql,
+            mapOf("taitotaso" to taitotaso.name) +
+                (searchTokens?.toMap() ?: emptyMap()),
+        )
+    }
 }
 
 @Repository

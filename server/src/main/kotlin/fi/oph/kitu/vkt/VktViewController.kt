@@ -29,6 +29,7 @@ class VktViewController(
         page: Int = 1,
         sortColumn: VktIlmoittautuneet.Column = VktIlmoittautuneet.Column.Sukunimi,
         sortDirection: SortDirection = SortDirection.ASC,
+        search: String? = null,
     ): String {
         val (ilmoittautuneet, pagination) =
             vktSuoritukset.getIlmoittautuneetAndPagination(
@@ -37,6 +38,7 @@ class VktViewController(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
                 pageNumber = page,
+                searchQuery = search,
             )
         val translations =
             localizationService
@@ -49,6 +51,7 @@ class VktViewController(
             sortDirection = sortDirection,
             pagination = pagination,
             translations = translations,
+            searchQuery = search,
         )
     }
 

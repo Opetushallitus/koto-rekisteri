@@ -23,9 +23,10 @@ class VktSuoritusService(
         sortColumn: VktIlmoittautuneet.Column,
         sortDirection: SortDirection,
         pageNumber: Int,
+        searchQuery: String?,
     ) = Pair(
-        getIlmoittautuneetForListView(taitotaso, arvioidut, sortColumn, sortDirection, pageNumber),
-        getPagination(sortColumn, sortDirection, pageNumber, taitotaso, arvioidut),
+        getIlmoittautuneetForListView(taitotaso, arvioidut, sortColumn, sortDirection, pageNumber, searchQuery),
+        getPagination(sortColumn, sortDirection, pageNumber, taitotaso, arvioidut, searchQuery),
     )
 
     fun getIlmoittautuneetForListView(
@@ -34,6 +35,7 @@ class VktSuoritusService(
         sortColumn: VktIlmoittautuneet.Column,
         sortDirection: SortDirection,
         pageNumber: Int,
+        searchQuery: String?,
     ): List<Henkilosuoritus<VktSuoritus>> =
         customSuoritusRepository.findForListView(
             taitotaso = taitotaso,
@@ -42,6 +44,7 @@ class VktSuoritusService(
             direction = sortDirection,
             limit = PAGE_SIZE,
             offset = (pageNumber - 1) * PAGE_SIZE,
+            searchQuery = searchQuery,
         )
 
     fun getPagination(
@@ -50,10 +53,11 @@ class VktSuoritusService(
         currentPageNumber: Int,
         taitotaso: Koodisto.VktTaitotaso,
         arvioidut: Boolean?,
+        searchQuery: String?,
     ): Pagination =
         Pagination.valueOf(
             currentPageNumber = currentPageNumber,
-            numberOfRows = listRowCounts.get(Pair(taitotaso, arvioidut))!!,
+            numberOfRows = listRowCounts.get(Triple(taitotaso, arvioidut, searchQuery))!!,
             pageSize = PAGE_SIZE,
             url = { "?page=$it&sortColumn=$sortColumn&sortDirection=$sortDirection" },
         )
@@ -70,10 +74,11 @@ class VktSuoritusService(
     ) = osakoeRepository.updateArvosana(id, arvosana, arviointipaiva)
 
     private val listRowCounts =
-        Cache(ttl = 5.minutes) { params: Pair<Koodisto.VktTaitotaso, Boolean?> ->
+        Cache(ttl = 5.minutes) { params: Triple<Koodisto.VktTaitotaso, Boolean?, String?> ->
             customSuoritusRepository.numberOfRowsForListView(
                 taitotaso = params.first,
                 arvioidut = params.second,
+                searchQuery = params.third,
             )
         }
 
