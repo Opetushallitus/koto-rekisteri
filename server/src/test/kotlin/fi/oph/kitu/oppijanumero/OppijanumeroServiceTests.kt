@@ -1,6 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.Oid
+import fi.oph.kitu.assertFailureIsThrowable
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -9,10 +10,12 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Bean
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
+import org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
@@ -110,15 +113,20 @@ class OppijanumeroServiceTests {
                 ).getOrThrow()
         }
     }
-/*
+
     @Test
-    fun `oppijanumero service does not find user`() {
+    fun `oppijanumero service does not find user`(
+        @Autowired oppijanumeroService: OppijanumeroService,
+        @Autowired restClientBuilder: RestClient.Builder,
+    ) {
         // Facade
-        val response: TypedResult<HttpResponse<String>, CasError> =
-            TypedResult.Success(
-                HttpResponseMock(
-                    statusCode = 404,
-                    body =
+        val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
+        mockServer
+            .expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
+            .andRespond(
+                withStatus(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(
                         """
                         {
                             "timestamp": 1734962667439,
@@ -127,17 +135,8 @@ class OppijanumeroServiceTests {
                             "path":"/oppijanumerorekisteri-service/yleistunniste/hae"
                         }
                         """.trimIndent(),
-                ),
+                    ),
             )
-        // System under test
-        val oppijanumeroService =
-            OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedServiceMock(response),
-                objectMapper = ObjectMapper(),
-                tracer = MockTracer(),
-            )
-        oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
         assertThrows<OppijanumeroException.OppijaNotFoundException> {
             oppijanumeroService
@@ -153,32 +152,28 @@ class OppijanumeroServiceTests {
     }
 
     @Test
-    fun `oppijanumero service received bad request`() {
+    fun `oppijanumero service received bad request`(
+        @Autowired oppijanumeroService: OppijanumeroService,
+        @Autowired restClientBuilder: RestClient.Builder,
+    ) {
         // Facade
-        val response: TypedResult<HttpResponse<String>, CasError> =
-            TypedResult.Success(
-                HttpResponseMock(
-                    statusCode = 409,
-                    body =
+        val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
+        mockServer
+            .expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
+            .andRespond(
+                withStatus(HttpStatus.CONFLICT)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(
                         """
                         {
                             "timestamp": 1734962667439,
-                            "status":404,
+                            "status":409,
                             "error":"Conflict",
                             "path":"/oppijanumerorekisteri-service/yleistunniste/hae"
                         }
                         """.trimIndent(),
-                ),
+                    ),
             )
-        // System under test
-        val oppijanumeroService =
-            OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedServiceMock(response),
-                objectMapper = ObjectMapper(),
-                tracer = MockTracer(),
-            )
-        oppijanumeroService.serviceUrl = "http://localhost:8080/oppijanumero-service"
 
         val result =
             oppijanumeroService.getOppijanumero(
@@ -194,5 +189,5 @@ class OppijanumeroServiceTests {
             result,
             "Bad request to oppijanumero-service",
         )
-    }*/
+    }
 }
