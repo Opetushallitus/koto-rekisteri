@@ -16,9 +16,9 @@ import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.*
 
-object VktIlmoittautuneet {
+object VktHyvaJaTyydyttavaSuoritukset {
     fun render(
-        ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
+        suoritukset: List<Henkilosuoritus<VktSuoritus>>,
         sortedBy: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
         pagination: Pagination,
@@ -29,18 +29,18 @@ object VktIlmoittautuneet {
             wideContent = true,
             breadcrumbs =
                 listOf(
-                    MenuItem("Valtionhallinnon kielitutkinto", "/vkt/erinomainen/ilmoittautuneet"),
-                    MenuItem("Ilmoittautuneet", "/vkt/erinomainen/ilmoittautuneet"),
+                    MenuItem("Valtionhallinnon kielitutkinto", "/vkt/hyvajatyydyttava/ilmoittautuneet"),
+                    MenuItem("Suoritukset", "/vkt/hyvajatyydyttava/suoritukset"),
                 ),
         ) {
-            h1 { +"Erinomaisen taitotason ilmoittautuneet" }
+            h1 { +"Hyvän ja tyydyttävän taitotason suoritukset" }
             vktSearch(searchQuery)
-            vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, pagination, translations)
+            vktHyvaJaTyydyttavaTable(suoritukset, sortedBy, sortDirection, pagination, translations)
         }
 }
 
-fun FlowContent.vktIlmoittautuneetTable(
-    ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
+fun FlowContent.vktHyvaJaTyydyttavaTable(
+    suoritukset: List<Henkilosuoritus<VktSuoritus>>,
     sortedBy: CustomVktSuoritusRepository.Column,
     sortDirection: SortDirection,
     pagination: Pagination,
@@ -50,7 +50,7 @@ fun FlowContent.vktIlmoittautuneetTable(
         fun getHref(id: Int?) = id?.let { "/vkt/ilmoittautuneet/$it" } ?: "#"
 
         displayTable(
-            ilmoittautuneet,
+            suoritukset,
             listOf(
                 CustomVktSuoritusRepository.Column.Sukunimi.withValue {
                     a(href = getHref(it.suoritus.internalId)) {
@@ -66,7 +66,7 @@ fun FlowContent.vktIlmoittautuneetTable(
             sortedBy = sortedBy,
             sortDirection = sortDirection,
             compact = true,
-            testId = "ilmoittautuneet",
+            testId = "suoritukset",
             rowTestId = { it.suoritus.lahdejarjestelmanId.toString() },
         )
     }

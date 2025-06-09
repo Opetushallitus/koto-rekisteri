@@ -4,7 +4,6 @@ import fi.oph.kitu.Cache
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.vkt.html.VktIlmoittautuneet
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -17,10 +16,10 @@ class VktSuoritusService(
     private val customSuoritusRepository: CustomVktSuoritusRepository,
     private val osakoeRepository: VktOsakoeRepository,
 ) {
-    fun getIlmoittautuneetAndPagination(
+    fun getSuorituksetAndPagination(
         taitotaso: Koodisto.VktTaitotaso,
         arvioidut: Boolean?,
-        sortColumn: VktIlmoittautuneet.Column,
+        sortColumn: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
         pageNumber: Int,
         searchQuery: String?,
@@ -32,7 +31,7 @@ class VktSuoritusService(
     fun getIlmoittautuneetForListView(
         taitotaso: Koodisto.VktTaitotaso,
         arvioidut: Boolean?,
-        sortColumn: VktIlmoittautuneet.Column,
+        sortColumn: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
         pageNumber: Int,
         searchQuery: String?,
@@ -48,7 +47,7 @@ class VktSuoritusService(
         )
 
     fun getPagination(
-        sortColumn: VktIlmoittautuneet.Column,
+        sortColumn: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
         currentPageNumber: Int,
         taitotaso: Koodisto.VktTaitotaso,
