@@ -45,6 +45,7 @@ fun <T> FlowContent.displayTable(
     compact: Boolean = false,
     testId: String? = null,
     rowTestId: ((T) -> String)? = null,
+    urlParams: Map<String, String?> = emptyMap(),
 ) {
     val sortedByKey = sortedBy?.urlParam
 
@@ -64,15 +65,16 @@ fun <T> FlowContent.displayTable(
                             a(
                                 href =
                                     httpParams(
-                                        mapOf(
-                                            "sortColumn" to it.sortKey,
-                                            "sortDirection" to
-                                                if (isSortedColumn) {
-                                                    sortDirection.reverse().name
-                                                } else {
-                                                    SortDirection.ASC.name
-                                                },
-                                        ),
+                                        urlParams +
+                                            mapOf(
+                                                "sortColumn" to it.sortKey,
+                                                "sortDirection" to
+                                                    if (isSortedColumn) {
+                                                        sortDirection.reverse().name
+                                                    } else {
+                                                        SortDirection.ASC.name
+                                                    },
+                                            ),
                                     ),
                             ) {
                                 +it.label
@@ -103,5 +105,8 @@ fun <T> FlowContent.displayTable(
     }
 }
 
-fun httpParams(params: Map<String, String>): String =
-    "?${params.map { (key, value) -> "$key=${urlEncode(value)}" }.joinToString("&")}"
+fun httpParams(params: Map<String, String?>): String =
+    "?${params
+        .filter { (_, value) -> value != null }
+        .map { (key, value) -> "$key=${urlEncode(value)}" }
+        .joinToString("&")}"
