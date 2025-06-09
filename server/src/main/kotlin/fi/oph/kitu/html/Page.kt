@@ -66,7 +66,8 @@ object Page {
                 ),
             "Valtionhallinnon kielitutkinto" to
                 listOf(
-                    MenuItem("Erinomaisen tason ilmoittautuneet", "/vkt/ilmoittautuneet"),
+                    MenuItem("Erinomaisen tason ilmoittautuneet", "/vkt/erinomainen/ilmoittautuneet"),
+                    MenuItem("Hyvän ja tyydyttävän tason suoritukset", "/vkt/hyvajatyydyttava/suoritukset"),
                 ),
         )
 }

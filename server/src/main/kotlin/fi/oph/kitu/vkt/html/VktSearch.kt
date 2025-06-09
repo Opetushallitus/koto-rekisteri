@@ -10,7 +10,7 @@ import kotlinx.html.form
 import kotlinx.html.id
 import kotlinx.html.input
 
-fun FlowContent.vktIlmoittautuneetSearch(query: String?) {
+fun FlowContent.vktSearch(query: String?) {
     form(action = "", method = FormMethod.get, classes = "grid center-vertically") {
         fieldSet {
             attributes["role"] = "search"

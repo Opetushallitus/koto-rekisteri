@@ -1,8 +1,8 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.vkt.html.VktIlmoittautuneet
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
@@ -28,7 +28,7 @@ class CustomVktSuoritusRepository {
     fun findForListView(
         taitotaso: Koodisto.VktTaitotaso,
         arvioidut: Boolean? = null,
-        column: VktIlmoittautuneet.Column,
+        column: Column,
         direction: SortDirection,
         limit: Int? = null,
         offset: Int? = null,
@@ -181,6 +181,18 @@ class CustomVktSuoritusRepository {
             mapOf("taitotaso" to taitotaso.name) +
                 (searchTokens?.toMap() ?: emptyMap()),
         )
+    }
+
+    enum class Column(
+        override val dbColumn: String?,
+        override val uiHeaderValue: String,
+        override val urlParam: String,
+    ) : DisplayTableEnum {
+        Sukunimi("sukunimi", "Sukunimi", "sukunimi"),
+        Etunimet("etunimi", "Etunimet", "etunimet"),
+        Kieli("tutkintokieli", "Tutkintokieli", "kieli"),
+        Taitotaso("taitotaso", "Taitotaso", "taitotaso"),
+        Tutkintopaiva("tutkintopaiva", "Tutkintopäivä", "tutkintopaiva"),
     }
 }
 

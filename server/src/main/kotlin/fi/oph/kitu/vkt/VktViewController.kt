@@ -4,6 +4,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointi
+import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuoritukset
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkastelu
 import fi.oph.kitu.vkt.html.VktIlmoittautuneet
 import org.springframework.security.web.csrf.CsrfToken
@@ -23,16 +24,16 @@ class VktViewController(
     private val vktSuoritukset: VktSuoritusService,
     private val localizationService: LocalizationService,
 ) {
-    @GetMapping("/ilmoittautuneet", produces = ["text/html"])
+    @GetMapping("/erinomainen/ilmoittautuneet", produces = ["text/html"])
     @ResponseBody
-    fun ilmoittautuneetView(
+    fun erinomaisenTaitotasonIlmoittautuneetView(
         page: Int = 1,
-        sortColumn: VktIlmoittautuneet.Column = VktIlmoittautuneet.Column.Sukunimi,
+        sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
         sortDirection: SortDirection = SortDirection.ASC,
         search: String? = null,
     ): String {
         val (ilmoittautuneet, pagination) =
-            vktSuoritukset.getIlmoittautuneetAndPagination(
+            vktSuoritukset.getSuorituksetAndPagination(
                 taitotaso = Koodisto.VktTaitotaso.Erinomainen,
                 arvioidut = false,
                 sortColumn = sortColumn,
@@ -47,6 +48,38 @@ class VktViewController(
                 .build()
         return VktIlmoittautuneet.render(
             ilmoittautuneet = ilmoittautuneet,
+            sortedBy = sortColumn,
+            sortDirection = sortDirection,
+            pagination = pagination,
+            translations = translations,
+            searchQuery = search,
+        )
+    }
+
+    @GetMapping("/hyvajatyydyttava/suoritukset", produces = ["text/html"])
+    @ResponseBody
+    fun hyvanJaTyydyttavanTaitotasonIlmoittautuneetView(
+        page: Int = 1,
+        sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
+        sortDirection: SortDirection = SortDirection.ASC,
+        search: String? = null,
+    ): String {
+        val (suoritukset, pagination) =
+            vktSuoritukset.getSuorituksetAndPagination(
+                taitotaso = Koodisto.VktTaitotaso.HyväJaTyydyttävä,
+                arvioidut = null,
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                pageNumber = page,
+                searchQuery = search,
+            )
+        val translations =
+            localizationService
+                .translationBuilder()
+                .koodistot("kieli", "vkttutkintotaso")
+                .build()
+        return VktHyvaJaTyydyttavaSuoritukset.render(
+            suoritukset = suoritukset,
             sortedBy = sortColumn,
             sortDirection = sortDirection,
             pagination = pagination,
