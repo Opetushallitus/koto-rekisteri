@@ -23,6 +23,7 @@ object Navigation {
                 "Valtionhallinnon kielitutkinto",
                 listOf(
                     MenuItem("Erinomaisen tason ilmoittautuneet", "/vkt/erinomainen/ilmoittautuneet"),
+                    MenuItem("Erinomaisen tason arvioidut suoritukset", "/vkt/erinomainen/arvioidut"),
                     MenuItem("Hyvän ja tyydyttävän tason suoritukset", "/vkt/hyvajatyydyttava/suoritukset"),
                 ),
             ),

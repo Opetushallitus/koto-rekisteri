@@ -4,7 +4,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
-import fi.oph.kitu.vkt.html.VktErinomaisenIlmoittautuneetPage
+import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
 import org.springframework.security.web.csrf.CsrfToken
@@ -46,8 +46,44 @@ class VktViewController(
                 .translationBuilder()
                 .koodistot("kieli", "vkttutkintotaso")
                 .build()
-        return VktErinomaisenIlmoittautuneetPage.render(
+        return VktErinomaisenSuorituksetPage.render(
+            title = "Erinomaisen taitotason ilmoittautuneet",
+            ref = "/vkt/erinomainen/ilmoittautuneet",
             ilmoittautuneet = ilmoittautuneet,
+            sortedBy = sortColumn,
+            sortDirection = sortDirection,
+            pagination = pagination,
+            translations = translations,
+            searchQuery = search,
+        )
+    }
+
+    @GetMapping("/erinomainen/arvioidut", produces = ["text/html"])
+    @ResponseBody
+    fun erinomaisenTaitotasonArvioidutSuorituksetView(
+        page: Int = 1,
+        sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
+        sortDirection: SortDirection = SortDirection.ASC,
+        search: String? = null,
+    ): String {
+        val (suoritukset, pagination) =
+            vktSuoritukset.getSuorituksetAndPagination(
+                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                arvioidut = true,
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                pageNumber = page,
+                searchQuery = search,
+            )
+        val translations =
+            localizationService
+                .translationBuilder()
+                .koodistot("kieli", "vkttutkintotaso")
+                .build()
+        return VktErinomaisenSuorituksetPage.render(
+            title = "Erinomaisen taitotason arvioidut suoritukset",
+            ref = "/vkt/erinomainen/arvioidut",
+            ilmoittautuneet = suoritukset,
             sortedBy = sortColumn,
             sortDirection = sortDirection,
             pagination = pagination,
