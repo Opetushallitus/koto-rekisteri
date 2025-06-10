@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt.html
 
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Navigation.setCurrentItem
@@ -14,6 +15,8 @@ import fi.oph.kitu.html.submitButton
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
@@ -27,6 +30,7 @@ import java.time.LocalDate
 object VktErinomaisenArviointiPage {
     fun render(
         data: Henkilosuoritus<VktSuoritus>,
+        henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         csrfToken: CsrfToken,
         translations: Translations,
     ): String =
@@ -41,6 +45,7 @@ object VktErinomaisenArviointiPage {
         ) {
             h1 { +data.henkilo.kokoNimi() }
 
+            vktHenkilonTiedot(data, henkilo)
             vktSuorituksenTiedot(data, translations)
 
             h2 { +"Tutkinnot" }
@@ -48,7 +53,7 @@ object VktErinomaisenArviointiPage {
 
             h2 { +"Osakokeet" }
             formPost("/vkt/suoritukset/${data.suoritus.internalId}", csrfToken = csrfToken) {
-                card(overflowAuto = true) {
+                card(overflowAuto = true, compact = true) {
                     vktErinomainenOsakoeTable(data.suoritus.osat, translations)
                     footer {
                         submitButton()
