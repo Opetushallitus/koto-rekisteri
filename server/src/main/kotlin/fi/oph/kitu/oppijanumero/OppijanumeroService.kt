@@ -18,6 +18,8 @@ import java.time.OffsetDateTime
 
 interface OppijanumeroService {
     fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
+
+    fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>
 }
 
 @Service
@@ -68,6 +70,11 @@ class OppijanumeroServiceImpl(
                             }
                     }
                 }
+        }
+
+    override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
+        withSpan("OppijanumeroServiceImpl.getHenkilo") {
+            client.get<OppijanumerorekisteriHenkilo>("henkilo/$oid")
         }
 
     final inline fun <reified T> withSpan(
