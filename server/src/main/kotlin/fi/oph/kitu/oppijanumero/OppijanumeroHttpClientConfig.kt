@@ -10,6 +10,7 @@ import org.springframework.http.client.JdkClientHttpRequestFactory
 import org.springframework.web.client.RestClient
 import java.net.CookieManager
 import java.net.http.HttpClient
+import java.net.http.HttpClient.Redirect
 import java.time.Duration
 
 @Configuration
@@ -19,6 +20,7 @@ class OppijanumeroHttpClientConfig {
         val httpClient =
             HttpClient
                 .newBuilder()
+                .followRedirects(Redirect.NEVER)
                 .cookieHandler(CookieManager()) // sends JSESSIONID Cookie between the requests
                 .connectTimeout(Duration.ofSeconds(10))
                 .build()
