@@ -7,6 +7,7 @@ import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
+import org.springframework.http.HttpStatus
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -15,8 +16,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.servlet.view.RedirectView
-import kotlin.jvm.optionals.getOrNull
+import kotlin.jvm.optionals.getOrElse
 
 @Controller
 @RequestMapping("/vkt")
@@ -144,7 +146,7 @@ class VktViewController(
                 } else {
                     VktHyvaJaTyydyttavaTarkasteluPage.render(it, translations)
                 }
-            }.getOrNull()
+            }.getOrElse { throw VktSuoritusNotFoundError() }
 
     @PostMapping("/suoritukset/{id}", produces = ["text/html"])
     @ResponseBody
@@ -158,3 +160,6 @@ class VktViewController(
         return RedirectView("/vkt/suoritukset/$id")
     }
 }
+
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "VKT suoritusta ei löytynyt")
+class VktSuoritusNotFoundError : RuntimeException()
