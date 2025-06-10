@@ -124,7 +124,7 @@ class OppijanumerorekisteriClient(
         // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
         val rawResult =
             casAuthenticatedService.post(
-                "/yleistunniste/hae",
+                url,
                 requestBody,
                 MediaType.APPLICATION_JSON,
                 String::class.java,
