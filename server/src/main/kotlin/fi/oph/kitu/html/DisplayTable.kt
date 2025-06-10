@@ -42,14 +42,13 @@ fun <T> FlowContent.displayTable(
     columns: List<DisplayTableColumn<T>>,
     sortedBy: DisplayTableEnum? = null,
     sortDirection: SortDirection? = null,
-    compact: Boolean = false,
     testId: String? = null,
     rowTestId: ((T) -> String)? = null,
     urlParams: Map<String, String?> = emptyMap(),
 ) {
     val sortedByKey = sortedBy?.urlParam
 
-    table(classes = "${if (compact) "compact" else ""} striped") {
+    table(classes = "striped") {
         testId(testId)
         debugTrace()
         thead {

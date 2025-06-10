@@ -14,7 +14,7 @@ fun FlowContent.vktSuorituksenTiedot(
     data: Henkilosuoritus<VktSuoritus>,
     t: Translations,
 ) {
-    card {
+    card(compact = true) {
         infoTable(
             "Tutkinnon taso" to { +t.get(data.suoritus.taitotaso) },
             "Kieli" to { +t.get(data.suoritus.kieli) },
@@ -27,7 +27,7 @@ fun FlowContent.vktTutkinnot(
     data: Henkilosuoritus<VktSuoritus>,
     t: Translations,
 ) {
-    card {
+    card(compact = true) {
         displayTable(
             rows = data.suoritus.tutkinnot,
             columns =
@@ -42,7 +42,6 @@ fun FlowContent.vktTutkinnot(
                         +t.get(it.arviointi()?.arvosana)
                     },
                 ),
-            compact = true,
             testId = "tutkinnot",
             rowTestId = { it.tyyppi.koodiarvo },
         )
