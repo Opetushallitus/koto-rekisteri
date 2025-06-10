@@ -43,7 +43,7 @@ fun FlowContent.vktHyvaJaTyydyttavaTable(
     t: Translations,
     searchQuery: String?,
 ) {
-    card(overflowAuto = true) {
+    card(overflowAuto = true, compact = true) {
         fun getHref(id: Int?) = id?.let { "/vkt/suoritukset/$it" } ?: "#"
 
         displayTable(
@@ -62,7 +62,6 @@ fun FlowContent.vktHyvaJaTyydyttavaTable(
             ),
             sortedBy = sortedBy,
             sortDirection = sortDirection,
-            compact = true,
             testId = "suoritukset",
             rowTestId = { it.suoritus.lahdejarjestelmanId.toString() },
             urlParams = mapOf("search" to searchQuery),

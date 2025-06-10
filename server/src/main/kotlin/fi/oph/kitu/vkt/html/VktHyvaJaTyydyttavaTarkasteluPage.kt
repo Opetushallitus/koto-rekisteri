@@ -67,7 +67,6 @@ fun FlowContent.vktHyvaJaTyydyttavaOsakoeTable(
                 it.arviointi?.paivamaara?.let { pvm -> finnishDate(pvm) }
             },
         ),
-        compact = true,
         testId = "osakokeet",
     )
 }

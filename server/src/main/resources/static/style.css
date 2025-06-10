@@ -126,21 +126,41 @@ article.error-text a {
   color: var(--oph-orange1);
 }
 
-table.compact {
-  margin: calc(-1 * var(--pico-block-spacing-vertical));
+article > *:last-child {
+  margin-bottom: 0;
 }
 
-table.compact td {
+article.compact {
+  padding: 0;
+}
+
+article.compact .cardContent,
+article.compact footer {
+  margin: 0;
+  padding: var(--pico-block-spacing-vertical)
+    var(--pico-block-spacing-horizontal);
+}
+
+article.compact .cardContent:not(:first-child),
+article.compact footer:not(:first-child) {
+  padding-top: 0;
+}
+
+.cardContent > *:last-child {
+  margin-bottom: 0;
+}
+
+article.compact table td {
   white-space: nowrap;
 }
 
-table.compact th,
-table.compact th a {
+article.compact table th,
+article.compact table th a {
   white-space: nowrap;
   text-decoration: none;
 }
 
-table.compact .truncated {
+article.compact table .truncated {
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;

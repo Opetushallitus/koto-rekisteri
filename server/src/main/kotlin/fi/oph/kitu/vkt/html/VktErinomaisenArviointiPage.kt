@@ -117,7 +117,6 @@ fun FlowContent.vktErinomainenOsakoeTable(
                 dateInput("arviointipaiva", it.arviointi?.paivamaara, testId = "arviointipaiva")
             },
         ),
-        compact = true,
         testId = "osakokeet",
         rowTestId = { "${it.tyyppi.koodiarvo}-${it.tutkintopaiva}" },
     )
