@@ -159,7 +159,7 @@ class VktViewController(
                 if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
                     VktErinomaisenArviointiPage.render(suoritus, henkilo, csrfToken, translations)
                 } else {
-                    VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, translations)
+                    VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, henkilo, translations)
                 }
             }.getOrElse { throw VktSuoritusNotFoundError() }
 
