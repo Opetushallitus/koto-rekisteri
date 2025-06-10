@@ -159,7 +159,7 @@ class OppijanumerorekisteriClient(
      * In that case [OppijanumeroException.BadResponse] will be thrown.
      * Otherwise, the underlying exception will be thrown
      */
-    final inline fun <reified T> deserializeResponse(
+    inline fun <reified T> deserializeResponse(
         request: OppijanumerorekisteriRequest,
         response: ResponseEntity<String>,
     ): TypedResult<T, OppijanumeroException> =
