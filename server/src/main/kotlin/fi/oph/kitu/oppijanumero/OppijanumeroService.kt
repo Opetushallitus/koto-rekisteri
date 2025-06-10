@@ -4,11 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.use
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.OffsetDateTime
 
 interface OppijanumeroService {
     fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
@@ -16,82 +21,118 @@ interface OppijanumeroService {
 
 @Service
 class OppijanumeroServiceImpl(
-    private val casAuthenticatedService: CasAuthenticatedService,
+    casAuthenticatedService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
-    private val tracer: Tracer,
+    val tracer: Tracer,
+    @Value("\${kitu.oppijanumero.service.url}")
+    val serviceUrl: String,
 ) : OppijanumeroService {
+    private val client by lazy {
+        OppijanumerorekisteriClient(serviceUrl, casAuthenticatedService, objectMapper)
+    }
+
     override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
-        tracer
-            .spanBuilder("OppijanumeroServiceImpl.getOppijanumero")
-            .startSpan()
-            .use { span ->
-                require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
-                require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
-                require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
-                require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
+        withSpan("OppijanumeroServiceImpl.getOppijanumero") { span ->
+            require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
+            require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
+            require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
+            require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
 
-                val yleistunnisteHaeRequest =
-                    YleistunnisteHaeRequest(oppija.etunimet, oppija.hetu, oppija.kutsumanimi, oppija.sukunimi)
+            val requestBody =
+                YleistunnisteHaeRequest(
+                    oppija.etunimet,
+                    oppija.hetu,
+                    oppija.kutsumanimi,
+                    oppija.sukunimi,
+                )
 
-                // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
-                val rawResult =
-                    casAuthenticatedService.post(
-                        "/yleistunniste/hae",
-                        yleistunnisteHaeRequest,
-                        MediaType.APPLICATION_JSON,
-                        String::class.java,
-                    )
-                if (rawResult !is TypedResult.Success) {
-                    // CAS errors are not caused by the oppija data, and thus
-                    // should be handling outside default error handling flow.
-                    throw (rawResult as TypedResult.Failure).error
-                }
+            client
+                .post<YleistunnisteHaeResponse, YleistunnisteHaeRequest>("yleistunniste/hae", requestBody)
+                .flatMap { body ->
+                    span.setAttribute("response.hasOppijanumero", body.oppijanumero.isNullOrEmpty())
+                    span.setAttribute("response.hasOid", body.oid.isEmpty())
+                    span.setAttribute("response.areOppijanumeroAndOidSame", (body.oppijanumero == body.oid))
 
-                // At this point, CAS-authentication is done succesfully,
-                // but we still need to check yleistunniste/hae - specific statuses
-                val rawResponse = rawResult.value
-                if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
-                    return@use TypedResult.Failure(
-                        OppijanumeroException.OppijaNotFoundException(yleistunnisteHaeRequest),
-                    )
-                } else if (rawResponse.statusCode.is4xxClientError) {
-                    return@use TypedResult.Failure(
-                        OppijanumeroException.BadRequest(
-                            yleistunnisteHaeRequest,
-                            rawResponse,
-                        ),
-                    )
-                } else if (!rawResponse.statusCode.is2xxSuccessful) {
-                    throw OppijanumeroException.UnexpectedError(yleistunnisteHaeRequest, rawResponse)
-                }
-
-                val onrResult =
-                    tryConvertToOppijanumeroResponse<YleistunnisteHaeResponse>(yleistunnisteHaeRequest, rawResponse)
-
-                if (onrResult is TypedResult.Failure) {
-                    return@use TypedResult.Failure(onrResult.error)
-                }
-
-                val body = (onrResult as TypedResult.Success).value
-                span.setAttribute("response.hasOppijanumero", body.oppijanumero.isNullOrEmpty())
-                span.setAttribute("response.hasOid", body.oid.isEmpty())
-                span.setAttribute("response.areOppijanumeroAndOidSame", (body.oppijanumero == body.oid))
-
-                if (body.oppijanumero.isNullOrEmpty()) {
-                    return@use TypedResult.Failure(
-                        OppijanumeroException.OppijaNotIdentifiedException(yleistunnisteHaeRequest),
-                    )
-                }
-
-                return@use Oid
-                    .parseTyped(body.oppijanumero)
-                    .mapFailure {
-                        OppijanumeroException.MalformedOppijanumero(
-                            yleistunnisteHaeRequest,
-                            body.oppijanumero,
-                        )
+                    if (body.oppijanumero.isNullOrEmpty()) {
+                        TypedResult.Failure(OppijanumeroException.OppijaNotIdentifiedException(requestBody))
+                    } else {
+                        Oid
+                            .parseTyped(body.oppijanumero)
+                            .mapFailure {
+                                OppijanumeroException.MalformedOppijanumero(
+                                    requestBody,
+                                    body.oppijanumero,
+                                )
+                            }
                     }
-            }
+                }
+        }
+
+    final inline fun <reified T> withSpan(
+        s: String,
+        block: (Span) -> T,
+    ): T =
+        tracer
+            .spanBuilder(s)
+            .startSpan()
+            .use { return@use block(it) }
+}
+
+class OppijanumerorekisteriClient(
+    val serviceUrl: String,
+    val casAuthenticatedService: CasAuthenticatedService,
+    val objectMapper: ObjectMapper,
+) {
+    inline fun <reified T> get(endpoint: String) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint)
+
+    inline fun <reified T, R : OppijanumerorekisteriRequest> post(
+        endpoint: String,
+        body: R,
+    ) = fetch<T, R>(
+        HttpMethod.POST,
+        endpoint,
+        body,
+    )
+
+    inline fun <reified T, R : OppijanumerorekisteriRequest> fetch(
+        httpMethod: HttpMethod,
+        endpoint: String,
+        body: OppijanumerorekisteriRequest? = null,
+    ): TypedResult<T, OppijanumeroException> {
+        val url = "$serviceUrl/$endpoint"
+
+        // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
+        val rawResult =
+            casAuthenticatedService.fetch(
+                httpMethod,
+                url,
+                body,
+                MediaType.APPLICATION_JSON,
+                String::class.java,
+            )
+        if (rawResult !is TypedResult.Success) {
+            // CAS errors are not caused by the oppija data, and thus
+            // should be handling outside default error handling flow.
+            throw (rawResult as TypedResult.Failure).error
+        }
+
+        // At this point, CAS-authentication is done succesfully,
+        // but we still need to check endpoint specific statuses
+        val rawResponse = rawResult.value
+        if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
+            return TypedResult.Failure(
+                OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest()),
+            )
+        } else if (rawResponse.statusCode.is4xxClientError) {
+            return TypedResult.Failure(
+                OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse),
+            )
+        } else if (!rawResponse.statusCode.is2xxSuccessful) {
+            throw OppijanumeroException.UnexpectedError(body ?: EmptyRequest(), rawResponse)
+        }
+
+        return deserializeResponse<T>(body ?: EmptyRequest(), rawResult.value)
+    }
 
     /**
      * Tries to convert `HttpResponse<String>` into the given `T`.
@@ -99,8 +140,8 @@ class OppijanumeroServiceImpl(
      * In that case [OppijanumeroException.BadResponse] will be thrown.
      * Otherwise, the underlying exception will be thrown
      */
-    final inline fun <reified T> tryConvertToOppijanumeroResponse(
-        request: YleistunnisteHaeRequest,
+    inline fun <reified T> deserializeResponse(
+        request: OppijanumerorekisteriRequest,
         response: ResponseEntity<String>,
     ): TypedResult<T, OppijanumeroException> =
         TypedResult
@@ -131,6 +172,7 @@ class OppijanumeroServiceImpl(
                         },
                     )
             }
+}
 
 data class OppijanumerorekisteriHenkilo(
     val oidHenkilo: String?,

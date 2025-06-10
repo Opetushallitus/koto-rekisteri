@@ -2,14 +2,17 @@ package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.retrieveEntitySafely
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
+import java.net.URI
 
 @Service
 class CasAuthenticatedService(
@@ -18,21 +21,35 @@ class CasAuthenticatedService(
     private val casService: CasService,
 ) {
     @WithSpan
-    fun <Request : Any, Response> post(
+    fun <Request : Any, Response> fetch(
+        httpMethod: HttpMethod,
         endpoint: String,
-        body: Request,
+        body: Request?,
         contentType: MediaType,
         responseType: Class<Response>,
     ): TypedResult<ResponseEntity<Response>, CasError> {
-        val response =
-            restClient
-                .post()
-                .uri(endpoint)
-                .body(body)
-                .contentType(contentType)
-                .retrieveEntitySafely(responseType)
+        val span = Span.current()
+        span.setAttribute("request.httpMethod", httpMethod.name())
+        span.setAttribute("request.endpoint", endpoint)
+        span.setAttribute("request.contentType", contentType.toString())
+        span.setAttribute("request.responseType", responseType.toString())
+        span.setAttribute("request.body", body?.toString())
 
-        // Shouldn't happen, unless pppijanumero don't behave as expected
+        fun retrieveEntitySafely(uri: URI) =
+            restClient
+                .method(httpMethod)
+                .uri(uri)
+                .let {
+                    body?.let { b ->
+                        it
+                            .body(b)
+                            .contentType(contentType)
+                    } ?: it
+                }.retrieveEntitySafely(responseType)
+
+        val response = retrieveEntitySafely(URI.create(endpoint))
+
+        // Shouldn't happen, unless oppijanumero service doesn't behave as expected
         if (response == null) {
             return TypedResult.Failure(
                 CasError.CasAuthServiceError("Received null ResponseEntity on the first request"),
@@ -48,14 +65,8 @@ class CasAuthenticatedService(
             .getGrantingTicket()
             .flatMap(casService::getServiceTicket)
             .flatMap(casService::verifyServiceTicket)
-            .flatMap { newURI ->
-                val response =
-                    restClient
-                        .post()
-                        .uri(newURI)
-                        .body(body)
-                        .contentType(contentType)
-                        .retrieveEntitySafely(responseType)
+            .flatMap { newUri ->
+                val response = retrieveEntitySafely(newUri)
 
                 if (response == null) {
                     TypedResult.Failure(
@@ -68,7 +79,7 @@ class CasAuthenticatedService(
     }
 
     private fun requiresLogin(response: ResponseEntity<*>): Boolean {
-        // First, check if if it is login page
+        // First, check if it is a login page
         if (response.statusCode == HttpStatus.FOUND) {
             return response.headers
                 .getFirst(HttpHeaders.LOCATION)
