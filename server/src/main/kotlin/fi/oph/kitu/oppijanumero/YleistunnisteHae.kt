@@ -3,6 +3,10 @@ package fi.oph.kitu.oppijanumero
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.Date
 
+interface OppijanumerorekisteriRequest
+
+class EmptyRequest : OppijanumerorekisteriRequest
+
 data class YleistunnisteHaeRequest(
     @JsonProperty("etunimet")
     val etunimet: String,
@@ -12,7 +16,7 @@ data class YleistunnisteHaeRequest(
     val kutsumanimi: String,
     @JsonProperty("sukunimi")
     val sukunimi: String,
-)
+) : OppijanumerorekisteriRequest
 
 data class YleistunnisteHaeResponse(
     @JsonProperty("oid")

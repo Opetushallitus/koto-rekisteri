@@ -65,6 +65,7 @@ class OppijanumeroServiceTests {
                     ),
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
+                serviceUrl = "http://localhost:8080/oppijanumero-service",
             )
 
         val result =
@@ -122,6 +123,7 @@ class OppijanumeroServiceTests {
                     ),
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
+                serviceUrl = "http://localhost:8080/oppijanumero-service",
             )
 
         // System under test
@@ -182,6 +184,7 @@ class OppijanumeroServiceTests {
                     ),
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
+                serviceUrl = "http://localhost:8080/oppijanumero-service",
             )
 
         assertThrows<OppijanumeroException.OppijaNotFoundException> {
@@ -241,6 +244,7 @@ class OppijanumeroServiceTests {
                     ),
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
+                serviceUrl = "http://localhost:8080/oppijanumero-service",
             )
 
         val result =
