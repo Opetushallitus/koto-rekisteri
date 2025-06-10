@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt.html
 
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
@@ -7,6 +8,8 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
@@ -17,6 +20,7 @@ import kotlinx.html.h2
 object VktHyvaJaTyydyttavaTarkasteluPage {
     fun render(
         data: Henkilosuoritus<VktSuoritus>,
+        henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
     ): String =
         Page.renderHtml(
@@ -30,6 +34,7 @@ object VktHyvaJaTyydyttavaTarkasteluPage {
         ) {
             h1 { +data.henkilo.kokoNimi() }
 
+            vktHenkilonTiedot(data, henkilo)
             vktSuorituksenTiedot(data, translations)
 
             h2 { +"Tutkinnot" }

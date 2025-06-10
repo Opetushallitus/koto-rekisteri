@@ -3,6 +3,10 @@ package fi.oph.kitu.vkt
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.oppijanumero.EmptyRequest
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.toTypedResult
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
@@ -25,6 +29,7 @@ import kotlin.jvm.optionals.getOrElse
 class VktViewController(
     private val vktSuoritukset: VktSuoritusService,
     private val localizationService: LocalizationService,
+    private val oppijanumeroService: OppijanumeroService,
 ) {
     @GetMapping("/erinomainen/ilmoittautuneet", produces = ["text/html"])
     @ResponseBody
@@ -134,17 +139,27 @@ class VktViewController(
     ): String? =
         vktSuoritukset
             .getSuoritus(id)
-            .map {
+            .map { suoritus ->
+                val henkilo =
+                    suoritus.henkilo.oid
+                        .toOid()
+                        .toTypedResult<_, OppijanumeroException> {
+                            OppijanumeroException.MalformedOppijanumero(
+                                EmptyRequest(),
+                                suoritus.henkilo.oid.oid,
+                            )
+                        }.flatMap { oppijanumeroService.getHenkilo(it) }
+
                 val translations =
                     localizationService
                         .translationBuilder()
                         .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
                         .build()
 
-                if (it.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
-                    VktErinomaisenArviointiPage.render(it, csrfToken, translations)
+                if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
+                    VktErinomaisenArviointiPage.render(suoritus, henkilo, csrfToken, translations)
                 } else {
-                    VktHyvaJaTyydyttavaTarkasteluPage.render(it, translations)
+                    VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, translations)
                 }
             }.getOrElse { throw VktSuoritusNotFoundError() }
 
