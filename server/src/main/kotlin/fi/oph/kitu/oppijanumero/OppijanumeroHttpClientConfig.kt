@@ -1,7 +1,5 @@
 package fi.oph.kitu.oppijanumero
 
-import io.opentelemetry.instrumentation.javahttpclient.JavaHttpClientTelemetry
-import io.opentelemetry.sdk.OpenTelemetrySdk
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -16,20 +14,13 @@ import java.time.Duration
 @Configuration
 class OppijanumeroHttpClientConfig {
     @Bean("oppijanumeroHttpClient")
-    fun HttpClient(openTelemetry: OpenTelemetrySdk): HttpClient {
-        val httpClient =
-            HttpClient
-                .newBuilder()
-                .followRedirects(Redirect.NEVER)
-                .cookieHandler(CookieManager()) // sends JSESSIONID Cookie between the requests
-                .connectTimeout(Duration.ofSeconds(10))
-                .build()
-
-        return JavaHttpClientTelemetry
-            .builder(openTelemetry)
+    fun HttpClient(): HttpClient =
+        HttpClient
+            .newBuilder()
+            .followRedirects(Redirect.NEVER)
+            .cookieHandler(CookieManager()) // sends JSESSIONID Cookie between the requests
+            .connectTimeout(Duration.ofSeconds(10))
             .build()
-            .newHttpClient(httpClient)
-    }
 }
 
 @Configuration
