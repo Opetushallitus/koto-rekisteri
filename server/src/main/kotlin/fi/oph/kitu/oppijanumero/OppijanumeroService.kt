@@ -5,7 +5,6 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.use
 import io.opentelemetry.api.trace.Tracer
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -21,9 +20,6 @@ class OppijanumeroServiceImpl(
     val objectMapper: ObjectMapper,
     private val tracer: Tracer,
 ) : OppijanumeroService {
-    @Value("\${kitu.oppijanumero.service.url}")
-    lateinit var serviceUrl: String
-
     override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
         tracer
             .spanBuilder("OppijanumeroServiceImpl.getOppijanumero")
