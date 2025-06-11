@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt.html
 
+import fi.oph.kitu.html.testId
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
@@ -15,13 +16,15 @@ fun FlowContent.vktSearch(query: String?) {
         fieldSet {
             attributes["role"] = "search"
             input {
+                testId("search")
                 id = "search"
                 type = InputType.search
                 name = "search"
                 value = query ?: ""
-                placeholder = "Oppijanumero tai nimi"
+                placeholder = "Oppijanumero, nimi tai tutkintopäivä"
             }
             button {
+                testId("search-button")
                 type = ButtonType.submit
                 +"Suodata"
             }
