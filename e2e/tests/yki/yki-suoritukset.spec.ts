@@ -156,8 +156,8 @@ describe('"YKI Suoritukset" -page', () => {
       tableColumnIndex: 6,
       order: Array<string>(
         "Testikuja 5, 40100 Testilä",
-        "Testikuja 10, 40100 Testinsuu",
-        "Testikoto 10, 40100 Koestamo",
+        "Testikuja 10, 40200 Testinsuu",
+        "Testikoto 10, 40300 Koestamo",
       ),
     },
     {
