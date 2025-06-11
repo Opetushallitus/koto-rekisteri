@@ -7,11 +7,11 @@ export const expectToHaveTexts = async (
   // Tehdään vertailu parhaiden käytäntöjen mukaan, jotta vältetään väpättävät testit...
   const locators = await locator.all()
   if (locators.length !== texts.length) {
-    throw Error(`Expected ${texts.length} elements, got ${locators.length}}`)
+    expect(await locator.allTextContents()).toEqual(texts)
   }
   try {
-    const promises = locators.map((l, i) => {
-      expect(l).toHaveText(texts[i])
+    const promises = locators.map(async (l, i) => {
+      await expect(l).toHaveText(texts[i])
     })
     return await Promise.all(promises)
   } catch (_) {

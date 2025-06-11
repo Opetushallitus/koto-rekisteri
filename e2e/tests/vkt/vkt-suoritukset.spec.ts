@@ -216,4 +216,58 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       arviointipaiva: expectToHaveInputValue(todayISODate()),
     })
   })
+
+  describe("Search", () => {
+    test("Search by first name works", async ({ vktIlmoittautuneetPage }) => {
+      await vktIlmoittautuneetPage.login()
+      await vktIlmoittautuneetPage.open()
+      await vktIlmoittautuneetPage.search("fiona")
+
+      await expectToHaveTexts(
+        vktIlmoittautuneetPage.table.getCellsOfColumn("etunimi"),
+        "Fiona Kerttu",
+        "Fiona Roosa",
+      )
+    })
+
+    test("Search by surname works", async ({ vktIlmoittautuneetPage }) => {
+      await vktIlmoittautuneetPage.login()
+      await vktIlmoittautuneetPage.open()
+      await vktIlmoittautuneetPage.search("halonen")
+
+      await expectToHaveTexts(
+        vktIlmoittautuneetPage.table.getCellsOfColumn("sukunimi"),
+        "Halonen",
+        "Halonen",
+      )
+    })
+
+    test("Search by oppijanumero works", async ({ vktIlmoittautuneetPage }) => {
+      await vktIlmoittautuneetPage.login()
+      await vktIlmoittautuneetPage.open()
+      await vktIlmoittautuneetPage.search("1.2.246.562.240.58644376343")
+
+      await expect(vktIlmoittautuneetPage.table.rows).toHaveCount(1)
+      await expectToHaveTexts(
+        vktIlmoittautuneetPage.table.getCellsOfRow("KIOS:55"),
+        "Huhtala",
+        "Nella Eveliina",
+        "<kieli:SV>",
+        "17.6.2010",
+      )
+    })
+
+    test("Search by tutkintopäivä works", async ({
+      vktIlmoittautuneetPage,
+    }) => {
+      await vktIlmoittautuneetPage.login()
+      await vktIlmoittautuneetPage.open()
+      await vktIlmoittautuneetPage.search("17.6.2010")
+
+      await expectToHaveTexts(
+        vktIlmoittautuneetPage.table.getCellsOfColumn("tutkintopaiva"),
+        "17.6.2010",
+      )
+    })
+  })
 })
