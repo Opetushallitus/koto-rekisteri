@@ -119,3 +119,13 @@ fun <Value, Error> Iterable<TypedResult<Value, out Error>>.splitIntoValuesAndErr
 
     return values to errors
 }
+
+fun <T> Result<T>.toTypedResult(): TypedResult<T, Throwable> =
+    this.fold({
+        TypedResult.Success(it)
+    }, { TypedResult.Failure(it) })
+
+fun <T, E> Result<T>.toTypedResult(mapFailure: (Throwable) -> E): TypedResult<T, E> =
+    this.fold({
+        TypedResult.Success(it)
+    }, { TypedResult.Failure(mapFailure(it)) })

@@ -17,4 +17,8 @@ class OppijanumeroServiceMock(
                 ),
             ),
         )
+
+    override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> {
+        TODO("Not yet implemented")
+    }
 }

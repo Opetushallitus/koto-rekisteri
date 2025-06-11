@@ -2,6 +2,7 @@ package fi.oph.kitu.html
 
 import kotlinx.html.FlowContent
 import kotlinx.html.Tag
+import kotlinx.html.article
 import kotlinx.html.script
 import kotlinx.html.unsafe
 
@@ -14,6 +15,12 @@ fun Tag.data(
 
 fun Tag.testId(id: String?) {
     if (id != null) data("testid", id)
+}
+
+fun FlowContent.error(message: String) {
+    article(classes = "error-text") {
+        +message
+    }
 }
 
 fun FlowContent.javascript(code: String) {
@@ -39,3 +46,8 @@ fun FlowContent.debugTrace() {
             }
     }
 }
+
+fun classes(vararg conditionAndName: Pair<Boolean?, String>) =
+    conditionAndName
+        .filter { it.first == true }
+        .joinToString(" ") { it.second }

@@ -12,6 +12,7 @@ import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completi
 import fi.oph.kitu.oppijanumero.Oppija
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -273,7 +274,7 @@ class KoealustaMappingService(
                     KielitestiSuoritusError(
                         id = null,
                         suorittajanOid = null,
-                        hetu = error.oppijanumeroException.request.hetu,
+                        hetu = (error.oppijanumeroException.request as YleistunnisteHaeRequest).hetu,
                         nimi =
                             "${error.oppijanumeroException.request.sukunimi} ${error.oppijanumeroException.request.etunimet}",
                         schoolOid = error.schoolOid,
