@@ -34,7 +34,8 @@ class CustomVktSuoritusRepository {
         offset: Int? = null,
         searchQuery: String? = null,
     ): List<Henkilosuoritus<VktSuoritus>> {
-        val (prefilter, prefilterParams) = listViewPrefilter(taitotaso, searchQuery)
+        val search = SearchQueryParser(searchQuery)
+        val (prefilter, prefilterParams) = listViewPrefilter(taitotaso, search)
 
         val query =
             """
@@ -65,10 +66,10 @@ class CustomVktSuoritusRepository {
             	tutkintopaiva
             FROM suoritus
             JOIN viimeisin_tutkintopaiva ON viimeisin_tutkintopaiva.suoritus_id = suoritus.id
-            WHERE rn = 1
+            ${whereAll("rn = 1", tutkintopaivaCondition(search.dateTokens))}
             ORDER BY ${column.dbColumn} $direction
-            ${limit?.let { "LIMIT :limit"} ?: ""}
-            ${offset?.let { "OFFSET :offset"} ?: ""}
+            ${limit?.let { "LIMIT :limit" } ?: ""}
+            ${offset?.let { "OFFSET :offset" } ?: ""}
             """.trimIndent()
 
         val params =
@@ -110,7 +111,8 @@ class CustomVktSuoritusRepository {
         arvioidut: Boolean?,
         searchQuery: String?,
     ): Int {
-        val (prefilter, prefilterParams) = listViewPrefilter(taitotaso, searchQuery)
+        val search = SearchQueryParser(searchQuery)
+        val (prefilter, prefilterParams) = listViewPrefilter(taitotaso, search)
         val query =
             """
             WITH suoritus AS (
@@ -127,7 +129,11 @@ class CustomVktSuoritusRepository {
                 AND EXISTS (
                     SELECT 1
                     FROM vkt_osakoe
-                    ${whereAll("vkt_osakoe.suoritus_id = suoritus.id", arvioituCondition(arvioidut))}
+                    ${whereAll(
+                "vkt_osakoe.suoritus_id = suoritus.id",
+                arvioituCondition(arvioidut),
+                tutkintopaivaCondition(search.dateTokens),
+            )}
                 )
             """.trimIndent()
 
@@ -148,38 +154,35 @@ class CustomVktSuoritusRepository {
             "vkt_osakoe.arvosana IS ${if (arvioidut) "NOT" else ""} null"
         }
 
+    private fun tutkintopaivaCondition(tokens: List<SearchQueryParser.DateSearchToken>): String? =
+        if (tokens.isNotEmpty()) {
+            "tutkintopaiva = any(${tokens.sqlArray()})"
+        } else {
+            null
+        }
+
     private fun listViewPrefilter(
         taitotaso: Koodisto.VktTaitotaso,
-        query: String?,
-    ): Pair<String, Map<String, String>> {
-        val searchTokens =
-            query
-                ?.trim()
-                ?.let { it.ifEmpty { null } }
-                ?.split(" ")
-                ?.mapIndexed { index, s ->
-                    "search${index + 1}" to s
-                }
-
+        search: SearchQueryParser,
+    ): Pair<String, Map<String, Any>> {
         val sql =
             whereAll(
                 *
                     arrayOf("taitotaso = :taitotaso") +
                         (
-                            searchTokens?.map { token ->
+                            search.textTokens.map { token ->
                                 listOf(
                                     "etunimi ILIKE",
                                     "sukunimi ILIKE",
                                     "suorittajan_oppijanumero LIKE",
-                                ).joinToString(" OR ") { "($it '%' || :${token.first} || '%')" }
-                            } ?: emptyList()
+                                ).joinToString(" OR ") { "($it ${token.sql})" }
+                            }
                         ),
             )
 
         return Pair(
             sql,
-            mapOf("taitotaso" to taitotaso.name) +
-                (searchTokens?.toMap() ?: emptyMap()),
+            mapOf("taitotaso" to taitotaso.name) + search.sqlParams,
         )
     }
 

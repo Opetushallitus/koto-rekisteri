@@ -19,7 +19,7 @@ fun FlowContent.vktSearch(query: String?) {
                 type = InputType.search
                 name = "search"
                 value = query ?: ""
-                placeholder = "Oppijanumero tai nimi"
+                placeholder = "Oppijanumero, nimi tai tutkintopäivä"
             }
             button {
                 type = ButtonType.submit
