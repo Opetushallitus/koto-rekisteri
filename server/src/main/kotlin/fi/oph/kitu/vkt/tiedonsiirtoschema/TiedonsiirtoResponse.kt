@@ -24,8 +24,7 @@ class TiedonsiirtoSuccess : TiedonsiirtoResponse {
 data class TiedonsiirtoFailure(
     val statusCode: HttpStatusCode = HttpStatus.BAD_REQUEST,
     val errors: List<String>,
-) : Throwable("$statusCode: ${errors.joinToString("; ")}"),
-    TiedonsiirtoResponse {
+) : TiedonsiirtoResponse {
     override val result = TiedonsiirtoStatus.Failed
 
     override fun toResponseEntity() = ResponseEntity(this, statusCode)
