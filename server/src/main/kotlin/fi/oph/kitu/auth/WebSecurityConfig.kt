@@ -56,6 +56,10 @@ class WebSecurityConfig {
                 }
 
                 authorize("/api/vkt/**", hasRole("APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS"))
+                authorize("/api-docs", permitAll)
+                authorize("/swagger-ui/**", permitAll)
+                authorize("/v3/api-docs/**", permitAll)
+                authorize("/schema-examples/**", permitAll)
                 authorize(anyRequest, hasRole("APP_KIELITUTKINTOREKISTERI_READ"))
             }
             exceptionHandling {
