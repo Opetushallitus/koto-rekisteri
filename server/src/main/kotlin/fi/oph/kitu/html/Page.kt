@@ -21,9 +21,11 @@ object Page {
 
         return createHTML().html {
             lang = "fi"
+            data("theme", "light")
 
             head {
                 title { +pageTitle }
+                meta(name = "color-scheme", content = "light")
                 link(href = "/pico.min.css", rel = "stylesheet")
                 link(href = "/style.css", rel = "stylesheet")
             }
