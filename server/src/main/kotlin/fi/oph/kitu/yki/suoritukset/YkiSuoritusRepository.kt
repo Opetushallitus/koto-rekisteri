@@ -80,7 +80,8 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         arvosana_muuttui,
         perustelu,
         tarkistusarvioinnin_kasittely_pvm,
-        koski_opiskeluoikeus
+        koski_opiskeluoikeus,
+        koski_siirto_kasitelty
         """.trimIndent()
 
     /**
@@ -261,7 +262,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 (SELECT DISTINCT ON (suoritus_id) $allColumns
                 FROM yki_suoritus
                 ORDER BY suoritus_id, last_modified DESC)
-            WHERE koski_opiskeluoikeus IS NULL
+            WHERE NOT koski_siirto_kasitelty
             """.trimIndent()
         return jdbcNamedParameterTemplate.query(sql) { rs, _ ->
             YkiSuoritusEntity.fromResultSet(rs)
@@ -328,6 +329,7 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getString("perustelu"),
         rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
         Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),
+        rs.getBoolean("koski_siirto_kasitelty"),
     )
 
 @Repository

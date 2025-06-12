@@ -28,35 +28,46 @@ class KoskiService(
             .startSpan()
             .use { span ->
                 val koskiRequest = koskiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
-                val koskiResponse =
-                    try {
-                        koskiRestClient
-                            .put()
-                            .uri("oppija")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.APPLICATION_JSON)
-                            .body(koskiRequest)
-                            .retrieve()
-                            .toEntity<KoskiResponse>()
-                    } catch (e: RestClientException) {
-                        return TypedResult.Failure(KoskiException(ykiSuoritusEntity.id, e.message))
+
+                if (koskiRequest == null) {
+                    val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
+                    ykiSuoritusRepository.save(suoritus)
+                    return TypedResult.Success(suoritus)
+                } else {
+                    val koskiResponse =
+                        try {
+                            koskiRestClient
+                                .put()
+                                .uri("oppija")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .body(koskiRequest)
+                                .retrieve()
+                                .toEntity<KoskiResponse>()
+                        } catch (e: RestClientException) {
+                            return TypedResult.Failure(KoskiException(ykiSuoritusEntity.id, e.message))
+                        }
+
+                    val koskiOpiskeluoikeus =
+                        koskiResponse.body
+                            ?.opiskeluoikeudet
+                            ?.first()
+                            ?.oid
+
+                    if (koskiOpiskeluoikeus == null) {
+                        return TypedResult.Failure(
+                            KoskiException(ykiSuoritusEntity.id, "KOSKI opiskeluoikeus OID missing from response"),
+                        )
                     }
 
-                val koskiOpiskeluoikeus =
-                    koskiResponse.body
-                        ?.opiskeluoikeudet
-                        ?.first()
-                        ?.oid
-
-                if (koskiOpiskeluoikeus == null) {
-                    return TypedResult.Failure(
-                        KoskiException(ykiSuoritusEntity.id, "KOSKI opiskeluoikeus OID missing from response"),
-                    )
+                    val suoritus =
+                        ykiSuoritusEntity.copy(
+                            koskiOpiskeluoikeus = Oid.parse(koskiOpiskeluoikeus).getOrThrow(),
+                            koskiSiirtoKasitelty = true,
+                        )
+                    ykiSuoritusRepository.save(suoritus)
+                    return TypedResult.Success(suoritus)
                 }
-
-                val suoritus = ykiSuoritusEntity.copy(koskiOpiskeluoikeus = Oid.parse(koskiOpiskeluoikeus).getOrThrow())
-                ykiSuoritusRepository.save(suoritus)
-                return TypedResult.Success(suoritus)
             }
 
     @WithSpan
