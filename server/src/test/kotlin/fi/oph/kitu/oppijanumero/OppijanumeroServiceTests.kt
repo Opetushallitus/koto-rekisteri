@@ -1,11 +1,12 @@
 package fi.oph.kitu.oppijanumero
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.assertFailureIsThrowable
+import fi.oph.kitu.logging.MockTracer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -68,11 +69,9 @@ class OppijanumeroServiceTests {
     }
 
     @Test
-    fun `oppijanumero service returns identified user`(
-        @Autowired oppijanumeroService: OppijanumeroService,
-        @Autowired restClientBuilder: RestClient.Builder,
-    ) {
+    fun `oppijanumero service returns identified user`() {
         // Facade
+        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
         val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
         val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
         mockServer
@@ -87,6 +86,22 @@ class OppijanumeroServiceTests {
                     """.trimIndent(),
                     MediaType.APPLICATION_JSON,
                 ),
+            )
+
+        val restClient = restClientBuilder.build()
+        val oppijanumeroService =
+            OppijanumeroServiceImpl(
+                casAuthenticatedService =
+                    CasAuthenticatedService(
+                        restClient = restClient,
+                        casService =
+                            CasService(
+                                restClient,
+                                restClient,
+                            ),
+                    ),
+                objectMapper = ObjectMapper(),
+                tracer = MockTracer(),
             )
 
         val result =
@@ -105,11 +120,9 @@ class OppijanumeroServiceTests {
     }
 
     @Test
-    fun `oppijanumero service returns unidentified user`(
-        @Autowired oppijanumeroService: OppijanumeroService,
-        @Autowired restClientBuilder: RestClient.Builder,
-    ) {
+    fun `oppijanumero service returns unidentified user`() {
         // Facade
+        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
         val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
         mockServer
             .expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
@@ -124,6 +137,23 @@ class OppijanumeroServiceTests {
                     MediaType.APPLICATION_JSON,
                 ),
             )
+
+        val restClient = restClientBuilder.build()
+        val oppijanumeroService =
+            OppijanumeroServiceImpl(
+                casAuthenticatedService =
+                    CasAuthenticatedService(
+                        restClient = restClient,
+                        casService =
+                            CasService(
+                                restClient,
+                                restClient,
+                            ),
+                    ),
+                objectMapper = ObjectMapper(),
+                tracer = MockTracer(),
+            )
+
         // System under test
         assertThrows<OppijanumeroException.OppijaNotIdentifiedException> {
             oppijanumeroService
@@ -139,11 +169,9 @@ class OppijanumeroServiceTests {
     }
 
     @Test
-    fun `oppijanumero service does not find user`(
-        @Autowired oppijanumeroService: OppijanumeroService,
-        @Autowired restClientBuilder: RestClient.Builder,
-    ) {
+    fun `oppijanumero service does not find user`() {
         // Facade
+        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
         val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
         mockServer
             .expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
@@ -162,6 +190,22 @@ class OppijanumeroServiceTests {
                     ),
             )
 
+        val restClient = restClientBuilder.build()
+        val oppijanumeroService =
+            OppijanumeroServiceImpl(
+                casAuthenticatedService =
+                    CasAuthenticatedService(
+                        restClient = restClient,
+                        casService =
+                            CasService(
+                                restClient,
+                                restClient,
+                            ),
+                    ),
+                objectMapper = ObjectMapper(),
+                tracer = MockTracer(),
+            )
+
         assertThrows<OppijanumeroException.OppijaNotFoundException> {
             oppijanumeroService
                 .getOppijanumero(
@@ -176,11 +220,9 @@ class OppijanumeroServiceTests {
     }
 
     @Test
-    fun `oppijanumero service received bad request`(
-        @Autowired oppijanumeroService: OppijanumeroService,
-        @Autowired restClientBuilder: RestClient.Builder,
-    ) {
+    fun `oppijanumero service received bad request`() {
         // Facade
+        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
         val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
         mockServer
             .expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
@@ -197,6 +239,22 @@ class OppijanumeroServiceTests {
                         }
                         """.trimIndent(),
                     ),
+            )
+
+        val restClient = restClientBuilder.build()
+        val oppijanumeroService =
+            OppijanumeroServiceImpl(
+                casAuthenticatedService =
+                    CasAuthenticatedService(
+                        restClient = restClient,
+                        casService =
+                            CasService(
+                                restClient,
+                                restClient,
+                            ),
+                    ),
+                objectMapper = ObjectMapper(),
+                tracer = MockTracer(),
             )
 
         val result =
