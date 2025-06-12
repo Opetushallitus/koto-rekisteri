@@ -65,10 +65,9 @@ export const peopleFixture = {
     email: "devnull-3@oph.fi",
     oppijanumero: "1.2.246.562.24.74064782358",
     osoite: {
-      // FIXME:
-      katuosoite: "",
-      postinumero: "",
-      postitoimipaikka: "",
+      katuosoite: "Testikatu 1",
+      postinumero: "40400",
+      postitoimipaikka: "Testaamo",
     },
   }),
   eino: createPerson({
@@ -79,10 +78,9 @@ export const peopleFixture = {
     oppijanumero: "1.2.246.562.24.67409348034",
     email: "devnull-10@oph.fi",
     osoite: {
-      // FIXME:
-      katuosoite: "",
-      postinumero: "",
-      postitoimipaikka: "",
+      katuosoite: "Testinmutka 126",
+      postinumero: "40300",
+      postitoimipaikka: "Testilä",
     },
   }),
   petro: createPerson({
@@ -106,10 +104,9 @@ export const peopleFixture = {
     email: "devnull-4@oph.fi",
     oppijanumero: "1.2.246.562.24.83611868632",
     osoite: {
-      // FIXME
-      katuosoite: "",
-      postitoimipaikka: "",
-      postinumero: "",
+      katuosoite: "Testikuja 32",
+      postitoimipaikka: "40500",
+      postinumero: "Testilä",
     },
   }),
   kalervo: createPerson({
@@ -120,10 +117,9 @@ export const peopleFixture = {
     email: "devnull-5@oph.fi",
     oppijanumero: "1.2.246.562.24.61390710528",
     osoite: {
-      // FIXME
-      katuosoite: "",
-      postinumero: "",
-      postitoimipaikka: "",
+      katuosoite: "Testi 1",
+      postinumero: "40800",
+      postitoimipaikka: "Testaamo",
     },
   }),
   toni: createPerson({
@@ -134,10 +130,9 @@ export const peopleFixture = {
     email: "devnull-6@oph.fi",
     oppijanumero: "1.2.246.562.24.16014275446",
     osoite: {
-      // FIXME
-      katuosoite: "",
-      postinumero: "",
-      postitoimipaikka: "",
+      katuosoite: "Testi 2",
+      postinumero: "40800",
+      postitoimipaikka: "Testaamo",
     },
   }),
   amalia: createPerson({
@@ -148,10 +143,9 @@ export const peopleFixture = {
     email: "devnull-7@oph.fi",
     oppijanumero: "1.2.246.562.24.64655158835",
     osoite: {
-      // FIXME
-      katuosoite: "",
-      postinumero: "",
-      postitoimipaikka: "",
+      katuosoite: "Testikuja 25",
+      postinumero: "40300",
+      postitoimipaikka: "Koestamo",
     },
   }),
   topi: createPerson({
@@ -162,10 +156,9 @@ export const peopleFixture = {
     email: "devnull-8@oph.fi",
     oppijanumero: "1.2.246.562.24.19650463538",
     osoite: {
-      // FIXME
-      katuosoite: "",
-      postinumero: "",
-      postitoimipaikka: "",
+      katuosoite: "Testitie 12",
+      postinumero: "40300",
+      postitoimipaikka: "Koestamo",
     },
   }),
   tobias: createPerson({
@@ -176,10 +169,9 @@ export const peopleFixture = {
     email: "devnull-9@oph.fi",
     oppijanumero: "1.2.246.562.24.67738436206",
     osoite: {
-      // FIXME
-      katuosoite: "",
-      postinumero: "",
-      postitoimipaikka: "",
+      katuosoite: "Testikuja 1",
+      postinumero: "40300",
+      postitoimipaikka: "Testaamo",
     },
   }),
   silja: createPerson({
@@ -190,10 +182,9 @@ export const peopleFixture = {
     email: "devnull-11@oph.fi",
     oppijanumero: "1.2.246.562.24.27639310186",
     osoite: {
-      // FIXME
-      katuosoite: "",
-      postinumero: "",
-      postitoimipaikka: "",
+      katuosoite: "Testikuja 5",
+      postinumero: "40100",
+      postitoimipaikka: "Testilä",
     },
   }),
   anniina: createPerson({
@@ -204,10 +195,9 @@ export const peopleFixture = {
     email: "devnull-12@oph.fi",
     oppijanumero: "1.2.246.562.24.24941612410",
     osoite: {
-      // FIXME
-      katuosoite: "",
-      postinumero: "",
-      postitoimipaikka: "",
+      katuosoite: "Testintie 123",
+      postinumero: "40700",
+      postitoimipaikka: "Testijärvi",
     },
   }),
   magdalena: createPerson({
