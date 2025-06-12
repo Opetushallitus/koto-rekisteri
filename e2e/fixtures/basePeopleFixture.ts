@@ -1,4 +1,5 @@
 export type Oid = `${number}.${number}.${number}.${number}.${number}.${number}`
+export type OidQuoted = `"${Oid}"`
 export type Email = `${string}@${string}.${string}`
 export type Sukupuoli = "N" | "M"
 
