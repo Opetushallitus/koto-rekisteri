@@ -91,9 +91,9 @@ describe('"Koto Suoritukset" -page', () => {
       column: "Nimi",
       tableColumnIndex: 1,
       order: Array<string>(
-        "Sallinen-Testi Magdalena Testi",
-        "Öhman Testi Ranja Testi",
-        "Kivinen-Testi Petro Testi",
+        "Ranja Testi Öhman-Testi",
+        "Petro Testi Kivinen-Testi",
+        "Magdalena Testi Sallinen-Testi",
       ),
     },
     {
