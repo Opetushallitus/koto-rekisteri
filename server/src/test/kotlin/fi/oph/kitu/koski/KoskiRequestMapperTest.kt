@@ -93,7 +93,8 @@ class KoskiRequestMapperTest {
             koskiRequestMapper
                 .ykiSuoritusToKoskiRequest(
                     suoritus,
-                ).opiskeluoikeudet
+                )!!
+                .opiskeluoikeudet
                 .first()
                 .suoritukset
                 .first()
@@ -126,7 +127,8 @@ class KoskiRequestMapperTest {
             koskiRequestMapper
                 .ykiSuoritusToKoskiRequest(
                     suoritus,
-                ).opiskeluoikeudet
+                )!!
+                .opiskeluoikeudet
                 .first()
                 .suoritukset
                 .first()
@@ -160,7 +162,8 @@ class KoskiRequestMapperTest {
             koskiRequestMapper
                 .ykiSuoritusToKoskiRequest(
                     suoritus,
-                ).opiskeluoikeudet
+                )!!
+                .opiskeluoikeudet
                 .first()
                 .suoritukset
                 .first()
@@ -175,5 +178,29 @@ class KoskiRequestMapperTest {
         assertEquals(Koodisto.YkiArvosana.ALLE5.toKoski(), arvosanat["puheenymmartaminen"])
         assertEquals(Koodisto.YkiArvosana.ALLE5.toKoski(), arvosanat["puhuminen"])
         assertEquals(Koodisto.YkiArvosana.ALLE5.toKoski(), arvosanat["rakenteetjasanasto"])
+    }
+
+    @Test
+    fun `drop whole suoritus if even osakoe is vilppi`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                tutkintokieli = Tutkintokieli.SME,
+                tutkintotaso = Tutkintotaso.YT,
+                tekstinYmmartaminen = 10,
+            )
+        val koskiSuoritus = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
+        assertEquals(null, koskiSuoritus)
+    }
+
+    @Test
+    fun `drop whole suoritus if even osakoe is keskeytetty`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                tutkintokieli = Tutkintokieli.SME,
+                tutkintotaso = Tutkintotaso.YT,
+                tekstinYmmartaminen = 11,
+            )
+        val koskiSuoritus = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
+        assertEquals(null, koskiSuoritus)
     }
 }

@@ -47,6 +47,7 @@ class YkiSuoritusMappingService {
         csv.perustelu,
         csv.tarkistusarvioinninKasittelyPvm,
         Oid.parse(koskiOpiskeluoikeus).getOrNull(),
+        false,
     )
 
     @WithSpan

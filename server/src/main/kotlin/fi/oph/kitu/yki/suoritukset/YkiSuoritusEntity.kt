@@ -63,6 +63,7 @@ data class YkiSuoritusEntity(
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
     val koskiOpiskeluoikeus: Oid?,
+    val koskiSiirtoKasitelty: Boolean?,
 ) {
     companion object
 }

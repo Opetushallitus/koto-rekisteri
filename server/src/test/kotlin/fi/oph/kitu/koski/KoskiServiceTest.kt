@@ -181,6 +181,7 @@ class KoskiServiceTest(
         val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
         assertEquals(3, updatedSuoritukset.size)
         updatedSuoritukset.forEach {
+            assertEquals(true, it.koskiSiirtoKasitelty)
             assertEquals("1.2.246.562.15.50209741037", it.koskiOpiskeluoikeus.toString())
         }
     }
