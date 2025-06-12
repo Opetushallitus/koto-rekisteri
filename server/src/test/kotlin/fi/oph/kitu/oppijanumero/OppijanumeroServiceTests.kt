@@ -7,67 +7,16 @@ import fi.oph.kitu.logging.MockTracer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Primary
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import kotlin.test.assertEquals
 
-@SpringBootTest
-@Testcontainers
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class OppijanumeroServiceTests {
-    @TestConfiguration
-    class RestClientBuilderConfig {
-        @Bean
-        fun restClientBuilder() = RestClient.builder()
-    }
-
-    @TestConfiguration
-    class OppijanumeroRestClientConfig(
-        private val restClientBuilder: RestClient.Builder,
-    ) {
-        @Value("\${kitu.oppijanumero.service.url}")
-        private lateinit var serviceUrl: String
-
-        @Value("\${kitu.oppijanumero.callerid}")
-        private lateinit var callerId: String
-
-        @Primary
-        @Bean("oppijanumeroRestClient")
-        fun oppijanumeroRestClient(): RestClient =
-            restClientBuilder
-                .baseUrl(serviceUrl)
-                .defaultHeaders { headers ->
-                    headers["Caller-Id"] = callerId
-                    headers["CSRF"] = "CSRF"
-                    headers["Cookie"] = "CSRF=CSRF"
-                }.build()
-    }
-
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
-
     @Test
     fun `oppijanumero service returns identified user`() {
         // Facade
