@@ -4,7 +4,6 @@ import fi.oph.kitu.TypedResult
 import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -18,12 +17,6 @@ class CasAuthenticatedService(
     val restClient: RestClient,
     private val casService: CasService,
 ) {
-    @Value("\${kitu.oppijanumero.service.url}")
-    lateinit var serviceUrl: String
-
-    @Value("\${kitu.oppijanumero.callerid}")
-    lateinit var callerId: String
-
     @WithSpan
     fun <Request : Any, Response> post(
         endpoint: String,

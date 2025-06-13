@@ -20,13 +20,13 @@ class CasService(
     private val oppijanumeroRestClient: RestClient,
 ) {
     @Value("\${kitu.palvelukayttaja.username}")
-    private lateinit var onrUsername: String
+    lateinit var onrUsername: String
 
     @Value("\${kitu.palvelukayttaja.password}")
-    private lateinit var onrPassword: String
+    lateinit var onrPassword: String
 
     @Value("\${kitu.oppijanumero.service.url}")
-    private lateinit var serviceUrl: String
+    lateinit var serviceUrl: String
 
     @WithSpan
     fun verifyServiceTicket(serviceTicket: String): TypedResult<URI, CasError> {
