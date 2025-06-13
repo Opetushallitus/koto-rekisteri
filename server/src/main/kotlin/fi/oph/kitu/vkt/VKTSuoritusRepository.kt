@@ -204,6 +204,7 @@ class VktOsakoeRepository {
     @Autowired
     private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
 
+    @WithSpan
     fun updateArvosana(
         id: Int,
         arvosana: Koodisto.VktArvosana?,
