@@ -5,6 +5,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.Optional
@@ -16,6 +17,7 @@ class VktSuoritusService(
     private val customSuoritusRepository: CustomVktSuoritusRepository,
     private val osakoeRepository: VktOsakoeRepository,
 ) {
+    @WithSpan
     fun getSuorituksetAndPagination(
         taitotaso: Koodisto.VktTaitotaso,
         arvioidut: Boolean?,
@@ -28,6 +30,7 @@ class VktSuoritusService(
         getPagination(sortColumn, sortDirection, pageNumber, taitotaso, arvioidut, searchQuery),
     )
 
+    @WithSpan
     fun getIlmoittautuneetForListView(
         taitotaso: Koodisto.VktTaitotaso,
         arvioidut: Boolean?,
@@ -46,6 +49,7 @@ class VktSuoritusService(
             searchQuery = searchQuery,
         )
 
+    @WithSpan
     fun getPagination(
         sortColumn: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
@@ -61,11 +65,13 @@ class VktSuoritusService(
             url = { "?page=$it&sortColumn=$sortColumn&sortDirection=$sortDirection" },
         )
 
+    @WithSpan
     fun getSuoritus(id: Int): Optional<Henkilosuoritus<VktSuoritus>> =
         suoritusRepository
             .findById(id)
             .map { Henkilosuoritus.from(it) }
 
+    @WithSpan
     fun setOsakoeArvosana(
         id: Int,
         arvosana: Koodisto.VktArvosana?,
