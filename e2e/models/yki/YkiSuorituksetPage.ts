@@ -67,4 +67,13 @@ export default class YkiSuorituksetPage extends BasePage {
   async filterSuoritukset() {
     await this.getContent().getByRole("button", { name: "Suodata" }).click()
   }
+
+  getSuoritusColumn(rowIndex: number, columnIndex: number) {
+    const row = this.getSuoritusRow().nth(rowIndex)
+    return row.getByRole("cell").nth(columnIndex)
+  }
+
+  getTableColumnHeaderLink(text: string) {
+    return this.getSuorituksetTable().getByRole("link", { name: text })
+  }
 }

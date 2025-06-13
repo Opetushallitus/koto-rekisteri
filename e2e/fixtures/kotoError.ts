@@ -1,8 +1,6 @@
 import SQL from "sql-template-strings"
 import { TestDB } from "./baseFixture"
-import { YkiSuorittajaErrorName } from "./ykiSuoritusError"
-
-export type Oid = `${number}.${number}.${number}.${number}.${number}.${number}`
+import { FixturePerson, Oid, peopleFixture } from "./basePeopleFixture"
 
 export interface KotoError {
   suorittajanOid: string
@@ -16,40 +14,63 @@ export interface KotoError {
   virheellinenArvo: string
 }
 
-const createError = ({
-  suorittajanOid = "1.2.246.562.24.33342764709",
-  hetu,
-  nimi,
-  schoolOid,
-  teacherEmail = "opettaja@testi.oph.fi",
-  virheenLuontiaika = "2024-11-22T10:49:49Z",
-  viesti,
-  virheellinenKentta,
-  virheellinenArvo,
-}: Partial<KotoError>) => ({
-  suorittajanOid,
-  hetu,
-  nimi,
-  schoolOid,
-  teacherEmail,
-  virheenLuontiaika,
-  viesti,
-  virheellinenKentta,
-  virheellinenArvo,
-})
+type CreateErrorArgs = Partial<
+  Omit<KotoError, "hetu" | "suorittajanOid" | "nimi">
+>
+
+const createError = (
+  person: FixturePerson,
+  {
+    schoolOid,
+    teacherEmail = "opettaja@testi.oph.fi",
+    virheenLuontiaika = "2024-11-22T10:49:49Z",
+    viesti,
+    virheellinenKentta,
+    virheellinenArvo,
+  }: CreateErrorArgs,
+) => {
+  const p = peopleFixture[person]
+  return {
+    suorittajanOid: p.oppijanumero,
+    hetu: p.hetu,
+    nimi: `${p.etunimet} ${p.sukunimi}`,
+    schoolOid,
+    teacherEmail,
+    virheenLuontiaika,
+    viesti,
+    virheellinenKentta,
+    virheellinenArvo,
+  }
+}
 
 export const fixtureData = {
-  suoritusVirhe: createError({
-    hetu: "010180-9026",
-    nimi: "Öhman Testi Ranja Testi",
+  suoritusVirhe: createError("ranja", {
     schoolOid: "1.2.246.562.10.1234567890",
     teacherEmail: "opettaja@testi.oph.fi",
     viesti:
       'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
     virheellinenKentta: "puhuminen",
     virheellinenArvo: "virheellinen arvosana",
+    virheenLuontiaika: "2024-11-22T10:49:49Z",
   }),
-  withNullValues: createError({
+  virhePetro: createError("petro", {
+    schoolOid: "1.2.246.562.10.1234567891",
+    teacherEmail: "toinen-opettaja@testi.oph.fi",
+    viesti:
+      'Malformed quiz grade "kirjoittaminen" on course "Integraatio testaus" for user "2"',
+    virheellinenKentta: "kirjoittaminen",
+    virheellinenArvo: "tyhjää täynnä",
+    virheenLuontiaika: "2025-05-26T12:34:56Z",
+  }),
+  virheMagdalena: createError("magdalena", {
+    schoolOid: "1.2.246.562.10.0987654321",
+    teacherEmail: "yksi-opettajista@testi.oph.fi",
+    viesti: "testiviesti, ei tekstiviesti",
+    virheellinenKentta: "yksi niistä",
+    virheellinenArvo: "en kerro, arvaa!",
+    virheenLuontiaika: "2042-12-22T22:42:42Z",
+  }),
+  withNullValues: {
     suorittajanOid: null,
     hetu: null,
     nimi: " ",
@@ -58,7 +79,8 @@ export const fixtureData = {
     viesti: "Unexpected error",
     virheellinenKentta: null,
     virheellinenArvo: null,
-  }),
+    virheenLuontiaika: "2024-11-22T10:49:49Z",
+  },
 } as const
 
 const insertQuery = (virhe: KotoError) => SQL`
