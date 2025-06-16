@@ -62,7 +62,9 @@ class OppijanumeroServiceTests {
                                 onrUsername = "username"
                                 onrPassword = "password"
                             },
-                    ),
+                    ).apply {
+                        callerId = "koto-test"
+                    },
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
                 serviceUrl = "http://localhost:8080/oppijanumero-service",
@@ -120,7 +122,9 @@ class OppijanumeroServiceTests {
                                 onrUsername = "username"
                                 onrPassword = "password"
                             },
-                    ),
+                    ).apply {
+                        callerId = "koto-test"
+                    },
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
                 serviceUrl = "http://localhost:8080/oppijanumero-service",
@@ -181,7 +185,9 @@ class OppijanumeroServiceTests {
                                 onrUsername = "username"
                                 onrPassword = "password"
                             },
-                    ),
+                    ).apply {
+                        callerId = "koto-test"
+                    },
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
                 serviceUrl = "http://localhost:8080/oppijanumero-service",
@@ -241,7 +247,9 @@ class OppijanumeroServiceTests {
                                 onrUsername = "username"
                                 onrPassword = "password"
                             },
-                    ),
+                    ).apply {
+                        callerId = "koto-test"
+                    },
                 objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
                 serviceUrl = "http://localhost:8080/oppijanumero-service",

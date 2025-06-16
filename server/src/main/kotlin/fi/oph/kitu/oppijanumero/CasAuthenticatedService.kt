@@ -5,6 +5,7 @@ import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -20,7 +21,13 @@ class CasAuthenticatedService(
     val restClient: RestClient,
     private val casService: CasService,
 ) {
-    @WithSpan
+    @Value("\${kitu.oppijanumero.service.url}")
+    lateinit var serviceUrl: String
+
+    @Value("\${kitu.oppijanumero.callerid}")
+    lateinit var callerId: String
+
+    @WithSpan("CasAuthenticatedService.fetch")
     fun <Request : Any, Response> fetch(
         httpMethod: HttpMethod,
         endpoint: String,
@@ -29,11 +36,11 @@ class CasAuthenticatedService(
         responseType: Class<Response>,
     ): TypedResult<ResponseEntity<Response>, CasError> {
         val span = Span.current()
-        span.setAttribute("request.httpMethod", httpMethod.name())
-        span.setAttribute("request.endpoint", endpoint)
-        span.setAttribute("request.contentType", contentType.toString())
-        span.setAttribute("request.responseType", responseType.toString())
-        span.setAttribute("request.body", body?.toString())
+        span.setAttribute("http.request.method", httpMethod.name())
+        span.setAttribute("http.request.uri", endpoint)
+        span.setAttribute("http.contentType", contentType.toString())
+        span.setAttribute("http.responseType", responseType.toString())
+        span.setAttribute("http.body", body?.toString())
 
         fun retrieveEntitySafely(uri: URI) =
             restClient
@@ -44,6 +51,11 @@ class CasAuthenticatedService(
                         it
                             .body(b)
                             .contentType(contentType)
+                            .headers { headers ->
+                                headers.set("Caller-Id", callerId)
+                                headers.set("CSRF", "CSRF")
+                                headers.set("Cookie", "CSRF=CSRF")
+                            }
                     } ?: it
                 }.retrieveEntitySafely(responseType)
 
