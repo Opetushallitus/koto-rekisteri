@@ -51,7 +51,7 @@ class OppijanumeroServiceTests {
         val oppijanumeroService =
             OppijanumeroServiceImpl(
                 casAuthenticatedService =
-                    CasAuthenticatedService(
+                    CasAuthenticatedServiceImpl(
                         restClient = oppijanumeroRestClient,
                         casService =
                             CasService(
@@ -108,7 +108,7 @@ class OppijanumeroServiceTests {
         val oppijanumeroService =
             OppijanumeroServiceImpl(
                 casAuthenticatedService =
-                    CasAuthenticatedService(
+                    CasAuthenticatedServiceImpl(
                         restClient = oppijanumeroRestClient,
                         casService =
                             CasService(
@@ -168,7 +168,7 @@ class OppijanumeroServiceTests {
         val oppijanumeroService =
             OppijanumeroServiceImpl(
                 casAuthenticatedService =
-                    CasAuthenticatedService(
+                    CasAuthenticatedServiceImpl(
                         restClient = oppijanumeroRestClient,
                         casService =
                             CasService(
@@ -227,7 +227,7 @@ class OppijanumeroServiceTests {
         val oppijanumeroService =
             OppijanumeroServiceImpl(
                 casAuthenticatedService =
-                    CasAuthenticatedService(
+                    CasAuthenticatedServiceImpl(
                         restClient = oppijanumeroRestClient,
                         casService =
                             CasService(

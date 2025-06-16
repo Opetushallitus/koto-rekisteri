@@ -11,14 +11,23 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 
+interface CasAuthenticatedService {
+    fun <Request : Any, Response> post(
+        endpoint: String,
+        body: Request,
+        contentType: MediaType,
+        responseType: Class<Response>,
+    ): TypedResult<ResponseEntity<Response>, CasError>
+}
+
 @Service
-class CasAuthenticatedService(
+class CasAuthenticatedServiceImpl(
     @Qualifier("oppijanumeroRestClient")
     val restClient: RestClient,
     private val casService: CasService,
-) {
+) : CasAuthenticatedService {
     @WithSpan
-    fun <Request : Any, Response> post(
+    override fun <Request : Any, Response> post(
         endpoint: String,
         body: Request,
         contentType: MediaType,
