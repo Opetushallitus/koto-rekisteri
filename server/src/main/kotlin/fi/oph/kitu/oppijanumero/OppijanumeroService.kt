@@ -49,7 +49,7 @@ class OppijanumeroServiceImpl(
                 )
 
             client
-                .post<YleistunnisteHaeResponse, YleistunnisteHaeRequest>("yleistunniste/hae", requestBody)
+                .onrPost<YleistunnisteHaeResponse, YleistunnisteHaeRequest>("yleistunniste/hae", requestBody)
                 .flatMap { body ->
                     span.setAttribute("response.hasOppijanumero", body.oppijanumero.isNullOrEmpty())
                     span.setAttribute("response.hasOid", body.oid.isEmpty())
@@ -72,7 +72,7 @@ class OppijanumeroServiceImpl(
 
     override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
         withSpan("OppijanumeroServiceImpl.getHenkilo") {
-            client.get<OppijanumerorekisteriHenkilo>("henkilo/$oid")
+            client.onrGet<OppijanumerorekisteriHenkilo>("henkilo/$oid")
         }
 
     final inline fun <reified T> withSpan(
@@ -90,9 +90,9 @@ class OppijanumerorekisteriClient(
     val casAuthenticatedService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
 ) {
-    inline fun <reified T> get(endpoint: String) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint)
+    inline fun <reified T> onrGet(endpoint: String) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint)
 
-    inline fun <reified T, R : OppijanumerorekisteriRequest> post(
+    inline fun <reified T, R : OppijanumerorekisteriRequest> onrPost(
         endpoint: String,
         body: R,
     ) = fetch<T, R>(

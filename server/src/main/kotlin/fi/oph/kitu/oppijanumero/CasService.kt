@@ -28,7 +28,7 @@ class CasService(
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
-    @WithSpan
+    @WithSpan("CasService.verifyServiceTicket")
     fun verifyServiceTicket(serviceTicket: String): TypedResult<URI, CasError> {
         val response =
             oppijanumeroRestClient
@@ -43,7 +43,7 @@ class CasService(
         }
     }
 
-    @WithSpan
+    @WithSpan("CaseService.getServiceTicket")
     fun getServiceTicket(ticketGrantingTicket: String): TypedResult<String, CasError> {
         // Step 3 - Get the response
         val body = "service=$serviceUrl/j_spring_cas_security_check"
@@ -64,7 +64,7 @@ class CasService(
         }
     }
 
-    @WithSpan
+    @WithSpan("CaseService.getGrantingTicket")
     fun getGrantingTicket(): TypedResult<String, CasError> {
         // Step 2 - form a request
         val username = URLEncoder.encode(onrUsername, "UTF-8")

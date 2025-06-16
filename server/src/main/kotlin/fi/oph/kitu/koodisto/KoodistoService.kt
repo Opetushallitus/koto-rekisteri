@@ -17,7 +17,7 @@ class KoodistoService(
     private val restClient: RestClient,
     private val tracer: Tracer,
 ) {
-    @WithSpan
+    @WithSpan("KoodistoService.getKoodiviitteet")
     fun getKoodiviitteet(koodistoUri: String): List<KoodistopalveluKoodiviite>? = cachedKoodistot.get(koodistoUri)
 
     private fun fetchKoodisto(koodistoUri: String): List<KoodistopalveluKoodiviite>? =

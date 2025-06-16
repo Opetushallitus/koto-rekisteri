@@ -17,7 +17,7 @@ class VktSuoritusService(
     private val customSuoritusRepository: CustomVktSuoritusRepository,
     private val osakoeRepository: VktOsakoeRepository,
 ) {
-    @WithSpan
+    @WithSpan("VktSuoritusService.getSuorituksetAndPagination")
     fun getSuorituksetAndPagination(
         taitotaso: Koodisto.VktTaitotaso,
         arvioidut: Boolean?,
@@ -30,7 +30,7 @@ class VktSuoritusService(
         getPagination(sortColumn, sortDirection, pageNumber, taitotaso, arvioidut, searchQuery),
     )
 
-    @WithSpan
+    @WithSpan("VktSuoritusService.getIlmoittautuneetForListView")
     fun getIlmoittautuneetForListView(
         taitotaso: Koodisto.VktTaitotaso,
         arvioidut: Boolean?,
@@ -49,7 +49,7 @@ class VktSuoritusService(
             searchQuery = searchQuery,
         )
 
-    @WithSpan
+    @WithSpan("VktSuoritusService.getPagination")
     fun getPagination(
         sortColumn: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
@@ -65,13 +65,13 @@ class VktSuoritusService(
             url = { "?page=$it&sortColumn=$sortColumn&sortDirection=$sortDirection" },
         )
 
-    @WithSpan
+    @WithSpan("VktSuoritusService.getSuoritus")
     fun getSuoritus(id: Int): Optional<Henkilosuoritus<VktSuoritus>> =
         suoritusRepository
             .findById(id)
             .map { Henkilosuoritus.from(it) }
 
-    @WithSpan
+    @WithSpan("VktSuoritusService.setOsakoeArvosana")
     fun setOsakoeArvosana(
         id: Int,
         arvosana: Koodisto.VktArvosana?,
