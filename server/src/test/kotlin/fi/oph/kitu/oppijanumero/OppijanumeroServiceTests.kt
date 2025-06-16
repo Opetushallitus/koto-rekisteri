@@ -27,17 +27,23 @@ class OppijanumeroServiceTests {
                 .ignoreExpectOrder(true)
                 .build()
 
-        val casRestClientBuilder =
-            mockServer.addCasAuthenticatedService(
+        val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
+
+        mockServer
+            .addCasFlow(
                 serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
                 serviceEndpoint = "yleistunniste/hae",
-                respondWithJsonBody =
+            ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
+            .andRespond(
+                withSuccess(
                     """
                     {
                         "oid": "1.2.246.562.24.33342764709",
                         "oppijanumero": "1.2.246.562.24.33342764709"
                     }
                     """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
             )
 
         val restClient = onrRestClientBuilder.build()

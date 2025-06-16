@@ -68,19 +68,7 @@ fun MockRestServiceServer.setupCasVerifyTicket(
         )
 }
 
-/**
- * Setups CAS login flow to the instance of `MockRestServiceServer`.
- *
- * Returns generated `RestClient.Builder` that CAS login flow uses.
- */
-fun MockRestServiceServer.addCasAuthenticatedService(
-    serviceBaseUrl: String,
-    serviceEndpoint: String,
-    respondWithJsonBody: String,
-): RestClient.Builder {
-    val casBaseUrl = "http://localhost:8080/cas"
-    val serviceUrl = "$serviceBaseUrl/$serviceEndpoint"
-
+fun createRestClientBuilderWithCasFlow(casBaseUrl: String): RestClient.Builder {
     val builder = RestClient.builder().baseUrl(casBaseUrl)
     val casMockServer =
         MockRestServiceServer
@@ -88,22 +76,34 @@ fun MockRestServiceServer.addCasAuthenticatedService(
             .ignoreExpectOrder(true)
             .build()
 
-    // Expectation 1: App tries to use CAS-authenticated site.
-    // It does not have the correct cookie, so CAS returns HTTP 302
-    this.isNotLoggedInToCas(serviceUrl)
-
     // Expectation 2: getGrantingTicket - Since CAS provided login - site, now we have to get granting ticket:
     casMockServer.setupCasGrantingTicket(casBaseUrl)
 
     // Expectation 3: getServiceTicket - After granting ticket, -> service ticket
     casMockServer.setupCasServiceTicket(casBaseUrl)
 
+    return builder
+}
+
+/**
+ * Setups CAS login flow to the instance of `MockRestServiceServer`.
+ *
+ * Returns generated `RestClient.Builder` that CAS login flow uses.
+ */
+fun MockRestServiceServer.addCasFlow(
+    serviceBaseUrl: String,
+    serviceEndpoint: String,
+): MockRestServiceServer {
+    val serviceUrl = "$serviceBaseUrl/$serviceEndpoint"
+
+    // Expectation 1: App tries to use CAS-authenticated site.
+    // It does not have the correct cookie, so CAS returns HTTP 302
+    this.isNotLoggedInToCas(serviceUrl)
+
     // Exepectation 4: verifyServiceTicket - service ticket validated in CAS Authenticated service
     this.setupCasVerifyTicket(serviceBaseUrl, serviceEndpoint)
 
-    // Expectation 5: Authenticated request
-    this
-        .expect(requestTo(serviceUrl))
-        .andRespond(withSuccess(respondWithJsonBody, MediaType.APPLICATION_JSON))
-    return builder
+    // Expectation 5: Authenticated request.
+    // It's not mocked here. You need to setup it yourself
+    return this
 }
