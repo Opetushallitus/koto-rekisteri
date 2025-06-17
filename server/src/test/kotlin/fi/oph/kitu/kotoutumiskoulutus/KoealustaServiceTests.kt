@@ -5,6 +5,7 @@ import fi.oph.kitu.TypedResult
 import fi.oph.kitu.mustBeSuccess
 import fi.oph.kitu.oppijanumero.CasAuthenticatedService
 import fi.oph.kitu.oppijanumero.CasAuthenticatedServiceMock
+import fi.oph.kitu.oppijanumero.CasError
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.oppijanumero.OppijanumeroServiceMock
@@ -89,38 +90,62 @@ class KoealustaServiceTests {
             )
 
         @JvmStatic
-        fun casAuthenticatedService(): CasAuthenticatedService =
-            CasAuthenticatedServiceMock(
-                posts =
-                    mapOf(
-                        CasAuthenticatedServiceMock.toKey(
-                            "/yleistunniste/hae",
-                            YleistunnisteHaeRequest(
-                                etunimet = "Ranja Testi",
-                                hetu = "010180-9026",
-                                kutsumanimi = "Ranja",
-                                sukunimi = "Öhman-Testi",
-                            ),
-                            contentType = MediaType.APPLICATION_JSON,
-                            responseType = String::class.java,
-                        ) to
-                            TypedResult.Success(
-                                ResponseEntity.ok().body(
-                                    """
-                                    {
-                                        "oid": "1.2.246.562.24.33342764709",
-                                        "oppijanumero": "1.2.246.562.24.33342764709"
-                                    }
-                                    """.trimIndent(),
-                                ),
-                            ),
+        fun casAuthenticatedService(): CasAuthenticatedService {
+            // Test: `import with no errors`
+            val oppijaIdentified =
+                Pair<String, TypedResult<ResponseEntity<Any>, CasError>>(
+                    CasAuthenticatedServiceMock.toKey(
+                        "/yleistunniste/hae",
+                        YleistunnisteHaeRequest(
+                            etunimet = "Ranja Testi",
+                            hetu = "010180-9026",
+                            kutsumanimi = "Ranja",
+                            sukunimi = "Öhman-Testi",
+                        ),
+                        contentType = MediaType.APPLICATION_JSON,
+                        responseType = String::class.java,
                     ),
-            )
-    }
+                    TypedResult.Success(
+                        ResponseEntity.ok().body(
+                            """
+                            {
+                                "oid": "1.2.246.562.24.33342764709",
+                                "oppijanumero": "1.2.246.562.24.33342764709"
+                            }
+                            """.trimIndent(),
+                        ),
+                    ),
+                )
 
-    // @TestBean
-    // @Suppress("unused")
-    // private lateinit var oppijanumeroService: OppijanumeroService
+            // `import with hetu name mismatch`
+            val oppijaNotIdentified =
+                Pair<String, TypedResult<ResponseEntity<Any>, CasError>>(
+                    CasAuthenticatedServiceMock.toKey(
+                        "/yleistunniste/hae",
+                        YleistunnisteHaeRequest(
+                            etunimet = "Antero",
+                            hetu = "WRONG_HETU",
+                            kutsumanimi = "Antero",
+                            sukunimi = "Testi-Moikka",
+                        ),
+                        contentType = MediaType.APPLICATION_JSON,
+                        responseType = String::class.java,
+                    ),
+                    TypedResult.Success(
+                        ResponseEntity.ok().body(
+                            """
+                            {
+                                "oid": "1.2.246.562.24.33342764709",
+                                "oppijanumero": ""
+                            }
+                            """.trimIndent(),
+                        ),
+                    ),
+                )
+
+            return CasAuthenticatedServiceMock(posts = mapOf(oppijaIdentified, oppijaNotIdentified))
+        }
+    }
 
     @TestBean
     @Suppress("unused")
@@ -242,7 +267,7 @@ class KoealustaServiceTests {
                           "firstnames": "Antero",
                           "lastname": "Testi-Moikka",
                           "preferredname": "Antero", 
-                          "SSN": "12345678902",
+                          "SSN": "WRONG_HETU",
                           "email": "ranja.testi@oph.fi",
                           "completions": [
                             {
@@ -301,10 +326,10 @@ class KoealustaServiceTests {
         val oppijaValidationFailure = errors.first()
 
         assertAll(
-            fun() = assertEquals("12345678902", oppijaValidationFailure.hetu),
+            fun() = assertEquals("WRONG_HETU", oppijaValidationFailure.hetu),
             fun() =
                 assertEquals(
-                    "Oppijanumeron haku epäonnistui: virheviesti",
+                    "Oppijanumeron haku epäonnistui: Oppija YleistunnisteHaeRequest(etunimet=Antero, hetu=WRONG_HETU, kutsumanimi=Antero, sukunimi=Testi-Moikka) is not identified in oppijanumero service",
                     oppijaValidationFailure.viesti,
                 ),
             fun() = assertEquals("Testi-Moikka Antero", oppijaValidationFailure.nimi),
