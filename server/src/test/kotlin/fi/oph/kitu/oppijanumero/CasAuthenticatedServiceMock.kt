@@ -14,12 +14,10 @@ class CasAuthenticatedServiceMock(
             contentType: MediaType,
             responseType: Class<*>,
         ): String =
-            "{" +
-                """ "endpoint":"$endpoint",""" +
+            """{"endpoint":"$endpoint",""" +
                 """ "body":"$body",""" +
-                """ "contentType":"$contentType", """ +
-                """ "responseType":"$responseType" """ +
-                "}"
+                """ "contentType":"$contentType",""" +
+                """ "responseType":"$responseType"}"""
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -29,5 +27,8 @@ class CasAuthenticatedServiceMock(
         contentType: MediaType,
         responseType: Class<Response>,
     ): TypedResult<ResponseEntity<Response>, CasError> =
-        posts[toKey(endpoint, body, contentType, responseType)] as TypedResult<ResponseEntity<Response>, CasError>
+        (
+            posts[toKey(endpoint, body, contentType, responseType)]
+                ?: throw AssertionError("Response is null")
+        ) as TypedResult<ResponseEntity<Response>, CasError>
 }

@@ -94,11 +94,11 @@ class KoealustaServiceTests {
                 posts =
                     mapOf(
                         CasAuthenticatedServiceMock.toKey(
-                            "yleistunniste/hae",
+                            "/yleistunniste/hae",
                             YleistunnisteHaeRequest(
-                                etunimet = "Ranja",
+                                etunimet = "Ranja Testi",
                                 hetu = "010180-9026",
-                                kutsumanimi = "Ranja Testi",
+                                kutsumanimi = "Ranja",
                                 sukunimi = "Öhman-Testi",
                             ),
                             contentType = MediaType.APPLICATION_JSON,
@@ -109,7 +109,7 @@ class KoealustaServiceTests {
                                     """
                                     {
                                         "oid": "1.2.246.562.24.33342764709",
-                                        "oppijanumero:  "1.2.246.562.24.33342764709"
+                                        "oppijanumero": "1.2.246.562.24.33342764709"
                                     }
                                     """.trimIndent(),
                                 ),
@@ -156,7 +156,7 @@ class KoealustaServiceTests {
                         {
                           "userid": 1,
                           "firstnames": "Ranja Testi",
-                          "lastname": "\u00f6hman-Testi",
+                          "lastname": "\u00D6hman-Testi",
                           "preferredname": "Ranja", 
                           "SSN": "010180-9026",
                           "email": "ranja.testi@oph.fi",
