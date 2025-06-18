@@ -91,9 +91,8 @@ class KoealustaServiceTests {
 
         @JvmStatic
         fun casAuthenticatedService(): CasAuthenticatedService {
-            // Tests:
-            //  * `import with no errors`
-            //  * `import with suoritus validation error`
+            // `import with no errors`
+            // `import with suoritus validation error`
             val oppijaIdentified =
                 Pair<String, TypedResult<ResponseEntity<Any>, CasError>>(
                     CasAuthenticatedServiceMock.toKey(
@@ -144,8 +143,28 @@ class KoealustaServiceTests {
                         ),
                     ),
                 )
+            // `import with person information mismatch`
+            val badRequest =
+                Pair<String, TypedResult<ResponseEntity<Any>, CasError>>(
+                    CasAuthenticatedServiceMock.toKey(
+                        "/yleistunniste/hae",
+                        YleistunnisteHaeRequest(
+                            etunimet = "Antero",
+                            hetu = "INVALID_HETU",
+                            kutsumanimi = "Antero",
+                            sukunimi = "Testi-Moikka",
+                        ),
+                        contentType = MediaType.APPLICATION_JSON,
+                        responseType = String::class.java,
+                    ),
+                    TypedResult.Success(
+                        ResponseEntity.badRequest().body(
+                            "Bad request".trimIndent(),
+                        ),
+                    ),
+                )
 
-            return CasAuthenticatedServiceMock(posts = mapOf(oppijaIdentified, oppijaNotIdentified))
+            return CasAuthenticatedServiceMock(posts = mapOf(oppijaIdentified, oppijaNotIdentified, badRequest))
         }
     }
 
@@ -524,7 +543,7 @@ class KoealustaServiceTests {
                           "firstnames": "Antero",
                           "lastname": "Testi-Moikka",
                           "preferredname": "Antero", 
-                          "SSN": "12345678903",
+                          "SSN": "INVALID_HETU",
                           "email": "ranja.testi@oph.fi",
                           "completions": [
                             {
@@ -581,10 +600,10 @@ class KoealustaServiceTests {
         val onrBadRequestFailure = errors.first()
 
         assertAll(
-            fun() = assertEquals("12345678903", onrBadRequestFailure.hetu),
+            fun() = assertEquals("INVALID_HETU", onrBadRequestFailure.hetu),
             fun() =
                 assertEquals(
-                    "Oppijanumeron haku epäonnistui: Bad request",
+                    "Oppijanumeron haku epäonnistui: Bad request to oppijanumero-service",
                     onrBadRequestFailure.viesti,
                 ),
             fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
