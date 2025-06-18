@@ -49,7 +49,7 @@ class OppijanumeroServiceTests {
         val oppijanumeroRestClient = onrRestClientBuilder.build()
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroService =
-            OppijanumeroServiceImpl(
+            OppijanumeroService(
                 casAuthenticatedService =
                     CasAuthenticatedServiceImpl(
                         restClient = oppijanumeroRestClient,
@@ -106,7 +106,7 @@ class OppijanumeroServiceTests {
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
         val oppijanumeroService =
-            OppijanumeroServiceImpl(
+            OppijanumeroService(
                 casAuthenticatedService =
                     CasAuthenticatedServiceImpl(
                         restClient = oppijanumeroRestClient,
@@ -166,7 +166,7 @@ class OppijanumeroServiceTests {
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
         val oppijanumeroService =
-            OppijanumeroServiceImpl(
+            OppijanumeroService(
                 casAuthenticatedService =
                     CasAuthenticatedServiceImpl(
                         restClient = oppijanumeroRestClient,
@@ -225,7 +225,7 @@ class OppijanumeroServiceTests {
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
         val oppijanumeroService =
-            OppijanumeroServiceImpl(
+            OppijanumeroService(
                 casAuthenticatedService =
                     CasAuthenticatedServiceImpl(
                         restClient = oppijanumeroRestClient,

@@ -2,13 +2,9 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.mustBeSuccess
 import fi.oph.kitu.oppijanumero.CasAuthenticatedService
 import fi.oph.kitu.oppijanumero.CasAuthenticatedServiceMock
 import fi.oph.kitu.oppijanumero.CasError
-import fi.oph.kitu.oppijanumero.OppijanumeroException
-import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.oppijanumero.OppijanumeroServiceMock
 import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -39,55 +35,6 @@ class KoealustaServiceTests {
         @Container
         @ServiceConnection
         val postgres = PostgreSQLContainer("postgres:16")
-
-        @JvmStatic
-        fun oppijanumeroService(): OppijanumeroService =
-            OppijanumeroServiceMock(
-                mapOf(
-                    "12345678901" to Oid.parseTyped("1.2.246.562.24.33342764709").mustBeSuccess(),
-                    "12345678902" to
-                        TypedResult.Failure(
-                            OppijanumeroException.OppijaNotIdentifiedException(
-                                request =
-                                    YleistunnisteHaeRequest(
-                                        etunimet = "Antero",
-                                        hetu = "12345678902",
-                                        kutsumanimi = "Antero",
-                                        sukunimi = "Testi-Moikka",
-                                    ),
-                                message = "virheviesti",
-                            ),
-                        ),
-                    "12345678903" to
-                        TypedResult.Failure(
-                            OppijanumeroException.BadRequest(
-                                request =
-                                    YleistunnisteHaeRequest(
-                                        etunimet = "Antero",
-                                        hetu = "12345678903",
-                                        kutsumanimi = "Antero",
-                                        sukunimi = "Testi-Moikka",
-                                    ),
-                                message = "Bad request",
-                                response = ResponseEntity.badRequest().body("Bad request"),
-                            ),
-                        ),
-                    "12345678904" to
-                        TypedResult.Failure(
-                            OppijanumeroException.UnexpectedError(
-                                request =
-                                    YleistunnisteHaeRequest(
-                                        etunimet = "Antero",
-                                        hetu = "12345678904",
-                                        kutsumanimi = "Antero",
-                                        sukunimi = "Testi-Moikka",
-                                    ),
-                                message = "Server Error",
-                                response = ResponseEntity.internalServerError().body("Server Error"),
-                            ),
-                        ),
-                ),
-            )
 
         @JvmStatic
         fun casAuthenticatedService(): CasAuthenticatedService {

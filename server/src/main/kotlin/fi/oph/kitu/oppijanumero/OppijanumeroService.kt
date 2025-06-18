@@ -10,19 +10,15 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
-interface OppijanumeroService {
-    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
-}
-
 @Service
-class OppijanumeroServiceImpl(
+class OppijanumeroService(
     private val casAuthenticatedService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
     private val tracer: Tracer,
-) : OppijanumeroService {
-    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
+) {
+    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
         tracer
-            .spanBuilder("OppijanumeroServiceImpl.getOppijanumero")
+            .spanBuilder("OppijanumeroService.getOppijanumero")
             .startSpan()
             .use { span ->
                 require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
