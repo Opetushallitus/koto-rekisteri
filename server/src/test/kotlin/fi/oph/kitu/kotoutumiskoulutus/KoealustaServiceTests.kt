@@ -3,6 +3,8 @@ package fi.oph.kitu.kotoutumiskoulutus
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.mustBeSuccess
+import fi.oph.kitu.oppijanumero.CasAuthenticatedService
+import fi.oph.kitu.oppijanumero.CasAuthenticatedServiceMock
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.oppijanumero.OppijanumeroServiceMock
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.test.annotation.DirtiesContext
@@ -85,11 +88,45 @@ class KoealustaServiceTests {
                         ),
                 ),
             )
+
+        @JvmStatic
+        fun casAuthenticatedService(): CasAuthenticatedService =
+            CasAuthenticatedServiceMock(
+                posts =
+                    mapOf(
+                        CasAuthenticatedServiceMock.toKey(
+                            HttpMethod.POST,
+                            "http://localhost:8080/oppijanumero-service/yleistunniste/hae",
+                            YleistunnisteHaeRequest(
+                                etunimet = "Ranja Testi",
+                                hetu = "010180-9026",
+                                kutsumanimi = "Ranja",
+                                sukunimi = "Öhman-Testi",
+                            ),
+                            contentType = MediaType.APPLICATION_JSON,
+                            responseType = String::class.java,
+                        ) to
+                            TypedResult.Success(
+                                ResponseEntity.ok().body(
+                                    """
+                                    {
+                                        "oid": "1.2.246.562.24.33342764709",
+                                        "oppijanumero": "1.2.246.562.24.33342764709"
+                                    }
+                                    """.trimIndent(),
+                                ),
+                            ),
+                    ),
+            )
     }
+
+    // @TestBean
+    // @Suppress("unused")
+    // private lateinit var oppijanumeroService: OppijanumeroService
 
     @TestBean
     @Suppress("unused")
-    private lateinit var oppijanumeroService: OppijanumeroService
+    private lateinit var casAuthenticatedService: CasAuthenticatedService
 
     @BeforeEach
     fun nukeDb(
@@ -121,9 +158,9 @@ class KoealustaServiceTests {
                         {
                           "userid": 1,
                           "firstnames": "Ranja Testi",
-                          "lastname": "\u00f6hman-Testi",
+                          "lastname": "Öhman-Testi",
                           "preferredname": "Ranja", 
-                          "SSN": "12345678901",
+                          "SSN": "010180-9026",
                           "email": "ranja.testi@oph.fi",
                           "completions": [
                             {
