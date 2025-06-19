@@ -23,16 +23,9 @@ interface OppijanumeroService {
 
 @Service
 class OppijanumeroServiceImpl(
-    casAuthenticatedService: CasAuthenticatedService,
-    val objectMapper: ObjectMapper,
     val tracer: Tracer,
-    @Value("\${kitu.oppijanumero.service.url}")
-    val serviceUrl: String,
+    val client: OppijanumerorekisteriClient,
 ) : OppijanumeroService {
-    private val client by lazy {
-        OppijanumerorekisteriClient(serviceUrl, casAuthenticatedService, objectMapper)
-    }
-
     override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
         withSpan("OppijanumeroServiceImpl.getOppijanumero") { span ->
             require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
@@ -85,14 +78,17 @@ class OppijanumeroServiceImpl(
             .use { return@use block(it) }
 }
 
+@Service
 class OppijanumerorekisteriClient(
-    val serviceUrl: String,
     val casAuthenticatedService: CasAuthenticatedService,
     val objectMapper: ObjectMapper,
 ) {
-    inline fun <reified T> onrGet(endpoint: String) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint)
+    @Value("\${kitu.oppijanumero.service.url}")
+    lateinit var serviceUrl: String
 
-    inline fun <reified T, R : OppijanumerorekisteriRequest> onrPost(
+    final inline fun <reified T> onrGet(endpoint: String) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint)
+
+    final inline fun <reified T, R : OppijanumerorekisteriRequest> onrPost(
         endpoint: String,
         body: R,
     ) = fetch<T, R>(
@@ -101,7 +97,7 @@ class OppijanumerorekisteriClient(
         body,
     )
 
-    inline fun <reified T, R : OppijanumerorekisteriRequest> fetch(
+    final inline fun <reified T, R : OppijanumerorekisteriRequest> fetch(
         httpMethod: HttpMethod,
         endpoint: String,
         body: OppijanumerorekisteriRequest? = null,
@@ -147,7 +143,7 @@ class OppijanumerorekisteriClient(
      * In that case [OppijanumeroException.BadResponse] will be thrown.
      * Otherwise, the underlying exception will be thrown
      */
-    inline fun <reified T> deserializeResponse(
+    final inline fun <reified T> deserializeResponse(
         request: OppijanumerorekisteriRequest,
         response: ResponseEntity<String>,
     ): TypedResult<T, OppijanumeroException> =
