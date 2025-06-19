@@ -48,26 +48,33 @@ class OppijanumeroServiceTests {
 
         val oppijanumeroRestClient = onrRestClientBuilder.build()
         val casRestClient = casRestClientBuilder.build()
+
+        val objectMapper = ObjectMapper()
+        val casAuthenticatedService =
+            CasAuthenticatedService(
+                restClient = oppijanumeroRestClient,
+                casService =
+                    CasService(
+                        casRestClient,
+                        oppijanumeroRestClient,
+                    ).apply {
+                        serviceUrl = "http://localhost:8080/cas/login"
+                        onrUsername = "username"
+                        onrPassword = "password"
+                    },
+            ).apply {
+                callerId = "koto-test"
+            }
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedService(
-                        restClient = oppijanumeroRestClient,
-                        casService =
-                            CasService(
-                                casRestClient,
-                                oppijanumeroRestClient,
-                            ).apply {
-                                serviceUrl = "http://localhost:8080/cas/login"
-                                onrUsername = "username"
-                                onrPassword = "password"
-                            },
-                    ).apply {
-                        callerId = "koto-test"
-                    },
-                objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
-                serviceUrl = "http://localhost:8080/oppijanumero-service",
+                client =
+                    OppijanumerorekisteriClient(
+                        casAuthenticatedService,
+                        objectMapper,
+                    ).apply {
+                        serviceUrl = "http://localhost:8080/oppijanumero-service"
+                    },
             )
 
         val result =
@@ -108,26 +115,32 @@ class OppijanumeroServiceTests {
             )
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
+        val objectMapper = ObjectMapper()
+        val casAuthenticatedService =
+            CasAuthenticatedService(
+                restClient = oppijanumeroRestClient,
+                casService =
+                    CasService(
+                        casRestClient,
+                        oppijanumeroRestClient,
+                    ).apply {
+                        serviceUrl = "http://localhost:8080/cas/login"
+                        onrUsername = "username"
+                        onrPassword = "password"
+                    },
+            ).apply {
+                callerId = "koto-test"
+            }
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedService(
-                        restClient = oppijanumeroRestClient,
-                        casService =
-                            CasService(
-                                casRestClient,
-                                oppijanumeroRestClient,
-                            ).apply {
-                                serviceUrl = "http://localhost:8080/cas/login"
-                                onrUsername = "username"
-                                onrPassword = "password"
-                            },
-                    ).apply {
-                        callerId = "koto-test"
-                    },
-                objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
-                serviceUrl = "http://localhost:8080/oppijanumero-service",
+                client =
+                    OppijanumerorekisteriClient(
+                        casAuthenticatedService,
+                        objectMapper,
+                    ).apply {
+                        serviceUrl = "http://localhost:8080/oppijanumero-service"
+                    },
             )
 
         // System under test
@@ -171,26 +184,32 @@ class OppijanumeroServiceTests {
             )
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
+        val objectMapper = ObjectMapper()
+        val casAuthenticatedService =
+            CasAuthenticatedService(
+                restClient = oppijanumeroRestClient,
+                casService =
+                    CasService(
+                        casRestClient,
+                        oppijanumeroRestClient,
+                    ).apply {
+                        serviceUrl = "http://localhost:8080/cas/login"
+                        onrUsername = "username"
+                        onrPassword = "password"
+                    },
+            ).apply {
+                callerId = "koto-test"
+            }
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedService(
-                        restClient = oppijanumeroRestClient,
-                        casService =
-                            CasService(
-                                casRestClient,
-                                oppijanumeroRestClient,
-                            ).apply {
-                                serviceUrl = "http://localhost:8080/cas/login"
-                                onrUsername = "username"
-                                onrPassword = "password"
-                            },
-                    ).apply {
-                        callerId = "koto-test"
-                    },
-                objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
-                serviceUrl = "http://localhost:8080/oppijanumero-service",
+                client =
+                    OppijanumerorekisteriClient(
+                        casAuthenticatedService,
+                        objectMapper,
+                    ).apply {
+                        serviceUrl = "http://localhost:8080/oppijanumero-service"
+                    },
             )
 
         assertThrows<OppijanumeroException.OppijaNotFoundException> {
@@ -233,26 +252,32 @@ class OppijanumeroServiceTests {
             )
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
+        val objectMapper = ObjectMapper()
+        val casAuthenticatedService =
+            CasAuthenticatedService(
+                restClient = oppijanumeroRestClient,
+                casService =
+                    CasService(
+                        casRestClient,
+                        oppijanumeroRestClient,
+                    ).apply {
+                        serviceUrl = "http://localhost:8080/cas/login"
+                        onrUsername = "username"
+                        onrPassword = "password"
+                    },
+            ).apply {
+                callerId = "koto-test"
+            }
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                casAuthenticatedService =
-                    CasAuthenticatedService(
-                        restClient = oppijanumeroRestClient,
-                        casService =
-                            CasService(
-                                casRestClient,
-                                oppijanumeroRestClient,
-                            ).apply {
-                                serviceUrl = "http://localhost:8080/cas/login"
-                                onrUsername = "username"
-                                onrPassword = "password"
-                            },
-                    ).apply {
-                        callerId = "koto-test"
-                    },
-                objectMapper = ObjectMapper(),
                 tracer = MockTracer(),
-                serviceUrl = "http://localhost:8080/oppijanumero-service",
+                client =
+                    OppijanumerorekisteriClient(
+                        casAuthenticatedService,
+                        objectMapper,
+                    ).apply {
+                        serviceUrl = "http://localhost:8080/oppijanumero-service"
+                    },
             )
 
         val result =
