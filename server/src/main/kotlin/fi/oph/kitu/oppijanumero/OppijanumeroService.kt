@@ -85,12 +85,7 @@ class OppijanumerorekisteriClient(
         endpoint: String,
         body: R,
         clazz: Class<T>,
-    ) = fetch<T, R>(
-        HttpMethod.POST,
-        endpoint,
-        body,
-        clazz,
-    )
+    ) = fetch<T, R>(HttpMethod.POST, endpoint, body, clazz)
 
     @WithSpan
     fun <T, R : OppijanumerorekisteriRequest> fetch(
@@ -103,13 +98,7 @@ class OppijanumerorekisteriClient(
 
         // no need to log sendRequest, because there are request and response logging inside casAuthenticatedService.
         val rawResult =
-            casAuthenticatedService.fetch(
-                httpMethod,
-                url,
-                body,
-                MediaType.APPLICATION_JSON,
-                String::class.java,
-            )
+            casAuthenticatedService.fetch(httpMethod, url, body, MediaType.APPLICATION_JSON, String::class.java)
         if (rawResult !is TypedResult.Success) {
             // CAS errors are not caused by the oppija data, and thus
             // should be handling outside default error handling flow.

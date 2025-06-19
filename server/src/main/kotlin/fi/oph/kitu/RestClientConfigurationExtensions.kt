@@ -7,6 +7,13 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.web.client.RestClient
 
+fun <T> RestClient.RequestBodySpec.nullableBody(body: T?): RestClient.RequestBodySpec =
+    if (body == null) {
+        this
+    } else {
+        this.body(body)
+    }
+
 /**
  * Does not throw, like [RestClient.RequestBodySpec.retrieve] if receiving non 2xx status code.
  *
