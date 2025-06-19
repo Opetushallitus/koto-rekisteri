@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.use
-import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -27,55 +27,43 @@ class OppijanumeroServiceImpl(
     val client: OppijanumerorekisteriClient,
 ) : OppijanumeroService {
     override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
-        withSpan("OppijanumeroServiceImpl.getOppijanumero") { span ->
-            require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
-            require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
-            require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
-            require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
-
-            val requestBody =
-                YleistunnisteHaeRequest(
-                    oppija.etunimet,
-                    oppija.hetu,
-                    oppija.kutsumanimi,
-                    oppija.sukunimi,
-                )
-
-            client
-                .onrPost<YleistunnisteHaeResponse, YleistunnisteHaeRequest>("yleistunniste/hae", requestBody)
-                .flatMap { body ->
-                    span.setAttribute("response.hasOppijanumero", body.oppijanumero.isNullOrEmpty())
-                    span.setAttribute("response.hasOid", body.oid.isEmpty())
-                    span.setAttribute("response.areOppijanumeroAndOidSame", (body.oppijanumero == body.oid))
-
-                    if (body.oppijanumero.isNullOrEmpty()) {
-                        TypedResult.Failure(OppijanumeroException.OppijaNotIdentifiedException(requestBody))
-                    } else {
-                        Oid
-                            .parseTyped(body.oppijanumero)
-                            .mapFailure {
-                                OppijanumeroException.MalformedOppijanumero(
-                                    requestBody,
-                                    body.oppijanumero,
-                                )
-                            }
-                    }
-                }
-        }
-
-    override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
-        withSpan("OppijanumeroServiceImpl.getHenkilo") {
-            client.onrGet<OppijanumerorekisteriHenkilo>("henkilo/$oid")
-        }
-
-    final inline fun <reified T> withSpan(
-        s: String,
-        block: (Span) -> T,
-    ): T =
         tracer
-            .spanBuilder(s)
+            .spanBuilder("OppijanumeroServiceImpl.getOppijanumero")
             .startSpan()
-            .use { return@use block(it) }
+            .use { span ->
+                require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
+                require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
+                require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
+                require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
+
+                val requestBody =
+                    YleistunnisteHaeRequest(oppija.etunimet, oppija.hetu, oppija.kutsumanimi, oppija.sukunimi)
+
+                client
+                    .onrPost("yleistunniste/hae", requestBody, YleistunnisteHaeResponse::class.java)
+                    .flatMap { body ->
+                        span.setAttribute("response.hasOppijanumero", body.oppijanumero.isNullOrEmpty())
+                        span.setAttribute("response.hasOid", body.oid.isEmpty())
+                        span.setAttribute("response.areOppijanumeroAndOidSame", (body.oppijanumero == body.oid))
+
+                        if (body.oppijanumero.isNullOrEmpty()) {
+                            TypedResult.Failure(OppijanumeroException.OppijaNotIdentifiedException(requestBody))
+                        } else {
+                            Oid
+                                .parseTyped(body.oppijanumero)
+                                .mapFailure {
+                                    OppijanumeroException.MalformedOppijanumero(
+                                        requestBody,
+                                        body.oppijanumero,
+                                    )
+                                }
+                        }
+                    }
+            }
+
+    @WithSpan
+    override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
+        client.onrGet("henkilo/$oid", OppijanumerorekisteriHenkilo::class.java)
 }
 
 @Service
@@ -86,21 +74,30 @@ class OppijanumerorekisteriClient(
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
 
-    final inline fun <reified T> onrGet(endpoint: String) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint)
+    @WithSpan
+    fun <T> onrGet(
+        endpoint: String,
+        responseType: Class<T>,
+    ) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint, responseType = responseType)
 
-    final inline fun <reified T, R : OppijanumerorekisteriRequest> onrPost(
+    @WithSpan
+    fun <T, R : OppijanumerorekisteriRequest> onrPost(
         endpoint: String,
         body: R,
+        clazz: Class<T>,
     ) = fetch<T, R>(
         HttpMethod.POST,
         endpoint,
         body,
+        clazz,
     )
 
-    final inline fun <reified T, R : OppijanumerorekisteriRequest> fetch(
+    @WithSpan
+    fun <T, R : OppijanumerorekisteriRequest> fetch(
         httpMethod: HttpMethod,
         endpoint: String,
         body: OppijanumerorekisteriRequest? = null,
+        responseType: Class<T>,
     ): TypedResult<T, OppijanumeroException> {
         val url = "$serviceUrl/$endpoint"
 
@@ -134,7 +131,7 @@ class OppijanumerorekisteriClient(
             throw OppijanumeroException.UnexpectedError(body ?: EmptyRequest(), rawResponse)
         }
 
-        return deserializeResponse<T>(body ?: EmptyRequest(), rawResult.value)
+        return deserializeResponse(body ?: EmptyRequest(), rawResult.value, responseType)
     }
 
     /**
@@ -143,13 +140,15 @@ class OppijanumerorekisteriClient(
      * In that case [OppijanumeroException.BadResponse] will be thrown.
      * Otherwise, the underlying exception will be thrown
      */
-    final inline fun <reified T> deserializeResponse(
+    @WithSpan
+    fun <T> deserializeResponse(
         request: OppijanumerorekisteriRequest,
         response: ResponseEntity<String>,
+        clazz: Class<T>,
     ): TypedResult<T, OppijanumeroException> =
         TypedResult
             .runCatching {
-                objectMapper.readValue(response.body, T::class.java)
+                objectMapper.readValue(response.body, clazz)
             }.mapFailure { decodeError ->
                 TypedResult
                     .runCatching {
