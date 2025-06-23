@@ -12,7 +12,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
-import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
 import kotlin.test.assertEquals
 
@@ -29,26 +28,30 @@ class OppijanumeroServiceTests {
         onrMockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
     }
 
+    fun MockRestServiceServer.yleistunnisteHae(
+        status: HttpStatus,
+        content: String,
+    ) = this
+        .addCasFlow(
+            serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
+            serviceEndpoint = "yleistunniste/hae",
+        ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
+        .andRespond(withStatus(status).contentType(MediaType.APPLICATION_JSON).body(content))
+
     @Test
     fun `oppijanumero service returns identified user`() {
         // Facade
         val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
 
         onrMockServer
-            .addCasFlow(
-                serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
-                serviceEndpoint = "yleistunniste/hae",
-            ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
-            .andRespond(
-                withSuccess(
-                    """
-                    {
-                        "oid": "1.2.246.562.24.33342764709",
-                        "oppijanumero": "1.2.246.562.24.33342764709"
-                    }
-                    """.trimIndent(),
-                    MediaType.APPLICATION_JSON,
-                ),
+            .yleistunnisteHae(
+                HttpStatus.OK,
+                """
+                {
+                    "oid": "1.2.246.562.24.33342764709",
+                    "oppijanumero": "1.2.246.562.24.33342764709"
+                }
+                """.trimIndent(),
             )
 
         val oppijanumeroRestClient = onrRestClientBuilder.build()
@@ -95,20 +98,14 @@ class OppijanumeroServiceTests {
     fun `oppijanumero service returns unidentified user`() {
         // Facade
         onrMockServer
-            .addCasFlow(
-                serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
-                serviceEndpoint = "yleistunniste/hae",
-            ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
-            .andRespond(
-                withSuccess(
-                    """
-                    {
-                        "oid": "1.2.246.562.24.33342764709",
-                        "oppijanumero": ""
-                    }
-                    """.trimIndent(),
-                    MediaType.APPLICATION_JSON,
-                ),
+            .yleistunnisteHae(
+                HttpStatus.OK,
+                """
+                {
+                    "oid": "1.2.246.562.24.33342764709",
+                    "oppijanumero": ""
+                }
+                """.trimIndent(),
             )
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = onrRestClientBuilder.build()
@@ -154,23 +151,16 @@ class OppijanumeroServiceTests {
     fun `oppijanumero service does not find user`() {
         // Facade
         onrMockServer
-            .addCasFlow(
-                serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
-                serviceEndpoint = "yleistunniste/hae",
-            ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
-            .andRespond(
-                withStatus(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(
-                        """
-                        {
-                            "timestamp": 1734962667439,
-                            "status":404,
-                            "error":"Not Found",
-                            "path":"/oppijanumerorekisteri-service/yleistunniste/hae"
-                        }
-                        """.trimIndent(),
-                    ),
+            .yleistunnisteHae(
+                HttpStatus.NOT_FOUND,
+                """
+                {
+                    "timestamp": 1734962667439,
+                    "status":404,
+                    "error":"Not Found",
+                    "path":"/oppijanumerorekisteri-service/yleistunniste/hae"
+                }
+                """.trimIndent(),
             )
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = onrRestClientBuilder.build()
@@ -215,23 +205,16 @@ class OppijanumeroServiceTests {
     fun `oppijanumero service received bad request`() {
         // Facade
         onrMockServer
-            .addCasFlow(
-                serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
-                serviceEndpoint = "yleistunniste/hae",
-            ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
-            .andRespond(
-                withStatus(HttpStatus.CONFLICT)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(
-                        """
-                        {
-                            "timestamp": 1734962667439,
-                            "status":409,
-                            "error":"Conflict",
-                            "path":"/oppijanumerorekisteri-service/yleistunniste/hae"
-                        }
-                        """.trimIndent(),
-                    ),
+            .yleistunnisteHae(
+                HttpStatus.CONFLICT,
+                """
+                {
+                    "timestamp": 1734962667439,
+                    "status":409,
+                    "error":"Conflict",
+                    "path":"/oppijanumerorekisteri-service/yleistunniste/hae"
+                }
+                """.trimIndent(),
             )
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = onrRestClientBuilder.build()
