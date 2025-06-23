@@ -184,7 +184,7 @@ data class OppijanumerorekisteriHenkilo(
     val yksilointivirheet: List<Yksilointivirhe>?,
     val passinumero: List<String>?,
 ) {
-    fun hetut() = listOfNotNull(hetu) + (kaikkiHetut ?: emptyList())
+    fun hetut() = listOfNotNull(hetu) + (kaikkiHetut.orEmpty())
 
     data class Kieli(
         val kieliKoodi: String?,

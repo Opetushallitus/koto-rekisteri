@@ -83,7 +83,7 @@ class YkiSuoritusErrorTests(
             span.attributes
                 ?.asMap()
                 ?.filterKeys { at -> at.key.startsWith("serialization.error") }
-                ?: emptyMap()
+                .orEmpty()
 
         assertEquals(0, serializationErrors.size)
     }
@@ -195,7 +195,7 @@ class YkiSuoritusErrorTests(
             span.attributes
                 ?.asMap()
                 ?.filterKeys { at -> at.key.startsWith("serialization.error") }
-                ?: emptyMap()
+                .orEmpty()
 
         assertEquals(6, serializationErrors.size)
 

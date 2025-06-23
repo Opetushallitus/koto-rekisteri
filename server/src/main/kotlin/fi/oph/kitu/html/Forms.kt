@@ -28,7 +28,7 @@ fun FlowContent.dateInput(
 ) {
     input(type = InputType.date, name = name) {
         testId(testId)
-        value = date?.toString() ?: ""
+        value = date?.toString().orEmpty()
     }
 }
 

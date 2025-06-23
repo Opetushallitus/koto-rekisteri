@@ -52,7 +52,7 @@ class TranslationBuilder(
                             koodistoService
                                 .getKoodiviitteet(uri)
                                 ?.associate { it.koodiArvo to it.metadata.toLocalizedString() }
-                                ?: emptyMap()
+                                .orEmpty()
                         }
 
                     Translations(

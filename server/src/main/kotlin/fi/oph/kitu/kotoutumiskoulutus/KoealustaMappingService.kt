@@ -199,7 +199,7 @@ class KoealustaMappingService(
                 .getOrNull()
 
         val schoolOid =
-            validate("schoolOID", user.userid, completion.schoolOID ?: "")
+            validate("schoolOID", user.userid, completion.schoolOID.orEmpty())
                 .onFailure { errors.add(it) }
                 .getOrNull()
 

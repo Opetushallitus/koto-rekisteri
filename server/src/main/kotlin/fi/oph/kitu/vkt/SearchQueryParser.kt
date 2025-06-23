@@ -13,7 +13,7 @@ class SearchQueryParser(
             ?.let { it.ifEmpty { null } }
             ?.split(" ")
             ?.mapIndexed { index, text -> stringToSearchToken(makeKey(index), text) }
-            ?: emptyList()
+            .orEmpty()
 
     val textTokens: List<TextSearchToken> by lazy {
         tokens.filterIsInstance<TextSearchToken>()

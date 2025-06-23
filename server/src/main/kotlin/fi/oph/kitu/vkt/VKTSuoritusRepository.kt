@@ -68,8 +68,8 @@ class CustomVktSuoritusRepository {
             JOIN viimeisin_tutkintopaiva ON viimeisin_tutkintopaiva.suoritus_id = suoritus.id
             ${whereAll("rn = 1", tutkintopaivaCondition(search.dateTokens))}
             ORDER BY ${column.dbColumn} $direction
-            ${limit?.let { "LIMIT :limit" } ?: ""}
-            ${offset?.let { "OFFSET :offset" } ?: ""}
+            ${limit?.let { "LIMIT :limit" }.orEmpty()}
+            ${offset?.let { "OFFSET :offset" }.orEmpty()}
             """.trimIndent()
 
         val params =

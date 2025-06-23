@@ -51,10 +51,10 @@ fun FlowContent.vktHyvaJaTyydyttavaTable(
             listOf(
                 CustomVktSuoritusRepository.Column.Sukunimi.withValue {
                     a(href = getHref(it.suoritus.internalId)) {
-                        +(it.henkilo.sukunimi ?: "")
+                        +(it.henkilo.sukunimi.orEmpty())
                     }
                 },
-                CustomVktSuoritusRepository.Column.Etunimet.withValue { +(it.henkilo.etunimet ?: "") },
+                CustomVktSuoritusRepository.Column.Etunimet.withValue { +(it.henkilo.etunimet.orEmpty()) },
                 CustomVktSuoritusRepository.Column.Kieli.withValue { +t.get(it.suoritus.kieli) },
                 CustomVktSuoritusRepository.Column.Tutkintopaiva.withValue {
                     it.suoritus.tutkintopaiva?.let { finnishDate(it) }

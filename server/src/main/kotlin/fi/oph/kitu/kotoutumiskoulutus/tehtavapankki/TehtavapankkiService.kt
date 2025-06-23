@@ -36,7 +36,7 @@ class TehtavapankkiService(
             .build()
     }
 
-    fun dryRun(): Boolean = (bucket?.trim()?.length ?: 0) == 0
+    fun dryRun(): Boolean = bucket?.trim().isNullOrEmpty()
 
     /**
      * 1. Replaces white spaces with underscore.
