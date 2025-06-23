@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.assertFailureIsThrowable
 import fi.oph.kitu.logging.MockTracer
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
@@ -16,11 +17,17 @@ import org.springframework.web.client.RestClient
 import kotlin.test.assertEquals
 
 class OppijanumeroServiceTests {
+    private lateinit var onrRestClientBuilder: RestClient.Builder
+
+    @BeforeEach
+    fun setup() {
+        onrRestClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
+    }
+
     @Test
     fun `oppijanumero service returns identified user`() {
         // Facade
         val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
-        val onrRestClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
         val mockServer =
             MockRestServiceServer
                 .bindTo(onrRestClientBuilder)
@@ -89,9 +96,8 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service returns unidentified user`() {
         // Facade
-        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
         val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
-        val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
 
         mockServer
             .addCasFlow(
@@ -110,7 +116,7 @@ class OppijanumeroServiceTests {
                 ),
             )
         val casRestClient = casRestClientBuilder.build()
-        val oppijanumeroRestClient = restClientBuilder.build()
+        val oppijanumeroRestClient = onrRestClientBuilder.build()
         val objectMapper = ObjectMapper()
         val tracer = MockTracer()
         val oppijanumeroService =
@@ -152,9 +158,8 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service does not find user`() {
         // Facade
-        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
         val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
-        val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
         mockServer
             .addCasFlow(
                 serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
@@ -175,7 +180,7 @@ class OppijanumeroServiceTests {
                     ),
             )
         val casRestClient = casRestClientBuilder.build()
-        val oppijanumeroRestClient = restClientBuilder.build()
+        val oppijanumeroRestClient = onrRestClientBuilder.build()
         val objectMapper = ObjectMapper()
         val tracer = MockTracer()
         val oppijanumeroService =
@@ -216,9 +221,8 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service received bad request`() {
         // Facade
-        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
         val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
-        val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
         mockServer
             .addCasFlow(
                 serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
@@ -239,7 +243,7 @@ class OppijanumeroServiceTests {
                     ),
             )
         val casRestClient = casRestClientBuilder.build()
-        val oppijanumeroRestClient = restClientBuilder.build()
+        val oppijanumeroRestClient = onrRestClientBuilder.build()
         val objectMapper = ObjectMapper()
         val tracer = MockTracer()
         val oppijanumeroService =
