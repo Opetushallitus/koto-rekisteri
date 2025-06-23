@@ -81,10 +81,9 @@ class KoealustaService(
 
             val (suoritukset, validationFailure) = mappingService.responseStringToEntity(response.body!!)
 
-            kielitestiSuoritusErrorRepository.replaceAll(
-                mappingService.convertErrors(validationFailure?.validationErrors.orEmpty()) +
-                    mappingService.convertErrors(validationFailure?.oppijanumeroExceptions.orEmpty()),
-            )
+            val validationErrors = mappingService.convertErrors(validationFailure?.validationErrors.orEmpty())
+            val oppijanumeroErrors = mappingService.convertErrors(validationFailure?.oppijanumeroExceptions.orEmpty())
+            kielitestiSuoritusErrorRepository.replaceAll(validationErrors + oppijanumeroErrors)
 
             val savedSuoritukset =
                 kielitestiSuoritusRepository
@@ -102,6 +101,8 @@ class KoealustaService(
             span.setAttribute("db.saved", savedSuoritukset.count())
 
             if (validationFailure != null && validationFailure.isNotEmpty()) {
+                span.setAttribute("db.saved.error.validation", validationErrors.count())
+                span.setAttribute("db.saved.error.onr", oppijanumeroErrors.count())
                 return@use from
             }
 
