@@ -15,20 +15,14 @@ import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
-interface OppijanumeroService {
-    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
-
-    fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>
-}
-
 @Service
-class OppijanumeroServiceImpl(
+class OppijanumeroService(
     val tracer: Tracer,
     val client: OppijanumerorekisteriClient,
-) : OppijanumeroService {
-    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
+) {
+    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
         tracer
-            .spanBuilder("OppijanumeroServiceImpl.getOppijanumero")
+            .spanBuilder("OppijanumeroService.getOppijanumero")
             .startSpan()
             .use { span ->
                 require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
@@ -62,7 +56,7 @@ class OppijanumeroServiceImpl(
             }
 
     @WithSpan
-    override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
+    fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
         client.onrGet("henkilo/$oid", OppijanumerorekisteriHenkilo::class.java)
 }
 
@@ -109,13 +103,9 @@ class OppijanumerorekisteriClient(
         // but we still need to check endpoint specific statuses
         val rawResponse = rawResult.value
         if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
-            return TypedResult.Failure(
-                OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest()),
-            )
+            return TypedResult.Failure(OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest()))
         } else if (rawResponse.statusCode.is4xxClientError) {
-            return TypedResult.Failure(
-                OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse),
-            )
+            return TypedResult.Failure(OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse))
         } else if (!rawResponse.statusCode.is2xxSuccessful) {
             throw OppijanumeroException.UnexpectedError(body ?: EmptyRequest(), rawResponse)
         }

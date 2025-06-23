@@ -52,7 +52,7 @@ class OppijanumeroServiceTests {
         val objectMapper = ObjectMapper()
         val tracer = MockTracer()
         val oppijanumeroService =
-            OppijanumeroServiceImpl(
+            OppijanumeroService(
                 tracer,
                 OppijanumerorekisteriClient(
                     CasAuthenticatedServiceImpl(
@@ -114,7 +114,7 @@ class OppijanumeroServiceTests {
         val objectMapper = ObjectMapper()
         val tracer = MockTracer()
         val oppijanumeroService =
-            OppijanumeroServiceImpl(
+            OppijanumeroService(
                 tracer,
                 OppijanumerorekisteriClient(
                     CasAuthenticatedServiceImpl(
@@ -179,7 +179,7 @@ class OppijanumeroServiceTests {
         val objectMapper = ObjectMapper()
         val tracer = MockTracer()
         val oppijanumeroService =
-            OppijanumeroServiceImpl(
+            OppijanumeroService(
                 tracer,
                 OppijanumerorekisteriClient(
                     CasAuthenticatedServiceImpl(
@@ -243,7 +243,7 @@ class OppijanumeroServiceTests {
         val objectMapper = ObjectMapper()
         val tracer = MockTracer()
         val oppijanumeroService =
-            OppijanumeroServiceImpl(
+            OppijanumeroService(
                 tracer,
                 OppijanumerorekisteriClient(
                     CasAuthenticatedServiceImpl(
