@@ -18,10 +18,12 @@ import kotlin.test.assertEquals
 
 class OppijanumeroServiceTests {
     private lateinit var onrRestClientBuilder: RestClient.Builder
+    private lateinit var casRestClientBuilder: RestClient.Builder
 
     @BeforeEach
     fun setup() {
         onrRestClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
+        casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
     }
 
     @Test
@@ -33,8 +35,6 @@ class OppijanumeroServiceTests {
                 .bindTo(onrRestClientBuilder)
                 .ignoreExpectOrder(true)
                 .build()
-
-        val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
 
         mockServer
             .addCasFlow(
@@ -96,7 +96,6 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service returns unidentified user`() {
         // Facade
-        val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
         val mockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
 
         mockServer
@@ -158,7 +157,6 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service does not find user`() {
         // Facade
-        val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
         val mockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
         mockServer
             .addCasFlow(
@@ -221,7 +219,6 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service received bad request`() {
         // Facade
-        val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
         val mockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
         mockServer
             .addCasFlow(
