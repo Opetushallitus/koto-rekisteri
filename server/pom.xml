@@ -28,7 +28,7 @@
     </scm>
     <properties>
         <java.version>21</java.version>
-        <kotlin.version>2.1.21</kotlin.version>
+        <kotlin.version>2.2.0</kotlin.version>
         <kotlin.compiler.apiVersion>2.1</kotlin.compiler.apiVersion>
 
         <flyway.version>11.9.2</flyway.version>
