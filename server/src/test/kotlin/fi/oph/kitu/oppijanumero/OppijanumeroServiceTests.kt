@@ -18,25 +18,23 @@ import kotlin.test.assertEquals
 
 class OppijanumeroServiceTests {
     private lateinit var onrRestClientBuilder: RestClient.Builder
+    private lateinit var onrMockServer: MockRestServiceServer
     private lateinit var casRestClientBuilder: RestClient.Builder
 
     @BeforeEach
     fun setup() {
         onrRestClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
         casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
+
+        onrMockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
     }
 
     @Test
     fun `oppijanumero service returns identified user`() {
         // Facade
         val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
-        val mockServer =
-            MockRestServiceServer
-                .bindTo(onrRestClientBuilder)
-                .ignoreExpectOrder(true)
-                .build()
 
-        mockServer
+        onrMockServer
             .addCasFlow(
                 serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
                 serviceEndpoint = "yleistunniste/hae",
@@ -96,9 +94,7 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service returns unidentified user`() {
         // Facade
-        val mockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
-
-        mockServer
+        onrMockServer
             .addCasFlow(
                 serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
                 serviceEndpoint = "yleistunniste/hae",
@@ -157,8 +153,7 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service does not find user`() {
         // Facade
-        val mockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
-        mockServer
+        onrMockServer
             .addCasFlow(
                 serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
                 serviceEndpoint = "yleistunniste/hae",
@@ -219,8 +214,7 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service received bad request`() {
         // Facade
-        val mockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
-        mockServer
+        onrMockServer
             .addCasFlow(
                 serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
                 serviceEndpoint = "yleistunniste/hae",
