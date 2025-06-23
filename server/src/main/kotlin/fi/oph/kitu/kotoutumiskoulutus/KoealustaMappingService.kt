@@ -304,7 +304,11 @@ class KoealustaMappingService(
         message: String,
         val oppijanumeroExceptions: List<Error>,
         val validationErrors: List<Error>,
-    ) : Exception(message)
+    ) : Exception(message) {
+        fun isEmpty(): Boolean = oppijanumeroExceptions.isEmpty() || validationErrors.isEmpty()
+
+        fun isNotEmpty(): Boolean = !isEmpty()
+    }
 
     sealed class Error(
         message: String,

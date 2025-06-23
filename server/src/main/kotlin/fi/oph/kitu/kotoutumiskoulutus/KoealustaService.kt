@@ -101,12 +101,7 @@ class KoealustaService(
 
             span.setAttribute("db.saved", savedSuoritukset.count())
 
-            if (validationFailure != null &&
-                (
-                    validationFailure.validationErrors.isNotEmpty() ||
-                        validationFailure.oppijanumeroExceptions.isNotEmpty()
-                )
-            ) {
+            if (validationFailure != null && validationFailure.isNotEmpty()) {
                 return@use from
             }
 
