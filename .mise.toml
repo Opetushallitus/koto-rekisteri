@@ -4,7 +4,7 @@ AWS_PROFILE = "oph-ktr-dev"
 
 [tools]
 node = "22.16.0"
-"npm:prettier" = "3.5.3"
+"npm:prettier" = "3.6.0"
 "aqua:maven" = "3.9.10"
 awscli = "2.27.40"
 java = "corretto-21.0.7"
