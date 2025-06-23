@@ -67,7 +67,7 @@ class YkiService(
 
                 val (suoritukset, errors) =
                     parser
-                        .convertCsvToData<YkiSuoritusCsv>(response.body ?: "")
+                        .convertCsvToData<YkiSuoritusCsv>(response.body.orEmpty())
                         .splitIntoValuesAndErrors()
 
                 val hasErrors = suoritusErrorService.handleErrors(errors)

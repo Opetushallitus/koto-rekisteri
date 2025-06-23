@@ -33,7 +33,7 @@ interface Validation<T> {
             val errors =
                 validations
                     .map { it(value) }
-                    .flatMap { it.errorOrNull()?.errors ?: emptyList() }
+                    .flatMap { it.errorOrNull()?.errors.orEmpty() }
             return if (errors.isNotEmpty()) {
                 fail(errors)
             } else {

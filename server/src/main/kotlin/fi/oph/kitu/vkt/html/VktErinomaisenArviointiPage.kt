@@ -101,7 +101,7 @@ fun FlowContent.vktErinomainenOsakoeTable(
                 finnishDate(it.tutkintopaiva)
             },
             DisplayTableColumn("Arvosana", width = "25%") {
-                hiddenValue("id", it.internalId?.toString() ?: "")
+                hiddenValue("id", it.internalId?.toString().orEmpty())
                 itemSelect(
                     inputName = "arvosana",
                     includeBlank = true,

@@ -40,7 +40,7 @@ object Navigation {
                 }.firstOrNull()
                 ?.let { (group, item) ->
                     listOf(MenuItem(group.name, item.ref), item)
-                } ?: emptyList()
+                }.orEmpty()
         ) + listOfNotNull(leaf)
 
     data class MenuItemGroup(
