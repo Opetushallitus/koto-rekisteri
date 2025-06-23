@@ -82,8 +82,8 @@ class KoealustaService(
             val (suoritukset, validationFailure) = mappingService.responseStringToEntity(response.body!!)
 
             kielitestiSuoritusErrorRepository.replaceAll(
-                mappingService.convertErrors(validationFailure?.validationErrors ?: listOf()) +
-                    mappingService.convertErrors(validationFailure?.oppijanumeroExceptions ?: listOf()),
+                mappingService.convertErrors(validationFailure?.validationErrors.orEmpty()) +
+                    mappingService.convertErrors(validationFailure?.oppijanumeroExceptions.orEmpty()),
             )
 
             val savedSuoritukset =
