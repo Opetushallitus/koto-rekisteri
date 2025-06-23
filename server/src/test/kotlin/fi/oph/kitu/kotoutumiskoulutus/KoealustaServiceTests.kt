@@ -94,6 +94,7 @@ class KoealustaServiceTests {
             CasAuthenticatedServiceMock(
                 posts =
                     mapOf(
+                        // happy-path
                         CasAuthenticatedServiceMock.toKey(
                             HttpMethod.POST,
                             "http://localhost:8080/oppijanumero-service/yleistunniste/hae",
@@ -112,6 +113,29 @@ class KoealustaServiceTests {
                                     {
                                         "oid": "1.2.246.562.24.33342764709",
                                         "oppijanumero": "1.2.246.562.24.33342764709"
+                                    }
+                                    """.trimIndent(),
+                                ),
+                            ),
+                        // Oppija not identified
+                        CasAuthenticatedServiceMock.toKey(
+                            HttpMethod.POST,
+                            "http://localhost:8080/oppijanumero-service/yleistunniste/hae",
+                            YleistunnisteHaeRequest(
+                                etunimet = "Antero",
+                                hetu = "WRONG_HETU",
+                                kutsumanimi = "Antero",
+                                sukunimi = "Testi-Moikka",
+                            ),
+                            contentType = MediaType.APPLICATION_JSON,
+                            responseType = String::class.java,
+                        ) to
+                            TypedResult.Success(
+                                ResponseEntity.ok().body(
+                                    """
+                                    {
+                                        "oid": "1.2.246.562.24.33342764709",
+                                        "oppijanumero": ""
                                     }
                                     """.trimIndent(),
                                 ),
@@ -244,7 +268,7 @@ class KoealustaServiceTests {
                           "firstnames": "Antero",
                           "lastname": "Testi-Moikka",
                           "preferredname": "Antero", 
-                          "SSN": "12345678902",
+                          "SSN": "WRONG_HETU",
                           "email": "ranja.testi@oph.fi",
                           "completions": [
                             {
@@ -303,13 +327,12 @@ class KoealustaServiceTests {
         val oppijaValidationFailure = errors.first()
 
         assertAll(
-            fun() = assertEquals("12345678902", oppijaValidationFailure.hetu),
+            fun() = assertEquals("WRONG_HETU", oppijaValidationFailure.hetu),
             fun() =
                 assertEquals(
-                    "Oppijanumeron haku epäonnistui: virheviesti",
+                    "Oppijanumeron haku epäonnistui: Oppija YleistunnisteHaeRequest(etunimet=Antero, hetu=WRONG_HETU, kutsumanimi=Antero, sukunimi=Testi-Moikka) is not identified in oppijanumero service",
                     oppijaValidationFailure.viesti,
                 ),
-            fun() = assertEquals("Testi-Moikka Antero", oppijaValidationFailure.nimi),
         )
     }
 
