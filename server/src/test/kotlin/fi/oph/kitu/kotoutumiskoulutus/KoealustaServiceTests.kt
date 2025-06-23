@@ -355,10 +355,10 @@ class KoealustaServiceTests {
                       "users": [
                         {
                           "userid": 1,
-                          "firstnames": "Antero",
-                          "lastname": "Testi-Moikka",
-                          "preferredname": "Antero", 
-                          "SSN": "12345678901",
+                          "firstnames": "Ranja Testi",
+                          "lastname": "Öhman-Testi",
+                          "preferredname": "Ranja",
+                          "SSN": "010180-9026",
                           "email": "ranja.testi@oph.fi",
                           "completions": [
                             {
@@ -406,8 +406,8 @@ class KoealustaServiceTests {
 
         val missingPuhuminenError = errors[0]
         assertAll(
-            fun() = assertEquals("Testi-Moikka Antero", missingPuhuminenError.nimi),
-            fun() = assertEquals("12345678901", missingPuhuminenError.hetu),
+            fun() = assertEquals("Öhman-Testi Ranja Testi", missingPuhuminenError.nimi),
+            fun() = assertEquals("010180-9026", missingPuhuminenError.hetu),
             fun() = assertEquals("1.2.246.562.24.33342764709", missingPuhuminenError.suorittajanOid),
             fun() = assertEquals("1.2.246.562.10.1234567890", missingPuhuminenError.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", missingPuhuminenError.teacherEmail),
