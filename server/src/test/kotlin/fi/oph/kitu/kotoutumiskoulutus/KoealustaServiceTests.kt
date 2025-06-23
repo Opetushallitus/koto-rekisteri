@@ -140,6 +140,19 @@ class KoealustaServiceTests {
                                     """.trimIndent(),
                                 ),
                             ),
+                        // Bad request
+                        CasAuthenticatedServiceMock.toKey(
+                            HttpMethod.POST,
+                            "http://localhost:8080/oppijanumero-service/yleistunniste/hae",
+                            YleistunnisteHaeRequest(
+                                etunimet = "Antero",
+                                hetu = "INVALID_HETU",
+                                kutsumanimi = "Antero",
+                                sukunimi = "Testi-Moikka",
+                            ),
+                            contentType = MediaType.APPLICATION_JSON,
+                            responseType = String::class.java,
+                        ) to TypedResult.Success(ResponseEntity.badRequest().body("Bad request")),
                     ),
             )
     }
@@ -522,7 +535,7 @@ class KoealustaServiceTests {
                           "firstnames": "Antero",
                           "lastname": "Testi-Moikka",
                           "preferredname": "Antero", 
-                          "SSN": "12345678903",
+                          "SSN": "INVALID_HETU",
                           "email": "ranja.testi@oph.fi",
                           "completions": [
                             {
@@ -579,10 +592,10 @@ class KoealustaServiceTests {
         val onrBadRequestFailure = errors.first()
 
         assertAll(
-            fun() = assertEquals("12345678903", onrBadRequestFailure.hetu),
+            fun() = assertEquals("INVALID_HETU", onrBadRequestFailure.hetu),
             fun() =
                 assertEquals(
-                    "Oppijanumeron haku epäonnistui: Bad request",
+                    "Oppijanumeron haku epäonnistui: Bad request to oppijanumero-service",
                     onrBadRequestFailure.viesti,
                 ),
             fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
