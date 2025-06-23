@@ -34,8 +34,8 @@ class CasAuthenticatedServiceMock(
         responseType: Class<Response>,
     ): TypedResult<ResponseEntity<Response>, CasError> {
         val key = toKey(httpMethod, endpoint, body, contentType, responseType)
-        val res = posts[key]
-        val result = res as TypedResult<ResponseEntity<Response>, CasError>
-        return result
+        val result = posts[key] ?: throw AssertionError("Could not find response with key $key")
+
+        return result as TypedResult<ResponseEntity<Response>, CasError>
     }
 }
