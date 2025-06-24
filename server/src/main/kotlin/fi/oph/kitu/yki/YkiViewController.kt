@@ -5,12 +5,14 @@ import fi.oph.kitu.generateHeader
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
+import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.servlet.ModelAndView
 import java.net.URLEncoder
 import kotlin.math.ceil
@@ -23,6 +25,7 @@ class YkiViewController(
     private val arvioijaErrorService: YkiArvioijaErrorService,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
+    @ResponseBody
     fun suorituksetView(
         search: String = "",
         versionHistory: Boolean = false,
@@ -30,7 +33,7 @@ class YkiViewController(
         page: Int = 1,
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): ModelAndView {
+    ): String {
         val suorituksetTotal = ykiService.countSuoritukset(search, versionHistory)
         val totalPages = ceil(suorituksetTotal.toDouble() / limit).toInt()
         val offset = limit * (page - 1)
@@ -48,9 +51,8 @@ class YkiViewController(
                 "searchStrUrl" to searchStrUrl,
             )
 
-        return ModelAndView("yki-suoritukset")
-            .addObject(
-                "suoritukset",
+        return YkiSuorituksetPage.render(
+            suoritukset =
                 ykiService.findSuorituksetPaged(
                     search,
                     sortColumn,
@@ -59,13 +61,13 @@ class YkiViewController(
                     limit,
                     offset,
                 ),
-            ).addObject("header", generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.urlParam)
-            .addObject("sortDirection", sortDirection)
-            .addObject("paging", paging)
-            .addObject("versionHistory", versionHistory)
-            // nullify 0 values for mustache
-            .addObject("errorsCount", suoritusErrorService.countErrors().let { if (it == 0L) null else it })
+            header = generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection),
+            sortColumn = sortColumn.urlParam,
+            sortDirection = sortDirection,
+            paging = paging,
+            versionHistory = versionHistory,
+            errorsCount = suoritusErrorService.countErrors(),
+        )
     }
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
