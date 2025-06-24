@@ -107,3 +107,13 @@ fun MockRestServiceServer.addCasFlow(
     // It's not mocked here. You need to setup it yourself
     return this
 }
+
+fun MockRestServiceServer.yleistunnisteHae(
+    status: HttpStatus,
+    content: String,
+) = this
+    .addCasFlow(
+        serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
+        serviceEndpoint = "yleistunniste/hae",
+    ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
+    .andRespond(withStatus(status).contentType(MediaType.APPLICATION_JSON).body(content))

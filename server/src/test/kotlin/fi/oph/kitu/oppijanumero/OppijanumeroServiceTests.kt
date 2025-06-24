@@ -8,10 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
-import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
-import org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
 import org.springframework.web.client.RestClient
 import kotlin.test.assertEquals
 
@@ -27,16 +24,6 @@ class OppijanumeroServiceTests {
 
         onrMockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
     }
-
-    fun MockRestServiceServer.yleistunnisteHae(
-        status: HttpStatus,
-        content: String,
-    ) = this
-        .addCasFlow(
-            serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
-            serviceEndpoint = "yleistunniste/hae",
-        ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
-        .andRespond(withStatus(status).contentType(MediaType.APPLICATION_JSON).body(content))
 
     @Test
     fun `oppijanumero service returns identified user`() {

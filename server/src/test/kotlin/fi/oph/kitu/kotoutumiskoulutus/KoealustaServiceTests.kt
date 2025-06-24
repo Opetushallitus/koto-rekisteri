@@ -1,24 +1,22 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.TypedResult
 import fi.oph.kitu.oppijanumero.CasAuthenticatedService
-import fi.oph.kitu.oppijanumero.CasAuthenticatedServiceMock
-import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
+import fi.oph.kitu.oppijanumero.createRestClientBuilderWithCasFlow
+import fi.oph.kitu.oppijanumero.yleistunnisteHae
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
-import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.bean.override.convention.TestBean
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
+import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -35,7 +33,7 @@ class KoealustaServiceTests {
         @Container
         @ServiceConnection
         val postgres = PostgreSQLContainer("postgres:16")
-
+/*
         @JvmStatic
         fun casAuthenticatedService(): CasAuthenticatedService =
             CasAuthenticatedServiceMock(
@@ -102,19 +100,29 @@ class KoealustaServiceTests {
                         ) to TypedResult.Success(ResponseEntity.badRequest().body("Bad request")),
                     ),
             )
+ */
     }
 
+/*
     @TestBean
     @Suppress("unused")
     private lateinit var casAuthenticatedService: CasAuthenticatedService
+*/
+    private lateinit var onrRestClientBuilder: RestClient.Builder
+    private lateinit var onrMockServer: MockRestServiceServer
+    private lateinit var casRestClientBuilder: RestClient.Builder
 
     @BeforeEach
-    fun nukeDb(
+    fun setup(
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
     ) {
         kielitestiSuoritusRepository.deleteAll()
         kielitestiSuoritusErrorRepository.deleteAll()
+
+        onrRestClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
+        casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
+        onrMockServer = MockRestServiceServer.bindTo(onrRestClientBuilder).build()
     }
 
     @Test
@@ -122,6 +130,7 @@ class KoealustaServiceTests {
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired koealustaService: KoealustaService,
+        @Autowired casAuthenticatedService: CasAuthenticatedService,
     ) {
         // Facade
         val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
@@ -176,6 +185,20 @@ class KoealustaServiceTests {
                     MediaType.APPLICATION_JSON,
                 ),
             )
+
+        onrMockServer
+            .yleistunnisteHae(
+                HttpStatus.OK,
+                """
+                {
+                    "oid": "1.2.246.562.24.33342764709",
+                    "oppijanumero": "1.2.246.562.24.33342764709"
+                }
+                """.trimIndent(),
+            )
+
+        val casRestClient = casRestClientBuilder.build()
+        casAuthenticatedService.restClient = casRestClient
 
         // System under test
         koealustaService.koealustaToken = "token"

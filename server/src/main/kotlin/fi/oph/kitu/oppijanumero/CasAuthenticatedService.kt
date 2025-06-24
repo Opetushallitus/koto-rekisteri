@@ -28,7 +28,7 @@ interface CasAuthenticatedService {
 @Service
 class CasAuthenticatedServiceImpl(
     @Qualifier("oppijanumeroRestClient")
-    val restClient: RestClient,
+    private val restClient: RestClient,
     private val casService: CasService,
     private val tracer: Tracer,
 ) : CasAuthenticatedService {

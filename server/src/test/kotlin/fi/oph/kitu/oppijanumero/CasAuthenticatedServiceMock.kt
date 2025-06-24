@@ -4,10 +4,15 @@ import fi.oph.kitu.TypedResult
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.client.RestClient
 
 class CasAuthenticatedServiceMock(
     private val posts: Map<String, TypedResult<ResponseEntity<Any>, CasError>>,
 ) : CasAuthenticatedService {
+    override var restClient: RestClient
+        get() = RestClient.builder().build()
+        set(value) = println("value: $value")
+
     companion object {
         fun <Request> toKey(
             httpMethod: HttpMethod,
