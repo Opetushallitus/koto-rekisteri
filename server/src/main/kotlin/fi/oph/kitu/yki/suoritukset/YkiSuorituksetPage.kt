@@ -4,6 +4,9 @@ import fi.oph.kitu.HeaderCell
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.error
+import kotlinx.html.a
+import kotlinx.html.br
 
 object YkiSuorituksetPage {
     fun <T> render(
@@ -18,5 +21,13 @@ object YkiSuorituksetPage {
         Page.renderHtml(
             Navigation.getBreadcrumbs("/yki/suoritukset"),
         ) {
+            if (errorsCount > 0) {
+                error("Järjestelmässä on $errorsCount virhettä.") {
+                    br()
+                    a("/yki/suoritukset/virheet") {
+                        +"Katso virheet"
+                    }
+                }
+            }
         }
 }

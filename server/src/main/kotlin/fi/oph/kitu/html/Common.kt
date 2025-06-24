@@ -17,9 +17,13 @@ fun Tag.testId(id: String?) {
     if (id != null) data("testid", id)
 }
 
-fun FlowContent.error(message: String) {
+fun FlowContent.error(
+    message: String,
+    block: () -> Unit = {},
+) {
     article(classes = "error-text") {
         +message
+        block()
     }
 }
 
