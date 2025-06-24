@@ -40,13 +40,13 @@ class YkiViewController(
         val nextPage = if (page >= totalPages) null else page + 1
         val previousPage = if (page <= 1) null else page - 1
         val searchStrUrl = URLEncoder.encode(search, Charsets.UTF_8)
-        val paging =
+        val paging: Map<String, String> =
             mapOf(
-                "totalEntries" to suorituksetTotal,
-                "currentPage" to page,
-                "nextPage" to nextPage,
-                "previousPage" to previousPage,
-                "totalPages" to totalPages,
+                "totalEntries" to "$suorituksetTotal",
+                "currentPage" to "$page",
+                "nextPage" to "$nextPage",
+                "previousPage" to "$previousPage",
+                "totalPages" to "$totalPages",
                 "searchStr" to search,
                 "searchStrUrl" to searchStrUrl,
             )
