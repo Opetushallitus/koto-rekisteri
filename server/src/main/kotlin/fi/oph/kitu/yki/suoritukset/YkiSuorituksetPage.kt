@@ -30,6 +30,20 @@ import kotlinx.html.th
 import kotlinx.html.thead
 import kotlinx.html.tr
 import kotlinx.html.ul
+import java.net.URLEncoder
+import kotlin.math.ceil
+
+data class Paging(
+    val totalEntries: Long,
+    val limit: Int,
+    val currentPage: Int,
+    val searchStr: String,
+) {
+    val totalPages = ceil(totalEntries.toDouble() / limit).toInt()
+    val nextPage = if (currentPage >= totalPages) null else currentPage + 1
+    val previousPage = if (currentPage <= 1) null else currentPage - 1
+    val searchStrUrl: String = URLEncoder.encode(searchStr, Charsets.UTF_8)
+}
 
 object YkiSuorituksetPage {
     fun render(
@@ -37,7 +51,7 @@ object YkiSuorituksetPage {
         header: List<HeaderCell<YkiSuoritusColumn>>,
         sortColumn: String,
         sortDirection: SortDirection,
-        paging: Map<String, String>,
+        paging: Paging,
         versionHistory: Boolean,
         errorsCount: Long,
     ): String =
@@ -63,10 +77,7 @@ object YkiSuorituksetPage {
                             id = "search",
                             type = InputType.text,
                             name = "search",
-                            // TODO: Maybe we should create a class for paging, so that we can minimize typo errors
-                            value =
-                                paging["searchStr"]
-                                    ?: throw RuntimeException("Missing 'searchStr' field from paging."),
+                            value = paging.searchStr,
                             placeholder = "Oppijanumero, henkilötunnus tai hakusana",
                         ) {
                             button(type = ButtonType.submit) {
@@ -93,7 +104,7 @@ object YkiSuorituksetPage {
                         nav {
                             ul {
                                 li {
-                                    +"Suorituksia yhteensä: ${paging["totalEntries"]}" // TODO: Paging class
+                                    +"Suorituksia yhteensä: ${paging.totalEntries}"
                                 }
                                 li {
                                     a(
@@ -114,7 +125,7 @@ object YkiSuorituksetPage {
                                     th {
                                         val urlParams =
                                             mapOf(
-                                                "search" to paging["searchStrUrl"],
+                                                "search" to paging.searchStrUrl,
                                                 "includeVersionHistory" to versionHistory,
                                                 "sortColumn" to cell.column.urlParam,
                                                 "sortDirection" to cell.sortDirection,
