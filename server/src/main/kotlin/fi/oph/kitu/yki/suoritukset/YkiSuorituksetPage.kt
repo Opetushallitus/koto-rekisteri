@@ -16,6 +16,7 @@ import kotlinx.html.br
 import kotlinx.html.button
 import kotlinx.html.details
 import kotlinx.html.fieldSet
+import kotlinx.html.footer
 import kotlinx.html.form
 import kotlinx.html.header
 import kotlinx.html.label
@@ -181,6 +182,24 @@ object YkiSuorituksetPage {
                                         }
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+
+                footer {
+                    nav {
+                        attributes["aria-label"] = "Suoritusten sivutus"
+
+                        ul(classes = "paging") {
+                            li {
+                                // Navigate to previous page
+                            }
+                            li {
+                                // Show the number of the current page
+                            }
+                            li {
+                                // Navigate to next page
                             }
                         }
                     }
