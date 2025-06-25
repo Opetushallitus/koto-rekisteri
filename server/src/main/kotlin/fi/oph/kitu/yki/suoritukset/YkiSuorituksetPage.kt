@@ -123,16 +123,15 @@ object YkiSuorituksetPage {
                             tr {
                                 for (cell in header) {
                                     th {
-                                        val urlParams =
-                                            mapOf(
-                                                "search" to paging.searchStrUrl,
-                                                "includeVersionHistory" to versionHistory,
-                                                "sortColumn" to cell.column.urlParam,
-                                                "sortDirection" to cell.sortDirection,
-                                            ).map { entry -> entry }
-                                                .joinToString(separator = "&") { "${it.key}=${it.value}" }
-
-                                        a(href = "suoritukset?$urlParams") {
+                                        a(
+                                            href = "suoritukset?${
+                                                mapOf(
+                                                    "search" to paging.searchStrUrl,
+                                                    "includeVersionHistory" to versionHistory,
+                                                    "sortColumn" to cell.column.urlParam,
+                                                    "sortDirection" to cell.sortDirection,
+                                                ).toUrlParams()}",
+                                        ) {
                                             +"${cell.column.uiHeaderValue} ${cell.symbol}"
                                         }
                                     }
@@ -205,12 +204,37 @@ object YkiSuorituksetPage {
                         ul(classes = "paging") {
                             li {
                                 // Navigate to previous page
+                                a(
+                                    href = "suoritukset?${mapOf(
+                                        "search" to paging.searchStrUrl,
+                                        "includeVersionHistory" to versionHistory,
+                                        "page" to paging.previousPage,
+                                        "sortColumn" to sortColumn,
+                                        "sortDirection" to sortDirection,
+                                    ).toUrlParams()}",
+                                ) {
+                                    attributes["aria-label"] = "Edellinen sivu"
+                                    +"◀"
+                                }
                             }
-                            li {
-                                // Show the number of the current page
-                            }
-                            li {
-                                // Navigate to next page
+                        }
+                        li {
+                            // Show the number of the current page
+                            +"${paging.currentPage}"
+                        }
+                        li {
+                            // Navigate to next page
+                            a(
+                                href = "suoritukset?${mapOf(
+                                    "search" to paging.searchStrUrl,
+                                    "includeVersionHistory" to versionHistory,
+                                    "page" to paging.nextPage,
+                                    "sortColumn" to sortColumn,
+                                    "sortDirection" to sortDirection,
+                                ).toUrlParams()}",
+                            ) {
+                                attributes["aria-label"] = "Seuraava sivu"
+                                +"▶"
                             }
                         }
                     }
@@ -218,6 +242,11 @@ object YkiSuorituksetPage {
             }
         }
 
+
+    fun <K, V> Map<K, V>.toUrlParams(): String =
+        this
+            .map { entry -> entry }
+            .joinToString(separator = "&") { "${it.key}=${it.value}" }
 
     fun <T> TR.cell(value: T? = null) {
         td {
