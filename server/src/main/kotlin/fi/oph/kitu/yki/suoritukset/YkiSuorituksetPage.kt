@@ -9,6 +9,7 @@ import fi.oph.kitu.html.input
 import kotlinx.html.ButtonType
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
+import kotlinx.html.TR
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.br
@@ -19,6 +20,12 @@ import kotlinx.html.header
 import kotlinx.html.label
 import kotlinx.html.li
 import kotlinx.html.nav
+import kotlinx.html.table
+import kotlinx.html.tbody
+import kotlinx.html.td
+import kotlinx.html.th
+import kotlinx.html.thead
+import kotlinx.html.tr
 import kotlinx.html.ul
 
 object YkiSuorituksetPage {
@@ -96,7 +103,64 @@ object YkiSuorituksetPage {
                             }
                         }
                     }
+
+                    table {
+                        thead {
+                            tr {
+                                for (cell in header) {
+                                    th {
+                                        val urlParams =
+                                            mapOf(
+                                                "search" to paging["searchStrUrl"],
+                                                "includeVersionHistory" to versionHistory,
+                                                "sortColumn" to cell.column.urlParam,
+                                                "sortDirection" to cell.sortDirection,
+                                            ).map { entry -> entry }
+                                                .joinToString(separator = "&") { "${it.key}=${it.value}" }
+
+                                        a(href = "suoritukset?$urlParams") {
+                                            +"${cell.column.uiHeaderValue} ${cell.symbol}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        for (suoritus in suoritukset) {
+                            tbody(classes = "suoritus") {
+                                tr {
+                                    cell(suoritus.suorittajanOID)
+                                    cell(suoritus.sukunimi)
+                                    cell(suoritus.etunimet)
+                                    cell(suoritus.sukupuoli.name)
+                                    cell(suoritus.hetu)
+                                    cell(suoritus.kansalaisuus)
+                                    cell("${suoritus.katuosoite}, ${suoritus.postinumero} ${suoritus.postitoimipaikka}")
+                                    cell(suoritus.email)
+                                    cell(suoritus.suoritusId)
+                                    cell(suoritus.tutkintopaiva)
+                                    cell(suoritus.tutkintokieli.name)
+                                    cell(suoritus.tutkintotaso.name)
+                                    cell(suoritus.jarjestajanTunnusOid)
+                                    cell(suoritus.jarjestajanNimi)
+                                    cell(suoritus.arviointipaiva)
+                                    cell(suoritus.tekstinYmmartaminen)
+                                    cell(suoritus.kirjoittaminen)
+                                    cell(suoritus.rakenteetJaSanasto)
+                                    cell(suoritus.puheenYmmartaminen)
+                                    cell(suoritus.puhuminen)
+                                    cell(suoritus.yleisarvosana)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
+
+
+    fun <T> TR.cell(value: T? = null) {
+        td {
+            +(value?.toString() ?: "")
+        }
+    }
 }
