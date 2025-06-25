@@ -5,6 +5,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.error
+import fi.oph.kitu.html.input
 import kotlinx.html.ButtonType
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
@@ -13,7 +14,7 @@ import kotlinx.html.br
 import kotlinx.html.button
 import kotlinx.html.fieldSet
 import kotlinx.html.form
-import kotlinx.html.input
+import kotlinx.html.label
 
 object YkiSuorituksetPage {
     fun render(
@@ -44,18 +45,29 @@ object YkiSuorituksetPage {
                     fieldSet {
                         attributes["role"] = "search"
                         input(
+                            id = "search",
                             type = InputType.text,
                             name = "search",
-                        ) {
-                            attributes["id"] = "search"
                             // TODO: Maybe we should create a class for paging, so that we can minimize typo errors
-                            attributes["value"] = paging["searchStr"]
-                                ?: throw RuntimeException("Missing 'searchStr' field from paging.")
-                            attributes["placeholder"] = "Oppijanumero, henkilötunnus tai hakusana"
-
+                            value =
+                                paging["searchStr"]
+                                    ?: throw RuntimeException("Missing 'searchStr' field from paging."),
+                            placeholder = "Oppijanumero, henkilötunnus tai hakusana",
+                        ) {
                             button(type = ButtonType.submit) {
                                 +"Suodata"
                             }
+                        }
+                    }
+                    fieldSet {
+                        label {
+                            input(
+                                id = "versionHistory",
+                                type = InputType.checkBox,
+                                name = "versionHistory",
+                                checked = versionHistory,
+                            ) { }
+                            +"Näytä versiohistoria"
                         }
                     }
                 }

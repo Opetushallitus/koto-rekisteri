@@ -1,10 +1,15 @@
 package fi.oph.kitu.html
 
 import kotlinx.html.FlowContent
+import kotlinx.html.INPUT
+import kotlinx.html.InputFormEncType
+import kotlinx.html.InputFormMethod
+import kotlinx.html.InputType
 import kotlinx.html.Tag
 import kotlinx.html.article
 import kotlinx.html.script
 import kotlinx.html.unsafe
+import kotlinx.html.input as inputBase
 
 fun Tag.data(
     key: String,
@@ -15,6 +20,45 @@ fun Tag.data(
 
 fun Tag.testId(id: String?) {
     if (id != null) data("testid", id)
+}
+
+fun FlowContent.input(
+    type: InputType? = null,
+    formEncType: InputFormEncType? = null,
+    formMethod: InputFormMethod? = null,
+    name: String? = null,
+    classes: String? = null,
+    id: String? = null,
+    value: String? = null,
+    placeholder: String? = null,
+    checked: Boolean? = null,
+    block: INPUT.() -> Unit = {},
+) {
+    inputBase(
+        type = type,
+        formEncType = formEncType,
+        formMethod = formMethod,
+        name = name,
+        classes = classes,
+    ) {
+        if (id != null) {
+            attributes["id"] = id
+        }
+
+        if (value != null) {
+            attributes["value"] = value
+        }
+
+        if (placeholder != null) {
+            attributes["placeholder"] = placeholder
+        }
+
+        if (checked == true) {
+            attributes["checked"] = ""
+        }
+
+        block()
+    }
 }
 
 fun FlowContent.error(
