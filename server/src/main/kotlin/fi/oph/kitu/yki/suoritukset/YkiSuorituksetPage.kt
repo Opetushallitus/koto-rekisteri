@@ -14,12 +14,14 @@ import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.br
 import kotlinx.html.button
+import kotlinx.html.details
 import kotlinx.html.fieldSet
 import kotlinx.html.form
 import kotlinx.html.header
 import kotlinx.html.label
 import kotlinx.html.li
 import kotlinx.html.nav
+import kotlinx.html.summary
 import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
@@ -149,6 +151,35 @@ object YkiSuorituksetPage {
                                     cell(suoritus.puheenYmmartaminen)
                                     cell(suoritus.puhuminen)
                                     cell(suoritus.yleisarvosana)
+                                }
+
+                                if (suoritus.tarkistusarvioinninSaapumisPvm != null) {
+                                    tr {
+                                        td {
+                                            attributes["colspan"] = "13"
+                                            details {
+                                                summary { +"Näytä tarkistusarvioinnin tiedot" }
+                                                table {
+                                                    tr {
+                                                        th { +"Saapumispäivä" }
+                                                        th { +"Asiatunnus" }
+                                                        th { +"Osakokeet" }
+                                                        th { +"Arvosana muuttui?" }
+                                                        th { +"Perustelu" }
+                                                        th { +"Käsittelypäivä" }
+                                                    }
+                                                    tr {
+                                                        cell(suoritus.tarkistusarvioinninSaapumisPvm)
+                                                        cell(suoritus.tarkistusarvioinninAsiatunnus)
+                                                        cell(suoritus.tarkistusarvioidutOsakokeet)
+                                                        cell(suoritus.arvosanaMuuttui)
+                                                        cell(suoritus.perustelu)
+                                                        cell(suoritus.tarkistusarvioinninKasittelyPvm)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
