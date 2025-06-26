@@ -246,7 +246,14 @@ object YkiSuorituksetPage {
     fun <K, V> Map<K, V>.toUrlParams(): String =
         this
             .map { entry -> entry }
-            .joinToString(separator = "&") { "${it.key}=${it.value}" }
+            .joinToString(separator = "&") {
+                listOf(it.key, it.value).joinToString(separator = "=") { it ->
+                    URLEncoder.encode(
+                        it.toString(),
+                        "UTF-8",
+                    )
+                }
+            }
 
     fun <T> TR.cell(value: T? = null) {
         td {
