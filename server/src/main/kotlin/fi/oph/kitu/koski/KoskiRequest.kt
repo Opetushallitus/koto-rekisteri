@@ -56,22 +56,6 @@ data class KoskiRequest(
                 val päivä: LocalDate,
                 val myöntäjäOrganisaatio: Organisaatio,
             )
-
-            data class Osasuoritus(
-                val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.YleisenKielitutkinnonOsa,
-                val koulutusmoduuli: OsasuoritusKoulutusModuuli,
-                val arviointi: List<Arvosana>,
-            ) {
-                data class OsasuoritusKoulutusModuuli(
-                    val tunniste: KoskiKoodiviite,
-                )
-
-                data class Arvosana(
-                    val arvosana: KoskiKoodiviite,
-                    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-                    val päivä: LocalDate,
-                )
-            }
         }
     }
 }
