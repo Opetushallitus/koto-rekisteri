@@ -52,8 +52,7 @@ class YkiViewController(
                     limit,
                     limit * (page - 1),
                 ),
-            header = generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection),
-            sortColumn = sortColumn.urlParam,
+            sortColumn = sortColumn,
             sortDirection = sortDirection,
             paging = paging,
             versionHistory = versionHistory,
@@ -79,8 +78,7 @@ class YkiViewController(
         sortDirection: SortDirection = SortDirection.DESC,
     ): String =
         YkiArvioijaPage.render(
-            header = generateHeader<YkiArvioijaColumn>(sortColumn, sortDirection),
-            sortColumn = sortColumn.urlParam,
+            sortColumn = sortColumn,
             sortDirection = sortDirection,
             arvioijat = ykiService.allArvioijat(sortColumn, sortDirection),
             errorsCount = arvioijaErrorService.countErrors(),

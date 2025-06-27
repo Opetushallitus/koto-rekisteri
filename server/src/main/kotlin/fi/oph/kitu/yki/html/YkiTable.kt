@@ -12,6 +12,7 @@ import kotlinx.html.thead
 import kotlinx.html.tr
 
 fun <Header> TABLE.ykiTableHeader(
+    page: String,
     header: List<HeaderCell<Header>>,
     paging: Paging? = null,
     versionHistory: Boolean? = null,
@@ -22,7 +23,7 @@ fun <Header> TABLE.ykiTableHeader(
             for (cell in header) {
                 th {
                     a(
-                        href = "suoritukset?${mapOf(
+                        href = "$page?${mapOf(
                             "search" to paging?.searchStrUrl,
                             "includeVersionHistory" to versionHistory,
                             "page" to paging?.currentPage,

@@ -1,7 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.HeaderCell
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.generateHeader
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.input
@@ -36,8 +36,7 @@ import java.net.URLEncoder
 object YkiSuorituksetPage {
     fun render(
         suoritukset: List<YkiSuoritusEntity>,
-        header: List<HeaderCell<YkiSuoritusColumn>>,
-        sortColumn: String,
+        sortColumn: YkiSuoritusColumn,
         sortDirection: SortDirection,
         paging: Paging,
         versionHistory: Boolean,
@@ -60,7 +59,7 @@ object YkiSuorituksetPage {
                         "search" to (search ?: paging.searchStrUrl),
                         "includeVersionHistory" to (includeVersionHistory ?: versionHistory),
                         "page" to (page ?: paging.currentPage),
-                        "sortColumn" to (sortColumnStr ?: sortColumn),
+                        "sortColumn" to (sortColumnStr ?: sortColumn.urlParam),
                         "sortDirection" to (sortDirectionEnum ?: sortDirection),
                     ).toUrlParams()}",
                 ) {
@@ -127,7 +126,13 @@ object YkiSuorituksetPage {
                 }
 
                 table {
-                    ykiTableHeader(header, paging, versionHistory, sortDirection)
+                    ykiTableHeader(
+                        "suoritukset",
+                        header = generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection),
+                        paging,
+                        versionHistory,
+                        sortDirection,
+                    )
 
                     for (suoritus in suoritukset) {
                         tbody(classes = "suoritus") {
