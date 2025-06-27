@@ -4,8 +4,8 @@ import fi.oph.kitu.HeaderCell
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
-import fi.oph.kitu.html.error
 import fi.oph.kitu.html.input
+import fi.oph.kitu.yki.errorsArticle
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
@@ -13,7 +13,6 @@ import kotlinx.html.InputType
 import kotlinx.html.TR
 import kotlinx.html.a
 import kotlinx.html.article
-import kotlinx.html.br
 import kotlinx.html.button
 import kotlinx.html.details
 import kotlinx.html.fieldSet

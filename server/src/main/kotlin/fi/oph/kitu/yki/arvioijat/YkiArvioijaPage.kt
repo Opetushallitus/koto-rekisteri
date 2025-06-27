@@ -4,6 +4,7 @@ import fi.oph.kitu.HeaderCell
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.yki.errorsArticle
 
 object YkiArvioijaPage {
     fun render(
@@ -16,5 +17,6 @@ object YkiArvioijaPage {
         Page.renderHtml(
             Navigation.getBreadcrumbs("/yki/arvioijat"),
         ) {
+            this.errorsArticle(errorsCount, "/yki/arvioijat/virheet")
         }
 }
