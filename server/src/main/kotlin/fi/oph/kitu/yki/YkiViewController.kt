@@ -6,7 +6,7 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
-import fi.oph.kitu.yki.suoritukset.Paging
+import fi.oph.kitu.yki.html.Paging
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
@@ -34,7 +34,6 @@ class YkiViewController(
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
     ): String {
-        val offset = limit * (page - 1)
         val paging =
             Paging(
                 totalEntries = ykiService.countSuoritukset(search, versionHistory),
@@ -51,7 +50,7 @@ class YkiViewController(
                     sortDirection,
                     versionHistory,
                     limit,
-                    offset,
+                    limit * (page - 1),
                 ),
             header = generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection),
             sortColumn = sortColumn.urlParam,

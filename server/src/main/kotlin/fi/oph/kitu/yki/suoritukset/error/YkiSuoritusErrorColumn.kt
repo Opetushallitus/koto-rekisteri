@@ -1,10 +1,12 @@
 package fi.oph.kitu.yki.suoritukset.error
 
+import fi.oph.kitu.KituColumn
+
 enum class YkiSuoritusErrorColumn(
     val entityName: String,
-    val uiHeaderValue: String,
-    val urlParam: String,
-) {
+    override val uiHeaderValue: String,
+    override val urlParam: String,
+) : KituColumn {
     SuorittajanOid(entityName = "suorittajanOid", uiHeaderValue = "oppijanumero", urlParam = "suorittajanoid"),
     Hetu(entityName = "hetu", uiHeaderValue = "hetu", urlParam = "hetu"),
     Nimi(entityName = "nimi", uiHeaderValue = "nimi", urlParam = "nimi"),

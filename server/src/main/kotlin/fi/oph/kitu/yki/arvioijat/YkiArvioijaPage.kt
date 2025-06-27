@@ -4,7 +4,10 @@ import fi.oph.kitu.HeaderCell
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
-import fi.oph.kitu.yki.errorsArticle
+import fi.oph.kitu.yki.html.errorsArticle
+import fi.oph.kitu.yki.html.ykiTableHeader
+import kotlinx.html.article
+import kotlinx.html.table
 
 object YkiArvioijaPage {
     fun render(
@@ -18,5 +21,11 @@ object YkiArvioijaPage {
             Navigation.getBreadcrumbs("/yki/arvioijat"),
         ) {
             this.errorsArticle(errorsCount, "/yki/arvioijat/virheet")
+
+            article(classes = "overflow-auto") {
+                table {
+                    ykiTableHeader(header, sortDirection = sortDirection)
+                }
+            }
         }
 }

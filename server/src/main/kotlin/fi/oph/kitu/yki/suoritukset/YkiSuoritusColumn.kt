@@ -1,14 +1,16 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.KituColumn
+
 /**
  * Enum class representing columns in YKI Suoritus.
  * The class also maps the column names between SQL data classes and UI.
  */
 enum class YkiSuoritusColumn(
     val dbColumn: String,
-    val uiHeaderValue: String,
-    val urlParam: String,
-) {
+    override val uiHeaderValue: String,
+    override val urlParam: String,
+) : KituColumn {
     SuorittajanOid(
         dbColumn = "suorittajan_oid",
         uiHeaderValue = "Oppijanumero",

@@ -5,7 +5,9 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.input
-import fi.oph.kitu.yki.errorsArticle
+import fi.oph.kitu.yki.html.Paging
+import fi.oph.kitu.yki.html.errorsArticle
+import fi.oph.kitu.yki.html.ykiTableHeader
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
@@ -27,23 +29,9 @@ import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
 import kotlinx.html.th
-import kotlinx.html.thead
 import kotlinx.html.tr
 import kotlinx.html.ul
 import java.net.URLEncoder
-import kotlin.math.ceil
-
-data class Paging(
-    val totalEntries: Long,
-    val limit: Int,
-    val currentPage: Int,
-    val searchStr: String,
-) {
-    val totalPages = ceil(totalEntries.toDouble() / limit).toInt()
-    val nextPage = if (currentPage >= totalPages) null else currentPage + 1
-    val previousPage = if (currentPage <= 1) null else currentPage - 1
-    val searchStrUrl: String = URLEncoder.encode(searchStr, Charsets.UTF_8)
-}
 
 object YkiSuorituksetPage {
     fun render(
@@ -139,19 +127,8 @@ object YkiSuorituksetPage {
                 }
 
                 table {
-                    thead {
-                        tr {
-                            for (cell in header) {
-                                th {
-                                    this@renderHtml.navigationLink(
-                                        sortColumnStr = cell.column.urlParam,
-                                        sortDirectionEnum = cell.sortDirection,
-                                        innerText = "${cell.column.uiHeaderValue} ${cell.symbol}",
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    ykiTableHeader(header, paging, versionHistory, sortDirection)
+
                     for (suoritus in suoritukset) {
                         tbody(classes = "suoritus") {
                             tr {

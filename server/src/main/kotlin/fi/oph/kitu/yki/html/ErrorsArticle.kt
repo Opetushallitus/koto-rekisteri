@@ -1,4 +1,4 @@
-package fi.oph.kitu.yki
+package fi.oph.kitu.yki.html
 
 import fi.oph.kitu.html.error
 import kotlinx.html.FlowContent

@@ -1,10 +1,12 @@
 package fi.oph.kitu.yki.arvioijat
 
+import fi.oph.kitu.KituColumn
+
 enum class YkiArvioijaColumn(
     val entityName: String,
-    val uiHeaderValue: String,
-    val urlParam: String,
-) {
+    override val uiHeaderValue: String,
+    override val urlParam: String,
+) : KituColumn {
     // id not added
 
     Oppijanumero(

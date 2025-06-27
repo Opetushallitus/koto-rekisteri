@@ -1,10 +1,12 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
+import fi.oph.kitu.KituColumn
+
 enum class KielitestiSuoritusColumn(
     val entityName: String,
-    val uiHeaderValue: String,
-    val urlParam: String,
-) {
+    override val uiHeaderValue: String,
+    override val urlParam: String,
+) : KituColumn {
     Sukunimi(
         entityName = "lastName",
         uiHeaderValue = "Sukunimi",
