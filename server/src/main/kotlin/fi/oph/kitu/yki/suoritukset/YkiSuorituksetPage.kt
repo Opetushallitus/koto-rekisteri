@@ -55,44 +55,37 @@ object YkiSuorituksetPage {
         paging: Paging,
         versionHistory: Boolean,
         errorsCount: Long,
-    ): String {
-        fun FlowContent.navigationLink(
-            search: String? = null,
-            includeVersionHistory: Boolean? = null,
-            page: Int? = null,
-            sortColumnStr: String? = null,
-            sortDirectionEnum: SortDirection? = null,
-            ariaLabel: String? = null,
-            innerText: String,
-        ) {
-            a(
-                href = "suoritukset?${mapOf(
-                    "search" to (search ?: paging.searchStrUrl),
-                    "includeVersionHistory" to (includeVersionHistory ?: versionHistory),
-                    "page" to (page ?: paging.currentPage),
-                    "sortColumn" to (sortColumnStr ?: sortColumn),
-                    "sortDirection" to (sortDirectionEnum ?: sortDirection),
-                ).toUrlParams()}",
-            ) {
-                if (ariaLabel != null) {
-                    attributes["aria-label"] = ariaLabel
-                }
-
-                +innerText
-            }
-        }
-
-        return Page.renderHtml(
+    ): String =
+        Page.renderHtml(
             Navigation.getBreadcrumbs("/yki/suoritukset"),
         ) {
-            if (errorsCount > 0) {
-                error("Järjestelmässä on $errorsCount virhettä.") {
-                    br()
-                    a("/yki/suoritukset/virheet") {
-                        +"Katso virheet"
+            fun FlowContent.navigationLink(
+                search: String? = null,
+                includeVersionHistory: Boolean? = null,
+                page: Int? = null,
+                sortColumnStr: String? = null,
+                sortDirectionEnum: SortDirection? = null,
+                ariaLabel: String? = null,
+                innerText: String,
+            ) {
+                a(
+                    href = "suoritukset?${mapOf(
+                        "search" to (search ?: paging.searchStrUrl),
+                        "includeVersionHistory" to (includeVersionHistory ?: versionHistory),
+                        "page" to (page ?: paging.currentPage),
+                        "sortColumn" to (sortColumnStr ?: sortColumn),
+                        "sortDirection" to (sortDirectionEnum ?: sortDirection),
+                    ).toUrlParams()}",
+                ) {
+                    if (ariaLabel != null) {
+                        attributes["aria-label"] = ariaLabel
                     }
+
+                    +innerText
                 }
             }
+
+            this.errorsArticle(errorsCount, "/yki/suoritukset/virheet")
 
             form(
                 action = "",
@@ -248,7 +241,6 @@ object YkiSuorituksetPage {
                 }
             }
         }
-    }
 
     fun <T> TR.cell(value: T? = null) {
         td {
