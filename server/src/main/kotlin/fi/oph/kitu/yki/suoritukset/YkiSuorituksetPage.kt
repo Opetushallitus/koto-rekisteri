@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.generateHeader
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.input
@@ -128,9 +127,9 @@ object YkiSuorituksetPage {
                 table {
                     ykiTableHeader(
                         "suoritukset",
-                        header = generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection),
                         paging,
                         versionHistory,
+                        currentColumn = sortColumn,
                         sortDirection,
                     )
 

@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.generateHeader
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.yki.html.errorsArticle
@@ -23,9 +22,9 @@ object YkiArvioijaPage {
 
             article(classes = "overflow-auto") {
                 table {
-                    ykiTableHeader(
+                    ykiTableHeader<YkiArvioijaColumn>(
                         "arvioijat",
-                        header = generateHeader<YkiArvioijaColumn>(sortColumn, sortDirection),
+                        currentColumn = sortColumn,
                         sortDirection = sortDirection,
                     )
                 }

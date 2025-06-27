@@ -1,8 +1,8 @@
 package fi.oph.kitu.yki.html
 
-import fi.oph.kitu.HeaderCell
 import fi.oph.kitu.KituColumn
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.generateHeader
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage.cell
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage.toUrlParams
 import kotlinx.html.TABLE
@@ -11,16 +11,16 @@ import kotlinx.html.th
 import kotlinx.html.thead
 import kotlinx.html.tr
 
-fun <Header> TABLE.ykiTableHeader(
+inline fun <reified Header> TABLE.ykiTableHeader(
     page: String,
-    header: List<HeaderCell<Header>>,
     paging: Paging? = null,
     versionHistory: Boolean? = null,
+    currentColumn: Header,
     sortDirection: SortDirection,
 ) where Header : Enum<Header>, Header : KituColumn {
     thead {
         tr {
-            for (cell in header) {
+            for (cell in generateHeader(currentColumn, sortDirection)) {
                 th {
                     a(
                         href = "$page?${mapOf(
