@@ -9,6 +9,7 @@ import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktSuoritusRepository
+import fi.oph.kitu.vkt.VktValidation
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
@@ -39,6 +40,7 @@ class CreateMockDataController(
     private val arvioijaRepository: YkiArvioijaRepository,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val vktSuoritusRepository: VktSuoritusRepository,
+    private val vktValidation: VktValidation,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -117,7 +119,7 @@ class CreateMockDataController(
         val generator = VktSuoritusMockGenerator()
         return vktSuoritusRepository.saveAll(
             List(count ?: 1000) {
-                generator.generateRandomVktSuoritusEntity()
+                generator.generateRandomVktSuoritusEntity(vktValidation)
             },
         )
     }

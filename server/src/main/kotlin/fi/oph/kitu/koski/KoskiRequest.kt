@@ -38,9 +38,9 @@ data class KoskiRequest(
             val tyyppi: Koodisto.SuorituksenTyyppi,
             val koulutusmoduuli: KoulutusModuuli,
             val toimipiste: Organisaatio,
-            val vahvistus: Vahvistus,
+            val vahvistus: Vahvistus?,
             val osasuoritukset: List<Osasuoritus>,
-            val yleisarvosana: KoskiKoodiviite?,
+            val yleisarvosana: KoskiKoodiviite? = null,
         ) {
             data class KoulutusModuuli(
                 val tunniste: KoskiKoodiviite,
@@ -51,27 +51,25 @@ data class KoskiRequest(
                 val oid: String,
             )
 
-            data class Vahvistus(
+            interface Vahvistus
+
+            data class VahvistusImpl(
                 @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
                 val päivä: LocalDate,
                 val myöntäjäOrganisaatio: Organisaatio,
+            ) : Vahvistus
+
+            data class VahvistusHenkiloilla(
+                @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+                val päivä: LocalDate,
+                val myöntäjäOrganisaatio: Organisaatio,
+                val myöntäjäHenkilöt: List<Organisaatiohenkilo>,
+            ) : Vahvistus
+
+            data class Organisaatiohenkilo(
+                val nimi: String,
+                val organisaatio: Organisaatio,
             )
-
-            data class Osasuoritus(
-                val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.YleisenKielitutkinnonOsa,
-                val koulutusmoduuli: OsasuoritusKoulutusModuuli,
-                val arviointi: List<Arvosana>,
-            ) {
-                data class OsasuoritusKoulutusModuuli(
-                    val tunniste: KoskiKoodiviite,
-                )
-
-                data class Arvosana(
-                    val arvosana: KoskiKoodiviite,
-                    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-                    val päivä: LocalDate,
-                )
-            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt.tiedonsiirtoschema
 
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.VktSuoritusEntity
 
 data class OidOppija(
@@ -8,6 +9,22 @@ data class OidOppija(
     val sukunimi: String? = null,
 ) {
     fun kokoNimi(): String = "$sukunimi, $etunimet"
+
+    fun fill(onr: OppijanumeroService): OidOppija? =
+        oid.toOid().getOrNull()?.let { oid ->
+            if (etunimet != null || sukunimi != null) {
+                onr
+                    .getHenkilo(oid)
+                    .map { tiedot ->
+                        copy(
+                            etunimet = tiedot.etunimet,
+                            sukunimi = tiedot.sukunimi,
+                        )
+                    }.getOrNull()
+            } else {
+                this
+            }
+        }
 
     companion object {
         fun from(entity: VktSuoritusEntity) =
