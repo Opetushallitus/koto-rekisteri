@@ -3,6 +3,7 @@ package fi.oph.kitu.yki.suoritukset
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.html.input
 import fi.oph.kitu.yki.html.Paging
 import fi.oph.kitu.yki.html.errorsArticle
@@ -11,7 +12,6 @@ import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
-import kotlinx.html.TR
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.button
@@ -30,7 +30,6 @@ import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.tr
 import kotlinx.html.ul
-import java.net.URLEncoder
 
 object YkiSuorituksetPage {
     fun render(
@@ -54,13 +53,16 @@ object YkiSuorituksetPage {
                 innerText: String,
             ) {
                 a(
-                    href = "suoritukset?${mapOf(
-                        "search" to (search ?: paging.searchStrUrl),
-                        "includeVersionHistory" to (includeVersionHistory ?: versionHistory),
-                        "page" to (page ?: paging.currentPage),
-                        "sortColumn" to (sortColumnStr ?: sortColumn.urlParam),
-                        "sortDirection" to (sortDirectionEnum ?: sortDirection),
-                    ).toUrlParams()}",
+                    href = "suoritukset?${
+                        httpParams(
+                            mapOf(
+                                "search" to (search ?: paging.searchStrUrl),
+                                "includeVersionHistory" to (includeVersionHistory ?: versionHistory),
+                                "page" to (page ?: paging.currentPage),
+                                "sortColumn" to (sortColumnStr ?: sortColumn.urlParam),
+                                "sortDirection" to (sortDirectionEnum?.name ?: sortDirection.name),
+                            ),
+                        )}",
                 ) {
                     if (ariaLabel != null) {
                         attributes["aria-label"] = ariaLabel
@@ -136,27 +138,27 @@ object YkiSuorituksetPage {
                     for (suoritus in suoritukset) {
                         tbody(classes = "suoritus") {
                             tr {
-                                cell(suoritus.suorittajanOID)
-                                cell(suoritus.sukunimi)
-                                cell(suoritus.etunimet)
-                                cell(suoritus.sukupuoli.name)
-                                cell(suoritus.hetu)
-                                cell(suoritus.kansalaisuus)
-                                cell("${suoritus.katuosoite}, ${suoritus.postinumero} ${suoritus.postitoimipaikka}")
-                                cell(suoritus.email)
-                                cell(suoritus.suoritusId)
-                                cell(suoritus.tutkintopaiva)
-                                cell(suoritus.tutkintokieli.name)
-                                cell(suoritus.tutkintotaso.name)
-                                cell(suoritus.jarjestajanTunnusOid)
-                                cell(suoritus.jarjestajanNimi)
-                                cell(suoritus.arviointipaiva)
-                                cell(suoritus.tekstinYmmartaminen)
-                                cell(suoritus.kirjoittaminen)
-                                cell(suoritus.rakenteetJaSanasto)
-                                cell(suoritus.puheenYmmartaminen)
-                                cell(suoritus.puhuminen)
-                                cell(suoritus.yleisarvosana)
+                                td { +suoritus.suorittajanOID.toString() }
+                                td { +suoritus.sukunimi }
+                                td { +suoritus.etunimet }
+                                td { +suoritus.sukupuoli.name }
+                                td { +suoritus.hetu }
+                                td { +suoritus.kansalaisuus }
+                                td { +"${suoritus.katuosoite}, ${suoritus.postinumero} ${suoritus.postitoimipaikka}" }
+                                td { +suoritus.email.orEmpty() }
+                                td { +suoritus.suoritusId }
+                                td { +suoritus.tutkintopaiva.toString() }
+                                td { +suoritus.tutkintokieli.name }
+                                td { +suoritus.tutkintotaso.name }
+                                td { +suoritus.jarjestajanTunnusOid.toString() }
+                                td { +suoritus.jarjestajanNimi }
+                                td { +suoritus.arviointipaiva.toString() }
+                                td { +suoritus.tekstinYmmartaminen?.toString().orEmpty() }
+                                td { +suoritus.kirjoittaminen?.toString().orEmpty() }
+                                td { +suoritus.rakenteetJaSanasto?.toString().orEmpty() }
+                                td { +suoritus.puheenYmmartaminen?.toString().orEmpty() }
+                                td { +suoritus.puhuminen?.toString().orEmpty() }
+                                td { +suoritus.yleisarvosana?.toString().orEmpty() }
                             }
 
                             if (suoritus.tarkistusarvioinninSaapumisPvm != null) {
@@ -175,12 +177,14 @@ object YkiSuorituksetPage {
                                                     th { +"Käsittelypäivä" }
                                                 }
                                                 tr {
-                                                    cell(suoritus.tarkistusarvioinninSaapumisPvm)
-                                                    cell(suoritus.tarkistusarvioinninAsiatunnus)
-                                                    cell(suoritus.tarkistusarvioidutOsakokeet)
-                                                    cell(suoritus.arvosanaMuuttui)
-                                                    cell(suoritus.perustelu)
-                                                    cell(suoritus.tarkistusarvioinninKasittelyPvm)
+                                                    td { +suoritus.tarkistusarvioinninSaapumisPvm.toString() }
+                                                    td { +suoritus.tarkistusarvioinninAsiatunnus.orEmpty() }
+                                                    td { +suoritus.tarkistusarvioidutOsakokeet?.toString().orEmpty() }
+                                                    td { +suoritus.arvosanaMuuttui?.toString().orEmpty() }
+                                                    td { +suoritus.perustelu.orEmpty() }
+                                                    td {
+                                                        +suoritus.tarkistusarvioinninKasittelyPvm?.toString().orEmpty()
+                                                    }
                                                 }
                                             }
                                         }
@@ -221,22 +225,4 @@ object YkiSuorituksetPage {
                 }
             }
         }
-
-    fun <T> TR.cell(value: T? = null) {
-        td {
-            +(value?.toString() ?: "")
-        }
-    }
-
-    fun <K, V> Map<K, V>.toUrlParams(): String =
-        this
-            .map { entry -> entry }
-            .joinToString(separator = "&") {
-                listOf(it.key, it.value).joinToString(separator = "=") { it ->
-                    URLEncoder.encode(
-                        it.toString(),
-                        "UTF-8",
-                    )
-                }
-            }
 }
