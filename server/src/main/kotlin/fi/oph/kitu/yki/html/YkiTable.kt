@@ -2,8 +2,8 @@ package fi.oph.kitu.yki.html
 
 import fi.oph.kitu.KituColumn
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.generateHeader
-import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage.cell
+import fi.oph.kitu.reverse
+import fi.oph.kitu.toSymbol
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage.toUrlParams
 import kotlinx.html.TABLE
 import kotlinx.html.a
@@ -20,18 +20,18 @@ inline fun <reified Header> TABLE.ykiTableHeader(
 ) where Header : Enum<Header>, Header : KituColumn {
     thead {
         tr {
-            for (cell in generateHeader(currentColumn, sortDirection)) {
+            for (column in enumValues<Header>()) {
                 th {
                     a(
                         href = "$page?${mapOf(
                             "search" to paging?.searchStrUrl,
                             "includeVersionHistory" to versionHistory,
                             "page" to paging?.currentPage,
-                            "sortColumn" to cell.column.urlParam,
-                            "sortDirection" to sortDirection,
+                            "sortColumn" to column.urlParam,
+                            "sortDirection" to if (currentColumn == column) sortDirection.reverse() else sortDirection,
                         ).toUrlParams()}",
                     ) {
-                        +"${cell.column.uiHeaderValue} ${cell.symbol}"
+                        +"${column.uiHeaderValue} ${if (currentColumn == column) sortDirection.toSymbol() else ""}"
                     }
                 }
             }
