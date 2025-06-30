@@ -186,6 +186,7 @@ interface VktOsakoe :
 
     val tutkintopaiva: LocalDate
     override val arviointi: VktArvionti?
+    val oppilaitos: OidString?
 
     fun toVktOsakoeRow() =
         VktSuoritusEntity.VktOsakoe(
@@ -237,6 +238,7 @@ data class VktKirjoittamisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
+    override val oppilaitos: OidString? = null,
 ) : VktKirjallisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.Kirjoittaminen
 }
@@ -245,6 +247,7 @@ data class VktTekstinYmmartamisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
+    override val oppilaitos: OidString? = null,
 ) : VktKirjallisenKielitaidonKoe,
     VktYmmartamisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.TekstinYmmärtäminen
@@ -254,6 +257,7 @@ data class VktPuhumisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
+    override val oppilaitos: OidString? = null,
 ) : VktSuullisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.Puhuminen
 }
@@ -262,6 +266,7 @@ data class VktPuheenYmmartamisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
+    override val oppilaitos: OidString? = null,
 ) : VktSuullisenKielitaidonKoe,
     VktYmmartamisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.PuheenYmmärtäminen

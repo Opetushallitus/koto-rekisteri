@@ -12,6 +12,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import fi.oph.kitu.Validation
 import fi.oph.kitu.ValidationResult
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktValidation
@@ -24,6 +25,8 @@ data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
     val henkilo: OidOppija,
     val suoritus: T,
 ) {
+    fun fill(onr: OppijanumeroService): Henkilosuoritus<T>? = henkilo.fill(onr)?.let { copy(it, suoritus) }
+
     fun toVktSuoritusEntity(): VktSuoritusEntity? =
         when (suoritus) {
             is VktSuoritus -> suoritus.toVktSuoritusEntity(henkilo)
@@ -80,9 +83,12 @@ interface KielitutkinnonSuoritus :
     override val tyyppi: Koodisto.SuorituksenTyyppi
 
     companion object {
-        fun validateAndEnrich(suoritus: KielitutkinnonSuoritus): ValidationResult<KielitutkinnonSuoritus> =
+        fun validateAndEnrich(
+            suoritus: KielitutkinnonSuoritus,
+            vktValidation: VktValidation,
+        ): ValidationResult<KielitutkinnonSuoritus> =
             when (suoritus) {
-                is VktSuoritus -> VktValidation.validateAndEnrich(suoritus)
+                is VktSuoritus -> vktValidation.validateAndEnrich(suoritus)
                 else -> Validation.ok(suoritus)
             }
     }
