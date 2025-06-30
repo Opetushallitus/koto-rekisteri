@@ -3,20 +3,48 @@ package fi.oph.kitu.koski
 import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.mock.VktSuoritusMockGenerator
+import fi.oph.kitu.mock.generateRandomOppijaOid
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.mock.getRandomLocalDate
+import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Lahdejarjestelma
+import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
+import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.core.io.ClassPathResource
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.junit.jupiter.Container
 import java.time.LocalDate
+import kotlin.random.Random
 import kotlin.test.assertEquals
 
+@SpringBootTest
 class KoskiRequestMapperTest {
-    private val koskiRequestMapper = KoskiRequestMapper()
+    @Autowired
+    lateinit var koskiRequestMapper: KoskiRequestMapper
     private val objectMapper = KoskiRequestMapper.getObjectMapper()
 
     private val oid: Oid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
     private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.12345678910").getOrThrow()
+
+    @Suppress("unused")
+    companion object {
+        @JvmStatic
+        @Container
+        @ServiceConnection
+        val postgres =
+            PostgreSQLContainer("postgres:16")
+                .withUrlParam("stringtype", "unspecified")!!
+    }
 
     @Test
     fun `map yki suoritus to koski request`() {
@@ -202,5 +230,53 @@ class KoskiRequestMapperTest {
             )
         val koskiSuoritus = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
         assertEquals(null, koskiSuoritus)
+    }
+
+    @Test
+    fun `map vkt erinomainen suoritus to koski`() {
+        val generator = VktSuoritusMockGenerator(0)
+        val random = Random(0)
+
+        val suoritus =
+            VktSuoritus(
+                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                kieli = Koodisto.Tutkintokieli.FIN,
+                suorituksenVastaanottaja = null,
+                suorituspaikkakunta = "091",
+                osat =
+                    generator.randomOsakokeet(
+                        Koodisto.VktTaitotaso.Erinomainen,
+                        getRandomLocalDate(
+                            LocalDate.of(2000, 1, 1),
+                            LocalDate.of(2025, 1, 1),
+                            random,
+                        ),
+                    ),
+                lahdejarjestelmanId =
+                    LahdejarjestelmanTunniste(
+                        "vkt.0",
+                        Lahdejarjestelma.KIOS,
+                    ),
+            )
+
+        val henkiloOid = generateRandomOppijaOid(Random(0))
+        val henkilosuoritus =
+            Henkilosuoritus(
+                henkilo =
+                    OidOppija(
+                        oid = OidString.from(henkiloOid),
+                        etunimet = "Keijo",
+                        sukunimi = "Keijunen",
+                    ),
+                suoritus = suoritus,
+            )
+
+        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
+
+        assertNotNull(koskiSuoritus)
+
+        val json = objectMapper.writeValueAsString(koskiSuoritus)
+
+        println("JSON: $json")
     }
 }
