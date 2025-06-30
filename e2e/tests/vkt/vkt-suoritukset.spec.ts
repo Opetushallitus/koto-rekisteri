@@ -245,7 +245,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     test("Search by oppijanumero works", async ({ vktIlmoittautuneetPage }) => {
       await vktIlmoittautuneetPage.login()
       await vktIlmoittautuneetPage.open()
-      await vktIlmoittautuneetPage.search("1.2.246.562.240.58644376343")
+      await vktIlmoittautuneetPage.search("1.2.246.562.24.58644376343")
 
       await expect(vktIlmoittautuneetPage.table.rows).toHaveCount(1)
       await expectToHaveTexts(
