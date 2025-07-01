@@ -1,7 +1,7 @@
 package fi.oph.kitu.koodisto
 
 import fi.oph.kitu.Cache
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier

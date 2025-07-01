@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream

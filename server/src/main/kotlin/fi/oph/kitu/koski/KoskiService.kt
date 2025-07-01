@@ -2,7 +2,7 @@ package fi.oph.kitu.koski
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.observability.use
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Tracer

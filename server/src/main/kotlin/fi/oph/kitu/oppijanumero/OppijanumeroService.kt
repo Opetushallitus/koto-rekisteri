@@ -3,7 +3,7 @@ package fi.oph.kitu.oppijanumero
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value

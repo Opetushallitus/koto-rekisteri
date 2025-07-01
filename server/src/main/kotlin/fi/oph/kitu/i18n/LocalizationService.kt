@@ -2,7 +2,7 @@ package fi.oph.kitu.i18n
 
 import fi.oph.kitu.koodisto.KoodistoService
 import fi.oph.kitu.koodisto.toLocalizedString
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.stereotype.Service
 

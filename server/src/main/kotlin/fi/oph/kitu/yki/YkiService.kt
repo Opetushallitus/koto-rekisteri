@@ -6,8 +6,8 @@ import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.setAttribute
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.observability.setAttribute
+import fi.oph.kitu.observability.use
 import fi.oph.kitu.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
@@ -32,7 +32,6 @@ import org.springframework.web.client.toEntity
 import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.time.format.DateTimeFormatter
-import kotlin.io.use
 
 @Service
 class YkiService(
