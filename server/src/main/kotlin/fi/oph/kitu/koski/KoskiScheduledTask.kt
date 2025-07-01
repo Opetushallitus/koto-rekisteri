@@ -19,13 +19,24 @@ class KoskiScheduledTask(
     lateinit var koskiSendSuorituksetSchedule: String
 
     @Bean
-    fun sendSuoriukset(koskiService: KoskiService): Task<Void> =
+    fun sendYkiSuoritukset(koskiService: KoskiService): Task<Void> =
         Tasks
             .recurring("KOSKI-send-YKI-suoritukset", ExtendedSchedules.parse(koskiSendSuorituksetSchedule))
             .execute { _, _ ->
                 tracer.spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute").startSpan().use { span ->
                     span.setAttribute("task.name", "KOSKI-send-YKI-suoritukset")
                     koskiService.sendYkiSuorituksetToKoski()
+                }
+            }
+
+    @Bean
+    fun sendVktSuoritukset(koskiService: KoskiService): Task<Void> =
+        Tasks
+            .recurring("KOSKI-send-VKT-suoritukset", ExtendedSchedules.parse(koskiSendSuorituksetSchedule))
+            .execute { _, _ ->
+                tracer.spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute").startSpan().use { span ->
+                    span.setAttribute("task.name", "KOSKI-send-VKT-suoritukset")
+                    koskiService.sendVktSuorituksetToKoski()
                 }
             }
 }
