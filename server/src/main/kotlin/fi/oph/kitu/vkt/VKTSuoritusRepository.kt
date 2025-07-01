@@ -11,6 +11,8 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
@@ -23,6 +25,9 @@ interface VktSuoritusRepository :
 class CustomVktSuoritusRepository {
     @Autowired
     private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
+
+    @Autowired
+    private lateinit var jdbcTemplate: JdbcTemplate
 
     @WithSpan
     fun findForListView(
@@ -79,31 +84,7 @@ class CustomVktSuoritusRepository {
             ) +
                 prefilterParams
 
-        return jdbcNamedParameterTemplate.query(query, params) { rs, _ ->
-            val henkilo =
-                OidOppija(
-                    oid = OidString(rs.getString("suorittajan_oppijanumero")),
-                    etunimet = rs.getString("etunimi"),
-                    sukunimi = rs.getString("sukunimi"),
-                )
-            val suoritus =
-                VktSuoritus(
-                    internalId = rs.getInt("id"),
-                    taitotaso = Koodisto.VktTaitotaso.valueOf(rs.getString("taitotaso")),
-                    kieli = Koodisto.Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
-                    osat =
-                        listOf(
-                            // Koska listanäkymissä (esim. erinomaisen ilmoittautuneet) ei ole tarvetta näyttää
-                            // mistä osakokeesta oli kyse, vaan meitä kiinnostaa ainoastaan tutkintopäivä,
-                            // käytetään tässä placeholderina niistä kirjoittamista.
-                            VktKirjoittamisenKoe(
-                                tutkintopaiva = rs.getDate("tutkintopaiva").toLocalDate(),
-                            ),
-                        ),
-                    lahdejarjestelmanId = LahdejarjestelmanTunniste.from(rs.getString("ilmoittautumisen_id")),
-                )
-            Henkilosuoritus(henkilo, suoritus)
-        }
+        return jdbcNamedParameterTemplate.query(query, params, henkiloSuoritusFromRow)
     }
 
     @WithSpan
@@ -139,6 +120,43 @@ class CustomVktSuoritusRepository {
             """.trimIndent()
 
         return jdbcNamedParameterTemplate.queryForObject(query, prefilterParams, Int::class.java)!!
+    }
+
+    @WithSpan
+    fun findSuoritusIdsWithNoKoskiopiskeluoikeus(): Iterable<Int> {
+        val query =
+            """
+            SELECT id
+            FROM vkt_suoritus
+            WHERE NOT koski_siirto_kasitelty
+            ORDER BY created_at
+            """.trimIndent()
+
+        return jdbcTemplate.query(query) { rs, rowNum -> rs.getInt("id") }
+    }
+
+    @WithSpan
+    fun setSuoritusTransferredToKoski(
+        id: Int,
+        koskiOpiskeluoikeusOid: String?,
+    ) {
+        val query =
+            """
+            UPDATE vkt_suoritus
+            SET
+                koski_siirto_kasitelty = true,
+                koski_opiskeluoikeus = :koski_oid
+            WHERE
+                id = :id
+            """.trimIndent()
+
+        val params =
+            mapOf(
+                "id" to id,
+                "koski_oid" to koskiOpiskeluoikeusOid,
+            )
+
+        jdbcNamedParameterTemplate.update(query, params)
     }
 
     private fun whereAll(vararg conditions: String?): String {
@@ -185,6 +203,35 @@ class CustomVktSuoritusRepository {
             sql,
             mapOf("taitotaso" to taitotaso.name) + search.sqlParams,
         )
+    }
+
+    companion object {
+        val henkiloSuoritusFromRow: RowMapper<Henkilosuoritus<VktSuoritus>> =
+            RowMapper { rs, _ ->
+                val henkilo =
+                    OidOppija(
+                        oid = OidString(rs.getString("suorittajan_oppijanumero")),
+                        etunimet = rs.getString("etunimi"),
+                        sukunimi = rs.getString("sukunimi"),
+                    )
+                val suoritus =
+                    VktSuoritus(
+                        internalId = rs.getInt("id"),
+                        taitotaso = Koodisto.VktTaitotaso.valueOf(rs.getString("taitotaso")),
+                        kieli = Koodisto.Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
+                        osat =
+                            listOf(
+                                // Koska listanäkymissä (esim. erinomaisen ilmoittautuneet) ei ole tarvetta näyttää
+                                // mistä osakokeesta oli kyse, vaan meitä kiinnostaa ainoastaan tutkintopäivä,
+                                // käytetään tässä placeholderina niistä kirjoittamista.
+                                VktKirjoittamisenKoe(
+                                    tutkintopaiva = rs.getDate("tutkintopaiva").toLocalDate(),
+                                ),
+                            ),
+                        lahdejarjestelmanId = LahdejarjestelmanTunniste.from(rs.getString("ilmoittautumisen_id")),
+                    )
+                Henkilosuoritus(henkilo, suoritus)
+            }
     }
 
     enum class Column(
