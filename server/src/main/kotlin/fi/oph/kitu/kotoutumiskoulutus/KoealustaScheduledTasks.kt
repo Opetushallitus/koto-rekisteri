@@ -3,7 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 import com.github.kagkarlsson.scheduler.task.Task
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import fi.oph.kitu.ExtendedSchedules
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty

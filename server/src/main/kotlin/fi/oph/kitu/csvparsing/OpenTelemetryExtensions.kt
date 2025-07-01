@@ -1,6 +1,6 @@
 package fi.oph.kitu.csvparsing
 
-import fi.oph.kitu.logging.setAttribute
+import fi.oph.kitu.observability.setAttribute
 import io.opentelemetry.api.trace.Span
 
 fun Span.setSerializationErrorToAttributes(errors: List<CsvExportError>) {

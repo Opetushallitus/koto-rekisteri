@@ -5,8 +5,8 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.setAttribute
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.observability.setAttribute
+import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value

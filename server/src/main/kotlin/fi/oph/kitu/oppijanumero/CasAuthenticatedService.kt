@@ -1,8 +1,8 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.logging.use
 import fi.oph.kitu.nullableBody
+import fi.oph.kitu.observability.use
 import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Qualifier

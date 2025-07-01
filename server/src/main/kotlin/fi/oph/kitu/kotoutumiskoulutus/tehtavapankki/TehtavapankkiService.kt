@@ -1,6 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.tehtavapankki
 
-import fi.oph.kitu.logging.use
+import fi.oph.kitu.observability.use
 import fi.oph.kitu.withJacksonStreamMaxStringLength
 import io.awspring.cloud.s3.S3Template
 import io.opentelemetry.api.trace.Tracer

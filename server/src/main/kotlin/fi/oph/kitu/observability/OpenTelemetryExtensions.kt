@@ -1,4 +1,4 @@
-package fi.oph.kitu.logging
+package fi.oph.kitu.observability
 
 import fi.oph.kitu.setAttributesForTypedResult
 import io.opentelemetry.api.trace.Span
