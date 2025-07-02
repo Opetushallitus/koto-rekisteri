@@ -72,7 +72,8 @@ object YkiSuorituksetPage {
         }
 
         return Page.renderHtml(
-            Navigation.getBreadcrumbs("/yki/suoritukset"),
+            breadcrumbs = Navigation.getBreadcrumbs("/yki/suoritukset"),
+            wideContent = true,
         ) {
             if (errorsCount > 0) {
                 error("Järjestelmässä on $errorsCount virhettä.") {
