@@ -4,7 +4,6 @@ import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.contrib.sampler.RuleBasedRoutingSampler
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider
-import io.opentelemetry.sdk.trace.samplers.Sampler
 import io.opentelemetry.semconv.UrlAttributes
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -19,7 +18,7 @@ class OpenTelemetrySamplingRules {
                 customizer.addSamplerCustomizer { fallback, config ->
                     RuleBasedRoutingSampler
                         .builder(SpanKind.SERVER, fallback)
-                        .customize(UrlAttributes.URL_PATH, "/actuator/health", Sampler.traceIdRatioBased(0.01))
+                        .drop(UrlAttributes.URL_PATH, "/actuator/health")
                         .build()
                 }
             }
