@@ -2,10 +2,11 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.generateHeader
+import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
-import fi.oph.kitu.yki.suoritukset.Paging
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
@@ -32,17 +33,8 @@ class YkiViewController(
         page: Int = 1,
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): String {
-        val offset = limit * (page - 1)
-        val paging =
-            Paging(
-                totalEntries = ykiService.countSuoritukset(search, versionHistory),
-                limit = limit,
-                currentPage = page,
-                searchStr = search,
-            )
-
-        return YkiSuorituksetPage.render(
+    ): String =
+        YkiSuorituksetPage.render(
             suoritukset =
                 ykiService.findSuorituksetPaged(
                     search,
@@ -50,16 +42,31 @@ class YkiViewController(
                     sortDirection,
                     versionHistory,
                     limit,
-                    offset,
+                    offset = limit * (page - 1),
                 ),
             header = generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection),
             sortColumn = sortColumn.urlParam,
             sortDirection = sortDirection,
-            paging = paging,
+            pagination =
+                Pagination(
+                    currentPageNumber = page,
+                    numberOfPages = ykiService.countSuoritukset(search, versionHistory).toInt(),
+                    url = { currentPage ->
+                        httpParams(
+                            mapOf(
+                                "page" to search,
+                                "includeVersionHistory" to versionHistory,
+                                "page" to currentPage,
+                                "sortColumn" to sortColumn.urlParam,
+                                "sortDirection" to sortDirection.name,
+                            ),
+                        )
+                    },
+                ),
+            search = search,
             versionHistory = versionHistory,
             errorsCount = suoritusErrorService.countErrors(),
         )
-    }
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
     fun suorituksetVirheetView(
