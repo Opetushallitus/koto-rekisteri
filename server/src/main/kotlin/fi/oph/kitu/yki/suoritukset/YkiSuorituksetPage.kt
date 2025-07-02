@@ -7,6 +7,7 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.error
 import fi.oph.kitu.html.input
+import fi.oph.kitu.html.pagination
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
@@ -210,42 +211,7 @@ object YkiSuorituksetPage {
             }
 
             footer {
-                nav {
-                    attributes["aria-label"] = "Suoritusten sivutus"
-
-                    ul(classes = "paging") {
-                        li {
-                            // Navigate to previous page
-                            navigationLink(
-                                page =
-                                    if (pagination.currentPageNumber <= 1) {
-                                        null
-                                    } else {
-                                        pagination.currentPageNumber - 1
-                                    },
-                                ariaLabel = "Edellinen sivu",
-                                innerText = "◀",
-                            )
-                        }
-                        li {
-                            // Show the number of the current page
-                            +"${pagination.currentPageNumber}"
-                        }
-                        li {
-                            // Navigate to next page
-                            navigationLink(
-                                page =
-                                    if (pagination.currentPageNumber >= pagination.numberOfPages) {
-                                        null
-                                    } else {
-                                        pagination.currentPageNumber + 1
-                                    },
-                                ariaLabel = "Seuraava sivu",
-                                innerText = "▶",
-                            )
-                        }
-                    }
-                }
+                pagination(pagination)
             }
         }
     }
