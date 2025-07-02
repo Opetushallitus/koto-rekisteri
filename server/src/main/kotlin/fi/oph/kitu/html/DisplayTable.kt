@@ -104,8 +104,8 @@ fun <T> FlowContent.displayTable(
     }
 }
 
-fun httpParams(params: Map<String, String?>): String =
+fun <K, V> httpParams(params: Map<K, V?>): String =
     "?${params
         .filter { (_, value) -> value != null }
-        .map { (key, value) -> "$key=${urlEncode(value)}" }
+        .map { (key, value) -> "$key=${urlEncode(value?.toString().orEmpty())}" }
         .joinToString("&")}"

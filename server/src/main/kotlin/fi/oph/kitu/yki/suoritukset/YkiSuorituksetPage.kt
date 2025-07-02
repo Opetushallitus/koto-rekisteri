@@ -4,6 +4,7 @@ import fi.oph.kitu.HeaderCell
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.error
 import fi.oph.kitu.html.input
 import kotlinx.html.ButtonType
@@ -32,19 +33,6 @@ import kotlinx.html.thead
 import kotlinx.html.tr
 import kotlinx.html.ul
 import java.net.URLEncoder
-import kotlin.math.ceil
-
-data class Paging(
-    val totalEntries: Long,
-    val limit: Int,
-    val currentPage: Int,
-    val searchStr: String,
-) {
-    val totalPages = ceil(totalEntries.toDouble() / limit).toInt()
-    val nextPage = if (currentPage >= totalPages) null else currentPage + 1
-    val previousPage = if (currentPage <= 1) null else currentPage - 1
-    val searchStrUrl: String = URLEncoder.encode(searchStr, Charsets.UTF_8)
-}
 
 object YkiSuorituksetPage {
     fun render(
@@ -52,12 +40,13 @@ object YkiSuorituksetPage {
         header: List<HeaderCell<YkiSuoritusColumn>>,
         sortColumn: String,
         sortDirection: SortDirection,
-        paging: Paging,
+        pagination: Pagination,
+        search: String,
         versionHistory: Boolean,
         errorsCount: Long,
     ): String {
         fun FlowContent.navigationLink(
-            search: String? = null,
+            searchStrUrl: String? = null,
             includeVersionHistory: Boolean? = null,
             page: Int? = null,
             sortColumnStr: String? = null,
@@ -67,9 +56,9 @@ object YkiSuorituksetPage {
         ) {
             a(
                 href = "suoritukset?${mapOf(
-                    "search" to (search ?: paging.searchStrUrl),
+                    "search" to (searchStrUrl ?: search),
                     "includeVersionHistory" to (includeVersionHistory ?: versionHistory),
-                    "page" to (page ?: paging.currentPage),
+                    "page" to (page ?: pagination.currentPageNumber),
                     "sortColumn" to (sortColumnStr ?: sortColumn),
                     "sortDirection" to (sortDirectionEnum ?: sortDirection),
                 ).toUrlParams()}",
@@ -105,7 +94,7 @@ object YkiSuorituksetPage {
                         id = "search",
                         type = InputType.text,
                         name = "search",
-                        value = paging.searchStr,
+                        value = search,
                         placeholder = "Oppijanumero, henkilötunnus tai hakusana",
                     ) {
                         button(type = ButtonType.submit) {
@@ -132,7 +121,7 @@ object YkiSuorituksetPage {
                     nav {
                         ul {
                             li {
-                                +"Suorituksia yhteensä: ${paging.totalEntries}"
+                                +"Suorituksia yhteensä: ${pagination.numberOfPages}"
                             }
                             li {
                                 a(
@@ -227,19 +216,29 @@ object YkiSuorituksetPage {
                         li {
                             // Navigate to previous page
                             navigationLink(
-                                page = paging.previousPage,
+                                page =
+                                    if (pagination.currentPageNumber <= 1) {
+                                        null
+                                    } else {
+                                        pagination.currentPageNumber - 1
+                                    },
                                 ariaLabel = "Edellinen sivu",
                                 innerText = "◀",
                             )
                         }
                         li {
                             // Show the number of the current page
-                            +"${paging.currentPage}"
+                            +"${pagination.currentPageNumber}"
                         }
                         li {
                             // Navigate to next page
                             navigationLink(
-                                page = paging.nextPage,
+                                page =
+                                    if (pagination.currentPageNumber >= pagination.numberOfPages) {
+                                        null
+                                    } else {
+                                        pagination.currentPageNumber + 1
+                                    },
                                 ariaLabel = "Seuraava sivu",
                                 innerText = "▶",
                             )
