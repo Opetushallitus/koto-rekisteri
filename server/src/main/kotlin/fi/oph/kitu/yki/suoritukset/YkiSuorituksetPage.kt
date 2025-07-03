@@ -1,13 +1,15 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.HeaderCell
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.error
+import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.reverse
+import fi.oph.kitu.toSymbol
 import kotlinx.html.ButtonType
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
@@ -36,8 +38,7 @@ import java.net.URLEncoder
 object YkiSuorituksetPage {
     fun render(
         suoritukset: List<YkiSuoritusEntity>,
-        header: List<HeaderCell<YkiSuoritusColumn>>,
-        sortColumn: String,
+        sortColumn: YkiSuoritusColumn,
         sortDirection: SortDirection,
         pagination: Pagination,
         search: String,
@@ -112,18 +113,28 @@ object YkiSuorituksetPage {
                 table {
                     thead {
                         tr {
-                            for (cell in header) {
+                            for (column in enumValues<YkiSuoritusColumn>()) {
                                 th {
                                     a(
-                                        href = "suoritukset?${mapOf(
-                                            "search" to (search),
-                                            "includeVersionHistory" to (versionHistory),
-                                            "page" to (pagination.currentPageNumber),
-                                            "sortColumn" to cell.column.urlParam,
-                                            "sortDirection" to cell.sortDirection,
-                                        ).toUrlParams()}",
+                                        href = "suoritukset?${
+                                            httpParams(
+                                                mapOf(
+                                                    "search" to (search),
+                                                    "includeVersionHistory" to (versionHistory),
+                                                    "page" to (pagination.currentPageNumber),
+                                                    "sortColumn" to column.urlParam,
+                                                    "sortDirection" to
+                                                        if (sortColumn == column) {
+                                                            sortDirection.reverse()
+                                                        } else {
+                                                            sortDirection
+                                                        },
+                                                ),
+                                            )
+                                        }",
                                     ) {
-                                        +"${cell.column.uiHeaderValue} ${cell.symbol}"
+                                        val symbol = if (sortColumn == column) sortDirection.toSymbol() else ""
+                                        +"${column.uiHeaderValue} $symbol"
                                     }
                                 }
                             }
