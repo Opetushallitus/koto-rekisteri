@@ -11,7 +11,6 @@ import fi.oph.kitu.html.pagination
 import kotlinx.html.ButtonType
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
-import kotlinx.html.TR
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.br
@@ -133,27 +132,27 @@ object YkiSuorituksetPage {
                     for (suoritus in suoritukset) {
                         tbody(classes = "suoritus") {
                             tr {
-                                cell(suoritus.suorittajanOID)
-                                cell(suoritus.sukunimi)
-                                cell(suoritus.etunimet)
-                                cell(suoritus.sukupuoli.name)
-                                cell(suoritus.hetu)
-                                cell(suoritus.kansalaisuus)
-                                cell("${suoritus.katuosoite}, ${suoritus.postinumero} ${suoritus.postitoimipaikka}")
-                                cell(suoritus.email)
-                                cell(suoritus.suoritusId)
-                                cell(suoritus.tutkintopaiva)
-                                cell(suoritus.tutkintokieli.name)
-                                cell(suoritus.tutkintotaso.name)
-                                cell(suoritus.jarjestajanTunnusOid)
-                                cell(suoritus.jarjestajanNimi)
-                                cell(suoritus.arviointipaiva)
-                                cell(suoritus.tekstinYmmartaminen)
-                                cell(suoritus.kirjoittaminen)
-                                cell(suoritus.rakenteetJaSanasto)
-                                cell(suoritus.puheenYmmartaminen)
-                                cell(suoritus.puhuminen)
-                                cell(suoritus.yleisarvosana)
+                                td { +suoritus.suorittajanOID.toString() }
+                                td { +suoritus.sukunimi }
+                                td { +suoritus.etunimet }
+                                td { +suoritus.sukupuoli.name }
+                                td { +suoritus.hetu }
+                                td { +suoritus.kansalaisuus }
+                                td { +"${suoritus.katuosoite}, ${suoritus.postinumero} ${suoritus.postitoimipaikka}" }
+                                td { +suoritus.email.orEmpty() }
+                                td { +suoritus.suoritusId.toString() }
+                                td { +suoritus.tutkintopaiva.toString() }
+                                td { +suoritus.tutkintokieli.name }
+                                td { +suoritus.tutkintotaso.name }
+                                td { +suoritus.jarjestajanTunnusOid.toString() }
+                                td { +suoritus.jarjestajanNimi }
+                                td { +suoritus.arviointipaiva.toString() }
+                                td { +suoritus.tekstinYmmartaminen?.toString().orEmpty() }
+                                td { +suoritus.kirjoittaminen?.toString().orEmpty() }
+                                td { +suoritus.rakenteetJaSanasto?.toString().orEmpty() }
+                                td { +suoritus.puheenYmmartaminen?.toString().orEmpty() }
+                                td { +suoritus.puhuminen?.toString().orEmpty() }
+                                td { +suoritus.yleisarvosana?.toString().orEmpty() }
                             }
 
                             if (suoritus.tarkistusarvioinninSaapumisPvm != null) {
@@ -172,12 +171,16 @@ object YkiSuorituksetPage {
                                                     th { +"Käsittelypäivä" }
                                                 }
                                                 tr {
-                                                    cell(suoritus.tarkistusarvioinninSaapumisPvm)
-                                                    cell(suoritus.tarkistusarvioinninAsiatunnus)
-                                                    cell(suoritus.tarkistusarvioidutOsakokeet)
-                                                    cell(suoritus.arvosanaMuuttui)
-                                                    cell(suoritus.perustelu)
-                                                    cell(suoritus.tarkistusarvioinninKasittelyPvm)
+                                                    td {
+                                                        +suoritus.tarkistusarvioinninSaapumisPvm?.toString().orEmpty()
+                                                    }
+                                                    td { +suoritus.tarkistusarvioinninAsiatunnus.orEmpty() }
+                                                    td { +suoritus.tarkistusarvioidutOsakokeet?.toString().orEmpty() }
+                                                    td { +suoritus.arvosanaMuuttui?.toString().orEmpty() }
+                                                    td { +suoritus.perustelu.orEmpty() }
+                                                    td {
+                                                        +suoritus.tarkistusarvioinninKasittelyPvm?.toString().orEmpty()
+                                                    }
                                                 }
                                             }
                                         }
@@ -193,12 +196,6 @@ object YkiSuorituksetPage {
                 pagination(pagination)
             }
         }
-
-    fun <T> TR.cell(value: T? = null) {
-        td {
-            +(value?.toString() ?: "")
-        }
-    }
 
     fun <K, V> Map<K, V>.toUrlParams(): String =
         this
