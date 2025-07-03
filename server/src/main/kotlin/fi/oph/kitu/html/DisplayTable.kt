@@ -4,6 +4,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.reverse
 import fi.oph.kitu.toSymbol
 import kotlinx.html.FlowContent
+import kotlinx.html.TABLE
 import kotlinx.html.a
 import kotlinx.html.style
 import kotlinx.html.table
@@ -13,6 +14,7 @@ import kotlinx.html.th
 import kotlinx.html.thead
 import kotlinx.html.tr
 import org.apereo.cas.client.util.CommonUtils.urlEncode
+import kotlin.collections.plus
 
 data class DisplayTableColumn<T>(
     val label: String,
@@ -37,6 +39,55 @@ interface DisplayTableEnum {
         )
 }
 
+fun <T> TABLE.displayTableHeader(
+    columns: List<DisplayTableColumn<T>>,
+    sortedBy: DisplayTableEnum? = null,
+    sortDirection: SortDirection? = null,
+    urlParams: Map<String, String?> = emptyMap(),
+    preserveSortDirection: Boolean,
+) {
+    val sortedByKey = sortedBy?.urlParam
+    thead {
+        tr {
+            columns.forEach {
+                th {
+                    testId(it.testId)
+                    if (it.width != null) {
+                        style = "width: ${it.width};"
+                    }
+                    if (it.sortKey != null && sortedBy != null && sortDirection != null) {
+                        val isSortedColumn = it.sortKey == sortedByKey
+                        a(
+                            href =
+                                httpParams(
+                                    urlParams +
+                                        mapOf(
+                                            "sortColumn" to it.sortKey,
+                                            "sortDirection" to
+                                                if (isSortedColumn) {
+                                                    sortDirection.reverse().name
+                                                } else if (preserveSortDirection) {
+                                                    SortDirection.ASC.name
+                                                } else {
+                                                    sortDirection.name
+                                                },
+                                        ),
+                                ),
+                        ) {
+                            +it.label
+                            if (isSortedColumn) {
+                                +" ${sortDirection.toSymbol()}"
+                            }
+                        }
+                    } else {
+                        +it.label
+                    }
+                }
+            }
+        }
+    }
+}
+
 fun <T> FlowContent.displayTable(
     rows: List<T>,
     columns: List<DisplayTableColumn<T>>,
@@ -46,48 +97,17 @@ fun <T> FlowContent.displayTable(
     rowTestId: ((T) -> String)? = null,
     urlParams: Map<String, String?> = emptyMap(),
 ) {
-    val sortedByKey = sortedBy?.urlParam
-
     table(classes = "striped") {
         testId(testId)
         debugTrace()
-        thead {
-            tr {
-                columns.forEach {
-                    th {
-                        testId(it.testId)
-                        if (it.width != null) {
-                            style = "width: ${it.width};"
-                        }
-                        if (it.sortKey != null && sortedBy != null && sortDirection != null) {
-                            val isSortedColumn = it.sortKey == sortedByKey
-                            a(
-                                href =
-                                    httpParams(
-                                        urlParams +
-                                            mapOf(
-                                                "sortColumn" to it.sortKey,
-                                                "sortDirection" to
-                                                    if (isSortedColumn) {
-                                                        sortDirection.reverse().name
-                                                    } else {
-                                                        SortDirection.ASC.name
-                                                    },
-                                            ),
-                                    ),
-                            ) {
-                                +it.label
-                                if (isSortedColumn) {
-                                    +" ${sortDirection.toSymbol()}"
-                                }
-                            }
-                        } else {
-                            +it.label
-                        }
-                    }
-                }
-            }
-        }
+        displayTableHeader(
+            columns = columns,
+            sortedBy = sortedBy,
+            sortDirection = sortDirection,
+            urlParams = urlParams,
+            preserveSortDirection = true,
+        )
+
         tbody {
             rows.forEach { row ->
                 tr {

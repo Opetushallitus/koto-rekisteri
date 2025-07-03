@@ -1,15 +1,14 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.html.error
-import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.pagination
-import fi.oph.kitu.reverse
-import fi.oph.kitu.toSymbol
 import kotlinx.html.ButtonType
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
@@ -30,10 +29,9 @@ import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
 import kotlinx.html.th
-import kotlinx.html.thead
 import kotlinx.html.tr
 import kotlinx.html.ul
-import java.net.URLEncoder
+import kotlin.enums.enumEntries
 
 object YkiSuorituksetPage {
     fun render(
@@ -111,35 +109,26 @@ object YkiSuorituksetPage {
                 }
 
                 table {
-                    thead {
-                        tr {
-                            for (column in enumValues<YkiSuoritusColumn>()) {
-                                th {
-                                    a(
-                                        href = "suoritukset?${
-                                            httpParams(
-                                                mapOf(
-                                                    "search" to (search),
-                                                    "includeVersionHistory" to (versionHistory),
-                                                    "page" to (pagination.currentPageNumber),
-                                                    "sortColumn" to column.urlParam,
-                                                    "sortDirection" to
-                                                        if (sortColumn == column) {
-                                                            sortDirection.reverse()
-                                                        } else {
-                                                            sortDirection
-                                                        },
-                                                ),
-                                            )
-                                        }",
-                                    ) {
-                                        val symbol = if (sortColumn == column) sortDirection.toSymbol() else ""
-                                        +"${column.uiHeaderValue} $symbol"
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    displayTableHeader(
+                        columns =
+                            enumEntries<YkiSuoritusColumn>().map {
+                                DisplayTableColumn<YkiSuoritusEntity>(
+                                    label = it.uiHeaderValue,
+                                    sortKey = it.urlParam,
+                                    renderValue = {},
+                                )
+                            },
+                        sortedBy = sortColumn,
+                        sortDirection = sortDirection,
+                        urlParams =
+                            mapOf(
+                                "search" to search,
+                                "includeVersionHistory" to "$versionHistory",
+                                "page" to "${pagination.currentPageNumber}",
+                            ),
+                        preserveSortDirection = false,
+                    )
+
                     for (suoritus in suoritukset) {
                         tbody(classes = "suoritus") {
                             tr {
@@ -207,16 +196,4 @@ object YkiSuorituksetPage {
                 pagination(pagination)
             }
         }
-
-    fun <K, V> Map<K, V>.toUrlParams(): String =
-        this
-            .map { entry -> entry }
-            .joinToString(separator = "&") {
-                listOf(it.key, it.value).joinToString(separator = "=") { it ->
-                    URLEncoder.encode(
-                        it.toString(),
-                        "UTF-8",
-                    )
-                }
-            }
 }
