@@ -9,7 +9,6 @@ import fi.oph.kitu.html.error
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.pagination
 import kotlinx.html.ButtonType
-import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
 import kotlinx.html.TR
@@ -45,34 +44,8 @@ object YkiSuorituksetPage {
         search: String,
         versionHistory: Boolean,
         errorsCount: Long,
-    ): String {
-        fun FlowContent.navigationLink(
-            searchStrUrl: String? = null,
-            includeVersionHistory: Boolean? = null,
-            page: Int? = null,
-            sortColumnStr: String? = null,
-            sortDirectionEnum: SortDirection? = null,
-            ariaLabel: String? = null,
-            innerText: String,
-        ) {
-            a(
-                href = "suoritukset?${mapOf(
-                    "search" to (searchStrUrl ?: search),
-                    "includeVersionHistory" to (includeVersionHistory ?: versionHistory),
-                    "page" to (page ?: pagination.currentPageNumber),
-                    "sortColumn" to (sortColumnStr ?: sortColumn),
-                    "sortDirection" to (sortDirectionEnum ?: sortDirection),
-                ).toUrlParams()}",
-            ) {
-                if (ariaLabel != null) {
-                    attributes["aria-label"] = ariaLabel
-                }
-
-                +innerText
-            }
-        }
-
-        return Page.renderHtml(
+    ): String =
+        Page.renderHtml(
             breadcrumbs = Navigation.getBreadcrumbs("/yki/suoritukset"),
             wideContent = true,
         ) {
@@ -142,11 +115,17 @@ object YkiSuorituksetPage {
                         tr {
                             for (cell in header) {
                                 th {
-                                    this@renderHtml.navigationLink(
-                                        sortColumnStr = cell.column.urlParam,
-                                        sortDirectionEnum = cell.sortDirection,
-                                        innerText = "${cell.column.uiHeaderValue} ${cell.symbol}",
-                                    )
+                                    a(
+                                        href = "suoritukset?${mapOf(
+                                            "search" to (search),
+                                            "includeVersionHistory" to (versionHistory),
+                                            "page" to (pagination.currentPageNumber),
+                                            "sortColumn" to cell.column.urlParam,
+                                            "sortDirection" to cell.sortDirection,
+                                        ).toUrlParams()}",
+                                    ) {
+                                        +"${cell.column.uiHeaderValue} ${cell.symbol}"
+                                    }
                                 }
                             }
                         }
@@ -214,7 +193,6 @@ object YkiSuorituksetPage {
                 pagination(pagination)
             }
         }
-    }
 
     fun <T> TR.cell(value: T? = null) {
         td {
