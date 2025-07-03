@@ -44,8 +44,7 @@ class YkiViewController(
                     limit,
                     offset = limit * (page - 1),
                 ),
-            header = generateHeader<YkiSuoritusColumn>(sortColumn, sortDirection),
-            sortColumn = sortColumn.urlParam,
+            sortColumn = sortColumn,
             sortDirection = sortDirection,
             pagination =
                 Pagination(
