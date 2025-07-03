@@ -88,6 +88,26 @@ fun <T> TABLE.displayTableHeader(
     }
 }
 
+fun <T> TABLE.displayTableBody(
+    rows: List<T>,
+    columns: List<DisplayTableColumn<T>>,
+    rowTestId: ((T) -> String)? = null,
+) {
+    tbody {
+        rows.forEach { row ->
+            tr {
+                testId(rowTestId?.let { it(row) })
+                columns.forEach { column ->
+                    td {
+                        testId(column.testId)
+                        column.renderValue(this, row)
+                    }
+                }
+            }
+        }
+    }
+}
+
 fun <T> FlowContent.displayTable(
     rows: List<T>,
     columns: List<DisplayTableColumn<T>>,
@@ -108,19 +128,7 @@ fun <T> FlowContent.displayTable(
             preserveSortDirection = true,
         )
 
-        tbody {
-            rows.forEach { row ->
-                tr {
-                    testId(rowTestId?.let { it(row) })
-                    columns.forEach { column ->
-                        td {
-                            testId(column.testId)
-                            column.renderValue(this, row)
-                        }
-                    }
-                }
-            }
-        }
+        displayTableBody(rows, columns, rowTestId)
     }
 }
 
