@@ -67,7 +67,7 @@ class CustomVktSuoritusRepository {
             FROM suoritus
             JOIN viimeisin_tutkintopaiva ON viimeisin_tutkintopaiva.suoritus_id = suoritus.id
             ${whereAll("rn = 1", tutkintopaivaCondition(search.dateTokens))}
-            ORDER BY ${column.dbColumn} $direction
+            ORDER BY ${column.entityName} $direction
             ${limit?.let { "LIMIT :limit" }.orEmpty()}
             ${offset?.let { "OFFSET :offset" }.orEmpty()}
             """.trimIndent()
@@ -187,7 +187,7 @@ class CustomVktSuoritusRepository {
     }
 
     enum class Column(
-        override val dbColumn: String?,
+        override val entityName: String?,
         override val uiHeaderValue: String,
         override val urlParam: String,
     ) : DisplayTableEnum {

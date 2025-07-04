@@ -27,7 +27,7 @@ data class DisplayTableColumn<T>(
 
 interface DisplayTableEnum {
     val name: String
-    val dbColumn: String?
+    val entityName: String?
     val uiHeaderValue: String
     val urlParam: String
 
@@ -36,7 +36,7 @@ interface DisplayTableEnum {
             label = uiHeaderValue,
             sortKey = urlParam,
             renderValue = renderValue,
-            testId = dbColumn,
+            testId = entityName,
         )
 }
 

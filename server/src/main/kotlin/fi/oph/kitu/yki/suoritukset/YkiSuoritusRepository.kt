@@ -239,7 +239,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 FROM yki_suoritus
                 ${whereQuery()}
                 ORDER BY suoritus_id, last_modified DESC)
-            ORDER BY ${column.dbColumn} $direction
+            ORDER BY ${column.entityName} $direction
             ${pagingQuery(limit, offset)}
             """.trimIndent()
 
