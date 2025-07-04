@@ -7,15 +7,14 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
-import fi.oph.kitu.html.error
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.yki.html.errorsArticle
 import kotlinx.html.ButtonType
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
 import kotlinx.html.a
 import kotlinx.html.article
-import kotlinx.html.br
 import kotlinx.html.button
 import kotlinx.html.details
 import kotlinx.html.fieldSet
@@ -47,14 +46,7 @@ object YkiSuorituksetPage {
             breadcrumbs = Navigation.getBreadcrumbs("/yki/suoritukset"),
             wideContent = true,
         ) {
-            if (errorsCount > 0) {
-                error("Järjestelmässä on $errorsCount virhettä.") {
-                    br()
-                    a("/yki/suoritukset/virheet") {
-                        +"Katso virheet"
-                    }
-                }
-            }
+            this.errorsArticle(errorsCount, "/yki/suoritukset/virheet")
 
             form(
                 action = "",
