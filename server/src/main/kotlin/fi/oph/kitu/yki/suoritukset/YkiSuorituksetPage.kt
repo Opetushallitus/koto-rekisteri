@@ -153,7 +153,7 @@ object YkiSuorituksetPage {
                                             }
                                             tr {
                                                 td {
-                                                    +suoritus.tarkistusarvioinninSaapumisPvm?.toString().orEmpty()
+                                                    +suoritus.tarkistusarvioinninSaapumisPvm.toString()
                                                 }
                                                 td { +suoritus.tarkistusarvioinninAsiatunnus.orEmpty() }
                                                 td { +suoritus.tarkistusarvioidutOsakokeet?.toString().orEmpty() }
