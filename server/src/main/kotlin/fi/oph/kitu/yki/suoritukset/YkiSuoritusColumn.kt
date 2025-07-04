@@ -8,153 +8,153 @@ import kotlinx.html.FlowContent
  * The class also maps the column names between SQL data classes and UI.
  */
 enum class YkiSuoritusColumn(
-    override val dbColumn: String,
+    override val entityName: String,
     override val uiHeaderValue: String,
     override val urlParam: String,
     val renderValue: FlowContent.(YkiSuoritusEntity) -> Unit,
 ) : DisplayTableEnum {
     SuorittajanOid(
-        dbColumn = "suorittajan_oid",
+        entityName = "suorittajan_oid",
         uiHeaderValue = "Oppijanumero",
         urlParam = "suorittajanoid",
         renderValue = { +it.suorittajanOID.toString() },
     ),
 
     Sukunimi(
-        dbColumn = "sukunimi",
+        entityName = "sukunimi",
         uiHeaderValue = "Sukunimi",
         urlParam = "sukunimi",
         renderValue = { +it.sukunimi },
     ),
 
     Etunimet(
-        dbColumn = "etunimet",
+        entityName = "etunimet",
         uiHeaderValue = "Etunimi",
         urlParam = "etunimet",
         renderValue = { +it.etunimet },
     ),
 
     Sukupuoli(
-        dbColumn = "sukupuoli",
+        entityName = "sukupuoli",
         uiHeaderValue = "Sukupuoli",
         urlParam = "sukupuoli",
         renderValue = { +it.sukupuoli.name },
     ),
 
     Hetu(
-        dbColumn = "hetu",
+        entityName = "hetu",
         uiHeaderValue = "Henkilötunnus",
         urlParam = "hetu",
         renderValue = { +it.hetu },
     ),
 
     Kansalaisuus(
-        dbColumn = "kansalaisuus",
+        entityName = "kansalaisuus",
         uiHeaderValue = "Kansalaisuus",
         urlParam = "kansalaisuus",
         renderValue = { +it.kansalaisuus },
     ),
 
     Katuosoite(
-        dbColumn = "katuosoite",
+        entityName = "katuosoite",
         uiHeaderValue = "Osoite",
         urlParam = "katuosoite",
         renderValue = { +"${it.katuosoite}, ${it.postinumero} ${it.postitoimipaikka}" },
     ),
 
     Email(
-        dbColumn = "email",
+        entityName = "email",
         uiHeaderValue = "Sähköposti",
         urlParam = "email",
         renderValue = { +it.email.orEmpty() },
     ),
 
     SuoritusId(
-        dbColumn = "suoritus_id",
+        entityName = "suoritus_id",
         uiHeaderValue = "Suorituksen tunniste",
         urlParam = "suoritusid",
         renderValue = { +it.suoritusId.toString() },
     ),
 
     Tutkintopaiva(
-        dbColumn = "tutkintopaiva",
+        entityName = "tutkintopaiva",
         uiHeaderValue = "Tutkintopäivä",
         urlParam = "tutkintopaiva",
         renderValue = { +it.tutkintopaiva.toString() },
     ),
 
     Tutkintokieli(
-        dbColumn = "tutkintokieli",
+        entityName = "tutkintokieli",
         uiHeaderValue = "Tutkintokieli",
         urlParam = "tutkintokieli",
         renderValue = { +it.tutkintokieli.name },
     ),
 
     Tutkintotaso(
-        dbColumn = "tutkintotaso",
+        entityName = "tutkintotaso",
         uiHeaderValue = "Tutkintotaso",
         urlParam = "tutkintotaso",
         renderValue = { +it.tutkintotaso.name },
     ),
 
     JarjestajanTunnusOid(
-        dbColumn = "jarjestajan_tunnus_oid",
+        entityName = "jarjestajan_tunnus_oid",
         uiHeaderValue = "Järjestäjän OID",
         urlParam = "jarjestajantunnusoid",
         renderValue = { +it.jarjestajanTunnusOid.toString() },
     ),
 
     JarjestajanNimi(
-        dbColumn = "jarjestajan_nimi",
+        entityName = "jarjestajan_nimi",
         uiHeaderValue = "Järjestäjän nimi",
         urlParam = "jarjestajannimi",
         renderValue = { +it.jarjestajanNimi },
     ),
 
     Arviointipaiva(
-        dbColumn = "arviointipaiva",
+        entityName = "arviointipaiva",
         uiHeaderValue = "Arviointipäivä",
         urlParam = "arviointipaiva",
         renderValue = { +it.arviointipaiva.toString() },
     ),
 
     TekstinYmmartaminen(
-        dbColumn = "tekstin_ymmartaminen",
+        entityName = "tekstin_ymmartaminen",
         uiHeaderValue = "Tekstin ymmärtäminen",
         urlParam = "tekstinymmartaminen",
         renderValue = { +it.tekstinYmmartaminen?.toString().orEmpty() },
     ),
 
     Kirjoittaminen(
-        dbColumn = "kirjoittaminen",
+        entityName = "kirjoittaminen",
         uiHeaderValue = "Kirjoittaminen",
         urlParam = "kirjoittaminen",
         renderValue = { +it.kirjoittaminen?.toString().orEmpty() },
     ),
 
     RakenteetJaSanasto(
-        dbColumn = "rakenteet_ja_sanasto",
+        entityName = "rakenteet_ja_sanasto",
         uiHeaderValue = "Rakenteet ja sanasto",
         urlParam = "rakenteetjasanasto",
         renderValue = { +it.rakenteetJaSanasto?.toString().orEmpty() },
     ),
 
     PuheenYmmartamainen(
-        dbColumn = "puheen_ymmartaminen",
+        entityName = "puheen_ymmartaminen",
         uiHeaderValue = "Puheen ymmärtäminen",
         urlParam = "puheenymmartamainen",
         renderValue = { +it.puheenYmmartaminen?.toString().orEmpty() },
     ),
 
     Puhuminen(
-        dbColumn = "puhuminen",
+        entityName = "puhuminen",
         uiHeaderValue = "Puhuminen",
         urlParam = "puhuminen",
         renderValue = { +it.puhuminen?.toString().orEmpty() },
     ),
 
     Yleisarvosana(
-        dbColumn = "yleisarvosana",
+        entityName = "yleisarvosana",
         uiHeaderValue = "Yleisarvosana",
         urlParam = "yleisarvosana",
         renderValue = { +it.yleisarvosana?.toString().orEmpty() },
