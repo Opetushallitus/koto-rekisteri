@@ -5,6 +5,7 @@ import fi.oph.kitu.reverse
 import fi.oph.kitu.toSymbol
 import kotlinx.html.FlowContent
 import kotlinx.html.TABLE
+import kotlinx.html.TBODY
 import kotlinx.html.a
 import kotlinx.html.style
 import kotlinx.html.table
@@ -92,10 +93,12 @@ fun <T> TABLE.displayTableBody(
     rows: List<T>,
     columns: List<DisplayTableColumn<T>>,
     rowTestId: ((T) -> String)? = null,
+    rowClasses: String? = null,
+    afterRow: TBODY.(T) -> Unit = {},
 ) {
     tbody {
         rows.forEach { row ->
-            tr {
+            tr(classes = rowClasses) {
                 testId(rowTestId?.let { it(row) })
                 columns.forEach { column ->
                     td {
@@ -104,6 +107,7 @@ fun <T> TABLE.displayTableBody(
                     }
                 }
             }
+            afterRow(this, row)
         }
     }
 }
