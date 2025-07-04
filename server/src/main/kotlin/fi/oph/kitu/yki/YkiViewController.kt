@@ -5,6 +5,7 @@ import fi.oph.kitu.generateHeader
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
@@ -79,17 +80,17 @@ class YkiViewController(
             .addObject("virheet", suoritusErrorService.getErrors(sortColumn, sortDirection))
 
     @GetMapping("/arvioijat")
+    @ResponseBody
     fun arvioijatView(
         sortColumn: YkiArvioijaColumn = YkiArvioijaColumn.Rekisteriintuontiaika,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): ModelAndView =
-        ModelAndView("yki-arvioijat")
-            .addObject("header", generateHeader<YkiArvioijaColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.urlParam)
-            .addObject("sortDirection", sortDirection)
-            .addObject("arvioijat", ykiService.allArvioijat(sortColumn, sortDirection))
-            // nullify 0 values for mustache
-            .addObject("errorsCount", arvioijaErrorService.countErrors().let { if (it == 0L) null else it })
+    ): String =
+        YkiArvioijaPage.render(
+            sortColumn = sortColumn,
+            sortDirection = sortDirection,
+            arvioijat = ykiService.allArvioijat(sortColumn, sortDirection),
+            errorsCount = arvioijaErrorService.countErrors(),
+        )
 
     @GetMapping("/arvioijat/virheet", produces = ["text/html"])
     fun arvioijatVirheetView(
