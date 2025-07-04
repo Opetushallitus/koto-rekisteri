@@ -5,11 +5,11 @@ import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.html.error
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.pagination
-import fi.oph.kitu.yki.html.ykiDisplayTableBody
 import kotlinx.html.ButtonType
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
@@ -131,10 +131,10 @@ object YkiSuorituksetPage {
                         preserveSortDirection = false,
                     )
 
-                    ykiDisplayTableBody(
+                    displayTableBody(
                         rows = suoritukset,
                         columns = columns,
-                        tbodyClasses = "suoritus",
+                        rowClasses = "suoritus",
                     ) { suoritus ->
                         if (suoritus.tarkistusarvioinninSaapumisPvm != null) {
                             tr {
