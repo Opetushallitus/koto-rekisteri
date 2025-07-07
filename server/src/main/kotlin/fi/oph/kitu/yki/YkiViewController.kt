@@ -1,12 +1,12 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.generateHeader
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
+import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.servlet.ModelAndView
 
 @Controller
 @RequestMapping("yki")
@@ -95,13 +94,14 @@ class YkiViewController(
         )
 
     @GetMapping("/arvioijat/virheet", produces = ["text/html"])
+    @ResponseBody
     fun arvioijatVirheetView(
         sortColumn: YkiArvioijaErrorColumn = YkiArvioijaErrorColumn.VirheenLuontiaika,
         sortDirection: SortDirection = SortDirection.ASC,
-    ): ModelAndView =
-        ModelAndView("yki-arvioijat-virheet")
-            .addObject("header", generateHeader<YkiArvioijaErrorColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.urlParam)
-            .addObject("sortDirection", sortDirection)
-            .addObject("virheet", arvioijaErrorService.getErrors(sortColumn, sortDirection))
+    ): String =
+        YkiArvioijaErrorPage.render(
+            sortColumn = sortColumn,
+            sortDirection = sortDirection,
+            arvioijaErrorService.getErrors(sortColumn, sortDirection),
+        )
 }
