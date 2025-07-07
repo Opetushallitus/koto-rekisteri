@@ -11,6 +11,7 @@ import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -69,15 +70,16 @@ class YkiViewController(
         )
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
+    @ResponseBody
     fun suorituksetVirheetView(
         sortColumn: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.VirheenLuontiaika,
         sortDirection: SortDirection = SortDirection.ASC,
-    ): ModelAndView =
-        ModelAndView("yki-suoritukset-virheet")
-            .addObject("header", generateHeader<YkiSuoritusErrorColumn>(sortColumn, sortDirection))
-            .addObject("sortColumn", sortColumn.urlParam)
-            .addObject("sortDirection", sortDirection)
-            .addObject("virheet", suoritusErrorService.getErrors(sortColumn, sortDirection))
+    ): String =
+        YkiSuoritusErrorPage.render(
+            sortColumn = sortColumn,
+            sortDirection = sortDirection,
+            virheet = suoritusErrorService.getErrors(sortColumn, sortDirection),
+        )
 
     @GetMapping("/arvioijat")
     @ResponseBody

@@ -119,6 +119,7 @@ fun <T> FlowContent.displayTable(
     sortDirection: SortDirection? = null,
     testId: String? = null,
     rowTestId: ((T) -> String)? = null,
+    rowClasses: String? = null,
     urlParams: Map<String, String?> = emptyMap(),
 ) {
     table(classes = "striped") {
@@ -132,7 +133,12 @@ fun <T> FlowContent.displayTable(
             preserveSortDirection = true,
         )
 
-        displayTableBody(rows, columns, rowTestId)
+        displayTableBody(
+            rows = rows,
+            columns = columns,
+            rowTestId = rowTestId,
+            rowClasses = rowClasses,
+        )
     }
 }
 
