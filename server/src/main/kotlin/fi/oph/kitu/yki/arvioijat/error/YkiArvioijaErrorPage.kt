@@ -12,7 +12,14 @@ object YkiArvioijaErrorPage {
         virheet: List<YkiArvioijaErrorEntity>,
     ): String =
         Page.renderHtml(
-            breadcrumbs = Navigation.getBreadcrumbs("/yki/arvioijat/virheet"),
+            breadcrumbs =
+                Navigation.getBreadcrumbs(
+                    "/yki/arvioijat",
+                    Navigation.MenuItem(
+                        "Virheet",
+                        "/yki/arvioijat/virheet",
+                    ),
+                ),
             wideContent = true,
         ) {
             displayTable(
