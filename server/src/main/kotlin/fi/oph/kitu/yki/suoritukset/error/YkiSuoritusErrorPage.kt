@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTable
@@ -16,18 +15,9 @@ object YkiSuoritusErrorPage {
             breadcrumbs = Navigation.getBreadcrumbs("/yki/suoritukset/virheet"),
             wideContent = true,
         ) {
-            val columns =
-                enumValues<YkiSuoritusErrorColumn>().map { it ->
-                    DisplayTableColumn(
-                        label = it.uiHeaderValue,
-                        sortKey = it.urlParam,
-                        renderValue = it.renderValue,
-                    )
-                }
-
             displayTable(
                 rows = virheet,
-                columns = columns,
+                columns = enumValues<YkiSuoritusErrorColumn>().map { it.withValue(it.renderValue) },
                 sortedBy = sortColumn,
                 sortDirection = sortDirection,
                 rowClasses = "virheet",
