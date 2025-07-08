@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
@@ -101,14 +100,7 @@ object YkiSuorituksetPage {
                 }
 
                 table {
-                    val columns =
-                        enumEntries<YkiSuoritusColumn>().map {
-                            DisplayTableColumn(
-                                label = it.uiHeaderValue,
-                                sortKey = it.urlParam,
-                                renderValue = it.renderValue,
-                            )
-                        }
+                    val columns = enumEntries<YkiSuoritusColumn>().map { it.withValue(it.renderValue) }
 
                     displayTableHeader(
                         columns = columns,

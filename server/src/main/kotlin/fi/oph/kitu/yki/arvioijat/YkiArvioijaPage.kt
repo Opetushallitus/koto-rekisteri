@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTable
@@ -22,18 +21,9 @@ object YkiArvioijaPage {
         ) {
             this.errorsArticle(errorsCount, "/yki/arvioijat/virheet")
 
-            val columns =
-                enumEntries<YkiArvioijaColumn>().map {
-                    DisplayTableColumn(
-                        label = it.uiHeaderValue,
-                        sortKey = it.urlParam,
-                        renderValue = it.renderValue,
-                    )
-                }
-
             displayTable(
                 rows = arvioijat,
-                columns = columns,
+                columns = enumEntries<YkiArvioijaColumn>().map { it.withValue(it.renderValue) },
                 sortedBy = sortColumn,
                 sortDirection = sortDirection,
             )
