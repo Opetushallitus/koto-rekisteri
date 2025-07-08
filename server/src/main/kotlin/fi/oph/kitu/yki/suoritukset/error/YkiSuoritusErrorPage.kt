@@ -12,7 +12,14 @@ object YkiSuoritusErrorPage {
         virheet: List<YkiSuoritusErrorEntity>,
     ): String =
         Page.renderHtml(
-            breadcrumbs = Navigation.getBreadcrumbs("/yki/suoritukset/virheet"),
+            breadcrumbs =
+                Navigation.getBreadcrumbs(
+                    "/yki/suoritukset",
+                    Navigation.MenuItem(
+                        "Virheet",
+                        "/yki/suoritukset/virheet",
+                    ),
+                ),
             wideContent = true,
         ) {
             displayTable(
