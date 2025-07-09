@@ -5,6 +5,7 @@ import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.yki.html.errorsArticle
+import kotlinx.html.article
 import kotlin.String
 import kotlin.enums.enumEntries
 
@@ -21,11 +22,13 @@ object YkiArvioijaPage {
         ) {
             this.errorsArticle(errorsCount, "/yki/arvioijat/virheet")
 
-            displayTable(
-                rows = arvioijat,
-                columns = enumEntries<YkiArvioijaColumn>().map { it.withValue(it.renderValue) },
-                sortedBy = sortColumn,
-                sortDirection = sortDirection,
-            )
+            article(classes = "overflow-auto") {
+                displayTable(
+                    rows = arvioijat,
+                    columns = enumEntries<YkiArvioijaColumn>().map { it.withValue(it.renderValue) },
+                    sortedBy = sortColumn,
+                    sortDirection = sortDirection,
+                )
+            }
         }
 }
