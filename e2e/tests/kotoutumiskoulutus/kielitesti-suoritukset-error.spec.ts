@@ -29,40 +29,24 @@ describe('"Koto Suoritukset" -page', () => {
     kielitestiErrorPage,
   }) => {
     await kielitestiErrorPage.open()
-
     const errors = await kielitestiErrorPage.getErrorTableBody()
+    const virhe = fixtureData.suoritusVirhe
 
-    const virheFixture = fixtureData.suoritusVirhe
-    const hetuCell = errors.getByRole("cell", { name: virheFixture.hetu })
-    const nimiCell = errors.getByText(virheFixture.nimi)
-    const schoolOidCell = errors.getByText(virheFixture.schoolOid)
-    const teacherEmailCell = errors.getByText(virheFixture.teacherEmail)
-    const virheenLuontiaikaCell = errors.getByText(
-      virheFixture.virheenLuontiaika,
+    await expect(errors.getByTestId("hetu")).toHaveText(virhe.hetu)
+    await expect(errors.getByTestId("nimi")).toHaveText(virhe.nimi)
+    await expect(errors.getByTestId("schoolOid")).toHaveText(virhe.schoolOid)
+    await expect(errors.getByTestId("teacherEmail")).toHaveText(
+      virhe.teacherEmail,
     )
-    const viestiCell = errors.getByText(virheFixture.viesti)
-    const virheellinenKenttaCell = errors.getByText(
-      virheFixture.virheellinenKentta,
-      { exact: true },
+    await expect(errors.getByTestId("virheenLuontiaika")).toHaveText(
+      virhe.virheenLuontiaika,
     )
-    const virheellinenArvoCell = errors.getByText(virheFixture.virheellinenArvo)
-
-    await expect(hetuCell).toHaveAttribute("headers", "hetu")
-    await expect(nimiCell).toHaveAttribute("headers", "nimi")
-    await expect(schoolOidCell).toHaveAttribute("headers", "schoolOid")
-    await expect(teacherEmailCell).toHaveAttribute("headers", "teacherEmail")
-    await expect(virheenLuontiaikaCell).toHaveAttribute(
-      "headers",
-      "virheenLuontiaika",
+    await expect(errors.getByTestId("viesti")).toHaveText(virhe.viesti)
+    await expect(errors.getByTestId("virheellinenKentta")).toHaveText(
+      virhe.virheellinenKentta,
     )
-    await expect(viestiCell).toHaveAttribute("headers", "viesti")
-    await expect(virheellinenKenttaCell).toHaveAttribute(
-      "headers",
-      "virheellinenKentta",
-    )
-    await expect(virheellinenArvoCell).toHaveAttribute(
-      "headers",
-      "virheellinenArvo",
+    await expect(errors.getByTestId("virheellinenArvo")).toHaveText(
+      virhe.virheellinenArvo,
     )
   })
 
@@ -81,6 +65,7 @@ describe('"Koto Suoritukset" -page', () => {
     expect(errors).toHaveLength(2)
   })
 
+  // Test: registry data can be sorted by "${column}"`
   const sortTestCases = [
     {
       column: "Henkilötunnus",
@@ -156,6 +141,7 @@ describe('"Koto Suoritukset" -page', () => {
       kotoSuoritusError,
       db,
     }) => {
+      console.log("column:", column)
       await kotoSuoritusError.insert(db, "virheMagdalena")
       await kotoSuoritusError.insert(db, "virhePetro")
 
@@ -164,8 +150,19 @@ describe('"Koto Suoritukset" -page', () => {
       const sortByLink = page.getTableColumnHeaderLink(column)
       await sortByLink.click()
 
-      for (const [expected, row] of enumerate(order)) {
-        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+      console.log("order:", order)
+      for (const data of enumerate(order)) {
+        const [expected, row] = data
+        console.log("data", data)
+
+        const actualValue = page
+          .getErrorRow()
+          .nth(row)
+          .getByRole("cell")
+          .nth(tableColumnIndex)
+
+        // const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+
         await expect(actualValue).toHaveText(expected)
       }
 
