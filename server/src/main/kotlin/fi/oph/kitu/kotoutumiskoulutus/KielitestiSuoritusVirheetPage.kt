@@ -1,4 +1,4 @@
-package fi.oph.kitu.yki.suoritukset.error
+package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
@@ -6,31 +6,31 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTable
 import kotlinx.html.article
 
-object YkiSuoritusErrorPage {
+object KielitestiSuoritusVirheetPage {
     fun render(
-        sortColumn: YkiSuoritusErrorColumn,
+        sortColumn: KielitestiSuoritusErrorColumn,
         sortDirection: SortDirection,
-        virheet: List<YkiSuoritusErrorEntity>,
+        virheet: Iterable<KielitestiSuoritusError>,
     ): String =
         Page.renderHtml(
             breadcrumbs =
                 Navigation.getBreadcrumbs(
-                    "/yki/suoritukset",
+                    "/yki/arvioijat",
                     Navigation.MenuItem(
                         "Virheet",
-                        "/yki/suoritukset/virheet",
+                        "/yki/arvioijat/virheet",
                     ),
                 ),
             wideContent = true,
         ) {
             article(classes = "overflow-auto") {
                 displayTable(
-                    rows = virheet,
-                    columns = enumValues<YkiSuoritusErrorColumn>().map { it.withValue(it.renderValue) },
+                    rows = virheet.toList(),
+                    columns = enumValues<KielitestiSuoritusErrorColumn>().map { it.withValue(it.renderValue) },
                     sortedBy = sortColumn,
                     sortDirection = sortDirection,
                     rowClasses = "virheet",
-                    rowTestId = { "error-row" },
+                    rowTestId = { "virhe-summary-row" },
                 )
             }
         }

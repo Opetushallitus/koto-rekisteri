@@ -52,7 +52,7 @@ class KoealustaService(
     fun getErrors(
         sortColumn: KielitestiSuoritusErrorColumn,
         sortDirection: SortDirection,
-    ) = kielitestiSuoritusErrorRepository.findAllSorted(sortColumn.fieldName, sortDirection)
+    ) = kielitestiSuoritusErrorRepository.findAllSorted(sortColumn.entityName, sortDirection)
 
     fun importSuoritukset(from: Instant): Instant =
         tracer.spanBuilder("koealusta.import.suoritukset").startSpan().use { span ->
