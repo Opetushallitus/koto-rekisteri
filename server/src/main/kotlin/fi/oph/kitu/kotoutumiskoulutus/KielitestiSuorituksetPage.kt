@@ -10,8 +10,10 @@ import kotlinx.html.article
 import kotlinx.html.details
 import kotlinx.html.summary
 import kotlinx.html.table
+import kotlinx.html.tbody
 import kotlinx.html.td
 import kotlinx.html.th
+import kotlinx.html.thead
 import kotlinx.html.tr
 import kotlin.enums.enumEntries
 
@@ -44,26 +46,30 @@ object KielitestiSuorituksetPage {
                         rowTestId = { "suoritus-summary-row" },
                     ) { suoritus ->
                         tr {
-                            attributes["colspan"] = "13"
+                            attributes["data-testid"] = "suoritus-details-row"
 
                             td {
-                                attributes["rowspan"] = "13"
+                                attributes["colspan"] = "13"
                                 details {
                                     summary { +"Näytä lisätiedot/tulokset" }
                                     table {
-                                        tr {
-                                            th { +"Oppijanumero" }
-                                            th { +"Luetun ymmärtäminen" }
-                                            th { +"Kuullun ymmärtäminen" }
-                                            th { +"Puhe" }
-                                            th { +"Kirjoittaminen" }
+                                        thead {
+                                            tr {
+                                                th { +"Oppijanumero" }
+                                                th { +"Luetun ymmärtäminen" }
+                                                th { +"Kuullun ymmärtäminen" }
+                                                th { +"Puhe" }
+                                                th { +"Kirjoittaminen" }
+                                            }
                                         }
-                                        tr {
-                                            td { +suoritus.oppijanumero.toString() }
-                                            td { +suoritus.luetunYmmartaminenResult }
-                                            td { +suoritus.kuullunYmmartaminenResult }
-                                            td { +suoritus.puheResult }
-                                            td { +suoritus.kirjoittaminenResult.orEmpty() }
+                                        tbody {
+                                            tr {
+                                                td { +suoritus.oppijanumero.toString() }
+                                                td { +suoritus.luetunYmmartaminenResult }
+                                                td { +suoritus.kuullunYmmartaminenResult }
+                                                td { +suoritus.puheResult }
+                                                td { +suoritus.kirjoittaminenResult.orEmpty() }
+                                            }
                                         }
                                     }
                                 }
