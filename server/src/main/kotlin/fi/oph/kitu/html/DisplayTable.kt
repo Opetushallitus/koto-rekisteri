@@ -52,6 +52,7 @@ fun <T> TABLE.displayTableHeader(
         tr {
             columns.forEach {
                 th {
+                    attributes["id"] = it.sortKey ?: ""
                     testId(it.testId)
                     if (it.width != null) {
                         style = "width: ${it.width};"
