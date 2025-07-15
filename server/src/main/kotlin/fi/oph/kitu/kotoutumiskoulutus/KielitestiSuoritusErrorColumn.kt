@@ -13,48 +13,74 @@ enum class KielitestiSuoritusErrorColumn(
         "hetu",
         "Henkilötunnus",
         "henkilötunnus",
-        { +it.hetu.orEmpty() },
+        {
+            if (!it.hetu.isNullOrEmpty()) {
+                attributes["headers"] = "hetu"
+                +it.hetu
+            }
+        },
     ),
     Nimi(
         "nimi",
         "Nimi",
         "nimi",
-        { +it.nimi },
+        {
+            attributes["headers"] = "nimi"
+            +it.nimi
+        },
     ),
     SchoolOid(
         "schoolOid",
         "Organisaation OID",
         "schooloid",
-        { +it.schoolOid?.toString().orEmpty() },
+        {
+            attributes["headers"] = "schoolOid"
+            +it.schoolOid?.toString().orEmpty()
+        },
     ),
     TeacherEmail(
         "teacherEmail",
         "Opettajan sähköpostiosoite",
         "teacheremail",
-        { +it.teacherEmail.orEmpty() },
+        {
+            attributes["headers"] = "teacherEmail"
+            +it.teacherEmail.orEmpty()
+        },
     ),
     VirheenLuontiaika(
         "virheenLuontiaika",
         "Virheen luontiaika",
         "virheenluontiaika",
-        { +it.virheenLuontiaika.toString() },
+        {
+            attributes["headers"] = "virheenLuontiaika"
+            +it.virheenLuontiaika.toString()
+        },
     ),
     Viesti(
         "viesti",
         "Virheviesti",
         "viesti",
-        { +it.viesti },
+        {
+            attributes["headers"] = "viesti"
+            +it.viesti
+        },
     ),
     VirheellinenKentta(
         "virheellinenKentta",
         "Virheellinen kenttä",
         "virheellinenkentta",
-        { +it.virheellinenKentta.orEmpty() },
+        {
+            attributes["headers"] = "virheellinenKentta"
+            +it.virheellinenKentta.orEmpty()
+        },
     ),
     VirheellinenArvo(
         "virheellinenArvo",
         "Virheellinen arvo",
         "virheellinenarvo",
-        { +it.virheellinenArvo.orEmpty() },
+        {
+            attributes["headers"] = "virheellinenArvo"
+            +it.virheellinenArvo.orEmpty()
+        },
     ),
 }

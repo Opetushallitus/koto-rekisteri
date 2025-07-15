@@ -94,10 +94,11 @@ fun <T> TABLE.displayTableBody(
     rows: List<T>,
     columns: List<DisplayTableColumn<T>>,
     rowTestId: ((T) -> String)? = null,
+    tbodyClasses: String? = null,
     rowClasses: String? = null,
     afterRow: TBODY.(T) -> Unit = {},
 ) {
-    tbody {
+    tbody(tbodyClasses) {
         rows.forEach { row ->
             tr(classes = rowClasses) {
                 testId(rowTestId?.let { it(row) })
