@@ -10,10 +10,10 @@ enum class KielitestiSuoritusErrorColumn(
     val renderValue: FlowContent.(KielitestiSuoritusError) -> Unit,
 ) : DisplayTableEnum {
     Henkilötunnus(
-        "hetu",
-        "Henkilötunnus",
-        "henkilötunnus",
-        {
+        entityName = "hetu",
+        uiHeaderValue = "Henkilötunnus",
+        urlParam = "henkilötunnus",
+        renderValue = {
             if (!it.hetu.isNullOrEmpty()) {
                 attributes["headers"] = "hetu"
                 +it.hetu
@@ -21,64 +21,64 @@ enum class KielitestiSuoritusErrorColumn(
         },
     ),
     Nimi(
-        "nimi",
-        "Nimi",
-        "nimi",
-        {
+        entityName = "nimi",
+        uiHeaderValue = "Nimi",
+        urlParam = "nimi",
+        renderValue = {
             attributes["headers"] = "nimi"
             +it.nimi
         },
     ),
     SchoolOid(
-        "schoolOid",
-        "Organisaation OID",
-        "schooloid",
-        {
+        entityName = "schoolOid",
+        uiHeaderValue = "Organisaation OID",
+        urlParam = "schooloid",
+        renderValue = {
             attributes["headers"] = "schoolOid"
             +it.schoolOid?.toString().orEmpty()
         },
     ),
     TeacherEmail(
-        "teacherEmail",
-        "Opettajan sähköpostiosoite",
-        "teacheremail",
-        {
+        entityName = "teacherEmail",
+        uiHeaderValue = "Opettajan sähköpostiosoite",
+        urlParam = "teacheremail",
+        renderValue = {
             attributes["headers"] = "teacherEmail"
             +it.teacherEmail.orEmpty()
         },
     ),
     VirheenLuontiaika(
-        "virheenLuontiaika",
-        "Virheen luontiaika",
-        "virheenluontiaika",
-        {
+        entityName = "virheenLuontiaika",
+        uiHeaderValue = "Virheen luontiaika",
+        urlParam = "virheenluontiaika",
+        renderValue = {
             attributes["headers"] = "virheenLuontiaika"
             +it.virheenLuontiaika.toString()
         },
     ),
     Viesti(
-        "viesti",
-        "Virheviesti",
-        "viesti",
-        {
+        entityName = "viesti",
+        uiHeaderValue = "Virheviesti",
+        urlParam = "viesti",
+        renderValue = {
             attributes["headers"] = "viesti"
             +it.viesti
         },
     ),
     VirheellinenKentta(
-        "virheellinenKentta",
-        "Virheellinen kenttä",
-        "virheellinenkentta",
-        {
+        entityName = "virheellinenKentta",
+        uiHeaderValue = "Virheellinen kenttä",
+        urlParam = "virheellinenkentta",
+        renderValue = {
             attributes["headers"] = "virheellinenKentta"
             +it.virheellinenKentta.orEmpty()
         },
     ),
     VirheellinenArvo(
-        "virheellinenArvo",
-        "Virheellinen arvo",
-        "virheellinenarvo",
-        {
+        entityName = "virheellinenArvo",
+        uiHeaderValue = "Virheellinen arvo",
+        urlParam = "virheellinenarvo",
+        renderValue = {
             attributes["headers"] = "virheellinenArvo"
             +it.virheellinenArvo.orEmpty()
         },
