@@ -76,7 +76,8 @@ class CustomVktSuoritusRepository {
             mapOf(
                 "limit" to limit,
                 "offset" to offset,
-            ) + prefilterParams
+            ) +
+                prefilterParams
 
         return jdbcNamedParameterTemplate.query(query, params) { rs, _ ->
             val henkilo =

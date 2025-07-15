@@ -30,33 +30,62 @@ fun generateRandomYkiSuoritusErrorEntity(): YkiSuoritusErrorEntity {
 }
 
 fun YkiSuoritusCsv.toCsvString(): String =
-    this.suorittajanOID.toString() + "," +
-        this.hetu + "," +
-        this.sukupuoli + "," +
-        this.sukunimi + "," +
-        this.etunimet + "," +
-        this.kansalaisuus + "," +
-        this.katuosoite + "," +
-        this.postinumero + "," +
-        this.postitoimipaikka + "," +
-        this.email + "," +
-        this.suoritusID + "," +
-        this.lastModified + "," +
-        this.tutkintopaiva + "," +
-        this.tutkintokieli + "," +
-        this.tutkintotaso + "," +
-        this.jarjestajanOID + "," +
-        this.jarjestajanNimi + "," +
-        this.arviointipaiva + "," +
-        this.tekstinYmmartaminen + "," +
-        this.kirjoittaminen + "," +
-        this.rakenteetJaSanasto + "," +
-        this.puheenYmmartaminen + "," +
-        this.puhuminen + "," +
-        this.yleisarvosana + "," +
-        this.tarkistusarvioinninSaapumisPvm + "," +
-        this.tarkistusarvioinninAsiatunnus + "," +
-        this.tarkistusarvioidutOsakokeet + "," +
-        this.arvosanaMuuttui + "," +
-        this.perustelu + "," +
+    this.suorittajanOID.toString() +
+        "," +
+        this.hetu +
+        "," +
+        this.sukupuoli +
+        "," +
+        this.sukunimi +
+        "," +
+        this.etunimet +
+        "," +
+        this.kansalaisuus +
+        "," +
+        this.katuosoite +
+        "," +
+        this.postinumero +
+        "," +
+        this.postitoimipaikka +
+        "," +
+        this.email +
+        "," +
+        this.suoritusID +
+        "," +
+        this.lastModified +
+        "," +
+        this.tutkintopaiva +
+        "," +
+        this.tutkintokieli +
+        "," +
+        this.tutkintotaso +
+        "," +
+        this.jarjestajanOID +
+        "," +
+        this.jarjestajanNimi +
+        "," +
+        this.arviointipaiva +
+        "," +
+        this.tekstinYmmartaminen +
+        "," +
+        this.kirjoittaminen +
+        "," +
+        this.rakenteetJaSanasto +
+        "," +
+        this.puheenYmmartaminen +
+        "," +
+        this.puhuminen +
+        "," +
+        this.yleisarvosana +
+        "," +
+        this.tarkistusarvioinninSaapumisPvm +
+        "," +
+        this.tarkistusarvioinninAsiatunnus +
+        "," +
+        this.tarkistusarvioidutOsakokeet +
+        "," +
+        this.arvosanaMuuttui +
+        "," +
+        this.perustelu +
+        "," +
         this.tarkistusarvioinninKasittelyPvm

@@ -41,7 +41,8 @@ object Navigation {
                 ?.let { (group, item) ->
                     listOf(MenuItem(group.name, item.ref), item)
                 }.orEmpty()
-        ) + listOfNotNull(leaf)
+        ) +
+            listOfNotNull(leaf)
 
     data class MenuItemGroup(
         val id: String,
