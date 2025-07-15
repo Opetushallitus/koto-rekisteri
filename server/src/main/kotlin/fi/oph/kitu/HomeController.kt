@@ -17,11 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 class HomeController {
     @GetMapping("/", produces = ["text/html"])
     @ResponseBody
-    fun home(): String = HomePage.render()
-}
-
-object HomePage {
-    fun render(): String =
+    fun home(): String =
         Page.renderHtml(breadcrumbs = emptyList()) {
             h1 { +"Kielitutkintorekisteri" }
             mainNavigation.forEach { group ->
