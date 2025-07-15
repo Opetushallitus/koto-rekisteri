@@ -4,13 +4,10 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.classes
+import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import kotlinx.html.article
-import kotlinx.html.span
 import kotlinx.html.table
-import kotlinx.html.tbody
-import kotlinx.html.td
-import kotlinx.html.tr
 import kotlin.enums.enumEntries
 
 object KielitestiSuoritusErrorPage {
@@ -40,58 +37,12 @@ object KielitestiSuoritusErrorPage {
                         preserveSortDirection = false,
                     )
 
-                    tbody(classes = "virheet") {
-                        for (error in errors) {
-                            tr {
-                                attributes["data-testid"] = "virhe-summary-row"
-
-                                td(classes = "truncated") {
-                                    attributes["headers"] = "hetu"
-                                    if (!error.hetu.isNullOrEmpty()) {
-                                        span {
-                                            attributes["title"] = error.hetu
-                                            +error.hetu
-                                        }
-                                    }
-                                }
-
-                                td {
-                                    attributes["headers"] = "nimi"
-                                    +error.nimi
-                                }
-
-                                td {
-                                    attributes["headers"] = "schoolOid"
-                                    +error.schoolOid?.toString().orEmpty()
-                                }
-
-                                td {
-                                    attributes["headers"] = "teacherEmail"
-                                    +error.teacherEmail.orEmpty()
-                                }
-
-                                td {
-                                    attributes["headers"] = "virheenLuontiaika"
-                                    +error.virheenLuontiaika.toString()
-                                }
-
-                                td {
-                                    attributes["headers"] = "viesti"
-                                    +error.viesti
-                                }
-
-                                td {
-                                    attributes["headers"] = "virheellinenKentta"
-                                    +error.virheellinenKentta.orEmpty()
-                                }
-
-                                td {
-                                    attributes["headers"] = "virheellinenArvo"
-                                    +error.virheellinenArvo.orEmpty()
-                                }
-                            }
-                        }
-                    }
+                    displayTableBody(
+                        rows = errors.toList(),
+                        columns = columns,
+                        tbodyClasses = "virheet",
+                        rowTestId = { "virhe-summary-row" },
+                    )
                 }
             }
         }
