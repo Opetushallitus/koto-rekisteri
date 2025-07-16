@@ -228,11 +228,6 @@
             <artifactId>opentelemetry-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.opentelemetry.contrib</groupId>
-            <artifactId>opentelemetry-samplers</artifactId>
-            <version>1.39.0-alpha</version>
-        </dependency>
-        <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-otel</artifactId>
         </dependency>
