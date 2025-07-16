@@ -7,11 +7,12 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 processors:
-  batch/traces:
-    timeout: 1s
-    send_batch_size: 50
+  batch:
+  groupbytrace:
   tail_sampling:
     policies:
+      - name: default
+        type: always_sample
       - name: health checks
         type: and
         and:
@@ -19,7 +20,7 @@ processors:
             - name: route-health-checks
               type: string_attribute
               string_attribute:
-                key: http.route
+                key: http.url
                 values: [ /actuator/health ]
             - name: probabilistic-policy
               type: probabilistic
@@ -38,8 +39,12 @@ service:
   pipelines:
     traces:
       receivers: [ otlp ]
-      processors: [ tail_sampling, batch/traces ]
+      processors: [ groupbytrace, tail_sampling, batch ]
       exporters: [ debug, otlphttp/jaeger ]
+    metrics:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ debug ]
     logs:
       receivers: [ otlp ]
       processors: [ ]
