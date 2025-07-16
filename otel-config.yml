@@ -2,11 +2,29 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
 
 processors:
-  batch:
+  batch/traces:
+    timeout: 1s
+    send_batch_size: 50
+  tail_sampling:
+    policies:
+      - name: health checks
+        type: and
+        and:
+          and_sub_policy:
+            - name: route-health-checks
+              type: string_attribute
+              string_attribute:
+                key: http.route
+                values: [ /actuator/health ]
+            - name: probabilistic-policy
+              type: probabilistic
+              probabilistic:
+                sampling_percentage: 0.1
 
 extensions:
   health_check:
@@ -19,14 +37,12 @@ exporters:
 service:
   pipelines:
     traces:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [debug, otlphttp/jaeger]
-    metrics:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [debug]
+      receivers: [ otlp ]
+      processors: [ tail_sampling, batch/traces ]
+      exporters: [ debug, otlphttp/jaeger ]
     logs:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [debug]
+      receivers: [ otlp ]
+      processors: [ ]
+      exporters: [ debug ]
+
+  extensions: [ health_check ]
