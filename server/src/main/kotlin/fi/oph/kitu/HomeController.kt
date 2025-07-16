@@ -43,11 +43,8 @@ class HomeController {
         Page.renderHtml(breadcrumbs = emptyList()) {
             h1 { +"Kielitutkintorekisteri" }
             p {
-                val status = request.getStatusCode()
+                val status = HttpStatus.valueOf(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE) as Int)
                 +"${request.requestURL} ${status.value()} ${status.reasonPhrase}"
             }
         }
-
-    fun HttpServletRequest.getStatusCode() =
-        HttpStatus.valueOf(this.getAttribute(RequestDispatcher.ERROR_STATUS_CODE) as Int)
 }
