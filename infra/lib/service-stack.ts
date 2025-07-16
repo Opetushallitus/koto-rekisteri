@@ -4,11 +4,11 @@ import {
   aws_secretsmanager,
   Duration,
   Stack,
-  StackProps,
+  StackProps
 } from "aws-cdk-lib"
 import {
   Certificate,
-  CertificateValidation,
+  CertificateValidation
 } from "aws-cdk-lib/aws-certificatemanager"
 import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
@@ -18,14 +18,14 @@ import {
   ContainerImage,
   ContainerInsights,
   LogDriver,
-  Secret,
+  Secret
 } from "aws-cdk-lib/aws-ecs"
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns"
 import {
   ApplicationLoadBalancer,
   ApplicationProtocol,
   HttpCodeTarget,
-  SslPolicy,
+  SslPolicy
 } from "aws-cdk-lib/aws-elasticloadbalancingv2"
 import { ILogGroup, LogGroup } from "aws-cdk-lib/aws-logs"
 import { DatabaseCluster } from "aws-cdk-lib/aws-rds"
@@ -34,6 +34,7 @@ import { ITopic } from "aws-cdk-lib/aws-sns"
 import { Construct } from "constructs"
 import { ManagedPolicy } from "aws-cdk-lib/aws-iam"
 import * as s3 from "aws-cdk-lib/aws-s3"
+import { StringParameter } from "aws-cdk-lib/aws-ssm"
 
 export interface ServiceStackProps extends StackProps {
   auditLogGroup: ILogGroup
@@ -60,25 +61,25 @@ export class ServiceStack extends Stack {
     const dbUser = "postgres"
 
     const zone = HostedZone.fromLookup(this, "Zone", {
-      domainName: props.domainName,
+      domainName: props.domainName
     })
 
     const certificate = new Certificate(this, "Certificate", {
       domainName: props.domainName,
-      validation: CertificateValidation.fromDns(zone),
+      validation: CertificateValidation.fromDns(zone)
     })
 
     const loadBalancer = new ApplicationLoadBalancer(this, "LoadBalancer", {
       vpc: props.vpc,
       securityGroup: props.loadBalancerSecurityGroup,
-      internetFacing: true,
+      internetFacing: true
     })
 
     // Create an S3 bucket
     const tehtavapankkiBucket = new s3.Bucket(this, "Kitu-Bucket", {
       bucketName: `kitu-bucket-${props.name}`,
       publicReadAccess: false,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
     })
 
     const snsAction = new SnsAction(props.alarmSnsTopic)
@@ -87,7 +88,7 @@ export class ServiceStack extends Stack {
       .createAlarm(this, "LoadBalancer5xxAlarm", {
         evaluationPeriods: 1,
         threshold: 1,
-        treatMissingData: TreatMissingData.NOT_BREACHING,
+        treatMissingData: TreatMissingData.NOT_BREACHING
       })
     alarm5xx.addAlarmAction(snsAction)
     alarm5xx.addOkAction(snsAction)
@@ -96,7 +97,7 @@ export class ServiceStack extends Stack {
       containerInsightsV2: props.productionQuality
         ? ContainerInsights.ENHANCED
         : ContainerInsights.DISABLED,
-      vpc: props.vpc,
+      vpc: props.vpc
     })
 
     this.service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
@@ -108,62 +109,62 @@ export class ServiceStack extends Stack {
         containerPort: 8080,
         logDriver: LogDriver.awsLogs({
           logGroup: props.logGroup,
-          streamPrefix: "kitu",
+          streamPrefix: "kitu"
         }),
         environment: {
           SPRING_PROFILES_ACTIVE: props.name,
           DATABASE_URL: `jdbc:postgresql://${props.database.clusterEndpoint.socketAddress}/${props.databaseName}`,
           DATABASE_USER: dbUser,
-          AUDIT_LOG_LOG_GROUP_NAME: props.auditLogGroup.logGroupName,
+          AUDIT_LOG_LOG_GROUP_NAME: props.auditLogGroup.logGroupName
         },
         secrets: {
           DATABASE_PASSWORD: Secret.fromSecretsManager(
             props.database.secret!,
-            "password",
+            "password"
           ),
           KIELITESTI_TOKEN: aws_ecs.Secret.fromSecretsManager(
             aws_secretsmanager.Secret.fromSecretNameV2(
               this,
               "KielitestiToken",
-              "kielitesti-token",
-            ),
+              "kielitesti-token"
+            )
           ),
           PALVELUKAYTTAJA_PASSWORD: aws_ecs.Secret.fromSecretsManager(
             aws_secretsmanager.Secret.fromSecretNameV2(
               this,
               "PalvelukayttajaPassword",
-              "palvelukayttaja-password",
-            ),
+              "palvelukayttaja-password"
+            )
           ),
           YKI_API_PASSWORD: aws_ecs.Secret.fromSecretsManager(
             aws_secretsmanager.Secret.fromSecretNameV2(
               this,
               "YkiApiPassword",
-              "yki-api-password",
-            ),
+              "yki-api-password"
+            )
           ),
           YKI_API_USER: aws_ecs.Secret.fromSecretsManager(
             aws_secretsmanager.Secret.fromSecretNameV2(
               this,
               "YkiApiUser",
-              "yki-api-user",
-            ),
-          ),
-        },
+              "yki-api-user"
+            )
+          )
+        }
       },
       cpu: 2048,
       memoryLimitMiB: 4096,
       healthCheckGracePeriod: Duration.seconds(40),
       circuitBreaker: {
         enable: true,
-        rollback: true,
+        rollback: true
       },
       domainName: props.domainName,
       domainZone: zone,
       protocol: ApplicationProtocol.HTTPS,
       redirectHTTP: true,
       certificate,
-      sslPolicy: SslPolicy.RECOMMENDED_TLS,
+      sslPolicy: SslPolicy.RECOMMENDED_TLS
     })
 
     // The default target group health check for ALBs is {healthyThresholdCount: 5, interval: Duration.seconds(30)}.
@@ -173,7 +174,7 @@ export class ServiceStack extends Stack {
       enabled: true,
       healthyThresholdCount: 2,
       interval: Duration.seconds(10),
-      path: "/actuator/health",
+      path: "/actuator/health"
     })
 
     // The default load balancer configuration waits 300 seconds (5 minutes) before moving a container to UNUSED state.
@@ -183,18 +184,78 @@ export class ServiceStack extends Stack {
     // Let's go faster.
     this.service.targetGroup.setAttribute(
       "deregistration_delay.timeout_seconds",
-      "5",
+      "5"
     )
+
+    // https://github.com/aws-observability/aws-otel-collector/blob/main/config.yaml
+    const otelCollectorConfig = new StringParameter(this, "OtelCollectorConfig", {
+      stringValue: `
+extensions:
+  health_check:
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  awsxray:
+    endpoint: 0.0.0.0:2000
+    transport: udp
+
+processors:
+  batch/traces:
+    timeout: 1s
+    send_batch_size: 50
+  batch/metrics:
+    timeout: 60s
+  # --- this is customized ---
+  sampling/traces:
+    policies:
+      - name: health checks
+        type: and
+        and:
+          and_sub_policy:
+            - name: route-health-checks
+              type: string_attribute
+              string_attribute:
+                key: http.route
+                values: [/actuator/health]
+                enable_regex_matching: false
+            - name: probabilistic-policy
+              type: probabilistic
+              probabilistic:
+                sampling_percentage: 0.1              
+
+exporters:
+  awsxray:
+  awsemf:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp,awsxray]
+      processors: [sampling/traces, batch/traces]
+      exporters: [awsxray]
+    metrics:
+      receivers: [otlp]
+      processors: [batch/metrics]
+      exporters: [awsemf]
+
+  extensions: [health_check]
+      `
+    })
 
     this.service.taskDefinition.addContainer("AwsOtelCollector", {
       image: ContainerImage.fromRegistry(
         // renovate: datasource=docker
-        "public.ecr.aws/aws-observability/aws-otel-collector:v0.43.3",
+        "public.ecr.aws/aws-observability/aws-otel-collector:v0.43.3"
       ),
       logging: LogDriver.awsLogs({
         logGroup: props.logGroup,
-        streamPrefix: "AwsOtelCollector",
-      }),
+        streamPrefix: "AwsOtelCollector"
+      })
     })
 
     // EMF exporter-created log group.
@@ -202,11 +263,11 @@ export class ServiceStack extends Stack {
     const metricsLogGroup = LogGroup.fromLogGroupName(
       this,
       "MetricsLogGroup",
-      "/metrics/kitu",
+      "/metrics/kitu"
     )
     metricsLogGroup.grant(
       this.service.taskDefinition.taskRole,
-      "logs:CreateLogGroup",
+      "logs:CreateLogGroup"
     )
     metricsLogGroup.grantWrite(this.service.taskDefinition.taskRole)
 
@@ -214,14 +275,14 @@ export class ServiceStack extends Stack {
 
     // Ref: https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AWSXrayWriteOnlyAccess.html
     this.service.taskDefinition.taskRole.addManagedPolicy(
-      ManagedPolicy.fromAwsManagedPolicyName("AWSXrayWriteOnlyAccess"),
+      ManagedPolicy.fromAwsManagedPolicyName("AWSXrayWriteOnlyAccess")
     )
 
     this.service.service
       .metricCpuUtilization()
       .createAlarm(this, "CpuUtilization", {
         threshold: 50,
-        evaluationPeriods: 1,
+        evaluationPeriods: 1
       })
       .addAlarmAction(snsAction)
 
@@ -229,7 +290,7 @@ export class ServiceStack extends Stack {
       .metricMemoryUtilization()
       .createAlarm(this, "MemoryUtilization", {
         threshold: 50,
-        evaluationPeriods: 1,
+        evaluationPeriods: 1
       })
       .addAlarmAction(snsAction)
 
