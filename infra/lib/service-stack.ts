@@ -213,8 +213,11 @@ processors:
     send_batch_size: 50
   batch/metrics:
     timeout: 60s
+  groupbytrace:
   tail_sampling:
     policies:
+      - name: default
+        type: always_sample
       - name: health checks
         type: and
         and:
@@ -222,13 +225,12 @@ processors:
             - name: route-health-checks
               type: string_attribute
               string_attribute:
-                key: http.route
-                values: [/actuator/health]
-                enable_regex_matching: false
+                key: http.url
+                values: [ /actuator/health ]
             - name: probabilistic-policy
               type: probabilistic
               probabilistic:
-                sampling_percentage: 0.1              
+                sampling_percentage: 0.1           
 
 exporters:
   awsxray:
@@ -238,7 +240,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp,awsxray]
-      processors: [tail_sampling, batch/traces]
+      processors: [groupbytrace, tail_sampling, batch/traces]
       exporters: [awsxray]
     metrics:
       receivers: [otlp]
