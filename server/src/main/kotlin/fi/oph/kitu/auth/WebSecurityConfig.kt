@@ -1,6 +1,10 @@
 package fi.oph.kitu.auth
 
 import org.apereo.cas.client.session.SingleSignOutFilter
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
+import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -72,4 +76,29 @@ class WebSecurityConfig {
 
         return http.build()
     }
+
+    /**
+     * Konfiguraatio kun palvelua ajetaan HTTPS proxyn läpi. Käytännössä tämä
+     * muuttaa [javax.servlet.ServletRequest.getScheme] palauttamaan
+     * `https` jolloin palvelun kautta luodut urlit muodostuvat oikein.
+     *
+     *
+     * Aktivointi: `kayttooikeus.uses-ssl-proxy` arvoon `true`.
+     *
+     * @return EmbeddedServletContainerCustomizer jonka Spring automaattisesti
+     * tunnistaa ja lisää servlet containerin konfigurointiin
+     *
+     * @see https://github.com/Opetushallitus/oppijanumerorekisteri/blob/e2de50dfc039280ff3f657456451d67e6af40bd3/henkilo-ui/src/main/java/fi/vm/sade/henkiloui/configurations/ServletContainerConfiguration.java
+     */
+    @Bean
+    @ConditionalOnBooleanProperty("kitu.uses-ssl-proxy")
+    fun sslProxyCustomizer(): WebServerFactoryCustomizer<TomcatServletWebServerFactory> =
+        WebServerFactoryCustomizer { container ->
+            container.addConnectorCustomizers(
+                TomcatConnectorCustomizer { connector ->
+                    connector.scheme = "https"
+                    connector.secure = true
+                },
+            )
+        }
 }
