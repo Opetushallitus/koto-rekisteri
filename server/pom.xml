@@ -252,7 +252,7 @@
         <dependency>
             <groupId>io.opentelemetry.semconv</groupId>
             <artifactId>opentelemetry-semconv-incubating</artifactId>
-            <version>1.30.0-alpha</version>
+            <version>1.34.0-alpha</version>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
@@ -261,7 +261,7 @@
         <dependency>
             <groupId>io.opentelemetry.contrib</groupId>
             <artifactId>opentelemetry-aws-resources</artifactId>
-            <version>1.44.0-alpha</version>
+            <version>1.46.0-alpha</version>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
