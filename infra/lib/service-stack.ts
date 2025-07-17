@@ -268,7 +268,9 @@ service:
     })
 
     // EMF exporter-created log group.
-    // This is configured in the default adot config file, and changing it would require providing our own configuration file to the adot sidecar. For now let's just follow the default configuration. In the future we could create the log group ourselves in the log groups stack and then configure adot to use it. Another option would be to disable the EMF exporter.
+    // See: https://aws-otel.github.io/docs/getting-started/cloudwatch-metrics#cloudwatch-emf-exporter-awsemf
+    // This is configured in the default ADOT config file.
+    // Another option would be to disable the EMF exporter.
     const metricsLogGroup = LogGroup.fromLogGroupName(
       this,
       "MetricsLogGroup",
