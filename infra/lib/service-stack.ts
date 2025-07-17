@@ -258,6 +258,7 @@ service:
         "public.ecr.aws/aws-observability/aws-otel-collector:v0.43.3",
       ),
       secrets: {
+        // https://aws-otel.github.io/docs/setup/ecs/config-through-ssm
         AOT_CONFIG_CONTENT: Secret.fromSsmParameter(otelCollectorConfig),
       },
       logging: LogDriver.awsLogs({
