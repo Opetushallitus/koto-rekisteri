@@ -16,16 +16,15 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.KoulutusModuuli
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Organisaatio
-import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Osasuoritus
-import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Osasuoritus.Arvosana
-import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Osasuoritus.OsasuoritusKoulutusModuuli
-import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Vahvistus
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
+import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -34,6 +33,9 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class KoskiRequestMapper {
+    @Value("\${kitu.oids.valtionhallinnonkielitutkinnot}")
+    lateinit var vktOrganisaatioOid: String
+
     @WithSpan
     fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): KoskiRequest? =
         if (isVilpillinenTaiKeskeytettySuoritus(ykiSuoritus)) {
@@ -46,7 +48,7 @@ class KoskiRequestMapper {
                         Opiskeluoikeus(
                             lähdejärjestelmänId =
                                 LahdeJarjestelmanId(
-                                    id = ykiSuoritus.suoritusId.toString(),
+                                    id = "yki.${ykiSuoritus.suoritusId}",
                                 ),
                             tila =
                                 Tila(
@@ -80,7 +82,7 @@ class KoskiRequestMapper {
                                             ),
                                         toimipiste = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid.toString()),
                                         vahvistus =
-                                            Vahvistus(
+                                            KielitutkintoSuoritus.VahvistusImpl(
                                                 päivä = ykiSuoritus.arviointipaiva,
                                                 myöntäjäOrganisaatio =
                                                     Organisaatio(
@@ -134,9 +136,9 @@ class KoskiRequestMapper {
         arvosana: Int,
         tutkintotaso: Tutkintotaso,
         arviointipaiva: LocalDate,
-    ) = Osasuoritus(
+    ) = YkiOsasuoritus(
         koulutusmoduuli =
-            OsasuoritusKoulutusModuuli(
+            OsasuorituksenKoulutusmoduuli(
                 tunniste = suorituksenNimi.toKoski(),
             ),
         arviointi =
@@ -182,6 +184,125 @@ class KoskiRequestMapper {
                 11 -> YkiArvosana.Vilppi
                 else -> throw IllegalArgumentException("Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso")
             }
+    }
+
+    fun vktSuoritusToKoskiRequest(henkilosuoritus: Henkilosuoritus<VktSuoritus>): KoskiRequest? {
+        val henkilo = henkilosuoritus.henkilo
+        val suoritus = henkilosuoritus.suoritus
+
+        val vktOrganisaatio: Organisaatio? =
+            suoritus.osat.firstNotNullOfOrNull { it.oppilaitos?.let { Organisaatio(it.oid) } }
+                ?: when (suoritus.taitotaso) {
+                    Koodisto.VktTaitotaso.Erinomainen -> Organisaatio(vktOrganisaatioOid)
+                    else -> null
+                }
+
+        val suorituksenVastaanottajaOid =
+            when (suoritus.taitotaso) {
+                Koodisto.VktTaitotaso.Erinomainen -> "" // TODO
+                else -> suoritus.suorituksenVastaanottaja?.oid
+            }
+
+        val arviointipaiva =
+            suoritus.osat
+                .mapNotNull { it.arviointi?.paivamaara }
+                .maxOrNull()
+
+        val vahvistus =
+            if (vktOrganisaatio != null &&
+                arviointipaiva != null &&
+                suorituksenVastaanottajaOid != null
+            ) {
+                KielitutkintoSuoritus.VahvistusHenkiloilla(
+                    päivä = arviointipaiva,
+                    myöntäjäOrganisaatio = Organisaatio(suorituksenVastaanottajaOid),
+                    myöntäjäHenkilöt =
+                        listOf(
+                            KielitutkintoSuoritus.Organisaatiohenkilo(
+                                nimi = "Hessu Hessunperä",
+                                organisaatio = vktOrganisaatio,
+                            ),
+                        ),
+                )
+            } else {
+                null
+            }
+
+        return vahvistus?.let { vahvistus ->
+            KoskiRequest(
+                henkilö = Henkilo(oid = henkilo.oid.oid),
+                opiskeluoikeudet =
+                    listOf(
+                        Opiskeluoikeus(
+                            lähdejärjestelmänId = LahdeJarjestelmanId(id = "vkt.${suoritus.internalId}"),
+                            tyyppi = Koodisto.OpiskeluoikeudenTyyppi.Kielitutkinto,
+                            tila =
+                                Tila(
+                                    opiskeluoikeusjaksot =
+                                        listOf(
+                                            OpiskeluoikeusJakso(
+                                                alku = suoritus.osat.maxOf { it.tutkintopaiva },
+                                                tila = Koodisto.OpiskeluoikeudenTila.Lasna,
+                                            ),
+                                            OpiskeluoikeusJakso(
+                                                alku = suoritus.osat.maxOf { it.tutkintopaiva },
+                                                tila = Koodisto.OpiskeluoikeudenTila.Paattynyt,
+                                            ),
+                                        ),
+                                ),
+                            suoritukset =
+                                listOf(
+                                    KielitutkintoSuoritus(
+                                        tyyppi = Koodisto.SuorituksenTyyppi.ValtionhallinnonKielitutkinto,
+                                        koulutusmoduuli =
+                                            KoulutusModuuli(
+                                                tunniste = suoritus.taitotaso.toKoski(),
+                                                kieli = suoritus.kieli,
+                                            ),
+                                        toimipiste = vktOrganisaatio!!,
+                                        vahvistus = vahvistus,
+                                        osasuoritukset =
+                                            suoritus.tutkinnot.map { kielitaito ->
+                                                VktKielitaito(
+                                                    koulutusmoduuli =
+                                                        OsasuorituksenKoulutusmoduuli(
+                                                            tunniste = kielitaito.tyyppi.toKoski(),
+                                                        ),
+                                                    arviointi =
+                                                        kielitaito.arviointi()?.let { arviointi ->
+                                                            listOf(
+                                                                Arvosana(
+                                                                    arvosana = arviointi.arvosana.toKoski(),
+                                                                    päivä = arviointi.paivamaara,
+                                                                ),
+                                                            )
+                                                        } ?: emptyList(),
+                                                    osasuoritukset =
+                                                        kielitaito.osat.map { osakoe ->
+                                                            VktOsakoe(
+                                                                koulutusmoduuli =
+                                                                    OsasuorituksenKoulutusmoduuli(
+                                                                        tunniste = osakoe.tyyppi.toKoski(),
+                                                                    ),
+                                                                arviointi =
+                                                                    osakoe.arviointi?.let { arviointi ->
+                                                                        listOf(
+                                                                            Arvosana(
+                                                                                arvosana = arviointi.arvosana.toKoski(),
+                                                                                päivä = arviointi.paivamaara,
+                                                                            ),
+                                                                        )
+                                                                    } ?: emptyList(),
+                                                            )
+                                                        },
+                                                )
+                                            },
+                                    ),
+                                ),
+                        ),
+                    ),
+            )
+        }
     }
 
     companion object {

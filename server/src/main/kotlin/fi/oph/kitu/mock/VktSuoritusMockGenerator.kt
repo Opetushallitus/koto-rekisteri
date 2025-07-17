@@ -27,9 +27,9 @@ class VktSuoritusMockGenerator(
     private var index = 0
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    fun generateRandomVktSuoritusEntity(): VktSuoritusEntity {
+    fun generateRandomVktSuoritusEntity(vktValidation: VktValidation): VktSuoritusEntity {
         index += 1
-        return VktValidation.enrich(randomSuoritus(index)).toVktSuoritusEntity(randomOppija())
+        return vktValidation.enrich(randomSuoritus(index)).toVktSuoritusEntity(randomOppija())
     }
 
     fun randomSuoritus(index: Int): VktSuoritus {
@@ -58,7 +58,7 @@ class VktSuoritusMockGenerator(
 
     fun randomOppija() =
         OidOppija(
-            oid = OidString.from(generateRandomUserOid(random)),
+            oid = OidString.from(generateRandomOppijaOid(random)),
             etunimet =
                 generateRandomFirstnames(
                     Sukupuoli.entries.random(random),

@@ -5,7 +5,7 @@
   "opiskeluoikeudet": [
     {
       "lähdejärjestelmänId": {
-        "id": "123456",
+        "id": "yki.123456",
         "lähdejärjestelmä": {
           "koodiarvo": "kielitutkintorekisteri",
           "koodistoUri": "lahdejarjestelma"
