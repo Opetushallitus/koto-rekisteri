@@ -3,8 +3,26 @@
 package fi.oph.kitu.html
 
 import fi.oph.kitu.html.Navigation.mainNavigation
+import jakarta.annotation.PostConstruct
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
+
+@Component
+class AppConfig(
+    @Value("\${kitu.opintopolkuHostname}")
+    private val opintopolkuHostname: String,
+) {
+    @PostConstruct
+    fun init() {
+        Companion.opintopolkuHostname = opintopolkuHostname
+    }
+
+    companion object {
+        lateinit var opintopolkuHostname: String private set
+    }
+}
 
 object Page {
     fun renderHtml(
@@ -28,6 +46,11 @@ object Page {
                 meta(name = "color-scheme", content = "light")
                 link(href = "/pico.min.css", rel = "stylesheet")
                 link(href = "/style.css", rel = "stylesheet")
+                script(
+                    type = "text/javascript",
+                    src = "https://${AppConfig.opintopolkuHostname}/virkailija-raamit/apply-raamit.js",
+                    crossorigin = null,
+                ) {}
             }
             body {
                 testId("page-body")
