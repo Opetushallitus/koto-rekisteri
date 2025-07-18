@@ -35,6 +35,7 @@ import { Construct } from "constructs"
 import { ManagedPolicy } from "aws-cdk-lib/aws-iam"
 import * as s3 from "aws-cdk-lib/aws-s3"
 import { StringParameter } from "aws-cdk-lib/aws-ssm"
+import { Bucket } from "aws-cdk-lib/aws-s3"
 
 export interface ServiceStackProps extends StackProps {
   auditLogGroup: ILogGroup
@@ -74,6 +75,8 @@ export class ServiceStack extends Stack {
       securityGroup: props.loadBalancerSecurityGroup,
       internetFacing: true,
     })
+
+    loadBalancer.logAccessLogs(new Bucket(this, "LoadBalancerLogs", {}))
 
     // Create an S3 bucket
     const tehtavapankkiBucket = new s3.Bucket(this, "Kitu-Bucket", {
