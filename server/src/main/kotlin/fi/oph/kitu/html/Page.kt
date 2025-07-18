@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 
 @Component
@@ -15,20 +16,40 @@ class AppConfig(
     private val opintopolkuHostname: String,
     @Value("\${kitu.appUrl}")
     private val appUrl: String,
+    private val environment: Environment,
 ) {
     @PostConstruct
     fun init() {
         Companion.opintopolkuHostname = opintopolkuHostname
         Companion.appUrl = appUrl
+        Companion.environment = environment
     }
 
     companion object {
         lateinit var opintopolkuHostname: String private set
         lateinit var appUrl: String private set
+        lateinit var environment: Environment private set
     }
 }
 
 object Page {
+    fun HEAD.loadRaamit() {
+        val isDeployEnvironment =
+            AppConfig.environment.activeProfiles.any {
+                it.lowercase().contains("untuva") ||
+                    it.lowercase().contains("qa") ||
+                    it.lowercase().contains("prod")
+            }
+
+        if (isDeployEnvironment) {
+            script(
+                type = "text/javascript",
+                src = "https://${AppConfig.opintopolkuHostname}/virkailija-raamit/apply-raamit.js",
+                crossorigin = null,
+            ) {}
+        }
+    }
+
     fun renderHtml(
         breadcrumbs: List<Navigation.MenuItem>,
         wideContent: Boolean = false,
@@ -50,11 +71,8 @@ object Page {
                 meta(name = "color-scheme", content = "light")
                 link(href = "${AppConfig.appUrl}/pico.min.css", rel = "stylesheet")
                 link(href = "${AppConfig.appUrl}/style.css", rel = "stylesheet")
-                script(
-                    type = "text/javascript",
-                    src = "https://${AppConfig.opintopolkuHostname}/virkailija-raamit/apply-raamit.js",
-                    crossorigin = null,
-                ) {}
+
+                loadRaamit()
             }
             body {
                 testId("page-body")
