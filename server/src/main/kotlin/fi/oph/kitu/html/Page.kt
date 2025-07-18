@@ -13,14 +13,18 @@ import org.springframework.stereotype.Component
 class AppConfig(
     @Value("\${kitu.opintopolkuHostname}")
     private val opintopolkuHostname: String,
+    @Value("\${kitu.appUrl}")
+    private val appUrl: String,
 ) {
     @PostConstruct
     fun init() {
         Companion.opintopolkuHostname = opintopolkuHostname
+        Companion.appUrl = appUrl
     }
 
     companion object {
         lateinit var opintopolkuHostname: String private set
+        lateinit var appUrl: String private set
     }
 }
 
@@ -44,8 +48,8 @@ object Page {
             head {
                 title { +pageTitle }
                 meta(name = "color-scheme", content = "light")
-                link(href = "/pico.min.css", rel = "stylesheet")
-                link(href = "/style.css", rel = "stylesheet")
+                link(href = "${AppConfig.appUrl}/pico.min.css", rel = "stylesheet")
+                link(href = "${AppConfig.appUrl}/style.css", rel = "stylesheet")
                 script(
                     type = "text/javascript",
                     src = "https://${AppConfig.opintopolkuHostname}/virkailija-raamit/apply-raamit.js",
