@@ -201,6 +201,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await vktSuorituksenTiedotPage.save()
 
     // Tarkista onko suulliselle taidolle muodostunut arvosana
+    console.log("tutkintojenArvosanat:", tutkintojenArvosanat)
     await testForEach(
       tutkintojenArvosanat,
       expectToHaveText(""),
