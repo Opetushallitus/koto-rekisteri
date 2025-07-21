@@ -174,7 +174,7 @@ export class ServiceStack extends Stack {
       enabled: true,
       healthyThresholdCount: 2,
       interval: Duration.seconds(10),
-      path: "/actuator/health",
+      path: "/kielitutkinnot/actuator/health",
     })
 
     // The default load balancer configuration waits 300 seconds (5 minutes) before moving a container to UNUSED state.
