@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import java.io.ByteArrayInputStream
 
@@ -17,7 +16,6 @@ class YkiApiController(
     private val service: YkiService,
 ) {
     @GetMapping("/suoritukset", produces = ["text/csv"])
-    @ResponseBody
     fun getSuorituksetAsCsv(
         @RequestParam("includeVersionHistory", required = false) includeVersionHistory: Boolean?,
     ): ResponseEntity<Resource> =

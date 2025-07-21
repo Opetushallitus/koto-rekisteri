@@ -5,7 +5,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
 
 @Controller
 @RequestMapping("/koto-kielitesti", produces = ["text/html"])
@@ -13,7 +12,6 @@ class KielitestiViewController(
     private val suoritusService: KoealustaService,
 ) {
     @GetMapping("/suoritukset")
-    @ResponseBody
     fun suorituksetView(
         sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
         sortDirection: SortDirection = SortDirection.DESC,
@@ -32,7 +30,6 @@ class KielitestiViewController(
         )
 
     @GetMapping("/suoritukset/virheet")
-    @ResponseBody
     fun virheetView(
         sortColumn: KielitestiSuoritusErrorColumn = KielitestiSuoritusErrorColumn.VirheenLuontiaika,
         sortDirection: SortDirection = SortDirection.DESC,

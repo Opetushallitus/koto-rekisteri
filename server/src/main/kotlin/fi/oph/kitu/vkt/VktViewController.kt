@@ -33,7 +33,6 @@ class VktViewController(
     private val oppijanumeroService: OppijanumeroService,
 ) {
     @GetMapping("/erinomainen/ilmoittautuneet", produces = ["text/html"])
-    @ResponseBody
     fun erinomaisenTaitotasonIlmoittautuneetView(
         page: Int = 1,
         sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
@@ -69,7 +68,6 @@ class VktViewController(
     }
 
     @GetMapping("/erinomainen/arvioidut", produces = ["text/html"])
-    @ResponseBody
     fun erinomaisenTaitotasonArvioidutSuorituksetView(
         page: Int = 1,
         sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
@@ -105,7 +103,6 @@ class VktViewController(
     }
 
     @GetMapping("/hyvajatyydyttava/suoritukset", produces = ["text/html"])
-    @ResponseBody
     fun hyvanJaTyydyttavanTaitotasonIlmoittautuneetView(
         page: Int = 1,
         sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
@@ -171,7 +168,6 @@ class VktViewController(
             }.getOrElse { throw VktSuoritusNotFoundError() }
 
     @PostMapping("/suoritukset/{id}", produces = ["text/html"])
-    @ResponseBody
     fun saveIlmoittautuneenArviointi(
         @PathVariable id: Int,
         @ModelAttribute form: VktErinomaisenArviointiPage.ArvosanaFormData,
