@@ -20,14 +20,12 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
 import java.time.LocalDate
 
 @Controller
 @RequestMapping("/schema-examples")
 class SchemaExamplesController {
     @GetMapping("/vkt-erinomainen-ilmoittautuminen.json", produces = ["application/json;charset=UTF-8"])
-    @ResponseBody
     fun vktErinomainenResponse() =
         exampleJson(
             Henkilosuoritus(
@@ -66,7 +64,6 @@ class SchemaExamplesController {
         )
 
     @GetMapping("/vkt-hyvajatyydyttava-suoritus.json", produces = ["application/json;charset=UTF-8"])
-    @ResponseBody
     fun vktHyvaJaTyydyttavaResponse(): ResponseEntity<String> {
         val tutkintopaiva = LocalDate.now().minusDays(60)
         val arviointipaiva = LocalDate.now()
@@ -129,14 +126,12 @@ class SchemaExamplesController {
     }
 
     @GetMapping("/tiedonsiirto-ok.json", produces = ["application/json;charset=UTF-8"])
-    @ResponseBody
     fun tiedonsiirtoOkResponse() =
         exampleJson(
             TiedonsiirtoSuccess(),
         )
 
     @GetMapping("/tiedonsiirto-bad-request.json", produces = ["application/json;charset=UTF-8"])
-    @ResponseBody
     fun tiedonsiirtoBadRequestResponse() =
         exampleJson(
             TiedonsiirtoFailure.badRequest(
@@ -145,7 +140,6 @@ class SchemaExamplesController {
         )
 
     @GetMapping("/tiedonsiirto-forbidden.json", produces = ["application/json;charset=UTF-8"])
-    @ResponseBody
     fun tiedonsiirtoForbiddenResponse() =
         exampleJson(
             TiedonsiirtoFailure.forbidden("Vain VKT-kielitutkinnon siirto sallittu"),

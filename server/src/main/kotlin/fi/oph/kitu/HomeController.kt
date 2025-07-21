@@ -10,10 +10,10 @@ import kotlinx.html.li
 import kotlinx.html.section
 import kotlinx.html.ul
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
 
-@Controller
+@RestController
 class HomeController {
     @GetMapping("/", produces = ["text/html"])
     fun home(): ResponseEntity<String> =
