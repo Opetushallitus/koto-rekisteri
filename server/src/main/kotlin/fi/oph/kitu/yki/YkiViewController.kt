@@ -13,6 +13,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -34,38 +35,40 @@ class YkiViewController(
         page: Int = 1,
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): String =
-        YkiSuorituksetPage.render(
-            suoritukset =
-                ykiService.findSuorituksetPaged(
-                    search,
-                    sortColumn,
-                    sortDirection,
-                    versionHistory,
-                    limit,
-                    offset = limit * (page - 1),
-                ),
-            sortColumn = sortColumn,
-            sortDirection = sortDirection,
-            pagination =
-                Pagination(
-                    currentPageNumber = page,
-                    numberOfPages = ykiService.countSuoritukset(search, versionHistory).toInt(),
-                    url = { currentPage ->
-                        httpParams(
-                            mapOf(
-                                "page" to search,
-                                "includeVersionHistory" to versionHistory,
-                                "page" to currentPage,
-                                "sortColumn" to sortColumn.urlParam,
-                                "sortDirection" to sortDirection.name,
-                            ),
-                        )
-                    },
-                ),
-            search = search,
-            versionHistory = versionHistory,
-            errorsCount = suoritusErrorService.countErrors(),
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(
+            YkiSuorituksetPage.render(
+                suoritukset =
+                    ykiService.findSuorituksetPaged(
+                        search,
+                        sortColumn,
+                        sortDirection,
+                        versionHistory,
+                        limit,
+                        offset = limit * (page - 1),
+                    ),
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                pagination =
+                    Pagination(
+                        currentPageNumber = page,
+                        numberOfPages = ykiService.countSuoritukset(search, versionHistory).toInt(),
+                        url = { currentPage ->
+                            httpParams(
+                                mapOf(
+                                    "page" to search,
+                                    "includeVersionHistory" to versionHistory,
+                                    "page" to currentPage,
+                                    "sortColumn" to sortColumn.urlParam,
+                                    "sortDirection" to sortDirection.name,
+                                ),
+                            )
+                        },
+                    ),
+                search = search,
+                versionHistory = versionHistory,
+                errorsCount = suoritusErrorService.countErrors(),
+            ),
         )
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
@@ -73,11 +76,13 @@ class YkiViewController(
     fun suorituksetVirheetView(
         sortColumn: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.VirheenLuontiaika,
         sortDirection: SortDirection = SortDirection.ASC,
-    ): String =
-        YkiSuoritusErrorPage.render(
-            sortColumn = sortColumn,
-            sortDirection = sortDirection,
-            virheet = suoritusErrorService.getErrors(sortColumn, sortDirection),
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(
+            YkiSuoritusErrorPage.render(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                virheet = suoritusErrorService.getErrors(sortColumn, sortDirection),
+            ),
         )
 
     @GetMapping("/arvioijat")
@@ -85,12 +90,14 @@ class YkiViewController(
     fun arvioijatView(
         sortColumn: YkiArvioijaColumn = YkiArvioijaColumn.Rekisteriintuontiaika,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): String =
-        YkiArvioijaPage.render(
-            sortColumn = sortColumn,
-            sortDirection = sortDirection,
-            arvioijat = ykiService.allArvioijat(sortColumn, sortDirection),
-            errorsCount = arvioijaErrorService.countErrors(),
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(
+            YkiArvioijaPage.render(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                arvioijat = ykiService.allArvioijat(sortColumn, sortDirection),
+                errorsCount = arvioijaErrorService.countErrors(),
+            ),
         )
 
     @GetMapping("/arvioijat/virheet", produces = ["text/html"])
@@ -98,10 +105,12 @@ class YkiViewController(
     fun arvioijatVirheetView(
         sortColumn: YkiArvioijaErrorColumn = YkiArvioijaErrorColumn.VirheenLuontiaika,
         sortDirection: SortDirection = SortDirection.ASC,
-    ): String =
-        YkiArvioijaErrorPage.render(
-            sortColumn = sortColumn,
-            sortDirection = sortDirection,
-            arvioijaErrorService.getErrors(sortColumn, sortDirection),
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(
+            YkiArvioijaErrorPage.render(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                arvioijaErrorService.getErrors(sortColumn, sortDirection),
+            ),
         )
 }
