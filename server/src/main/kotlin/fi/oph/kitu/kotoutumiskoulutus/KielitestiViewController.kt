@@ -1,6 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -16,16 +17,18 @@ class KielitestiViewController(
     fun suorituksetView(
         sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): String =
-        KielitestiSuorituksetPage.render(
-            sortColumn = sortColumn,
-            sortDirection = sortDirection,
-            suoritukset = suoritusService.getSuoritukset(sortColumn, sortDirection),
-            errorsCount =
-                suoritusService
-                    .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
-                    .count()
-                    .toLong(),
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(
+            KielitestiSuorituksetPage.render(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                suoritukset = suoritusService.getSuoritukset(sortColumn, sortDirection),
+                errorsCount =
+                    suoritusService
+                        .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
+                        .count()
+                        .toLong(),
+            ),
         )
 
     @GetMapping("/suoritukset/virheet")
@@ -33,10 +36,12 @@ class KielitestiViewController(
     fun virheetView(
         sortColumn: KielitestiSuoritusErrorColumn = KielitestiSuoritusErrorColumn.VirheenLuontiaika,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): String =
-        KielitestiSuoritusErrorPage.render(
-            sortColumn = sortColumn,
-            sortDirection = sortDirection,
-            errors = suoritusService.getErrors(sortColumn, sortDirection),
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(
+            KielitestiSuoritusErrorPage.render(
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                errors = suoritusService.getErrors(sortColumn, sortDirection),
+            ),
         )
 }

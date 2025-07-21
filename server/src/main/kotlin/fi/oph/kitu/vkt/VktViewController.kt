@@ -12,6 +12,7 @@ import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,7 +39,7 @@ class VktViewController(
         sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
         sortDirection: SortDirection = SortDirection.ASC,
         search: String? = null,
-    ): String {
+    ): ResponseEntity<String> {
         val (ilmoittautuneet, pagination) =
             vktSuoritukset.getSuorituksetAndPagination(
                 taitotaso = Koodisto.VktTaitotaso.Erinomainen,
@@ -53,15 +54,17 @@ class VktViewController(
                 .translationBuilder()
                 .koodistot("kieli", "vkttutkintotaso")
                 .build()
-        return VktErinomaisenSuorituksetPage.render(
-            title = "Erinomaisen taitotason ilmoittautuneet",
-            ref = "/vkt/erinomainen/ilmoittautuneet",
-            ilmoittautuneet = ilmoittautuneet,
-            sortedBy = sortColumn,
-            sortDirection = sortDirection,
-            pagination = pagination,
-            translations = translations,
-            searchQuery = search,
+        return ResponseEntity.ok(
+            VktErinomaisenSuorituksetPage.render(
+                title = "Erinomaisen taitotason ilmoittautuneet",
+                ref = "/vkt/erinomainen/ilmoittautuneet",
+                ilmoittautuneet = ilmoittautuneet,
+                sortedBy = sortColumn,
+                sortDirection = sortDirection,
+                pagination = pagination,
+                translations = translations,
+                searchQuery = search,
+            ),
         )
     }
 
@@ -72,7 +75,7 @@ class VktViewController(
         sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
         sortDirection: SortDirection = SortDirection.ASC,
         search: String? = null,
-    ): String {
+    ): ResponseEntity<String> {
         val (suoritukset, pagination) =
             vktSuoritukset.getSuorituksetAndPagination(
                 taitotaso = Koodisto.VktTaitotaso.Erinomainen,
@@ -87,15 +90,17 @@ class VktViewController(
                 .translationBuilder()
                 .koodistot("kieli", "vkttutkintotaso")
                 .build()
-        return VktErinomaisenSuorituksetPage.render(
-            title = "Erinomaisen taitotason arvioidut suoritukset",
-            ref = "/vkt/erinomainen/arvioidut",
-            ilmoittautuneet = suoritukset,
-            sortedBy = sortColumn,
-            sortDirection = sortDirection,
-            pagination = pagination,
-            translations = translations,
-            searchQuery = search,
+        return ResponseEntity.ok(
+            VktErinomaisenSuorituksetPage.render(
+                title = "Erinomaisen taitotason arvioidut suoritukset",
+                ref = "/vkt/erinomainen/arvioidut",
+                ilmoittautuneet = suoritukset,
+                sortedBy = sortColumn,
+                sortDirection = sortDirection,
+                pagination = pagination,
+                translations = translations,
+                searchQuery = search,
+            ),
         )
     }
 
@@ -106,7 +111,7 @@ class VktViewController(
         sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
         sortDirection: SortDirection = SortDirection.ASC,
         search: String? = null,
-    ): String {
+    ): ResponseEntity<String> {
         val (suoritukset, pagination) =
             vktSuoritukset.getSuorituksetAndPagination(
                 taitotaso = Koodisto.VktTaitotaso.HyväJaTyydyttävä,
@@ -121,13 +126,15 @@ class VktViewController(
                 .translationBuilder()
                 .koodistot("kieli", "vkttutkintotaso")
                 .build()
-        return VktHyvaJaTyydyttavaSuorituksetPage.render(
-            suoritukset = suoritukset,
-            sortedBy = sortColumn,
-            sortDirection = sortDirection,
-            pagination = pagination,
-            translations = translations,
-            searchQuery = search,
+        return ResponseEntity.ok(
+            VktHyvaJaTyydyttavaSuorituksetPage.render(
+                suoritukset = suoritukset,
+                sortedBy = sortColumn,
+                sortDirection = sortDirection,
+                pagination = pagination,
+                translations = translations,
+                searchQuery = search,
+            ),
         )
     }
 
