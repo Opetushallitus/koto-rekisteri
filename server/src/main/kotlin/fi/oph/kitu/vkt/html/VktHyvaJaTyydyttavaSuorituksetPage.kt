@@ -13,8 +13,10 @@ import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.*
+import org.springframework.hateoas.server.mvc.linkTo
 
 object VktHyvaJaTyydyttavaSuorituksetPage {
     fun render(
@@ -27,7 +29,12 @@ object VktHyvaJaTyydyttavaSuorituksetPage {
     ): String =
         Page.renderHtml(
             wideContent = true,
-            breadcrumbs = Navigation.getBreadcrumbs("/vkt/hyvajatyydyttava/suoritukset"),
+            breadcrumbs =
+                Navigation.getBreadcrumbs(
+                    linkTo(
+                        VktViewController::hyvanJaTyydyttavanTaitotasonIlmoittautuneetView,
+                    ).toString(),
+                ),
         ) {
             h1 { +"Hyvän ja tyydyttävän taitotason suoritukset" }
             vktSearch(searchQuery)

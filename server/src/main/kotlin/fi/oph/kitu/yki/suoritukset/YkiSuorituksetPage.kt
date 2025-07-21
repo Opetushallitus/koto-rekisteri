@@ -8,6 +8,7 @@ import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.html.errorsArticle
 import kotlinx.html.ButtonType
 import kotlinx.html.FormMethod
@@ -29,6 +30,7 @@ import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.tr
 import kotlinx.html.ul
+import org.springframework.hateoas.server.mvc.linkTo
 import kotlin.enums.enumEntries
 
 object YkiSuorituksetPage {
@@ -42,7 +44,7 @@ object YkiSuorituksetPage {
         errorsCount: Long,
     ): String =
         Page.renderHtml(
-            breadcrumbs = Navigation.getBreadcrumbs("/yki/suoritukset"),
+            breadcrumbs = Navigation.getBreadcrumbs(linkTo(YkiViewController::suorituksetView).toString()),
             wideContent = true,
         ) {
             this.errorsArticle(errorsCount, "/yki/suoritukset/virheet")
