@@ -15,6 +15,7 @@ import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.thead
 import kotlinx.html.tr
+import org.springframework.hateoas.server.mvc.linkTo
 import kotlin.enums.enumEntries
 
 object KielitestiSuorituksetPage {
@@ -25,7 +26,10 @@ object KielitestiSuorituksetPage {
         errorsCount: Long,
     ): String =
         Page.renderHtml(
-            breadcrumbs = Navigation.getBreadcrumbs("/koto-kielitesti/suoritukset"),
+            breadcrumbs =
+                Navigation.getBreadcrumbs(
+                    linkTo(KielitestiViewController::suorituksetView).toString(),
+                ),
             wideContent = true,
         ) {
             errorsArticle(errorsCount, "/koto-kielitesti/suoritukset/virheet")
