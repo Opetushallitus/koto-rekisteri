@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 
 @Controller
-@RequestMapping("koto-kielitesti", produces = ["text/html"])
+@RequestMapping("/koto-kielitesti", produces = ["text/html"])
 class KielitestiViewController(
     private val suoritusService: KoealustaService,
 ) {

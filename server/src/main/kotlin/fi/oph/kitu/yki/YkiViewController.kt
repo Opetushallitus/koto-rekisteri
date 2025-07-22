@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 
 @Controller
-@RequestMapping("yki")
+@RequestMapping("/yki")
 class YkiViewController(
     private val ykiService: YkiService,
     private val suoritusErrorService: YkiSuoritusErrorService,

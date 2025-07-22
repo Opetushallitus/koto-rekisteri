@@ -23,7 +23,7 @@ import java.net.URI
 import kotlin.system.exitProcess
 
 @RestController
-@RequestMapping("dev")
+@RequestMapping("/dev")
 @Profile("local", "e2e")
 class MockLoginController(
     private val environment: Environment,

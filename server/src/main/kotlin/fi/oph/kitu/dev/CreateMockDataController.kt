@@ -29,7 +29,7 @@ import org.springframework.web.context.WebApplicationContext
 import kotlin.system.exitProcess
 
 @RestController
-@RequestMapping("dev")
+@RequestMapping("/dev")
 @Profile("local", "e2e")
 class CreateMockDataController(
     private val environment: Environment,

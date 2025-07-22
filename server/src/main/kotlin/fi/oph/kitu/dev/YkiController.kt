@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.system.exitProcess
 
 @RestController
-@RequestMapping("dev")
+@RequestMapping("/dev")
 @Profile("local", "test", "e2e")
 class YkiController(
     private val environment: Environment,
