@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.io.ByteArrayInputStream
 
 @RestController
-@RequestMapping("yki/api")
+@RequestMapping("/yki/api")
 class YkiApiController(
     private val service: YkiService,
 ) {
