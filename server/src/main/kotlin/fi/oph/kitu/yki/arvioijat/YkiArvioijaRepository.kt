@@ -3,12 +3,13 @@ package fi.oph.kitu.yki.arvioijat
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.getTutkintokieli
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.PreparedStatement
@@ -21,10 +22,10 @@ interface CustomYkiArvioijaRepository {
 }
 
 @Repository
-class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
-    @Autowired
-    private lateinit var jdbcTemplate: JdbcTemplate
-
+class CustomYkiArvioijaRepositoryImpl(
+    val jdbcTemplate: JdbcTemplate,
+    val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
+) : CustomYkiArvioijaRepository {
     /**
      * Override to allow handling duplicates/conflicts. The default implementation from CrudRepository fails
      * due to the unique constraint. Overriding the implementation allows explicit handling of conflicts.
@@ -119,10 +120,10 @@ class CustomYkiArvioijaRepositoryImpl : CustomYkiArvioijaRepository {
                 kieli,
                 tasot
             FROM yki_arvioija
-            WHERE id IN $idsQuery
+            WHERE id IN (:ids)
             """.trimIndent()
-        return jdbcTemplate
-            .query(findAllQuerySql) { rs, _ ->
+        return namedParameterJdbcTemplate
+            .query(findAllQuerySql, MapSqlParameterSource("ids", ids)) { rs, _ ->
                 YkiArvioijaEntity(
                     rs.getInt("id"),
                     rs.getObject("rekisteriintuontiaika", OffsetDateTime::class.java),
