@@ -2,12 +2,14 @@
 
 package fi.oph.kitu.html
 
+import fi.oph.kitu.HomeController
 import fi.oph.kitu.html.Navigation.mainNavigation
 import jakarta.annotation.PostConstruct
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.env.Environment
+import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.stereotype.Component
 
 @Component
@@ -85,7 +87,11 @@ object Page {
                             li {
                                 ul(classes = "breadcrumbs") {
                                     testId("breadcrumbs")
-                                    li { a(href = "/") { strong { +"Kielitutkintorekisteri" } } }
+                                    li {
+                                        a(
+                                            href = linkTo(HomeController::home).toString(),
+                                        ) { strong { +"Kielitutkintorekisteri" } }
+                                    }
                                     breadcrumbs.forEach {
                                         li { a(href = it.ref) { +it.title } }
                                     }
