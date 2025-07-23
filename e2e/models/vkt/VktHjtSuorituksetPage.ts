@@ -12,7 +12,7 @@ export default class VktHjtSuorituksetPage extends BasePage {
   }
 
   async open() {
-    await this.goto("/vkt/hyvajatyydyttava/suoritukset")
+    await this.goto("vkt/hyvajatyydyttava/suoritukset")
   }
 
   async followLinkOfRow(testId: string) {

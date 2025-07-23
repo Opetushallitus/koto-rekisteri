@@ -27,7 +27,7 @@ export default class BasePage {
   }
 
   async login() {
-    await this.goto("/dev/mocklogin")
+    await this.goto("dev/mocklogin")
   }
 
   getPageContent() {
