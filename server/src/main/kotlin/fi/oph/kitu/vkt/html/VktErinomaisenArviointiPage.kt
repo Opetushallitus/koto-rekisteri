@@ -24,14 +24,12 @@ import kotlinx.html.FlowContent
 import kotlinx.html.footer
 import kotlinx.html.h1
 import kotlinx.html.h2
-import org.springframework.security.web.csrf.CsrfToken
 import java.time.LocalDate
 
 object VktErinomaisenArviointiPage {
     fun render(
         data: Henkilosuoritus<VktSuoritus>,
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
-        csrfToken: CsrfToken,
         translations: Translations,
     ): String =
         Page.renderHtml(
@@ -52,7 +50,7 @@ object VktErinomaisenArviointiPage {
             vktTutkinnot(data, translations)
 
             h2 { +"Osakokeet" }
-            formPost("/vkt/suoritukset/${data.suoritus.internalId}", csrfToken = csrfToken) {
+            formPost("/vkt/suoritukset/${data.suoritus.internalId}") {
                 card(overflowAuto = true, compact = true) {
                     vktErinomainenOsakoeTable(data.suoritus.osat, translations)
                     footer {
