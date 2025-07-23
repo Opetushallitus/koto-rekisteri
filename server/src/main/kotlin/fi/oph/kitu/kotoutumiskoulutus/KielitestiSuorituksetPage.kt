@@ -32,7 +32,7 @@ object KielitestiSuorituksetPage {
                 ),
             wideContent = true,
         ) {
-            errorsArticle(errorsCount, "/koto-kielitesti/suoritukset/virheet")
+            errorsArticle(errorsCount, linkTo(KielitestiViewController::virheetView).toString())
 
             article(classes = "overflow-auto") {
                 table {
