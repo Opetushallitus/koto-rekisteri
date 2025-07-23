@@ -11,7 +11,7 @@ import java.time.LocalDate
 
 fun FlowContent.formPost(
     action: String,
-    csrfToken: CsrfToken,
+    csrfToken: CsrfToken = KituRequest.currentCsrfToken(),
     content: FORM.() -> Unit,
 ) {
     form(action = action, method = FormMethod.post) {
