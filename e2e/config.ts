@@ -100,7 +100,7 @@ export const createConfig = (workerIndex: number) => {
   return {
     workerIndex,
     port,
-    baseUrl: `http://127.0.0.1:${port}/`,
+    baseUrl: `http://127.0.0.1:${port}/kielitutkinnot/`,
     database: {
       connectionString:
         getDatabaseConnectionStringFromServerE2EConfiguration(workerIndex),

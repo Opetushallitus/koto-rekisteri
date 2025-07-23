@@ -15,7 +15,7 @@ const workerWebServer = (workerIndex: number) => {
   const port = 8080 + workerIndex
   return {
     command: "./mvnw spring-boot:run",
-    url: `http://127.0.0.1:${port}`,
+    url: `http://127.0.0.1:${port}/kielitutkinnot`,
     reuseExistingServer: false,
     cwd: "../server/",
     env: {
