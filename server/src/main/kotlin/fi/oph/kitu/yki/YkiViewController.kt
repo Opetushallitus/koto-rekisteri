@@ -16,7 +16,9 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 @RequestMapping("/yki")
@@ -26,13 +28,31 @@ class YkiViewController(
     private val arvioijaErrorService: YkiArvioijaErrorService,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
-    fun suorituksetView(
-        search: String = "",
+    fun suorituksetGetView(
         versionHistory: Boolean = false,
         limit: Int = 100,
         page: Int = 1,
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
+    ): ResponseEntity<String> = handleSuorituksetView("", versionHistory, limit, page, sortColumn, sortDirection)
+
+    @PostMapping("/suoritukset", produces = ["text/html"])
+    fun suorituksetPostView(
+        @RequestParam("search") search: String,
+        versionHistory: Boolean = false,
+        limit: Int = 100,
+        page: Int = 1,
+        sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
+        sortDirection: SortDirection = SortDirection.DESC,
+    ): ResponseEntity<String> = handleSuorituksetView(search, versionHistory, limit, page, sortColumn, sortDirection)
+
+    fun handleSuorituksetView(
+        search: String,
+        versionHistory: Boolean,
+        limit: Int,
+        page: Int,
+        sortColumn: YkiSuoritusColumn,
+        sortDirection: SortDirection,
     ): ResponseEntity<String> =
         ResponseEntity.ok(
             YkiSuorituksetPage.render(

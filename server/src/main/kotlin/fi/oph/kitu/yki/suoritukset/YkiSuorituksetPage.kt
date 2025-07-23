@@ -44,14 +44,14 @@ object YkiSuorituksetPage {
         errorsCount: Long,
     ): String =
         Page.renderHtml(
-            breadcrumbs = Navigation.getBreadcrumbs(linkTo(YkiViewController::suorituksetView).toString()),
+            breadcrumbs = Navigation.getBreadcrumbs(linkTo(YkiViewController::suorituksetGetView).toString()),
             wideContent = true,
         ) {
             this.errorsArticle(errorsCount, "/yki/suoritukset/virheet")
 
             form(
                 action = "",
-                method = FormMethod.get,
+                method = FormMethod.post,
                 classes = "grid center-vertically",
             ) {
                 fieldSet {

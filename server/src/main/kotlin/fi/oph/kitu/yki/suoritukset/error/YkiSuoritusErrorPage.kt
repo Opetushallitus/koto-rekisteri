@@ -17,7 +17,7 @@ object YkiSuoritusErrorPage {
         Page.renderHtml(
             breadcrumbs =
                 Navigation.getBreadcrumbs(
-                    linkTo(YkiViewController::suorituksetView).toString(),
+                    linkTo(YkiViewController::suorituksetGetView).toString(),
                     navItem(
                         "Virheet",
                         linkTo(YkiViewController::suorituksetVirheetView),
