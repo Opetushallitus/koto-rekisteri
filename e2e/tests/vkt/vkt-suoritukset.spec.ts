@@ -12,9 +12,9 @@ import {
 import { todayISODate } from "../../util/time"
 
 describe("Valtionkielitutkinnon suoritukset page", () => {
-  beforeEach(async ({ db, vktSuoritus, vktIlmoittautuneetPage }) => {
+  beforeEach(async ({ db, vktSuoritus, config }) => {
     await db.withEmptyDatabase()
-    await vktSuoritus.create()
+    await vktSuoritus.create(config.baseUrl)
   })
 
   test("Ilmoittauneet page shows a table with content", async ({

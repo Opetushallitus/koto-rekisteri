@@ -13,7 +13,6 @@ import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
@@ -139,33 +138,34 @@ class VktViewController(
     @ResponseBody
     fun ilmoittautuneenArviointiView(
         @PathVariable id: Int,
-        csrfToken: CsrfToken,
-    ): String? =
-        vktSuoritukset
-            .getSuoritus(id)
-            .map { suoritus ->
-                val henkilo =
-                    suoritus.henkilo.oid
-                        .toOid()
-                        .toTypedResult<_, OppijanumeroException> {
-                            OppijanumeroException.MalformedOppijanumero(
-                                EmptyRequest(),
-                                suoritus.henkilo.oid.oid,
-                            )
-                        }.flatMap { oppijanumeroService.getHenkilo(it) }
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(
+            vktSuoritukset
+                .getSuoritus(id)
+                .map { suoritus ->
+                    val henkilo =
+                        suoritus.henkilo.oid
+                            .toOid()
+                            .toTypedResult<_, OppijanumeroException> {
+                                OppijanumeroException.MalformedOppijanumero(
+                                    EmptyRequest(),
+                                    suoritus.henkilo.oid.oid,
+                                )
+                            }.flatMap { oppijanumeroService.getHenkilo(it) }
 
-                val translations =
-                    localizationService
-                        .translationBuilder()
-                        .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
-                        .build()
+                    val translations =
+                        localizationService
+                            .translationBuilder()
+                            .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
+                            .build()
 
-                if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
-                    VktErinomaisenArviointiPage.render(suoritus, henkilo, csrfToken, translations)
-                } else {
-                    VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, henkilo, translations)
-                }
-            }.getOrElse { throw VktSuoritusNotFoundError() }
+                    if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
+                        VktErinomaisenArviointiPage.render(suoritus, henkilo, translations)
+                    } else {
+                        VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, henkilo, translations)
+                    }
+                }.getOrElse { throw VktSuoritusNotFoundError() },
+        )
 
     @PostMapping("/suoritukset/{id}", produces = ["text/html"])
     fun saveIlmoittautuneenArviointi(
