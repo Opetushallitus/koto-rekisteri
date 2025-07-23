@@ -13,7 +13,7 @@ object Navigation {
                 "yki",
                 "Yleiset kielitutkinnot",
                 listOf(
-                    MenuItem("Suoritukset", linkTo(YkiViewController::suorituksetView).toString()),
+                    MenuItem("Suoritukset", linkTo(YkiViewController::suorituksetGetView).toString()),
                     MenuItem("Arvioijat", linkTo(YkiViewController::arvioijatView).toString()),
                 ),
             ),
