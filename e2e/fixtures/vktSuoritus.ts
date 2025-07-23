@@ -1,6 +1,6 @@
-export const create = async () => {
+export const create = async (baseUrl: string) => {
   const response = await fetch(
-    "http://localhost:8080/dev/mockdata/vkt/suoritus/1000",
+    new URL("dev/mockdata/vkt/suoritus/1000", baseUrl),
   )
   return await response.json()
 }

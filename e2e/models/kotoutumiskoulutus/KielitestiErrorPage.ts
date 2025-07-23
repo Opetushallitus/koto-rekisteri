@@ -3,7 +3,7 @@ import { Page } from "@playwright/test"
 import { Config } from "../../config"
 
 export default class KielitestiErrorPage extends BasePage {
-  readonly url = "/koto-kielitesti/suoritukset/virheet"
+  readonly url = "koto-kielitesti/suoritukset/virheet"
 
   constructor(page: Page, config: Config) {
     super(page, config)

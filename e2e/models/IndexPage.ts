@@ -8,7 +8,7 @@ export default class IndexPage extends BasePage {
   }
 
   async open() {
-    await this.goto("/")
+    await this.goto("")
   }
 
   getYkiSuorituksetLink() {
