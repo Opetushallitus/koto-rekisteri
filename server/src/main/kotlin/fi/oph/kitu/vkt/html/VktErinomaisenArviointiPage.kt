@@ -19,11 +19,14 @@ import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.footer
 import kotlinx.html.h1
 import kotlinx.html.h2
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import java.time.LocalDate
 
 object VktErinomaisenArviointiPage {
@@ -50,7 +53,13 @@ object VktErinomaisenArviointiPage {
             vktTutkinnot(data, translations)
 
             h2 { +"Osakokeet" }
-            formPost("/vkt/suoritukset/${data.suoritus.internalId}") {
+            formPost(
+                linkTo(
+                    // NOTE: This is the GET endpoint, not the POST one, because we don't have a FormData object here.
+                    // NOTE: Why is internalId nullable?
+                    methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(data.suoritus.internalId!!),
+                ).toString(),
+            ) {
                 card(overflowAuto = true, compact = true) {
                     vktErinomainenOsakoeTable(data.suoritus.osat, translations)
                     footer {
