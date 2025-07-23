@@ -1,5 +1,6 @@
 package fi.oph.kitu.dev
 
+import fi.oph.kitu.HomeController
 import fi.oph.kitu.auth.CasUserDetails
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -19,7 +21,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
-import java.net.URI
 import kotlin.system.exitProcess
 
 @RestController
@@ -62,6 +63,6 @@ class MockLoginController(
         val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
         SecurityContextHolder.getContext().authentication = authentication
         securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response)
-        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("/")).build()
+        return ResponseEntity.status(HttpStatus.FOUND).location(linkTo(HomeController::home).toUri()).build()
     }
 }
