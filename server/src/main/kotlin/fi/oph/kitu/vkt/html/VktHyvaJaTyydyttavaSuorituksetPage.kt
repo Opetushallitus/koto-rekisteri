@@ -16,6 +16,9 @@ import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.*
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilderDsl
 import org.springframework.hateoas.server.mvc.linkTo
 
 object VktHyvaJaTyydyttavaSuorituksetPage {
@@ -51,7 +54,14 @@ fun FlowContent.vktHyvaJaTyydyttavaTable(
     searchQuery: String?,
 ) {
     card(overflowAuto = true, compact = true) {
-        fun getHref(id: Int?) = id?.let { "/vkt/suoritukset/$it" } ?: "#"
+        fun getHref(id: Int?) =
+            id?.let {
+                WebMvcLinkBuilder
+                    .linkTo(
+                        methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(it),
+                    ).toString()
+            }
+                ?: "#"
 
         displayTable(
             suoritukset,
