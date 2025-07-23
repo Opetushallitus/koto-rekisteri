@@ -7,7 +7,7 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import java.time.LocalDate
 import kotlin.random.Random
 
-fun generateRandomYkiArviointiEntity(): YkiArvioijaEntity {
+fun generateRandomYkiArvioijaEntity(): YkiArvioijaEntity {
     val randomTeacher = generateRandomPerson()
 
     val (rekisteriintuontiaika, ensimmainenRekisterointipaiva, kaudenAlkupaiva, kaudenPaattymispaiva) =

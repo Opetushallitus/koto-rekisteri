@@ -11,7 +11,7 @@ fun generateRandomYkiArvioijaErrorEntity(): YkiArvioijaErrorEntity {
     val virheenLuontiaika = getRandomInstant(lastModified)
     val virheellinenKentta = SolkiArvioijaResponse::class.memberProperties.random().name
 
-    val arvioijaEntity = generateRandomYkiArviointiEntity()
+    val arvioijaEntity = generateRandomYkiArvioijaEntity()
 
     val csv = YkiArvioijaMappingService().convertToResponse(arvioijaEntity).toCsvString()
 
