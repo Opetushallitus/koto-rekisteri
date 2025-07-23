@@ -8,7 +8,7 @@ export default class KielitestiSuorituksetPage extends BasePage {
   }
 
   async open() {
-    await this.goto("/koto-kielitesti/suoritukset")
+    await this.goto("koto-kielitesti/suoritukset")
   }
 
   async openFromNavigation() {

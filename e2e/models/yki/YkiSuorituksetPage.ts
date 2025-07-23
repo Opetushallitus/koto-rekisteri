@@ -9,7 +9,7 @@ export default class YkiSuorituksetPage extends BasePage {
   }
 
   async open() {
-    await this.goto("/yki/suoritukset")
+    await this.goto("yki/suoritukset")
   }
 
   async openFromNavigation() {
