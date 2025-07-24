@@ -6,12 +6,12 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
+import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.pagination
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.html.errorsArticle
 import kotlinx.html.ButtonType
-import kotlinx.html.FormMethod
 import kotlinx.html.InputType
 import kotlinx.html.a
 import kotlinx.html.article
@@ -19,7 +19,6 @@ import kotlinx.html.button
 import kotlinx.html.details
 import kotlinx.html.fieldSet
 import kotlinx.html.footer
-import kotlinx.html.form
 import kotlinx.html.header
 import kotlinx.html.label
 import kotlinx.html.li
@@ -31,6 +30,7 @@ import kotlinx.html.th
 import kotlinx.html.tr
 import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
+import org.springframework.security.web.csrf.CsrfToken
 import kotlin.enums.enumEntries
 
 object YkiSuorituksetPage {
@@ -42,6 +42,7 @@ object YkiSuorituksetPage {
         search: String,
         versionHistory: Boolean,
         errorsCount: Long,
+        csrfToken: CsrfToken,
     ): String =
         Page.renderHtml(
             breadcrumbs = Navigation.getBreadcrumbs(linkTo(YkiViewController::suorituksetGetView).toString()),
@@ -49,10 +50,10 @@ object YkiSuorituksetPage {
         ) {
             this.errorsArticle(errorsCount, "/yki/suoritukset/virheet")
 
-            form(
+            formPost(
                 action = "",
-                method = FormMethod.post,
-                classes = "grid center-vertically",
+                csrfToken = csrfToken,
+                formClasses = "grid center-vertically",
             ) {
                 fieldSet {
                     attributes["role"] = "search"

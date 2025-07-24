@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
@@ -14,6 +15,7 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -34,7 +36,16 @@ class YkiViewController(
         page: Int = 1,
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): ResponseEntity<String> = handleSuorituksetView("", versionHistory, limit, page, sortColumn, sortDirection)
+    ): ResponseEntity<String> =
+        handleSuorituksetView(
+            "",
+            versionHistory,
+            limit,
+            page,
+            sortColumn,
+            sortDirection,
+            KituRequest.currentCsrfToken(),
+        )
 
     @PostMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetPostView(
@@ -44,7 +55,9 @@ class YkiViewController(
         page: Int = 1,
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
-    ): ResponseEntity<String> = handleSuorituksetView(search, versionHistory, limit, page, sortColumn, sortDirection)
+        csrfToken: CsrfToken = KituRequest.currentCsrfToken(),
+    ): ResponseEntity<String> =
+        handleSuorituksetView(search, versionHistory, limit, page, sortColumn, sortDirection, csrfToken)
 
     fun handleSuorituksetView(
         search: String,
@@ -53,6 +66,7 @@ class YkiViewController(
         page: Int,
         sortColumn: YkiSuoritusColumn,
         sortDirection: SortDirection,
+        csrfToken: CsrfToken,
     ): ResponseEntity<String> =
         ResponseEntity.ok(
             YkiSuorituksetPage.render(
@@ -86,6 +100,7 @@ class YkiViewController(
                 search = search,
                 versionHistory = versionHistory,
                 errorsCount = suoritusErrorService.countErrors(),
+                csrfToken = csrfToken,
             ),
         )
 
