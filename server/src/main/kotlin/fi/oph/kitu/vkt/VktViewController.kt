@@ -11,6 +11,8 @@ import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -175,7 +177,7 @@ class VktViewController(
         form.toEntries().forEach {
             vktSuoritukset.setOsakoeArvosana(it.id, it.arvosana, it.arviointipaiva)
         }
-        return RedirectView("/vkt/suoritukset/$id")
+        return RedirectView(linkTo(methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(id)).toString())
     }
 }
 
