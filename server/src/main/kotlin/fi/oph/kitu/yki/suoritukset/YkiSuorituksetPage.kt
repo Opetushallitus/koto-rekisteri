@@ -8,6 +8,7 @@ import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.html.errorsArticle
 import kotlinx.html.ButtonType
@@ -47,7 +48,7 @@ object YkiSuorituksetPage {
             breadcrumbs = Navigation.getBreadcrumbs(linkTo(YkiViewController::suorituksetView).toString()),
             wideContent = true,
         ) {
-            this.errorsArticle(errorsCount, "/yki/suoritukset/virheet")
+            this.errorsArticle(errorsCount, linkTo(YkiViewController::suorituksetVirheetView).toString())
 
             form(
                 action = "",
@@ -90,9 +91,7 @@ object YkiSuorituksetPage {
                                 +"Suorituksia yhteensä: ${pagination.numberOfPages}"
                             }
                             li {
-                                a(
-                                    href = "/yki/api/suoritukset?includeVersionHistory=$versionHistory",
-                                ) {
+                                a(href = linkTo<YkiApiController> { getSuorituksetAsCsv(versionHistory) }.toString()) {
                                     attributes["download"] = ""
                                     +"Lataa tiedot CSV:nä"
                                 }
