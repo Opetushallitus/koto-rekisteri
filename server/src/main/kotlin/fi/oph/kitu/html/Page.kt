@@ -2,7 +2,9 @@
 
 package fi.oph.kitu.html
 
+import fi.oph.kitu.ApplicationProperties
 import fi.oph.kitu.HomeController
+import fi.oph.kitu.KituApplicationProperties
 import fi.oph.kitu.html.Navigation.mainNavigation
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
@@ -11,7 +13,7 @@ import org.springframework.hateoas.server.mvc.linkTo
 object Page {
     fun HEAD.loadRaamit() {
         val isDeployEnvironment =
-            AppConfig.environment.activeProfiles.any {
+            ApplicationProperties.environment.activeProfiles.any {
                 it.lowercase().contains("untuva") ||
                     it.lowercase().contains("qa") ||
                     it.lowercase().contains("prod")
@@ -20,7 +22,7 @@ object Page {
         if (isDeployEnvironment) {
             script(
                 type = "text/javascript",
-                src = "https://${AppConfig.opintopolkuHostname}/virkailija-raamit/apply-raamit.js",
+                src = "https://${ApplicationProperties.kitu.opintopolkuHostname}/virkailija-raamit/apply-raamit.js",
                 crossorigin = null,
             ) {}
         }
@@ -45,8 +47,8 @@ object Page {
             head {
                 title { +pageTitle }
                 meta(name = "color-scheme", content = "light")
-                link(href = "${AppConfig.appUrl}/pico.min.css", rel = "stylesheet")
-                link(href = "${AppConfig.appUrl}/style.css", rel = "stylesheet")
+                link(href = "${ApplicationProperties.kitu.appUrl}/pico.min.css", rel = "stylesheet")
+                link(href = "${ApplicationProperties.kitu.appUrl}/style.css", rel = "stylesheet")
 
                 loadRaamit()
             }
