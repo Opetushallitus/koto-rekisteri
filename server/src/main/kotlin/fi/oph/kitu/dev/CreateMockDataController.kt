@@ -4,7 +4,7 @@ import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusRepository
 import fi.oph.kitu.mock.VktSuoritusMockGenerator
 import fi.oph.kitu.mock.generateRandomKielitestiSuoritus
-import fi.oph.kitu.mock.generateRandomYkiArviointiEntity
+import fi.oph.kitu.mock.generateRandomYkiArvioijaEntity
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.vkt.VktSuoritusEntity
@@ -80,15 +80,15 @@ class CreateMockDataController(
             )
 
     @GetMapping(
-        "/mockdata/yki/arviointi/",
-        "/mockdata/yki/arviointi/{count}",
+        "/mockdata/yki/arvioija/",
+        "/mockdata/yki/arvioija/{count}",
     )
-    fun createYkiArviointiMockData(
+    fun createYkiArvioijaMockData(
         @PathVariable count: Int?,
     ): Iterable<YkiArvioijaEntity> =
         arvioijaRepository.saveAll(
             List(count ?: 1000) {
-                generateRandomYkiArviointiEntity()
+                generateRandomYkiArvioijaEntity()
             },
         )
 
