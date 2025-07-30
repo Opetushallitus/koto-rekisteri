@@ -2,7 +2,8 @@ name: kitu
 
 services:
   db:
-    image: postgres:16
+    build:
+      dockerfile: possu.Dockerfile
     volumes:
       - ./scripts/postgres-docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
