@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 @RequestMapping("/api/vkt")
 class VktTiedonsiirtoController(
     val vktRepository: VktSuoritusRepository,
+    private val vktValidation: VktValidation,
 ) {
     @PutMapping("/kios", produces = ["application/json"])
     @Operation(
@@ -113,7 +114,12 @@ class VktTiedonsiirtoController(
             val suoritus = data.suoritus
             when (suoritus) {
                 is VktSuoritus -> {
-                    val enrichedSuoritus = KielitutkinnonSuoritus.validateAndEnrich(data.suoritus).getOrThrow()
+                    val enrichedSuoritus =
+                        KielitutkinnonSuoritus
+                            .validateAndEnrich(
+                                data.suoritus,
+                                vktValidation,
+                            ).getOrThrow()
                     val henkilosuoritus = Henkilosuoritus(data.henkilo, enrichedSuoritus)
                     vktRepository.save(
                         henkilosuoritus.toVktSuoritusEntity() ?: throw RuntimeException("Failed to convert to entity"),
