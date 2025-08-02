@@ -63,7 +63,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     }
 
     // Oletussorttaus on sukunimen perusteella, joten järjestys kääntyy päinvastaiseksi
-    await testSorting("sukunimi", "Voutilainen", "Salo")
+    await testSorting("sukunimi", "Väänänen", "Salo")
 
     // Testataan loputkin kentät
     await testSorting("etunimi", "Aarni Eino", "Eero Hugo")

@@ -5,7 +5,9 @@ import { expect } from "@playwright/test"
 describe("Yleiset kielitutkinnot arvioijat page", () => {
   beforeEach(async ({ db, ykiArvioija }) => {
     await db.withEmptyDatabase()
+    await ykiArvioija.insert(db, "ranja")
     await ykiArvioija.insert(db, "fanni")
+    await ykiArvioija.insert(db, "amalia")
     await ykiArvioija.insert(db, "petro")
   })
 
@@ -42,7 +44,7 @@ describe("Yleiset kielitutkinnot arvioijat page", () => {
       "Jatkorekisteröinti",
       "Rekisteriintuontiaika ▼",
     )
-    expect(table.rows).toHaveCount(2)
+    expect(table.rows).toHaveCount(4)
   })
 
   test("sorting by sukunimi works", async ({ indexPage, ykiArvioijatPage }) => {
@@ -54,20 +56,20 @@ describe("Yleiset kielitutkinnot arvioijat page", () => {
     await table.head.getByTestId("sukunimi").getByRole("link").click()
 
     await expect(table.rows.first().getByTestId("sukunimi")).toHaveText(
-      "Kivinen-Testi",
+      "Andersson-Testi",
     )
     await expect(table.rows.last().getByTestId("sukunimi")).toHaveText(
-      "Vesala-Testi",
+      "Öhman-Testi",
     )
 
     // descending order
     await table.head.getByTestId("sukunimi").getByRole("link").click()
 
     await expect(table.rows.first().getByTestId("sukunimi")).toHaveText(
-      "Vesala-Testi",
+      "Öhman-Testi",
     )
     await expect(table.rows.last().getByTestId("sukunimi")).toHaveText(
-      "Kivinen-Testi",
+      "Andersson-Testi",
     )
   })
 })

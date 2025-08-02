@@ -124,12 +124,7 @@ describe('"YKI Suoritukset" -page', () => {
     {
       column: "Sukunimi",
       tableColumnIndex: 1,
-      order: Array<string>(
-        "Sallinen-Testi",
-        // 'Ö' is treated as 'O' while sorting
-        "Öhman-Testi",
-        "Kivinen-Testi",
-      ),
+      order: Array<string>("Öhman-Testi", "Sallinen-Testi", "Kivinen-Testi"),
     },
     {
       column: "Etunimi",
