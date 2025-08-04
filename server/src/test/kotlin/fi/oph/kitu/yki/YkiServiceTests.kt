@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
@@ -20,7 +21,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
@@ -28,16 +28,13 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers.request
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.Instant
 import java.time.OffsetDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 @SpringBootTest
-@Testcontainers
-@Import(OpenTelemetryTestConfig::class)
+@Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
 class YkiServiceTests(
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @Autowired private val ykiSuoritusErrorService: YkiSuoritusErrorService,
@@ -49,17 +46,8 @@ class YkiServiceTests(
     @Autowired private val mockRestClientBuilder: RestClient.Builder,
     @Autowired private val tracer: Tracer,
     @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
+    @Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
-
     @BeforeEach
     fun nukeDb() {
         ykiArvioijaRepository.deleteAll()

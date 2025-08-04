@@ -1,5 +1,6 @@
 package fi.oph.kitu.e2e
 
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.dev.YkiController
 import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -10,32 +11,21 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.springframework.http.ResponseEntity
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.Instant
 import kotlin.test.assertEquals
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@Testcontainers
+@Import(DBContainerConfiguration::class)
 class YkiServiceTests(
     @Autowired val ykiService: YkiService,
     @Autowired val ykiDevController: YkiController,
     @Autowired val ykiSuoritusErrorRepository: YkiSuoritusErrorRepository,
     @Autowired val ykiSuoritusRepository: YkiSuoritusRepository,
+    @Autowired val postgres: PostgreSQLContainer<*>,
 ) {
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
-
     @BeforeEach
     fun nukeDb() {
         ykiSuoritusErrorRepository.deleteAll()

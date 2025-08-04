@@ -7,28 +7,19 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 @SpringBootTest
-@Testcontainers
+@Import(DBContainerConfiguration::class)
 class DBIsoOidTest(
     @Autowired private val jdbcTemplate: JdbcTemplate,
+    @Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres = PostgreSQLContainer("postgres:16")
-    }
-
     @BeforeEach
     fun nukeDb() {
         jdbcTemplate.execute("DROP TABLE IF EXISTS oid_test")

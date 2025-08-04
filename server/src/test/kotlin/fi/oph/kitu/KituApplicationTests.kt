@@ -1,23 +1,16 @@
 package fi.oph.kitu
 
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 
 @SpringBootTest
-@Testcontainers
-class KituApplicationTests {
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres = PostgreSQLContainer("postgres:16")
-    }
-
+@Import(DBContainerConfiguration::class)
+class KituApplicationTests(
+    @Autowired private val postgres: PostgreSQLContainer<*>,
+) {
     @Test
     fun contextLoads() {
     }

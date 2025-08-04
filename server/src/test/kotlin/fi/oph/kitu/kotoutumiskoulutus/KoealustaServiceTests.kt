@@ -1,5 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.oppijanumero.CasAuthenticatedService
@@ -10,7 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -20,22 +21,17 @@ import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.Instant
 import kotlin.test.assertEquals
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@Testcontainers
-class KoealustaServiceTests {
+@Import(DBContainerConfiguration::class)
+class KoealustaServiceTests(
+    @Autowired private val postgres: PostgreSQLContainer<*>,
+) {
     @Suppress("unused")
     companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres = PostgreSQLContainer("postgres:16")
-
         @JvmStatic
         fun casAuthenticatedService(): CasAuthenticatedService =
             CasAuthenticatedServiceMock(
