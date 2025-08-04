@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
@@ -7,10 +8,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.assertContains
@@ -19,20 +18,11 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @SpringBootTest
-@Testcontainers
+@Import(DBContainerConfiguration::class)
 class YkiSuoritusRepositoryTest(
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
+    @Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
-
     @BeforeEach
     fun nukeDb() {
         ykiSuoritusRepository.deleteAll()

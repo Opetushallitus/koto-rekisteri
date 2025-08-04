@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.SimpleCsvExportError
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
@@ -12,11 +13,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Import
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import java.lang.RuntimeException
 import java.time.Instant
 import kotlin.test.assertEquals
@@ -24,23 +22,13 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
-@Testcontainers
-@Import(OpenTelemetryTestConfig::class)
+@Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
 class YkiArvioijaErrorTests(
     @Autowired private val repository: YkiArvioijaErrorRepository,
     @Autowired private val service: YkiArvioijaErrorService,
     @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
+    @Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
-
     @BeforeEach
     fun nukeDb() {
         repository.deleteAll()

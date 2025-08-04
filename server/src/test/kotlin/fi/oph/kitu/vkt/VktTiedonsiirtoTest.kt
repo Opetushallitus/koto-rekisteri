@@ -1,11 +1,12 @@
 package fi.oph.kitu.vkt
 
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.schema.SchemaTests
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity
@@ -15,26 +16,16 @@ import org.springframework.test.web.servlet.put
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import kotlin.test.Test
 
 @SpringBootTest
-@Testcontainers
+@Import(DBContainerConfiguration::class)
 class VktTiedonsiirtoTest {
     @Autowired
     private lateinit var context: WebApplicationContext
-    private var mockMvc: MockMvc? = null
 
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
+    @Autowired private var postgres: PostgreSQLContainer<*>? = null
+    private var mockMvc: MockMvc? = null
 
     @BeforeEach
     fun setup() {

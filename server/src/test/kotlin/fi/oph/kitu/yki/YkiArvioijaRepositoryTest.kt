@@ -1,35 +1,25 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @SpringBootTest
-@Testcontainers
+@Import(DBContainerConfiguration::class)
 class YkiArvioijaRepositoryTest(
+    @Autowired private val postgres: PostgreSQLContainer<*>,
     @Autowired private val arvioijaRepository: YkiArvioijaRepository,
 ) {
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
-
     @BeforeEach
     fun nukeDb() {
         arvioijaRepository.deleteAll()

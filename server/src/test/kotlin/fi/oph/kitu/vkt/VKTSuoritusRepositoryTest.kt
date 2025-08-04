@@ -1,34 +1,24 @@
 package fi.oph.kitu.vkt
 
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDate
 import kotlin.jvm.optionals.getOrNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @SpringBootTest
-@Testcontainers
+@Import(DBContainerConfiguration::class)
 class VKTSuoritusRepositoryTest(
     @Autowired private var repository: VktSuoritusRepository,
+    @Autowired private var postgres: PostgreSQLContainer<*>,
 ) {
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
-
     @BeforeEach
     fun nukeDb() {
         repository.deleteAll()

@@ -1,5 +1,6 @@
 package fi.oph.kitu.koski
 
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
@@ -10,7 +11,6 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.client.ExpectedCount
@@ -20,8 +20,6 @@ import org.springframework.test.web.client.response.MockRestResponseCreators.wit
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -29,27 +27,17 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
-@Testcontainers
-@Import(OpenTelemetryTestConfig::class)
+@Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
 class KoskiServiceTest(
     @Autowired private val koskiRequestMapper: KoskiRequestMapper,
     @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @Autowired private val mockRestClientBuilder: RestClient.Builder,
     @Autowired private val tracer: Tracer,
     @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
+    @Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @Autowired
     private lateinit var ykiService: YkiService
-
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
 
     @BeforeEach
     fun nukeDb() {
