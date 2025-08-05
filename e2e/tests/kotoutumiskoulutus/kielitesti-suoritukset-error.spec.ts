@@ -85,66 +85,62 @@ describe('"Koto Suoritukset" -page', () => {
     {
       column: "Henkilötunnus",
       tableColumnIndex: 0,
-      order: Array<string>("010866-9260", "010180-9026", "010116A9518"),
+      order: ["010866-9260", "010180-9026", "010116A9518"],
     },
     {
       column: "Nimi",
       tableColumnIndex: 1,
-      order: Array<string>(
+      order: [
         "Ranja Testi Öhman-Testi",
         "Petro Testi Kivinen-Testi",
         "Magdalena Testi Sallinen-Testi",
-      ),
+      ],
     },
     {
       column: "Organisaation OID",
       tableColumnIndex: 2,
-      order: Array<string>(
+      order: [
         "1.2.246.562.10.1234567891",
         "1.2.246.562.10.1234567890",
         "1.2.246.562.10.0987654321",
-      ),
+      ],
     },
     {
       column: "Opettajan sähköpostiosoite",
       tableColumnIndex: 3,
-      order: Array<string>(
+      order: [
         "yksi-opettajista@testi.oph.fi",
         "toinen-opettaja@testi.oph.fi",
         "opettaja@testi.oph.fi",
-      ),
+      ],
     },
     {
       column: "Virheen luontiaika",
       tableColumnIndex: 4,
-      order: Array<string>(
+      order: [
         "2024-11-22T10:49:49Z",
         "2025-05-26T12:34:56Z",
         "2042-12-22T22:42:42Z",
-      ),
+      ],
     },
     {
       column: "Virheviesti",
       tableColumnIndex: 5,
-      order: Array<string>(
+      order: [
         'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
         "testiviesti, ei tekstiviesti",
         'Malformed quiz grade "kirjoittaminen" on course "Integraatio testaus" for user "2"',
-      ),
+      ],
     },
     {
       column: "Virheellinen kenttä",
       tableColumnIndex: 6,
-      order: Array<string>("yksi niistä", "puhuminen", "kirjoittaminen"),
+      order: ["yksi niistä", "puhuminen", "kirjoittaminen"],
     },
     {
       column: "Virheellinen arvo",
       tableColumnIndex: 7,
-      order: Array<string>(
-        "virheellinen arvosana",
-        "tyhjää täynnä",
-        "en kerro, arvaa!",
-      ),
+      order: ["virheellinen arvosana", "tyhjää täynnä", "en kerro, arvaa!"],
     },
   ] as const
   for (const testCase of sortTestCases) {
