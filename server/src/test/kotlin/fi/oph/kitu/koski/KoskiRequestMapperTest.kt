@@ -1,6 +1,7 @@
 package fi.oph.kitu.koski
 
 import com.fasterxml.jackson.databind.JsonNode
+import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.mock.VktSuoritusMockGenerator
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
@@ -28,23 +30,16 @@ import kotlin.random.Random
 import kotlin.test.assertEquals
 
 @SpringBootTest
-class KoskiRequestMapperTest {
+@Import(DBContainerConfiguration::class)
+class KoskiRequestMapperTest(
+    @Autowired private val postgres: PostgreSQLContainer<*>,
+) {
     @Autowired
     lateinit var koskiRequestMapper: KoskiRequestMapper
     private val objectMapper = KoskiRequestMapper.getObjectMapper()
 
     private val oid: Oid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
     private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.12345678910").getOrThrow()
-
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        @Container
-        @ServiceConnection
-        val postgres =
-            PostgreSQLContainer("postgres:16")
-                .withUrlParam("stringtype", "unspecified")!!
-    }
 
     @Test
     fun `map yki suoritus to koski request`() {
