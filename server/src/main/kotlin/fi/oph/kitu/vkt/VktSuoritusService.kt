@@ -78,6 +78,12 @@ class VktSuoritusService(
         arviointipaiva: LocalDate? = null,
     ) = osakoeRepository.updateArvosana(id, arvosana, arviointipaiva)
 
+    @WithSpan("VktSuoritusServer.setSuoritusTransferredToKoski")
+    fun setSuoritusTransferredToKoski(
+        id: Int,
+        koskiOpiskeluoikeusOid: String? = null,
+    ) = customSuoritusRepository.setSuoritusTransferredToKoski(id, koskiOpiskeluoikeusOid)
+
     private val listRowCounts =
         Cache(ttl = 5.minutes) { params: Triple<Koodisto.VktTaitotaso, Boolean?, String?> ->
             customSuoritusRepository.numberOfRowsForListView(
