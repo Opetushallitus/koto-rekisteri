@@ -63,32 +63,27 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     {
       column: "Sukunimi",
       tableColumnIndex: 0,
-      order: Array<string>(
+      order: [
         "Välimaa-Testi",
         "Torvinen-Testi",
         "Sallinen-Testi",
         "Laasonen-Testi",
-      ),
+      ],
     },
     {
       column: "Etunimet",
       tableColumnIndex: 1,
-      order: Array<string>(
-        "Toni Testi",
-        "Magdalena Testi",
-        "Eino Testi",
-        "Anniina Testi",
-      ),
+      order: ["Toni Testi", "Magdalena Testi", "Eino Testi", "Anniina Testi"],
     },
     {
       column: "Sähköposti",
       tableColumnIndex: 2,
-      order: Array<string>(
+      order: [
         "devnull-6@oph.fi",
         "devnull-14@oph.fi",
         "devnull-12@oph.fi",
         "devnull-10@oph.fi",
-      ),
+      ],
     },
   ] as const
   for (const testCase of sortTestCases) {
