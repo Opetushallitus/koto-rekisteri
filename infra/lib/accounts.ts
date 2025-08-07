@@ -55,7 +55,7 @@ export const deploymentAccounts: {
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "kielitutkintorekisteri-alerts-dev-test",
     slackChannelId: "C08E14CRZ3J",
-    healthCheckPath: "/actuator/health",
+    healthCheckPath: "kielitutkinnot/actuator/health",
   },
   prod: {
     name: "prod",
