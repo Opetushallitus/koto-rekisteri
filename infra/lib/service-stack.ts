@@ -37,7 +37,6 @@ import * as s3 from "aws-cdk-lib/aws-s3"
 import { StringParameter } from "aws-cdk-lib/aws-ssm"
 
 export interface ServiceStackProps extends StackProps {
-  healthCheckPath: string
   auditLogGroup: ILogGroup
   logGroup: ILogGroup
   image: ContainerImage
@@ -175,7 +174,7 @@ export class ServiceStack extends Stack {
       enabled: true,
       healthyThresholdCount: 2,
       interval: Duration.seconds(10),
-      path: props.healthCheckPath,
+      path: "/kielitutkinnot/actuator/health",
     })
 
     // The default load balancer configuration waits 300 seconds (5 minutes) before moving a container to UNUSED state.
