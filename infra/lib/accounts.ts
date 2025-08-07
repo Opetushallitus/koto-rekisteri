@@ -1,5 +1,4 @@
 export interface EnvironmentConfig {
-  healthCheckPath: string
   name: string
   account: string
   region: string
@@ -39,7 +38,6 @@ export const deploymentAccounts: {
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "kielitutkintorekisteri-alerts-dev-test",
     slackChannelId: "C08E14CRZ3J",
-    healthCheckPath: "/kielitutkinnot/actuator/health",
   },
   test: {
     name: "qa",
@@ -55,7 +53,6 @@ export const deploymentAccounts: {
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "kielitutkintorekisteri-alerts-dev-test",
     slackChannelId: "C08E14CRZ3J",
-    healthCheckPath: "/kielitutkinnot/actuator/health",
   },
   prod: {
     name: "prod",
@@ -71,7 +68,6 @@ export const deploymentAccounts: {
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "kielitutkintorekisteri-alerts",
     slackChannelId: "C07QPSYBY7L",
-    healthCheckPath: "/actuator/health",
   },
 }
 
