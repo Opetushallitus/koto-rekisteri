@@ -14,7 +14,7 @@ services:
       - "5432:5432"
 
   collector:
-    image: public.ecr.aws/aws-observability/aws-otel-collector:v0.43.3
+    image: public.ecr.aws/aws-observability/aws-otel-collector:v0.44.0
     command: ["--config=/etc/otel-collector-config.yml"]
     volumes:
       - ./otel-config.yml:/etc/otel-collector-config.yml
