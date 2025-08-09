@@ -255,7 +255,7 @@ service:
     this.service.taskDefinition.addContainer("AwsOtelCollector", {
       image: ContainerImage.fromRegistry(
         // renovate: datasource=docker
-        "public.ecr.aws/aws-observability/aws-otel-collector:v0.43.3",
+        "public.ecr.aws/aws-observability/aws-otel-collector:v0.44.0",
       ),
       secrets: {
         // https://aws-otel.github.io/docs/setup/ecs/config-through-ssm
