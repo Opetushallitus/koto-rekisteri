@@ -21,7 +21,7 @@ jobs:
       mise: ${{ steps.filter.outputs.mise }}
       infra: ${{ steps.filter.outputs.infra }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: list_changes
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install tools
         if: needs.list_changes.outputs.mise == 'true'
         uses: jdx/mise-action@v2
@@ -53,7 +53,7 @@ jobs:
       contents: write
     needs: update_tools_cache
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install tools
         uses: jdx/mise-action@v2
         with:
@@ -73,7 +73,7 @@ jobs:
     env:
       MISE_ENV: ci
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install tools
         uses: jdx/mise-action@v2
         with:
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: update_tools_cache
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install tools
         uses: jdx/mise-action@v2
         with:
@@ -121,7 +121,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: update_tools_cache
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install tools
         uses: jdx/mise-action@v2
         with:
@@ -142,7 +142,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install tools
         uses: jdx/mise-action@v2
         with:

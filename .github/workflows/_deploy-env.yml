@@ -48,7 +48,7 @@ jobs:
       name: ${{ inputs.environment }}
       url: ${{ vars.environment_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install tools
         uses: jdx/mise-action@v2
         with:
