@@ -21,7 +21,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     await expect(
       kielitestiSuorituksetPage
         .getBreadcrumbs()
-        .filter({ hasText: "Kotoutumiskoulutuksen kielikokeet" }),
+        .filter({ hasText: "Kotoutumiskoulutuksen kielitaidon päättötesti" }),
     ).toBeVisible()
     await expect(kielitestiSuorituksetPage.getContent()).toBeVisible()
   })
@@ -36,7 +36,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     await expect(
       kielitestiSuorituksetPage
         .getBreadcrumbs()
-        .filter({ hasText: "Kotoutumiskoulutuksen kielikokeet" }),
+        .filter({ hasText: "Kotoutumiskoulutuksen kielitaidon päättötesti" }),
     ).toBeVisible()
     await expect(kielitestiSuorituksetPage.getContent()).toBeVisible()
   })
