@@ -13,7 +13,7 @@ export default class KielitestiSuorituksetPage extends BasePage {
 
   async openFromNavigation() {
     await this.gotoFromMainNav(
-      "Kotoutumiskoulutuksen kielikokeet",
+      "Kotoutumiskoulutuksen kielitaidon päättötesti",
       "Suoritukset",
     )
   }

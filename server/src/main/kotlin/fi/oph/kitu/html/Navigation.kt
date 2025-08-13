@@ -19,7 +19,7 @@ object Navigation {
             ),
             MenuItemGroup(
                 "koto-kielitesti",
-                "Kotoutumiskoulutuksen kielikokeet",
+                "Kotoutumiskoulutuksen kielitaidon päättötesti",
                 listOf(
                     MenuItem("Suoritukset", linkTo(KielitestiViewController::suorituksetView).toString()),
                 ),
