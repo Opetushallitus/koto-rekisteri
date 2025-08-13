@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.html.ViewMessage
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oppijanumero.EmptyRequest
@@ -140,6 +141,7 @@ class VktViewController(
     @ResponseBody
     fun ilmoittautuneenArviointiView(
         @PathVariable id: Int,
+        viewMessage: ViewMessage? = null,
     ): ResponseEntity<String> =
         ResponseEntity.ok(
             vktSuoritukset
@@ -161,8 +163,10 @@ class VktViewController(
                             .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
                             .build()
 
+                    val message = viewMessage?.consume() // httpSession?.getAttribute(MESSAGE_KEY)?.toString()
+
                     if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
-                        VktErinomaisenArviointiPage.render(suoritus, henkilo, translations)
+                        VktErinomaisenArviointiPage.render(suoritus, henkilo, translations, message)
                     } else {
                         VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, henkilo, translations)
                     }
@@ -173,11 +177,15 @@ class VktViewController(
     fun saveIlmoittautuneenArviointi(
         @PathVariable id: Int,
         @ModelAttribute form: VktErinomaisenArviointiPage.ArvosanaFormData,
+        viewMessage: ViewMessage,
     ): RedirectView {
         form.toEntries().forEach {
             vktSuoritukset.setOsakoeArvosana(it.id, it.arvosana, it.arviointipaiva)
         }
-        return RedirectView(linkTo(methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(id)).toString())
+        viewMessage.showSuccess("Muutokset tallennettu onnistuneesti.")
+        return RedirectView(
+            linkTo(methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(id)).toString(),
+        )
     }
 }
 
