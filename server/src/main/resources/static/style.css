@@ -126,6 +126,34 @@ article.error-text a {
   color: var(--oph-orange1);
 }
 
+article.success-text {
+  color: var(--oph-green1);
+  border: 2px solid var(--oph-green2);
+  background-color: var(--oph-green5);
+}
+
+article.success-text a {
+  color: var(--oph-green1);
+}
+
+article.info-text {
+  color: var(--oph-blue1);
+  border: 2px solid var(--oph-blue2);
+  background-color: var(--oph-lightBlue2);
+}
+
+article.success-info a {
+  color: var(--oph-blue1);
+}
+
+article.success-message,
+article.info-message,
+article.error-message {
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards;
+  animation-delay: 0.2s;
+}
+
 article > *:last-child {
   margin-bottom: 0;
 }
@@ -219,4 +247,10 @@ table td input {
 .pagination li.current a {
   color: var(--oph-white);
   background: var(--pico-primary);
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
 }
