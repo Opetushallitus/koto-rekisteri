@@ -14,6 +14,7 @@ import { ServiceStack } from "./service-stack"
 import { BackupsStack } from "./backups-stack"
 import { BackupResource } from "aws-cdk-lib/aws-backup"
 import { SlackBotStack } from "./slack-bot-stack"
+import { BastionStack } from "./bastion-stack"
 
 interface EnvironmentStageProps extends StageProps {
   environmentConfig: EnvironmentConfig
@@ -74,6 +75,12 @@ export class EnvironmentStage extends Stage {
     })
 
     connectionsStack.databaseSG = dbStack.cluster.connections.securityGroups[0]
+
+    new BastionStack(this, "Bastion", {
+      env,
+      vpc: networkStack.vpc,
+      cluster: dbStack.cluster,
+    })
 
     new ServiceStack(this, "Service", {
       env,
