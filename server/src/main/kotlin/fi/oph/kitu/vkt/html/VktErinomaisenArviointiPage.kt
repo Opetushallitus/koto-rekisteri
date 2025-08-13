@@ -5,6 +5,7 @@ import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Navigation.setCurrentItem
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.dateInput
 import fi.oph.kitu.html.displayTable
@@ -12,6 +13,7 @@ import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.hiddenValue
 import fi.oph.kitu.html.itemSelect
 import fi.oph.kitu.html.submitButton
+import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
@@ -31,6 +33,7 @@ object VktErinomaisenArviointiPage {
         data: Henkilosuoritus<VktSuoritus>,
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
+        message: ViewMessageData?,
     ): String =
         Page.renderHtml(
             Navigation.getBreadcrumbs(
@@ -42,6 +45,8 @@ object VktErinomaisenArviointiPage {
             ),
         ) {
             h1 { +data.henkilo.kokoNimi() }
+
+            viewMessage(message)
 
             vktHenkilonTiedot(data, henkilo)
             vktSuorituksenTiedot(data, translations)
