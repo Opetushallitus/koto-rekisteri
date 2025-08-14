@@ -170,7 +170,7 @@ class VktViewController(
                             .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
                             .build()
 
-                    val message = viewMessage?.consume() // httpSession?.getAttribute(MESSAGE_KEY)?.toString()
+                    val message = viewMessage?.consume()
 
                     if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
                         VktErinomaisenArviointiPage.render(suoritus, henkilo, translations, message)
