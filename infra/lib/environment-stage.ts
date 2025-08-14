@@ -15,6 +15,7 @@ import { BackupsStack } from "./backups-stack"
 import { BackupResource } from "aws-cdk-lib/aws-backup"
 import { SlackBotStack } from "./slack-bot-stack"
 import { BastionStack } from "./bastion-stack"
+import { EcsRdsProxyStack } from "./ecs-rds-proxy-stack"
 
 interface EnvironmentStageProps extends StageProps {
   environmentConfig: EnvironmentConfig
@@ -80,6 +81,10 @@ export class EnvironmentStage extends Stage {
       env,
       vpc: networkStack.vpc,
       cluster: dbStack.cluster,
+    })
+
+    new EcsRdsProxyStack(this, "EcsRdsProxy", {
+      env,
     })
 
     new ServiceStack(this, "Service", {
