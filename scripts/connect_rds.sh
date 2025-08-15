@@ -56,17 +56,24 @@ establish_session() {
 stop_task() {
   local cluster=$1
   local task_arn=$2
+  info "Stopping proxy task..."
   aws ecs stop-task --cluster "$cluster" --task "$task_arn"
 }
 
-cluster_name=$(get_stack_output Service ClusterName)
-task_definition=$(get_stack_output EcsRdsProxy TaskDefinitionArn)
-database_hostname=$(get_stack_output Database EndpointROHost)
+run() {
+  local cluster_name task_definition database_hostname
 
-task_arn=$(start_task "$cluster_name" "$task_definition")
+  cluster_name=$(get_stack_output Service ClusterName)
+  task_definition=$(get_stack_output EcsRdsProxy TaskDefinitionArn)
+  database_hostname=$(get_stack_output Database EndpointROHost)
 
-trap 'stop_task $cluster_name $task_arn' EXIT
+  task_arn=$(start_task "$cluster_name" "$task_definition")
 
-container_runtime_id=$(wait_for_task_start "$cluster_name" "$task_arn")
+  trap 'stop_task "$cluster_name" "$task_arn"' EXIT
 
-establish_session "$cluster" "$container_runtime_id" "$database_hostname"
+  container_runtime_id=$(wait_for_task_start "$cluster_name" "$task_arn")
+
+  establish_session "$cluster" "$container_runtime_id" "$database_hostname"
+}
+
+run
