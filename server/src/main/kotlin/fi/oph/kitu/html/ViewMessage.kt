@@ -27,9 +27,9 @@ data class ViewMessageData(
 enum class ViewMessageType(
     val cssClass: String,
 ) {
-    INFO("info-message"),
-    SUCCESS("success-message"),
-    ERROR("error-message"),
+    INFO("info-text"),
+    SUCCESS("success-text"),
+    ERROR("error-text"),
 }
 
 class ViewMessage(

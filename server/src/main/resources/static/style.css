@@ -146,9 +146,9 @@ article.success-info a {
   color: var(--oph-blue1);
 }
 
-article.success-message,
-article.info-message,
-article.error-message {
+article.success-text,
+article.info-text,
+article.error-text {
   opacity: 0;
   animation: fadeIn 0.8s ease forwards;
   animation-delay: 0.2s;
