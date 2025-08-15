@@ -58,13 +58,16 @@ class VktViewController(
         return ResponseEntity.ok(
             VktErinomaisenSuorituksetPage.render(
                 title = "Erinomaisen taitotason ilmoittautuneet",
-                ref = "/vkt/erinomainen/ilmoittautuneet",
                 ilmoittautuneet = ilmoittautuneet,
                 sortedBy = sortColumn,
                 sortDirection = sortDirection,
                 pagination = pagination,
                 translations = translations,
                 searchQuery = search,
+                linkBuilder =
+                    linkTo(
+                        methodOn(VktViewController::class.java).erinomaisenTaitotasonIlmoittautuneetView(),
+                    ),
             ),
         )
     }
@@ -90,16 +93,20 @@ class VktViewController(
                 .translationBuilder()
                 .koodistot("kieli", "vkttutkintotaso")
                 .build()
+
         return ResponseEntity.ok(
             VktErinomaisenSuorituksetPage.render(
                 title = "Erinomaisen taitotason arvioidut suoritukset",
-                ref = "/vkt/erinomainen/arvioidut",
                 ilmoittautuneet = suoritukset,
                 sortedBy = sortColumn,
                 sortDirection = sortDirection,
                 pagination = pagination,
                 translations = translations,
                 searchQuery = search,
+                linkBuilder =
+                    linkTo(
+                        methodOn(VktViewController::class.java).erinomaisenTaitotasonArvioidutSuorituksetView(),
+                    ),
             ),
         )
     }

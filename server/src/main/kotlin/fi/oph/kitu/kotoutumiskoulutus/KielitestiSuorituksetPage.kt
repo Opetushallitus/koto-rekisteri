@@ -27,9 +27,7 @@ object KielitestiSuorituksetPage {
     ): String =
         Page.renderHtml(
             breadcrumbs =
-                Navigation.getBreadcrumbs(
-                    linkTo(KielitestiViewController::suorituksetView).toString(),
-                ),
+                Navigation.getBreadcrumbs(KielitestiViewController::suorituksetView),
             wideContent = true,
         ) {
             errorsArticle(errorsCount, linkTo(KielitestiViewController::virheetView).toString())

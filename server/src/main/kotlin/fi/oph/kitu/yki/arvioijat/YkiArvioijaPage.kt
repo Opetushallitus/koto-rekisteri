@@ -7,7 +7,6 @@ import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.html.errorsArticle
 import kotlinx.html.article
-import org.springframework.hateoas.server.mvc.linkTo
 import kotlin.String
 import kotlin.enums.enumEntries
 
@@ -19,7 +18,7 @@ object YkiArvioijaPage {
         errorsCount: Long,
     ): String =
         Page.renderHtml(
-            Navigation.getBreadcrumbs(linkTo(YkiViewController::arvioijatView).toString()),
+            Navigation.getBreadcrumbs(YkiViewController::arvioijatView),
             wideContent = true,
         ) {
             this.errorsArticle(errorsCount, "/yki/arvioijat/virheet")
