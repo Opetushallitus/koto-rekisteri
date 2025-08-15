@@ -11,7 +11,7 @@ run() {
     exit 1
   }
 
-  env=$1
+  local env=$1
 
   [[ $env != Dev && $env != Test && $env != Prod ]] && {
     fatal "env must be one of: Dev, Test, Prod"
