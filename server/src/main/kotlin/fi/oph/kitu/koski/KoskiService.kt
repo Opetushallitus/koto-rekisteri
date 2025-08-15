@@ -3,6 +3,7 @@ package fi.oph.kitu.koski
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.observability.use
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusService
@@ -28,6 +29,7 @@ class KoskiService(
     private val vktSuoritusRepository: VktSuoritusRepository,
     private val customVktSuoritusRepository: CustomVktSuoritusRepository,
     private val vktSuoritusService: VktSuoritusService,
+    private val onrService: OppijanumeroService,
 ) {
     fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<YkiSuoritusEntity, KoskiException> =
         tracer
@@ -87,7 +89,7 @@ class KoskiService(
                     return TypedResult.Failure(KoskiException(vktSuoritusId, "VKT suoritus disappeared"))
                 }
 
-                val koskiRequest = koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus)
+                val koskiRequest = koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus, onrService)
                 if (koskiRequest == null) {
                     vktSuoritusService.setSuoritusTransferredToKoski(vktSuoritusId)
                     return TypedResult.Success(Unit)

@@ -186,6 +186,8 @@ data class OppijanumerorekisteriHenkilo(
 ) {
     fun hetut() = listOfNotNull(hetu) + (kaikkiHetut.orEmpty())
 
+    fun kokoNimi() = "$etunimet $sukunimi"
+
     data class Kieli(
         val kieliKoodi: String?,
         val kieliTyyppi: String?,

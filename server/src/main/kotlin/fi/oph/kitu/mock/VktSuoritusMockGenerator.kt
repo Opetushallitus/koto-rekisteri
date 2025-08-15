@@ -77,8 +77,9 @@ class VktSuoritusMockGenerator(
         taso: Koodisto.VktTaitotaso,
         pvm: LocalDate,
         tyypit: List<Koodisto.VktOsakoe> = Koodisto.VktOsakoe.entries,
+        oppilaitos: OidString? = null,
     ): List<VktOsakoe> {
-        val kokeet = randomTutkintopaiva(taso, pvm, tyypit)
+        val kokeet = randomTutkintopaiva(taso, pvm, tyypit, oppilaitos)
         val hylatytKokeet = kokeet.filter { it.arviointi?.arvosana == Koodisto.VktArvosana.Hylätty }
 
         return if (hylatytKokeet.isNotEmpty()) {
@@ -92,6 +93,7 @@ class VktSuoritusMockGenerator(
         taso: Koodisto.VktTaitotaso,
         pvm: LocalDate,
         tyypit: List<Koodisto.VktOsakoe>,
+        oppilaitos: OidString? = null,
     ): List<VktOsakoe> {
         val arvosanat = validArvosanat(taso)
         val arviointiPvm = listOf(pvm.plusDays(60), pvm.plusDays(50), null).random(random)
@@ -100,18 +102,22 @@ class VktSuoritusMockGenerator(
             VktKirjoittamisenKoe(
                 tutkintopaiva = pvm,
                 arviointi = arviointiPvm?.let { VktArvionti(arvosanat.random(random), it) },
+                oppilaitos = oppilaitos,
             ),
             VktTekstinYmmartamisenKoe(
                 tutkintopaiva = pvm,
                 arviointi = arviointiPvm?.let { VktArvionti(arvosanat.random(random), it) },
+                oppilaitos = oppilaitos,
             ),
             VktPuhumisenKoe(
                 tutkintopaiva = pvm,
                 arviointi = arviointiPvm?.let { VktArvionti(arvosanat.random(random), it) },
+                oppilaitos = oppilaitos,
             ),
             VktPuheenYmmartamisenKoe(
                 tutkintopaiva = pvm,
                 arviointi = arviointiPvm?.let { VktArvionti(arvosanat.random(random), it) },
+                oppilaitos = oppilaitos,
             ),
         ).filter { tyypit.contains(it.tyyppi) }
     }

@@ -4,6 +4,7 @@ import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.oppijanumero.MockOppijanumeroService
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusService
@@ -11,7 +12,9 @@ import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
+import junit.framework.TestCase.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -26,8 +29,6 @@ import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
@@ -96,6 +97,8 @@ class KoskiServiceTest(
                 ),
             )
 
+        val onrService = MockOppijanumeroService.build()
+
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
@@ -105,7 +108,9 @@ class KoskiServiceTest(
                 vktSuoritusRepository,
                 customVktSuoritusRepository,
                 vktSuoritusService,
+                onrService,
             )
+
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus).getOrThrow()
         assertEquals("1.2.246.562.15.50209741037", updatedSuoritus.koskiOpiskeluoikeus.toString())
 
@@ -129,6 +134,8 @@ class KoskiServiceTest(
                 withBadRequest().body(expectedResponse),
             )
 
+        val onrService = MockOppijanumeroService.build()
+
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
@@ -138,13 +145,14 @@ class KoskiServiceTest(
                 vktSuoritusRepository,
                 customVktSuoritusRepository,
                 vktSuoritusService,
+                onrService,
             )
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(id = 1)
 
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus)
         assertTrue(updatedSuoritus is TypedResult.Failure)
-        assertEquals(suoritus.id, updatedSuoritus.error.suoritusId)
+        assertEquals(suoritus.id, updatedSuoritus.errorOrNull()?.suoritusId)
     }
 
     @Test
@@ -183,6 +191,9 @@ class KoskiServiceTest(
                     MediaType.APPLICATION_JSON,
                 ),
             )
+
+        val onrService = MockOppijanumeroService.build()
+
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
@@ -192,6 +203,7 @@ class KoskiServiceTest(
                 vktSuoritusRepository,
                 customVktSuoritusRepository,
                 vktSuoritusService,
+                onrService,
             )
 
         ykiSuoritusRepository.saveAll(
@@ -254,6 +266,8 @@ class KoskiServiceTest(
                 ),
             )
 
+        val onrService = MockOppijanumeroService.build()
+
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
@@ -263,6 +277,7 @@ class KoskiServiceTest(
                 vktSuoritusRepository,
                 customVktSuoritusRepository,
                 vktSuoritusService,
+                onrService,
             )
 
         ykiSuoritusRepository.saveAll(
