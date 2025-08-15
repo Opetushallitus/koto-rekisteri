@@ -400,8 +400,7 @@
                             <rules>
                                 <bannedDependencies>
                                     <excludes>
-                                        <!-- versions before 1.73 have multiple CVEs: https://github.com/advisories/GHSA-wjxj-5m7g-mg7q  -->
-                                        <exclude>org.bouncycastle:bcprov-jdk15on:[,1.73)</exclude>
+                                        <exclude>org.bouncycastle:bcprov-jdk15on:[,1.79)</exclude>
                                         <!-- https://github.com/advisories/GHSA-chfm-68vv-pvw5 -->
                                         <exclude>org.xmlunit:xmlunit-core:[,2.10.0)</exclude>
                                     </excludes>
