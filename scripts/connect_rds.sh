@@ -23,6 +23,7 @@ quiet() {
 get_stack_output() {
   local stack=$1
   local output=$2
+  # use starts_with here instead of equality comparison because CDK adds a hash suffix to output names
   aws cloudformation describe-stacks --stack-name "$env-$stack" --query "Stacks[0].Outputs[?starts_with(OutputKey, '$output')].OutputValue[0]"
 }
 
