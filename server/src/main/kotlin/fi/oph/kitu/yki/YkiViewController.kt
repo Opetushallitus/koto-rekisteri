@@ -67,8 +67,9 @@ class YkiViewController(
         sortColumn: YkiSuoritusColumn,
         sortDirection: SortDirection,
         csrfToken: CsrfToken,
-    ): ResponseEntity<String> =
-        ResponseEntity.ok(
+    ): ResponseEntity<String> {
+        val totalSuoritukset = ykiService.countSuoritukset(search, versionHistory)
+        return ResponseEntity.ok(
             YkiSuorituksetPage.render(
                 suoritukset =
                     ykiService.findSuorituksetPaged(
@@ -79,12 +80,14 @@ class YkiViewController(
                         limit,
                         offset = limit * (page - 1),
                     ),
+                totalSuoritukset = totalSuoritukset,
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
                 pagination =
-                    Pagination(
+                    Pagination.valueOf(
                         currentPageNumber = page,
-                        numberOfPages = ykiService.countSuoritukset(search, versionHistory).toInt(),
+                        numberOfRows = totalSuoritukset.toInt(),
+                        pageSize = limit,
                         url = { currentPage ->
                             httpParams(
                                 mapOf(
@@ -103,6 +106,7 @@ class YkiViewController(
                 csrfToken = csrfToken,
             ),
         )
+    }
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
     fun suorituksetVirheetView(

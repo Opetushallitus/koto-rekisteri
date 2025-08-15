@@ -37,6 +37,7 @@ import kotlin.enums.enumEntries
 object YkiSuorituksetPage {
     fun render(
         suoritukset: List<YkiSuoritusEntity>,
+        totalSuoritukset: Long,
         sortColumn: YkiSuoritusColumn,
         sortDirection: SortDirection,
         pagination: Pagination,
@@ -89,7 +90,7 @@ object YkiSuorituksetPage {
                     nav {
                         ul {
                             li {
-                                +"Suorituksia yhteensä: ${pagination.numberOfPages}"
+                                +"Suorituksia yhteensä: $totalSuoritukset"
                             }
                             li {
                                 a(href = linkTo<YkiApiController> { getSuorituksetAsCsv(versionHistory) }.toString()) {
