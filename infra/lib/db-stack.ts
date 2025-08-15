@@ -1,5 +1,5 @@
 import * as cdk from "aws-cdk-lib"
-import { aws_ec2, aws_rds } from "aws-cdk-lib"
+import { aws_ec2, aws_rds, CfnOutput } from "aws-cdk-lib"
 import { Construct } from "constructs"
 
 export interface DbStackProps extends cdk.StackProps {
@@ -35,6 +35,14 @@ export class DbStack extends cdk.Stack {
         deletionProtection: true,
         enablePerformanceInsights: true,
       }),
+    })
+
+    new CfnOutput(this, "EndpointRWHost", {
+      value: this.cluster.clusterEndpoint.hostname,
+    })
+
+    new CfnOutput(this, "EndpointROHost", {
+      value: this.cluster.clusterReadEndpoint.hostname,
     })
   }
 }
