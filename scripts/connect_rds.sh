@@ -6,7 +6,7 @@ scripts_dir=$( dirname "${BASH_SOURCE[0]}" )
 source "$scripts_dir/common-functions.sh"
 
 [[ $# != 1 ]] && {
-  echo "usage: $0 <dev|qa|prod>"
+  echo "usage: $0 <Dev|Test|Prod>"
   exit 1
 }
 
