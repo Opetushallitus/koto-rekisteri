@@ -83,7 +83,7 @@ class ViewMessageArgumentResolver : HandlerMethodArgumentResolver {
 }
 
 @Configuration
-class WebConfig(
+class ViewMessageConfig(
     private val viewMessageArgumentResolver: ViewMessageArgumentResolver,
 ) : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
