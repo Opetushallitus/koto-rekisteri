@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib"
 import {
   aws_ecs,
   aws_secretsmanager,
+  CfnOutput,
   Duration,
   Stack,
   StackProps,
@@ -99,6 +100,8 @@ export class ServiceStack extends Stack {
         : ContainerInsights.DISABLED,
       vpc: props.vpc,
     })
+
+    new CfnOutput(this, "ClusterArn", { value: cluster.clusterArn })
 
     this.service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
       cluster,

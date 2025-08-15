@@ -1,4 +1,4 @@
-import { Stack, StackProps } from "aws-cdk-lib"
+import { CfnOutput, Stack, StackProps } from "aws-cdk-lib"
 import { Construct } from "constructs"
 import { ContainerImage, FargateTaskDefinition } from "aws-cdk-lib/aws-ecs"
 import { PolicyStatement } from "aws-cdk-lib/aws-iam"
@@ -26,6 +26,10 @@ export class EcsRdsProxyStack extends Stack {
       image: ContainerImage.fromRegistry(
         "public.ecr.aws/amazonlinux/amazonlinux:2023-minimal",
       ),
+    })
+
+    new CfnOutput(this, "TaskDefinitionArn", {
+      value: this.taskDefinition.taskDefinitionArn,
     })
   }
 }
