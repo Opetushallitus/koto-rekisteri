@@ -1,12 +1,19 @@
 package fi.oph.kitu.auth
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import org.springframework.context.annotation.Configuration
+import org.springframework.core.MethodParameter
 import org.springframework.security.cas.authentication.CasAssertionAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
+import org.springframework.web.context.request.NativeWebRequest
+import org.springframework.web.method.support.HandlerMethodArgumentResolver
+import org.springframework.web.method.support.ModelAndViewContainer
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Component
 class CasUserDetailsService : AuthenticationUserDetailsService<CasAssertionAuthenticationToken> {
@@ -42,4 +49,26 @@ data class CasUserDetails(
     @JsonIgnore override fun isCredentialsNonExpired(): Boolean = true
 
     @JsonIgnore override fun isEnabled(): Boolean = true
+}
+
+@Component
+class CasUserDetailsResolver : HandlerMethodArgumentResolver {
+    override fun supportsParameter(parameter: MethodParameter): Boolean =
+        parameter.parameterType == CasUserDetails::class.java
+
+    override fun resolveArgument(
+        parameter: MethodParameter,
+        mavContainer: ModelAndViewContainer?,
+        webRequest: NativeWebRequest,
+        binderFactory: org.springframework.web.bind.support.WebDataBinderFactory?,
+    ): Any? = SecurityContextHolder.getContext().authentication?.principal as? CasUserDetails
+}
+
+@Configuration
+class CasUserDetailConfig(
+    private val casUserDetailsResolver: CasUserDetailsResolver,
+) : WebMvcConfigurer {
+    override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
+        resolvers.add(casUserDetailsResolver)
+    }
 }
