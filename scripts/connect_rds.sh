@@ -5,67 +5,25 @@ set -euo pipefail
 scripts_dir=$( dirname "${BASH_SOURCE[0]}" )
 source "$scripts_dir/common-functions.sh"
 
-[[ $# != 1 ]] && {
-  echo "usage: $0 <Dev|Test|Prod>"
-  exit 1
-}
-
-env=$1
-
-aws() {
-  command aws --output text "$@"
-}
-
-quiet() {
-  "$@" >/dev/null
-}
-
-get_stack_output() {
-  local stack=$1
-  local output=$2
-  # use starts_with here instead of equality comparison because CDK adds a hash suffix to output names
-  aws cloudformation describe-stacks --stack-name "$env-$stack" --query "Stacks[0].Outputs[?starts_with(OutputKey, '$output')].OutputValue[0]"
-}
-
-start_task() {
-  local cluster=$1
-  local task_def=$2
-  info "Starting temporary ECS proxy task..."
-  aws ecs run-task --cluster "$cluster" --task_definition "$task_def" --query 'tasks[0].taskArn'
-}
-
-wait_for_task_start() {
-  local cluster=$1
-  local task_arn=$2
-  info "Waiting for task to report running..."
-  quiet aws ecs wait tasks-running --cluster "$cluster" --tasks "$task_arn"
-  aws ecs describe-tasks --cluster "$cluster" --tasks "$task_arn" --query "tasks[0].containers[0].runtimeId"
-}
-
-establish_session() {
-  local cluster=$1
-  local container=$2
-  local host=$3
-  info "Connecting to proxy task..."
-  aws ssm start-session \
-    --target "ecs:$cluster:$container" \
-    --document-name AWS-StartPortForwardingSessionToRemoteHost \
-    --parameters "host=$host,portNumber=5432,localPortNumber=8432"
-}
-
-stop_task() {
-  local cluster=$1
-  local task_arn=$2
-  info "Stopping proxy task..."
-  aws ecs stop-task --cluster "$cluster" --task "$task_arn"
-}
-
 run() {
+  [[ $# != 1 ]] && {
+    echo "usage: $0 <Dev|Test|Prod>"
+    exit 1
+  }
+
+  env=$1
+
+  [[ $env != Dev && $env != Test && $env != Prod ]] && {
+    fatal "env must be one of: Dev, Test, Prod"
+  }
+
   local cluster_name task_definition database_hostname
 
-  cluster_name=$(get_stack_output Service ClusterName)
-  task_definition=$(get_stack_output EcsRdsProxy TaskDefinitionArn)
-  database_hostname=$(get_stack_output Database EndpointROHost)
+  info "Getting environment information"
+
+  cluster_name=$(get_stack_output "$env" Service ClusterName)
+  task_definition=$(get_stack_output "$env" EcsRdsProxy TaskDefinitionArn)
+  database_hostname=$(get_stack_output "$env" Database EndpointROHost)
 
   task_arn=$(start_task "$cluster_name" "$task_definition")
 
@@ -76,4 +34,56 @@ run() {
   establish_session "$cluster" "$container_runtime_id" "$database_hostname"
 }
 
-run
+aws() {
+  command aws --output text "$@"
+}
+
+quiet() {
+  "$@" >/dev/null
+}
+
+get_stack_output() {
+  local env=$1
+  local stack=$2
+  local output=$3
+  local value
+  # use starts_with here instead of equality comparison because CDK adds a hash suffix to output names
+  value=$(aws cloudformation describe-stacks --stack-name "$env-$stack" --query "Stacks[0].Outputs[?starts_with(OutputKey, '$output')].OutputValue[0]")
+  [[ -z $value ]] && fatal "Could not find stack output stack=$stack output=$output"
+  echo "$value"
+}
+
+start_task() {
+  local cluster=$1
+  local task_def=$2
+  info "Starting temporary ECS proxy task"
+  aws ecs run-task --cluster "$cluster" --task_definition "$task_def" --query 'tasks[0].taskArn'
+}
+
+wait_for_task_start() {
+  local cluster=$1
+  local task_arn=$2
+  info "Waiting for task to report running"
+  quiet aws ecs wait tasks-running --cluster "$cluster" --tasks "$task_arn"
+  aws ecs describe-tasks --cluster "$cluster" --tasks "$task_arn" --query "tasks[0].containers[0].runtimeId"
+}
+
+establish_session() {
+  local cluster=$1
+  local container=$2
+  local host=$3
+  info "Connecting to proxy task"
+  aws ssm start-session \
+    --target "ecs:$cluster:$container" \
+    --document-name AWS-StartPortForwardingSessionToRemoteHost \
+    --parameters "host=$host,portNumber=5432,localPortNumber=8432"
+}
+
+stop_task() {
+  local cluster=$1
+  local task_arn=$2
+  info "Stopping proxy task"
+  aws ecs stop-task --cluster "$cluster" --task "$task_arn"
+}
+
+run "$@"
