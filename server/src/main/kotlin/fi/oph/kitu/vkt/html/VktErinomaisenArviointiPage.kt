@@ -21,11 +21,14 @@ import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.footer
 import kotlinx.html.h1
 import kotlinx.html.h2
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import java.time.LocalDate
 
 object VktErinomaisenArviointiPage {
@@ -37,10 +40,14 @@ object VktErinomaisenArviointiPage {
     ): String =
         Page.renderHtml(
             Navigation.getBreadcrumbs(
-                "/vkt/erinomainen/ilmoittautuneet",
-                Navigation.MenuItem(
+                VktViewController::erinomaisenTaitotasonIlmoittautuneetView,
+                Navigation.MenuItem.of(
                     data.henkilo.kokoNimi(),
-                    "/vkt/suoritukset/${data.suoritus.internalId}",
+                    linkTo(
+                        methodOn(
+                            VktViewController::class.java,
+                        ).ilmoittautuneenArviointiView(data.suoritus.internalId!!),
+                    ),
                 ),
             ),
         ) {

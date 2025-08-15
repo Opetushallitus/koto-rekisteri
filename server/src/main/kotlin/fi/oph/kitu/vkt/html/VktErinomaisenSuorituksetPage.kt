@@ -22,7 +22,7 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 object VktErinomaisenSuorituksetPage {
     fun render(
         title: String,
-        ref: String,
+        linkBuilder: WebMvcLinkBuilder,
         ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
         sortedBy: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
@@ -32,7 +32,7 @@ object VktErinomaisenSuorituksetPage {
     ): String =
         Page.renderHtml(
             wideContent = true,
-            breadcrumbs = Navigation.getBreadcrumbs(ref),
+            breadcrumbs = Navigation.getBreadcrumbs(linkBuilder),
         ) {
             h1 { +title }
             vktSearch(searchQuery)

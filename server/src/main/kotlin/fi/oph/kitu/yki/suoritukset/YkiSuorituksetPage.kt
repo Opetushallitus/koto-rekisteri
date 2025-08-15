@@ -46,7 +46,7 @@ object YkiSuorituksetPage {
         csrfToken: CsrfToken,
     ): String =
         Page.renderHtml(
-            breadcrumbs = Navigation.getBreadcrumbs(linkTo(YkiViewController::suorituksetGetView).toString()),
+            breadcrumbs = Navigation.getBreadcrumbs(YkiViewController::suorituksetGetView),
             wideContent = true,
         ) {
             this.errorsArticle(errorsCount, linkTo(YkiViewController::suorituksetVirheetView).toString())
