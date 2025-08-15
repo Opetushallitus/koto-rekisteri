@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koodisto.Koodisto.YkiArvosana
 import fi.oph.kitu.koodisto.KoskiKoodiviite
@@ -19,6 +20,8 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Organ
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
+import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.toTypedResult
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.yki.Tutkintotaso
@@ -186,41 +189,50 @@ class KoskiRequestMapper {
             }
     }
 
-    fun vktSuoritusToKoskiRequest(henkilosuoritus: Henkilosuoritus<VktSuoritus>): KoskiRequest? {
+    fun vktSuoritusToKoskiRequest(
+        henkilosuoritus: Henkilosuoritus<VktSuoritus>,
+        onrService: OppijanumeroService,
+    ): KoskiRequest? {
         val henkilo = henkilosuoritus.henkilo
         val suoritus = henkilosuoritus.suoritus
 
-        val vktOrganisaatio: Organisaatio? =
+        val organisaatio: Organisaatio? =
             suoritus.osat.firstNotNullOfOrNull { it.oppilaitos?.let { Organisaatio(it.oid) } }
                 ?: when (suoritus.taitotaso) {
                     Koodisto.VktTaitotaso.Erinomainen -> Organisaatio(vktOrganisaatioOid)
                     else -> null
                 }
 
-        val suorituksenVastaanottajaOid =
-            when (suoritus.taitotaso) {
-                Koodisto.VktTaitotaso.Erinomainen -> "" // TODO
-                else -> suoritus.suorituksenVastaanottaja?.oid
-            }
-
         val arviointipaiva =
             suoritus.osat
                 .mapNotNull { it.arviointi?.paivamaara }
                 .maxOrNull()
 
+        val suorituksenVastaanottaja =
+            when (suoritus.taitotaso) {
+                Koodisto.VktTaitotaso.Erinomainen ->
+                    TypedResult.Success("Kielitutkintolautakunta")
+                Koodisto.VktTaitotaso.HyväJaTyydyttävä ->
+                    suoritus.suorituksenVastaanottaja
+                        ?.toOid()
+                        ?.toTypedResult()
+                        ?.flatMap { onrService.getHenkilo(it).mapFailure { it as Throwable } }
+                        ?.map { it.kokoNimi() }
+            }
+
         val vahvistus =
-            if (vktOrganisaatio != null &&
+            if (organisaatio != null &&
                 arviointipaiva != null &&
-                suorituksenVastaanottajaOid != null
+                suorituksenVastaanottaja?.isSuccess == true
             ) {
                 KielitutkintoSuoritus.VahvistusHenkiloilla(
                     päivä = arviointipaiva,
-                    myöntäjäOrganisaatio = Organisaatio(suorituksenVastaanottajaOid),
+                    myöntäjäOrganisaatio = Organisaatio(organisaatio.oid),
                     myöntäjäHenkilöt =
                         listOf(
                             KielitutkintoSuoritus.Organisaatiohenkilo(
-                                nimi = "Hessu Hessunperä",
-                                organisaatio = vktOrganisaatio,
+                                nimi = suorituksenVastaanottaja.getOrThrow(),
+                                organisaatio = organisaatio,
                             ),
                         ),
                 )
@@ -259,7 +271,7 @@ class KoskiRequestMapper {
                                                 tunniste = suoritus.taitotaso.toKoski(),
                                                 kieli = suoritus.kieli,
                                             ),
-                                        toimipiste = vktOrganisaatio!!,
+                                        toimipiste = organisaatio!!,
                                         vahvistus = vahvistus,
                                         osasuoritukset =
                                             suoritus.tutkinnot.map { kielitaito ->

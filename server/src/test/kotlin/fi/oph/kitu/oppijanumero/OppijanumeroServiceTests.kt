@@ -11,7 +11,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
-import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
 import kotlin.test.assertEquals
 
@@ -20,57 +19,13 @@ class OppijanumeroServiceTests {
     fun `oppijanumero service returns identified user`() {
         // Facade
         val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
-        val onrRestClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
-        val mockServer =
-            MockRestServiceServer
-                .bindTo(onrRestClientBuilder)
-                .ignoreExpectOrder(true)
-                .build()
 
-        val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
-
-        mockServer
-            .addCasFlow(
-                serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
-                serviceEndpoint = "yleistunniste/hae",
-            ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
-            .andRespond(
-                withSuccess(
-                    """
-                    {
-                        "oid": "1.2.246.562.24.33342764709",
-                        "oppijanumero": "1.2.246.562.24.33342764709"
-                    }
-                    """.trimIndent(),
-                    MediaType.APPLICATION_JSON,
-                ),
-            )
-
-        val oppijanumeroRestClient = onrRestClientBuilder.build()
-        val casRestClient = casRestClientBuilder.build()
-
-        val objectMapper = ObjectMapper()
-        val tracer = MockTracer()
         val oppijanumeroService =
-            OppijanumeroService(
-                tracer,
-                OppijanumerorekisteriClient(
-                    CasAuthenticatedServiceImpl(
-                        oppijanumeroRestClient,
-                        CasService(
-                            casRestClient,
-                            oppijanumeroRestClient,
-                        ).apply {
-                            serviceUrl = "http://localhost:8080/cas/login"
-                            onrUsername = "username"
-                            onrPassword = "password"
-                        },
-                        tracer,
-                    ),
-                    objectMapper,
-                ).apply {
-                    serviceUrl = "http://localhost:8080/oppijanumero-service"
-                },
+            MockOppijanumeroService.build(
+                YleistunnisteHaeResponse(
+                    expectedOppijanumero.toString(),
+                    expectedOppijanumero.toString(),
+                ),
             )
 
         val result =
@@ -89,50 +44,12 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service returns unidentified user`() {
         // Facade
-        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
-        val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
-        val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
-
-        mockServer
-            .addCasFlow(
-                serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
-                serviceEndpoint = "yleistunniste/hae",
-            ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
-            .andRespond(
-                withSuccess(
-                    """
-                    {
-                        "oid": "1.2.246.562.24.33342764709",
-                        "oppijanumero": ""
-                    }
-                    """.trimIndent(),
-                    MediaType.APPLICATION_JSON,
-                ),
-            )
-        val casRestClient = casRestClientBuilder.build()
-        val oppijanumeroRestClient = restClientBuilder.build()
-        val objectMapper = ObjectMapper()
-        val tracer = MockTracer()
         val oppijanumeroService =
-            OppijanumeroService(
-                tracer,
-                OppijanumerorekisteriClient(
-                    CasAuthenticatedServiceImpl(
-                        oppijanumeroRestClient,
-                        CasService(
-                            casRestClient,
-                            oppijanumeroRestClient,
-                        ).apply {
-                            serviceUrl = "http://localhost:8080/cas/login"
-                            onrUsername = "username"
-                            onrPassword = "password"
-                        },
-                        tracer,
-                    ),
-                    objectMapper,
-                ).apply {
-                    serviceUrl = "http://localhost:8080/oppijanumero-service"
-                },
+            MockOppijanumeroService.build(
+                YleistunnisteHaeResponse(
+                    "1.2.246.562.24.33342764709",
+                    "",
+                ),
             )
 
         // System under test
