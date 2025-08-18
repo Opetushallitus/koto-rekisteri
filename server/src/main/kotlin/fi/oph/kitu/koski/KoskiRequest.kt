@@ -51,17 +51,19 @@ data class KoskiRequest(
                 val oid: String,
             )
 
-            interface Vahvistus
+            interface Vahvistus {
+                val päivä: LocalDate
+            }
 
             data class VahvistusImpl(
-                @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-                val päivä: LocalDate,
+                @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+                override val päivä: LocalDate,
                 val myöntäjäOrganisaatio: Organisaatio,
             ) : Vahvistus
 
             data class VahvistusHenkiloilla(
-                @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-                val päivä: LocalDate,
+                @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+                override val päivä: LocalDate,
                 val myöntäjäOrganisaatio: Organisaatio,
                 val myöntäjäHenkilöt: List<Organisaatiohenkilo>,
             ) : Vahvistus

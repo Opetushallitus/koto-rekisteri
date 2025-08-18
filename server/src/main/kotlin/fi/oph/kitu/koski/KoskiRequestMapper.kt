@@ -251,15 +251,17 @@ class KoskiRequestMapper {
                             tila =
                                 Tila(
                                     opiskeluoikeusjaksot =
-                                        listOf(
+                                        listOfNotNull(
                                             OpiskeluoikeusJakso(
-                                                alku = suoritus.osat.maxOf { it.tutkintopaiva },
+                                                alku = suoritus.osat.minOf { it.tutkintopaiva },
                                                 tila = Koodisto.OpiskeluoikeudenTila.Lasna,
                                             ),
-                                            OpiskeluoikeusJakso(
-                                                alku = suoritus.osat.maxOf { it.tutkintopaiva },
-                                                tila = Koodisto.OpiskeluoikeudenTila.Paattynyt,
-                                            ),
+                                            arviointipaiva?.let {
+                                                OpiskeluoikeusJakso(
+                                                    alku = it,
+                                                    tila = Koodisto.OpiskeluoikeudenTila.Paattynyt,
+                                                )
+                                            },
                                         ),
                                 ),
                             suoritukset =
