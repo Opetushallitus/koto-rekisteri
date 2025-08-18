@@ -18,5 +18,5 @@ aws lambda create-function \
   --memory-size 512 \
   --timeout 10 \
   --handler fi.oph.kitu.Handler::handleRequest \
-  --role arn:aws:iam::682033502734:role/sendAuditLogsToKoski_test-role-er2ykcki \
+  --role arn:aws:iam::682033502734:role/service-role/sendAuditLogsToKoski_test-role-er2ykcki \
   --zip-file fileb://"$LAMBDA_NAME.zip"
