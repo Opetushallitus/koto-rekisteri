@@ -283,6 +283,7 @@ class KoskiRequestMapperTest(
             "Kielitutkintolautakunta",
             vahvistus?.myöntäjäHenkilöt?.firstOrNull()?.nimi,
         )
+        validateKoskiRequest(koskiSuoritus)
 
         val json = objectMapper.writeValueAsString(koskiSuoritus)
 
@@ -380,9 +381,26 @@ class KoskiRequestMapperTest(
             "Vallu Vastaanottaja",
             vahvistus?.myöntäjäHenkilöt?.firstOrNull()?.nimi,
         )
+        validateKoskiRequest(koskiSuoritus)
 
         val json = objectMapper.writeValueAsString(koskiSuoritus)
 
         println("JSON: $json")
+    }
+
+    fun validateKoskiRequest(data: KoskiRequest) {
+        data.opiskeluoikeudet.forEach { oo ->
+            val jaksot = oo.tila.opiskeluoikeusjaksot
+
+            // Ei saa olla samalla päivämäärällä olevia tiloja
+            val pvms = jaksot.map { it.alku }
+            assertEquals(pvms.distinct(), pvms)
+
+            // Suorituksen vahvistuspäivä pitää olla sama kuin päättymispäivä
+            val paattymispaiva = jaksot.find { it.tila == Koodisto.OpiskeluoikeudenTila.Paattynyt }?.alku
+            oo.suoritukset.forEach { pts ->
+                assertEquals(pts.vahvistus?.päivä, paattymispaiva)
+            }
+        }
     }
 }
