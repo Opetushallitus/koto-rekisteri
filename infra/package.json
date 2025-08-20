@@ -21,6 +21,7 @@
     "typescript": "~5.9.0"
   },
   "dependencies": {
+    "@types/aws-lambda": "^8.10.152",
     "aws-cdk-lib": "2.212.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
