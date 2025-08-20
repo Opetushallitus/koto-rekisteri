@@ -16,6 +16,7 @@ import { BackupResource } from "aws-cdk-lib/aws-backup"
 import { SlackBotStack } from "./slack-bot-stack"
 import { BastionStack } from "./bastion-stack"
 import { EcsRdsProxyStack } from "./ecs-rds-proxy-stack"
+import { SendAuditLogsToKoskiStack } from "./lambda-stack"
 
 interface EnvironmentStageProps extends StageProps {
   environmentConfig: EnvironmentConfig
@@ -113,6 +114,10 @@ export class EnvironmentStage extends Stage {
       env,
       resources: [BackupResource.fromRdsServerlessCluster(dbStack.cluster)],
       notificationTopic: alarmsStack.alarmSnsTopic,
+    })
+
+    new SendAuditLogsToKoskiStack(this, "SendAuditLogsToKoski", {
+      serviceAuditLogGroup: logGroupsStack.serviceAuditLogGroup,
     })
 
     connectionsStack.createRules()
