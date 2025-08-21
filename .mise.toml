@@ -13,5 +13,5 @@ go = "1.25.0"
 "npm:esbuild" = "0.25.9"
 "go:github.com/humanlogio/humanlog/cmd/humanlog" = "0.8.8"
 "ubi:karlderkaefer/cdk-notifier" = "2.14.6"
-aws-cli = "2.28.11"
+aws-cli = "2.28.12"
 "aqua:aws/session-manager-plugin" = { version = "1.2.707", os = ["macos"] }
