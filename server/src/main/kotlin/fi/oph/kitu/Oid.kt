@@ -24,6 +24,8 @@ data class Oid private constructor(
             }
     }
 
+    fun unwrap(): org.ietf.jgss.Oid = value
+
     override fun toString(): String = value.toString()
 }
 
