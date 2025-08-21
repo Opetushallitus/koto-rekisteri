@@ -21,6 +21,17 @@ class GlobalControllerExceptionHandler {
     private val logger: Logger = LoggerFactory.getLogger(GlobalControllerExceptionHandler::class.java)
 
     @ExceptionHandler
+    fun handleValidationException(e: Validation.ValidationException): ResponseEntity<RestErrorMessage> =
+        ResponseEntity(
+            RestErrorMessage(
+                status = HttpStatus.BAD_REQUEST.value(),
+                error = "Bad request: validation error",
+                message = e.errors.joinToString(", "),
+            ),
+            HttpStatus.BAD_REQUEST,
+        )
+
+    @ExceptionHandler
     fun handleRestClientException(ex: RestClientException): ResponseEntity<RestErrorMessage> {
         logger.error(ex.stackTraceToString())
         return ResponseEntity(
