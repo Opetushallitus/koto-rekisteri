@@ -33,14 +33,14 @@ class VktValidation : Validation<VktSuoritus> {
 
     private fun validateSuorituspaikkakunta(s: VktSuoritus): ValidationResult<VktSuoritus> =
         if (s.suorituspaikkakunta == null) {
-            Validation.fail("Suorituspaikkakunta puuttuu")
+            Validation.fail(listOf("suoritus", "suorituspaikkakunta"), "Suorituspaikkakunta puuttuu")
         } else {
             Validation.ok(s)
         }
 
     private fun validateSuorituksenVastaanottaja(s: VktSuoritus): ValidationResult<VktSuoritus> =
         if (s.suorituksenVastaanottaja == null) {
-            Validation.fail("Suorituksen vastaanottaja puuttuu")
+            Validation.fail(listOf("suoritus", "suorituksenVastaanottaja"), "Suorituksen vastaanottaja puuttuu")
         } else {
             Validation.ok(s)
         }

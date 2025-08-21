@@ -18,8 +18,15 @@ interface Validation<T> {
     fun validationAfterEnrichment(value: T): ValidationResult<T> = ok(value)
 
     data class ValidationException(
-        val errors: List<String>,
+        val errors: List<ValidationError>,
     ) : Exception(errors.joinToString("; "))
+
+    data class ValidationError(
+        val path: List<String>,
+        val message: String,
+    ) {
+        override fun toString(): String = "${path.joinToString(".")}: $message"
+    }
 
     companion object {
         inline fun <reified T> fold(
@@ -39,8 +46,12 @@ interface Validation<T> {
 
         fun <T> ok(value: T): ValidationResult<T> = TypedResult.Success(value)
 
-        fun <T> fail(reason: String): ValidationResult<T> = fail(listOf(reason))
+        fun <T> fail(
+            path: List<String>,
+            message: String,
+        ): ValidationResult<T> = fail(listOf(ValidationError(path, message)))
 
-        fun <T> fail(reasons: List<String>): ValidationResult<T> = TypedResult.Failure(ValidationException(reasons))
+        fun <T> fail(reasons: List<ValidationError>): ValidationResult<T> =
+            TypedResult.Failure(ValidationException(reasons))
     }
 }
