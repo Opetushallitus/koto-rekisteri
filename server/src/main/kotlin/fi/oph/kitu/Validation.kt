@@ -1,6 +1,6 @@
 package fi.oph.kitu
 
-typealias ValidationResult<T> = TypedResult<out T, Validation.ValidationFailure>
+typealias ValidationResult<T> = TypedResult<out T, Validation.ValidationException>
 
 interface Validation<T> {
     fun validateAndEnrich(value: T): ValidationResult<T> {
@@ -17,13 +17,9 @@ interface Validation<T> {
 
     fun validationAfterEnrichment(value: T): ValidationResult<T> = ok(value)
 
-    data class ValidationFailure(
-        val errors: List<String>,
-    )
-
     data class ValidationException(
         val errors: List<String>,
-    ) : Exception(errors.joinToString("\n"))
+    ) : Exception(errors.joinToString("; "))
 
     companion object {
         inline fun <reified T> fold(
@@ -45,6 +41,6 @@ interface Validation<T> {
 
         fun <T> fail(reason: String): ValidationResult<T> = fail(listOf(reason))
 
-        fun <T> fail(reasons: List<String>): ValidationResult<T> = TypedResult.Failure(ValidationFailure(reasons))
+        fun <T> fail(reasons: List<String>): ValidationResult<T> = TypedResult.Failure(ValidationException(reasons))
     }
 }
