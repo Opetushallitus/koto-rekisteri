@@ -131,6 +131,6 @@ class VktTiedonsiirtoController(
         } catch (e: JsonMappingException) {
             TiedonsiirtoFailure.badRequest(e.message ?: "JSON mapping failed for unknown reason")
         } catch (e: Validation.ValidationException) {
-            TiedonsiirtoFailure(statusCode = HttpStatus.BAD_REQUEST, errors = e.errors)
+            TiedonsiirtoFailure(statusCode = HttpStatus.BAD_REQUEST, errors = e.errors.map { it.toString() })
         }.toResponseEntity()
 }

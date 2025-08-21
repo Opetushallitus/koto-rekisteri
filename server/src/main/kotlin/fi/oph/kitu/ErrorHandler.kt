@@ -26,7 +26,7 @@ class GlobalControllerExceptionHandler {
             RestErrorMessage(
                 status = HttpStatus.BAD_REQUEST.value(),
                 error = "Bad request: validation error",
-                messages = e.errors,
+                messages = e.errors.map { it.toString() },
             ),
             HttpStatus.BAD_REQUEST,
         )
