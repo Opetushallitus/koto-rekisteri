@@ -13,7 +13,7 @@ data class RestErrorMessage(
     val timestamp: Instant = Instant.now(),
     val status: Int,
     val error: String,
-    val message: String?,
+    val messages: List<String>?,
 )
 
 @ControllerAdvice
@@ -26,7 +26,7 @@ class GlobalControllerExceptionHandler {
             RestErrorMessage(
                 status = HttpStatus.BAD_REQUEST.value(),
                 error = "Bad request: validation error",
-                message = e.errors.joinToString(", "),
+                messages = e.errors,
             ),
             HttpStatus.BAD_REQUEST,
         )
@@ -38,7 +38,7 @@ class GlobalControllerExceptionHandler {
             RestErrorMessage(
                 status = HttpStatus.SERVICE_UNAVAILABLE.value(),
                 error = "Service Unavailable",
-                message = "Call to external API failed",
+                messages = listOf("Call to external API failed"),
             ),
             HttpStatus.SERVICE_UNAVAILABLE,
         )
