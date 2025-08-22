@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/handler.ts"],
+  "sourcesContent": ["import type { APIGatewayProxyHandlerV2 } from 'aws-lambda';\n\nexport const handler: APIGatewayProxyHandlerV2 = async (event) => {\n  return { statusCode: 200, body: JSON.stringify({ ok: true, path: event.rawPath }) };\n};\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAEO,IAAM,UAAoC,OAAO,UAAU;AAChE,SAAO,EAAE,YAAY,KAAK,MAAM,KAAK,UAAU,EAAE,IAAI,MAAM,MAAM,MAAM,QAAQ,CAAC,EAAE;AACpF;",
+  "names": []
+}
