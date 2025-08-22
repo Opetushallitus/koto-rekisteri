@@ -1,6 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.logging.toAuditContext
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,6 +15,7 @@ class KielitestiViewController(
 ) {
     @GetMapping("/suoritukset")
     fun suorituksetView(
+        request: HttpServletRequest,
         sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
         sortDirection: SortDirection = SortDirection.DESC,
     ): ResponseEntity<String> =
@@ -20,7 +23,7 @@ class KielitestiViewController(
             KielitestiSuorituksetPage.render(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
-                suoritukset = suoritusService.getSuoritukset(sortColumn, sortDirection),
+                suoritukset = suoritusService.getSuoritukset(request.toAuditContext(), sortColumn, sortDirection),
                 errorsCount =
                     suoritusService
                         .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
