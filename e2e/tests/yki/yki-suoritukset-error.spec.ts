@@ -28,25 +28,25 @@ describe('"YKI Suoritukset" -page', () => {
     {
       column: "oppijanumero",
       tableColumnIndex: 0,
-      order: Array<string>(
+      order: [
         "1.2.246.562.24.33342764709",
         "1.2.246.562.24.59267607404",
         "arvo puuttuu",
-      ),
+      ],
     },
     {
       column: "hetu",
       tableColumnIndex: 1,
-      order: Array<string>("010116A9518", "010180-9026", "010866-9260"),
+      order: ["010116A9518", "010180-9026", "010866-9260"],
     },
     {
       column: "nimi",
       tableColumnIndex: 2,
-      order: Array<string>(
+      order: [
         '"Kivinen-Testi" "Petro Testi"',
         '"Öhman-Testi" "Ranja Testi"',
         '"Sallinen-Testi" "Magdalena Testi"',
-      ),
+      ],
     },
   ]
   for (const testCase of sortTestCases) {
