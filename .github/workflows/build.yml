@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  MISE_ENV: ci
+
 jobs:
   determine_action:
     runs-on: ubuntu-24.04
@@ -70,8 +73,6 @@ jobs:
     name: Server tests
     runs-on: ubuntu-24.04
     needs: update_tools_cache
-    env:
-      MISE_ENV: ci
     steps:
       - uses: actions/checkout@v5
       - name: Install tools
