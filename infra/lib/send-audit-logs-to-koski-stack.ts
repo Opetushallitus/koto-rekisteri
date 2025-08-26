@@ -23,7 +23,7 @@ export class SendAuditLogsToKoskiStack extends Stack {
       "sendAuditLogsToKoski",
     )
 
-    new SubscriptionFilter(this, "sendAuditLogsToKoski", {
+    new SubscriptionFilter(this, "sendAuditLogsToKoskiSubscriptionFilter", {
       logGroup: props.serviceAuditLogGroup,
       filterName: "sendAuditLogsToKoski",
       filterPattern: FilterPattern.allEvents(),
