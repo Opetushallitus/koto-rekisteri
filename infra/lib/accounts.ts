@@ -12,6 +12,10 @@ export interface EnvironmentConfig {
   slackWorkspaceId: string
   slackChannelName: string
   slackChannelId: string
+  koski: {
+    accountId: string
+    region: string
+  }
 }
 
 // CIDR allocation strategy:
@@ -38,6 +42,10 @@ export const deploymentAccounts: {
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "kielitutkintorekisteri-alerts-dev-test",
     slackChannelId: "C08E14CRZ3J",
+    koski: {
+      accountId: "500150530292",
+      region: "eu-west-1",
+    },
   },
   test: {
     name: "qa",
@@ -53,6 +61,10 @@ export const deploymentAccounts: {
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "kielitutkintorekisteri-alerts-dev-test",
     slackChannelId: "C08E14CRZ3J",
+    koski: {
+      accountId: "692437769085",
+      region: "eu-west-1",
+    },
   },
   prod: {
     name: "prod",
@@ -68,6 +80,9 @@ export const deploymentAccounts: {
     slackWorkspaceId: "T02C6SZL7KP",
     slackChannelName: "kielitutkintorekisteri-alerts",
     slackChannelId: "C07QPSYBY7L",
+    koski: {
+      region: "eu-west-1",
+    },
   },
 }
 
