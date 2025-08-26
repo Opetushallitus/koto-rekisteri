@@ -1,12 +1,7 @@
 import { gunzipSync } from "node:zlib"
+import { CloudWatchLogsEvent } from "aws-lambda"
 
-interface AuditLogsSubscriptFilterEvent {
-  awslogs: {
-    data: string
-  }
-}
-
-export const handler = async (event: AuditLogsSubscriptFilterEvent) => {
+export const handler = async (event: CloudWatchLogsEvent) => {
   const payload = Buffer.from(event.awslogs.data, "base64")
   const decompressed = gunzipSync(payload)
   const { logEvents } = JSON.parse(decompressed.toString())
