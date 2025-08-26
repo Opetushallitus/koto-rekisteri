@@ -5,30 +5,30 @@ import {
   LogGroup,
   SubscriptionFilter,
 } from "aws-cdk-lib/aws-logs"
-import { SendAuditLogsToKoski } from "./send-audit-logs-to-koski"
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs"
+import { Runtime } from "aws-cdk-lib/aws-lambda"
 
-export interface SendAuditLogsToKoskiStackProps extends StackProps {
+export interface KoskiAuditLogsIntegrationStackProps extends StackProps {
   serviceAuditLogGroup: LogGroup
 }
 
-export class SendAuditLogsToKoskiStack extends Stack {
+export class KoskiAuditLogsIntegrationStack extends Stack {
   constructor(
     scope: Construct,
     id: string,
-    props: SendAuditLogsToKoskiStackProps,
+    props: KoskiAuditLogsIntegrationStackProps,
   ) {
     super(scope, id, props)
-    const sendAuditLogsToKoskiLambda = new SendAuditLogsToKoski(
-      this,
-      "sendAuditLogsToKoski",
-    )
+    const sendAuditLogsToKoskiLambda = new NodejsFunction(this, "function", {
+      runtime: Runtime.NODEJS_LATEST,
+    })
 
     new SubscriptionFilter(this, "sendAuditLogsToKoskiSubscriptionFilter", {
       logGroup: props.serviceAuditLogGroup,
       filterName: "sendAuditLogsToKoski",
       filterPattern: FilterPattern.allEvents(),
       destination: new aws_logs_destinations.LambdaDestination(
-        sendAuditLogsToKoskiLambda.function,
+        sendAuditLogsToKoskiLambda,
       ),
     })
   }
