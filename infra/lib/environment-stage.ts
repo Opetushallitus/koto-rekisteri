@@ -16,7 +16,7 @@ import { BackupResource } from "aws-cdk-lib/aws-backup"
 import { SlackBotStack } from "./slack-bot-stack"
 import { BastionStack } from "./bastion-stack"
 import { EcsRdsProxyStack } from "./ecs-rds-proxy-stack"
-import { SendAuditLogsToKoskiStack } from "./send-audit-logs-to-koski-stack"
+import { KoskiAuditLogsIntegrationStack } from "./koski-audit-logs-integration-stack"
 
 interface EnvironmentStageProps extends StageProps {
   environmentConfig: EnvironmentConfig
@@ -116,7 +116,7 @@ export class EnvironmentStage extends Stage {
       notificationTopic: alarmsStack.alarmSnsTopic,
     })
 
-    new SendAuditLogsToKoskiStack(this, "SendAuditLogsToKoski", {
+    new KoskiAuditLogsIntegrationStack(this, "KoskiAuditLogsIntegration", {
       serviceAuditLogGroup: logGroupsStack.serviceAuditLogGroup,
     })
 
