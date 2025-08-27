@@ -44,7 +44,7 @@ class KoealustaService(
             .findAllSorted(orderBy.entityName, orderByDirection)
             .toList()
             .also {
-                auditLogger.logAll(KituAuditLogOperation.KielitestiSuoritusViewed(), it) { suoritus ->
+                auditLogger.logAll(KituAuditLogOperation.KielitestiSuoritusViewed, it) { suoritus ->
                     arrayOf(
                         KituAuditLogMessageField.OPPIJA_OPPIJANUMERO to suoritus.oppijanumero,
                     )
