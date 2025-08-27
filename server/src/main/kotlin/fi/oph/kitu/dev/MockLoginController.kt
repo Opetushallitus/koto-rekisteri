@@ -49,7 +49,8 @@ class MockLoginController(
         val userDetails =
             CasUserDetails(
                 name = "kitu_mocklogin",
-                oid = "",
+                // Can be any valid OID. Currently oppijanumero for Ranja Testi Öhman-Testi
+                oid = "1.2.246.562.24.20281155246",
                 strongAuth = false,
                 kayttajaTyyppi = "VIRKAILIJA",
                 authorities =
