@@ -17,7 +17,6 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import java.net.InetAddress
 import fi.vm.sade.auditlog.Target as AuditTarget
-import org.slf4j.Logger as SLogger
 
 const val AUDIT_LOGGER_NAME = "auditLogger"
 
@@ -26,19 +25,18 @@ class AuditLogger(
     @Qualifier("applicationTaskExecutor")
     private val taskExecutor: AsyncTaskExecutor,
 ) : Logger {
-    private val logger = AuditLoggerImpl(LoggerFactory.getLogger(AUDIT_LOGGER_NAME))
-    private val audit: Audit = Audit(logger, "kitu", ApplicationType.BACKEND)
+    private val slf4jLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
+    private val audit: Audit = Audit(this, "kitu", ApplicationType.BACKEND)
 
     override fun log(msg: String?) {
-        logger.log(msg)
+        slf4jLogger.info(msg)
     }
 
     fun log(
         message: String,
         vararg properties: Pair<String, Any?>,
     ) {
-        logger
-            .logger
+        slf4jLogger
             .atInfo()
             .add(*properties)
             .log(message)
@@ -137,12 +135,4 @@ enum class KituAuditLogMessageField(
     val key: String,
 ) {
     OPPIJA_OPPIJANUMERO("oppijaHenkiloOid"),
-}
-
-class AuditLoggerImpl(
-    val logger: SLogger,
-) : Logger {
-    override fun log(msg: String?) {
-        logger.info(msg)
-    }
 }
