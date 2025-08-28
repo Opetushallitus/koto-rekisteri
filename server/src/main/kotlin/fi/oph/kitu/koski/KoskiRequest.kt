@@ -61,11 +61,11 @@ data class KoskiRequest(
                 val myöntäjäOrganisaatio: Organisaatio,
             ) : Vahvistus
 
-            data class VahvistusHenkiloilla(
+            data class VahvistusPaikkakunnalla(
                 @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
                 override val päivä: LocalDate,
                 val myöntäjäOrganisaatio: Organisaatio,
-                val myöntäjäHenkilöt: List<Organisaatiohenkilo>,
+                val paikkakunta: KoskiKoodiviite, // koodistoUri: kunta
             ) : Vahvistus
 
             data class Organisaatiohenkilo(
