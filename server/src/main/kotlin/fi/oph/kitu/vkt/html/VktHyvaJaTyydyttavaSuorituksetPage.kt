@@ -18,7 +18,6 @@ import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.*
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilderDsl
 import org.springframework.hateoas.server.mvc.linkTo
 
 object VktHyvaJaTyydyttavaSuorituksetPage {
@@ -35,7 +34,7 @@ object VktHyvaJaTyydyttavaSuorituksetPage {
             breadcrumbs =
                 Navigation.getBreadcrumbs(
                     linkTo(
-                        VktViewController::hyvanJaTyydyttavanTaitotasonIlmoittautuneetView,
+                        VktViewController::hyvanJaTyydyttavanTaitotasonSuorituksetView,
                     ).toString(),
                 ),
         ) {
