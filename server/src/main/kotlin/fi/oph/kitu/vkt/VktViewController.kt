@@ -112,7 +112,7 @@ class VktViewController(
     }
 
     @GetMapping("/hyvajatyydyttava/suoritukset", produces = ["text/html"])
-    fun hyvanJaTyydyttavanTaitotasonIlmoittautuneetView(
+    fun hyvanJaTyydyttavanTaitotasonSuorituksetView(
         page: Int = 1,
         sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
         sortDirection: SortDirection = SortDirection.ASC,

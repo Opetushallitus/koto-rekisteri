@@ -38,7 +38,7 @@ object Navigation {
                     ),
                     MenuItem.of(
                         "Hyvän ja tyydyttävän tason suoritukset",
-                        VktViewController::hyvanJaTyydyttavanTaitotasonIlmoittautuneetView,
+                        VktViewController::hyvanJaTyydyttavanTaitotasonSuorituksetView,
                     ),
                 ),
             ),
