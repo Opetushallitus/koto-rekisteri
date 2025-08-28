@@ -12,6 +12,7 @@ import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.h1
@@ -25,7 +26,7 @@ object VktHyvaJaTyydyttavaTarkasteluPage {
     ): String =
         Page.renderHtml(
             Navigation.getBreadcrumbs(
-                "/vkt/hyvajatyydyttava/suoritukset",
+                VktViewController::hyvanJaTyydyttavanTaitotasonSuorituksetView,
                 Navigation.MenuItem(
                     data.henkilo.kokoNimi(),
                     "/vkt/suoritukset/${data.suoritus.internalId}",
