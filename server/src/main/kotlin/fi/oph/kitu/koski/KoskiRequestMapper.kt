@@ -8,7 +8,6 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import fi.oph.kitu.TypedResult
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koodisto.Koodisto.YkiArvosana
 import fi.oph.kitu.koodisto.KoskiKoodiviite
@@ -21,7 +20,6 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.toTypedResult
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.yki.Tutkintotaso
@@ -208,33 +206,15 @@ class KoskiRequestMapper {
                 .mapNotNull { it.arviointi?.paivamaara }
                 .maxOrNull()
 
-        val suorituksenVastaanottaja =
-            when (suoritus.taitotaso) {
-                Koodisto.VktTaitotaso.Erinomainen ->
-                    TypedResult.Success("Kielitutkintolautakunta")
-                Koodisto.VktTaitotaso.HyväJaTyydyttävä ->
-                    suoritus.suorituksenVastaanottaja
-                        ?.toOid()
-                        ?.toTypedResult()
-                        ?.flatMap { onrService.getHenkilo(it).mapFailure { it as Throwable } }
-                        ?.map { it.kokoNimi() }
-            }
-
         val vahvistus =
             if (organisaatio != null &&
                 arviointipaiva != null &&
-                suorituksenVastaanottaja?.isSuccess == true
+                suoritus.suorituspaikkakunta != null
             ) {
-                KielitutkintoSuoritus.VahvistusHenkiloilla(
+                KielitutkintoSuoritus.VahvistusPaikkakunnalla(
                     päivä = arviointipaiva,
                     myöntäjäOrganisaatio = Organisaatio(organisaatio.oid),
-                    myöntäjäHenkilöt =
-                        listOf(
-                            KielitutkintoSuoritus.Organisaatiohenkilo(
-                                nimi = suorituksenVastaanottaja.getOrThrow(),
-                                organisaatio = organisaatio,
-                            ),
-                        ),
+                    paikkakunta = KoskiKoodiviite(suoritus.suorituspaikkakunta, "kunta"),
                 )
             } else {
                 null
