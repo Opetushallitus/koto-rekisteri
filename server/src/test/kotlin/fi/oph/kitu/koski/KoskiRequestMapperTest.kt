@@ -277,12 +277,8 @@ class KoskiRequestMapperTest(
                 .firstOrNull()
                 ?.suoritukset
                 ?.firstOrNull()
-                ?.vahvistus as? KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.VahvistusHenkiloilla
+                ?.vahvistus as? KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.VahvistusPaikkakunnalla
 
-        assertEquals(
-            "Kielitutkintolautakunta",
-            vahvistus?.myöntäjäHenkilöt?.firstOrNull()?.nimi,
-        )
         validateKoskiRequest(koskiSuoritus)
 
         val json = objectMapper.writeValueAsString(koskiSuoritus)
@@ -375,12 +371,8 @@ class KoskiRequestMapperTest(
                 .firstOrNull()
                 ?.suoritukset
                 ?.firstOrNull()
-                ?.vahvistus as? KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.VahvistusHenkiloilla
+                ?.vahvistus as? KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.VahvistusPaikkakunnalla
 
-        assertEquals(
-            "Vallu Vastaanottaja",
-            vahvistus?.myöntäjäHenkilöt?.firstOrNull()?.nimi,
-        )
         validateKoskiRequest(koskiSuoritus)
 
         val json = objectMapper.writeValueAsString(koskiSuoritus)
