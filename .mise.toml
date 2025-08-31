@@ -3,7 +3,7 @@ SPRING_PROFILES_ACTIVE = 'local'
 AWS_PROFILE = "oph-ktr-dev"
 
 [tools]
-node = "22.18.0"
+node = "22.19.0"
 "npm:prettier" = "3.6.2"
 "aqua:maven" = "3.9.11"
 java = "corretto-21.0.8.9.1"
