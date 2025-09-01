@@ -111,7 +111,7 @@ data class AuditContext(
                     ?: throw IllegalStateException("HTTP request not available via RequestContextHolder")
             val request = servletRequestAttributes.request
 
-            val userOid = Oid.parse(userDetails.oid).getOrThrow()
+            val userOid = userDetails.oid
             val userAgent = request.getHeader("user-agent")
             val ip = InetAddress.getByName(request.remoteAddr)
             val session = request.session.id

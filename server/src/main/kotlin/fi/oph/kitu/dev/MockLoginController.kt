@@ -1,6 +1,7 @@
 package fi.oph.kitu.dev
 
 import fi.oph.kitu.HomeController
+import fi.oph.kitu.Oid
 import fi.oph.kitu.auth.CasUserDetails
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
@@ -50,7 +51,7 @@ class MockLoginController(
             CasUserDetails(
                 name = "kitu_mocklogin",
                 // Can be any valid OID. Currently oppijanumero for Ranja Testi Öhman-Testi
-                oid = "1.2.246.562.24.20281155246",
+                oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                 strongAuth = false,
                 kayttajaTyyppi = "VIRKAILIJA",
                 authorities =
