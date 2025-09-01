@@ -1,6 +1,7 @@
 package fi.oph.kitu.auth
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import fi.oph.kitu.Oid
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
 import org.springframework.security.cas.authentication.CasAssertionAuthenticationToken
@@ -19,9 +20,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class CasUserDetailsService : AuthenticationUserDetailsService<CasAssertionAuthenticationToken> {
     override fun loadUserDetails(token: CasAssertionAuthenticationToken): UserDetails {
         val attributes = token.assertion.principal.attributes
+        val oid = Oid.parseTyped(attributes["oidHenkilo"] as String).getOrThrow()
         return CasUserDetails(
             token.name,
-            attributes["oidHenkilo"] as String,
+            oid,
             attributes["idpEntityId"] == "vetuma",
             attributes["kayttajaTyyppi"] as String?,
             (attributes["roles"] as List<String>).map { SimpleGrantedAuthority(it) },
@@ -31,7 +33,7 @@ class CasUserDetailsService : AuthenticationUserDetailsService<CasAssertionAuthe
 
 data class CasUserDetails(
     val name: String,
-    val oid: String,
+    val oid: Oid,
     val strongAuth: Boolean,
     val kayttajaTyyppi: String?,
     private val authorities: List<SimpleGrantedAuthority>,
