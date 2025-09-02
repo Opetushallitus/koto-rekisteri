@@ -102,7 +102,7 @@ fun FlowContent.vktErinomainenOsakoeTable(
     t: Translations,
 ) {
     displayTable(
-        osat.sortedWith(compareBy(VktOsakoe::tutkintopaiva, VktOsakoe::tyyppi)),
+        osat.sortedWith(compareBy(VktOsakoe::tutkintopaiva, VktOsakoe::tyyppi).reversed()),
         listOf(
             DisplayTableColumn("Osakoe", width = "25%", testId = "osakoe") {
                 +t.get(it.tyyppi)
