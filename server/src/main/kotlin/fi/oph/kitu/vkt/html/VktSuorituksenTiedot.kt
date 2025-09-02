@@ -9,6 +9,7 @@ import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
+import kotlinx.html.i
 
 fun FlowContent.vktSuorituksenTiedot(
     data: Henkilosuoritus<VktSuoritus>,
@@ -39,7 +40,24 @@ fun FlowContent.vktTutkinnot(
                         it.viimeisinTutkintopaiva()?.let { finnishDate(it) }
                     },
                     DisplayTableColumn("Arvosana", width = "50%", testId = "arvosana") {
-                        +t.get(it.arviointi()?.arvosana)
+                        it.puuttuvatOsakokeet().let { puuttuvat ->
+                            if (puuttuvat.isNotEmpty()) {
+                                i {
+                                    +"Osakoe puuttuu: ${puuttuvat.joinToString(", ") { t.get(it) }}"
+                                }
+                            } else {
+                                val arviointi = it.arviointi()
+                                if (arviointi != null) {
+                                    +t.get(arviointi.arvosana)
+                                } else {
+                                    i {
+                                        +"Arviointi puuttuu: ${
+                                            it.puuttuvatArvioinnit().joinToString(", ") { t.get(it) }
+                                        }"
+                                    }
+                                }
+                            }
+                        }
                     },
                 ),
             testId = "tutkinnot",
