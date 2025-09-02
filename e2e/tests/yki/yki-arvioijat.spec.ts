@@ -44,7 +44,7 @@ describe("Yleiset kielitutkinnot arvioijat page", () => {
       "Jatkorekisteröinti",
       "Rekisteriintuontiaika ▼",
     )
-    expect(table.rows).toHaveCount(4)
+    await expect(table.rows).toHaveCount(4)
   })
 
   test("sorting by sukunimi works", async ({ indexPage, ykiArvioijatPage }) => {
