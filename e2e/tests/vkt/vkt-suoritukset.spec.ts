@@ -178,7 +178,12 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     // Tutkinnoilla ei pitäisi näkyä vielä mitään arvosanoja
     const tutkinnot = vktSuorituksenTiedotPage.tutkinnot
     const tutkintojenArvosanat = tutkinnot.getCellsOfColumn("arvosana")
-    await expectToHaveTexts(tutkintojenArvosanat, "", "", "")
+    await expectToHaveTexts(
+      tutkintojenArvosanat,
+      "Arviointi puuttuu: <vktosakoe:kirjoittaminen>, <vktosakoe:tekstinymmartaminen>",
+      "Arviointi puuttuu: <vktosakoe:puheenymmartaminen>, <vktosakoe:puhuminen>",
+      "Arviointi puuttuu: <vktosakoe:puheenymmartaminen>, <vktosakoe:tekstinymmartaminen>",
+    )
 
     // Ota talteen locatorit suullisen taidon osakokeiden riveille
     const osakokeet = vktSuorituksenTiedotPage.osakokeet
@@ -203,9 +208,11 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     // Tarkista onko suulliselle taidolle muodostunut arvosana
     await testForEach(
       tutkintojenArvosanat,
-      expectToHaveText(""),
+      expectToHaveText(
+        "Arviointi puuttuu: <vktosakoe:kirjoittaminen>, <vktosakoe:tekstinymmartaminen>",
+      ),
       expectToHaveKoodiviite("vktarvosana", "erinomainen"),
-      expectToHaveText(""),
+      expectToHaveText("Arviointi puuttuu: <vktosakoe:tekstinymmartaminen>"),
     )
 
     // Tarkista että arvosana on valittuna taulukossa ja arviointipäiväksi on automaattisesti valittu tämä päivä

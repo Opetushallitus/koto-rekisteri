@@ -116,6 +116,18 @@ interface VktTutkinto :
         )
     }
 
+    fun mahdollisetOsakokeidenTyypit(): List<Koodisto.VktOsakoe>
+
+    fun puuttuvatOsakokeet(): List<Koodisto.VktOsakoe> {
+        val tyypit = osat.map { it.tyyppi }
+        return mahdollisetOsakokeidenTyypit().filterNot { tyypit.contains(it) }
+    }
+
+    fun puuttuvatArvioinnit(): List<Koodisto.VktOsakoe> {
+        val tyypit = osat.filter { it.arviointi != null }.map { it.tyyppi }
+        return mahdollisetOsakokeidenTyypit().filterNot { tyypit.contains(it) }
+    }
+
     companion object {
         fun from(
             tutkinto: VktSuoritusEntity.VktTutkinto,
@@ -136,6 +148,12 @@ data class VktKirjallinenKielitaito(
 ) : VktTutkinto {
     override val tyyppi: Koodisto.VktKielitaito = Koodisto.VktKielitaito.Kirjallinen
 
+    override fun mahdollisetOsakokeidenTyypit(): List<Koodisto.VktOsakoe> =
+        listOf(
+            Koodisto.VktOsakoe.Kirjoittaminen,
+            Koodisto.VktOsakoe.TekstinYmmärtäminen,
+        )
+
     companion object {
         fun from(osakokeet: List<VktOsakoe>) =
             VktKirjallinenKielitaito(
@@ -149,6 +167,12 @@ data class VktSuullinenKielitaito(
 ) : VktTutkinto {
     override val tyyppi: Koodisto.VktKielitaito = Koodisto.VktKielitaito.Suullinen
 
+    override fun mahdollisetOsakokeidenTyypit(): List<Koodisto.VktOsakoe> =
+        listOf(
+            Koodisto.VktOsakoe.PuheenYmmärtäminen,
+            Koodisto.VktOsakoe.Puhuminen,
+        )
+
     companion object {
         fun from(osakokeet: List<VktOsakoe>) =
             VktSuullinenKielitaito(
@@ -161,6 +185,12 @@ data class VktYmmartamisenKielitaito(
     override val osat: List<VktYmmartamisenKielitaidonKoe>,
 ) : VktTutkinto {
     override val tyyppi: Koodisto.VktKielitaito = Koodisto.VktKielitaito.Ymmärtäminen
+
+    override fun mahdollisetOsakokeidenTyypit(): List<Koodisto.VktOsakoe> =
+        listOf(
+            Koodisto.VktOsakoe.PuheenYmmärtäminen,
+            Koodisto.VktOsakoe.TekstinYmmärtäminen,
+        )
 
     companion object {
         fun from(osakokeet: List<VktOsakoe>) =
