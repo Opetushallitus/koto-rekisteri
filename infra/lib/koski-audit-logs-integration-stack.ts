@@ -28,7 +28,10 @@ export class KoskiAuditLogsIntegrationStack extends Stack {
     new SubscriptionFilter(this, "sendAuditLogsToKoskiSubscriptionFilter", {
       logGroup: props.serviceAuditLogGroup,
       filterName: "sendAuditLogsToKoski",
-      filterPattern: FilterPattern.allEvents(),
+      // We only send audit logs to koski, that are in OPH standardized format.
+      // The format is checking by this filter - if the event contains word "operation",
+      // it will be passed to lambda
+      filterPattern: FilterPattern.anyTerm("operation"),
       destination: new aws_logs_destinations.LambdaDestination(
         sendAuditLogsToKoskiLambda,
       ),
