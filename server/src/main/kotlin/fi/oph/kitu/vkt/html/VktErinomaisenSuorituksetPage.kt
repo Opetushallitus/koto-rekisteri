@@ -51,10 +51,11 @@ fun FlowContent.vktIlmoittautuneetTable(
         fun getHref(
             oppijanumero: String?,
             kieli: Koodisto.Tutkintokieli,
+            taso: Koodisto.VktTaitotaso,
         ) = oppijanumero?.let {
             WebMvcLinkBuilder
                 .linkTo(
-                    methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(it, kieli),
+                    methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(it, kieli, taso),
                 ).toString()
         } ?: "#"
 
@@ -62,7 +63,7 @@ fun FlowContent.vktIlmoittautuneetTable(
             ilmoittautuneet,
             listOf(
                 CustomVktSuoritusRepository.Column.Sukunimi.withValue {
-                    a(href = getHref(it.oppijanumero, it.kieli)) {
+                    a(href = getHref(it.oppijanumero, it.kieli, it.taso)) {
                         +(it.sukunimi)
                     }
                 },

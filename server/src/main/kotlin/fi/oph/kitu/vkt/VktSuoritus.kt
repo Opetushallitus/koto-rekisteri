@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Arviointi
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Arvioitava
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
@@ -69,6 +70,39 @@ data class VktSuoritus(
                 lahdejarjestelmanId = LahdejarjestelmanTunniste.Companion.from(entity.ilmoittautumisenId),
                 internalId = entity.id,
             )
+
+        fun merge(henkilosuoritukset: List<Henkilosuoritus<VktSuoritus>>): Henkilosuoritus<VktSuoritus> {
+            val suoritukset = henkilosuoritukset.map { it.suoritus }
+
+            val oppijanumerot = henkilosuoritukset.map { it.henkilo.oid }.distinct()
+            if (oppijanumerot.size > 1) {
+                throw IllegalArgumentException(
+                    "Vain yhden oppijan suorituksia voi yhdistää (annettiin: ${oppijanumerot.joinToString(", ")}",
+                )
+            }
+
+            val kielet = suoritukset.map { it.kieli }.distinct()
+            if (kielet.size > 1) {
+                throw IllegalArgumentException(
+                    "Vain yhden tutkintokielen suorituksia voi yhdistää (annettiin: ${kielet.joinToString(", ")}",
+                )
+            }
+
+            val taitotasot = suoritukset.map { it.taitotaso }.distinct()
+            if (taitotasot.size > 1) {
+                throw IllegalArgumentException(
+                    "Vain yhden taitotason suorituksia voi yhdistää (annettiin: ${taitotasot.joinToString(", ")}",
+                )
+            }
+
+            val viimeisin = henkilosuoritukset.sortedBy { it.lisatty }.last()
+            val kaikkiOsakokeet = suoritukset.flatMap { it.osat }
+
+            return Henkilosuoritus(
+                henkilo = viimeisin.henkilo,
+                suoritus = viimeisin.suoritus.copy(osat = kaikkiOsakokeet),
+            )
+        }
     }
 }
 

@@ -18,12 +18,14 @@ import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktValidation
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
     val henkilo: OidOppija,
     val suoritus: T,
+    val lisatty: OffsetDateTime? = null,
 ) {
     fun fill(onr: OppijanumeroService): Henkilosuoritus<T>? = henkilo.fill(onr)?.let { copy(it, suoritus) }
 
@@ -60,6 +62,7 @@ data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
             Henkilosuoritus(
                 henkilo = OidOppija.from(entity),
                 suoritus = VktSuoritus.from(entity),
+                lisatty = entity.createdAt,
             )
     }
 }
