@@ -4,6 +4,7 @@ import fi.oph.kitu.Cache
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.vkt.html.VktTableItem
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
@@ -38,7 +39,7 @@ class VktSuoritusService(
         sortDirection: SortDirection,
         pageNumber: Int,
         searchQuery: String?,
-    ): List<Henkilosuoritus<VktSuoritus>> =
+    ): List<VktTableItem> =
         customSuoritusRepository.findForListView(
             taitotaso = taitotaso,
             arvioidut = arvioidut,

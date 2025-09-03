@@ -144,15 +144,16 @@ class VktViewController(
         )
     }
 
-    @GetMapping("/suoritukset/{id}", produces = ["text/html"])
+    @GetMapping("/suoritukset/{oppijanumero}/{kieli}", produces = ["text/html"])
     @ResponseBody
     fun ilmoittautuneenArviointiView(
-        @PathVariable id: Int,
+        @PathVariable oppijanumero: String,
+        @PathVariable kieli: Koodisto.Tutkintokieli,
         viewMessage: ViewMessage? = null,
     ): ResponseEntity<String> =
         ResponseEntity.ok(
             vktSuoritukset
-                .getSuoritus(id)
+                .getSuoritus(TODO("Pitää hakea oppijannumerolla"))
                 .map { suoritus ->
                     val henkilo =
                         suoritus.henkilo.oid
@@ -180,9 +181,10 @@ class VktViewController(
                 }.getOrElse { throw VktSuoritusNotFoundError() },
         )
 
-    @PostMapping("/suoritukset/{id}", produces = ["text/html"])
+    @PostMapping("/suoritukset/{oppijanumero}/{kieli}", produces = ["text/html"])
     fun saveIlmoittautuneenArviointi(
-        @PathVariable id: Int,
+        @PathVariable oppijanumero: String,
+        @PathVariable kieli: Koodisto.Tutkintokieli,
         @ModelAttribute form: VktErinomaisenArviointiPage.ArvosanaFormData,
         viewMessage: ViewMessage,
     ): RedirectView {
@@ -191,7 +193,9 @@ class VktViewController(
         }
         viewMessage.showSuccess("Muutokset tallennettu onnistuneesti.")
         return RedirectView(
-            linkTo(methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(id)).toString(),
+            linkTo(
+                methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(oppijanumero, kieli),
+            ).toString(),
         )
     }
 }

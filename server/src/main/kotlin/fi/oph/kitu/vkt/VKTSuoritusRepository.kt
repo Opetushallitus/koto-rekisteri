@@ -3,6 +3,7 @@ package fi.oph.kitu.vkt
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.vkt.html.VktTableItem
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
@@ -38,7 +39,7 @@ class CustomVktSuoritusRepository {
         limit: Int? = null,
         offset: Int? = null,
         searchQuery: String? = null,
-    ): List<Henkilosuoritus<VktSuoritus>> {
+    ): List<VktTableItem> {
         val search = SearchQueryParser(searchQuery)
         val (prefilter, prefilterParams) = listViewPrefilter(taitotaso, search)
 
@@ -47,31 +48,34 @@ class CustomVktSuoritusRepository {
             WITH suoritus AS (
             	SELECT
             		*,
-            		row_number() OVER (PARTITION BY ilmoittautumisen_id ORDER BY created_at DESC) rn
+            		row_number() OVER (PARTITION BY suorittajan_oppijanumero, tutkintokieli ORDER BY created_at DESC) rn
             	FROM vkt_suoritus
             	$prefilter
             ),
-            viimeisin_tutkintopaiva AS (
-            	SELECT
-            		suoritus.id suoritus_id,
-            		MAX(tutkintopaiva) tutkintopaiva
-            	FROM suoritus
-            	JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = suoritus.id
-                ${whereAll(arvioituCondition(arvioidut))}
-            	GROUP BY suoritus.id
+            rivi AS (
+                SELECT
+                    s.suorittajan_oppijanumero,
+                    array_to_string(array_agg(distinct nimi.etunimi), ' / ') etunimi,
+                    array_to_string(array_agg(distinct nimi.sukunimi), ' / ') sukunimi,
+                    s.tutkintokieli,
+                    max(ok.tutkintopaiva) tutkintopaiva
+                FROM suoritus s
+                    JOIN vkt_osakoe ok ON ok.suoritus_id = s.id
+                    JOIN LATERAL (
+                        SELECT
+                            etunimi,
+                            sukunimi
+                        FROM vkt_suoritus
+                        WHERE vkt_suoritus.suorittajan_oppijanumero = s.suorittajan_oppijanumero
+                        ORDER BY created_at DESC
+                        LIMIT 1) AS nimi ON TRUE
+                ${whereAll("rn = 1", tutkintopaivaCondition(search.dateTokens))}
+                GROUP BY
+                    s.suorittajan_oppijanumero,
+                    s.tutkintokieli
             )
-            SELECT
-            	suoritus.id,
-            	suoritus.ilmoittautumisen_id,
-            	suoritus.suorittajan_oppijanumero,
-            	suoritus.etunimi,
-            	suoritus.sukunimi,
-            	suoritus.tutkintokieli,
-            	suoritus.taitotaso,
-            	tutkintopaiva
-            FROM suoritus
-            JOIN viimeisin_tutkintopaiva ON viimeisin_tutkintopaiva.suoritus_id = suoritus.id
-            ${whereAll("rn = 1", tutkintopaivaCondition(search.dateTokens))}
+            SELECT *
+            FROM rivi
             ORDER BY ${column.entityName} $direction
             ${limit?.let { "LIMIT :limit" }.orEmpty()}
             ${offset?.let { "OFFSET :offset" }.orEmpty()}
@@ -84,7 +88,7 @@ class CustomVktSuoritusRepository {
             ) +
                 prefilterParams
 
-        return jdbcNamedParameterTemplate.query(query, params, henkiloSuoritusFromRow)
+        return jdbcNamedParameterTemplate.query(query, params, VktTableItem.fromRow)
     }
 
     @WithSpan
@@ -100,7 +104,7 @@ class CustomVktSuoritusRepository {
             WITH suoritus AS (
                 SELECT
                     id,
-                    row_number() OVER (PARTITION BY ilmoittautumisen_id ORDER BY created_at DESC) rn
+                    row_number() OVER (PARTITION BY suorittajan_oppijanumero, tutkintokieli ORDER BY created_at DESC) rn
                 FROM vkt_suoritus
                 $prefilter
             )

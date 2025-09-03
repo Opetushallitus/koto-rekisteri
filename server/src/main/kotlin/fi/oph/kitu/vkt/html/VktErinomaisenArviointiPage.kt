@@ -46,7 +46,7 @@ object VktErinomaisenArviointiPage {
                     linkTo(
                         methodOn(
                             VktViewController::class.java,
-                        ).ilmoittautuneenArviointiView(data.suoritus.internalId!!),
+                        ).ilmoittautuneenArviointiView(data.henkilo.oid.toString(), data.suoritus.kieli),
                     ),
                 ),
             ),
