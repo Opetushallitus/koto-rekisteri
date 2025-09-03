@@ -36,7 +36,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await expect(table.rows).toHaveCount(50)
 
     await testForEach(
-      table.getCellsOfRow("KIOS:12"),
+      table.getCellsOfRow("1.2.246.562.24.62917207394-SV"),
       expectToHaveText("Halonen"),
       expectToHaveText("Vilho Eero"),
       expectToHaveKoodiviite("kieli", "SV"),
@@ -63,11 +63,11 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     }
 
     // Oletussorttaus on sukunimen perusteella, joten järjestys kääntyy päinvastaiseksi
-    await testSorting("sukunimi", "Väänänen", "Salo")
+    await testSorting("sukunimi", "Väänänen", "Tikkanen")
 
     // Testataan loputkin kentät
-    await testSorting("etunimi", "Aarni Eino", "Eero Hugo")
-    await testSorting("tutkintopaiva", "27.2.2000", "13.3.2003")
+    await testSorting("etunimi", "Aada Elsa", "Anton Aatu")
+    await testSorting("tutkintopaiva", "25.2.2000", "7.4.2002")
   })
 
   test("Details page shows correct information of hyvä ja tyydyttävä taso", async ({
@@ -77,7 +77,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     // Varmista että ollaan oikeassa fikstuurissa
     await vktHjtSuorituksetPage.login()
     await vktHjtSuorituksetPage.open()
-    await vktHjtSuorituksetPage.followLinkOfRow("KIOS:7")
+    await vktHjtSuorituksetPage.followLinkOfRow("1.2.246.562.24.26960378782-SV")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Fiona Konsta",
     )
@@ -123,7 +123,9 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     // Varmista että ollaan oikeassa fikstuurissa
     await vktArvioidutSuorituksetPage.login()
     await vktArvioidutSuorituksetPage.open()
-    await vktArvioidutSuorituksetPage.followLinkOfRow("KIOS:63")
+    await vktArvioidutSuorituksetPage.followLinkOfRow(
+      "1.2.246.562.24.08842807667-FI",
+    )
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Daniel Ville",
     )
@@ -170,7 +172,9 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     // Varmista että ollaan oikeassa fikstuurissa
     await vktIlmoittautuneetPage.login()
     await vktIlmoittautuneetPage.open()
-    await vktIlmoittautuneetPage.followLinkOfRow("KIOS:12")
+    await vktIlmoittautuneetPage.followLinkOfRow(
+      "1.2.246.562.24.62917207394-SV",
+    )
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Halonen, Vilho Eero",
     )
@@ -246,6 +250,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
         vktIlmoittautuneetPage.table.getCellsOfColumn("sukunimi"),
         "Halonen",
         "Halonen",
+        "Halonen",
       )
     })
 
@@ -256,7 +261,9 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 
       await expect(vktIlmoittautuneetPage.table.rows).toHaveCount(1)
       await expectToHaveTexts(
-        vktIlmoittautuneetPage.table.getCellsOfRow("KIOS:55"),
+        vktIlmoittautuneetPage.table.getCellsOfRow(
+          "1.2.246.562.24.58644376343-SV",
+        ),
         "Huhtala",
         "Nella Eveliina",
         "<kieli:SV>",
