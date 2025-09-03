@@ -11,10 +11,9 @@ import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.pagination
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
-import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktViewController
-import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.*
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
@@ -23,7 +22,7 @@ object VktErinomaisenSuorituksetPage {
     fun render(
         title: String,
         linkBuilder: WebMvcLinkBuilder,
-        ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
+        ilmoittautuneet: List<VktTableItem>,
         sortedBy: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
         pagination: Pagination,
@@ -41,7 +40,7 @@ object VktErinomaisenSuorituksetPage {
 }
 
 fun FlowContent.vktIlmoittautuneetTable(
-    ilmoittautuneet: List<Henkilosuoritus<VktSuoritus>>,
+    ilmoittautuneet: List<VktTableItem>,
     sortedBy: CustomVktSuoritusRepository.Column,
     sortDirection: SortDirection,
     pagination: Pagination,
@@ -49,32 +48,34 @@ fun FlowContent.vktIlmoittautuneetTable(
     searchQuery: String?,
 ) {
     card(overflowAuto = true, compact = true) {
-        fun getHref(id: Int?) =
-            id?.let {
-                WebMvcLinkBuilder
-                    .linkTo(
-                        methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(it),
-                    ).toString()
-            } ?: "#"
+        fun getHref(
+            oppijanumero: String?,
+            kieli: Koodisto.Tutkintokieli,
+        ) = oppijanumero?.let {
+            WebMvcLinkBuilder
+                .linkTo(
+                    methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(it, kieli),
+                ).toString()
+        } ?: "#"
 
         displayTable(
             ilmoittautuneet,
             listOf(
                 CustomVktSuoritusRepository.Column.Sukunimi.withValue {
-                    a(href = getHref(it.suoritus.internalId)) {
-                        +(it.henkilo.sukunimi.orEmpty())
+                    a(href = getHref(it.oppijanumero, it.kieli)) {
+                        +(it.sukunimi)
                     }
                 },
-                CustomVktSuoritusRepository.Column.Etunimet.withValue { +(it.henkilo.etunimet.orEmpty()) },
-                CustomVktSuoritusRepository.Column.Kieli.withValue { +t.get(it.suoritus.kieli) },
+                CustomVktSuoritusRepository.Column.Etunimet.withValue { +(it.etunimet) },
+                CustomVktSuoritusRepository.Column.Kieli.withValue { +t.get(it.kieli) },
                 CustomVktSuoritusRepository.Column.Tutkintopaiva.withValue {
-                    it.suoritus.tutkintopaiva?.let { finnishDate(it) }
+                    finnishDate(it.tutkintopaiva)
                 },
             ),
             sortedBy = sortedBy,
             sortDirection = sortDirection,
             testId = "ilmoittautuneet",
-            rowTestId = { it.suoritus.lahdejarjestelmanId.toString() },
+            rowTestId = { it.oppijanumero },
             urlParams = mapOf("search" to searchQuery),
         )
     }
