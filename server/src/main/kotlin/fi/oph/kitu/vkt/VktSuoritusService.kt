@@ -10,6 +10,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.Optional
+import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration.Companion.minutes
 
 @Service
@@ -71,6 +72,20 @@ class VktSuoritusService(
         suoritusRepository
             .findById(id)
             .map { Henkilosuoritus.from(it) }
+
+    @WithSpan("VktSuoritusService.getOppijanSuoritukset")
+    fun getOppijanSuoritukset(
+        oppijanumero: String,
+        kieli: Koodisto.Tutkintokieli,
+        taso: Koodisto.VktTaitotaso,
+    ): Henkilosuoritus<VktSuoritus>? {
+        val ids = customSuoritusRepository.getOppijanSuoritusIds(oppijanumero, kieli, taso)
+        val suoritukset =
+            ids
+                .mapNotNull { suoritusRepository.findById(it).getOrNull() }
+                .map { Henkilosuoritus.from(it) }
+        return if (suoritukset.isEmpty()) null else VktSuoritus.merge(suoritukset)
+    }
 
     @WithSpan("VktSuoritusService.setOsakoeArvosana")
     fun setOsakoeArvosana(

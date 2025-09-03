@@ -30,6 +30,37 @@ class CustomVktSuoritusRepository {
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
 
+    fun getOppijanSuoritusIds(
+        oppijanumero: String,
+        kieli: Koodisto.Tutkintokieli,
+        taso: Koodisto.VktTaitotaso,
+    ): List<Int> {
+        val query =
+            """
+            WITH suoritus AS (
+                SELECT
+                    *,
+                    row_number() OVER (PARTITION BY ilmoittautumisen_id ORDER BY created_at DESC) rn
+                FROM vkt_suoritus
+                WHERE suorittajan_oppijanumero = :oppijanumero
+                AND tutkintokieli = :tutkintokieli
+                AND taitotaso = :taitotaso
+            )
+            SELECT s.id
+            FROM suoritus s
+            WHERE rn = 1
+            """.trimIndent()
+
+        val params =
+            mapOf(
+                "oppijanumero" to oppijanumero,
+                "tutkintokieli" to kieli.name,
+                "taitotaso" to taso.name,
+            )
+
+        return jdbcNamedParameterTemplate.queryForList(query, params, Int::class.java)
+    }
+
     @WithSpan
     fun findForListView(
         taitotaso: Koodisto.VktTaitotaso,
@@ -48,7 +79,7 @@ class CustomVktSuoritusRepository {
             WITH suoritus AS (
             	SELECT
             		*,
-            		row_number() OVER (PARTITION BY suorittajan_oppijanumero, tutkintokieli ORDER BY created_at DESC) rn
+                row_number() OVER (PARTITION BY ilmoittautumisen_id ORDER BY created_at DESC) rn
             	FROM vkt_suoritus
             	$prefilter
             ),
@@ -58,6 +89,7 @@ class CustomVktSuoritusRepository {
                     array_to_string(array_agg(distinct nimi.etunimi), ' / ') etunimi,
                     array_to_string(array_agg(distinct nimi.sukunimi), ' / ') sukunimi,
                     s.tutkintokieli,
+                    s.taitotaso,
                     max(ok.tutkintopaiva) tutkintopaiva
                 FROM suoritus s
                     JOIN vkt_osakoe ok ON ok.suoritus_id = s.id
@@ -72,7 +104,8 @@ class CustomVktSuoritusRepository {
                 ${whereAll("rn = 1", tutkintopaivaCondition(search.dateTokens))}
                 GROUP BY
                     s.suorittajan_oppijanumero,
-                    s.tutkintokieli
+                    s.tutkintokieli,
+                    s.taitotaso
             )
             SELECT *
             FROM rivi
@@ -225,9 +258,6 @@ class CustomVktSuoritusRepository {
                         kieli = Koodisto.Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
                         osat =
                             listOf(
-                                // Koska listanäkymissä (esim. erinomaisen ilmoittautuneet) ei ole tarvetta näyttää
-                                // mistä osakokeesta oli kyse, vaan meitä kiinnostaa ainoastaan tutkintopäivä,
-                                // käytetään tässä placeholderina niistä kirjoittamista.
                                 VktKirjoittamisenKoe(
                                     tutkintopaiva = rs.getDate("tutkintopaiva").toLocalDate(),
                                 ),

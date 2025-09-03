@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.servlet.view.RedirectView
-import kotlin.jvm.optionals.getOrElse
 
 @Controller
 @RequestMapping("/vkt")
@@ -144,47 +143,50 @@ class VktViewController(
         )
     }
 
-    @GetMapping("/suoritukset/{oppijanumero}/{kieli}", produces = ["text/html"])
+    @GetMapping("/suoritukset/{oppijanumero}/{kieli}/{taso}", produces = ["text/html"])
     @ResponseBody
     fun ilmoittautuneenArviointiView(
         @PathVariable oppijanumero: String,
         @PathVariable kieli: Koodisto.Tutkintokieli,
+        @PathVariable taso: Koodisto.VktTaitotaso,
         viewMessage: ViewMessage? = null,
-    ): ResponseEntity<String> =
-        ResponseEntity.ok(
+    ): ResponseEntity<String> {
+        val suoritus =
             vktSuoritukset
-                .getSuoritus(TODO("Pitää hakea oppijannumerolla"))
-                .map { suoritus ->
-                    val henkilo =
-                        suoritus.henkilo.oid
-                            .toOid()
-                            .toTypedResult<_, OppijanumeroException> {
-                                OppijanumeroException.MalformedOppijanumero(
-                                    EmptyRequest(),
-                                    suoritus.henkilo.oid.oid,
-                                )
-                            }.flatMap { oppijanumeroService.getHenkilo(it) }
+                .getOppijanSuoritukset(oppijanumero, kieli, taso) ?: throw VktSuoritusNotFoundError()
 
-                    val translations =
-                        localizationService
-                            .translationBuilder()
-                            .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
-                            .build()
+        val henkilo =
+            suoritus.henkilo.oid
+                .toOid()
+                .toTypedResult<_, OppijanumeroException> {
+                    OppijanumeroException.MalformedOppijanumero(
+                        EmptyRequest(),
+                        suoritus.henkilo.oid.oid,
+                    )
+                }.flatMap { oppijanumeroService.getHenkilo(it) }
 
-                    val message = viewMessage?.consume()
+        val translations =
+            localizationService
+                .translationBuilder()
+                .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
+                .build()
 
-                    if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
-                        VktErinomaisenArviointiPage.render(suoritus, henkilo, translations, message)
-                    } else {
-                        VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, henkilo, translations)
-                    }
-                }.getOrElse { throw VktSuoritusNotFoundError() },
+        val message = viewMessage?.consume()
+
+        return ResponseEntity.ok(
+            if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
+                VktErinomaisenArviointiPage.render(suoritus, henkilo, translations, message)
+            } else {
+                VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, henkilo, translations)
+            },
         )
+    }
 
-    @PostMapping("/suoritukset/{oppijanumero}/{kieli}", produces = ["text/html"])
+    @PostMapping("/suoritukset/{oppijanumero}/{kieli}/{taso}", produces = ["text/html"])
     fun saveIlmoittautuneenArviointi(
         @PathVariable oppijanumero: String,
         @PathVariable kieli: Koodisto.Tutkintokieli,
+        @PathVariable taso: Koodisto.VktTaitotaso,
         @ModelAttribute form: VktErinomaisenArviointiPage.ArvosanaFormData,
         viewMessage: ViewMessage,
     ): RedirectView {
@@ -194,7 +196,7 @@ class VktViewController(
         viewMessage.showSuccess("Muutokset tallennettu onnistuneesti.")
         return RedirectView(
             linkTo(
-                methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(oppijanumero, kieli),
+                methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(oppijanumero, kieli, taso),
             ).toString(),
         )
     }
