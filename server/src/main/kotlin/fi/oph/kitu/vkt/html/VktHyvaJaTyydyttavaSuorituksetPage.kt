@@ -69,7 +69,7 @@ fun FlowContent.vktHyvaJaTyydyttavaTable(
             listOf(
                 CustomVktSuoritusRepository.Column.Sukunimi.withValue {
                     a(href = getHref(it.oppijanumero, it.kieli, it.taso)) {
-                        +(it.sukunimi.orEmpty())
+                        +(it.sukunimi)
                     }
                 },
                 CustomVktSuoritusRepository.Column.Etunimet.withValue { +(it.etunimet) },
@@ -81,7 +81,7 @@ fun FlowContent.vktHyvaJaTyydyttavaTable(
             sortedBy = sortedBy,
             sortDirection = sortDirection,
             testId = "suoritukset",
-            rowTestId = { it.oppijanumero },
+            rowTestId = { "${it.oppijanumero}-${it.kieli.koodiarvo}" },
             urlParams = mapOf("search" to searchQuery),
         )
     }

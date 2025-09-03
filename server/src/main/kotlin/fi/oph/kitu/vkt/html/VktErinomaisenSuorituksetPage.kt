@@ -76,7 +76,7 @@ fun FlowContent.vktIlmoittautuneetTable(
             sortedBy = sortedBy,
             sortDirection = sortDirection,
             testId = "ilmoittautuneet",
-            rowTestId = { it.oppijanumero },
+            rowTestId = { "${it.oppijanumero}-${it.kieli.koodiarvo}" },
             urlParams = mapOf("search" to searchQuery),
         )
     }
