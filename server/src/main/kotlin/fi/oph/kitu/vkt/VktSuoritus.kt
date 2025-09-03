@@ -36,7 +36,7 @@ data class VktSuoritus(
             VktKirjallinenKielitaito.from(osat),
             VktSuullinenKielitaito.from(osat),
             VktYmmartamisenKielitaito.from(osat),
-        ).filter { it.osat.isNotEmpty() }
+        ).flatten().sortedBy { it.viimeisinTutkintopaiva() }.reversed()
     }
 
     @get:JsonIgnore
@@ -166,7 +166,7 @@ interface VktTutkinto :
         fun from(
             tutkinto: VktSuoritusEntity.VktTutkinto,
             osakoeRows: Set<VktSuoritusEntity.VktOsakoe>,
-        ): VktTutkinto {
+        ): List<VktTutkinto> {
             val osakokeet = osakoeRows.map { VktOsakoe.from(it) }
             return when (tutkinto.tyyppi) {
                 Koodisto.VktKielitaito.Kirjallinen -> VktKirjallinenKielitaito.from(osakokeet)
@@ -189,10 +189,10 @@ data class VktKirjallinenKielitaito(
         )
 
     companion object {
-        fun from(osakokeet: List<VktOsakoe>) =
-            VktKirjallinenKielitaito(
-                osat = osakokeet.filterIsInstance<VktKirjallisenKielitaidonKoe>(),
-            )
+        fun from(osakokeet: List<VktOsakoe>): List<VktKirjallinenKielitaito> =
+            VktOsakoePartitioning.partition(osakokeet.filterIsInstance<VktKirjallisenKielitaidonKoe>()).map {
+                VktKirjallinenKielitaito(osat = it)
+            }
     }
 }
 
@@ -208,10 +208,10 @@ data class VktSuullinenKielitaito(
         )
 
     companion object {
-        fun from(osakokeet: List<VktOsakoe>) =
-            VktSuullinenKielitaito(
-                osat = osakokeet.filterIsInstance<VktSuullisenKielitaidonKoe>(),
-            )
+        fun from(osakokeet: List<VktOsakoe>): List<VktSuullinenKielitaito> =
+            VktOsakoePartitioning.partition(osakokeet.filterIsInstance<VktSuullisenKielitaidonKoe>()).map {
+                VktSuullinenKielitaito(osat = it)
+            }
     }
 }
 
@@ -227,10 +227,10 @@ data class VktYmmartamisenKielitaito(
         )
 
     companion object {
-        fun from(osakokeet: List<VktOsakoe>) =
-            VktYmmartamisenKielitaito(
-                osat = osakokeet.filterIsInstance<VktYmmartamisenKielitaidonKoe>(),
-            )
+        fun from(osakokeet: List<VktOsakoe>): List<VktYmmartamisenKielitaito> =
+            VktOsakoePartitioning.partition(osakokeet.filterIsInstance<VktYmmartamisenKielitaidonKoe>()).map {
+                VktYmmartamisenKielitaito(osat = it)
+            }
     }
 }
 
@@ -354,5 +354,26 @@ data class VktArvionti(
             } else {
                 null
             }
+    }
+}
+
+object VktOsakoePartitioning {
+    inline fun <reified T : VktOsakoe> partition(osakokeet: List<T>): List<List<T>> {
+        if (osakokeet.isEmpty()) return emptyList()
+        val minTutkintopaiva = osakokeet.minOf { it.tutkintopaiva }
+
+        return osakokeet
+            .groupBy { getTimeSpans(minTutkintopaiva, it.tutkintopaiva) }
+            .values
+            .toList()
+    }
+
+    fun getTimeSpans(
+        a: LocalDate,
+        b: LocalDate,
+        i: Int = 0,
+    ): Int {
+        val next = a.plusYears(3)
+        return if (next < b) getTimeSpans(next, b, i + 1) else i
     }
 }
