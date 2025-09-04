@@ -67,7 +67,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 
     // Testataan loputkin kentät
     await testSorting("etunimi", "Aarni Eino", "Eero Hugo")
-    await testSorting("tutkintopaiva", "27.2.2000", "13.3.2003")
+    await testSorting("tutkintopaiva", "27.2.2000", "29.3.2003")
   })
 
   test("Details page shows correct information of hyvä ja tyydyttävä taso", async ({
@@ -139,8 +139,8 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       "Arvosana",
     )
     await tutkinnot.expectRows(
-      ["kirjallinen", "8.7.2010", "erinomainen"],
-      ["suullinen", "8.7.2010", "erinomainen"],
+      ["kirjallinen", "9.7.2010", "erinomainen"],
+      ["suullinen", "9.7.2010", "erinomainen"],
       ["ymmartaminen", "9.4.2010", "erinomainen"],
     )
 
@@ -161,6 +161,47 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
         arvosana: expectToHaveSelectedValue("Erinomainen"),
         arviointipaiva: expectToHaveInputValue("2010-09-06"),
       },
+    )
+  })
+
+  test("Tutkinto katkeaa, jos ensimmäisen osakokeen suorituksesta on kolme vuotta", async ({
+    vktSuorituksenTiedotPage,
+  }) => {
+    // Varmista että ollaan oikeassa fikstuurissa
+    await vktSuorituksenTiedotPage.login()
+    await vktSuorituksenTiedotPage.open(
+      "1.2.246.562.24.18289922952",
+      "FIN",
+      "Erinomainen",
+    )
+    await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
+      "Rautio, Lucas Nelli",
+    )
+
+    // Tarkista että taulukossa on oletetut tiedot
+    const tutkinnot = vktSuorituksenTiedotPage.tutkinnot
+    await tutkinnot.expectRawRows(
+      [
+        "<vktkielitaito:suullinen>",
+        "15.1.2009",
+        "Osakoe puuttuu: <vktosakoe:puheenymmartaminen>",
+      ],
+      [
+        "<vktkielitaito:suullinen>",
+        "15.1.2005",
+        "Osakoe puuttuu: <vktosakoe:puheenymmartaminen>",
+      ],
+      ["<vktkielitaito:suullinen>", "15.1.2002", "<vktarvosana:hylatty>"],
+      [
+        "<vktkielitaito:kirjallinen>",
+        "15.10.2001",
+        "<vktarvosana:erinomainen>",
+      ],
+      [
+        "<vktkielitaito:ymmartaminen>",
+        "15.10.2001",
+        "<vktarvosana:erinomainen>",
+      ],
     )
   })
 
@@ -266,7 +307,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
         "Huhtala",
         "Nella Eveliina",
         "<kieli:SV>",
-        "17.6.2010",
+        "19.6.2010",
       )
     })
 
@@ -275,11 +316,11 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     }) => {
       await vktIlmoittautuneetPage.login()
       await vktIlmoittautuneetPage.open()
-      await vktIlmoittautuneetPage.search("17.6.2010")
+      await vktIlmoittautuneetPage.search("19.6.2010")
 
       await expectToHaveTexts(
         vktIlmoittautuneetPage.table.getCellsOfColumn("tutkintopaiva"),
-        "17.6.2010",
+        "19.6.2010",
       )
     })
   })
