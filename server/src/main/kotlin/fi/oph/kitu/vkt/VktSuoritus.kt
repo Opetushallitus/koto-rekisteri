@@ -36,7 +36,7 @@ data class VktSuoritus(
             VktKirjallinenKielitaito.from(osat),
             VktSuullinenKielitaito.from(osat),
             VktYmmartamisenKielitaito.from(osat),
-        ).flatten().sortedBy { it.viimeisinTutkintopaiva() }.reversed()
+        ).flatten().sortedWith(compareByDescending(VktTutkinto::viimeisinTutkintopaiva).thenBy { it.tyyppi.name })
     }
 
     @get:JsonIgnore

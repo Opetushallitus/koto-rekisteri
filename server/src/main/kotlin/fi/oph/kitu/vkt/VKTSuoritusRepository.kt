@@ -90,7 +90,9 @@ class CustomVktSuoritusRepository {
                     array_to_string(array_agg(distinct nimi.sukunimi), ' / ') sukunimi,
                     s.tutkintokieli,
                     s.taitotaso,
-                    max(ok.tutkintopaiva) tutkintopaiva
+                    max(ok.tutkintopaiva) tutkintopaiva,
+                    bool_or(ok.arvosana IS NOT NULL) arvioitu_osittain,
+                    bool_or(ok.arvosana IS NULL) arviointeja_puuttuu
                 FROM suoritus s
                     JOIN vkt_osakoe ok ON ok.suoritus_id = s.id
                     JOIN LATERAL (
@@ -109,6 +111,7 @@ class CustomVktSuoritusRepository {
             )
             SELECT *
             FROM rivi
+            ${arvioidut?.let { if (it) "WHERE arvioitu_osittain" else "WHERE arviointeja_puuttuu" }.orEmpty()}
             ORDER BY ${column.entityName} $direction
             ${limit?.let { "LIMIT :limit" }.orEmpty()}
             ${offset?.let { "OFFSET :offset" }.orEmpty()}
@@ -135,25 +138,26 @@ class CustomVktSuoritusRepository {
         val query =
             """
             WITH suoritus AS (
+            	SELECT
+            		*,
+                row_number() OVER (PARTITION BY ilmoittautumisen_id ORDER BY created_at DESC) rn
+            	FROM vkt_suoritus
+            	$prefilter
+            ),
+            rivi AS (
                 SELECT
-                    id,
-                    row_number() OVER (PARTITION BY suorittajan_oppijanumero, tutkintokieli ORDER BY created_at DESC) rn
-                FROM vkt_suoritus
-                $prefilter
+                    bool_or(ok.arvosana IS NOT NULL) arvioitu_osittain,
+                    bool_or(ok.arvosana IS NULL) arviointeja_puuttuu                
+                FROM suoritus s
+                JOIN vkt_osakoe ok ON ok.suoritus_id = s.id
+                ${whereAll("rn = 1", tutkintopaivaCondition(search.dateTokens))}
+                GROUP BY
+                    s.suorittajan_oppijanumero,
+                    s.tutkintokieli,
+                    s.taitotaso
             )
-            SELECT count(*)
-            FROM suoritus
-            WHERE
-                rn = 1
-                AND EXISTS (
-                    SELECT 1
-                    FROM vkt_osakoe
-                    ${whereAll(
-                "vkt_osakoe.suoritus_id = suoritus.id",
-                arvioituCondition(arvioidut),
-                tutkintopaivaCondition(search.dateTokens),
-            )}
-                )
+            SELECT COUNT(*) FROM rivi
+            ${arvioidut?.let { if (it) "WHERE arvioitu_osittain" else "WHERE arviointeja_puuttuu" }.orEmpty()}
             """.trimIndent()
 
         return jdbcNamedParameterTemplate.queryForObject(query, prefilterParams, Int::class.java)!!
