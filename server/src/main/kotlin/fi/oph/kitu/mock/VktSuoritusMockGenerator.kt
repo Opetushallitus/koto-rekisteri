@@ -15,8 +15,6 @@ import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import fi.oph.kitu.yki.Sukupuoli
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import kotlin.random.Random
 
@@ -25,7 +23,6 @@ class VktSuoritusMockGenerator(
 ) {
     private val random = Random(seed)
     private var index = 0
-    private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     fun generateRandomVktSuoritusEntity(vktValidation: VktValidation): VktSuoritusEntity {
         index += 1
@@ -78,12 +75,20 @@ class VktSuoritusMockGenerator(
         pvm: LocalDate,
         tyypit: List<Koodisto.VktOsakoe> = Koodisto.VktOsakoe.entries,
         oppilaitos: OidString? = null,
+        iteration: Int = 0,
     ): List<VktOsakoe> {
         val kokeet = randomTutkintopaiva(taso, pvm, tyypit, oppilaitos)
         val hylatytKokeet = kokeet.filter { it.arviointi?.arvosana == Koodisto.VktArvosana.Hylätty }
 
         return if (hylatytKokeet.isNotEmpty()) {
-            kokeet + randomOsakokeet(taso, pvm.plusDays(90), hylatytKokeet.map { it.tyyppi })
+            val nextPvm =
+                when (iteration) {
+                    0 -> pvm.plusDays(90)
+                    1 -> pvm.plusMonths(3)
+                    2 -> pvm.plusYears(3)
+                    else -> pvm.plusYears(4)
+                }
+            kokeet + randomOsakokeet(taso, nextPvm, hylatytKokeet.map { it.tyyppi }, iteration = iteration + 1)
         } else {
             kokeet
         }
