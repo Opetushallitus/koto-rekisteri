@@ -36,7 +36,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await expect(table.rows).toHaveCount(50)
 
     await testForEach(
-      table.getCellsOfRow("1.2.246.562.24.62917207394-SV"),
+      table.getCellsOfRow("1.2.246.562.24.00000000012-SV"),
       expectToHaveText("Halonen"),
       expectToHaveText("Vilho Eero"),
       expectToHaveKoodiviite("kieli", "SV"),
@@ -77,7 +77,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     // Varmista että ollaan oikeassa fikstuurissa
     await vktHjtSuorituksetPage.login()
     await vktHjtSuorituksetPage.open()
-    await vktHjtSuorituksetPage.followLinkOfRow("1.2.246.562.24.26960378782-SV")
+    await vktHjtSuorituksetPage.followLinkOfRow("1.2.246.562.24.00000000007-SV")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Fiona Konsta",
     )
@@ -124,7 +124,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await vktArvioidutSuorituksetPage.login()
     await vktArvioidutSuorituksetPage.open()
     await vktArvioidutSuorituksetPage.followLinkOfRow(
-      "1.2.246.562.24.08842807667-FI",
+      "1.2.246.562.24.00000000063-FI",
     )
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Daniel Ville",
@@ -170,7 +170,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     // Varmista että ollaan oikeassa fikstuurissa
     await vktSuorituksenTiedotPage.login()
     await vktSuorituksenTiedotPage.open(
-      "1.2.246.562.24.18289922952",
+      "1.2.246.562.24.00000000446",
       "FIN",
       "Erinomainen",
     )
@@ -214,7 +214,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await vktIlmoittautuneetPage.login()
     await vktIlmoittautuneetPage.open()
     await vktIlmoittautuneetPage.followLinkOfRow(
-      "1.2.246.562.24.62917207394-SV",
+      "1.2.246.562.24.00000000012-SV",
     )
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Halonen, Vilho Eero",
@@ -297,12 +297,12 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     test("Search by oppijanumero works", async ({ vktIlmoittautuneetPage }) => {
       await vktIlmoittautuneetPage.login()
       await vktIlmoittautuneetPage.open()
-      await vktIlmoittautuneetPage.search("1.2.246.562.24.58644376343")
+      await vktIlmoittautuneetPage.search("1.2.246.562.24.00000000055")
 
       await expect(vktIlmoittautuneetPage.table.rows).toHaveCount(1)
       await expectToHaveTexts(
         vktIlmoittautuneetPage.table.getCellsOfRow(
-          "1.2.246.562.24.58644376343-SV",
+          "1.2.246.562.24.00000000055-SV",
         ),
         "Huhtala",
         "Nella Eveliina",

@@ -14,10 +14,10 @@ class KoskiRestClientConfig(
     @Value("\${kitu.koski.baseUrl}")
     private lateinit var koskiBaseUrl: String
 
-    @Value("\${kitu.palvelukayttaja.username}")
+    @Value("\${kitu.koski.username:\${kitu.palvelukayttaja.username}}")
     private lateinit var user: String
 
-    @Value("\${kitu.palvelukayttaja.password}")
+    @Value("\${kitu.koski.password:\${kitu.palvelukayttaja.password}}")
     private lateinit var password: String
 
     @Bean("koskiRestClient")
