@@ -1,6 +1,6 @@
 package fi.oph.kitu.koski
 
 class KoskiException(
-    val suoritusId: Int?,
+    val suoritusId: String,
     message: String?,
 ) : Throwable(message)

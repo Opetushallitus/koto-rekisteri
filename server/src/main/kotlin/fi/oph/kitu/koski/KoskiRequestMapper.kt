@@ -19,7 +19,6 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Organ
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
-import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.yki.Tutkintotaso
@@ -187,10 +186,7 @@ class KoskiRequestMapper {
             }
     }
 
-    fun vktSuoritusToKoskiRequest(
-        henkilosuoritus: Henkilosuoritus<VktSuoritus>,
-        onrService: OppijanumeroService,
-    ): KoskiRequest? {
+    fun vktSuoritusToKoskiRequest(henkilosuoritus: Henkilosuoritus<VktSuoritus>): KoskiRequest? {
         val henkilo = henkilosuoritus.henkilo
         val suoritus = henkilosuoritus.suoritus
 
