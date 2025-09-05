@@ -36,8 +36,7 @@ class KoskiScheduledTask(
             .execute { _, _ ->
                 tracer.spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute").startSpan().use { span ->
                     span.setAttribute("task.name", "KOSKI-send-VKT-suoritukset")
-                    // TODO: Poista tämä kommenteista, kun organisaatiokysymys on saatu ratkaistua
-                    // koskiService.sendVktSuorituksetToKoski()
+                    koskiService.sendVktSuorituksetToKoski()
                 }
             }
 }

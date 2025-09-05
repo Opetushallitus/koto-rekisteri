@@ -3,10 +3,10 @@ package fi.oph.kitu.koski
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.observability.use
-import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
-import fi.oph.kitu.vkt.VktSuoritusRepository
+import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusService
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Tracer
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.toEntity
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class KoskiService(
@@ -26,10 +25,8 @@ class KoskiService(
     private val koskiRequestMapper: KoskiRequestMapper,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
     private val tracer: Tracer,
-    private val vktSuoritusRepository: VktSuoritusRepository,
     private val customVktSuoritusRepository: CustomVktSuoritusRepository,
     private val vktSuoritusService: VktSuoritusService,
-    private val onrService: OppijanumeroService,
 ) {
     fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<YkiSuoritusEntity, KoskiException> =
         tracer
@@ -54,7 +51,7 @@ class KoskiService(
                                 .retrieve()
                                 .toEntity<KoskiResponse>()
                         } catch (e: RestClientException) {
-                            return TypedResult.Failure(KoskiException(ykiSuoritusEntity.id, e.message))
+                            return TypedResult.Failure(KoskiException(ykiSuoritusEntity.id.toString(), e.message))
                         }
 
                     val koskiOpiskeluoikeus =
@@ -65,7 +62,10 @@ class KoskiService(
 
                     if (koskiOpiskeluoikeus == null) {
                         return TypedResult.Failure(
-                            KoskiException(ykiSuoritusEntity.id, "KOSKI opiskeluoikeus OID missing from response"),
+                            KoskiException(
+                                ykiSuoritusEntity.id.toString(),
+                                "KOSKI opiskeluoikeus OID missing from response",
+                            ),
                         )
                     }
 
@@ -79,19 +79,15 @@ class KoskiService(
                 }
             }
 
-    fun sendVktSuoritusToKoski(vktSuoritusId: Int): TypedResult<Unit, KoskiException> =
+    fun sendVktSuoritusToKoski(suoritus: Henkilosuoritus<VktSuoritus>): TypedResult<Unit, KoskiException> =
         tracer
             .spanBuilder("KoskiService.sendVktSuoritusToKoski")
             .startSpan()
             .use { span ->
-                val suoritus = vktSuoritusService.getSuoritus(vktSuoritusId).getOrNull()
-                if (suoritus == null) {
-                    return TypedResult.Failure(KoskiException(vktSuoritusId, "VKT suoritus disappeared"))
-                }
-
-                val koskiRequest = koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus, onrService)
+                val id = CustomVktSuoritusRepository.Tutkintoryhma.from(suoritus)
+                val koskiRequest = koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus)
                 if (koskiRequest == null) {
-                    vktSuoritusService.setSuoritusTransferredToKoski(vktSuoritusId)
+                    vktSuoritusService.markKoskiTransferProcessed(id)
                     return TypedResult.Success(Unit)
                 }
 
@@ -106,7 +102,7 @@ class KoskiService(
                             .retrieve()
                             .toEntity<KoskiResponse>()
                     } catch (e: RestClientException) {
-                        return TypedResult.Failure(KoskiException(vktSuoritusId, e.message))
+                        return TypedResult.Failure(KoskiException(id.toString(), e.message))
                     }
 
                 val koskiOpiskeluoikeusOid =
@@ -115,7 +111,7 @@ class KoskiService(
                         ?.firstOrNull()
                         ?.oid
 
-                vktSuoritusService.setSuoritusTransferredToKoski(vktSuoritusId, koskiOpiskeluoikeusOid)
+                vktSuoritusService.markKoskiTransferProcessed(id, koskiOpiskeluoikeusOid)
                 return TypedResult.Success(Unit)
             }
 
@@ -129,11 +125,11 @@ class KoskiService(
 
     @WithSpan
     fun sendVktSuorituksetToKoski() {
-        val ids = customVktSuoritusRepository.findSuoritusIdsWithNoKoskiopiskeluoikeus()
+        val siirrettavat = customVktSuoritusRepository.findOpiskeluoikeudetForKoskiTransfer()
         val results =
-            ids.map { suoritusId ->
-                vktSuoritusRepository.findById(suoritusId).getOrNull()?.let { suoritus ->
-                    sendVktSuoritusToKoski(suoritusId)
+            siirrettavat.map { id ->
+                vktSuoritusService.getOppijanSuoritukset(id)?.let { suoritus ->
+                    sendVktSuoritusToKoski(suoritus)
                 }
             }
         val failed = results.filterIsInstance<TypedResult.Failure<Unit, KoskiException>>()
@@ -144,7 +140,7 @@ class KoskiService(
         message: String,
     ) : Throwable(message) {
         class SendToKOSKIFailed(
-            ids: List<Int?>,
+            ids: List<String?>,
         ) : Error("Failed to send following suoritukset to KOSKI: ${ids.joinToString(",")}")
     }
 }

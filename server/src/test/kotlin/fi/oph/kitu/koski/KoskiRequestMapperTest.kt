@@ -267,7 +267,7 @@ class KoskiRequestMapperTest(
             )
 
         val onr = MockOppijanumeroService.build()
-        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus, onr)
+        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
 
         assertNotNull(koskiSuoritus)
 
@@ -361,7 +361,7 @@ class KoskiRequestMapperTest(
                     ),
             )
 
-        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus, onr)
+        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
 
         assertNotNull(koskiSuoritus)
 
