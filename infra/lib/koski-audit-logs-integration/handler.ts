@@ -1,15 +1,14 @@
 import { CloudWatchLogsEvent } from "aws-lambda"
 import { parse } from "./parser"
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs"
+import { getQueueUrl } from "./queueUrl"
 
 export const handler = async (event: CloudWatchLogsEvent) => {
   const { logEvents } = parse(event)
 
   const sqs = new SQSClient({ region: "eu-west-1" })
   const command = new SendMessageCommand({
-    QueueUrl:
-      // TODO: Get the queue url from Parameter store
-      "https://sqs.eu-west-1.amazonaws.com/500150530292/oma-opintopolku-loki-audit-queue",
+    QueueUrl: await getQueueUrl(),
     MessageBody: logEvents,
   })
 
