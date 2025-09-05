@@ -30,6 +30,14 @@ export class KoskiAuditLogsIntegrationStack extends Stack {
     const sendAuditLogsToKoskiLambda = new NodejsFunction(this, "function", {
       runtime: Runtime.NODEJS_LATEST,
       entry: path.join(__dirname, "koski-audit-logs-integration/handler.ts"),
+      initialPolicy: [
+        new PolicyStatement({
+          sid: "AllowSendKoskiSts",
+          effect: Effect.ALLOW,
+          actions: ["sts:AssumeRole"],
+          resources: [`arn:aws:iam::${koski.account}:role/kitu-sqs-sender`],
+        }),
+      ],
     })
 
     sendAuditLogsToKoskiLambda.addToRolePolicy(
