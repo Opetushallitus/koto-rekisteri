@@ -22,15 +22,20 @@ class VktSuoritusMockGenerator(
     seed: Int = 0,
 ) {
     private val random = Random(seed)
-    private var index = 0
+    private var index: Long = 0
 
     fun generateRandomVktSuoritusEntity(vktValidation: VktValidation): VktSuoritusEntity {
         index += 1
-        return vktValidation.enrich(randomSuoritus(index)).toVktSuoritusEntity(randomOppija())
+        return vktValidation.enrich(randomSuoritus(index)).toVktSuoritusEntity(randomOppija(index))
     }
 
-    fun randomSuoritus(index: Int): VktSuoritus {
+    fun randomSuoritus(index: Long): VktSuoritus {
         val taitotaso = Koodisto.VktTaitotaso.entries.random(random)
+        val oppilaitos =
+            when (taitotaso) {
+                Koodisto.VktTaitotaso.Erinomainen -> null
+                Koodisto.VktTaitotaso.HyväJaTyydyttävä -> OidString("1.2.246.562.10.78513447389")
+            }
         return VktSuoritus(
             taitotaso = taitotaso,
             kieli = randomKieli(),
@@ -44,6 +49,7 @@ class VktSuoritusMockGenerator(
                         LocalDate.of(2025, 1, 1),
                         random,
                     ),
+                    oppilaitos = oppilaitos,
                 ),
             lahdejarjestelmanId =
                 LahdejarjestelmanTunniste(
@@ -53,9 +59,15 @@ class VktSuoritusMockGenerator(
         )
     }
 
-    fun randomOppija() =
-        OidOppija(
-            oid = OidString.from(generateRandomOppijaOid(random)),
+    fun randomOppija(oppijaOidIndex: Long): OidOppija {
+        // Tätä satunnaista oidia käytettiin aiemmin oppijan oidissa. Luodaan se edelleen, mutta ei käytetä,
+        // jotta muut satunnaisarvot eivät muutu ja hajota testejä, jotka odottavat fikstuurissa olevan
+        // juuri tietyt arvot.
+        generateRandomOppijaOid(random)
+
+        return OidOppija(
+            oid =
+                OidString.from(createOid(OidClass.OPPIJA, oppijaOidIndex)),
             etunimet =
                 generateRandomFirstnames(
                     Sukupuoli.entries.random(random),
@@ -63,6 +75,7 @@ class VktSuoritusMockGenerator(
                 ).let { "${it.first} ${it.second}" },
             sukunimi = surnames.random(random),
         )
+    }
 
     fun randomKieli(): Koodisto.Tutkintokieli =
         listOf(
