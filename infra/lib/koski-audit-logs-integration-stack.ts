@@ -8,9 +8,15 @@ import {
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs"
 import { Runtime } from "aws-cdk-lib/aws-lambda"
 import path = require("node:path")
+import { StringParameter } from "aws-cdk-lib/aws-ssm"
+import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam"
 
 export interface KoskiAuditLogsIntegrationStackProps extends StackProps {
   serviceAuditLogGroup: LogGroup
+  koski: {
+    region: string
+    account: string
+  }
 }
 
 export class KoskiAuditLogsIntegrationStack extends Stack {
@@ -20,13 +26,33 @@ export class KoskiAuditLogsIntegrationStack extends Stack {
     props: KoskiAuditLogsIntegrationStackProps,
   ) {
     super(scope, id, props)
+    const { serviceAuditLogGroup, koski } = props
     const sendAuditLogsToKoskiLambda = new NodejsFunction(this, "function", {
       runtime: Runtime.NODEJS_LATEST,
       entry: path.join(__dirname, "koski-audit-logs-integration/handler.ts"),
+      initialPolicy: [
+        new PolicyStatement({
+          sid: "AllowSendKoskiSts",
+          effect: Effect.ALLOW,
+          actions: ["sts:AssumeRole"],
+          resources: [`arn:aws:iam::${koski.account}:role/kitu-sqs-sender`],
+        }),
+      ],
     })
 
+    sendAuditLogsToKoskiLambda.addToRolePolicy(
+      new PolicyStatement({
+        sid: "AllowSendKoskiSqsQueue",
+        effect: Effect.ALLOW,
+        actions: ["sqs:SendMessage"],
+        resources: [
+          `arn:aws:sqs:${koski.region}:${koski.account}:oma-opintopolku-loki-audit-queue`,
+        ],
+      }),
+    )
+
     new SubscriptionFilter(this, "sendAuditLogsToKoskiSubscriptionFilter", {
-      logGroup: props.serviceAuditLogGroup,
+      logGroup: serviceAuditLogGroup,
       filterName: "sendAuditLogsToKoski",
       // We only send audit logs to koski, that are in OPH standardized format.
       // The format is checking by this filter - if the event contains word "operation",
@@ -36,5 +62,17 @@ export class KoskiAuditLogsIntegrationStack extends Stack {
         sendAuditLogsToKoskiLambda,
       ),
     })
+
+    const auditQueueParam = new StringParameter(
+      this,
+      "KoskiAuditLogsIntegrationParams",
+      {
+        parameterName:
+          "/kitu/koski-integration/oma-opintopolku-loki-audit-queue",
+        stringValue: `https://sqs.${koski.region}.amazonaws.com/${koski.account}/oma-opintopolku-loki-audit-queue`,
+      },
+    )
+
+    auditQueueParam.grantRead(sendAuditLogsToKoskiLambda)
   }
 }
