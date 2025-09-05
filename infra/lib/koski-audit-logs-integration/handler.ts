@@ -5,11 +5,19 @@ import { getQueueUrl } from "./queueUrl"
 
 const sqs = new SQSClient({ region: "eu-west-1" })
 export const handler = async (event: CloudWatchLogsEvent) => {
+  console.log("received event:", event)
+
   const data = parse(event)
+  console.log("parsed CloudWatchData:", data)
+
   const auditLogEntry = getAuditLogEntry(data)
+  console.log("parsed auditLogEntry:", auditLogEntry)
+
+  const QueueUrl = await getQueueUrl()
+  console.log("Sending sqs:sendMessage to", QueueUrl)
 
   const command = new SendMessageCommand({
-    QueueUrl: await getQueueUrl(),
+    QueueUrl,
 
     // TODO: Send all, and maybe you should use batch send instead?
     MessageBody: auditLogEntry[0].toString(),
@@ -17,12 +25,14 @@ export const handler = async (event: CloudWatchLogsEvent) => {
 
   try {
     const data = await sqs.send(command)
+    console.log("we got the response from sqs:", data)
     return {
       statusCode: 200,
       message: "ok",
       data,
     }
   } catch (error) {
+    console.log("unable to send to sqs. Error:", error)
     return {
       statusCode: 500,
       message: "unknown error",
