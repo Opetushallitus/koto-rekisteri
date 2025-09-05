@@ -9,6 +9,7 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs"
 import { Runtime } from "aws-cdk-lib/aws-lambda"
 import path = require("node:path")
 import { StringParameter } from "aws-cdk-lib/aws-ssm"
+import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam"
 
 export interface KoskiAuditLogsIntegrationStackProps extends StackProps {
   serviceAuditLogGroup: LogGroup
@@ -30,6 +31,17 @@ export class KoskiAuditLogsIntegrationStack extends Stack {
       runtime: Runtime.NODEJS_LATEST,
       entry: path.join(__dirname, "koski-audit-logs-integration/handler.ts"),
     })
+
+    sendAuditLogsToKoskiLambda.addToRolePolicy(
+      new PolicyStatement({
+        sid: "AllowSendKoskiSqsQueue",
+        effect: Effect.ALLOW,
+        actions: ["sqs:SendMessage"],
+        resources: [
+          `arn:aws:sqs:${koski.region}:${koski.account}:oma-opintopolku-loki-audit-queue`,
+        ],
+      }),
+    )
 
     new SubscriptionFilter(this, "sendAuditLogsToKoskiSubscriptionFilter", {
       logGroup: serviceAuditLogGroup,
