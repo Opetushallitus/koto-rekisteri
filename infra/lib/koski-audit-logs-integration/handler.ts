@@ -1,15 +1,18 @@
 import { CloudWatchLogsEvent } from "aws-lambda"
-import { parse } from "./parser"
+import { getAuditLogEntry, parse } from "./parser"
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs"
 import { getQueueUrl } from "./queueUrl"
 
+const sqs = new SQSClient({ region: "eu-west-1" })
 export const handler = async (event: CloudWatchLogsEvent) => {
-  const { logEvents } = parse(event)
+  const data = parse(event)
+  const auditLogEntry = getAuditLogEntry(data)
 
-  const sqs = new SQSClient({ region: "eu-west-1" })
   const command = new SendMessageCommand({
     QueueUrl: await getQueueUrl(),
-    MessageBody: logEvents,
+
+    // TODO: Send all, and maybe you should use batch send instead?
+    MessageBody: auditLogEntry[0].toString(),
   })
 
   try {
