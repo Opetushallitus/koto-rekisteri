@@ -118,6 +118,7 @@ export class EnvironmentStage extends Stage {
 
     new KoskiAuditLogsIntegrationStack(this, "KoskiAuditLogsIntegration", {
       serviceAuditLogGroup: logGroupsStack.serviceAuditLogGroup,
+      koski: environmentConfig.koski,
     })
 
     connectionsStack.createRules()
