@@ -7,6 +7,7 @@ import {
 } from "aws-cdk-lib/aws-logs"
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs"
 import { Runtime } from "aws-cdk-lib/aws-lambda"
+import path = require("node:path")
 
 export interface KoskiAuditLogsIntegrationStackProps extends StackProps {
   serviceAuditLogGroup: LogGroup
@@ -21,6 +22,7 @@ export class KoskiAuditLogsIntegrationStack extends Stack {
     super(scope, id, props)
     const sendAuditLogsToKoskiLambda = new NodejsFunction(this, "function", {
       runtime: Runtime.NODEJS_LATEST,
+      entry: path.join(__dirname, "koski-audit-logs-integration/handler.ts"),
     })
 
     new SubscriptionFilter(this, "sendAuditLogsToKoskiSubscriptionFilter", {
