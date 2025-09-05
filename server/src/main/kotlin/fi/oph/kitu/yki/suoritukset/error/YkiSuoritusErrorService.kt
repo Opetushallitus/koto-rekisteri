@@ -57,7 +57,7 @@ class YkiSuoritusErrorService(
             .findAllSorted(orderBy.entityName, orderByDirection)
             .toList()
             .also {
-                auditLogger.logAll("Yki suoritus errors viewed", it) { error ->
+                auditLogger.logAllInternalOnly("Yki suoritus errors viewed", it) { error ->
                     arrayOf("suoritus.error.id" to error.id)
                 }
             }

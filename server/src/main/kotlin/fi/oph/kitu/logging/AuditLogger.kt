@@ -42,12 +42,22 @@ class AuditLogger(
             .log(message)
     }
 
+    /**
+     * Logs events.
+     *
+     * Note: the logged events with this method will be passed to an audit log integration on a lambda.
+     */
     fun log(
         operation: KituAuditLogOperation,
         target: Iterable<Pair<KituAuditLogMessageField, String>>,
         changes: Changes = Changes.EMPTY,
     ) = log(AuditContext.get(), operation, target, changes)
 
+    /**
+     * Logs events.
+     *
+     * Note: the logged events with this method will be passed to an audit log integration on a lambda.
+     */
     fun log(
         context: AuditContext,
         operation: KituAuditLogOperation,
@@ -64,7 +74,7 @@ class AuditLogger(
         audit.log(user, operation, targetBuilder.build(), changes)
     }
 
-    fun <E> logAll(
+    fun <E> logAllInternalOnly(
         message: String,
         entities: Iterable<E>,
         properties: (E) -> Array<Pair<String, Any?>>,
@@ -78,6 +88,11 @@ class AuditLogger(
         }
     }
 
+    /**
+     * Logs events.
+     *
+     * Note: the logged events with this method will be passed to an audit log integration on a lambda.
+     */
     fun <E> logAll(
         operation: KituAuditLogOperation,
         entities: Iterable<E>,

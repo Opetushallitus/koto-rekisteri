@@ -4,7 +4,6 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.jdbc.replaceAll
-import fi.oph.kitu.logging.AuditContext
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.KituAuditLogMessageField
 import fi.oph.kitu.logging.KituAuditLogOperation
@@ -50,7 +49,7 @@ class KoealustaService(
                     )
                 }
 
-                auditLogger.logAll("Kielitesti suoritus viewed", it) { suoritus ->
+                auditLogger.logAllInternalOnly("Kielitesti suoritus viewed", it) { suoritus ->
                     arrayOf(
                         "suoritus.id" to suoritus.id,
                     )
@@ -98,7 +97,7 @@ class KoealustaService(
                 kielitestiSuoritusRepository
                     .saveAll(suoritukset)
                     .also {
-                        auditLogger.logAll("Kielitesti suoritus imported", it) { suoritus ->
+                        auditLogger.logAllInternalOnly("Kielitesti suoritus imported", it) { suoritus ->
                             arrayOf(
                                 "suoritus.id" to suoritus.id,
                                 "principal" to "koealusta.import",

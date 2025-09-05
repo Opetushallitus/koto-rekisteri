@@ -76,7 +76,7 @@ class YkiService(
 
                 val saved = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
                 span.setAttribute("importedSuorituksetSize", saved.count().toLong())
-                auditLogger.logAll("YKI suoritus imported", saved) { suoritus ->
+                auditLogger.logAllInternalOnly("YKI suoritus imported", saved) { suoritus ->
                     arrayOf(
                         "principal" to "yki.importSuoritukset",
                         "suoritus.id" to suoritus.suoritusId,
@@ -123,7 +123,7 @@ class YkiService(
 
                 span.setAttribute("yki.arvioijat.importedCount", importedArvioijat.count())
 
-                auditLogger.logAll("YKI arvioija imported", importedArvioijat) { arvioija ->
+                auditLogger.logAllInternalOnly("YKI arvioija imported", importedArvioijat) { arvioija ->
                     arrayOf(
                         "principal" to "yki.importArvioijat",
                         "peer.service" to PeerService.Solki.value,
@@ -153,7 +153,7 @@ class YkiService(
             .find(distinct = !versionHistory)
             .toList()
             .also {
-                auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
+                auditLogger.logAllInternalOnly("Yki suoritus viewed", it) { suoritus ->
                     arrayOf(
                         "suoritus.id" to suoritus.id,
                     )
@@ -185,7 +185,7 @@ class YkiService(
                 offset = offset,
             ).toList()
             .also {
-                auditLogger.logAll("Yki suoritus viewed", it) { suoritus ->
+                auditLogger.logAllInternalOnly("Yki suoritus viewed", it) { suoritus ->
                     arrayOf(
                         "suoritus.id" to suoritus.id,
                     )
@@ -201,7 +201,7 @@ class YkiService(
             .findAllSorted(orderBy.entityName, orderByDirection)
             .toList()
             .also {
-                auditLogger.logAll("Yki arvioija viewed", it) { arvioija ->
+                auditLogger.logAllInternalOnly("Yki arvioija viewed", it) { arvioija ->
                     arrayOf("arvioija.oppijanumero" to arvioija.arvioijanOppijanumero)
                 }
             }

@@ -43,7 +43,7 @@ class YkiArvioijaErrorService(
             .findAllSorted(orderBy.entityName, orderByDirection)
             .toList()
             .also {
-                auditLogger.logAll("Yki arvioija errors viewed", it) { error ->
+                auditLogger.logAllInternalOnly("Yki arvioija errors viewed", it) { error ->
                     arrayOf("arvioija.error.id" to error.id)
                 }
             }
