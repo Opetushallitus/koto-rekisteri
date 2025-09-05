@@ -151,9 +151,8 @@ class VktViewController(
         @PathVariable taso: Koodisto.VktTaitotaso,
         viewMessage: ViewMessage? = null,
     ): ResponseEntity<String> {
-        val suoritus =
-            vktSuoritukset
-                .getOppijanSuoritukset(oppijanumero, kieli, taso) ?: throw VktSuoritusNotFoundError()
+        val id = CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso)
+        val suoritus = vktSuoritukset.getOppijanSuoritukset(id) ?: throw VktSuoritusNotFoundError()
 
         val henkilo =
             suoritus.henkilo.oid
