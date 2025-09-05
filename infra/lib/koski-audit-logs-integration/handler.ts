@@ -2,11 +2,32 @@ import { CloudWatchLogsEvent } from "aws-lambda"
 import { getAuditLogEntry, parse } from "./parser"
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs"
 import { getQueueUrl } from "./queueUrl"
+import { getAssumeRole } from "./assumeRole"
 
-const sqs = new SQSClient({ region: "eu-west-1" })
 export const handler = async (event: CloudWatchLogsEvent) => {
   const data = parse(event)
   const auditLogEntry = getAuditLogEntry(data)
+
+  // TODO: Fetch these from SSM
+  const region = "eu-west-1"
+  const kosskiAccountId = "500150530292"
+
+  const { Credentials } = await getAssumeRole("eu-west-1", kosskiAccountId)
+  if (!Credentials) {
+    throw `AssumeRole did not find credentials for account '${kosskiAccountId}'.`
+  }
+
+  const sqs = new SQSClient([
+    {
+      region,
+      credentials: {
+        accessKeyId: Credentials.AccessKeyId,
+        secretAccessKey: Credentials.SecretAccessKey,
+        sessionToken: Credentials.SessionToken,
+        expiration: Credentials.Expiration,
+      },
+    },
+  ])
 
   const command = new SendMessageCommand({
     QueueUrl: await getQueueUrl(),
