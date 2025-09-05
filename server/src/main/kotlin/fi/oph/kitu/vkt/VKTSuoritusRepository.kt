@@ -5,9 +5,6 @@ import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.html.VktTableItem
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
-import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
@@ -30,11 +27,7 @@ class CustomVktSuoritusRepository {
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
 
-    fun getOppijanSuoritusIds(
-        oppijanumero: String,
-        kieli: Koodisto.Tutkintokieli,
-        taso: Koodisto.VktTaitotaso,
-    ): List<Int> {
+    fun getOppijanSuoritusIds(id: Tutkintoryhma): List<Int> {
         val query =
             """
             WITH suoritus AS (
@@ -51,12 +44,7 @@ class CustomVktSuoritusRepository {
             WHERE rn = 1
             """.trimIndent()
 
-        val params =
-            mapOf(
-                "oppijanumero" to oppijanumero,
-                "tutkintokieli" to kieli.name,
-                "taitotaso" to taso.name,
-            )
+        val params = id.toSqlParams()
 
         return jdbcNamedParameterTemplate.queryForList(query, params, Int::class.java)
     }
@@ -164,21 +152,35 @@ class CustomVktSuoritusRepository {
     }
 
     @WithSpan
-    fun findSuoritusIdsWithNoKoskiopiskeluoikeus(): Iterable<Int> {
+    fun findOpiskeluoikeudetForKoskiTransfer(): Iterable<Tutkintoryhma> {
         val query =
             """
-            SELECT id
-            FROM vkt_suoritus
-            WHERE NOT koski_siirto_kasitelty
-            ORDER BY created_at
+            SELECT
+                suorittajan_oppijanumero oppijanumero,
+                tutkintokieli,
+                taitotaso
+            FROM
+                vkt_suoritus
+            WHERE
+                NOT koski_siirto_kasitelty
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM vkt_osakoe
+                    WHERE
+                        vkt_osakoe.suoritus_id = vkt_suoritus.id
+                        AND arvosana IS NULL)
+            GROUP BY
+                suorittajan_oppijanumero,
+                tutkintokieli,
+                taitotaso
             """.trimIndent()
 
-        return jdbcTemplate.query(query) { rs, rowNum -> rs.getInt("id") }
+        return jdbcTemplate.query(query, Tutkintoryhma.fromRow)
     }
 
     @WithSpan
-    fun setSuoritusTransferredToKoski(
-        id: Int,
+    fun markSuoritusTransferredToKoski(
+        id: Tutkintoryhma,
         koskiOpiskeluoikeusOid: String?,
     ) {
         val query =
@@ -188,14 +190,12 @@ class CustomVktSuoritusRepository {
                 koski_siirto_kasitelty = true,
                 koski_opiskeluoikeus = :koski_oid
             WHERE
-                id = :id
+                suorittajan_oppijanumero = :oppijanumero
+                AND tutkintokieli = :tutkintokieli
+                AND taitotaso = :taitotaso
             """.trimIndent()
 
-        val params =
-            mapOf(
-                "id" to id,
-                "koski_oid" to koskiOpiskeluoikeusOid,
-            )
+        val params = id.toSqlParams() + mapOf("koski_oid" to koskiOpiskeluoikeusOid)
 
         jdbcNamedParameterTemplate.update(query, params)
     }
@@ -208,11 +208,6 @@ class CustomVktSuoritusRepository {
             ""
         }
     }
-
-    private fun arvioituCondition(arvioidut: Boolean?): String? =
-        arvioidut?.let {
-            "vkt_osakoe.arvosana IS ${if (arvioidut) "NOT" else ""} null"
-        }
 
     private fun tutkintopaivaCondition(tokens: List<SearchQueryParser.DateSearchToken>): String? =
         if (tokens.isNotEmpty()) {
@@ -246,32 +241,6 @@ class CustomVktSuoritusRepository {
         )
     }
 
-    companion object {
-        val henkiloSuoritusFromRow: RowMapper<Henkilosuoritus<VktSuoritus>> =
-            RowMapper { rs, _ ->
-                val henkilo =
-                    OidOppija(
-                        oid = OidString(rs.getString("suorittajan_oppijanumero")),
-                        etunimet = rs.getString("etunimi"),
-                        sukunimi = rs.getString("sukunimi"),
-                    )
-                val suoritus =
-                    VktSuoritus(
-                        internalId = rs.getInt("id"),
-                        taitotaso = Koodisto.VktTaitotaso.valueOf(rs.getString("taitotaso")),
-                        kieli = Koodisto.Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
-                        osat =
-                            listOf(
-                                VktKirjoittamisenKoe(
-                                    tutkintopaiva = rs.getDate("tutkintopaiva").toLocalDate(),
-                                ),
-                            ),
-                        lahdejarjestelmanId = LahdejarjestelmanTunniste.from(rs.getString("ilmoittautumisen_id")),
-                    )
-                Henkilosuoritus(henkilo, suoritus)
-            }
-    }
-
     enum class Column(
         override val entityName: String?,
         override val uiHeaderValue: String,
@@ -282,6 +251,37 @@ class CustomVktSuoritusRepository {
         Kieli("tutkintokieli", "Tutkintokieli", "kieli"),
         Taitotaso("taitotaso", "Taitotaso", "taitotaso"),
         Tutkintopaiva("tutkintopaiva", "Tutkintopäivä", "tutkintopaiva"),
+    }
+
+    data class Tutkintoryhma(
+        val oppijanumero: String,
+        val tutkintokieli: Koodisto.Tutkintokieli,
+        val taitotaso: Koodisto.VktTaitotaso,
+    ) {
+        fun toSqlParams() =
+            mapOf(
+                "oppijanumero" to oppijanumero,
+                "tutkintokieli" to tutkintokieli.name,
+                "taitotaso" to taitotaso.name,
+            )
+
+        companion object {
+            fun from(suoritus: Henkilosuoritus<VktSuoritus>) =
+                Tutkintoryhma(
+                    oppijanumero = suoritus.henkilo.oid.toString(),
+                    tutkintokieli = suoritus.suoritus.kieli,
+                    taitotaso = suoritus.suoritus.taitotaso,
+                )
+
+            val fromRow =
+                RowMapper { rs, _ ->
+                    Tutkintoryhma(
+                        oppijanumero = rs.getString("oppijanumero"),
+                        tutkintokieli = Koodisto.Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
+                        taitotaso = Koodisto.VktTaitotaso.valueOf(rs.getString("taitotaso")),
+                    )
+                }
+        }
     }
 }
 

@@ -4,6 +4,7 @@ import fi.oph.kitu.Cache
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import fi.oph.kitu.vkt.html.VktTableItem
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -74,12 +75,8 @@ class VktSuoritusService(
             .map { Henkilosuoritus.from(it) }
 
     @WithSpan("VktSuoritusService.getOppijanSuoritukset")
-    fun getOppijanSuoritukset(
-        oppijanumero: String,
-        kieli: Koodisto.Tutkintokieli,
-        taso: Koodisto.VktTaitotaso,
-    ): Henkilosuoritus<VktSuoritus>? {
-        val ids = customSuoritusRepository.getOppijanSuoritusIds(oppijanumero, kieli, taso)
+    fun getOppijanSuoritukset(id: Tutkintoryhma): Henkilosuoritus<VktSuoritus>? {
+        val ids = customSuoritusRepository.getOppijanSuoritusIds(id)
         val suoritukset =
             ids
                 .mapNotNull { suoritusRepository.findById(it).getOrNull() }
@@ -95,10 +92,10 @@ class VktSuoritusService(
     ) = osakoeRepository.updateArvosana(id, arvosana, arviointipaiva)
 
     @WithSpan("VktSuoritusServer.setSuoritusTransferredToKoski")
-    fun setSuoritusTransferredToKoski(
-        id: Int,
+    fun markKoskiTransferProcessed(
+        id: Tutkintoryhma,
         koskiOpiskeluoikeusOid: String? = null,
-    ) = customSuoritusRepository.setSuoritusTransferredToKoski(id, koskiOpiskeluoikeusOid)
+    ) = customSuoritusRepository.markSuoritusTransferredToKoski(id, koskiOpiskeluoikeusOid)
 
     private val listRowCounts =
         Cache(ttl = 5.minutes) { params: Triple<Koodisto.VktTaitotaso, Boolean?, String?> ->

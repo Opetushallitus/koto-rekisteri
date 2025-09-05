@@ -4,7 +4,6 @@ import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
-import fi.oph.kitu.oppijanumero.MockOppijanumeroService
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusService
@@ -97,18 +96,14 @@ class KoskiServiceTest(
                 ),
             )
 
-        val onrService = MockOppijanumeroService.build()
-
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
                 koskiRequestMapper,
                 ykiSuoritusRepository,
                 tracer,
-                vktSuoritusRepository,
                 customVktSuoritusRepository,
                 vktSuoritusService,
-                onrService,
             )
 
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus).getOrThrow()
@@ -134,25 +129,21 @@ class KoskiServiceTest(
                 withBadRequest().body(expectedResponse),
             )
 
-        val onrService = MockOppijanumeroService.build()
-
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
                 koskiRequestMapper,
                 ykiSuoritusRepository,
                 tracer,
-                vktSuoritusRepository,
                 customVktSuoritusRepository,
                 vktSuoritusService,
-                onrService,
             )
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(id = 1)
 
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus)
         assertTrue(updatedSuoritus is TypedResult.Failure)
-        assertEquals(suoritus.id, updatedSuoritus.errorOrNull()?.suoritusId)
+        assertEquals(suoritus.id.toString(), updatedSuoritus.errorOrNull()?.suoritusId)
     }
 
     @Test
@@ -192,18 +183,14 @@ class KoskiServiceTest(
                 ),
             )
 
-        val onrService = MockOppijanumeroService.build()
-
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
                 koskiRequestMapper,
                 ykiSuoritusRepository,
                 tracer,
-                vktSuoritusRepository,
                 customVktSuoritusRepository,
                 vktSuoritusService,
-                onrService,
             )
 
         ykiSuoritusRepository.saveAll(
@@ -266,18 +253,14 @@ class KoskiServiceTest(
                 ),
             )
 
-        val onrService = MockOppijanumeroService.build()
-
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
                 koskiRequestMapper,
                 ykiSuoritusRepository,
                 tracer,
-                vktSuoritusRepository,
                 customVktSuoritusRepository,
                 vktSuoritusService,
-                onrService,
             )
 
         ykiSuoritusRepository.saveAll(
