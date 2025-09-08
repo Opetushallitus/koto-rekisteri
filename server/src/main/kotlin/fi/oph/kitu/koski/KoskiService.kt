@@ -2,7 +2,9 @@ package fi.oph.kitu.koski
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
+import fi.oph.kitu.mapValues
 import fi.oph.kitu.observability.use
+import fi.oph.kitu.partitionBySuccess
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusService
@@ -120,13 +122,7 @@ class KoskiService(
     fun sendYkiSuorituksetToKoski() {
         val suoritukset = ykiSuoritusRepository.findSuorituksetWithNoKoskiopiskeluoikeus()
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
-        val failed = results.filterIsInstance<TypedResult.Failure<YkiSuoritusEntity, KoskiException>>()
-        failed.forEach { failure ->
-            failure.errorOrNull()?.let { error ->
-                koskiErrors.save(error.suoritusId, error.message ?: error.toString())
-            }
-        }
-        if (failed.isNotEmpty()) throw Error.SendToKOSKIFailed(failed.map { it.error.suoritusId.entityId() })
+        reportErrors(results.mapValues { YkiMappingId(it.suoritusId) })
     }
 
     @WithSpan
@@ -135,16 +131,19 @@ class KoskiService(
         val results =
             siirrettavat.map { id ->
                 vktSuoritusService.getOppijanSuoritukset(id)?.let { suoritus ->
-                    sendVktSuoritusToKoski(suoritus)
+                    sendVktSuoritusToKoski(suoritus).map {
+                        VktMappingId(CustomVktSuoritusRepository.Tutkintoryhma.from(suoritus))
+                    }
                 }
             }
-        val failed = results.filterIsInstance<TypedResult.Failure<Unit, KoskiException>>()
-        failed.forEach { failure ->
-            failure.errorOrNull()?.let { error ->
-                koskiErrors.save(error.suoritusId, error.message ?: error.toString())
-            }
-        }
-        if (failed.isNotEmpty()) throw Error.SendToKOSKIFailed(failed.map { it.error.suoritusId.entityId() })
+        reportErrors(results)
+    }
+
+    private inline fun <reified T : KoskiErrorMappingId> reportErrors(results: List<TypedResult<T, KoskiException>?>) {
+        val (success, failed) = results.filterNotNull().partitionBySuccess()
+        success.forEach { id -> koskiErrors.reset(id) }
+        failed.forEach { error -> koskiErrors.save(error.suoritusId, error.message ?: error.toString()) }
+        if (failed.isNotEmpty()) throw Error.SendToKOSKIFailed(failed.map { it.suoritusId.entityId() })
     }
 
     sealed class Error(
