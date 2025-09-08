@@ -2,6 +2,7 @@ package fi.oph.kitu
 
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
+import kotlinx.html.B
 
 sealed class TypedResult<Value, Error> {
     data class Success<Value, Error>(
@@ -129,3 +130,16 @@ fun <T, E> Result<T>.toTypedResult(mapFailure: (Throwable) -> E): TypedResult<T,
     this.fold({
         TypedResult.Success(it)
     }, { TypedResult.Failure(mapFailure(it)) })
+
+inline fun <reified A, B> List<TypedResult<A, B>>.partitionBySuccess(): Pair<List<A>, List<B>> {
+    val (success, failed) = this.partition { it.isSuccess }
+    return success.mapNotNull { it.getOrNull() } to failed.mapNotNull { it.errorOrNull() }
+}
+
+inline fun <reified A, B, E> List<TypedResult<A, E>>.mapValues(crossinline f: (A) -> B): List<TypedResult<B, E>> =
+    map {
+        it.fold(
+            { s -> TypedResult.Success(f(s)) },
+            { e -> TypedResult.Failure(e) },
+        )
+    }
