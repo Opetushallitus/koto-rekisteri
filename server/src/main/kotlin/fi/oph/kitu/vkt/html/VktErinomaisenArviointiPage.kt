@@ -36,7 +36,7 @@ object VktErinomaisenArviointiPage {
         data: Henkilosuoritus<VktSuoritus>,
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
-        message: ViewMessageData?,
+        messages: List<ViewMessageData>,
     ): String =
         Page.renderHtml(
             Navigation.getBreadcrumbs(
@@ -57,7 +57,7 @@ object VktErinomaisenArviointiPage {
         ) {
             h1 { +data.henkilo.kokoNimi() }
 
-            viewMessage(message)
+            messages.forEach { viewMessage(it) }
 
             vktHenkilonTiedot(data, henkilo)
             vktSuorituksenTiedot(data, translations)

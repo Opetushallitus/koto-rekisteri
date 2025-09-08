@@ -2,8 +2,11 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.ViewMessage
+import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.koski.KoskiErrorService
+import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.oppijanumero.EmptyRequest
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
@@ -32,6 +35,7 @@ class VktViewController(
     private val vktSuoritukset: VktSuoritusService,
     private val localizationService: LocalizationService,
     private val oppijanumeroService: OppijanumeroService,
+    private val koskiErrorService: KoskiErrorService,
 ) {
     @GetMapping("/erinomainen/ilmoittautuneet", produces = ["text/html"])
     fun erinomaisenTaitotasonIlmoittautuneetView(
@@ -170,11 +174,15 @@ class VktViewController(
                 .koodistot("vkttutkintotaso", "kieli", "kunta", "vktosakoe", "vktarvosana", "vktkielitaito")
                 .build()
 
-        val message = viewMessage?.consume()
+        val messages =
+            listOfNotNull(
+                viewMessage?.consume(),
+                koskiErrorService.findById(VktMappingId(id))?.let { ViewMessageData.from(it) },
+            )
 
         return ResponseEntity.ok(
             if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
-                VktErinomaisenArviointiPage.render(suoritus, henkilo, translations, message)
+                VktErinomaisenArviointiPage.render(suoritus, henkilo, translations, messages)
             } else {
                 VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, henkilo, translations)
             },

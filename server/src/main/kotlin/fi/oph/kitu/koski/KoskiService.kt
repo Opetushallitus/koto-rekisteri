@@ -27,6 +27,7 @@ class KoskiService(
     private val tracer: Tracer,
     private val customVktSuoritusRepository: CustomVktSuoritusRepository,
     private val vktSuoritusService: VktSuoritusService,
+    private val koskiErrors: KoskiErrorService,
 ) {
     fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<YkiSuoritusEntity, KoskiException> =
         tracer
@@ -51,7 +52,7 @@ class KoskiService(
                                 .retrieve()
                                 .toEntity<KoskiResponse>()
                         } catch (e: RestClientException) {
-                            return TypedResult.Failure(KoskiException(ykiSuoritusEntity.id.toString(), e.message))
+                            return TypedResult.Failure(KoskiException(YkiMappingId(ykiSuoritusEntity.id), e.message))
                         }
 
                     val koskiOpiskeluoikeus =
@@ -63,7 +64,7 @@ class KoskiService(
                     if (koskiOpiskeluoikeus == null) {
                         return TypedResult.Failure(
                             KoskiException(
-                                ykiSuoritusEntity.id.toString(),
+                                YkiMappingId(ykiSuoritusEntity.id),
                                 "KOSKI opiskeluoikeus OID missing from response",
                             ),
                         )
@@ -102,7 +103,7 @@ class KoskiService(
                             .retrieve()
                             .toEntity<KoskiResponse>()
                     } catch (e: RestClientException) {
-                        return TypedResult.Failure(KoskiException(id.toString(), e.message))
+                        return TypedResult.Failure(KoskiException(VktMappingId(id), e.message))
                     }
 
                 val koskiOpiskeluoikeusOid =
@@ -120,7 +121,12 @@ class KoskiService(
         val suoritukset = ykiSuoritusRepository.findSuorituksetWithNoKoskiopiskeluoikeus()
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
         val failed = results.filterIsInstance<TypedResult.Failure<YkiSuoritusEntity, KoskiException>>()
-        if (failed.isNotEmpty()) throw Error.SendToKOSKIFailed(failed.map { it.error.suoritusId })
+        failed.forEach { failure ->
+            failure.errorOrNull()?.let { error ->
+                koskiErrors.save(error.suoritusId, error.message ?: error.toString())
+            }
+        }
+        if (failed.isNotEmpty()) throw Error.SendToKOSKIFailed(failed.map { it.error.suoritusId.entityId() })
     }
 
     @WithSpan
@@ -133,7 +139,12 @@ class KoskiService(
                 }
             }
         val failed = results.filterIsInstance<TypedResult.Failure<Unit, KoskiException>>()
-        if (failed.isNotEmpty()) throw Error.SendToKOSKIFailed(failed.map { it.error.suoritusId })
+        failed.forEach { failure ->
+            failure.errorOrNull()?.let { error ->
+                koskiErrors.save(error.suoritusId, error.message ?: error.toString())
+            }
+        }
+        if (failed.isNotEmpty()) throw Error.SendToKOSKIFailed(failed.map { it.error.suoritusId.entityId() })
     }
 
     sealed class Error(

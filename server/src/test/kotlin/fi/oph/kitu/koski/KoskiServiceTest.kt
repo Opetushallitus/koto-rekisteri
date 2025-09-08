@@ -37,6 +37,7 @@ class KoskiServiceTest(
     @Autowired private val mockRestClientBuilder: RestClient.Builder,
     @Autowired private val tracer: Tracer,
     @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
+    @Autowired private val koskiErrorService: KoskiErrorService,
     @Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @Autowired
@@ -104,6 +105,7 @@ class KoskiServiceTest(
                 tracer,
                 customVktSuoritusRepository,
                 vktSuoritusService,
+                koskiErrorService,
             )
 
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus).getOrThrow()
@@ -137,13 +139,14 @@ class KoskiServiceTest(
                 tracer,
                 customVktSuoritusRepository,
                 vktSuoritusService,
+                koskiErrorService,
             )
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(id = 1)
 
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus)
         assertTrue(updatedSuoritus is TypedResult.Failure)
-        assertEquals(suoritus.id.toString(), updatedSuoritus.errorOrNull()?.suoritusId)
+        assertEquals(YkiMappingId(suoritus.id), updatedSuoritus.errorOrNull()?.suoritusId)
     }
 
     @Test
@@ -191,6 +194,7 @@ class KoskiServiceTest(
                 tracer,
                 customVktSuoritusRepository,
                 vktSuoritusService,
+                koskiErrorService,
             )
 
         ykiSuoritusRepository.saveAll(
@@ -261,6 +265,7 @@ class KoskiServiceTest(
                 tracer,
                 customVktSuoritusRepository,
                 vktSuoritusService,
+                koskiErrorService,
             )
 
         ykiSuoritusRepository.saveAll(
