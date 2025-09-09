@@ -27,15 +27,23 @@ export class KoskiAuditLogsIntegrationStack extends Stack {
   ) {
     super(scope, id, props)
     const { serviceAuditLogGroup, koski } = props
+
+    const koski_role_arn = `arn:aws:iam::${koski.account}:role/kitu-sqs-sender`
+    const koski_sqs_queue_url = `https://sqs.${koski.region}.amazonaws.com/${koski.account}/oma-opintopolku-loki-audit-queue`
+
     const sendAuditLogsToKoskiLambda = new NodejsFunction(this, "function", {
       runtime: Runtime.NODEJS_LATEST,
       entry: path.join(__dirname, "koski-audit-logs-integration/handler.ts"),
+      environment: {
+        KOSKI_SQS_QUEUE_URL: koski_sqs_queue_url,
+        KOSKI_ROLE_ARN: koski_role_arn,
+      },
       initialPolicy: [
         new PolicyStatement({
           sid: "AllowSendKoskiSts",
           effect: Effect.ALLOW,
           actions: ["sts:AssumeRole"],
-          resources: [`arn:aws:iam::${koski.account}:role/kitu-sqs-sender`],
+          resources: [koski_role_arn],
         }),
       ],
     })
