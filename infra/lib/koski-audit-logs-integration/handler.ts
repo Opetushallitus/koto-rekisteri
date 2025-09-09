@@ -32,12 +32,14 @@ export const handler = async (event: CloudWatchLogsEvent) => {
 
   try {
     const data = await sqs.send(command)
+    console.log("data sent to sqs", data)
     return {
       statusCode: 200,
       message: "ok",
       data,
     }
   } catch (error) {
+    console.log("failed to send to sqs", error)
     return {
       statusCode: 500,
       message: "unknown error",
