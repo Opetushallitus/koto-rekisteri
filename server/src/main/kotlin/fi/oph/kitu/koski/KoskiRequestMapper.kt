@@ -190,6 +190,9 @@ class KoskiRequestMapper {
         val henkilo = henkilosuoritus.henkilo
         val suoritus = henkilosuoritus.suoritus
 
+        val kaikkiOsakokeetArvioitu = suoritus.osat.all { it.arviointi != null }
+        if (!kaikkiOsakokeetArvioitu) return null
+
         val organisaatio: Organisaatio? =
             suoritus.osat.firstNotNullOfOrNull { it.oppilaitos?.let { Organisaatio(it.oid) } }
                 ?: when (suoritus.taitotaso) {

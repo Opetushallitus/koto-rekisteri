@@ -239,14 +239,15 @@ class KoskiRequestMapperTest(
                 suorituksenVastaanottaja = null,
                 suorituspaikkakunta = "091",
                 osat =
-                    generator.randomOsakokeet(
-                        Koodisto.VktTaitotaso.Erinomainen,
-                        getRandomLocalDate(
-                            LocalDate.of(2000, 1, 1),
-                            LocalDate.of(2025, 1, 1),
-                            random,
-                        ),
-                    ),
+                    generator
+                        .randomOsakokeet(
+                            Koodisto.VktTaitotaso.Erinomainen,
+                            getRandomLocalDate(
+                                LocalDate.of(2000, 1, 1),
+                                LocalDate.of(2025, 1, 1),
+                                random,
+                            ),
+                        ).filter { it.arviointi != null },
                 lahdejarjestelmanId =
                     LahdejarjestelmanTunniste(
                         "vkt.0",
@@ -266,7 +267,6 @@ class KoskiRequestMapperTest(
                 suoritus = suoritus,
             )
 
-        val onr = MockOppijanumeroService.build()
         val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
 
         assertNotNull(koskiSuoritus)
