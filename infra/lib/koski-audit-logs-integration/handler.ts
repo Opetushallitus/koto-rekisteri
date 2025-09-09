@@ -1,12 +1,7 @@
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs"
+import { fromTemporaryCredentials } from "@aws-sdk/credential-providers"
 import { CloudWatchLogsEvent } from "aws-lambda"
 import { getAuditLogEntry, parse } from "./parser"
-import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs"
-import { getQueueUrl } from "./queueUrl"
-import { getAssumeRole } from "./assumeRole"
-
-export const handler = async (event: CloudWatchLogsEvent) => {
-  const data = parse(event)
-  const auditLogEntry = getAuditLogEntry(data)
 
 export const handler = async (event: CloudWatchLogsEvent) => {
   const QueueUrl = process.env.KOSKI_SQS_QUEUE_URL
@@ -19,17 +14,14 @@ export const handler = async (event: CloudWatchLogsEvent) => {
     throw "Cannot proceed, because 'KOSKI_ROLE_ARN' is missing."
   }
 
-  const sqs = new SQSClient([
-    {
-      region,
-      credentials: {
-        accessKeyId: Credentials.AccessKeyId,
-        secretAccessKey: Credentials.SecretAccessKey,
-        sessionToken: Credentials.SessionToken,
-        expiration: Credentials.Expiration,
-      },
-    },
-  ])
+  const data = parse(event)
+  const auditLogEntry = getAuditLogEntry(data)
+
+  const sqs = new SQSClient({
+    credentials: fromTemporaryCredentials({
+      params: { RoleArn: roleArn },
+    }),
+  })
 
   const command = new SendMessageCommand({
     QueueUrl,

@@ -48,17 +48,6 @@ export class KoskiAuditLogsIntegrationStack extends Stack {
       ],
     })
 
-    sendAuditLogsToKoskiLambda.addToRolePolicy(
-      new PolicyStatement({
-        sid: "AllowSendKoskiSqsQueue",
-        effect: Effect.ALLOW,
-        actions: ["sqs:SendMessage"],
-        resources: [
-          `arn:aws:sqs:${koski.region}:${koski.account}:oma-opintopolku-loki-audit-queue`,
-        ],
-      }),
-    )
-
     new SubscriptionFilter(this, "sendAuditLogsToKoskiSubscriptionFilter", {
       logGroup: serviceAuditLogGroup,
       filterName: "sendAuditLogsToKoski",
