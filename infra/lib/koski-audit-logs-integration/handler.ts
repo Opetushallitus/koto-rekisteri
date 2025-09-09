@@ -8,13 +8,15 @@ export const handler = async (event: CloudWatchLogsEvent) => {
   const data = parse(event)
   const auditLogEntry = getAuditLogEntry(data)
 
-  // TODO: Fetch these from SSM
-  const region = "eu-west-1"
-  const kosskiAccountId = "500150530292"
+export const handler = async (event: CloudWatchLogsEvent) => {
+  const QueueUrl = process.env.KOSKI_SQS_QUEUE_URL
+  if (!QueueUrl) {
+    throw "Cannot proceed, because 'KOSKI_SQS_QUEUE_URL' is missing."
+  }
 
-  const { Credentials } = await getAssumeRole("eu-west-1", kosskiAccountId)
-  if (!Credentials) {
-    throw `AssumeRole did not find credentials for account '${kosskiAccountId}'.`
+  const roleArn = process.env.KOSKI_ROLE_ARN
+  if (!roleArn) {
+    throw "Cannot proceed, because 'KOSKI_ROLE_ARN' is missing."
   }
 
   const sqs = new SQSClient([
@@ -30,7 +32,7 @@ export const handler = async (event: CloudWatchLogsEvent) => {
   ])
 
   const command = new SendMessageCommand({
-    QueueUrl: await getQueueUrl(),
+    QueueUrl,
 
     // TODO: Send all, and maybe you should use batch send instead?
     MessageBody: auditLogEntry[0].toString(),
