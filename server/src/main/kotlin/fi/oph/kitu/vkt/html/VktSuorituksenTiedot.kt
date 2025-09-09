@@ -9,6 +9,8 @@ import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
+import kotlinx.html.a
+import kotlinx.html.h3
 import kotlinx.html.i
 
 fun FlowContent.vktSuorituksenTiedot(
@@ -20,6 +22,25 @@ fun FlowContent.vktSuorituksenTiedot(
             "Tutkinnon taso" to { +t.get(data.suoritus.taitotaso) },
             "Kieli" to { +t.get(data.suoritus.kieli) },
             "Suorituspaikkakunta" to { +t.getByKoodiviite("kunta", data.suoritus.suorituspaikkakunta) },
+        )
+    }
+    h3 { +"Integraatiot" }
+    card(compact = true) {
+        infoTable(
+            "KOSKI" to {
+                if (data.suoritus.koskiSiirtoKasitelty) {
+                    if (data.suoritus.koskiOpiskeluoikeusOid != null) {
+                        +"Tiedot siirretty KOSKI-tietovarantoon, opiskeluoikeus: "
+                        a(href = "/koski/oppija/${data.henkilo.oid}") {
+                            +data.suoritus.koskiOpiskeluoikeusOid.toString()
+                        }
+                    } else {
+                        +"Tiedot eivät ole valmiit siirrettäväksi KOSKI-tietovarantoon"
+                    }
+                } else {
+                    +"Yritys tietojen siirrosta KOSKI-tietovarantoon ajastettu"
+                }
+            },
         )
     }
 }

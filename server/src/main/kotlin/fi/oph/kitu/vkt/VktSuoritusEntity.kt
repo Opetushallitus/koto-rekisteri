@@ -26,6 +26,8 @@ data class VktSuoritusEntity(
     @MappedCollection(idColumn = "suoritus_id")
     val tutkinnot: Set<VktTutkinto>,
     val createdAt: OffsetDateTime? = null,
+    val koskiOpiskeluoikeus: Oid? = null,
+    val koskiSiirtoKasitelty: Boolean = false,
 ) {
     @Table(name = "vkt_osakoe")
     data class VktOsakoe(
