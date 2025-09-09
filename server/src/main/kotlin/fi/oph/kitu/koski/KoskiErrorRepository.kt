@@ -1,6 +1,8 @@
 package fi.oph.kitu.koski
 
+import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import org.springframework.data.annotation.Id
 import org.springframework.data.jdbc.repository.query.Modifying
 import org.springframework.data.jdbc.repository.query.Query
@@ -50,7 +52,20 @@ data class KoskiErrorEntity(
     val entity: String,
     val message: String,
     val timestamp: LocalDateTime,
-)
+) {
+    fun errorJson(): JsonNode? {
+        val matchResult = Regex("^[\\w\\d\\s]+:\\s\"(.*)\"$").find(message)
+        return matchResult?.let {
+            val json = matchResult.groupValues[1]
+            val parser = objectMapper.factory.createParser(json)
+            return objectMapper.readTree(parser)
+        }
+    }
+
+    companion object {
+        val objectMapper = Henkilosuoritus.getDefaultObjectMapper()
+    }
+}
 
 @Service
 class KoskiErrorService(

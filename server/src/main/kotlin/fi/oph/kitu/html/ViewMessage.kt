@@ -5,6 +5,7 @@ import fi.oph.kitu.koski.KoskiErrorEntity
 import jakarta.servlet.http.HttpSession
 import kotlinx.html.FlowContent
 import kotlinx.html.article
+import kotlinx.html.section
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
@@ -16,7 +17,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 fun FlowContent.viewMessage(message: ViewMessageData?) {
     message?.let {
         article(classes = it.type.cssClass) {
-            +it.text
+            if (it.render != null) {
+                it.render(this)
+            } else {
+                +it.text
+            }
         }
     }
 }
@@ -24,12 +29,25 @@ fun FlowContent.viewMessage(message: ViewMessageData?) {
 data class ViewMessageData(
     val text: String,
     val type: ViewMessageType,
+    val render: (FlowContent.() -> Unit)? = null,
 ) {
     companion object {
         fun from(koskiError: KoskiErrorEntity): ViewMessageData =
             ViewMessageData(
                 text = "KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTime()}: ${koskiError.message}",
                 type = ViewMessageType.ERROR,
+                render = {
+                    +"KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTime()}: "
+
+                    val error = koskiError.errorJson()
+                    section {
+                        if (error != null) {
+                            json(error)
+                        } else {
+                            +koskiError.message
+                        }
+                    }
+                },
             )
     }
 }
