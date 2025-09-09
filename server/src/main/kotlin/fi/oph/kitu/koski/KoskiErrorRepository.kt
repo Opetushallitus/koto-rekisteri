@@ -16,26 +16,37 @@ interface KoskiErrorRepository : CrudRepository<KoskiErrorEntity, String> {
     @Modifying
     @Query(
         """
-        INSERT INTO koski_error(entity, message, timestamp)
-        VALUES (:entity, :message, now())
-        ON CONFLICT (entity) DO UPDATE 
+        INSERT INTO koski_error(id, entity, message, timestamp)
+        VALUES (:id, :entity, :message, now())
+        ON CONFLICT (id, entity) DO UPDATE 
         SET timestamp = now(), message = :message
     """,
     )
     fun upsert(
+        @Param("id") id: String,
         @Param("entity") entity: String,
         @Param("message") message: String,
     )
 
-    fun findByEntity(entityId: String): fi.oph.kitu.koski.KoskiErrorEntity?
+    fun find(id: KoskiErrorMappingId): KoskiErrorEntity? = findByIdAndEntity(id.mappedId(), id.entityName)
 
-    fun deleteByEntity(entityId: String)
+    fun findByIdAndEntity(
+        id: String,
+        entityId: String,
+    ): KoskiErrorEntity?
+
+    fun delete(id: KoskiErrorMappingId) = deleteByIdAndEntity(id.mappedId(), id.entityName)
+
+    fun deleteByIdAndEntity(
+        id: String,
+        entity: String,
+    )
 }
 
 @Table(name = "koski_error")
 data class KoskiErrorEntity(
     @Id
-    val id: Int?,
+    val id: String,
     val entity: String,
     val message: String,
     val timestamp: LocalDateTime,
@@ -50,35 +61,31 @@ class KoskiErrorService(
         message: String,
     ) {
         repository.upsert(
-            id.entityIdWithNamespace(),
+            id.mappedId(),
+            id.entityName,
             message = message,
         )
     }
 
-    fun findById(id: KoskiErrorMappingId): KoskiErrorEntity? = repository.findByEntity(id.entityIdWithNamespace())
+    fun findById(id: KoskiErrorMappingId): KoskiErrorEntity? = repository.find(id)
 
-    fun reset(id: KoskiErrorMappingId) =
-        repository.deleteByEntity(
-            id.entityIdWithNamespace(),
-        )
+    fun reset(id: KoskiErrorMappingId) = repository.delete(id)
 }
 
 sealed class KoskiErrorMappingId(
-    val namespace: String,
+    val entityName: String,
 ) {
-    abstract fun entityId(): String
-
-    fun entityIdWithNamespace(): String = "$namespace:${entityId()}"
+    abstract fun mappedId(): String
 }
 
 data class VktMappingId(
     val ryhma: CustomVktSuoritusRepository.Tutkintoryhma,
 ) : KoskiErrorMappingId("vkt") {
-    override fun entityId(): String = "${ryhma.oppijanumero}/${ryhma.tutkintokieli.name}/${ryhma.taitotaso.name}"
+    override fun mappedId(): String = "${ryhma.oppijanumero}/${ryhma.tutkintokieli.name}/${ryhma.taitotaso.name}"
 }
 
 data class YkiMappingId(
     val suoritusId: Int?,
 ) : KoskiErrorMappingId("yki") {
-    override fun entityId(): String = suoritusId.toString()
+    override fun mappedId(): String = suoritusId.toString()
 }
