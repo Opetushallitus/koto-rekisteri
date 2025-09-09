@@ -26,6 +26,8 @@ data class VktSuoritus(
     override val osat: List<VktOsakoe>,
     override val lahdejarjestelmanId: LahdejarjestelmanTunniste,
     val internalId: Int? = null,
+    val koskiOpiskeluoikeusOid: OidString? = null,
+    val koskiSiirtoKasitelty: Boolean = false,
 ) : KielitutkinnonSuoritus,
     Osasuorituksellinen {
     override val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.ValtionhallinnonKielitutkinto
@@ -57,6 +59,8 @@ data class VktSuoritus(
             suorituksenVastaanottaja = suorituksenVastaanottaja?.toString(),
             osakokeet = osat.map { it.toVktOsakoeRow() }.toSet(),
             tutkinnot = tutkinnot.map { it.toVktTutkintoRow() }.toSet(),
+            koskiOpiskeluoikeus = koskiOpiskeluoikeusOid?.toOid()?.getOrThrow(),
+            koskiSiirtoKasitelty = koskiSiirtoKasitelty,
         )
 
     companion object {
@@ -69,6 +73,8 @@ data class VktSuoritus(
                 osat = entity.osakokeet.map { VktOsakoe.from(it) },
                 lahdejarjestelmanId = LahdejarjestelmanTunniste.Companion.from(entity.ilmoittautumisenId),
                 internalId = entity.id,
+                koskiOpiskeluoikeusOid = entity.koskiOpiskeluoikeus?.let { OidString.from(it) },
+                koskiSiirtoKasitelty = entity.koskiSiirtoKasitelty,
             )
 
         fun merge(henkilosuoritukset: List<Henkilosuoritus<VktSuoritus>>): Henkilosuoritus<VktSuoritus> {
@@ -100,7 +106,12 @@ data class VktSuoritus(
 
             return Henkilosuoritus(
                 henkilo = viimeisin.henkilo,
-                suoritus = viimeisin.suoritus.copy(osat = kaikkiOsakokeet),
+                suoritus =
+                    viimeisin.suoritus.copy(
+                        osat = kaikkiOsakokeet,
+                        koskiSiirtoKasitelty = suoritukset.all { it.koskiSiirtoKasitelty },
+                        koskiOpiskeluoikeusOid = suoritukset.firstNotNullOfOrNull { it.koskiOpiskeluoikeusOid },
+                    ),
             )
         }
     }
