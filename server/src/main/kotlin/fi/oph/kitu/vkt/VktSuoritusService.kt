@@ -91,11 +91,14 @@ class VktSuoritusService(
         arviointipaiva: LocalDate? = null,
     ) = osakoeRepository.updateArvosana(id, arvosana, arviointipaiva)
 
-    @WithSpan("VktSuoritusServer.setSuoritusTransferredToKoski")
+    @WithSpan("VktSuoritusServer.markKoskiTransferProcessed")
     fun markKoskiTransferProcessed(
         id: Tutkintoryhma,
         koskiOpiskeluoikeusOid: String? = null,
     ) = customSuoritusRepository.markSuoritusTransferredToKoski(id, koskiOpiskeluoikeusOid)
+
+    @WithSpan("VktSuoritusServer.requestTransferToKoski")
+    fun requestTransferToKoski(id: Tutkintoryhma) = customSuoritusRepository.requestTransferToKoski(id)
 
     private val listRowCounts =
         Cache(ttl = 5.minutes) { params: Triple<Koodisto.VktTaitotaso, Boolean?, String?> ->

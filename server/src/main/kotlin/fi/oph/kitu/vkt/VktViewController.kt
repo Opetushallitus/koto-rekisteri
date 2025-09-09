@@ -200,6 +200,7 @@ class VktViewController(
         form.toEntries().forEach {
             vktSuoritukset.setOsakoeArvosana(it.id, it.arvosana, it.arviointipaiva)
         }
+        vktSuoritukset.requestTransferToKoski(CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso))
         viewMessage.showSuccess("Muutokset tallennettu onnistuneesti.")
         return RedirectView(
             linkTo(

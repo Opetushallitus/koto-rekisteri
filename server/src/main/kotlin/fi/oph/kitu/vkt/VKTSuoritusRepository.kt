@@ -200,6 +200,24 @@ class CustomVktSuoritusRepository {
         jdbcNamedParameterTemplate.update(query, params)
     }
 
+    @WithSpan
+    fun requestTransferToKoski(id: Tutkintoryhma) {
+        val query =
+            """
+            UPDATE vkt_suoritus
+            SET
+                koski_siirto_kasitelty = false
+            WHERE
+                suorittajan_oppijanumero = :oppijanumero
+                AND tutkintokieli = :tutkintokieli
+                AND taitotaso = :taitotaso
+            """.trimIndent()
+
+        val params = id.toSqlParams()
+
+        jdbcNamedParameterTemplate.update(query, params)
+    }
+
     private fun whereAll(vararg conditions: String?): String {
         val nonNullConditions = conditions.filterNotNull()
         return if (nonNullConditions.isNotEmpty()) {
