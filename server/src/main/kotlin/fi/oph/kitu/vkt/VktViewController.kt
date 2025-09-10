@@ -15,6 +15,7 @@ import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
+import fi.oph.kitu.vkt.html.VktKoskiErrors
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
@@ -207,6 +208,17 @@ class VktViewController(
                 methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(oppijanumero, kieli, taso),
             ).toString(),
         )
+    }
+
+    @GetMapping("/koski-virheet", produces = ["text/html"])
+    fun showKoskiVirheet(): ResponseEntity<String> {
+        val errors = koskiErrorService.findAllByEntity("vkt")
+        val translations =
+            localizationService
+                .translationBuilder()
+                .koodistot("vkttutkintotaso", "kieli")
+                .build()
+        return ResponseEntity.ok(VktKoskiErrors.render(errors, translations))
     }
 }
 

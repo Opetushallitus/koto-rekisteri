@@ -1,6 +1,7 @@
 package fi.oph.kitu.koski
 
 import com.fasterxml.jackson.databind.JsonNode
+import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import org.springframework.data.annotation.Id
@@ -43,6 +44,8 @@ interface KoskiErrorRepository : CrudRepository<KoskiErrorEntity, String> {
         id: String,
         entity: String,
     )
+
+    fun findAllByEntity(entity: String): List<KoskiErrorEntity>
 }
 
 @Table(name = "koski_error")
@@ -85,6 +88,8 @@ class KoskiErrorService(
     fun findById(id: KoskiErrorMappingId): KoskiErrorEntity? = repository.find(id)
 
     fun reset(id: KoskiErrorMappingId) = repository.delete(id)
+
+    fun findAllByEntity(entity: String) = repository.findAllByEntity(entity)
 }
 
 sealed class KoskiErrorMappingId(
@@ -97,6 +102,23 @@ data class VktMappingId(
     val ryhma: CustomVktSuoritusRepository.Tutkintoryhma,
 ) : KoskiErrorMappingId("vkt") {
     override fun mappedId(): String = "${ryhma.oppijanumero}/${ryhma.tutkintokieli.name}/${ryhma.taitotaso.name}"
+
+    companion object {
+        fun parse(id: String): VktMappingId? {
+            try {
+                val (oppijanumero, kieli, taitotaso) = id.split("/")
+                return VktMappingId(
+                    CustomVktSuoritusRepository.Tutkintoryhma(
+                        oppijanumero = oppijanumero,
+                        tutkintokieli = Koodisto.Tutkintokieli.valueOf(kieli),
+                        taitotaso = Koodisto.VktTaitotaso.valueOf(taitotaso),
+                    ),
+                )
+            } catch (_: Throwable) {
+                return null
+            }
+        }
+    }
 }
 
 data class YkiMappingId(
