@@ -4,6 +4,9 @@ import fi.oph.kitu.Cache
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.logging.AuditLogger
+import fi.oph.kitu.logging.KituAuditLogMessageField
+import fi.oph.kitu.logging.KituAuditLogOperation
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import fi.oph.kitu.vkt.html.VktTableItem
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
@@ -11,6 +14,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.Optional
+import kotlin.collections.listOf
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration.Companion.minutes
 
@@ -19,6 +23,7 @@ class VktSuoritusService(
     private val suoritusRepository: VktSuoritusRepository,
     private val customSuoritusRepository: CustomVktSuoritusRepository,
     private val osakoeRepository: VktOsakoeRepository,
+    private val auditLogger: AuditLogger,
 ) {
     @WithSpan("VktSuoritusService.getSuorituksetAndPagination")
     fun getSuorituksetAndPagination(
@@ -81,6 +86,16 @@ class VktSuoritusService(
             ids
                 .mapNotNull { suoritusRepository.findById(it).getOrNull() }
                 .map { Henkilosuoritus.from(it) }
+                .also {
+                    val henkilo = it.first().henkilo
+                    auditLogger.log(
+                        operation = KituAuditLogOperation.VktSuoritusViewed,
+                        target =
+                            listOf(
+                                Pair(KituAuditLogMessageField.OPPIJA_OPPIJANUMERO, henkilo.oid.oid),
+                            ),
+                    )
+                }
         return if (suoritukset.isEmpty()) null else VktSuoritus.merge(suoritukset)
     }
 
