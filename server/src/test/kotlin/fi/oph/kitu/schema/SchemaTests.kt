@@ -1,5 +1,6 @@
 package fi.oph.kitu.schema
 
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe
@@ -51,13 +52,11 @@ class SchemaTests {
 
     @Test
     fun `VKTSuoritus can be serialized and deserialized`() {
-        val objectMapper = Henkilosuoritus.getDefaultObjectMapper()
-
-        val json = objectMapper.writeValueAsString(vktHenkilosuoritus)
+        val json = defaultObjectMapper.writeValueAsString(vktHenkilosuoritus)
 
         print(json)
 
-        val decodedData = objectMapper.readValue(json, Henkilosuoritus::class.java)
+        val decodedData = defaultObjectMapper.readValue(json, Henkilosuoritus::class.java)
 
         assertEquals(expected = vktHenkilosuoritus, actual = decodedData)
     }

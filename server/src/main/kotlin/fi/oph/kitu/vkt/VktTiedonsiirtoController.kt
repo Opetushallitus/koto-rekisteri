@@ -2,6 +2,7 @@ package fi.oph.kitu.vkt
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import fi.oph.kitu.Validation
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.TiedonsiirtoFailure
@@ -106,10 +107,7 @@ class VktTiedonsiirtoController(
         @RequestBody json: String,
     ): ResponseEntity<*> =
         try {
-            val data =
-                Henkilosuoritus
-                    .getDefaultObjectMapper()
-                    .readValue(json, Henkilosuoritus::class.java)
+            val data = defaultObjectMapper.readValue(json, Henkilosuoritus::class.java)
 
             val suoritus = data.suoritus
             when (suoritus) {

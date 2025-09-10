@@ -182,7 +182,7 @@ data class OppijanumerorekisteriHenkilo(
     val vtjsynced: OffsetDateTime?,
     val yhteystiedotRyhma: List<Yhteystietoryhma>?,
     val yksilointivirheet: List<Yksilointivirhe>?,
-    val passinumero: List<String>?,
+    val passinumerot: List<String>?,
 ) {
     fun hetut() = listOfNotNull(hetu) + (kaikkiHetut.orEmpty())
 

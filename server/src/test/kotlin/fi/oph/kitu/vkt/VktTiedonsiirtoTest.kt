@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.schema.SchemaTests
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import org.junit.jupiter.api.BeforeEach
@@ -76,7 +77,7 @@ class VktTiedonsiirtoTest {
         suoritus: Henkilosuoritus<*>,
         block: MockMvcResultMatchersDsl.() -> Unit,
     ) {
-        putSuoritus(Henkilosuoritus.getDefaultObjectMapper().writeValueAsString(suoritus), block)
+        putSuoritus(defaultObjectMapper.writeValueAsString(suoritus), block)
     }
 
     private fun putSuoritus(

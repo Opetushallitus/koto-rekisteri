@@ -3,6 +3,7 @@ package fi.oph.kitu.oppijanumero
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.assertFailureIsThrowable
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.logging.MockTracer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -194,5 +195,49 @@ class OppijanumeroServiceTests {
             result,
             "Bad request to oppijanumero-service",
         )
+    }
+
+    @Test
+    fun `Ramonan parsinta onnistuu`() {
+        val json = """{
+          "oidHenkilo": "1.2.246.562.98.89505889280",
+          "hetu": "271258-9988",
+          "kaikkiHetut": [],
+          "passivoitu": false,
+          "etunimet": "Ramona Ulla",
+          "kutsumanimi": "Ramona Ulla",
+          "sukunimi": "Tuulispää",
+          "aidinkieli": {
+            "kieliKoodi": "VK",
+            "kieliTyyppi": null
+          },
+          "asiointiKieli": {
+            "kieliKoodi": "VK",
+            "kieliTyyppi": null
+          },
+          "kansalaisuus": [],
+          "kasittelijaOid": "testidatantuonti",
+          "syntymaaika": "1958-12-27",
+          "sukupuoli": "2",
+          "kotikunta": null,
+          "oppijanumero": "1.2.246.562.98.89505889280",
+          "turvakielto": false,
+          "eiSuomalaistaHetua": false,
+          "yksiloity": false,
+          "yksiloityVTJ": true,
+          "yksilointiYritetty": true,
+          "duplicate": false,
+          "created": 1741614259903,
+          "modified": 1741614259903,
+          "vtjsynced": null,
+          "yhteystiedotRyhma": [],
+          "yksilointivirheet": [],
+          "passinumerot": [],
+          "kielisyys": []
+        }"""
+
+        val obj = defaultObjectMapper.readValue(json, OppijanumerorekisteriHenkilo::class.java)
+
+        assertEquals("1.2.246.562.98.89505889280", obj.oppijanumero)
     }
 }

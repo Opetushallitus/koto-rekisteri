@@ -357,7 +357,7 @@ class KoskiRequestMapperTest(
                         vtjsynced = null,
                         yhteystiedotRyhma = null,
                         yksilointivirheet = null,
-                        passinumero = null,
+                        passinumerot = null,
                     ),
             )
 

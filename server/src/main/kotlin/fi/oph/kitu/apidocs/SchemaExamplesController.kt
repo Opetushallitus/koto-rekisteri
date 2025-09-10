@@ -1,6 +1,6 @@
 package fi.oph.kitu.apidocs
 
-import com.fasterxml.jackson.annotation.JsonInclude
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
@@ -146,10 +146,5 @@ class SchemaExamplesController {
         )
 
     private fun exampleJson(data: Any): ResponseEntity<String> =
-        ResponseEntity(objMapper.writeValueAsString(data), HttpStatus.OK)
-
-    private val objMapper =
-        Henkilosuoritus.getDefaultObjectMapper().apply {
-            setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        }
+        ResponseEntity(defaultObjectMapper.writeValueAsString(data), HttpStatus.OK)
 }
