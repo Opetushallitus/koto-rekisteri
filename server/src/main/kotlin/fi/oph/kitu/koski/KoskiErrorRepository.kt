@@ -46,6 +46,8 @@ interface KoskiErrorRepository : CrudRepository<KoskiErrorEntity, String> {
     )
 
     fun findAllByEntity(entity: String): List<KoskiErrorEntity>
+
+    fun countByEntity(entity: String): Int
 }
 
 @Table(name = "koski_error")
@@ -90,6 +92,8 @@ class KoskiErrorService(
     fun reset(id: KoskiErrorMappingId) = repository.delete(id)
 
     fun findAllByEntity(entity: String) = repository.findAllByEntity(entity)
+
+    fun countByEntity(entity: String) = repository.countByEntity(entity)
 }
 
 sealed class KoskiErrorMappingId(
