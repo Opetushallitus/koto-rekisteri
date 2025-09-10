@@ -1,8 +1,8 @@
 package fi.oph.kitu.oppijanumero
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -63,7 +63,6 @@ class OppijanumeroService(
 @Service
 class OppijanumerorekisteriClient(
     val casAuthenticatedService: CasAuthenticatedService,
-    val objectMapper: ObjectMapper,
 ) {
     @Value("\${kitu.oppijanumero.service.url}")
     lateinit var serviceUrl: String
@@ -127,11 +126,11 @@ class OppijanumerorekisteriClient(
     ): TypedResult<T, OppijanumeroException> =
         TypedResult
             .runCatching {
-                objectMapper.readValue(response.body, clazz)
+                defaultObjectMapper.readValue(response.body, clazz)
             }.mapFailure { decodeError ->
                 TypedResult
                     .runCatching {
-                        objectMapper.readValue(
+                        defaultObjectMapper.readValue(
                             response.body,
                             OppijanumeroServiceError::class.java,
                         )

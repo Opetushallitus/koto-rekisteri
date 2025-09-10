@@ -1,6 +1,5 @@
 package fi.oph.kitu.oppijanumero
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.assertFailureIsThrowable
 import fi.oph.kitu.defaultObjectMapper
@@ -94,7 +93,6 @@ class OppijanumeroServiceTests {
             )
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
-        val objectMapper = ObjectMapper()
         val tracer = MockTracer()
         val oppijanumeroService =
             OppijanumeroService(
@@ -112,7 +110,6 @@ class OppijanumeroServiceTests {
                         },
                         tracer,
                     ),
-                    objectMapper,
                 ).apply {
                     serviceUrl = "http://localhost:8080/oppijanumero-service"
                 },
@@ -158,7 +155,6 @@ class OppijanumeroServiceTests {
             )
         val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
-        val objectMapper = ObjectMapper()
         val tracer = MockTracer()
         val oppijanumeroService =
             OppijanumeroService(
@@ -176,7 +172,6 @@ class OppijanumeroServiceTests {
                         },
                         tracer,
                     ),
-                    objectMapper,
                 ).apply {
                     serviceUrl = "http://localhost:8080/oppijanumero-service"
                 },
