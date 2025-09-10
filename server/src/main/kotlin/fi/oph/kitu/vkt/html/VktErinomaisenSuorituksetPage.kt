@@ -6,9 +6,11 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
@@ -28,12 +30,14 @@ object VktErinomaisenSuorituksetPage {
         pagination: Pagination,
         translations: Translations,
         searchQuery: String?,
+        messages: List<ViewMessageData>,
     ): String =
         Page.renderHtml(
             wideContent = true,
             breadcrumbs = Navigation.getBreadcrumbs(linkBuilder),
         ) {
             h1 { +title }
+            messages.forEach { viewMessage(it) }
             vktSearch(searchQuery)
             vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, pagination, translations, searchQuery)
         }

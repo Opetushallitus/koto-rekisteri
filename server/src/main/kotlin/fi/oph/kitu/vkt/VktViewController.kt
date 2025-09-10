@@ -3,6 +3,7 @@ package fi.oph.kitu.vkt
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.ViewMessage
 import fi.oph.kitu.html.ViewMessageData
+import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiErrorService
@@ -16,6 +17,8 @@ import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
 import fi.oph.kitu.vkt.html.VktKoskiErrors
+import kotlinx.html.a
+import kotlinx.html.br
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
@@ -59,6 +62,7 @@ class VktViewController(
                 .translationBuilder()
                 .koodistot("kieli", "vkttutkintotaso")
                 .build()
+
         return ResponseEntity.ok(
             VktErinomaisenSuorituksetPage.render(
                 title = "Erinomaisen taitotason ilmoittautuneet",
@@ -72,6 +76,7 @@ class VktViewController(
                     linkTo(
                         methodOn(VktViewController::class.java).erinomaisenTaitotasonIlmoittautuneetView(),
                     ),
+                messages = getMessages(),
             ),
         )
     }
@@ -111,6 +116,7 @@ class VktViewController(
                     linkTo(
                         methodOn(VktViewController::class.java).erinomaisenTaitotasonArvioidutSuorituksetView(),
                     ),
+                messages = getMessages(),
             ),
         )
     }
@@ -220,6 +226,24 @@ class VktViewController(
                 .build()
         return ResponseEntity.ok(VktKoskiErrors.render(errors, translations))
     }
+
+    private fun getMessages(): List<ViewMessageData> =
+        listOfNotNull(
+            koskiErrorService.countByEntity("vkt").let {
+                if (it > 0) {
+                    val text = "$it siirtoa KOSKI-tietovarantoon on epäonnistunut"
+                    ViewMessageData(text, ViewMessageType.ERROR) {
+                        +text
+                        br()
+                        a(
+                            href = linkTo(methodOn(VktViewController::class.java).showKoskiVirheet()).toString(),
+                        ) { +"Näytä virheet" }
+                    }
+                } else {
+                    null
+                }
+            },
+        )
 }
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "VKT suoritusta ei löytynyt")
