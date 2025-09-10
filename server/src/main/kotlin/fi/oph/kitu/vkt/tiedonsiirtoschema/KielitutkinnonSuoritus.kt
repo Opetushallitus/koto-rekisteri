@@ -2,13 +2,6 @@ package fi.oph.kitu.vkt.tiedonsiirtoschema
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
-import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import fi.oph.kitu.Validation
 import fi.oph.kitu.ValidationResult
 import fi.oph.kitu.koodisto.Koodisto
@@ -17,10 +10,7 @@ import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktValidation
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
     val henkilo: OidOppija,
@@ -36,28 +26,6 @@ data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
         }
 
     companion object {
-        fun getDefaultObjectMapper(): ObjectMapper {
-            val mapper = ObjectMapper()
-
-            val javaTime =
-                JavaTimeModule()
-                    .addSerializer(LocalDate::class.java, LocalDateSerializer(DateTimeFormatter.ISO_LOCAL_DATE))
-                    .addSerializer(
-                        LocalDateTime::class.java,
-                        LocalDateTimeSerializer(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                    ).addSerializer(
-                        ZonedDateTime::class.java,
-                        ZonedDateTimeSerializer(DateTimeFormatter.ISO_ZONED_DATE_TIME),
-                    )
-
-            mapper.registerKotlinModule()
-            mapper.registerModule(javaTime)
-            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            mapper.enable(SerializationFeature.INDENT_OUTPUT)
-
-            return mapper
-        }
-
         fun from(entity: VktSuoritusEntity) =
             Henkilosuoritus(
                 henkilo = OidOppija.from(entity),

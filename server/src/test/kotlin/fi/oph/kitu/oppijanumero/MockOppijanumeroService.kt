@@ -1,7 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.logging.MockTracer
-import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus.Companion.getDefaultObjectMapper
 import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
@@ -22,7 +22,6 @@ object MockOppijanumeroService {
                 .build()
 
         val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
-        val objectMapper = getDefaultObjectMapper()
 
         yleistunnisteHaeResponse?.let { response ->
             mockServer
@@ -32,7 +31,7 @@ object MockOppijanumeroService {
                 ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
                 .andRespond(
                     withSuccess(
-                        objectMapper.writeValueAsString(response),
+                        defaultObjectMapper.writeValueAsString(response),
                         MediaType.APPLICATION_JSON,
                     ),
                 )
@@ -46,7 +45,7 @@ object MockOppijanumeroService {
                 ).expect(requestTo("http://localhost:8080/oppijanumero-service/henkilo/${response.oidHenkilo}"))
                 .andRespond(
                     withSuccess(
-                        objectMapper.writeValueAsString(response),
+                        defaultObjectMapper.writeValueAsString(response),
                         MediaType.APPLICATION_JSON,
                     ),
                 )
@@ -72,7 +71,7 @@ object MockOppijanumeroService {
                     },
                     tracer,
                 ),
-                objectMapper,
+                defaultObjectMapper,
             ).apply {
                 serviceUrl = "http://localhost:8080/oppijanumero-service"
             },
