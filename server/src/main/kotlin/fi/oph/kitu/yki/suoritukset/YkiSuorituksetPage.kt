@@ -12,6 +12,7 @@ import fi.oph.kitu.html.pagination
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.html.errorsArticle
+import fi.oph.kitu.yki.html.koskiErrorsArticle
 import kotlinx.html.ButtonType
 import kotlinx.html.InputType
 import kotlinx.html.a
@@ -44,13 +45,21 @@ object YkiSuorituksetPage {
         search: String,
         versionHistory: Boolean,
         errorsCount: Long,
+        koskiErrorsCount: Long,
         csrfToken: CsrfToken,
     ): String =
         Page.renderHtml(
             breadcrumbs = Navigation.getBreadcrumbs(YkiViewController::suorituksetGetView),
             wideContent = true,
         ) {
-            this.errorsArticle(errorsCount, linkTo(YkiViewController::suorituksetVirheetView).toString())
+            errorsArticle(
+                errorsCount,
+                linkTo(YkiViewController::suorituksetVirheetView).toString(),
+            )
+            koskiErrorsArticle(
+                koskiErrorsCount,
+                linkTo(YkiViewController::koskiVirheetView).toString(),
+            )
 
             formPost(
                 action = "",

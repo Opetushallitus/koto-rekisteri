@@ -18,3 +18,17 @@ fun FlowContent.errorsArticle(
         }
     }
 }
+
+fun FlowContent.koskiErrorsArticle(
+    errorsCount: Long,
+    errorPage: String,
+) {
+    if (errorsCount > 0) {
+        error("$errorsCount siirtoa KOSKI-tietovarantoon on epäonnistunut") {
+            br()
+            a(errorPage) {
+                +"Katso virheet"
+            }
+        }
+    }
+}
