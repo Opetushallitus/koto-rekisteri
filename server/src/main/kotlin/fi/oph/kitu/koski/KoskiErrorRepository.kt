@@ -129,4 +129,16 @@ data class YkiMappingId(
     val suoritusId: Int?,
 ) : KoskiErrorMappingId("yki") {
     override fun mappedId(): String = suoritusId.toString()
+
+    companion object {
+        fun parse(id: String): YkiMappingId? {
+            try {
+                return YkiMappingId(
+                    suoritusId = id.toInt(),
+                )
+            } catch (_: Throwable) {
+                return null
+            }
+        }
+    }
 }

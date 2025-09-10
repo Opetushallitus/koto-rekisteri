@@ -4,13 +4,17 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.httpParams
+import fi.oph.kitu.koski.KoskiErrorService
+import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
+import fi.oph.kitu.yki.arvioijat.error.YkiKoskiErrors
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
@@ -28,6 +32,8 @@ class YkiViewController(
     private val ykiService: YkiService,
     private val suoritusErrorService: YkiSuoritusErrorService,
     private val arvioijaErrorService: YkiArvioijaErrorService,
+    private val koskiErrorService: KoskiErrorService,
+    private val ykiSuoritusRepository: YkiSuoritusRepository,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetGetView(
@@ -103,6 +109,7 @@ class YkiViewController(
                 search = search,
                 versionHistory = versionHistory,
                 errorsCount = suoritusErrorService.countErrors(),
+                koskiErrorsCount = koskiErrorService.countByEntity("yki").toLong(),
                 csrfToken = csrfToken,
             ),
         )
@@ -147,4 +154,17 @@ class YkiViewController(
                 arvioijaErrorService.getErrors(sortColumn, sortDirection),
             ),
         )
+
+    @GetMapping("/koski-virheet", produces = ["text/html"])
+    fun koskiVirheetView(): ResponseEntity<String> {
+        val errors = koskiErrorService.findAllByEntity("yki")
+        val ids = errors.mapNotNull { YkiMappingId.parse(it.id)?.suoritusId }
+
+        return ResponseEntity.ok(
+            YkiKoskiErrors.render(
+                errors = koskiErrorService.findAllByEntity("yki"),
+                suoritukset = ykiSuoritusRepository.findAllById(ids),
+            ),
+        )
+    }
 }
