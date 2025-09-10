@@ -144,6 +144,8 @@ sealed class KituAuditLogOperation(
     override fun name(): String? = name
 
     object KielitestiSuoritusViewed : KituAuditLogOperation("KielitestiSuoritusViewed")
+
+    object VktSuoritusViewed : KituAuditLogOperation("VktSuoritusViewed")
 }
 
 enum class KituAuditLogMessageField(
