@@ -71,7 +71,6 @@ object MockOppijanumeroService {
                     },
                     tracer,
                 ),
-                defaultObjectMapper,
             ).apply {
                 serviceUrl = "http://localhost:8080/oppijanumero-service"
             },
