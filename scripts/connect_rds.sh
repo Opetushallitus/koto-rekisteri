@@ -52,7 +52,7 @@ get_stack_output() {
   local value
   # use starts_with here instead of equality comparison because CDK adds a hash suffix to output names
   value=$(aws cloudformation describe-stacks --stack-name "$env-$stack" --query "Stacks[0].Outputs[?starts_with(OutputKey, '$output')].OutputValue[0]")
-  [[ -z $value ]] && fatal "Could not find stack output stack=$stack output=$output"
+  [[ -z $value ]] && fatal "Could not find stack output stack=$env-$stack output=$output"
   echo "$value"
 }
 
