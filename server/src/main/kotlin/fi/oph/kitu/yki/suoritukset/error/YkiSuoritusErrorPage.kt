@@ -17,7 +17,7 @@ object YkiSuoritusErrorPage {
         Page.renderHtml(
             wideContent = true,
         ) {
-            h1 { +"Yleiset kielitutkinnot" }
+            h1 { +"Yleinen kielitutkinto" }
             h2 { +"Suoritusten tuonnin virheet" }
             displayTable(
                 rows = virheet,

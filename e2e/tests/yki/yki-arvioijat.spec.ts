@@ -2,7 +2,7 @@ import { beforeEach, describe, test } from "../../fixtures/baseFixture"
 import { expectToHaveTexts } from "../../util/expect"
 import { expect } from "@playwright/test"
 
-describe("Yleiset kielitutkinnot arvioijat page", () => {
+describe("Yleinen kielitutkinto arvioijat page", () => {
   beforeEach(async ({ db, ykiArvioija }) => {
     await db.withEmptyDatabase()
     await ykiArvioija.insert(db, "ranja")

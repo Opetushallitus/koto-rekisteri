@@ -11,7 +11,7 @@ object Navigation {
         listOf(
             MenuItemGroup(
                 "yki",
-                "Yleiset kielitutkinnot",
+                "Yleinen kielitutkinto",
                 listOf(
                     MenuItem.of("Suoritukset", YkiViewController::suorituksetGetView),
                     MenuItem.of("Arvioijat", YkiViewController::arvioijatView),
