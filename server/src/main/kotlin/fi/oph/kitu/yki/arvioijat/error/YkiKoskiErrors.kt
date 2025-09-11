@@ -30,7 +30,7 @@ object YkiKoskiErrors {
                             ?.let { error.id to it }
                     }.toMap()
 
-            h1 { +"Yleiset kielitutkinnot" }
+            h1 { +"Yleinen kielitutkinto" }
             h2 { +"KOSKI-tiedonsiirtovirheet" }
 
             card(overflowAuto = true, compact = true) {

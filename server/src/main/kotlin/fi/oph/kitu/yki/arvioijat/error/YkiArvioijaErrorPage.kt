@@ -15,7 +15,7 @@ object YkiArvioijaErrorPage {
         Page.renderHtml(
             wideContent = true,
         ) {
-            h1 { +"Yleiset kielitutkinnot" }
+            h1 { +"Yleinen kielitutkinto" }
             h2 { +"Arvioijien tuonnin virheet" }
             displayTable(
                 rows = virheet,

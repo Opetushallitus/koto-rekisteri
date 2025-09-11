@@ -53,7 +53,7 @@ object YkiSuorituksetPage {
         Page.renderHtml(
             wideContent = true,
         ) {
-            h1 { +"Yleiset kielitutkinnot" }
+            h1 { +"Yleinen kielitutkinto" }
             h2 { +"Suoritukset" }
             errorsArticle(
                 errorsCount,

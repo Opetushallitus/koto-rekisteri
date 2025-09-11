@@ -17,14 +17,14 @@ export default class YkiArvioijatPage extends BasePage {
   }
 
   async openFromNavigation() {
-    await this.gotoFromMainNav("Yleiset kielitutkinnot", "Arvioijat")
+    await this.gotoFromMainNav("Yleinen kielitutkinto", "Arvioijat")
   }
 
   async expectContentToBeVisible() {
     const pageContent = this.getPageContent()
     await expect(pageContent).toBeVisible()
     await expect(
-      pageContent.getByRole("heading", { name: "Yleiset kielitutkinnot" }),
+      pageContent.getByRole("heading", { name: "Yleinen kielitutkinto" }),
     ).toBeVisible()
     await expect(
       pageContent.getByRole("heading", { name: "Arvioijat" }),
