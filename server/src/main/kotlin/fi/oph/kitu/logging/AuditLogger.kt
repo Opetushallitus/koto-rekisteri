@@ -67,6 +67,8 @@ class AuditLogger(
         val user = context.user()
 
         val targetBuilder = AuditTarget.Builder()
+        targetBuilder.setField("organizationOid", context.userOrganizationOid.toString())
+
         for ((key, value) in target) {
             targetBuilder.setField(key.key, value)
         }
@@ -115,10 +117,11 @@ data class AuditContext(
     val userAgent: String,
     val ip: InetAddress,
     val session: String,
+    val userOrganizationOid: Oid,
 ) {
     companion object {
         fun get(): AuditContext {
-            val userDetails =
+            val userDetails: CasUserDetails =
                 SecurityContextHolder.getContext().authentication?.principal as CasUserDetails?
                     ?: throw IllegalStateException("User details not available via SecurityContextHolder")
             val servletRequestAttributes =
@@ -127,11 +130,12 @@ data class AuditContext(
             val request = servletRequestAttributes.request
 
             val userOid = userDetails.oid
+            val userOrganizationOid = userDetails.kayttajanOrganisaatioOid
             val userAgent = request.getHeader("user-agent")
             val ip = InetAddress.getByName(request.remoteAddr)
             val session = request.session.id
 
-            return AuditContext(userOid, userAgent, ip, session)
+            return AuditContext(userOid, userAgent, ip, session, userOrganizationOid)
         }
     }
 
