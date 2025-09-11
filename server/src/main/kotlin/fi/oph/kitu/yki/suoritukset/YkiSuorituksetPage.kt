@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.displayTableBody
@@ -123,7 +122,7 @@ object YkiSuorituksetPage {
                         sortDirection = sortDirection,
                         urlParams =
                             mapOf(
-                                "search" to search,
+                                "recallSearch" to if (search.isNotEmpty()) "true" else null,
                                 "includeVersionHistory" to "$versionHistory",
                                 "page" to "${pagination.currentPageNumber}",
                             ),
