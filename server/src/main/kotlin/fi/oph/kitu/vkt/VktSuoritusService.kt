@@ -87,14 +87,15 @@ class VktSuoritusService(
                 .mapNotNull { suoritusRepository.findById(it).getOrNull() }
                 .map { Henkilosuoritus.from(it) }
                 .also {
-                    val henkilo = it.first().henkilo
-                    auditLogger.log(
-                        operation = KituAuditLogOperation.VktSuoritusViewed,
-                        target =
-                            listOf(
-                                Pair(KituAuditLogMessageField.OPPIJA_OPPIJANUMERO, henkilo.oid.oid),
-                            ),
-                    )
+                    it.firstOrNull()?.henkilo?.let { henkilo ->
+                        auditLogger.log(
+                            operation = KituAuditLogOperation.VktSuoritusViewed,
+                            target =
+                                listOf(
+                                    Pair(KituAuditLogMessageField.OPPIJA_OPPIJANUMERO, henkilo.oid.oid),
+                                ),
+                        )
+                    }
                 }
         return if (suoritukset.isEmpty()) null else VktSuoritus.merge(suoritukset)
     }

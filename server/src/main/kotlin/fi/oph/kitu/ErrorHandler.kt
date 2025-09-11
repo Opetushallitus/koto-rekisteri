@@ -1,6 +1,9 @@
 package fi.oph.kitu
 
+import fi.oph.kitu.dev.MockResourceNotFoundError
 import fi.oph.kitu.html.ErrorPage
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.vkt.VktSuoritusNotFoundError
 import io.opentelemetry.api.trace.Span
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -11,6 +14,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.client.RestClientException
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import java.time.Instant
 
 data class RestErrorMessage(
@@ -58,13 +62,23 @@ class GlobalControllerExceptionHandler(
         val traceId = Span.current().spanContext?.traceId
         val isLocal = environment.activeProfiles.contains("local")
         val traceUrl =
-            if (traceId !== null &&
-                traceUiUrl.isNotEmpty()
-            ) {
+            if (traceId !== null && traceUiUrl.isNotEmpty()) {
                 traceUiUrl.replace("{traceId}", traceId)
             } else {
                 null
             }
-        return ResponseEntity(ErrorPage.render(error, traceId, traceUrl, isLocal), HttpStatus.INTERNAL_SERVER_ERROR)
+
+        return when (error) {
+            is VktSuoritusNotFoundError,
+            is MockResourceNotFoundError,
+            is OppijanumeroException.OppijaNotFoundException,
+            is org.springframework.web.servlet.resource.NoResourceFoundException,
+            -> ErrorPage.notFound(traceId, traceUrl)
+
+            is MethodArgumentTypeMismatchException,
+            -> ErrorPage.badRequest(traceId, traceUrl)
+
+            else -> ErrorPage.error(error, traceId, traceUrl, isLocal)
+        }
     }
 }
