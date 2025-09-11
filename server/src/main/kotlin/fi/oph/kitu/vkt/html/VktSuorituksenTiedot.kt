@@ -15,6 +15,7 @@ import kotlinx.html.i
 
 fun FlowContent.vktSuorituksenTiedot(
     data: Henkilosuoritus<VktSuoritus>,
+    koskiTransferState: KoskiTransferState,
     t: Translations,
 ) {
     card(compact = true) {
@@ -28,17 +29,19 @@ fun FlowContent.vktSuorituksenTiedot(
     card(compact = true) {
         infoTable(
             "KOSKI" to {
-                if (data.suoritus.koskiSiirtoKasitelty) {
-                    if (data.suoritus.koskiOpiskeluoikeusOid != null) {
-                        +"Tiedot siirretty KOSKI-tietovarantoon, opiskeluoikeus: "
-                        a(href = "/koski/oppija/${data.henkilo.oid}") {
-                            +data.suoritus.koskiOpiskeluoikeusOid.toString()
-                        }
-                    } else {
-                        +"Tiedot eivät ole valmiit siirrettäväksi KOSKI-tietovarantoon"
+                when (koskiTransferState) {
+                    KoskiTransferState.NOT_READY ->
+                        +"Tiedoissa puutteita tai virheitä, eivätkä ole valmiit siirrettäväksi KOSKI-tietovarantoon."
+                    KoskiTransferState.PENDING ->
+                        +"Yritys tietojen siirrosta KOSKI-tietovarantoon ajastettu."
+                    KoskiTransferState.SUCCESS ->
+                        +"Tiedot siirretty KOSKI-tietovarantoon."
+                }
+                if (data.suoritus.koskiOpiskeluoikeusOid != null) {
+                    +" Opiskeluoikeuden oid: "
+                    a(href = "/koski/oppija/${data.henkilo.oid}") {
+                        +data.suoritus.koskiOpiskeluoikeusOid.toString()
                     }
-                } else {
-                    +"Yritys tietojen siirrosta KOSKI-tietovarantoon ajastettu"
                 }
             },
         )

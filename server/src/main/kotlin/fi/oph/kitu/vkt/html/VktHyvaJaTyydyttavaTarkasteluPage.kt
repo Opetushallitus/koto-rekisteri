@@ -23,6 +23,7 @@ object VktHyvaJaTyydyttavaTarkasteluPage {
         data: Henkilosuoritus<VktSuoritus>,
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
+        koskiTransferState: KoskiTransferState,
     ): String =
         Page.renderHtml(
             Navigation.getBreadcrumbs(
@@ -36,7 +37,7 @@ object VktHyvaJaTyydyttavaTarkasteluPage {
             h1 { +data.henkilo.kokoNimi() }
 
             vktHenkilonTiedot(data, henkilo)
-            vktSuorituksenTiedot(data, translations)
+            vktSuorituksenTiedot(data, koskiTransferState, translations)
 
             h2 { +"Tutkinnot" }
             vktTutkinnot(data, translations)

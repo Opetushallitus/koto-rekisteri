@@ -7,16 +7,19 @@ import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiErrorService
+import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.oppijanumero.EmptyRequest
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.toTypedResult
+import fi.oph.kitu.vkt.html.KoskiTransferState
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
 import fi.oph.kitu.vkt.html.VktKoskiErrors
+import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.a
 import kotlinx.html.br
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
@@ -40,6 +43,7 @@ class VktViewController(
     private val localizationService: LocalizationService,
     private val oppijanumeroService: OppijanumeroService,
     private val koskiErrorService: KoskiErrorService,
+    private val koskiRequestMapper: KoskiRequestMapper,
 ) {
     @GetMapping("/erinomainen/ilmoittautuneet", produces = ["text/html"])
     fun erinomaisenTaitotasonIlmoittautuneetView(
@@ -189,9 +193,20 @@ class VktViewController(
 
         return ResponseEntity.ok(
             if (suoritus.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
-                VktErinomaisenArviointiPage.render(suoritus, henkilo, translations, messages)
+                VktErinomaisenArviointiPage.render(
+                    suoritus,
+                    henkilo,
+                    translations,
+                    messages,
+                    getKoskiTransferState(suoritus),
+                )
             } else {
-                VktHyvaJaTyydyttavaTarkasteluPage.render(suoritus, henkilo, translations)
+                VktHyvaJaTyydyttavaTarkasteluPage.render(
+                    suoritus,
+                    henkilo,
+                    translations,
+                    getKoskiTransferState(suoritus),
+                )
             },
         )
     }
@@ -244,6 +259,18 @@ class VktViewController(
                 }
             },
         )
+
+    private fun getKoskiTransferState(suoritus: Henkilosuoritus<VktSuoritus>): KoskiTransferState {
+        if (suoritus.suoritus.koskiSiirtoKasitelty) {
+            return KoskiTransferState.SUCCESS
+        } else {
+            val koskiRequest = koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus)
+            if (koskiRequest == null) {
+                return KoskiTransferState.NOT_READY
+            }
+            return KoskiTransferState.PENDING
+        }
+    }
 }
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "VKT suoritusta ei löytynyt")

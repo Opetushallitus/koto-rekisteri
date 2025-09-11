@@ -37,6 +37,7 @@ object VktErinomaisenArviointiPage {
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
         messages: List<ViewMessageData>,
+        koskiTransferState: KoskiTransferState,
     ): String =
         Page.renderHtml(
             Navigation.getBreadcrumbs(
@@ -60,7 +61,7 @@ object VktErinomaisenArviointiPage {
             messages.forEach { viewMessage(it) }
 
             vktHenkilonTiedot(data, henkilo)
-            vktSuorituksenTiedot(data, translations)
+            vktSuorituksenTiedot(data, koskiTransferState, translations)
 
             h2 { +"Tutkinnot" }
             vktTutkinnot(data, translations)
