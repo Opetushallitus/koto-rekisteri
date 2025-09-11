@@ -23,16 +23,12 @@ export const handler = async (event: CloudWatchLogsEvent) => {
     }),
   })
 
+  // TODO: Send all, and maybe you should use batch send instead?
+  const MessageBody = JSON.stringify(auditLogEntry[0])
   const command = new SendMessageCommand({
     QueueUrl,
-
-    // TODO: Send all, and maybe you should use batch send instead?
-    MessageBody: auditLogEntry[0].toString(),
+    MessageBody,
   })
-  console.log(
-    `Sending a message to queueUrl '${QueueUrl}'. The message: `,
-    auditLogEntry[0].toString(),
-  )
 
   try {
     const data = await sqs.send(command)
