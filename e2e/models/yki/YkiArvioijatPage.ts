@@ -23,13 +23,11 @@ export default class YkiArvioijatPage extends BasePage {
   async expectContentToBeVisible() {
     const pageContent = this.getPageContent()
     await expect(pageContent).toBeVisible()
-
-    const breadcrumbs = this.page
-      .getByTestId("breadcrumbs")
-      .getByRole("listitem")
     await expect(
-      breadcrumbs.filter({ hasText: "Yleiset kielitutkinnot" }),
+      pageContent.getByRole("heading", { name: "Yleiset kielitutkinnot" }),
     ).toBeVisible()
-    await expect(breadcrumbs.filter({ hasText: "Arvioijat" })).toBeVisible()
+    await expect(
+      pageContent.getByRole("heading", { name: "Arvioijat" }),
+    ).toBeVisible()
   }
 }

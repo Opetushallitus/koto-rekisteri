@@ -17,6 +17,7 @@ import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.h1
 import kotlinx.html.h2
+import kotlinx.html.h3
 
 object VktHyvaJaTyydyttavaTarkasteluPage {
     fun render(
@@ -25,24 +26,17 @@ object VktHyvaJaTyydyttavaTarkasteluPage {
         translations: Translations,
         koskiTransferState: KoskiTransferState,
     ): String =
-        Page.renderHtml(
-            Navigation.getBreadcrumbs(
-                VktViewController::hyvanJaTyydyttavanTaitotasonSuorituksetView,
-                Navigation.MenuItem(
-                    data.henkilo.kokoNimi(),
-                    "/vkt/suoritukset/${data.suoritus.internalId}",
-                ),
-            ),
-        ) {
+        Page.renderHtml {
             h1 { +data.henkilo.kokoNimi() }
+            h2 { +"Valtionhallinnon kielitutkinto" }
 
             vktHenkilonTiedot(data, henkilo)
             vktSuorituksenTiedot(data, koskiTransferState, translations)
 
-            h2 { +"Tutkinnot" }
+            h3 { +"Tutkinnot" }
             vktTutkinnot(data, translations)
 
-            h2 { +"Osakokeet" }
+            h3 { +"Osakokeet" }
             card(overflowAuto = true) {
                 vktHyvaJaTyydyttavaOsakoeTable(data.suoritus.osat, translations)
             }

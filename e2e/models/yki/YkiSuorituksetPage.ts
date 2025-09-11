@@ -19,12 +19,8 @@ export default class YkiSuorituksetPage extends BasePage {
   async expectContentToBeVisible() {
     const pageContent = this.getPageContent()
     await expect(pageContent).toBeVisible()
-
-    const breadcrumbs = this.page
-      .getByTestId("breadcrumbs")
-      .getByRole("listitem")
     await expect(
-      breadcrumbs.filter({ hasText: "Yleiset kielitutkinnot" }),
+      pageContent.getByRole("heading", { name: "Yleiset kielitutkinnot" }),
     ).toBeVisible()
   }
 

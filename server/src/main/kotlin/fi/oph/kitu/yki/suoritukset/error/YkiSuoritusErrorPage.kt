@@ -5,6 +5,8 @@ import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.yki.YkiViewController
+import kotlinx.html.h1
+import kotlinx.html.h2
 
 object YkiSuoritusErrorPage {
     fun render(
@@ -13,16 +15,10 @@ object YkiSuoritusErrorPage {
         virheet: List<YkiSuoritusErrorEntity>,
     ): String =
         Page.renderHtml(
-            breadcrumbs =
-                Navigation.getBreadcrumbs(
-                    YkiViewController::suorituksetGetView,
-                    Navigation.MenuItem.of(
-                        "Virheet",
-                        YkiViewController::suorituksetVirheetView,
-                    ),
-                ),
             wideContent = true,
         ) {
+            h1 { +"Yleiset kielitutkinnot" }
+            h2 { +"Suoritusten tuonnin virheet" }
             displayTable(
                 rows = virheet,
                 columns = enumValues<YkiSuoritusErrorColumn>().map { it.withValue(it.renderValue) },

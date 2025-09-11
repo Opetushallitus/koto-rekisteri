@@ -1,11 +1,12 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import kotlinx.html.article
+import kotlinx.html.h1
+import kotlinx.html.h2
 import kotlinx.html.table
 import kotlin.enums.enumEntries
 
@@ -16,13 +17,10 @@ object KielitestiSuoritusErrorPage {
         errors: Iterable<KielitestiSuoritusError>,
     ): String =
         Page.renderHtml(
-            breadcrumbs =
-                Navigation.getBreadcrumbs(
-                    KielitestiViewController::suorituksetView,
-                    Navigation.MenuItem.of("Virheet", KielitestiViewController::virheetView),
-                ),
             wideContent = true,
         ) {
+            h1 { +"Kotoutumiskoulutuksen kielitaidon päättötesti" }
+            h2 { +"Suoritusten tuonnin virheet" }
             article(classes = "overflow-auto") {
                 table(classes = "compact striped") {
                     val columns = enumEntries<KielitestiSuoritusErrorColumn>().map { it.withValue(it.renderValue) }

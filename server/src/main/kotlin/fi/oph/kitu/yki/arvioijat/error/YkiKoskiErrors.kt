@@ -11,6 +11,7 @@ import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import kotlinx.html.details
 import kotlinx.html.h1
+import kotlinx.html.h2
 import kotlinx.html.summary
 
 object YkiKoskiErrors {
@@ -18,7 +19,7 @@ object YkiKoskiErrors {
         errors: List<KoskiErrorEntity>,
         suoritukset: Iterable<YkiSuoritusEntity>,
     ): String =
-        Page.renderHtml(breadcrumbs = emptyList()) {
+        Page.renderHtml {
             val errorIdToSuoritusMap =
                 errors
                     .mapNotNull { error ->
@@ -29,7 +30,8 @@ object YkiKoskiErrors {
                             ?.let { error.id to it }
                     }.toMap()
 
-            h1 { +"KOSKI-tiedonsiirtovirheet" }
+            h1 { +"Yleiset kielitutkinnot" }
+            h2 { +"KOSKI-tiedonsiirtovirheet" }
 
             card(overflowAuto = true, compact = true) {
                 displayTable(

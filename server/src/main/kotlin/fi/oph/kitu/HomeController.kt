@@ -18,7 +18,7 @@ class HomeController {
     @GetMapping("/", produces = ["text/html"])
     fun home(): ResponseEntity<String> =
         ResponseEntity.ok(
-            Page.renderHtml(breadcrumbs = emptyList()) {
+            Page.renderHtml {
                 h1 { +"Kielitutkintorekisteri" }
                 mainNavigation.forEach { group ->
                     section {

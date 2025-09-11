@@ -44,31 +44,6 @@ object Navigation {
             ),
         )
 
-    inline fun <reified C> getBreadcrumbs(
-        routeFunc: C.() -> Unit,
-        leaf: MenuItem? = null,
-    ) = getBreadcrumbs(linkTo(routeFunc).toString(), leaf)
-
-    fun getBreadcrumbs(
-        linkBuilder: WebMvcLinkBuilder,
-        leaf: MenuItem? = null,
-    ) = getBreadcrumbs(linkBuilder.toString(), leaf)
-
-    fun getBreadcrumbs(
-        ref: String,
-        leaf: MenuItem? = null,
-    ): List<MenuItem> =
-        (
-            mainNavigation
-                .flatMap { group ->
-                    group.children.filter { it.ref == ref }.map { group to it }
-                }.firstOrNull()
-                ?.let { (group, item) ->
-                    listOf(MenuItem(group.name, item.ref), item)
-                }.orEmpty()
-        ) +
-            listOfNotNull(leaf)
-
     data class MenuItemGroup(
         val id: String,
         val name: String,

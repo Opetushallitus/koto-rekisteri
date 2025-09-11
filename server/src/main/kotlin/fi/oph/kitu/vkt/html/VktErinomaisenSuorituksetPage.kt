@@ -3,7 +3,6 @@
 package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessageData
@@ -34,9 +33,9 @@ object VktErinomaisenSuorituksetPage {
     ): String =
         Page.renderHtml(
             wideContent = true,
-            breadcrumbs = Navigation.getBreadcrumbs(linkBuilder),
         ) {
-            h1 { +title }
+            h1 { +"Valtionhallinnon kielitutkinto" }
+            h2 { +title }
             messages.forEach { viewMessage(it) }
             vktSearch(searchQuery)
             vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, pagination, translations, searchQuery)
