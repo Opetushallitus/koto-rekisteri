@@ -102,6 +102,7 @@ export class ServiceStack extends Stack {
     })
 
     new CfnOutput(this, "ClusterArn", { value: cluster.clusterArn })
+    new CfnOutput(this, "ClusterName", { value: cluster.clusterName })
 
     this.service = new ApplicationLoadBalancedFargateService(this, "Kitu", {
       cluster,
