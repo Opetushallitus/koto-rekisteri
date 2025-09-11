@@ -29,16 +29,10 @@ object Page {
     }
 
     fun renderHtml(
-        breadcrumbs: List<Navigation.MenuItem>,
         wideContent: Boolean = false,
         renderBody: SECTION.() -> Unit,
     ): String {
-        val pageTitle =
-            listOf(
-                "Kielitutkintorekisteri",
-                breadcrumbs.joinToString(" - ") { it.title },
-            ).filter { it.isNotEmpty() }
-                .joinToString(" - ")
+        val pageTitle = "Kielitutkintorekisteri"
 
         return createHTML().html {
             lang = "fi"
@@ -67,9 +61,6 @@ object Page {
                                         a(
                                             href = linkTo(HomeController::home).toString(),
                                         ) { strong { +"Kielitutkintorekisteri" } }
-                                    }
-                                    breadcrumbs.forEach {
-                                        li { a(href = it.ref) { +it.title } }
                                     }
                                 }
                             }

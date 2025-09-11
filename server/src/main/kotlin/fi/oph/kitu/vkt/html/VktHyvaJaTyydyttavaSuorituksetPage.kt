@@ -30,14 +30,9 @@ object VktHyvaJaTyydyttavaSuorituksetPage {
     ): String =
         Page.renderHtml(
             wideContent = true,
-            breadcrumbs =
-                Navigation.getBreadcrumbs(
-                    linkTo(
-                        VktViewController::hyvanJaTyydyttavanTaitotasonSuorituksetView,
-                    ).toString(),
-                ),
         ) {
-            h1 { +"Hyvän ja tyydyttävän taitotason suoritukset" }
+            h1 { +"Valtionhallinnon kielitutkinto" }
+            h2 { +"Hyvän ja tyydyttävän taitotason suoritukset" }
             vktSearch(searchQuery)
             vktHyvaJaTyydyttavaTable(suoritukset, sortedBy, sortDirection, pagination, translations, searchQuery)
         }

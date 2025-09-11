@@ -13,6 +13,7 @@ import fi.oph.kitu.vkt.VktViewController
 import kotlinx.html.a
 import kotlinx.html.details
 import kotlinx.html.h1
+import kotlinx.html.h2
 import kotlinx.html.summary
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
@@ -22,8 +23,9 @@ object VktKoskiErrors {
         errors: List<KoskiErrorEntity>,
         t: Translations,
     ): String =
-        Page.renderHtml(breadcrumbs = emptyList()) {
-            h1 { +"KOSKI-tiedonsiirtovirheet" }
+        Page.renderHtml {
+            h1 { +"Valtionhallinnon kielitutkinto" }
+            h2 { +"KOSKI-tiedonsiirtovirheet" }
 
             card(overflowAuto = true, compact = true) {
                 displayTable(

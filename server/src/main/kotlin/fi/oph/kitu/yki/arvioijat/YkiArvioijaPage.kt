@@ -1,12 +1,14 @@
 package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.html.errorsArticle
 import kotlinx.html.article
+import kotlinx.html.h1
+import kotlinx.html.h2
+import org.springframework.hateoas.server.mvc.linkTo
 import kotlin.String
 import kotlin.enums.enumEntries
 
@@ -18,10 +20,11 @@ object YkiArvioijaPage {
         errorsCount: Long,
     ): String =
         Page.renderHtml(
-            Navigation.getBreadcrumbs(YkiViewController::arvioijatView),
             wideContent = true,
         ) {
-            this.errorsArticle(errorsCount, "/yki/arvioijat/virheet")
+            h1 { +"Yleiset kielitutkinnot" }
+            h2 { +"Arvioijat" }
+            this.errorsArticle(errorsCount, linkTo(YkiViewController::arvioijatVirheetView).toString())
 
             article(classes = "overflow-auto") {
                 displayTable(

@@ -1,13 +1,14 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.yki.html.errorsArticle
 import kotlinx.html.article
 import kotlinx.html.details
+import kotlinx.html.h1
+import kotlinx.html.h2
 import kotlinx.html.summary
 import kotlinx.html.table
 import kotlinx.html.tbody
@@ -26,10 +27,10 @@ object KielitestiSuorituksetPage {
         errorsCount: Long,
     ): String =
         Page.renderHtml(
-            breadcrumbs =
-                Navigation.getBreadcrumbs(KielitestiViewController::suorituksetView),
             wideContent = true,
         ) {
+            h1 { +"Kotoutumiskoulutuksen kielitaidon päättötesti" }
+            h2 { +"Suoritukset" }
             errorsArticle(errorsCount, linkTo(KielitestiViewController::virheetView).toString())
 
             article(classes = "overflow-auto") {

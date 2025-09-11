@@ -27,6 +27,7 @@ import kotlinx.html.FlowContent
 import kotlinx.html.footer
 import kotlinx.html.h1
 import kotlinx.html.h2
+import kotlinx.html.h3
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import java.time.LocalDate
@@ -39,34 +40,19 @@ object VktErinomaisenArviointiPage {
         messages: List<ViewMessageData>,
         koskiTransferState: KoskiTransferState,
     ): String =
-        Page.renderHtml(
-            Navigation.getBreadcrumbs(
-                VktViewController::erinomaisenTaitotasonIlmoittautuneetView,
-                Navigation.MenuItem.of(
-                    data.henkilo.kokoNimi(),
-                    linkTo(
-                        methodOn(
-                            VktViewController::class.java,
-                        ).ilmoittautuneenArviointiView(
-                            data.henkilo.oid.toString(),
-                            data.suoritus.kieli,
-                            data.suoritus.taitotaso,
-                        ),
-                    ),
-                ),
-            ),
-        ) {
+        Page.renderHtml {
             h1 { +data.henkilo.kokoNimi() }
+            h2 { +"Valtionhallinnon kielitutkinto" }
 
             messages.forEach { viewMessage(it) }
 
             vktHenkilonTiedot(data, henkilo)
             vktSuorituksenTiedot(data, koskiTransferState, translations)
 
-            h2 { +"Tutkinnot" }
+            h3 { +"Tutkinnot" }
             vktTutkinnot(data, translations)
 
-            h2 { +"Osakokeet" }
+            h3 { +"Osakokeet" }
             formPost(action = "") {
                 card(overflowAuto = true, compact = true) {
                     vktErinomainenOsakoeTable(data.suoritus.osat, translations)

@@ -21,6 +21,8 @@ import kotlinx.html.button
 import kotlinx.html.details
 import kotlinx.html.fieldSet
 import kotlinx.html.footer
+import kotlinx.html.h1
+import kotlinx.html.h2
 import kotlinx.html.header
 import kotlinx.html.label
 import kotlinx.html.li
@@ -49,9 +51,10 @@ object YkiSuorituksetPage {
         csrfToken: CsrfToken,
     ): String =
         Page.renderHtml(
-            breadcrumbs = Navigation.getBreadcrumbs(YkiViewController::suorituksetGetView),
             wideContent = true,
         ) {
+            h1 { +"Yleiset kielitutkinnot" }
+            h2 { +"Suoritukset" }
             errorsArticle(
                 errorsCount,
                 linkTo(YkiViewController::suorituksetVirheetView).toString(),
