@@ -1,7 +1,11 @@
 package fi.oph.kitu
 
+import fi.oph.kitu.html.ErrorPage
+import io.opentelemetry.api.trace.Span
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -17,8 +21,13 @@ data class RestErrorMessage(
 )
 
 @ControllerAdvice
-class GlobalControllerExceptionHandler {
+class GlobalControllerExceptionHandler(
+    val environment: Environment,
+) {
     private val logger: Logger = LoggerFactory.getLogger(GlobalControllerExceptionHandler::class.java)
+
+    @Value("\${trace-ui:}")
+    private lateinit var traceUiUrl: String
 
     @ExceptionHandler
     fun handleValidationException(e: Validation.ValidationException): ResponseEntity<RestErrorMessage> =
@@ -42,5 +51,20 @@ class GlobalControllerExceptionHandler {
             ),
             HttpStatus.SERVICE_UNAVAILABLE,
         )
+    }
+
+    @ExceptionHandler
+    fun handleServerException(error: Throwable): ResponseEntity<String> {
+        val traceId = Span.current().spanContext?.traceId
+        val isLocal = environment.activeProfiles.contains("local")
+        val traceUrl =
+            if (traceId !== null &&
+                traceUiUrl.isNotEmpty()
+            ) {
+                traceUiUrl.replace("{traceId}", traceId)
+            } else {
+                null
+            }
+        return ResponseEntity(ErrorPage.render(error, traceId, traceUrl, isLocal), HttpStatus.INTERNAL_SERVER_ERROR)
     }
 }
