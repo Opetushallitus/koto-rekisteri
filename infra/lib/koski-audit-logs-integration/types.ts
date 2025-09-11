@@ -35,8 +35,8 @@ type AuditLogEntry = {
   user: {
     oid: string
     ip: string
-    session: "01234567890ABCDEF0123456789ABCDEF"
-    userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:142.0) Gecko/20100101 Firefox/142.0"
+    session: string
+    userAgent: string
   }
   operation: "KielitestiSuoritusViewed"
   target: { oppijaHenkiloOid: "1.2.246.562.198.88975028874" }
