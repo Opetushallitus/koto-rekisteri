@@ -18,6 +18,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
+import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
@@ -42,9 +43,11 @@ class YkiViewController(
         page: Int = 1,
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
+        recallSearch: Boolean = false,
+        session: HttpSession? = null,
     ): ResponseEntity<String> =
         handleSuorituksetView(
-            "",
+            if (recallSearch) session?.getAttribute(YKI_SEARCH_KEY) as? String ?: "" else "",
             versionHistory,
             limit,
             page,
@@ -62,8 +65,11 @@ class YkiViewController(
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
         csrfToken: CsrfToken = KituRequest.currentCsrfToken(),
-    ): ResponseEntity<String> =
-        handleSuorituksetView(search, versionHistory, limit, page, sortColumn, sortDirection, csrfToken)
+        session: HttpSession,
+    ): ResponseEntity<String> {
+        session.setAttribute(YKI_SEARCH_KEY, search)
+        return handleSuorituksetView(search, versionHistory, limit, page, sortColumn, sortDirection, csrfToken)
+    }
 
     fun handleSuorituksetView(
         search: String,
@@ -97,7 +103,7 @@ class YkiViewController(
                         url = { currentPage ->
                             httpParams(
                                 mapOf(
-                                    "page" to search,
+                                    "recallSearch" to if (search.isNotEmpty()) "true" else null,
                                     "includeVersionHistory" to versionHistory,
                                     "page" to currentPage,
                                     "sortColumn" to sortColumn.urlParam,
@@ -166,5 +172,9 @@ class YkiViewController(
                 suoritukset = ykiSuoritusRepository.findAllById(ids),
             ),
         )
+    }
+
+    companion object {
+        const val YKI_SEARCH_KEY = "YkiSearch"
     }
 }
