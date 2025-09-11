@@ -19,6 +19,16 @@ object YkiKoskiErrors {
         suoritukset: Iterable<YkiSuoritusEntity>,
     ): String =
         Page.renderHtml(breadcrumbs = emptyList()) {
+            val errorIdToSuoritusMap =
+                errors
+                    .mapNotNull { error ->
+                        YkiMappingId
+                            .parse(error.id)
+                            ?.suoritusId
+                            ?.let { id -> suoritukset.find { it.id == id } }
+                            ?.let { error.id to it }
+                    }.toMap()
+
             h1 { +"KOSKI-tiedonsiirtovirheet" }
 
             card(overflowAuto = true, compact = true) {
@@ -26,12 +36,11 @@ object YkiKoskiErrors {
                     rows = errors,
                     columns =
                         listOf(
+                            Column.Oppijanumero.withValue { error ->
+                                +(errorIdToSuoritusMap[error.id]?.suorittajanOID?.toString() ?: "???")
+                            },
                             Column.SuorituksenTunniste.withValue { error ->
-                                val suoritus =
-                                    YkiMappingId.parse(error.id)?.suoritusId?.let { id ->
-                                        suoritukset.find { it.id == id }
-                                    }
-                                +(suoritus?.suoritusId?.toString() ?: "#${error.id}")
+                                +(errorIdToSuoritusMap[error.id]?.suoritusId?.toString() ?: "#${error.id}")
                             },
                             Column.Aikaleima.withValue {
                                 +it.timestamp.finnishDateTime()
@@ -65,6 +74,7 @@ object YkiKoskiErrors {
         override val uiHeaderValue: String,
         override val urlParam: String,
     ) : DisplayTableEnum {
+        Oppijanumero("oppijanumero", "Oppijanumero", "oppijanumero"),
         SuorituksenTunniste("tunniste", "Suorituksen tunniste", "tunniste"),
         Virhe("error", "Virhe", "error"),
         Aikaleima("timestamp", "Aikaleima", "timestamp"),
