@@ -86,6 +86,8 @@ export class EnvironmentStage extends Stage {
 
     new EcsRdsProxyStack(this, "EcsRdsProxy", {
       env,
+      vpc: networkStack.vpc,
+      targetRdsCluster: dbStack.cluster,
     })
 
     new ServiceStack(this, "Service", {
