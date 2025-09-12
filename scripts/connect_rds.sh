@@ -90,10 +90,10 @@ wait_for_task_start() {
 
 establish_session() {
   local cluster=$1
-  local container=$2
+  local container_id=$2
   local host=$3
   aws ssm start-session \
-    --target "ecs:$cluster:$container" \
+    --target "ecs:${cluster}_${container_id}" \
     --document-name AWS-StartPortForwardingSessionToRemoteHost \
     --parameters "host=$host,portNumber=5432,localPortNumber=8432"
 }
