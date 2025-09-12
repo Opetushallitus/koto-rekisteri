@@ -37,7 +37,7 @@ run() {
   container_runtime_id=$(wait_for_task_start "$cluster_name" "$task_arn")
 
   info "Connecting to proxy task"
-  establish_session "$cluster" "$container_runtime_id" "$database_hostname"
+  establish_session "$cluster_name" "$container_runtime_id" "$database_hostname"
 }
 
 aws() {
