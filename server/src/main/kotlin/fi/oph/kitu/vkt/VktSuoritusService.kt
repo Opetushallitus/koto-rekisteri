@@ -90,6 +90,7 @@ class VktSuoritusService(
                     it.firstOrNull()?.henkilo?.let { henkilo ->
                         auditLogger.log(
                             operation = KituAuditLogOperation.VktSuoritusViewed,
+                            oppijaHenkiloOid = henkilo.oid.oid,
                             target =
                                 listOf(
                                     Pair(KituAuditLogMessageField.OPPIJA_OPPIJANUMERO, henkilo.oid.oid),
