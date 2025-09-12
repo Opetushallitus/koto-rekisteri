@@ -71,6 +71,8 @@ export class EcsRdsProxyStack extends Stack {
 
     this.securityGroup = new SecurityGroup(this, "ProxySecurityGroup", {
       vpc: props.vpc,
+      allowAllOutbound: true,
+      allowAllIpv6Outbound: true,
     })
     props.targetRdsCluster.connections.allowDefaultPortFrom(this.securityGroup)
 
