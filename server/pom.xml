@@ -37,18 +37,6 @@
         <opentelemetry-semconv.version>1.37.0</opentelemetry-semconv.version>
         <opentelemetry.instrumentation.version>2.17.1</opentelemetry.instrumentation.version>
     </properties>
-    <repositories>
-        <repository>
-            <id>oph-sade-snapshot-local</id>
-            <url>https://artifactory.opintopolku.fi/artifactory/oph-sade-snapshot-local</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>
-    </repositories>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -372,11 +360,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>fi.vm.sade</groupId>
-            <artifactId>auditlogger</artifactId>
-            <version>9.2.6-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

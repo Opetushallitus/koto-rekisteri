@@ -26,11 +26,11 @@ const val AUDIT_LOGGER_NAME = "auditLogger"
 class AuditLogger(
     @Qualifier("applicationTaskExecutor")
     private val taskExecutor: AsyncTaskExecutor,
-) : Logger {
+) {
     private val slf4jLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
-    private val audit: Audit = Audit(this, "kitu", ApplicationType.BACKEND)
+    // private val audit: Audit = Audit(this, "kitu", ApplicationType.BACKEND)
 
-    override fun log(msg: String?) {
+    fun log(msg: String?) {
         slf4jLogger.info(msg)
     }
 
@@ -52,8 +52,7 @@ class AuditLogger(
     fun log(
         operation: KituAuditLogOperation,
         target: Iterable<Pair<KituAuditLogMessageField, String>>,
-        changes: Changes = Changes.EMPTY,
-    ) = log(AuditContext.get(), operation, target, changes)
+    ) = log(AuditContext.get(), operation, target)
 
     /**
      * Logs events.
@@ -64,7 +63,6 @@ class AuditLogger(
         context: AuditContext,
         operation: KituAuditLogOperation,
         target: Iterable<Pair<KituAuditLogMessageField, String>>,
-        changes: Changes = Changes.EMPTY,
     ) {
         val user = context.user()
 
@@ -81,7 +79,8 @@ class AuditLogger(
             targetBuilder.setField(key.key, value)
         }
 
-        audit.log(user, operation, targetBuilder.build(), changes)
+        TODO()
+        // audit.log(user, operation, targetBuilder.build(), changes)
     }
 
     fun <E> logAllInternalOnly(
@@ -106,7 +105,6 @@ class AuditLogger(
     fun <E> logAll(
         operation: KituAuditLogOperation,
         entities: Iterable<E>,
-        changes: Changes = Changes.EMPTY,
         properties: (E) -> Array<Pair<KituAuditLogMessageField, Any?>>,
     ) {
         val context = AuditContext.get()
@@ -114,7 +112,7 @@ class AuditLogger(
         taskExecutor.execute {
             for (entity in entities) {
                 val props = properties(entity).map { (key, value) -> key to value.toString() }
-                log(context, operation, props, changes)
+                log(context, operation, props)
             }
         }
     }
