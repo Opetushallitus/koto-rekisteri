@@ -59,7 +59,7 @@ get_stack_output() {
 start_task() {
   local cluster=$1
   local task_def=$2
-  aws ecs run-task --cluster "$cluster" --task_definition "$task_def" --query 'tasks[0].taskArn'
+  aws ecs run-task --cluster "$cluster" --task-definition "$task_def" --query 'tasks[0].taskArn'
 }
 
 wait_for_task_start() {
