@@ -79,6 +79,29 @@ class AuditLogger(
             targetBuilder.setField(key.key, value)
         }
 
+        val json =
+            """
+            {
+                'version': 1,
+                'logSeq': $log_data.log_seq,
+                'bootTime': $boot_time_str,
+                'type': 'dataAccess',
+                'environment': $environment,
+                'hostname': $hostname,
+                'timestamp': $data_access_log.timestamp.isoformat(),
+                'serviceName': 'kitu',
+                'applicationType': 'backend',
+                'user': {
+                    'oid': $user_oid
+                },
+                'target': {
+                    'oppijaHenkiloOid': $data_access_log.henkilo_oid
+                },
+                'organizationOid': $data_access_log.organisaatio.organisaatio_oid,
+                'operation': $data_access_log.access_type
+            }
+            """.trimIndent()
+
         TODO()
         // audit.log(user, operation, targetBuilder.build(), changes)
     }
