@@ -26,9 +26,10 @@ run() {
   execution_role_arn=$(get_stack_output "$env" EcsRdsProxy TaskExecutionRoleArn)
   database_hostname=$(get_stack_output "$env" Database EndpointROHost)
   private_subnets=$(get_subnets "$env" Private)
+  security_groups=$(get_stack_output "$env" SecurityGroup)
 
   info "Starting temporary ECS proxy task"
-  task_arn=$(start_task "$cluster_name" "$task_definition" "$execution_role_arn" "$private_subnets")
+  task_arn=$(start_task "$cluster_name" "$task_definition" "$execution_role_arn" "$private_subnets" "$security_groups")
 
   trap 'stop_task "$cluster_name" "$task_arn"' EXIT
 
@@ -70,8 +71,9 @@ start_task() {
   local task_def=$2
   local execution_role_arn=$3
   local subnets=$4
+  local security_groups=$5
   aws ecs run-task --cluster "$cluster" --task-definition "$task_def" \
-    --network-configuration "awsvpcConfiguration={subnets=[$subnets]}" \
+    --network-configuration "awsvpcConfiguration={subnets=[$subnets],securityGroups=[$security_groups],assignPublicIp=DISABLED}" \
     --overrides '{"executionRoleArn":"'"$execution_role_arn"'"}' \
     --launch-type FARGATE \
     --query 'tasks[0].taskArn'

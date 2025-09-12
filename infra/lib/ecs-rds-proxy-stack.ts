@@ -1,4 +1,6 @@
 import { CfnOutput, Stack, StackProps } from "aws-cdk-lib"
+import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
+import { IDatabaseCluster } from "aws-cdk-lib/aws-rds"
 import { Construct } from "constructs"
 import { ContainerImage, FargateTaskDefinition } from "aws-cdk-lib/aws-ecs"
 import {
@@ -9,11 +11,17 @@ import {
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam"
 
+interface EcsRdsProxyStackProps extends StackProps {
+  vpc: IVpc
+  targetRdsCluster: IDatabaseCluster
+}
+
 export class EcsRdsProxyStack extends Stack {
   private readonly taskDefinition: FargateTaskDefinition
   private readonly taskExecutionRole: IRole
+  private readonly securityGroup: SecurityGroup
 
-  constructor(scope: Construct, id: string, props: StackProps) {
+  constructor(scope: Construct, id: string, props: EcsRdsProxyStackProps) {
     super(scope, id, props)
 
     this.taskDefinition = new FargateTaskDefinition(this, "TaskDefinition")
@@ -44,11 +52,19 @@ export class EcsRdsProxyStack extends Stack {
       ],
     })
 
+    this.securityGroup = new SecurityGroup(this, "ProxySecurityGroup", {
+      vpc: props.vpc,
+    })
+    props.targetRdsCluster.connections.allowDefaultPortFrom(this.securityGroup)
+
     new CfnOutput(this, "TaskDefinitionArn", {
       value: this.taskDefinition.taskDefinitionArn,
     })
     new CfnOutput(this, "TaskExecutionRoleArn", {
       value: this.taskExecutionRole.roleArn,
+    })
+    new CfnOutput(this, "SecurityGroup", {
+      value: this.securityGroup.securityGroupId,
     })
   }
 }
