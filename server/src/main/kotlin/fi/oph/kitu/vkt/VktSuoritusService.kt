@@ -5,7 +5,6 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.KituAuditLogMessageField
 import fi.oph.kitu.logging.KituAuditLogOperation
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import fi.oph.kitu.vkt.html.VktTableItem
@@ -14,7 +13,6 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.Optional
-import kotlin.collections.listOf
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration.Companion.minutes
 
@@ -91,10 +89,6 @@ class VktSuoritusService(
                         auditLogger.log(
                             operation = KituAuditLogOperation.VktSuoritusViewed,
                             oppijaHenkiloOid = henkilo.oid.oid,
-                            target =
-                                listOf(
-                                    Pair(KituAuditLogMessageField.OPPIJA_OPPIJANUMERO, henkilo.oid.oid),
-                                ),
                         )
                     }
                 }
