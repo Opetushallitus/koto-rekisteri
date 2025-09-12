@@ -3,6 +3,7 @@ import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
 import {
   ContainerImage,
   FargateTaskDefinition,
+  LinuxParameters,
   LogDriver,
 } from "aws-cdk-lib/aws-ecs"
 import {
@@ -51,6 +52,11 @@ export class EcsRdsProxyStack extends Stack {
       logging: LogDriver.awsLogs({
         logGroup: this.logGroup,
         streamPrefix: "proxy",
+      }),
+      linuxParameters: new LinuxParameters(this, "ProxyLinuxParameters", {
+        // install init process to reap background SSM agent
+        // https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html#ecs-exec-enabling-and-using
+        initProcessEnabled: true,
       }),
     })
 
