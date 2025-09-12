@@ -1,10 +1,12 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.koski.KoskiErrorService
+import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -35,6 +38,7 @@ class YkiViewController(
     private val arvioijaErrorService: YkiArvioijaErrorService,
     private val koskiErrorService: KoskiErrorService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
+    private val koskiRequestMapper: KoskiRequestMapper,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetGetView(
@@ -173,6 +177,19 @@ class YkiViewController(
             ),
         )
     }
+
+    @GetMapping("/koski-request/{suoritusId}", produces = ["application/json"])
+    fun koskiRequestJson(
+        @PathVariable suoritusId: Int,
+    ): ResponseEntity<String> =
+        ykiSuoritusRepository
+            .findLatestBySuoritusIds(listOf(suoritusId))
+            .firstOrNull()
+            ?.let {
+                koskiRequestMapper.ykiSuoritusToKoskiRequest(it)
+            }?.let {
+                ResponseEntity.ok(defaultObjectMapper.writeValueAsString(it))
+            } ?: ResponseEntity.notFound().build()
 
     companion object {
         const val YKI_SEARCH_KEY = "YkiSearch"
