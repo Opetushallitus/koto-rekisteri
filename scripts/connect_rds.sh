@@ -38,6 +38,8 @@ run() {
 
   info "Connecting to proxy task"
   establish_session "$cluster_name" "$container_runtime_id" "$database_hostname"
+
+  read -rp "Press any key to quit..."
 }
 
 aws() {
