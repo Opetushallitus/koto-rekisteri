@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.httpParams
@@ -188,7 +187,7 @@ class YkiViewController(
             ?.let {
                 koskiRequestMapper.ykiSuoritusToKoskiRequest(it)
             }?.let {
-                ResponseEntity.ok(defaultObjectMapper.writeValueAsString(it))
+                ResponseEntity.ok(KoskiRequestMapper.getObjectMapper().writeValueAsString(it))
             } ?: ResponseEntity.notFound().build()
 
     companion object {
