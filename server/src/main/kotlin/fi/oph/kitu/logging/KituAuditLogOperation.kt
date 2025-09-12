@@ -1,6 +1,9 @@
 package fi.oph.kitu.logging
 
-import fi.vm.sade.auditlog.Operation
+// TODO: Remove
+interface Operation {
+    fun name(): String?
+}
 
 sealed class KituAuditLogOperation(
     val name: String,
