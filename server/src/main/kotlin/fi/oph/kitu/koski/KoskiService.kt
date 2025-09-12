@@ -54,7 +54,9 @@ class KoskiService(
                                 .retrieve()
                                 .toEntity<KoskiResponse>()
                         } catch (e: RestClientException) {
-                            return TypedResult.Failure(KoskiException(YkiMappingId(ykiSuoritusEntity.id), e.message))
+                            return TypedResult.Failure(
+                                KoskiException(YkiMappingId(ykiSuoritusEntity.suoritusId), e.message),
+                            )
                         }
 
                     val koskiOpiskeluoikeus =
@@ -66,7 +68,7 @@ class KoskiService(
                     if (koskiOpiskeluoikeus == null) {
                         return TypedResult.Failure(
                             KoskiException(
-                                YkiMappingId(ykiSuoritusEntity.id),
+                                YkiMappingId(ykiSuoritusEntity.suoritusId),
                                 "KOSKI opiskeluoikeus OID missing from response",
                             ),
                         )

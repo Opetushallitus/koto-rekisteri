@@ -26,7 +26,7 @@ object YkiKoskiErrors {
                         YkiMappingId
                             .parse(error.id)
                             ?.suoritusId
-                            ?.let { id -> suoritukset.find { it.id == id } }
+                            ?.let { id -> suoritukset.find { it.suoritusId == id } }
                             ?.let { error.id to it }
                     }.toMap()
 

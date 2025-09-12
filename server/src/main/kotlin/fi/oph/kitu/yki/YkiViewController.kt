@@ -164,12 +164,12 @@ class YkiViewController(
     @GetMapping("/koski-virheet", produces = ["text/html"])
     fun koskiVirheetView(): ResponseEntity<String> {
         val errors = koskiErrorService.findAllByEntity("yki")
-        val ids = errors.mapNotNull { YkiMappingId.parse(it.id)?.suoritusId }
+        val suoritusIds = errors.mapNotNull { YkiMappingId.parse(it.id)?.suoritusId }
 
         return ResponseEntity.ok(
             YkiKoskiErrors.render(
                 errors = koskiErrorService.findAllByEntity("yki"),
-                suoritukset = ykiSuoritusRepository.findAllById(ids),
+                suoritukset = ykiSuoritusRepository.findLatestBySuoritusIds(suoritusIds),
             ),
         )
     }
