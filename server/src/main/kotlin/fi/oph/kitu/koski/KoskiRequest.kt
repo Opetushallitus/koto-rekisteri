@@ -18,6 +18,7 @@ data class KoskiRequest(
         val tyyppi: Koodisto.OpiskeluoikeudenTyyppi = Koodisto.OpiskeluoikeudenTyyppi.Kielitutkinto,
         val tila: Tila,
         val suoritukset: List<KielitutkintoSuoritus>,
+        val oid: String? = null,
     ) {
         data class LahdeJarjestelmanId(
             val id: String,

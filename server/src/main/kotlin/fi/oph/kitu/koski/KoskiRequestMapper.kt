@@ -46,6 +46,7 @@ class KoskiRequestMapper {
                 opiskeluoikeudet =
                     listOf(
                         Opiskeluoikeus(
+                            oid = ykiSuoritus.koskiOpiskeluoikeus?.toString(),
                             lähdejärjestelmänId =
                                 LahdeJarjestelmanId(
                                     id = "yki.${ykiSuoritus.suoritusId}",
@@ -225,6 +226,7 @@ class KoskiRequestMapper {
                 opiskeluoikeudet =
                     listOf(
                         Opiskeluoikeus(
+                            oid = henkilosuoritus.suoritus.koskiOpiskeluoikeusOid?.oid,
                             lähdejärjestelmänId = LahdeJarjestelmanId(id = "vkt.${suoritus.internalId}"),
                             tyyppi = Koodisto.OpiskeluoikeudenTyyppi.Kielitutkinto,
                             tila =
