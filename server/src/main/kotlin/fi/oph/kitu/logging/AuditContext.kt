@@ -2,7 +2,6 @@ package fi.oph.kitu.logging
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.auth.CasUserDetails
-import fi.vm.sade.auditlog.User
 import org.springframework.core.io.ClassPathResource
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
@@ -56,5 +55,5 @@ data class AuditContext(
         }
     }
 
-    fun user(): User = User(userOid.unwrap(), ip, session, userAgent)
+    // fun user(): User = User(userOid.unwrap(), ip, session, userAgent)
 }
