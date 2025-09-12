@@ -1,10 +1,17 @@
 import { CfnOutput, Stack, StackProps } from "aws-cdk-lib"
 import { Construct } from "constructs"
 import { ContainerImage, FargateTaskDefinition } from "aws-cdk-lib/aws-ecs"
-import { PolicyStatement } from "aws-cdk-lib/aws-iam"
+import {
+  IRole,
+  ManagedPolicy,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from "aws-cdk-lib/aws-iam"
 
 export class EcsRdsProxyStack extends Stack {
   private readonly taskDefinition: FargateTaskDefinition
+  private readonly taskExecutionRole: IRole
 
   constructor(scope: Construct, id: string, props: StackProps) {
     super(scope, id, props)
@@ -28,8 +35,20 @@ export class EcsRdsProxyStack extends Stack {
       ),
     })
 
+    this.taskExecutionRole = new Role(this, "TaskExecutionRole", {
+      assumedBy: new ServicePrincipal("ecs-tasks"),
+      managedPolicies: [
+        ManagedPolicy.fromAwsManagedPolicyName(
+          "AmazonECSTaskExecutionRolePolicy",
+        ),
+      ],
+    })
+
     new CfnOutput(this, "TaskDefinitionArn", {
       value: this.taskDefinition.taskDefinitionArn,
+    })
+    new CfnOutput(this, "TaskExecutionRoleArn", {
+      value: this.taskExecutionRole.roleArn,
     })
   }
 }
