@@ -69,7 +69,7 @@ class VktViewController(
 
         return ResponseEntity.ok(
             VktErinomaisenSuorituksetPage.render(
-                title = "Erinomaisen taitotason ilmoittautuneet",
+                title = "Erinomaisen taidon tutkinnon ilmoittautuneet",
                 ilmoittautuneet = ilmoittautuneet,
                 sortedBy = sortColumn,
                 sortDirection = sortDirection,
@@ -109,7 +109,7 @@ class VktViewController(
 
         return ResponseEntity.ok(
             VktErinomaisenSuorituksetPage.render(
-                title = "Erinomaisen taitotason arvioidut suoritukset",
+                title = "Erinomaisen taidon tutkinnon arvioidut suoritukset",
                 ilmoittautuneet = suoritukset,
                 sortedBy = sortColumn,
                 sortDirection = sortDirection,

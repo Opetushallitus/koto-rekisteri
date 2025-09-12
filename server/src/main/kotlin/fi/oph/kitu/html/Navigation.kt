@@ -29,15 +29,15 @@ object Navigation {
                 "Valtionhallinnon kielitutkinto",
                 listOf(
                     MenuItem.of(
-                        "Erinomaisen tason ilmoittautuneet",
+                        "Erinomaisen taidon ilmoittautuneet",
                         VktViewController::erinomaisenTaitotasonIlmoittautuneetView,
                     ),
                     MenuItem.of(
-                        "Erinomaisen tason arvioidut suoritukset",
+                        "Erinomaisen taidon suoritukset",
                         VktViewController::erinomaisenTaitotasonArvioidutSuorituksetView,
                     ),
                     MenuItem.of(
-                        "Hyvän ja tyydyttävän tason suoritukset",
+                        "Hyvän ja tyydyttävän taidon suoritukset",
                         VktViewController::hyvanJaTyydyttavanTaitotasonSuorituksetView,
                     ),
                 ),

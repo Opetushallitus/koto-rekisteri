@@ -3,7 +3,6 @@
 package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.card
@@ -32,7 +31,7 @@ object VktHyvaJaTyydyttavaSuorituksetPage {
             wideContent = true,
         ) {
             h1 { +"Valtionhallinnon kielitutkinto" }
-            h2 { +"Hyvän ja tyydyttävän taitotason suoritukset" }
+            h2 { +"Hyvän ja tyydyttävän taidon tutkinnon arvioidut suoritukset" }
             vktSearch(searchQuery)
             vktHyvaJaTyydyttavaTable(suoritukset, sortedBy, sortDirection, pagination, translations, searchQuery)
         }
