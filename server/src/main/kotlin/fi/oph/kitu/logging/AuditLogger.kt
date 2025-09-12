@@ -10,12 +10,14 @@ import fi.vm.sade.auditlog.Operation
 import fi.vm.sade.auditlog.User
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.io.ClassPathResource
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import java.net.InetAddress
+import java.util.Properties
 import fi.vm.sade.auditlog.Target as AuditTarget
 
 const val AUDIT_LOGGER_NAME = "auditLogger"
@@ -67,7 +69,13 @@ class AuditLogger(
         val user = context.user()
 
         val targetBuilder = AuditTarget.Builder()
-        targetBuilder.setField("organizationOid", context.userOrganizationOid.toString())
+
+        // NOTE: Use OID of Opetushallitus for every user of this application.
+        // It is done, because at the time (2025-09-12),
+        // only users of Opetushallitus are expected to use this application.
+        // If this is no longer the case,
+        // you need to implement how to fetch correct organization OID for the logged in user
+        targetBuilder.setField("organizationOid", context.opetushallitusOrganisaatioOid.toString())
 
         for ((key, value) in target) {
             targetBuilder.setField(key.key, value)
@@ -117,9 +125,25 @@ data class AuditContext(
     val userAgent: String,
     val ip: InetAddress,
     val session: String,
-    val userOrganizationOid: Oid,
+    val opetushallitusOrganisaatioOid: Oid,
 ) {
     companion object {
+        /**
+         * Gets the value for `oph.oid` from `application.properties` without using Spring at all.
+         */
+        private fun getOpetushallitusOrganizationOid(): Oid {
+            val props = Properties()
+
+            val resource = ClassPathResource("application.properties")
+            resource.inputStream.use { stream ->
+                props.load(stream)
+            }
+
+            val oid = props.getProperty("oph.oid")
+            val parsed = Oid.parse(oid).getOrThrow()
+            return parsed
+        }
+
         fun get(): AuditContext {
             val userDetails: CasUserDetails =
                 SecurityContextHolder.getContext().authentication?.principal as CasUserDetails?
@@ -130,12 +154,15 @@ data class AuditContext(
             val request = servletRequestAttributes.request
 
             val userOid = userDetails.oid
-            val userOrganizationOid = userDetails.kayttajanOrganisaatioOid
+
+            // Used to set organization oid for the logged in user.
+            val opetushallitusOrganisaatioOid = getOpetushallitusOrganizationOid()
+
             val userAgent = request.getHeader("user-agent")
             val ip = InetAddress.getByName(request.remoteAddr)
             val session = request.session.id
 
-            return AuditContext(userOid, userAgent, ip, session, userOrganizationOid)
+            return AuditContext(userOid, userAgent, ip, session, opetushallitusOrganisaatioOid)
         }
     }
 
