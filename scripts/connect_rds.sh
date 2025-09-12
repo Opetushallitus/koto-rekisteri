@@ -26,7 +26,7 @@ run() {
   execution_role_arn=$(get_stack_output "$env" EcsRdsProxy TaskExecutionRoleArn)
   database_hostname=$(get_stack_output "$env" Database EndpointROHost)
   private_subnets=$(get_subnets "$env" Private)
-  security_groups=$(get_stack_output "$env" SecurityGroup)
+  security_groups=$(get_stack_output "$env" EcsRdsProxy SecurityGroup)
 
   info "Starting temporary ECS proxy task"
   task_arn=$(start_task "$cluster_name" "$task_definition" "$execution_role_arn" "$private_subnets" "$security_groups")
