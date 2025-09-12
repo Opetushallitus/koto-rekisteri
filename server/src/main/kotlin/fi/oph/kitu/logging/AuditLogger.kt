@@ -43,27 +43,10 @@ class AuditLogger(
      * Note: the logged events with this method will be passed to an audit log integration on a lambda.
      */
     fun log(
-        operation: KituAuditLogOperation, // esim: VktSuoritusViewed
+        operation: KituAuditLogOperation,
         oppijaHenkiloOid: String,
-        // (OPPIJA_OPPIJANUMERO, 1.2.246.562.24.98167097342)
     ) {
         val context = AuditContext.get()
-        // val user = context.user()
-        // val user = context.user()
-
-        // val targetBuilder = AuditTarget.Builder()
-
-        // NOTE: Use OID of Opetushallitus for every user of this application.
-        // It is done, because at the time (2025-09-12),
-        // only users of Opetushallitus are expected to use this application.
-        // If this is no longer the case,
-        // you need to implement how to fetch correct organization OID for the logged in user
-        // targetBuilder.setField("organizationOid", context.opetushallitusOrganisaatioOid.toString())
-
-        // for ((key, value) in target) {
-        //    targetBuilder.setField(key.key, value)
-        // }
-
         val type = "log"
         val timestamp = fmt.format(Instant.now(clock))
 
@@ -81,15 +64,12 @@ class AuditLogger(
                     'serviceName': 'kitu',
                     'applicationType': 'backend',
                     'user': {'oid': '${context.userOid}'},
-                    'target': {'oppijaHenkiloOid': '$oppijaHenkiloOid'},
+                    'target': {'${KitAuditLogMessageField.OppijaHenkiloOid}': '$oppijaHenkiloOid'},
                     'organizationOid': '${context.opetushallitusOrganisaatioOid}',
                     'operation': '${operation.name}'
                 }
                 """.trimIndent(),
             )
-
-        // audit.log(user, operation, targetBuilder.build(), changes)
-        //  slf4jLogger.info(msg)
     }
 
     fun <E> logAllInternalOnly(

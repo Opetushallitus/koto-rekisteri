@@ -5,7 +5,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.KituAuditLogMessageField
+import fi.oph.kitu.logging.KitAuditLogMessageField
 import fi.oph.kitu.logging.KituAuditLogOperation
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
@@ -45,7 +45,7 @@ class KoealustaService(
             .also {
                 auditLogger.logAllInternalOnly(KituAuditLogOperation.KielitestiSuoritusViewed.name, it) { suoritus ->
                     arrayOf(
-                        KituAuditLogMessageField.OPPIJA_OPPIJANUMERO.key to suoritus.oppijanumero,
+                        KitAuditLogMessageField.OppijaHenkiloOid.value to suoritus.oppijanumero,
                     )
                 }
 
