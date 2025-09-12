@@ -1,15 +1,19 @@
 import { CfnOutput, Stack, StackProps } from "aws-cdk-lib"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
-import { IDatabaseCluster } from "aws-cdk-lib/aws-rds"
-import { Construct } from "constructs"
-import { ContainerImage, FargateTaskDefinition } from "aws-cdk-lib/aws-ecs"
 import {
-  IRole,
+  ContainerImage,
+  FargateTaskDefinition,
+  LogDriver,
+} from "aws-cdk-lib/aws-ecs"
+import {
   ManagedPolicy,
   PolicyStatement,
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam"
+import { LogGroup } from "aws-cdk-lib/aws-logs"
+import { IDatabaseCluster } from "aws-cdk-lib/aws-rds"
+import { Construct } from "constructs"
 
 interface EcsRdsProxyStackProps extends StackProps {
   vpc: IVpc
@@ -18,11 +22,14 @@ interface EcsRdsProxyStackProps extends StackProps {
 
 export class EcsRdsProxyStack extends Stack {
   private readonly taskDefinition: FargateTaskDefinition
-  private readonly taskExecutionRole: IRole
+  private readonly taskExecutionRole: Role
   private readonly securityGroup: SecurityGroup
+  private readonly logGroup: LogGroup
 
   constructor(scope: Construct, id: string, props: EcsRdsProxyStackProps) {
     super(scope, id, props)
+
+    this.logGroup = new LogGroup(this, "ProxyLogs")
 
     this.taskDefinition = new FargateTaskDefinition(this, "TaskDefinition")
     // https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions-start.html#sessions-remote-port-forwarding
@@ -41,6 +48,10 @@ export class EcsRdsProxyStack extends Stack {
       image: ContainerImage.fromRegistry(
         "public.ecr.aws/amazonlinux/amazonlinux:2023-minimal",
       ),
+      logging: LogDriver.awsLogs({
+        logGroup: this.logGroup,
+        streamPrefix: "proxy",
+      }),
     })
 
     this.taskExecutionRole = new Role(this, "TaskExecutionRole", {
