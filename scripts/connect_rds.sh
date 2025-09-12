@@ -76,7 +76,7 @@ start_task() {
   local security_groups=$5
   aws ecs run-task --cluster "$cluster" --task-definition "$task_def" \
     --network-configuration "awsvpcConfiguration={subnets=[$subnets],securityGroups=[$security_groups],assignPublicIp=DISABLED}" \
-    --overrides '{"executionRoleArn":"'"$execution_role_arn"'"}' \
+    --overrides '{"executionRoleArn":"'"$execution_role_arn"'","containerOverrides": {"name":"proxy","command":["sleep", "60m"]}}' \
     --launch-type FARGATE \
     --query 'tasks[0].taskArn'
 }
