@@ -94,7 +94,7 @@ establish_session() {
   local container_id=$2
   local host=$3
   aws ssm start-session \
-    --target "ecs:${cluster}_${container_id}" \
+    --target "ecs:${cluster}_proxy_${container_id}" \
     --document-name AWS-StartPortForwardingSessionToRemoteHost \
     --parameters "host=$host,portNumber=5432,localPortNumber=8432"
 }
