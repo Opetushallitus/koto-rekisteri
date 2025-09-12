@@ -61,7 +61,6 @@ class MockLoginController(
                         SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_READ_1.2.246.562.10.00000000001"),
                         SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS"),
                     ),
-                kayttajanOrganisaatioOid = Oid.parse("1.2.246.562.10.48587687889").getOrThrow(),
             )
         val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
         SecurityContextHolder.getContext().authentication = authentication
