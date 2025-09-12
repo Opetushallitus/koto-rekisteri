@@ -146,7 +146,7 @@ class KoskiServiceTest(
 
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus)
         assertTrue(updatedSuoritus is TypedResult.Failure)
-        assertEquals(YkiMappingId(suoritus.id), updatedSuoritus.errorOrNull()?.suoritusId)
+        assertEquals(YkiMappingId(suoritus.suoritusId), updatedSuoritus.errorOrNull()?.suoritusId)
     }
 
     @Test

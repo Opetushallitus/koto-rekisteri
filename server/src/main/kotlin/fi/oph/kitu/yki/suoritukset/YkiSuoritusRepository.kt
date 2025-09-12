@@ -7,6 +7,7 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
@@ -335,4 +336,21 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
 @Repository
 interface YkiSuoritusRepository :
     CrudRepository<YkiSuoritusEntity, Int>,
-    CustomYkiSuoritusRepository
+    CustomYkiSuoritusRepository {
+    @Query(
+        """
+        WITH suoritus AS (
+            SELECT
+                *,
+                row_number() OVER (PARTITION BY suoritus_id ORDER BY last_modified DESC) rn
+            FROM yki_suoritus
+            WHERE suoritus_id IN (:ids) 
+            ORDER BY last_modified DESC
+        )
+        SELECT *
+        FROM suoritus
+        WHERE rn = 1
+        """,
+    )
+    fun findLatestBySuoritusIds(ids: List<Int>): List<YkiSuoritusEntity>
+}
