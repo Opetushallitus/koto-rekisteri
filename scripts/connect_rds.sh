@@ -24,9 +24,10 @@ run() {
   cluster_name=$(get_stack_output "$env" Service ClusterName)
   task_definition=$(get_stack_output "$env" EcsRdsProxy TaskDefinitionArn)
   database_hostname=$(get_stack_output "$env" Database EndpointROHost)
+  private_subnets=$(get_subnets "$env" Private)
 
   info "Starting temporary ECS proxy task"
-  task_arn=$(start_task "$cluster_name" "$task_definition")
+  task_arn=$(start_task "$cluster_name" "$task_definition" "$private_subnets")
 
   trap 'stop_task "$cluster_name" "$task_arn"' EXIT
 
@@ -45,6 +46,13 @@ quiet() {
   "$@" >/dev/null
 }
 
+get_subnets() {
+  local env=$1
+  local kind=$2
+
+  aws ec2 describe-subnets --filters Name=tag:aws-cdk:subnet-type,Values="$kind" --query 'Subnets[].SubnetId' --output text | tr \\t ,
+}
+
 get_stack_output() {
   local env=$1
   local stack=$2
@@ -59,7 +67,8 @@ get_stack_output() {
 start_task() {
   local cluster=$1
   local task_def=$2
-  aws ecs run-task --cluster "$cluster" --task-definition "$task_def" --query 'tasks[0].taskArn'
+  local subnets=$3
+  aws ecs run-task --cluster "$cluster" --task-definition "$task_def" --network-configuration "awsvpcConfiguration={subnets=[$subnets]}" --launch-type FARGATE --query 'tasks[0].taskArn'
 }
 
 wait_for_task_start() {
