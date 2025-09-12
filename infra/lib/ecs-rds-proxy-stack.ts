@@ -39,7 +39,7 @@ export class EcsRdsProxyStack extends Stack {
       assumedBy: new ServicePrincipal("ecs-tasks"),
       managedPolicies: [
         ManagedPolicy.fromAwsManagedPolicyName(
-          "AmazonECSTaskExecutionRolePolicy",
+          "service-role/AmazonECSTaskExecutionRolePolicy",
         ),
       ],
     })
