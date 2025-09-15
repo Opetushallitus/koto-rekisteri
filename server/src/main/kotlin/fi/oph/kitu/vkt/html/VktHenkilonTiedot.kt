@@ -5,6 +5,7 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.error
 import fi.oph.kitu.html.infoTable
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.vkt.VktSuoritus
@@ -21,6 +22,7 @@ fun FlowContent.vktHenkilonTiedot(
                 infoTable(
                     "Henkilötunnus" to { +it.hetut().joinToString(", ") },
                     "Oppijanumero" to { +data.henkilo.oid.toString() },
+                    "Syntymäaika" to { it.syntymaaika?.finnishDate()?.let { +it } },
                     "Yksilöinti" to {
                         if (it.yksiloityVTJ == true || it.yksiloity == true) {
                             +"Yksilöity"
