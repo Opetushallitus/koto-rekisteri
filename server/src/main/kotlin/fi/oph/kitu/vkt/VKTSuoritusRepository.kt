@@ -306,6 +306,9 @@ class CustomVktSuoritusRepository {
 @Repository
 class VktOsakoeRepository {
     @Autowired
+    private lateinit var jdbcTemplate: JdbcTemplate
+
+    @Autowired
     private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
 
     @WithSpan
@@ -313,7 +316,6 @@ class VktOsakoeRepository {
         id: Int,
         arvosana: Koodisto.VktArvosana?,
         arviointipaiva: LocalDate?,
-        merkitsePoistettavaksi: Boolean,
     ) {
         val sql =
             if (arvosana != null) {
@@ -341,7 +343,6 @@ class VktOsakoeRepository {
                 "id" to id,
                 "arvosana" to arvosana?.name,
                 "arviointipaiva" to arviointipaiva,
-                "poistettava" to merkitsePoistettavaksi,
             )
 
         jdbcNamedParameterTemplate.update(sql, params)
@@ -365,5 +366,15 @@ class VktOsakoeRepository {
         val params = mapOf("id" to id)
 
         jdbcNamedParameterTemplate.update(sql, params)
+    }
+
+    fun cleanup() {
+        val sql =
+            """
+            DELETE FROM vkt_osakoe
+            WHERE merkitty_poistettavaksi < now()
+            """.trimIndent()
+
+        jdbcTemplate.update(sql)
     }
 }
