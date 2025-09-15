@@ -48,12 +48,14 @@ class VKTSuoritusRepositoryTest(
                             tutkintopaiva = LocalDate.of(2025, 1, 1),
                             arviointipaiva = null,
                             arvosana = null,
+                            merkittyPoistettavaksi = null,
                         ),
                         VktSuoritusEntity.VktOsakoe(
                             tyyppi = Koodisto.VktOsakoe.PuheenYmmärtäminen,
                             tutkintopaiva = LocalDate.of(2025, 1, 1),
                             arviointipaiva = null,
                             arvosana = null,
+                            merkittyPoistettavaksi = null,
                         ),
                     ),
                 tutkinnot =

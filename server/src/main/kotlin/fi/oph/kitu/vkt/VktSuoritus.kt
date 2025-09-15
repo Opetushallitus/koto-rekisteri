@@ -14,6 +14,7 @@ import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Osasuorituksellinen
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Osasuoritus
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 // Päätason suoritus
 
@@ -28,6 +29,7 @@ data class VktSuoritus(
     val internalId: Int? = null,
     val koskiOpiskeluoikeusOid: OidString? = null,
     val koskiSiirtoKasitelty: Boolean = false,
+    val merkittyPoistettavaksi: Boolean = false,
 ) : KielitutkinnonSuoritus,
     Osasuorituksellinen {
     override val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.ValtionhallinnonKielitutkinto
@@ -262,6 +264,7 @@ interface VktOsakoe :
     val tutkintopaiva: LocalDate
     override val arviointi: VktArvionti?
     val oppilaitos: OidString?
+    val merkittyPoistettavaksi: LocalDateTime?
 
     fun toVktOsakoeRow() =
         VktSuoritusEntity.VktOsakoe(
@@ -269,6 +272,7 @@ interface VktOsakoe :
             tutkintopaiva = tutkintopaiva,
             arviointipaiva = arviointi?.paivamaara,
             arvosana = arviointi?.arvosana,
+            merkittyPoistettavaksi = merkittyPoistettavaksi,
         )
 
     companion object {
@@ -279,12 +283,14 @@ interface VktOsakoe :
                         row.tutkintopaiva,
                         VktArvionti.from(row),
                         row.id,
+                        merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
                 Koodisto.VktOsakoe.TekstinYmmärtäminen ->
                     VktTekstinYmmartamisenKoe(
                         row.tutkintopaiva,
                         VktArvionti.from(row),
                         row.id,
+                        merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
 
                 Koodisto.VktOsakoe.Puhuminen ->
@@ -292,12 +298,14 @@ interface VktOsakoe :
                         row.tutkintopaiva,
                         VktArvionti.from(row),
                         row.id,
+                        merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
                 Koodisto.VktOsakoe.PuheenYmmärtäminen ->
                     VktPuheenYmmartamisenKoe(
                         row.tutkintopaiva,
                         VktArvionti.from(row),
                         row.id,
+                        merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
             }
     }
@@ -314,6 +322,7 @@ data class VktKirjoittamisenKoe(
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
+    override val merkittyPoistettavaksi: LocalDateTime? = null,
 ) : VktKirjallisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.Kirjoittaminen
 }
@@ -323,6 +332,7 @@ data class VktTekstinYmmartamisenKoe(
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
+    override val merkittyPoistettavaksi: LocalDateTime? = null,
 ) : VktKirjallisenKielitaidonKoe,
     VktYmmartamisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.TekstinYmmärtäminen
@@ -333,6 +343,7 @@ data class VktPuhumisenKoe(
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
+    override val merkittyPoistettavaksi: LocalDateTime? = null,
 ) : VktSuullisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.Puhuminen
 }
@@ -342,6 +353,7 @@ data class VktPuheenYmmartamisenKoe(
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
+    override val merkittyPoistettavaksi: LocalDateTime? = null,
 ) : VktSuullisenKielitaidonKoe,
     VktYmmartamisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.PuheenYmmärtäminen

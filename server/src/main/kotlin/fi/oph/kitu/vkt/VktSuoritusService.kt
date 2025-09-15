@@ -23,6 +23,10 @@ class VktSuoritusService(
     private val osakoeRepository: VktOsakoeRepository,
     private val auditLogger: AuditLogger,
 ) {
+    @Value("\${kitu.vkt.scheduling.cleanup.retentionTime}")
+    lateinit var retentionTimeForDeletedSetting: String
+    val retentionTimeForDeletedSeconds by lazy { Duration.parse(retentionTimeForDeletedSetting).inWholeSeconds }
+
     @WithSpan("VktSuoritusService.getSuorituksetAndPagination")
     fun getSuorituksetAndPagination(
         taitotaso: Koodisto.VktTaitotaso,
@@ -97,10 +101,17 @@ class VktSuoritusService(
 
     @WithSpan("VktSuoritusService.setOsakoeArvosana")
     fun setOsakoeArvosana(
-        id: Int,
+        osakoeId: Int,
         arvosana: Koodisto.VktArvosana?,
         arviointipaiva: LocalDate? = null,
-    ) = osakoeRepository.updateArvosana(id, arvosana, arviointipaiva)
+    ) = osakoeRepository.updateArvosana(
+        id = osakoeId,
+        arvosana = arvosana,
+        arviointipaiva = arviointipaiva,
+    )
+
+    @WithSpan("VktSuoritusService.deleteOsakoe")
+    fun deleteOsakoe(osakoeId: Int) = osakoeRepository.delete(osakoeId, retentionTimeForDeletedSeconds)
 
     @WithSpan("VktSuoritusServer.markKoskiTransferProcessed")
     fun markKoskiTransferProcessed(
