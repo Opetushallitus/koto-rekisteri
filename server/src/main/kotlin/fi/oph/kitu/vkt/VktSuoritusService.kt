@@ -134,8 +134,9 @@ class VktSuoritusService(
         }
 
     @WithSpan("VktSuoritusService.cleanup")
-    fun cleanup(retention: Duration) {
-        osakoeRepository.cleanup(retention)
+    fun cleanup() {
+        osakoeRepository.cleanup()
+        customSuoritusRepository.cleanup()
     }
 
     companion object {
