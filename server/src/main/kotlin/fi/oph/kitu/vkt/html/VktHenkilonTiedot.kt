@@ -21,7 +21,7 @@ fun FlowContent.vktHenkilonTiedot(
             card(compact = true) {
                 infoTable(
                     "Henkilötunnus" to { +it.hetut().joinToString(", ") },
-                    "Oppijanumero" to { +data.henkilo.oid.toString() },
+                    "Henkilö-oid" to { +data.henkilo.oid.toString() },
                     "Syntymäaika" to { it.syntymaaika?.finnishDate()?.let { +it } },
                     "Yksilöinti" to {
                         if (it.yksiloityVTJ == true || it.yksiloity == true) {
