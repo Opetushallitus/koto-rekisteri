@@ -10,10 +10,12 @@ import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import fi.oph.kitu.vkt.html.VktTableItem
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 @Service
@@ -113,13 +115,13 @@ class VktSuoritusService(
     @WithSpan("VktSuoritusService.deleteOsakoe")
     fun deleteOsakoe(osakoeId: Int) = osakoeRepository.delete(osakoeId, retentionTimeForDeletedSeconds)
 
-    @WithSpan("VktSuoritusServer.markKoskiTransferProcessed")
+    @WithSpan("VktSuoritusService.markKoskiTransferProcessed")
     fun markKoskiTransferProcessed(
         id: Tutkintoryhma,
         koskiOpiskeluoikeusOid: String? = null,
     ) = customSuoritusRepository.markSuoritusTransferredToKoski(id, koskiOpiskeluoikeusOid)
 
-    @WithSpan("VktSuoritusServer.requestTransferToKoski")
+    @WithSpan("VktSuoritusService.requestTransferToKoski")
     fun requestTransferToKoski(id: Tutkintoryhma) = customSuoritusRepository.requestTransferToKoski(id)
 
     private val listRowCounts =
@@ -130,6 +132,11 @@ class VktSuoritusService(
                 searchQuery = params.third,
             )
         }
+
+    @WithSpan("VktSuoritusService.cleanup")
+    fun cleanup(retention: Duration) {
+        osakoeRepository.cleanup(retention)
+    }
 
     companion object {
         const val PAGE_SIZE: Int = 50
