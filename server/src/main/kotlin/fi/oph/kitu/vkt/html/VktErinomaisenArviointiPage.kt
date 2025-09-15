@@ -16,20 +16,18 @@ import fi.oph.kitu.html.submitButton
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
-import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.footer
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.h3
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import java.time.LocalDate
 
 object VktErinomaisenArviointiPage {
@@ -73,10 +71,13 @@ object VktErinomaisenArviointiPage {
                 .zip(arvosana)
                 .zip(arviointipaiva)
                 .map {
+                    val arvosana = it.first.second
+                    val eiSuoritusta = arvosana == Koodisto.VktArvosana.EiSuoritusta
                     ArvosanaFormEntry(
                         id = it.first.first,
-                        arvosana = it.first.second,
-                        arviointipaiva = it.second,
+                        arvosana = if (eiSuoritusta) null else arvosana,
+                        arviointipaiva = if (eiSuoritusta) null else it.second,
+                        merkittyPoistettavaksi = eiSuoritusta,
                     )
                 }
 
@@ -84,6 +85,7 @@ object VktErinomaisenArviointiPage {
             val id: Int,
             val arvosana: Koodisto.VktArvosana?,
             val arviointipaiva: LocalDate?,
+            val merkittyPoistettavaksi: Boolean = false,
         )
     }
 }
@@ -110,7 +112,21 @@ fun FlowContent.vktErinomainenOsakoeTable(
                         listOf(
                             Navigation.MenuItem("Erinomainen", Koodisto.VktArvosana.Erinomainen.name),
                             Navigation.MenuItem("Hylätty", Koodisto.VktArvosana.Hylätty.name),
-                        ).setCurrentItem(it.arviointi?.arvosana?.name),
+                            Navigation.MenuItem(
+                                "Ei suoritusta (poistetaan${it.merkittyPoistettavaksi?.let { pvm ->
+                                    " ${pvm.finnishDateTime()}"
+                                } ?: ""})",
+                                Koodisto.VktArvosana.EiSuoritusta.name,
+                            ),
+                        ).setCurrentItem(
+                            if (it.merkittyPoistettavaksi != null) {
+                                Koodisto.VktArvosana.EiSuoritusta.name
+                            } else {
+                                it.arviointi
+                                    ?.arvosana
+                                    ?.name
+                            },
+                        ),
                     testId = "arvosana",
                 )
             },

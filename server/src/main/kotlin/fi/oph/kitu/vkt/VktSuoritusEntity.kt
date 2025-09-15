@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.MappedCollection
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 @Table(name = "vkt_suoritus")
@@ -37,6 +38,7 @@ data class VktSuoritusEntity(
         val tutkintopaiva: LocalDate,
         val arviointipaiva: LocalDate?,
         val arvosana: Koodisto.VktArvosana?,
+        val merkittyPoistettavaksi: LocalDateTime?,
     )
 
     @Table(name = "vkt_tutkinto")

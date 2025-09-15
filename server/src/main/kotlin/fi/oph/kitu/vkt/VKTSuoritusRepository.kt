@@ -313,6 +313,7 @@ class VktOsakoeRepository {
         id: Int,
         arvosana: Koodisto.VktArvosana?,
         arviointipaiva: LocalDate?,
+        merkitsePoistettavaksi: Boolean,
     ) {
         val sql =
             if (arvosana != null) {
@@ -320,7 +321,8 @@ class VktOsakoeRepository {
                 UPDATE vkt_osakoe
                 SET
                     arvosana = :arvosana,
-                    arviointipaiva = COALESCE(:arviointipaiva, now())
+                    arviointipaiva = COALESCE(:arviointipaiva, now()),
+                    merkitty_poistettavaksi = null
                 WHERE id = :id
                 """.trimIndent()
             } else {
@@ -328,7 +330,8 @@ class VktOsakoeRepository {
                 UPDATE vkt_osakoe
                 SET
                     arvosana = null,
-                    arviointipaiva = null
+                    arviointipaiva = null,
+                    merkitty_poistettavaksi = null
                 WHERE id = :id
                 """.trimIndent()
             }
@@ -338,7 +341,28 @@ class VktOsakoeRepository {
                 "id" to id,
                 "arvosana" to arvosana?.name,
                 "arviointipaiva" to arviointipaiva,
+                "poistettava" to merkitsePoistettavaksi,
             )
+
+        jdbcNamedParameterTemplate.update(sql, params)
+    }
+
+    @WithSpan
+    fun delete(
+        id: Int,
+        retentionTime: Long,
+    ) {
+        val sql =
+            """
+            UPDATE vkt_osakoe
+            SET
+                arvosana = null,
+                arviointipaiva = null,
+                merkitty_poistettavaksi = now() + interval '$retentionTime secs'
+            WHERE id = :id
+            """.trimIndent()
+
+        val params = mapOf("id" to id)
 
         jdbcNamedParameterTemplate.update(sql, params)
     }

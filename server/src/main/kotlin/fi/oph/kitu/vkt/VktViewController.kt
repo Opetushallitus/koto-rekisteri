@@ -220,7 +220,15 @@ class VktViewController(
         viewMessage: ViewMessage,
     ): RedirectView {
         form.toEntries().forEach {
-            vktSuoritukset.setOsakoeArvosana(it.id, it.arvosana, it.arviointipaiva)
+            if (it.merkittyPoistettavaksi) {
+                vktSuoritukset.deleteOsakoe(osakoeId = it.id)
+            } else {
+                vktSuoritukset.setOsakoeArvosana(
+                    osakoeId = it.id,
+                    arvosana = it.arvosana,
+                    arviointipaiva = it.arviointipaiva,
+                )
+            }
         }
         vktSuoritukset.requestTransferToKoski(CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso))
         viewMessage.showSuccess("Muutokset tallennettu onnistuneesti.")

@@ -166,6 +166,7 @@ object Koodisto {
         Hyvä("hyva", 2),
         Tyydyttävä("tyydyttava", 1),
         Hylätty("hylatty", -1),
+        EiSuoritusta("ei_suoritusta", -2),
         ;
 
         override val koodistoUri: String = "vktarvosana"
