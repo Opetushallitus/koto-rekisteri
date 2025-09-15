@@ -218,6 +218,22 @@ class CustomVktSuoritusRepository {
         jdbcNamedParameterTemplate.update(query, params)
     }
 
+    @WithSpan
+    fun cleanup() {
+        val query =
+            """
+            DELETE FROM vkt_suoritus
+            WHERE
+            	NOT EXISTS (
+            		SELECT 1
+            		FROM vkt_osakoe
+            		WHERE vkt_osakoe.suoritus_id = vkt_suoritus.id)
+
+            """.trimIndent()
+
+        jdbcTemplate.update(query)
+    }
+
     private fun whereAll(vararg conditions: String?): String {
         val nonNullConditions = conditions.filterNotNull()
         return if (nonNullConditions.isNotEmpty()) {
