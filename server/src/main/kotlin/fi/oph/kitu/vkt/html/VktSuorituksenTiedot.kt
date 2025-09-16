@@ -10,6 +10,7 @@ import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.a
+import kotlinx.html.div
 import kotlinx.html.h3
 import kotlinx.html.i
 
@@ -64,22 +65,36 @@ fun FlowContent.vktTutkinnot(
                         it.viimeisinTutkintopaiva()?.let { finnishDate(it) }
                     },
                     DisplayTableColumn("Arvosana", width = "50%", testId = "arvosana") {
-                        it.puuttuvatOsakokeet().let { puuttuvat ->
-                            if (puuttuvat.isNotEmpty()) {
-                                i {
-                                    +"Osakoe puuttuu: ${puuttuvat.joinToString(", ") { t.get(it) }}"
-                                }
-                            } else {
-                                val arviointi = it.arviointi()
-                                if (arviointi != null) {
-                                    +t.get(arviointi.arvosana)
+                        val puuttuvatOsakokeet = it.puuttuvatOsakokeet()
+                        val puuttuvatArvioinnit = it.puuttuvatArvioinnit()
+
+                        val puutteet =
+                            listOfNotNull(
+                                if (puuttuvatArvioinnit.isNotEmpty()) {
+                                    val head =
+                                        if (puuttuvatArvioinnit.size == 1) {
+                                            "Arviointi puuttuu"
+                                        } else {
+                                            "Arvioinnit puuttuvat"
+                                        }
+                                    val value = puuttuvatArvioinnit.joinToString(", ") { ok -> t.get(ok) }
+                                    "$head: $value"
                                 } else {
-                                    i {
-                                        +"Arviointi puuttuu: ${
-                                            it.puuttuvatArvioinnit().joinToString(", ") { t.get(it) }
-                                        }"
-                                    }
-                                }
+                                    null
+                                },
+                                if (puuttuvatOsakokeet.isNotEmpty()) {
+                                    val value = puuttuvatOsakokeet.joinToString(", ") { ok -> t.get(ok) }
+                                    "Osakoe puuttuu: $value"
+                                } else {
+                                    null
+                                },
+                            )
+
+                        if (puutteet.isNotEmpty()) {
+                            i { +puutteet.joinToString(" / ") }
+                        } else {
+                            it.arviointi()?.let { arviointi ->
+                                +t.get(arviointi.arvosana)
                             }
                         }
                     },
