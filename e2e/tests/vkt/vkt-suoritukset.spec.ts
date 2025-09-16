@@ -225,9 +225,9 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     const tutkintojenArvosanat = tutkinnot.getCellsOfColumn("arvosana")
     await expectToHaveTexts(
       tutkintojenArvosanat,
-      "Arviointi puuttuu: <vktosakoe:kirjoittaminen>, <vktosakoe:tekstinymmartaminen>",
-      "Arviointi puuttuu: <vktosakoe:puheenymmartaminen>, <vktosakoe:puhuminen>",
-      "Arviointi puuttuu: <vktosakoe:puheenymmartaminen>, <vktosakoe:tekstinymmartaminen>",
+      "Arvioinnit puuttuvat: <vktosakoe:kirjoittaminen>, <vktosakoe:tekstinymmartaminen>",
+      "Arvioinnit puuttuvat: <vktosakoe:puhuminen>, <vktosakoe:puheenymmartaminen>",
+      "Arvioinnit puuttuvat: <vktosakoe:tekstinymmartaminen>, <vktosakoe:puheenymmartaminen>",
     )
 
     // Ota talteen locatorit suullisen taidon osakokeiden riveille
@@ -254,7 +254,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await testForEach(
       tutkintojenArvosanat,
       expectToHaveText(
-        "Arviointi puuttuu: <vktosakoe:kirjoittaminen>, <vktosakoe:tekstinymmartaminen>",
+        "Arvioinnit puuttuvat: <vktosakoe:kirjoittaminen>, <vktosakoe:tekstinymmartaminen>",
       ),
       expectToHaveKoodiviite("vktarvosana", "erinomainen"),
       expectToHaveText("Arviointi puuttuu: <vktosakoe:tekstinymmartaminen>"),

@@ -170,10 +170,7 @@ interface VktTutkinto :
         return mahdollisetOsakokeidenTyypit().filterNot { tyypit.contains(it) }
     }
 
-    fun puuttuvatArvioinnit(): List<Koodisto.VktOsakoe> {
-        val tyypit = osat.filter { it.arviointi != null }.map { it.tyyppi }
-        return mahdollisetOsakokeidenTyypit().filterNot { tyypit.contains(it) }
-    }
+    fun puuttuvatArvioinnit(): List<Koodisto.VktOsakoe> = osat.filter { it.arviointi == null }.map { it.tyyppi }
 
     companion object {
         fun from(
