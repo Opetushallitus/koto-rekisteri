@@ -196,12 +196,9 @@ class KoskiRequestMapper {
 
         val kaikkiOsakokeetArvioitu = suoritus.osat.all { it.arviointi != null }
 
-        val organisaatio: Organisaatio? =
+        val organisaatio: Organisaatio =
             suoritus.osat.firstNotNullOfOrNull { it.oppilaitos?.let { Organisaatio(it.oid) } }
-                ?: when (suoritus.taitotaso) {
-                    Koodisto.VktTaitotaso.Erinomainen -> Organisaatio(vktOrganisaatioOid)
-                    else -> null
-                }
+                ?: Organisaatio(vktOrganisaatioOid)
 
         val arviointipaiva =
             suoritus.osat
@@ -225,7 +222,6 @@ class KoskiRequestMapper {
                 TypedResult.Failure(
                     listOfNotNull(
                         if (!kaikkiOsakokeetArvioitu) "Arviointi puuttuu" else null,
-                        if (organisaatio == null) "Organisaatio puuttuu" else null,
                         if (arviointipaiva == null) "Viimeisintä arviointipäivää ei voida päätellä" else null,
                         if (suoritus.suorituspaikkakunta == null) "Suorituspaikkakunta puuttuu" else null,
                     ),
