@@ -96,4 +96,5 @@ enum class KoskiTransferState {
     NOT_READY,
     PENDING,
     SUCCESS,
+    INVALID,
 }

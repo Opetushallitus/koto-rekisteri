@@ -10,7 +10,6 @@ import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.a
-import kotlinx.html.div
 import kotlinx.html.h3
 import kotlinx.html.i
 import kotlinx.html.li
@@ -34,15 +33,19 @@ fun FlowContent.vktSuorituksenTiedot(
             "KOSKI" to {
                 when (koskiTransferState.first) {
                     KoskiTransferState.NOT_READY -> {
-                        +"Tiedoissa puutteita tai virheitä, eivätkä ole valmiit siirrettäväksi KOSKI-tietovarantoon:"
-                        ul {
-                            koskiTransferState.second.forEach { error -> li { +error } }
-                        }
+                        +"Tiedoissa puutteita tai virheitä, eivätkä ole valmiit siirrettäväksi KOSKI-tietovarantoon."
                     }
                     KoskiTransferState.PENDING ->
                         +"Yritys tietojen siirrosta KOSKI-tietovarantoon ajastettu."
                     KoskiTransferState.SUCCESS ->
                         +"Tiedot siirretty KOSKI-tietovarantoon."
+                    KoskiTransferState.INVALID ->
+                        +"Tiedonsiirtotila on virheellinen."
+                }
+                if (koskiTransferState.second.isNotEmpty()) {
+                    ul {
+                        koskiTransferState.second.forEach { error -> li { +error } }
+                    }
                 }
                 if (data.suoritus.koskiOpiskeluoikeusOid != null) {
                     +" Opiskeluoikeuden oid: "
