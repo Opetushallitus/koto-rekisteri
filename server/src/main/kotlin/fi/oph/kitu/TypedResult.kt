@@ -2,7 +2,6 @@ package fi.oph.kitu
 
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
-import kotlinx.html.B
 
 sealed class TypedResult<Value, Error> {
     data class Success<Value, Error>(
@@ -82,6 +81,12 @@ sealed class TypedResult<Value, Error> {
             is Success<Value, Error> -> transform(this.value)
             is Failure<Value, Error> -> Failure(this.error)
         }
+
+    fun forEach(f: (Value) -> Unit): Unit =
+        fold(
+            onSuccess = { f(it) },
+            onFailure = { },
+        )
 
     companion object {
         inline fun <Value> runCatching(block: () -> Value): TypedResult<Value, Throwable> =

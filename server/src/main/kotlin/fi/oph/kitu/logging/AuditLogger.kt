@@ -1,6 +1,5 @@
 package fi.oph.kitu.logging
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.auth.CasUserDetails
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -46,30 +45,32 @@ class AuditLogger(
         operation: KituAuditLogOperation,
         oppijaHenkiloOid: String,
     ) {
-        val context = AuditContext.get()
-        val type = "log"
-        val timestamp = fmt.format(Instant.now(clock))
+        AuditContext.get().forEach { context ->
 
-        val json =
-            // TODO: Refactor to generate the json with fasterxml.jackson
-            """
-            {
-                "version": 1,
-                "logSeq": ${logSeq.getAndIncrement()},
-                "bootTime": "${fmt.format(bootTime)}",
-                "type": "$type",
-                "environment": "${environment.activeProfiles.first()}",
-                "hostname": "$appUrl",
-                "timestamp": "$timestamp",
-                "serviceName": "kitu",
-                "applicationType": "backend",
-                "user": {"oid": "${context.userOid}"},
-                "target": {"${KitAuditLogMessageField.OppijaHenkiloOid}": "$oppijaHenkiloOid"},
-                "organizationOid": "${context.opetushallitusOrganisaatioOid}",
-                "operation": "${operation.name}"
-            }
-            """.trimIndent()
-        slf4jLogger.info(json)
+            val type = "log"
+            val timestamp = fmt.format(Instant.now(clock))
+
+            val json =
+                // TODO: Refactor to generate the json with fasterxml.jackson
+                """
+                {
+                    "version": 1,
+                    "logSeq": ${logSeq.getAndIncrement()},
+                    "bootTime": "${fmt.format(bootTime)}",
+                    "type": "$type",
+                    "environment": "${environment.activeProfiles.first()}",
+                    "hostname": "$appUrl",
+                    "timestamp": "$timestamp",
+                    "serviceName": "kitu",
+                    "applicationType": "backend",
+                    "user": {"oid": "${context.userOid}"},
+                    "target": {"${KitAuditLogMessageField.OppijaHenkiloOid}": "$oppijaHenkiloOid"},
+                    "organizationOid": "${context.opetushallitusOrganisaatioOid}",
+                    "operation": "${operation.name}"
+                }
+                """.trimIndent()
+            slf4jLogger.info(json)
+        }
     }
 
     fun <E> logAllInternalOnly(
