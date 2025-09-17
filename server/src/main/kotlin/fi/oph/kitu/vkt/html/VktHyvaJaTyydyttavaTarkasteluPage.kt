@@ -2,7 +2,6 @@ package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.html.DisplayTableColumn
-import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
@@ -12,7 +11,6 @@ import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
-import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.h1
@@ -24,7 +22,7 @@ object VktHyvaJaTyydyttavaTarkasteluPage {
         data: Henkilosuoritus<VktSuoritus>,
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
-        koskiTransferState: KoskiTransferState,
+        koskiTransferState: Pair<KoskiTransferState, List<String>>,
     ): String =
         Page.renderHtml {
             h1 { +data.henkilo.kokoNimi() }

@@ -36,7 +36,7 @@ object VktErinomaisenArviointiPage {
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
         messages: List<ViewMessageData>,
-        koskiTransferState: KoskiTransferState,
+        koskiTransferState: Pair<KoskiTransferState, List<String>>,
     ): String =
         Page.renderHtml {
             h1 { +data.henkilo.kokoNimi() }
