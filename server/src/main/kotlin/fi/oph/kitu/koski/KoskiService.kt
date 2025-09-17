@@ -91,8 +91,8 @@ class KoskiService(
             .use { span ->
                 val id = CustomVktSuoritusRepository.Tutkintoryhma.from(suoritus)
                 val koskiRequest = koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus)
-                if (koskiRequest == null) {
-                    vktSuoritusService.markKoskiTransferProcessed(id)
+                if (koskiRequest.isFailure) {
+                    // Suoritus ei ole vielä valmis lähetettäväksi, mutta se ei ole tiedonsiirtovirhe.
                     return TypedResult.Success(Unit)
                 }
 
