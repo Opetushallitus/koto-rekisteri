@@ -1,6 +1,7 @@
 package fi.oph.kitu.logging
 
 import fi.oph.kitu.Oid
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.auth.CasUserDetails
 import org.springframework.core.io.ClassPathResource
 import org.springframework.security.core.context.SecurityContextHolder
@@ -33,13 +34,17 @@ data class AuditContext(
             return parsed
         }
 
-        fun get(): AuditContext {
+        fun get(): TypedResult<AuditContext, IllegalStateException> {
             val userDetails: CasUserDetails =
                 SecurityContextHolder.getContext().authentication?.principal as CasUserDetails?
-                    ?: throw IllegalStateException("User details not available via SecurityContextHolder")
+                    ?: return TypedResult.Failure(
+                        IllegalStateException("User details not available via SecurityContextHolder"),
+                    )
             val servletRequestAttributes =
                 RequestContextHolder.getRequestAttributes() as ServletRequestAttributes?
-                    ?: throw IllegalStateException("HTTP request not available via RequestContextHolder")
+                    ?: return TypedResult.Failure(
+                        IllegalStateException("HTTP request not available via RequestContextHolder"),
+                    )
             val request = servletRequestAttributes.request
 
             val userOid = userDetails.oid
@@ -51,7 +56,7 @@ data class AuditContext(
             val ip = InetAddress.getByName(request.remoteAddr)
             val session = request.session.id
 
-            return AuditContext(userOid, userAgent, ip, session, opetushallitusOrganisaatioOid)
+            return TypedResult.Success(AuditContext(userOid, userAgent, ip, session, opetushallitusOrganisaatioOid))
         }
     }
 
