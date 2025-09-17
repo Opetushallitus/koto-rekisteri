@@ -267,7 +267,7 @@ class KoskiRequestMapperTest(
                 suoritus = suoritus,
             )
 
-        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
+        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
 
         assertNotNull(koskiSuoritus)
 
@@ -361,7 +361,7 @@ class KoskiRequestMapperTest(
                     ),
             )
 
-        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
+        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
 
         assertNotNull(koskiSuoritus)
 

@@ -268,17 +268,15 @@ class VktViewController(
             },
         )
 
-    private fun getKoskiTransferState(suoritus: Henkilosuoritus<VktSuoritus>): KoskiTransferState {
+    private fun getKoskiTransferState(suoritus: Henkilosuoritus<VktSuoritus>): Pair<KoskiTransferState, List<String>> =
         if (suoritus.suoritus.koskiSiirtoKasitelty) {
-            return KoskiTransferState.SUCCESS
+            KoskiTransferState.SUCCESS to emptyList()
         } else {
-            val koskiRequest = koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus)
-            if (koskiRequest == null) {
-                return KoskiTransferState.NOT_READY
-            }
-            return KoskiTransferState.PENDING
+            koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus).fold(
+                onSuccess = { KoskiTransferState.PENDING to emptyList() },
+                onFailure = { KoskiTransferState.NOT_READY to it },
+            )
         }
-    }
 }
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "VKT suoritusta ei löytynyt")

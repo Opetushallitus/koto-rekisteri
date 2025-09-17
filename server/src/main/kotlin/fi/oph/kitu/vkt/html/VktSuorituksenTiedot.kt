@@ -16,7 +16,7 @@ import kotlinx.html.i
 
 fun FlowContent.vktSuorituksenTiedot(
     data: Henkilosuoritus<VktSuoritus>,
-    koskiTransferState: KoskiTransferState,
+    koskiTransferState: Pair<KoskiTransferState, List<String>>,
     t: Translations,
 ) {
     card(compact = true) {
@@ -30,9 +30,10 @@ fun FlowContent.vktSuorituksenTiedot(
     card(compact = true) {
         infoTable(
             "KOSKI" to {
-                when (koskiTransferState) {
+                when (koskiTransferState.first) {
                     KoskiTransferState.NOT_READY ->
-                        +"Tiedoissa puutteita tai virheitä, eivätkä ole valmiit siirrettäväksi KOSKI-tietovarantoon."
+                        +"Tiedoissa puutteita tai virheitä, eivätkä ole valmiit siirrettäväksi KOSKI-tietovarantoon: ${
+                            koskiTransferState.second.joinToString("; ")}"
                     KoskiTransferState.PENDING ->
                         +"Yritys tietojen siirrosta KOSKI-tietovarantoon ajastettu."
                     KoskiTransferState.SUCCESS ->

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koodisto.Koodisto.YkiArvosana
 import fi.oph.kitu.koodisto.KoskiKoodiviite
@@ -187,12 +188,13 @@ class KoskiRequestMapper {
             }
     }
 
-    fun vktSuoritusToKoskiRequest(henkilosuoritus: Henkilosuoritus<VktSuoritus>): KoskiRequest? {
+    fun vktSuoritusToKoskiRequest(
+        henkilosuoritus: Henkilosuoritus<VktSuoritus>,
+    ): TypedResult<KoskiRequest, List<String>> {
         val henkilo = henkilosuoritus.henkilo
         val suoritus = henkilosuoritus.suoritus
 
         val kaikkiOsakokeetArvioitu = suoritus.osat.all { it.arviointi != null }
-        if (!kaikkiOsakokeetArvioitu) return null
 
         val organisaatio: Organisaatio? =
             suoritus.osat.firstNotNullOfOrNull { it.oppilaitos?.let { Organisaatio(it.oid) } }
@@ -206,21 +208,31 @@ class KoskiRequestMapper {
                 .mapNotNull { it.arviointi?.paivamaara }
                 .maxOrNull()
 
-        val vahvistus =
-            if (organisaatio != null &&
+        val vahvistus: TypedResult<KielitutkintoSuoritus.VahvistusPaikkakunnalla, List<String>> =
+            if (kaikkiOsakokeetArvioitu &&
+                organisaatio != null &&
                 arviointipaiva != null &&
                 suoritus.suorituspaikkakunta != null
             ) {
-                KielitutkintoSuoritus.VahvistusPaikkakunnalla(
-                    päivä = arviointipaiva,
-                    myöntäjäOrganisaatio = Organisaatio(organisaatio.oid),
-                    paikkakunta = KoskiKoodiviite(suoritus.suorituspaikkakunta, "kunta"),
+                TypedResult.Success(
+                    KielitutkintoSuoritus.VahvistusPaikkakunnalla(
+                        päivä = arviointipaiva,
+                        myöntäjäOrganisaatio = Organisaatio(organisaatio.oid),
+                        paikkakunta = KoskiKoodiviite(suoritus.suorituspaikkakunta, "kunta"),
+                    ),
                 )
             } else {
-                null
+                TypedResult.Failure(
+                    listOfNotNull(
+                        if (!kaikkiOsakokeetArvioitu) "Arviointi puuttuu" else null,
+                        if (organisaatio == null) "Oppilaitos puuttuu" else null,
+                        if (arviointipaiva == null) "Viimeisintä arviointipäivää ei voida päätellä" else null,
+                        if (suoritus.suorituspaikkakunta == null) "Suorituspaikkakunta puuttuu" else null,
+                    ),
+                )
             }
 
-        return vahvistus?.let { vahvistus ->
+        return vahvistus.map { vahvistus ->
             KoskiRequest(
                 henkilö = Henkilo(oid = henkilo.oid.oid),
                 opiskeluoikeudet =
