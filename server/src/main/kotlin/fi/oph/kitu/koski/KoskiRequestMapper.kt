@@ -225,7 +225,7 @@ class KoskiRequestMapper {
                 TypedResult.Failure(
                     listOfNotNull(
                         if (!kaikkiOsakokeetArvioitu) "Arviointi puuttuu" else null,
-                        if (organisaatio == null) "Oppilaitos puuttuu" else null,
+                        if (organisaatio == null) "Organisaatio puuttuu" else null,
                         if (arviointipaiva == null) "Viimeisintä arviointipäivää ei voida päätellä" else null,
                         if (suoritus.suorituspaikkakunta == null) "Suorituspaikkakunta puuttuu" else null,
                     ),
