@@ -270,7 +270,12 @@ class VktViewController(
 
     private fun getKoskiTransferState(suoritus: Henkilosuoritus<VktSuoritus>): Pair<KoskiTransferState, List<String>> =
         if (suoritus.suoritus.koskiSiirtoKasitelty) {
-            KoskiTransferState.SUCCESS to emptyList()
+            if (suoritus.suoritus.koskiOpiskeluoikeusOid != null) {
+                KoskiTransferState.SUCCESS to emptyList()
+            } else {
+                KoskiTransferState.INVALID to
+                    listOf("Suoritus on merkitty käsitellyksi, mutta sille ei ole opiskeluoikeus-oidia.")
+            }
         } else {
             koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus).fold(
                 onSuccess = { KoskiTransferState.PENDING to emptyList() },
