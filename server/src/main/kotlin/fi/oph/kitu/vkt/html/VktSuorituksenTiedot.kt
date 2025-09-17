@@ -13,6 +13,8 @@ import kotlinx.html.a
 import kotlinx.html.div
 import kotlinx.html.h3
 import kotlinx.html.i
+import kotlinx.html.li
+import kotlinx.html.ul
 
 fun FlowContent.vktSuorituksenTiedot(
     data: Henkilosuoritus<VktSuoritus>,
@@ -31,9 +33,12 @@ fun FlowContent.vktSuorituksenTiedot(
         infoTable(
             "KOSKI" to {
                 when (koskiTransferState.first) {
-                    KoskiTransferState.NOT_READY ->
-                        +"Tiedoissa puutteita tai virheitä, eivätkä ole valmiit siirrettäväksi KOSKI-tietovarantoon: ${
-                            koskiTransferState.second.joinToString("; ")}"
+                    KoskiTransferState.NOT_READY -> {
+                        +"Tiedoissa puutteita tai virheitä, eivätkä ole valmiit siirrettäväksi KOSKI-tietovarantoon:"
+                        ul {
+                            koskiTransferState.second.forEach { error -> li { +error } }
+                        }
+                    }
                     KoskiTransferState.PENDING ->
                         +"Yritys tietojen siirrosta KOSKI-tietovarantoon ajastettu."
                     KoskiTransferState.SUCCESS ->
