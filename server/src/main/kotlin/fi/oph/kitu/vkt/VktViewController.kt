@@ -251,6 +251,18 @@ class VktViewController(
         return ResponseEntity.ok(VktKoskiErrors.render(errors, translations))
     }
 
+    @GetMapping("/koski-request/{oppijanumero}/{kieli}/{taso}", produces = ["application/json"])
+    fun koskiRequestJson(
+        @PathVariable oppijanumero: String,
+        @PathVariable kieli: Koodisto.Tutkintokieli,
+        @PathVariable taso: Koodisto.VktTaitotaso,
+    ): ResponseEntity<String> =
+        vktSuoritukset
+            .getOppijanSuoritukset(CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso))
+            ?.let { koskiRequestMapper.vktSuoritusToKoskiRequest(it).getOrNull() }
+            ?.let { ResponseEntity.ok(KoskiRequestMapper.getObjectMapper().writeValueAsString(it)) }
+            ?: ResponseEntity.notFound().build()
+
     private fun getMessages(): List<ViewMessageData> =
         listOfNotNull(
             koskiErrorService.countByEntity("vkt").let {
