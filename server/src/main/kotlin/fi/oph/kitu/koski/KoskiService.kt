@@ -103,7 +103,7 @@ class KoskiService(
                             .uri("oppija")
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON)
-                            .body(koskiRequest)
+                            .body(koskiRequest.getOrThrow())
                             .retrieve()
                             .toEntity<KoskiResponse>()
                     } catch (e: RestClientException) {
