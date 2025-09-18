@@ -3,6 +3,7 @@ package fi.oph.kitu.vkt
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
+import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Arviointi
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Arvioitava
@@ -10,7 +11,6 @@ import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
-import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Osasuorituksellinen
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Osasuoritus
 import java.time.LocalDate
@@ -21,13 +21,13 @@ import java.time.LocalDateTime
 data class VktSuoritus(
     val taitotaso: Koodisto.VktTaitotaso,
     val kieli: Koodisto.Tutkintokieli,
-    val suorituksenVastaanottaja: OidString? = null, // henkilö-oid
+    val suorituksenVastaanottaja: Oid? = null, // henkilö-oid
     val suorituspaikkakunta: String? = null, // kunta-koodiston mukainen koodiarvo
     @get:JsonProperty("osakokeet")
     override val osat: List<VktOsakoe>,
     override val lahdejarjestelmanId: LahdejarjestelmanTunniste,
     val internalId: Int? = null,
-    val koskiOpiskeluoikeusOid: OidString? = null,
+    val koskiOpiskeluoikeusOid: Oid? = null,
     val koskiSiirtoKasitelty: Boolean = false,
     val merkittyPoistettavaksi: Boolean = false,
 ) : KielitutkinnonSuoritus,
@@ -51,17 +51,17 @@ data class VktSuoritus(
     fun toVktSuoritusEntity(oppija: OidOppija): VktSuoritusEntity =
         VktSuoritusEntity(
             ilmoittautumisenId = lahdejarjestelmanId.toString(),
-            suorittajanOppijanumero = oppija.oid.toOid().getOrThrow(),
+            suorittajanOppijanumero = oppija.oid,
             etunimi = oppija.etunimet.orEmpty(),
             sukunimi = oppija.sukunimi.orEmpty(),
             tutkintokieli = kieli,
             ilmoittautumisenTila = "",
             suorituspaikkakunta = suorituspaikkakunta,
             taitotaso = taitotaso,
-            suorituksenVastaanottaja = suorituksenVastaanottaja?.toString(),
+            suorituksenVastaanottaja = suorituksenVastaanottaja,
             osakokeet = osat.map { it.toVktOsakoeRow() }.toSet(),
             tutkinnot = tutkinnot.map { it.toVktTutkintoRow() }.toSet(),
-            koskiOpiskeluoikeus = koskiOpiskeluoikeusOid?.toOid()?.getOrThrow(),
+            koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,
             koskiSiirtoKasitelty = koskiSiirtoKasitelty,
         )
 
@@ -70,12 +70,12 @@ data class VktSuoritus(
             VktSuoritus(
                 taitotaso = entity.taitotaso,
                 kieli = entity.tutkintokieli,
-                suorituksenVastaanottaja = entity.suorituksenVastaanottaja?.let { OidString(it) },
+                suorituksenVastaanottaja = entity.suorituksenVastaanottaja,
                 suorituspaikkakunta = entity.suorituspaikkakunta,
                 osat = entity.osakokeet.map { VktOsakoe.from(it) },
                 lahdejarjestelmanId = LahdejarjestelmanTunniste.Companion.from(entity.ilmoittautumisenId),
                 internalId = entity.id,
-                koskiOpiskeluoikeusOid = entity.koskiOpiskeluoikeus?.let { OidString.from(it) },
+                koskiOpiskeluoikeusOid = entity.koskiOpiskeluoikeus,
                 koskiSiirtoKasitelty = entity.koskiSiirtoKasitelty,
             )
 
@@ -276,7 +276,7 @@ interface VktOsakoe :
 
     val tutkintopaiva: LocalDate
     override val arviointi: VktArvionti?
-    val oppilaitos: OidString?
+    val oppilaitos: Oid?
     val merkittyPoistettavaksi: LocalDateTime?
     val suorituksenVastaanottaja: String?
 
@@ -299,6 +299,7 @@ interface VktOsakoe :
                         row.id,
                         merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
+
                 Koodisto.VktOsakoe.TekstinYmmärtäminen ->
                     VktTekstinYmmartamisenKoe(
                         row.tutkintopaiva,
@@ -314,6 +315,7 @@ interface VktOsakoe :
                         row.id,
                         merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
+
                 Koodisto.VktOsakoe.PuheenYmmärtäminen ->
                     VktPuheenYmmartamisenKoe(
                         row.tutkintopaiva,
@@ -335,7 +337,7 @@ data class VktKirjoittamisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
-    override val oppilaitos: OidString? = null,
+    override val oppilaitos: Oid? = null,
     override val merkittyPoistettavaksi: LocalDateTime? = null,
     override val suorituksenVastaanottaja: String? = null,
 ) : VktKirjallisenKielitaidonKoe {
@@ -346,7 +348,7 @@ data class VktTekstinYmmartamisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
-    override val oppilaitos: OidString? = null,
+    override val oppilaitos: Oid? = null,
     override val merkittyPoistettavaksi: LocalDateTime? = null,
     override val suorituksenVastaanottaja: String? = null,
 ) : VktKirjallisenKielitaidonKoe,
@@ -358,7 +360,7 @@ data class VktPuhumisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
-    override val oppilaitos: OidString? = null,
+    override val oppilaitos: Oid? = null,
     override val merkittyPoistettavaksi: LocalDateTime? = null,
     override val suorituksenVastaanottaja: String? = null,
 ) : VktSuullisenKielitaidonKoe {
@@ -369,7 +371,7 @@ data class VktPuheenYmmartamisenKoe(
     override val tutkintopaiva: LocalDate,
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
-    override val oppilaitos: OidString? = null,
+    override val oppilaitos: Oid? = null,
     override val merkittyPoistettavaksi: LocalDateTime? = null,
     override val suorituksenVastaanottaja: String? = null,
 ) : VktSuullisenKielitaidonKoe,

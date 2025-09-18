@@ -1,6 +1,10 @@
 package fi.oph.kitu.logging
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import fi.oph.kitu.Oid
 import fi.oph.kitu.auth.CasUserDetails
+import io.opentelemetry.sdk.resources.Resource
+import io.opentelemetry.semconv.incubating.ServiceIncubatingAttributes
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -11,7 +15,6 @@ import org.springframework.stereotype.Service
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicInteger
 
 const val AUDIT_LOGGER_NAME = "auditLogger"
@@ -21,6 +24,8 @@ class AuditLogger(
     @Qualifier("applicationTaskExecutor")
     private val taskExecutor: AsyncTaskExecutor,
     private val environment: Environment,
+    private val objectMapper: ObjectMapper,
+    private val resource: Resource,
 ) {
     @Value("\${kitu.appUrl}")
     lateinit var appUrl: String
@@ -31,10 +36,7 @@ class AuditLogger(
     private val clock = Clock.system(currentZone)
     private val logSeq = AtomicInteger(0)
     private val bootTime = Instant.now(clock)
-    private val fmt =
-        DateTimeFormatter
-            .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX") // same pattern as SDF
-            .withZone(currentZone)
+    private val instanceId = resource.getAttribute(ServiceIncubatingAttributes.SERVICE_INSTANCE_ID) ?: "not set"
 
     /**
      * Logs events.
@@ -43,33 +45,28 @@ class AuditLogger(
      */
     fun log(
         operation: KituAuditLogOperation,
-        oppijaHenkiloOid: String,
+        oppijaHenkiloOid: Oid,
     ) {
         AuditContext.get().forEach { context ->
-
-            val type = "log"
-            val timestamp = fmt.format(Instant.now(clock))
-
-            val json =
-                // TODO: Refactor to generate the json with fasterxml.jackson
-                """
-                {
-                    "version": 1,
-                    "logSeq": ${logSeq.getAndIncrement()},
-                    "bootTime": "${fmt.format(bootTime)}",
-                    "type": "$type",
-                    "environment": "${environment.activeProfiles.first()}",
-                    "hostname": "$appUrl",
-                    "timestamp": "$timestamp",
-                    "serviceName": "kitu",
-                    "applicationType": "backend",
-                    "user": {"oid": "${context.userOid}"},
-                    "target": {"${KitAuditLogMessageField.OppijaHenkiloOid}": "$oppijaHenkiloOid"},
-                    "organizationOid": "${context.opetushallitusOrganisaatioOid}",
-                    "operation": "${operation.name}"
-                }
-                """.trimIndent()
-            slf4jLogger.info(json)
+            slf4jLogger.info(
+                objectMapper.writeValueAsString(
+                    KituAuditLogMessage(
+                        version = 1,
+                        logSeq = logSeq.getAndIncrement(),
+                        bootTime = bootTime,
+                        type = "log",
+                        environment = environment.getRequiredProperty("kitu.env.name"),
+                        hostname = instanceId,
+                        timestamp = Instant.now(),
+                        serviceName = "kitu",
+                        applicationType = "backend",
+                        user = KituAuditLogMessage.User(context.userOid),
+                        target = KituAuditLogMessage.Target(oppijaHenkiloOid),
+                        organizationOid = context.opetushallitusOrganisaatioOid,
+                        operation = operation,
+                    ),
+                ),
+            )
         }
     }
 

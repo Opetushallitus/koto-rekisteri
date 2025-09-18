@@ -15,7 +15,6 @@ import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
-import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import org.junit.jupiter.api.Test
@@ -260,7 +259,7 @@ class KoskiRequestMapperTest(
             Henkilosuoritus(
                 henkilo =
                     OidOppija(
-                        oid = OidString.from(henkiloOid),
+                        oid = henkiloOid,
                         etunimet = "Keijo",
                         sukunimi = "Keijunen",
                     ),
@@ -290,13 +289,13 @@ class KoskiRequestMapperTest(
     fun `map vkt hyva ja tyydyttava suoritus to koski`() {
         val generator = VktSuoritusMockGenerator(0)
         val random = Random(0)
-        val vastaanottajaOid = "1.2.246.562.24.27639300000"
+        val vastaanottajaOid = Oid.parse("1.2.246.562.24.27639300000").getOrThrow()
 
         val suoritus =
             VktSuoritus(
                 taitotaso = Koodisto.VktTaitotaso.HyväJaTyydyttävä,
                 kieli = Koodisto.Tutkintokieli.FIN,
-                suorituksenVastaanottaja = OidString(vastaanottajaOid),
+                suorituksenVastaanottaja = vastaanottajaOid,
                 suorituspaikkakunta = "091",
                 osat =
                     generator.randomOsakokeet(
@@ -306,7 +305,7 @@ class KoskiRequestMapperTest(
                             LocalDate.of(2025, 1, 1),
                             random,
                         ),
-                        oppilaitos = OidString("1.2.246.562.10.42456023292"),
+                        oppilaitos = Oid.parse("1.2.246.562.10.42456023292").getOrThrow(),
                     ),
                 lahdejarjestelmanId =
                     LahdejarjestelmanTunniste(
@@ -320,7 +319,7 @@ class KoskiRequestMapperTest(
             Henkilosuoritus(
                 henkilo =
                     OidOppija(
-                        oid = OidString.from(henkiloOid),
+                        oid = henkiloOid,
                         etunimet = "Keijo",
                         sukunimi = "Keijunen",
                     ),

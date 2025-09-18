@@ -9,10 +9,7 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.VktMappingId
-import fi.oph.kitu.oppijanumero.EmptyRequest
-import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.toTypedResult
 import fi.oph.kitu.vkt.html.KoskiTransferState
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
@@ -170,15 +167,7 @@ class VktViewController(
         val id = CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso)
         val suoritus = vktSuoritukset.getOppijanSuoritukset(id) ?: throw VktSuoritusNotFoundError()
 
-        val henkilo =
-            suoritus.henkilo.oid
-                .toOid()
-                .toTypedResult<_, OppijanumeroException> {
-                    OppijanumeroException.MalformedOppijanumero(
-                        EmptyRequest(),
-                        suoritus.henkilo.oid.oid,
-                    )
-                }.flatMap { oppijanumeroService.getHenkilo(it) }
+        val henkilo = oppijanumeroService.getHenkilo(suoritus.henkilo.oid)
 
         val translations =
             localizationService
