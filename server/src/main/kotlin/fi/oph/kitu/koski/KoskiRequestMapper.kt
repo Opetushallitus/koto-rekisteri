@@ -207,7 +207,6 @@ class KoskiRequestMapper {
 
         val vahvistus: TypedResult<KielitutkintoSuoritus.VahvistusPaikkakunnalla, List<String>> =
             if (kaikkiOsakokeetArvioitu &&
-                organisaatio != null &&
                 arviointipaiva != null &&
                 suoritus.suorituspaikkakunta != null
             ) {
@@ -262,7 +261,7 @@ class KoskiRequestMapper {
                                                 tunniste = suoritus.taitotaso.toKoski(),
                                                 kieli = suoritus.kieli,
                                             ),
-                                        toimipiste = organisaatio!!,
+                                        toimipiste = organisaatio,
                                         vahvistus = vahvistus,
                                         osasuoritukset =
                                             suoritus.tutkinnot.map { kielitaito ->
