@@ -154,6 +154,7 @@ class VktViewController(
                 pagination = pagination,
                 translations = translations,
                 searchQuery = search,
+                messages = getMessages(),
             ),
         )
     }

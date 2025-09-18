@@ -5,9 +5,11 @@ package fi.oph.kitu.vkt.html
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
@@ -26,12 +28,14 @@ object VktHyvaJaTyydyttavaSuorituksetPage {
         pagination: Pagination,
         translations: Translations,
         searchQuery: String?,
+        messages: List<ViewMessageData>,
     ): String =
         Page.renderHtml(
             wideContent = true,
         ) {
             h1 { +"Valtionhallinnon kielitutkinto" }
             h2 { +"Hyvän ja tyydyttävän taidon tutkinnon arvioidut suoritukset" }
+            messages.forEach { viewMessage(it) }
             vktSearch(searchQuery)
             vktHyvaJaTyydyttavaTable(suoritukset, sortedBy, sortDirection, pagination, translations, searchQuery)
         }
