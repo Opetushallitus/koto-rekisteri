@@ -79,7 +79,10 @@ data class VktSuoritus(
                 koskiSiirtoKasitelty = entity.koskiSiirtoKasitelty,
             )
 
-        fun merge(henkilosuoritukset: List<Henkilosuoritus<VktSuoritus>>): Henkilosuoritus<VktSuoritus> {
+        fun merge(
+            henkilosuoritukset: List<Henkilosuoritus<VktSuoritus>>,
+            suorituksenVastaanottajat: Map<String, String>,
+        ): Henkilosuoritus<VktSuoritus> {
             val suoritukset = henkilosuoritukset.map { it.suoritus }
 
             val oppijanumerot = henkilosuoritukset.map { it.henkilo.oid }.distinct()
@@ -104,7 +107,20 @@ data class VktSuoritus(
             }
 
             val viimeisin = henkilosuoritukset.sortedBy { it.lisatty }.last()
-            val kaikkiOsakokeet = suoritukset.flatMap { it.osat }
+            val kaikkiOsakokeet =
+                suoritukset.flatMap {
+                    it.osat.map { osa ->
+                        val vastaanottaja =
+                            suorituksenVastaanottajat[it.suorituksenVastaanottaja?.oid]
+                        when (osa) {
+                            is VktKirjoittamisenKoe -> osa.copy(suorituksenVastaanottaja = vastaanottaja)
+                            is VktTekstinYmmartamisenKoe -> osa.copy(suorituksenVastaanottaja = vastaanottaja)
+                            is VktPuhumisenKoe -> osa.copy(suorituksenVastaanottaja = vastaanottaja)
+                            is VktPuheenYmmartamisenKoe -> osa.copy(suorituksenVastaanottaja = vastaanottaja)
+                            else -> osa
+                        }
+                    }
+                }
 
             return Henkilosuoritus(
                 henkilo = viimeisin.henkilo,
@@ -262,6 +278,7 @@ interface VktOsakoe :
     override val arviointi: VktArvionti?
     val oppilaitos: OidString?
     val merkittyPoistettavaksi: LocalDateTime?
+    val suorituksenVastaanottaja: String?
 
     fun toVktOsakoeRow() =
         VktSuoritusEntity.VktOsakoe(
@@ -320,6 +337,7 @@ data class VktKirjoittamisenKoe(
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
     override val merkittyPoistettavaksi: LocalDateTime? = null,
+    override val suorituksenVastaanottaja: String? = null,
 ) : VktKirjallisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.Kirjoittaminen
 }
@@ -330,6 +348,7 @@ data class VktTekstinYmmartamisenKoe(
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
     override val merkittyPoistettavaksi: LocalDateTime? = null,
+    override val suorituksenVastaanottaja: String? = null,
 ) : VktKirjallisenKielitaidonKoe,
     VktYmmartamisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.TekstinYmmärtäminen
@@ -341,6 +360,7 @@ data class VktPuhumisenKoe(
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
     override val merkittyPoistettavaksi: LocalDateTime? = null,
+    override val suorituksenVastaanottaja: String? = null,
 ) : VktSuullisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.Puhuminen
 }
@@ -351,6 +371,7 @@ data class VktPuheenYmmartamisenKoe(
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
     override val merkittyPoistettavaksi: LocalDateTime? = null,
+    override val suorituksenVastaanottaja: String? = null,
 ) : VktSuullisenKielitaidonKoe,
     VktYmmartamisenKielitaidonKoe {
     override val tyyppi: Koodisto.VktOsakoe = Koodisto.VktOsakoe.PuheenYmmärtäminen

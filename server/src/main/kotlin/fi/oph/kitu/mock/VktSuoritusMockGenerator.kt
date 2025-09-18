@@ -36,10 +36,15 @@ class VktSuoritusMockGenerator(
                 Koodisto.VktTaitotaso.Erinomainen -> null
                 Koodisto.VktTaitotaso.HyväJaTyydyttävä -> OidString("1.2.246.562.10.78513447389")
             }
+        val suorituksenVastaanottaja =
+            when (taitotaso) {
+                Koodisto.VktTaitotaso.Erinomainen -> null
+                Koodisto.VktTaitotaso.HyväJaTyydyttävä -> OidString("1.2.246.562.24.10691606777")
+            }
         return VktSuoritus(
             taitotaso = taitotaso,
             kieli = randomKieli(),
-            suorituksenVastaanottaja = null,
+            suorituksenVastaanottaja = suorituksenVastaanottaja,
             suorituspaikkakunta = "091",
             osat =
                 randomOsakokeet(

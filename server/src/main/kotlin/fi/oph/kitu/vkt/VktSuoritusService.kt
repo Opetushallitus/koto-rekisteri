@@ -6,6 +6,10 @@ import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.KituAuditLogOperation
+import fi.oph.kitu.oppijanumero.EmptyRequest
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.toTypedResult
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import fi.oph.kitu.vkt.html.VktTableItem
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
@@ -24,6 +28,7 @@ class VktSuoritusService(
     private val customSuoritusRepository: CustomVktSuoritusRepository,
     private val osakoeRepository: VktOsakoeRepository,
     private val auditLogger: AuditLogger,
+    private val oppijanumeroService: OppijanumeroService,
 ) {
     @Value("\${kitu.vkt.scheduling.cleanup.retentionTime}")
     lateinit var retentionTimeForDeletedSetting: String
@@ -98,7 +103,24 @@ class VktSuoritusService(
                         )
                     }
                 }
-        return if (suoritukset.isEmpty()) null else VktSuoritus.merge(suoritukset)
+        val suorituksenVastaanottajat =
+            suoritukset
+                .mapNotNull { it.suoritus.suorituksenVastaanottaja }
+                .toSet()
+                .associateBy({ it.oid }, { oidString ->
+                    oidString
+                        .toOid()
+                        .toTypedResult<_, OppijanumeroException> {
+                            OppijanumeroException.MalformedOppijanumero(
+                                EmptyRequest(),
+                                oidString.oid,
+                            )
+                        }.fold(
+                            { oppijanumeroService.getHenkilo(it).getOrNull()?.kokoNimi() ?: oidString.toString() },
+                            { oidString.toString() },
+                        )
+                })
+        return if (suoritukset.isEmpty()) null else VktSuoritus.merge(suoritukset, suorituksenVastaanottajat)
     }
 
     @WithSpan("VktSuoritusService.setOsakoeArvosana")

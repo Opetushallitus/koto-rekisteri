@@ -104,6 +104,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       "Tutkintopäivä",
       "Arvosana",
       "Arviointipäivä",
+      "Suorituksen vastaanottaja",
     )
     await testForEachTestId(
       osakokeet.rows.getByTestId("puheenymmartaminen-2007-12-22"),
