@@ -76,6 +76,24 @@ object VktKoskiErrors {
                                     }
                                 }
                             },
+                            Column.Request.withValue { error ->
+                                VktMappingId.parse(error.id)?.let { id ->
+                                    a(
+                                        href =
+                                            linkTo(
+                                                methodOn(
+                                                    VktViewController::class.java,
+                                                ).koskiRequestJson(
+                                                    id.ryhma.oppijanumero,
+                                                    id.ryhma.tutkintokieli,
+                                                    id.ryhma.taitotaso,
+                                                ),
+                                            ).toString(),
+                                    ) {
+                                        +"Näytä JSON"
+                                    }
+                                }
+                            },
                         ),
                 )
             }
@@ -89,6 +107,7 @@ object VktKoskiErrors {
         Tutkintoryhma("id", "Oppijanumero / kieli / taitotaso", "id"),
         Virhe("error", "Virhe", "error"),
         Aikaleima("timestamp", "Aikaleima", "timestamp"),
+        Request("request", "Pyyntö", "request"),
     }
 }
 
