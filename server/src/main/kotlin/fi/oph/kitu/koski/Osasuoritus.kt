@@ -9,6 +9,7 @@ interface Osasuoritus {
     val tyyppi: Koodisto.SuorituksenTyyppi
     val koulutusmoduuli: OsasuorituksenKoulutusmoduuli
     val arviointi: List<Arvosana>
+    val alkamispäivä: LocalDate?
 }
 
 data class OsasuorituksenKoulutusmoduuli(
@@ -17,7 +18,7 @@ data class OsasuorituksenKoulutusmoduuli(
 
 data class Arvosana(
     val arvosana: KoskiKoodiviite,
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val päivä: LocalDate,
 )
 
@@ -25,6 +26,8 @@ data class YkiOsasuoritus(
     override val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.YleisenKielitutkinnonOsa,
     override val koulutusmoduuli: OsasuorituksenKoulutusmoduuli,
     override val arviointi: List<Arvosana>,
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    override val alkamispäivä: LocalDate?,
 ) : Osasuoritus
 
 data class VktKielitaito(
@@ -32,10 +35,14 @@ data class VktKielitaito(
     override val koulutusmoduuli: OsasuorituksenKoulutusmoduuli,
     override val arviointi: List<Arvosana>,
     val osasuoritukset: List<VktOsakoe>,
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    override val alkamispäivä: LocalDate?,
 ) : Osasuoritus
 
 data class VktOsakoe(
     override val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.ValtionhallinnonKielitutkinnonOsakoe,
     override val koulutusmoduuli: OsasuorituksenKoulutusmoduuli,
     override val arviointi: List<Arvosana>,
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    override val alkamispäivä: LocalDate?,
 ) : Osasuoritus
