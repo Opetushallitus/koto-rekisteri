@@ -150,6 +150,7 @@ class KoskiRequestMapper {
                     päivä = arviointipaiva,
                 ),
             ),
+        alkamispäivä = null,
     )
 
     private fun koodistoYkiArvosana(
@@ -295,8 +296,10 @@ class KoskiRequestMapper {
                                                                             ),
                                                                         )
                                                                     } ?: emptyList(),
+                                                                alkamispäivä = osakoe.tutkintopaiva,
                                                             )
                                                         },
+                                                    alkamispäivä = kielitaito.osat.minOfOrNull { it.tutkintopaiva },
                                                 )
                                             },
                                     ),
