@@ -24,7 +24,6 @@ fun FlowContent.vktSuorituksenTiedot(
         infoTable(
             "Tutkinnon taso" to { +t.get(data.suoritus.taitotaso) },
             "Kieli" to { +t.get(data.suoritus.kieli) },
-            "Suorituspaikkakunta" to { +t.getByKoodiviite("kunta", data.suoritus.suorituspaikkakunta) },
         )
     }
     h3 { +"Integraatiot" }
