@@ -8,6 +8,7 @@ import fi.oph.kitu.oppijanumero.MockOppijanumeroService
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -137,6 +138,49 @@ class VktSuoritusServiceTest(
         assertEquals(osakokeet.size, henkilosuoritus.suoritus.osat.size)
         henkilosuoritus.suoritus.osat.forEach {
             assertEquals("definitely.not.an.oid", it.suorituksenVastaanottaja)
+        }
+    }
+
+    @Test
+    fun `get oppijan suoritukset without suorituksen vastaanottaja`() {
+        val generator = VktSuoritusMockGenerator()
+        val suoritus = generator.generateRandomVktSuoritusEntity(vktValidation)
+        val suoritus2 =
+            generator
+                .generateRandomVktSuoritusEntity(vktValidation)
+                .copy(
+                    suorittajanOppijanumero = suoritus.suorittajanOppijanumero,
+                    etunimi = suoritus.etunimi,
+                    sukunimi = suoritus.sukunimi,
+                    tutkintokieli = suoritus.tutkintokieli,
+                    taitotaso = suoritus.taitotaso,
+                )
+
+        suoritusRepository.saveAll(listOf(suoritus, suoritus2))
+
+        val service =
+            VktSuoritusService(
+                suoritusRepository = suoritusRepository,
+                customSuoritusRepository = customSuoritusRepository,
+                osakoeRepository = osakoeRepository,
+                auditLogger = auditLogger,
+                oppijanumeroService = oppijanumeroService,
+            )
+        val tutkintoryhma =
+            CustomVktSuoritusRepository.Tutkintoryhma(
+                oppijanumero = suoritus.suorittajanOppijanumero.toString(),
+                tutkintokieli = suoritus.tutkintokieli,
+                taitotaso = suoritus.taitotaso,
+            )
+
+        val suoritukset = suoritusRepository.findAll()
+        val osakokeet = suoritukset.flatMap { it.osakokeet }
+
+        val henkilosuoritus = service.getOppijanSuoritukset(tutkintoryhma, false)
+        assertNotNull(henkilosuoritus)
+        assertEquals(osakokeet.size, henkilosuoritus.suoritus.osat.size)
+        henkilosuoritus.suoritus.osat.forEach {
+            assertNull(it.suorituksenVastaanottaja)
         }
     }
 }

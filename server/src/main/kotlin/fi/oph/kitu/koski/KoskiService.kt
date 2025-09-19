@@ -132,7 +132,7 @@ class KoskiService(
         val siirrettavat = customVktSuoritusRepository.findOpiskeluoikeudetForKoskiTransfer()
         val results =
             siirrettavat.map { id ->
-                vktSuoritusService.getOppijanSuoritukset(id)?.let { suoritus ->
+                vktSuoritusService.getOppijanSuoritukset(id, false)?.let { suoritus ->
                     sendVktSuoritusToKoski(suoritus).map {
                         VktMappingId(CustomVktSuoritusRepository.Tutkintoryhma.from(suoritus))
                     }

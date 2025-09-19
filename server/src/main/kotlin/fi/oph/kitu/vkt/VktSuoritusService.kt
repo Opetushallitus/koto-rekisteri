@@ -89,7 +89,10 @@ class VktSuoritusService(
             .map { Henkilosuoritus.from(it) }
 
     @WithSpan("VktSuoritusService.getOppijanSuoritukset")
-    fun getOppijanSuoritukset(id: Tutkintoryhma): Henkilosuoritus<VktSuoritus>? {
+    fun getOppijanSuoritukset(
+        id: Tutkintoryhma,
+        includeSuorituksenVastaanottajat: Boolean = true,
+    ): Henkilosuoritus<VktSuoritus>? {
         val ids = customSuoritusRepository.getOppijanSuoritusIds(id)
         val suoritukset =
             ids
@@ -104,22 +107,27 @@ class VktSuoritusService(
                     }
                 }
         val suorituksenVastaanottajat =
-            suoritukset
-                .mapNotNull { it.suoritus.suorituksenVastaanottaja }
-                .toSet()
-                .associateBy({ it.oid }, { oidString ->
-                    oidString
-                        .toOid()
-                        .toTypedResult<_, OppijanumeroException> {
-                            OppijanumeroException.MalformedOppijanumero(
-                                EmptyRequest(),
-                                oidString.oid,
+            if (includeSuorituksenVastaanottajat) {
+                suoritukset
+                    .mapNotNull { it.suoritus.suorituksenVastaanottaja }
+                    .toSet()
+                    .associateBy({ it.oid }, { oidString ->
+                        oidString
+                            .toOid()
+                            .toTypedResult<_, OppijanumeroException> {
+                                OppijanumeroException.MalformedOppijanumero(
+                                    EmptyRequest(),
+                                    oidString.oid,
+                                )
+                            }.fold(
+                                { oppijanumeroService.getHenkilo(it).getOrNull()?.kokoNimi() ?: oidString.toString() },
+                                { oidString.toString() },
                             )
-                        }.fold(
-                            { oppijanumeroService.getHenkilo(it).getOrNull()?.kokoNimi() ?: oidString.toString() },
-                            { oidString.toString() },
-                        )
-                })
+                    })
+            } else {
+                mapOf()
+            }
+
         return if (suoritukset.isEmpty()) null else VktSuoritus.merge(suoritukset, suorituksenVastaanottajat)
     }
 
