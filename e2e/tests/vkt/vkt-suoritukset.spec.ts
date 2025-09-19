@@ -105,6 +105,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       "Arvosana",
       "Arviointipäivä",
       "Suorituksen vastaanottaja",
+      "Suorituspaikkakunta",
     )
     await testForEachTestId(
       osakokeet.rows.getByTestId("puheenymmartaminen-2007-12-22"),
@@ -152,6 +153,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       "Tutkintopäivä",
       "Arvosana",
       "Arviointipäivä",
+      "Suorituspaikkakunta",
     )
     await expect(osakokeet.rows).toHaveCount(10)
     await testForEachTestId(
