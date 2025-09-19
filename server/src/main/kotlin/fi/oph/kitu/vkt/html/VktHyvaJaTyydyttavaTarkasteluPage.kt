@@ -51,17 +51,20 @@ fun FlowContent.vktHyvaJaTyydyttavaOsakoeTable(
             DisplayTableColumn("Osakoe", width = "20%") {
                 +t.get(it.tyyppi)
             },
-            DisplayTableColumn("Tutkintopäivä", width = "20%") {
+            DisplayTableColumn("Tutkintopäivä", width = "16%") {
                 finnishDate(it.tutkintopaiva)
             },
-            DisplayTableColumn("Arvosana", width = "20%") {
+            DisplayTableColumn("Arvosana", width = "16%") {
                 it.arviointi?.arvosana?.let { arvosana -> +t.get(arvosana) }
             },
-            DisplayTableColumn("Arviointipäivä", width = "20%") {
+            DisplayTableColumn("Arviointipäivä", width = "16%") {
                 it.arviointi?.paivamaara?.let { pvm -> finnishDate(pvm) }
             },
-            DisplayTableColumn("Suorituksen vastaanottaja", width = "20%") {
+            DisplayTableColumn("Suorituksen vastaanottaja", width = "16%") {
                 +it.suorituksenVastaanottaja.toString()
+            },
+            DisplayTableColumn("Suorituspaikkakunta", width = "16%") {
+                +t.getByKoodiviite("kunta", it.suorituspaikkakunta)
             },
         ),
         testId = "osakokeet",
