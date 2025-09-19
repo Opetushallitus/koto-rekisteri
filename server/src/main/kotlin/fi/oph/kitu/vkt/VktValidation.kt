@@ -1,24 +1,22 @@
 package fi.oph.kitu.vkt
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.Validation
 import fi.oph.kitu.ValidationResult
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
 class VktValidation : Validation<VktSuoritus> {
     @Value("\${kitu.oids.palvelukayttaja}")
-    lateinit var palvelukayttajaOid: String
+    lateinit var palvelukayttajaOid: Oid
 
     override fun enrich(s: VktSuoritus): VktSuoritus =
         if (s.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
             s.copy(
-                suorituspaikkakunta =
-                    s.suorituspaikkakunta ?: "091",
-                suorituksenVastaanottaja =
-                    s.suorituksenVastaanottaja ?: OidString(palvelukayttajaOid),
+                suorituspaikkakunta = s.suorituspaikkakunta ?: "091",
+                suorituksenVastaanottaja = s.suorituksenVastaanottaja ?: palvelukayttajaOid,
             )
         } else {
             s

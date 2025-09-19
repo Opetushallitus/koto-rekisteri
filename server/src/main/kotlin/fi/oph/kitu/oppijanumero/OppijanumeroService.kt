@@ -155,7 +155,7 @@ class OppijanumerorekisteriClient(
 }
 
 data class OppijanumerorekisteriHenkilo(
-    val oidHenkilo: String?,
+    val oidHenkilo: Oid?,
     val hetu: String?,
     val kaikkiHetut: List<String>?,
     val passivoitu: Boolean?,

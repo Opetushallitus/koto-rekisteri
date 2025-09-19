@@ -102,7 +102,7 @@ class VktSuoritusService(
                     it.firstOrNull()?.henkilo?.let { henkilo ->
                         auditLogger.log(
                             operation = KituAuditLogOperation.VktSuoritusViewed,
-                            oppijaHenkiloOid = henkilo.oid.oid,
+                            oppijaHenkiloOid = henkilo.oid,
                         )
                     }
                 }

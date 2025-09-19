@@ -21,7 +21,7 @@ data class VktSuoritusEntity(
     val ilmoittautumisenTila: String,
     val suorituspaikkakunta: String?,
     val taitotaso: Koodisto.VktTaitotaso,
-    val suorituksenVastaanottaja: String?,
+    val suorituksenVastaanottaja: Oid?,
     @MappedCollection(idColumn = "suoritus_id")
     val osakokeet: Set<VktOsakoe>,
     @MappedCollection(idColumn = "suoritus_id")
