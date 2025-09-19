@@ -97,13 +97,13 @@ fun FlowContent.vktErinomainenOsakoeTable(
     displayTable(
         osat.sortedWith(compareBy(VktOsakoe::tutkintopaiva, VktOsakoe::tyyppi).reversed()),
         listOf(
-            DisplayTableColumn("Osakoe", width = "25%", testId = "osakoe") {
+            DisplayTableColumn("Osakoe", width = "20%", testId = "osakoe") {
                 +t.get(it.tyyppi)
             },
-            DisplayTableColumn("Tutkintopäivä", width = "25%", testId = "tutkintopaiva") {
+            DisplayTableColumn("Tutkintopäivä", width = "20%", testId = "tutkintopaiva") {
                 finnishDate(it.tutkintopaiva)
             },
-            DisplayTableColumn("Arvosana", width = "25%") {
+            DisplayTableColumn("Arvosana", width = "20%") {
                 hiddenValue("id", it.internalId?.toString().orEmpty())
                 itemSelect(
                     inputName = "arvosana",
@@ -130,8 +130,11 @@ fun FlowContent.vktErinomainenOsakoeTable(
                     testId = "arvosana",
                 )
             },
-            DisplayTableColumn("Arviointipäivä", width = "25%") {
+            DisplayTableColumn("Arviointipäivä", width = "20%") {
                 dateInput("arviointipaiva", it.arviointi?.paivamaara, testId = "arviointipaiva")
+            },
+            DisplayTableColumn("Suorituspaikkakunta", width = "20%") {
+                +t.getByKoodiviite("kunta", it.suorituspaikkakunta)
             },
         ),
         testId = "osakokeet",
