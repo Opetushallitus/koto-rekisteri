@@ -78,7 +78,8 @@
                   },
                   "päivä": "2025-01-03"
                 }
-              ]
+              ],
+              "alkamispäivä": null
             },
             {
               "tyyppi": {
@@ -99,7 +100,8 @@
                   },
                   "päivä": "2025-01-03"
                 }
-              ]
+              ],
+              "alkamispäivä": null
             },
             {
               "tyyppi": {
@@ -120,7 +122,8 @@
                   },
                   "päivä": "2025-01-03"
                 }
-              ]
+              ],
+              "alkamispäivä": null
             },
             {
               "tyyppi": {
@@ -141,7 +144,8 @@
                   },
                   "päivä": "2025-01-03"
                 }
-              ]
+              ],
+              "alkamispäivä": null
             }
           ],
           "yleisarvosana": null
