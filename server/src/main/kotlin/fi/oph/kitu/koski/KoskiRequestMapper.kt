@@ -206,10 +206,16 @@ class KoskiRequestMapper {
                 .mapNotNull { it.arviointi?.paivamaara }
                 .maxOrNull()
 
+        val valmiitTutkinnot =
+            suoritus.tutkinnot
+                .filter { it.puuttuvatOsakokeet().isEmpty() }
+                .filter { it.puuttuvatArvioinnit().isEmpty() }
+
         val vahvistus: TypedResult<KielitutkintoSuoritus.VahvistusPaikkakunnalla, List<String>> =
             if (kaikkiOsakokeetArvioitu &&
                 arviointipaiva != null &&
-                suoritus.suorituspaikkakunta != null
+                suoritus.suorituspaikkakunta != null &&
+                valmiitTutkinnot.isNotEmpty()
             ) {
                 TypedResult.Success(
                     KielitutkintoSuoritus.VahvistusPaikkakunnalla(
@@ -224,6 +230,7 @@ class KoskiRequestMapper {
                         if (!kaikkiOsakokeetArvioitu) "Arviointi puuttuu" else null,
                         if (arviointipaiva == null) "Viimeisintä arviointipäivää ei voida päätellä" else null,
                         if (suoritus.suorituspaikkakunta == null) "Suorituspaikkakunta puuttuu" else null,
+                        if (valmiitTutkinnot.isEmpty()) "Ei valmiita tutkintoja" else null,
                     ),
                 )
             }
@@ -265,7 +272,7 @@ class KoskiRequestMapper {
                                         toimipiste = organisaatio,
                                         vahvistus = vahvistus,
                                         osasuoritukset =
-                                            suoritus.tutkinnot.map { kielitaito ->
+                                            valmiitTutkinnot.map { kielitaito ->
                                                 VktKielitaito(
                                                     koulutusmoduuli =
                                                         OsasuorituksenKoulutusmoduuli(
@@ -291,7 +298,9 @@ class KoskiRequestMapper {
                                                                     osakoe.arviointi?.let { arviointi ->
                                                                         listOf(
                                                                             Arvosana(
-                                                                                arvosana = arviointi.arvosana.toKoski(),
+                                                                                arvosana =
+                                                                                    arviointi.arvosana
+                                                                                        .toKoski(),
                                                                                 päivä = arviointi.paivamaara,
                                                                             ),
                                                                         )
