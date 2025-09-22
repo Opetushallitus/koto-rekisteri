@@ -3,14 +3,17 @@ package fi.oph.kitu.koski
 import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.mock.VktSuoritusMockGenerator
 import fi.oph.kitu.mock.generateRandomOppijaOid
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.mock.getRandomLocalDate
-import fi.oph.kitu.oppijanumero.MockOppijanumeroService
-import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
+import fi.oph.kitu.vkt.VktArvionti
+import fi.oph.kitu.vkt.VktKirjoittamisenKoe
+import fi.oph.kitu.vkt.VktPuhumisenKoe
 import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
@@ -327,57 +330,126 @@ class KoskiRequestMapperTest(
                 suoritus = suoritus,
             )
 
-        val onr =
-            MockOppijanumeroService.build(
-                henkiloResponse =
-                    OppijanumerorekisteriHenkilo(
-                        oidHenkilo = vastaanottajaOid,
-                        hetu = null,
-                        kaikkiHetut = null,
-                        passivoitu = null,
-                        etunimet = "Vallu",
-                        kutsumanimi = "Vallu",
-                        sukunimi = "Vastaanottaja",
-                        aidinkieli = null,
-                        asiointiKieli = null,
-                        kansalaisuus = null,
-                        kasittelijaOid = null,
-                        syntymaaika = null,
-                        sukupuoli = null,
-                        kotikunta = null,
-                        oppijanumero = null,
-                        turvakielto = null,
-                        eiSuomalaistaHetua = null,
-                        yksiloity = null,
-                        yksiloityVTJ = null,
-                        yksilointiYritetty = null,
-                        duplicate = null,
-                        created = null,
-                        modified = null,
-                        vtjsynced = null,
-                        yhteystiedotRyhma = null,
-                        yksilointivirheet = null,
-                        passinumerot = null,
-                    ),
-            )
-
         val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
 
         assertNotNull(koskiSuoritus)
-
-        val vahvistus =
-            koskiSuoritus
-                .opiskeluoikeudet
-                .firstOrNull()
-                ?.suoritukset
-                ?.firstOrNull()
-                ?.vahvistus as? KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.VahvistusPaikkakunnalla
 
         validateKoskiRequest(koskiSuoritus)
 
         val json = objectMapper.writeValueAsString(koskiSuoritus)
 
         println("JSON: $json")
+    }
+
+    @Test
+    fun `älä siirrä vkt-tutkintoja, joilla ei ole valmiita tutkintoja`() {
+        val vastaanottajaOid = "1.2.246.562.24.27639300000"
+
+        val suoritus =
+            VktSuoritus(
+                taitotaso = Koodisto.VktTaitotaso.HyväJaTyydyttävä,
+                kieli = Koodisto.Tutkintokieli.FIN,
+                suorituksenVastaanottaja = OidString(vastaanottajaOid),
+                suorituspaikkakunta = "091",
+                osat =
+                    listOf(
+                        VktKirjoittamisenKoe(
+                            tutkintopaiva = LocalDate.of(2025, 9, 20),
+                            arviointi =
+                                VktArvionti(
+                                    arvosana = Koodisto.VktArvosana.Hyvä,
+                                    paivamaara = LocalDate.of(2025, 9, 22),
+                                ),
+                        ),
+                    ),
+                lahdejarjestelmanId =
+                    LahdejarjestelmanTunniste(
+                        "vkt.0",
+                        Lahdejarjestelma.KIOS,
+                    ),
+            )
+
+        val henkiloOid = generateRandomOppijaOid(Random(0))
+        val henkilosuoritus =
+            Henkilosuoritus(
+                henkilo =
+                    OidOppija(
+                        oid = OidString.from(henkiloOid),
+                        etunimet = "Keijo",
+                        sukunimi = "Keijunen",
+                    ),
+                suoritus = suoritus,
+            )
+
+        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
+
+        assertEquals(TypedResult.Failure(listOf("Ei valmiita tutkintoja")), koskiSuoritus)
+    }
+
+    @Test
+    fun `pudota siirrosta pois keskeneräiset vkt-tutkinnot`() {
+        val vastaanottajaOid = "1.2.246.562.24.27639300000"
+
+        val suoritus =
+            VktSuoritus(
+                taitotaso = Koodisto.VktTaitotaso.HyväJaTyydyttävä,
+                kieli = Koodisto.Tutkintokieli.FIN,
+                suorituksenVastaanottaja = OidString(vastaanottajaOid),
+                suorituspaikkakunta = "091",
+                osat =
+                    listOf(
+                        VktKirjoittamisenKoe(
+                            tutkintopaiva = LocalDate.of(2025, 9, 20),
+                            arviointi =
+                                VktArvionti(
+                                    arvosana = Koodisto.VktArvosana.Hyvä,
+                                    paivamaara = LocalDate.of(2025, 9, 22),
+                                ),
+                        ),
+                        VktTekstinYmmartamisenKoe(
+                            tutkintopaiva = LocalDate.of(2025, 9, 20),
+                            arviointi =
+                                VktArvionti(
+                                    arvosana = Koodisto.VktArvosana.Hyvä,
+                                    paivamaara = LocalDate.of(2025, 9, 22),
+                                ),
+                        ),
+                        VktPuhumisenKoe(
+                            tutkintopaiva = LocalDate.of(2025, 9, 20),
+                            arviointi =
+                                VktArvionti(
+                                    arvosana = Koodisto.VktArvosana.Hyvä,
+                                    paivamaara = LocalDate.of(2025, 9, 22),
+                                ),
+                        ),
+                    ),
+                lahdejarjestelmanId =
+                    LahdejarjestelmanTunniste(
+                        "vkt.0",
+                        Lahdejarjestelma.KIOS,
+                    ),
+            )
+
+        val henkiloOid = generateRandomOppijaOid(Random(0))
+        val henkilosuoritus =
+            Henkilosuoritus(
+                henkilo =
+                    OidOppija(
+                        oid = OidString.from(henkiloOid),
+                        etunimet = "Keijo",
+                        sukunimi = "Keijunen",
+                    ),
+                suoritus = suoritus,
+            )
+
+        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
+
+        assertEquals(
+            listOf("kirjallinen"),
+            koskiSuoritus.opiskeluoikeudet.first().suoritukset.first().osasuoritukset.map {
+                it.koulutusmoduuli.tunniste.koodiarvo
+            },
+        )
     }
 
     fun validateKoskiRequest(data: KoskiRequest) {
