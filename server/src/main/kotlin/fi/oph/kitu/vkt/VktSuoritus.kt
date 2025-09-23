@@ -13,8 +13,8 @@ import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Osasuorituksellinen
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Osasuoritus
+import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 // Päätason suoritus
 
@@ -293,7 +293,7 @@ interface VktOsakoe :
     val tutkintopaiva: LocalDate
     override val arviointi: VktArvionti?
     val oppilaitos: OidString?
-    val merkittyPoistettavaksi: LocalDateTime?
+    val merkittyPoistettavaksi: Instant?
     val suorituksenVastaanottaja: String?
     val suorituspaikkakunta: String?
 
@@ -353,7 +353,7 @@ data class VktKirjoittamisenKoe(
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
-    override val merkittyPoistettavaksi: LocalDateTime? = null,
+    override val merkittyPoistettavaksi: Instant? = null,
     override val suorituksenVastaanottaja: String? = null,
     override val suorituspaikkakunta: String? = null,
 ) : VktKirjallisenKielitaidonKoe {
@@ -365,7 +365,7 @@ data class VktTekstinYmmartamisenKoe(
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
-    override val merkittyPoistettavaksi: LocalDateTime? = null,
+    override val merkittyPoistettavaksi: Instant? = null,
     override val suorituksenVastaanottaja: String? = null,
     override val suorituspaikkakunta: String? = null,
 ) : VktKirjallisenKielitaidonKoe,
@@ -378,7 +378,7 @@ data class VktPuhumisenKoe(
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
-    override val merkittyPoistettavaksi: LocalDateTime? = null,
+    override val merkittyPoistettavaksi: Instant? = null,
     override val suorituksenVastaanottaja: String? = null,
     override val suorituspaikkakunta: String? = null,
 ) : VktSuullisenKielitaidonKoe {
@@ -390,7 +390,7 @@ data class VktPuheenYmmartamisenKoe(
     override val arviointi: VktArvionti? = null,
     override val internalId: Int? = null,
     override val oppilaitos: OidString? = null,
-    override val merkittyPoistettavaksi: LocalDateTime? = null,
+    override val merkittyPoistettavaksi: Instant? = null,
     override val suorituksenVastaanottaja: String? = null,
     override val suorituspaikkakunta: String? = null,
 ) : VktSuullisenKielitaidonKoe,
