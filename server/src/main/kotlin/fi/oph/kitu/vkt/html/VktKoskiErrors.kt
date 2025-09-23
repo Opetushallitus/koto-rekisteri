@@ -6,7 +6,7 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.json
 import fi.oph.kitu.i18n.Translations
-import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.vkt.VktViewController
@@ -55,7 +55,7 @@ object VktKoskiErrors {
                                 } ?: +it.id
                             },
                             Column.Aikaleima.withValue {
-                                +it.timestamp.finnishDateTime()
+                                +it.timestamp.finnishDateTimeUTC()
                             },
                             Column.Virhe.withValue {
                                 val errorJson = it.errorJson()

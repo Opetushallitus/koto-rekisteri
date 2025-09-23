@@ -12,10 +12,10 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
-import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService

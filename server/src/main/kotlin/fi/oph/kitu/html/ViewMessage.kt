@@ -1,6 +1,6 @@
 package fi.oph.kitu.html
 
-import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
 import jakarta.servlet.http.HttpSession
 import kotlinx.html.FlowContent
@@ -34,21 +34,20 @@ data class ViewMessageData(
     companion object {
         fun from(koskiError: KoskiErrorEntity): ViewMessageData =
             ViewMessageData(
-                text = "KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTime()}: ${koskiError.message}",
-                type = ViewMessageType.ERROR,
-                render = {
-                    +"KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTime()}: "
+                "KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTimeUTC()}: ${koskiError.message}",
+                ViewMessageType.ERROR,
+            ) {
+                +"KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTimeUTC()}: "
 
-                    val error = koskiError.errorJson()
-                    section {
-                        if (error != null) {
-                            json(error)
-                        } else {
-                            +koskiError.message
-                        }
+                val error = koskiError.errorJson()
+                section {
+                    if (error != null) {
+                        json(error)
+                    } else {
+                        +koskiError.message
                     }
-                },
-            )
+                }
+            }
     }
 }
 
