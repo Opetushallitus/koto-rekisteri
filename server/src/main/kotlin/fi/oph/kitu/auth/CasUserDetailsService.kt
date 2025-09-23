@@ -28,7 +28,9 @@ class CasUserDetailsService : AuthenticationUserDetailsService<CasAssertionAuthe
             oid,
             attributes["idpEntityId"] == "vetuma",
             attributes["kayttajaTyyppi"] as String?,
-            (attributes["roles"] as List<String>).map { SimpleGrantedAuthority(it) },
+            (attributes["roles"] as List<*>)
+                .filterIsInstance<String>()
+                .map { SimpleGrantedAuthority(it) },
         )
     }
 }
