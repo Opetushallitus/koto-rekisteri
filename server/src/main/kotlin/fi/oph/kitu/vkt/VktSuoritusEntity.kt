@@ -5,8 +5,8 @@ import fi.oph.kitu.koodisto.Koodisto
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.MappedCollection
 import org.springframework.data.relational.core.mapping.Table
+import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 @Table(name = "vkt_suoritus")
@@ -38,7 +38,7 @@ data class VktSuoritusEntity(
         val tutkintopaiva: LocalDate,
         val arviointipaiva: LocalDate?,
         val arvosana: Koodisto.VktArvosana?,
-        val merkittyPoistettavaksi: LocalDateTime?,
+        val merkittyPoistettavaksi: Instant?,
     )
 
     @Table(name = "vkt_tutkinto")
