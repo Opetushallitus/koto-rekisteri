@@ -1,4 +1,4 @@
-package fi.oph.kitu.yki.arvioijat.error
+package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.html.Page
@@ -15,8 +15,7 @@ import kotlinx.html.details
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.summary
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
 
 object YkiKoskiErrors {
     fun render(
@@ -27,7 +26,7 @@ object YkiKoskiErrors {
             val errorIdToSuoritusMap =
                 errors
                     .mapNotNull { error ->
-                        YkiMappingId
+                        YkiMappingId.Companion
                             .parse(error.id)
                             ?.suoritusId
                             ?.let { id -> suoritukset.find { it.suoritusId == id } }
@@ -73,8 +72,9 @@ object YkiKoskiErrors {
                             Column.Request.withValue { error ->
                                 a(
                                     href =
-                                        linkTo(
-                                            methodOn(YkiViewController::class.java).koskiRequestJson(error.id.toInt()),
+                                        WebMvcLinkBuilder.linkTo(
+                                            WebMvcLinkBuilder.methodOn(YkiViewController::class.java)
+                                                .koskiRequestJson(error.id.toInt()),
                                         ).toString(),
                                 ) {
                                     +"Näytä JSON"
