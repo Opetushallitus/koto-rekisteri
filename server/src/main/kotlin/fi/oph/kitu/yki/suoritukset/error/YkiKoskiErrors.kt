@@ -5,7 +5,7 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.json
-import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.yki.YkiViewController
@@ -48,7 +48,7 @@ object YkiKoskiErrors {
                                 +(errorIdToSuoritusMap[error.id]?.suoritusId?.toString() ?: "#${error.id}")
                             },
                             Column.Aikaleima.withValue {
-                                +it.timestamp.finnishDateTime()
+                                +it.timestamp.finnishDateTimeUTC()
                             },
                             Column.Virhe.withValue {
                                 val errorJson = it.errorJson()
@@ -72,10 +72,12 @@ object YkiKoskiErrors {
                             Column.Request.withValue { error ->
                                 a(
                                     href =
-                                        WebMvcLinkBuilder.linkTo(
-                                            WebMvcLinkBuilder.methodOn(YkiViewController::class.java)
-                                                .koskiRequestJson(error.id.toInt()),
-                                        ).toString(),
+                                        WebMvcLinkBuilder
+                                            .linkTo(
+                                                WebMvcLinkBuilder
+                                                    .methodOn(YkiViewController::class.java)
+                                                    .koskiRequestJson(error.id.toInt()),
+                                            ).toString(),
                                 ) {
                                     +"Näytä JSON"
                                 }
