@@ -17,7 +17,6 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -81,12 +80,6 @@ class VktSuoritusService(
             pageSize = PAGE_SIZE,
             url = { "?page=$it&sortColumn=$sortColumn&sortDirection=$sortDirection" },
         )
-
-    @WithSpan("VktSuoritusService.getSuoritus")
-    fun getSuoritus(id: Int): Optional<Henkilosuoritus<VktSuoritus>> =
-        suoritusRepository
-            .findById(id)
-            .map { Henkilosuoritus.from(it) }
 
     @WithSpan("VktSuoritusService.getOppijanSuoritukset")
     fun getOppijanSuoritukset(
