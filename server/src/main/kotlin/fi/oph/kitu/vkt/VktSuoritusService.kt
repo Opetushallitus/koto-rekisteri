@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.Cache
+import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
@@ -102,7 +103,7 @@ class VktSuoritusService(
                     it.firstOrNull()?.henkilo?.let { henkilo ->
                         auditLogger.log(
                             operation = KituAuditLogOperation.VktSuoritusViewed,
-                            oppijaHenkiloOid = henkilo.oid.oid,
+                            oppijaHenkiloOid = Oid.parse(henkilo.oid.oid).getOrThrow(),
                         )
                     }
                 }
