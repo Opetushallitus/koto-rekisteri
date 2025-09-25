@@ -206,6 +206,7 @@ class VktViewController(
                     suoritus,
                     henkilo,
                     translations,
+                    messages,
                     getKoskiTransferState(suoritus),
                 )
             },
