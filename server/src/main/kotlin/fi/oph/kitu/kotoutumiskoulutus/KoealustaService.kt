@@ -4,9 +4,7 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.jdbc.replaceAll
-import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.KituAuditLogMessageField
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
@@ -43,15 +41,10 @@ class KoealustaService(
             .findAllSorted(orderBy.entityName, orderByDirection)
             .toList()
             .also {
-                auditLogger.logAllInternalOnly(AuditLogOperation.KielitestiSuoritusViewed.name, it) { suoritus ->
-                    arrayOf(
-                        KituAuditLogMessageField.OppijaHenkiloOid.value to suoritus.oppijanumero,
-                    )
-                }
-
                 auditLogger.logAllInternalOnly("Kielitesti suoritus viewed", it) { suoritus ->
                     arrayOf(
                         "suoritus.id" to suoritus.id,
+                        "suoritus.oppijanumero" to suoritus.oppijanumero,
                     )
                 }
             }
