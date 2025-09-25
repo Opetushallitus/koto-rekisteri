@@ -3,8 +3,10 @@ package fi.oph.kitu.vkt.html
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
+import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
@@ -22,11 +24,14 @@ object VktHyvaJaTyydyttavaTarkasteluPage {
         data: Henkilosuoritus<VktSuoritus>,
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
+        messages: List<ViewMessageData>,
         koskiTransferState: Pair<KoskiTransferState, List<String>>,
     ): String =
         Page.renderHtml {
             h1 { +data.henkilo.kokoNimi() }
             h2 { +"Valtionhallinnon kielitutkinto" }
+
+            messages.forEach { viewMessage(it) }
 
             vktHenkilonTiedot(data, henkilo)
             vktSuorituksenTiedot(data, koskiTransferState, translations)

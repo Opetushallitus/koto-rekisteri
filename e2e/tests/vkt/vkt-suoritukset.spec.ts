@@ -10,6 +10,7 @@ import {
   testForEachTestId,
 } from "../../util/expect"
 import { todayISODate } from "../../util/time"
+import { insert as insertKoskiError } from "../../fixtures/koskiError"
 
 describe("Valtionkielitutkinnon suoritukset page", () => {
   beforeEach(async ({ db, vktSuoritus, config }) => {
@@ -118,6 +119,31 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     )
   })
 
+  test("Details page shows koski error message for hyvä ja tyydyttävä taso", async ({
+    db,
+    vktHjtSuorituksetPage,
+    vktSuorituksenTiedotPage,
+  }) => {
+    await insertKoskiError(db, "fionaHT")
+
+    await vktHjtSuorituksetPage.login()
+    await vktHjtSuorituksetPage.open()
+    await vktHjtSuorituksetPage.followLinkOfRow("1.2.246.562.24.00000000007-SV")
+    await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
+      "Eriksson, Fiona Konsta",
+    )
+    const errorMessage = vktSuorituksenTiedotPage
+      .getPageContent()
+      .getByText("KOSKI-siirto on epäonnistunut 24.09.2025 11:51:45Z:")
+    await expect(errorMessage).toBeVisible()
+    await expect(
+      errorMessage.getByRole("listitem").filter({ hasText: "key" }).last(),
+    ).toHaveText("key: notFound.oppijaaEiLöydy")
+    await expect(
+      errorMessage.getByRole("listitem").filter({ hasText: "message" }).last(),
+    ).toHaveText("message: Oppijaa 1.2.246.562.24.00000000007 ei löydy.")
+  })
+
   test("Details page shows correct information of erinomainen taso", async ({
     vktArvioidutSuorituksetPage,
     vktSuorituksenTiedotPage,
@@ -165,6 +191,34 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
         arviointipaiva: expectToHaveInputValue("2010-09-06"),
       },
     )
+  })
+
+  test("Details page shows koski error message for erinomainen taso", async ({
+    db,
+    vktArvioidutSuorituksetPage,
+    vktSuorituksenTiedotPage,
+  }) => {
+    await insertKoskiError(db, "danielE")
+
+    await vktArvioidutSuorituksetPage.login()
+    await vktArvioidutSuorituksetPage.open()
+    await vktArvioidutSuorituksetPage.followLinkOfRow(
+      "1.2.246.562.24.00000000063-FI",
+    )
+    await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
+      "Eriksson, Daniel Ville",
+    )
+
+    const errorMessage = vktSuorituksenTiedotPage
+      .getPageContent()
+      .getByText("KOSKI-siirto on epäonnistunut 24.09.2025 13:12:32Z:")
+    await expect(errorMessage).toBeVisible()
+    await expect(
+      errorMessage.getByRole("listitem").filter({ hasText: "key" }).last(),
+    ).toHaveText("key: notFound.oppijaaEiLöydy")
+    await expect(
+      errorMessage.getByRole("listitem").filter({ hasText: "message" }).last(),
+    ).toHaveText("message: Oppijaa 1.2.246.562.24.00000000063 ei löydy.")
   })
 
   test("Tutkinto katkeaa, jos ensimmäisen osakokeen suorituksesta on kolme vuotta", async ({
