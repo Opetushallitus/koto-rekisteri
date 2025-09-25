@@ -5,8 +5,8 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.KituAuditLogOperation
 import fi.oph.kitu.oppijanumero.EmptyRequest
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
@@ -102,7 +102,7 @@ class VktSuoritusService(
                 .also {
                     it.firstOrNull()?.henkilo?.let { henkilo ->
                         auditLogger.log(
-                            operation = KituAuditLogOperation.VktSuoritusViewed,
+                            operation = AuditLogOperation.VktSuoritusViewed,
                             oppijaHenkiloOid = Oid.parse(henkilo.oid.oid).getOrThrow(),
                         )
                     }

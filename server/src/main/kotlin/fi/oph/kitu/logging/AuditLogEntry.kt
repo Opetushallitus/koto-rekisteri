@@ -3,21 +3,8 @@ package fi.oph.kitu.logging
 import fi.oph.kitu.Oid
 import java.time.Instant
 
-enum class KitAuditLogMessageField(
-    val value: String,
-) {
-    OppijaHenkiloOid("oppijaHenkiloOid"),
-}
-
-enum class KituAuditLogOperation(
-    val value: String,
-) {
-    KielitestiSuoritusViewed("KielitestiSuoritusViewed"),
-    VktSuoritusViewed("VktSuoritusViewed"),
-}
-
 // https://github.com/Opetushallitus/oma-opintopolku-loki/blob/master/parser/README.md#format-of-the-expected-log-message
-data class KituAuditLogMessage(
+data class AuditLogEntry(
     val version: Int,
     val logSeq: Int,
     val bootTime: Instant,
@@ -30,7 +17,7 @@ data class KituAuditLogMessage(
     val user: User,
     val target: Target,
     val organizationOid: Oid,
-    val operation: KituAuditLogOperation,
+    val operation: AuditLogOperation,
 ) {
     data class User(
         val oid: Oid,
@@ -39,4 +26,11 @@ data class KituAuditLogMessage(
     data class Target(
         val oppijaHenkiloOid: Oid,
     )
+}
+
+enum class AuditLogOperation(
+    val value: String,
+) {
+    KielitestiSuoritusViewed("KielitestiSuoritusViewed"),
+    VktSuoritusViewed("VktSuoritusViewed"),
 }

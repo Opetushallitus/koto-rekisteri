@@ -44,13 +44,13 @@ class AuditLogger(
      * Note: the logged events with this method will be passed to an audit log integration on a lambda.
      */
     fun log(
-        operation: KituAuditLogOperation,
+        operation: AuditLogOperation,
         oppijaHenkiloOid: Oid,
     ) {
         AuditContext.get().forEach { context ->
             slf4jLogger.info(
                 objectMapper.writeValueAsString(
-                    KituAuditLogMessage(
+                    AuditLogEntry(
                         version = 1,
                         logSeq = logSeq.getAndIncrement(),
                         bootTime = bootTime,
@@ -60,8 +60,8 @@ class AuditLogger(
                         timestamp = Instant.now(),
                         serviceName = "kitu",
                         applicationType = "backend",
-                        user = KituAuditLogMessage.User(context.userOid),
-                        target = KituAuditLogMessage.Target(oppijaHenkiloOid),
+                        user = AuditLogEntry.User(context.userOid),
+                        target = AuditLogEntry.Target(oppijaHenkiloOid),
                         organizationOid = context.opetushallitusOrganisaatioOid,
                         operation = operation,
                     ),
