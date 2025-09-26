@@ -27,6 +27,3 @@ type AuditLogEntry = {
   organizationOid: string
   operation: string
 }
-
-
-

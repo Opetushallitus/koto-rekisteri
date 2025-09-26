@@ -23,20 +23,18 @@ const val AUDIT_LOGGER_NAME = "auditLogger"
 class AuditLogger(
     @Qualifier("applicationTaskExecutor")
     private val taskExecutor: AsyncTaskExecutor,
-    private val environment: Environment,
     private val objectMapper: ObjectMapper,
-    private val resource: Resource,
-) {
     @Value("\${kitu.appUrl}")
-    lateinit var appUrl: String
-
+    private val appUrl: String,
+    @Value("\${kitu.env.name}")
+    private val environment: String,
+) {
     private val slf4jLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
 
     private val currentZone = ZoneId.of("Europe/Helsinki")
     private val clock = Clock.system(currentZone)
     private val logSeq = AtomicInteger(0)
     private val bootTime = Instant.now(clock)
-    private val instanceId = resource.getAttribute(ServiceIncubatingAttributes.SERVICE_INSTANCE_ID) ?: "not set"
 
     /**
      * Logs events.
@@ -47,26 +45,40 @@ class AuditLogger(
         operation: AuditLogOperation,
         oppijaHenkiloOid: Oid,
     ) {
-        AuditContext.get().forEach { context ->
-            slf4jLogger.info(
-                objectMapper.writeValueAsString(
-                    AuditLogEntry(
-                        version = 1,
-                        logSeq = logSeq.getAndIncrement(),
-                        bootTime = bootTime,
-                        type = "log",
-                        environment = environment.getRequiredProperty("kitu.env.name"),
-                        hostname = instanceId,
-                        timestamp = Instant.now(),
-                        serviceName = "kitu",
-                        applicationType = "backend",
-                        user = AuditLogEntry.User(context.userOid),
-                        target = AuditLogEntry.Target(oppijaHenkiloOid),
-                        organizationOid = context.opetushallitusOrganisaatioOid,
-                        operation = operation,
-                    ),
-                ),
-            )
+        try {
+            AuditContext.get().forEach { context ->
+                val message =
+                    try {
+                        objectMapper.writeValueAsString(
+                            AuditLogEntry(
+                                version = 1,
+                                logSeq = logSeq.getAndIncrement(),
+                                bootTime = bootTime,
+                                type = "log",
+                                environment = environment,
+                                hostname = appUrl,
+                                timestamp = Instant.now(),
+                                serviceName = "kitu",
+                                applicationType = "backend",
+                                user = AuditLogEntry.User(context.userOid),
+                                target = AuditLogEntry.Target(oppijaHenkiloOid),
+                                organizationOid = context.opetushallitusOrganisaatioOid,
+                                operation = operation,
+                            ),
+                        )
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                        throw e
+                    }
+
+                try {
+                    slf4jLogger.info(message)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
     }
 
