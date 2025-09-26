@@ -1,0 +1,77 @@
+package fi.oph.kitu.logging
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.nimbusds.jose.proc.SecurityContext
+import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.Oid
+import fi.oph.kitu.auth.CasUserDetails
+import fi.oph.kitu.defaultObjectMapper
+import fi.oph.kitu.mock.generateRandomOppijaOid
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.system.CapturedOutput
+import org.springframework.boot.test.system.OutputCaptureExtension
+import org.springframework.context.annotation.Import
+import org.springframework.http.HttpHeaders
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
+import kotlin.random.Random
+import kotlin.test.assertTrue
+
+@SpringBootTest
+@Import(DBContainerConfiguration::class)
+@ExtendWith(OutputCaptureExtension::class)
+class AuditLoggerTests {
+    @Test
+    fun `log logs JSON string correctly`(
+        @Autowired auditLogger: AuditLogger,
+        captured: CapturedOutput,
+    ) {
+        val target = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
+
+        RequestContextHolder.setRequestAttributes(
+            ServletRequestAttributes(
+                MockHttpServletRequest().apply {
+                    addHeader(
+                        HttpHeaders.USER_AGENT,
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+                            "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+                    )
+                },
+            ),
+        )
+
+        val oid = Oid.parseTyped("1.2.246.562.24.19563255030").getOrThrow()
+        val principal =
+            CasUserDetails(
+                name = "test",
+                oid = oid,
+                strongAuth = false,
+                kayttajaTyyppi = "user_type",
+                authorities = listOf(SimpleGrantedAuthority("ROLE_USER")),
+            )
+        SecurityContextHolder
+            .getContext()
+            .authentication =
+            UsernamePasswordAuthenticationToken(
+                principal,
+                "test_credentials",
+                principal.authorities,
+            )
+
+        auditLogger.log(
+            AuditLogOperation.KielitestiSuoritusViewed,
+            generateRandomOppijaOid(Random(123456789)),
+        )
+
+        val matches = captured.out.contains("some message")
+
+        assertTrue(matches)
+    }
+}

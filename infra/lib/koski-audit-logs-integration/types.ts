@@ -14,19 +14,16 @@ type AuditLogEntry = {
   bootTime: string
   type: string
   environment: string
-  hostname: string // "hostname":"not set",
+  hostname: string
   timestamp: string
   serviceName: string
   applicationType: string
   user: {
-    oid: string // {}
+    oid: string
   }
   target: {
-    oppijaHenkiloOid: string // {}
+    oppijaHenkiloOid: string
   }
   organizationOid: string
   operation: string
 }
-
-
-

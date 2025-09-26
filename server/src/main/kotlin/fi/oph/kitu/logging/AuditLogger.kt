@@ -23,20 +23,20 @@ const val AUDIT_LOGGER_NAME = "auditLogger"
 class AuditLogger(
     @Qualifier("applicationTaskExecutor")
     private val taskExecutor: AsyncTaskExecutor,
-    private val environment: Environment,
     private val objectMapper: ObjectMapper,
-    private val resource: Resource,
 ) {
-    @Value("\${kitu.appUrl}")
-    lateinit var appUrl: String
-
     private val slf4jLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
 
     private val currentZone = ZoneId.of("Europe/Helsinki")
     private val clock = Clock.system(currentZone)
     private val logSeq = AtomicInteger(0)
     private val bootTime = Instant.now(clock)
-    private val instanceId = resource.getAttribute(ServiceIncubatingAttributes.SERVICE_INSTANCE_ID) ?: "not set"
+
+    @Value("\${kitu.appUrl}")
+    lateinit var appUrl: String
+
+    @Value("\${kitu.env.name}")
+    lateinit var environment: String
 
     /**
      * Logs events.
@@ -55,8 +55,8 @@ class AuditLogger(
                         logSeq = logSeq.getAndIncrement(),
                         bootTime = bootTime,
                         type = "log",
-                        environment = environment.getRequiredProperty("kitu.env.name"),
-                        hostname = instanceId,
+                        environment = environment,
+                        hostname = appUrl,
                         timestamp = Instant.now(),
                         serviceName = "kitu",
                         applicationType = "backend",
