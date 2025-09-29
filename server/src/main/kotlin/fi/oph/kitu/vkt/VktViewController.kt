@@ -290,7 +290,7 @@ class VktViewController(
 
     private fun getMessages(): List<ViewMessageData> =
         listOfNotNull(
-            koskiErrorService.countByEntity("vkt").let {
+            koskiErrorService.countByEntity("vkt", false).let {
                 if (it > 0) {
                     val text = "$it siirtoa KOSKI-tietovarantoon on epäonnistunut"
                     ViewMessageData(text, ViewMessageType.ERROR) {

@@ -118,7 +118,7 @@ class YkiViewController(
                 search = search,
                 versionHistory = versionHistory,
                 errorsCount = suoritusErrorService.countErrors(),
-                koskiErrorsCount = koskiErrorService.countByEntity("yki").toLong(),
+                koskiErrorsCount = koskiErrorService.countByEntity("yki", false).toLong(),
                 csrfToken = csrfToken,
             ),
         )
