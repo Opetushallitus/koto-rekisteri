@@ -1,39 +1,74 @@
 package fi.oph.kitu.logging
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.nimbusds.jose.proc.SecurityContext
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.auth.CasUserDetails
-import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.mock.generateRandomOppijaOid
+import fi.oph.kitu.oppijanumero.CasAuthenticatedService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Primary
 import org.springframework.http.HttpHeaders
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.test.context.bean.override.convention.TestBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 import kotlin.random.Random
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import ch.qos.logback.classic.Logger as LogbackLogger
 
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 @ExtendWith(OutputCaptureExtension::class)
 class AuditLoggerTests {
+    @Suppress("unused")
+    companion object {
+        @JvmStatic
+        fun clock(): Clock =
+            Clock.fixed(
+                Instant.parse("2025-09-29T12:00:00Z"),
+                ZoneId.of("Europe/Helsinki"),
+            )
+    }
+
+    @TestBean
+    @Suppress("unused")
+    private lateinit var clock: Clock
+
     @Test
     fun `log logs JSON string correctly`(
         @Autowired auditLogger: AuditLogger,
-        captured: CapturedOutput,
     ) {
-        val target = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
+        val logger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME) as LogbackLogger
+
+        // TODO: Detach
+        // logbackLogger.detachAppender(listAppender)
+        // listAppender.stop()
+        val listAppender =
+            ListAppender<ILoggingEvent>()
+                .apply {
+                    start()
+                }.also {
+                    logger.addAppender(it)
+                }
 
         RequestContextHolder.setRequestAttributes(
             ServletRequestAttributes(
@@ -70,8 +105,33 @@ class AuditLoggerTests {
             generateRandomOppijaOid(Random(123456789)),
         )
 
-        val matches = captured.out.contains("some message")
+        val events = listAppender.list
 
-        assertTrue(matches)
+        assertEquals(1, events.size)
+
+        val expectedJson =
+            """{
+            "version":1,
+            "logSeq":0,
+            "bootTime":"2025-09-29T12:00:00Z",
+            "type":"log",
+            "environment":"test",
+            "hostname":"http://localhost:8080/kielitutkinnot",
+            "timestamp":"2025-09-29T12:00:00Z",
+            "serviceName":"kitu",
+            "applicationType":"backend",
+            "user":{
+                "oid":"1.2.246.562.24.19563255030"
+            },
+            "target":{
+                "oppijaHenkiloOid":"TODO"
+            },
+            "organizationOid":{},
+            "operation":"KielitestiSuoritusViewed"
+        }
+        """.replace("\n", "")
+                .replace(" ", "")
+
+        assertEquals(expectedJson, events[0].formattedMessage)
     }
 }
