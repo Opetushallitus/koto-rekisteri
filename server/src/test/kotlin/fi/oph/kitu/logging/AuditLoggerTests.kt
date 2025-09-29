@@ -6,6 +6,8 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.auth.CasUserDetails
 import fi.oph.kitu.mock.generateRandomOppijaOid
 import fi.oph.kitu.oppijanumero.CasAuthenticatedService
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.LoggerFactory
@@ -53,23 +55,26 @@ class AuditLoggerTests {
     @Suppress("unused")
     private lateinit var clock: Clock
 
+    private val logbackLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME) as LogbackLogger
+
+    private val listAppender = ListAppender<ILoggingEvent>()
+
+    @BeforeEach
+    fun setup() {
+        listAppender.start()
+        logbackLogger.addAppender(listAppender)
+    }
+
+    @AfterEach
+    fun cleanup() {
+        listAppender.stop()
+        logbackLogger.detachAppender(listAppender)
+    }
+
     @Test
     fun `log logs JSON string correctly`(
         @Autowired auditLogger: AuditLogger,
     ) {
-        val logger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME) as LogbackLogger
-
-        // TODO: Detach
-        // logbackLogger.detachAppender(listAppender)
-        // listAppender.stop()
-        val listAppender =
-            ListAppender<ILoggingEvent>()
-                .apply {
-                    start()
-                }.also {
-                    logger.addAppender(it)
-                }
-
         RequestContextHolder.setRequestAttributes(
             ServletRequestAttributes(
                 MockHttpServletRequest().apply {
