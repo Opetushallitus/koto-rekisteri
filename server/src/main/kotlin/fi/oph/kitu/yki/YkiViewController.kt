@@ -20,6 +20,8 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import jakarta.servlet.http.HttpSession
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.ResponseEntity
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.servlet.view.RedirectView
 
 @Controller
 @RequestMapping("/yki")
@@ -174,6 +177,22 @@ class YkiViewController(
                 errors = koskiErrorService.findAllByEntity("yki", hidden),
                 suoritukset = ykiSuoritusRepository.findLatestBySuoritusIds(suoritusIds),
             ),
+        )
+    }
+
+    @GetMapping("/koski-virheet/piilota/{suoritusId}/{hidden}", produces = ["text/html"])
+    fun hideKoskiVirheet(
+        @PathVariable suoritusId: Int,
+        @PathVariable hidden: Boolean,
+    ): RedirectView {
+        koskiErrorService.setHidden(
+            id = YkiMappingId(suoritusId),
+            hidden = hidden,
+        )
+        return RedirectView(
+            linkTo(
+                methodOn(YkiViewController::class.java).koskiVirheetView(),
+            ).toString(),
         )
     }
 
