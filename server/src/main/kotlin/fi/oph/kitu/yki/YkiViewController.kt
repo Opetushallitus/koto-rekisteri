@@ -165,13 +165,13 @@ class YkiViewController(
         )
 
     @GetMapping("/koski-virheet", produces = ["text/html"])
-    fun koskiVirheetView(): ResponseEntity<String> {
-        val errors = koskiErrorService.findAllByEntity("yki")
+    fun koskiVirheetView(hidden: Boolean = false): ResponseEntity<String> {
+        val errors = koskiErrorService.findAllByEntity("yki", hidden)
         val suoritusIds = errors.mapNotNull { YkiMappingId.parse(it.id)?.suoritusId }
 
         return ResponseEntity.ok(
             YkiKoskiErrors.render(
-                errors = koskiErrorService.findAllByEntity("yki"),
+                errors = koskiErrorService.findAllByEntity("yki", hidden),
                 suoritukset = ykiSuoritusRepository.findLatestBySuoritusIds(suoritusIds),
             ),
         )

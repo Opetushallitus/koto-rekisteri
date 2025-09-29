@@ -45,9 +45,26 @@ interface KoskiErrorRepository : CrudRepository<KoskiErrorEntity, String> {
         entity: String,
     )
 
-    fun findAllByEntity(entity: String): List<KoskiErrorEntity>
+    fun findAllByEntityAndHidden(
+        entity: String,
+        hidden: Boolean,
+    ): List<KoskiErrorEntity>
 
     fun countByEntity(entity: String): Int
+
+    @Modifying
+    @Query(
+        """
+        UPDATE koski_error
+        SET hidden = :hidden
+        WHERE id = :id AND entity = :entity
+    """,
+    )
+    fun setHidden(
+        @Param("id") id: String,
+        @Param("entity") entity: String,
+        @Param("hidden") hidden: Boolean,
+    )
 }
 
 @Table(name = "koski_error")
@@ -57,6 +74,7 @@ data class KoskiErrorEntity(
     val entity: String,
     val message: String,
     val timestamp: Instant,
+    val hidden: Boolean,
 ) {
     fun errorJson(): JsonNode? {
         val matchResult = Regex("^[\\w\\d\\s]+:\\s\"(.*)\"$").find(message)
@@ -83,11 +101,18 @@ class KoskiErrorService(
         )
     }
 
+    fun hide(id: KoskiErrorMappingId) {
+        repository.setHidden(id.mappedId(), id.entityName, true)
+    }
+
     fun findById(id: KoskiErrorMappingId): KoskiErrorEntity? = repository.find(id)
 
     fun reset(id: KoskiErrorMappingId) = repository.delete(id)
 
-    fun findAllByEntity(entity: String) = repository.findAllByEntity(entity)
+    fun findAllByEntity(
+        entity: String,
+        hidden: Boolean,
+    ) = repository.findAllByEntityAndHidden(entity, hidden)
 
     fun countByEntity(entity: String) = repository.countByEntity(entity)
 }
