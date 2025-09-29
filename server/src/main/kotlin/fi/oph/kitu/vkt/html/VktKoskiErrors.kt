@@ -2,15 +2,19 @@ package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.ViewMessageData
+import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.json
+import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.vkt.VktViewController
 import kotlinx.html.a
+import kotlinx.html.article
 import kotlinx.html.details
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -21,11 +25,27 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 object VktKoskiErrors {
     fun render(
         errors: List<KoskiErrorEntity>,
+        hiddenCount: Int?,
         t: Translations,
     ): String =
         Page.renderHtml {
             h1 { +"Valtionhallinnon kielitutkinto" }
             h2 { +"KOSKI-tiedonsiirtovirheet" }
+
+            hiddenCount?.let { count ->
+                if (count > 0) {
+                    viewMessage(
+                        ViewMessageData(
+                            type = ViewMessageType.INFO,
+                            text = "",
+                            render = {
+                                +"Yhteensä $count virhettä on piilotettu. "
+                                a(href = "?hidden=true") { +"Näytä piilotetut virheet" }
+                            },
+                        ),
+                    )
+                }
+            } ?: article { a(href = "?hidden=false") { +"Palaa virhesivulle" } }
 
             card(overflowAuto = true, compact = true) {
                 displayTable(
