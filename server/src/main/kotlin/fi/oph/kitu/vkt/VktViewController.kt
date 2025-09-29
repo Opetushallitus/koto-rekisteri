@@ -242,8 +242,8 @@ class VktViewController(
     }
 
     @GetMapping("/koski-virheet", produces = ["text/html"])
-    fun showKoskiVirheet(): ResponseEntity<String> {
-        val errors = koskiErrorService.findAllByEntity("vkt")
+    fun showKoskiVirheet(hidden: Boolean = false): ResponseEntity<String> {
+        val errors = koskiErrorService.findAllByEntity("vkt", hidden)
         val translations =
             localizationService
                 .translationBuilder()
