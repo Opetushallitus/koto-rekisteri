@@ -14,6 +14,13 @@ class OidTest {
     }
 
     @Test
+    fun `parsing correctly formatted string as OID converts to json correctly`() {
+        val oid = Oid.parse(validOidString).getOrThrow()
+        val result = defaultObjectMapper.writeValueAsString(oid)
+        assertEquals("\"$validOidString\"", result)
+    }
+
+    @Test
     fun `parsing incorrectly formatted string as OID returns a failure`() {
         assertTrue(Oid.parse(nonValidOidString).isFailure)
     }
