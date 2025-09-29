@@ -8,6 +8,7 @@ import fi.oph.kitu.html.json
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.YkiMappingId
+import fi.oph.kitu.vkt.html.VktKoskiErrors.hideErrorUrl
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import kotlinx.html.a
@@ -16,6 +17,8 @@ import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.summary
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
 object YkiKoskiErrors {
     fun render(
@@ -82,6 +85,11 @@ object YkiKoskiErrors {
                                     +"Näytä JSON"
                                 }
                             },
+                            Column.Hidden.withValue { error ->
+                                hideErrorUrl(error, !error.hidden)?.let { url ->
+                                    a(href = url) { +if (error.hidden) "Palauta" else "Piilota" }
+                                }
+                            },
                         ),
                 )
             }
@@ -97,5 +105,20 @@ object YkiKoskiErrors {
         Virhe("error", "Virhe", "error"),
         Aikaleima("timestamp", "Aikaleima", "timestamp"),
         Request("request", "Pyyntö", "request"),
+        Hidden("hidden", "Piilotus", "hidden"),
     }
+
+    fun hideErrorUrl(
+        error: KoskiErrorEntity,
+        hidden: Boolean,
+    ): String? =
+        YkiMappingId.parse(error.id)?.let { id ->
+            id.suoritusId?.let { suoritusId ->
+                linkTo(
+                    methodOn(
+                        YkiViewController::class.java,
+                    ).hideKoskiVirheet(suoritusId, hidden),
+                ).toString()
+            }
+        }
 }
