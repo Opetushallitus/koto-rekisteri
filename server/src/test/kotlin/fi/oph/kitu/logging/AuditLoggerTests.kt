@@ -132,7 +132,7 @@ class AuditLoggerTests {
                 "target":{
                     "oppijaHenkiloOid":"1.2.246.562.24.19563255030"
                 },
-                "organizationOid":"1.2.246.562.10.48587687889",
+                "organizationOid":"1.2.246.562.10.00000000001",
                 "operation":"KielitestiSuoritusViewed"
             }
             """.replace("\n", "")
