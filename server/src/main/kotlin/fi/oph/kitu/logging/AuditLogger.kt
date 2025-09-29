@@ -24,11 +24,10 @@ class AuditLogger(
     @Qualifier("applicationTaskExecutor")
     private val taskExecutor: AsyncTaskExecutor,
     private val objectMapper: ObjectMapper,
+    private val clock: Clock,
 ) {
     private val slf4jLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
 
-    private val currentZone = ZoneId.of("Europe/Helsinki")
-    private val clock = Clock.system(currentZone)
     private val logSeq = AtomicInteger(0)
     private val bootTime = Instant.now(clock)
 
@@ -57,7 +56,7 @@ class AuditLogger(
                         type = "log",
                         environment = environment,
                         hostname = appUrl,
-                        timestamp = Instant.now(),
+                        timestamp = Instant.now(clock),
                         serviceName = "kitu",
                         applicationType = "backend",
                         user = AuditLogEntry.User(context.userOid),
