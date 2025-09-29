@@ -50,7 +50,10 @@ interface KoskiErrorRepository : CrudRepository<KoskiErrorEntity, String> {
         hidden: Boolean,
     ): List<KoskiErrorEntity>
 
-    fun countByEntity(entity: String): Int
+    fun countByEntityAndHidden(
+        entity: String,
+        hidden: Boolean,
+    ): Int
 
     @Modifying
     @Query(
@@ -117,7 +120,10 @@ class KoskiErrorService(
         hidden: Boolean,
     ) = repository.findAllByEntityAndHidden(entity, hidden)
 
-    fun countByEntity(entity: String) = repository.countByEntity(entity)
+    fun countByEntity(
+        entity: String,
+        hidden: Boolean,
+    ) = repository.countByEntityAndHidden(entity, hidden)
 }
 
 sealed class KoskiErrorMappingId(
