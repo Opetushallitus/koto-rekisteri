@@ -101,8 +101,11 @@ class KoskiErrorService(
         )
     }
 
-    fun hide(id: KoskiErrorMappingId) {
-        repository.setHidden(id.mappedId(), id.entityName, true)
+    fun setHidden(
+        id: KoskiErrorMappingId,
+        hidden: Boolean,
+    ) {
+        repository.setHidden(id.mappedId(), id.entityName, hidden)
     }
 
     fun findById(id: KoskiErrorMappingId): KoskiErrorEntity? = repository.find(id)

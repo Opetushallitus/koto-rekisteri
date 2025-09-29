@@ -94,9 +94,31 @@ object VktKoskiErrors {
                                     }
                                 }
                             },
+                            Column.Hidden.withValue { error ->
+                                hideErrorUrl(error, !error.hidden)?.let { url ->
+                                    a(href = url) { +if (error.hidden) "Palauta" else "Piilota" }
+                                }
+                            },
                         ),
                 )
             }
+        }
+
+    fun hideErrorUrl(
+        error: KoskiErrorEntity,
+        hidden: Boolean,
+    ): String? =
+        VktMappingId.parse(error.id)?.let { id ->
+            linkTo(
+                methodOn(
+                    VktViewController::class.java,
+                ).hideKoskiVirheet(
+                    oppijanumero = id.ryhma.oppijanumero,
+                    tutkintokieli = id.ryhma.tutkintokieli,
+                    taitotaso = id.ryhma.taitotaso,
+                    hidden = hidden,
+                ),
+            ).toString()
         }
 
     enum class Column(
@@ -108,6 +130,7 @@ object VktKoskiErrors {
         Virhe("error", "Virhe", "error"),
         Aikaleima("timestamp", "Aikaleima", "timestamp"),
         Request("request", "Pyyntö", "request"),
+        Hidden("hidden", "Piilotus", "hidden"),
     }
 }
 
