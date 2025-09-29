@@ -244,12 +244,13 @@ class VktViewController(
     @GetMapping("/koski-virheet", produces = ["text/html"])
     fun showKoskiVirheet(hidden: Boolean = false): ResponseEntity<String> {
         val errors = koskiErrorService.findAllByEntity("vkt", hidden)
+        val hiddenCount = if (hidden) null else koskiErrorService.countByEntity("vkt", true)
         val translations =
             localizationService
                 .translationBuilder()
                 .koodistot("vkttutkintotaso", "kieli")
                 .build()
-        return ResponseEntity.ok(VktKoskiErrors.render(errors, translations))
+        return ResponseEntity.ok(VktKoskiErrors.render(errors, hiddenCount, translations))
     }
 
     @GetMapping("/koski-virheet/piilota/{oppijanumero}/{tutkintokieli}/{taitotaso}/{hidden}", produces = ["text/html"])
