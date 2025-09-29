@@ -252,6 +252,30 @@ class VktViewController(
         return ResponseEntity.ok(VktKoskiErrors.render(errors, translations))
     }
 
+    @GetMapping("/koski-virheet/piilota/{oppijanumero}/{tutkintokieli}/{taitotaso}/{hidden}", produces = ["text/html"])
+    fun hideKoskiVirheet(
+        @PathVariable oppijanumero: String,
+        @PathVariable tutkintokieli: Koodisto.Tutkintokieli,
+        @PathVariable taitotaso: Koodisto.VktTaitotaso,
+        @PathVariable hidden: Boolean,
+    ): RedirectView {
+        koskiErrorService.setHidden(
+            VktMappingId(
+                CustomVktSuoritusRepository.Tutkintoryhma(
+                    oppijanumero = oppijanumero,
+                    tutkintokieli = tutkintokieli,
+                    taitotaso = taitotaso,
+                ),
+            ),
+            hidden = hidden,
+        )
+        return RedirectView(
+            linkTo(
+                methodOn(VktViewController::class.java).showKoskiVirheet(),
+            ).toString(),
+        )
+    }
+
     @GetMapping("/koski-request/{oppijanumero}/{kieli}/{taso}", produces = ["application/json"])
     fun koskiRequestJson(
         @PathVariable oppijanumero: String,
