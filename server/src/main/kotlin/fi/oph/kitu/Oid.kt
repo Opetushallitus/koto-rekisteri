@@ -1,10 +1,12 @@
 package fi.oph.kitu
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.oph.kitu.TypedResult.Failure
 import fi.oph.kitu.TypedResult.Success
 import org.ietf.jgss.GSSException
 
 @ConsistentCopyVisibility
+@JsonSerialize(using = com.fasterxml.jackson.databind.ser.std.ToStringSerializer::class)
 data class Oid private constructor(
     private val value: org.ietf.jgss.Oid,
 ) {

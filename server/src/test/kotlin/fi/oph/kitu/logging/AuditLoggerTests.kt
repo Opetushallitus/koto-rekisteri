@@ -115,26 +115,27 @@ class AuditLoggerTests {
         assertEquals(1, events.size)
 
         val expectedJson =
-            """{
-            "version":1,
-            "logSeq":0,
-            "bootTime":"2025-09-29T12:00:00Z",
-            "type":"log",
-            "environment":"test",
-            "hostname":"http://localhost:8080/kielitutkinnot",
-            "timestamp":"2025-09-29T12:00:00Z",
-            "serviceName":"kitu",
-            "applicationType":"backend",
-            "user":{
-                "oid":"1.2.246.562.24.19563255030"
-            },
-            "target":{
-                "oppijaHenkiloOid":"TODO"
-            },
-            "organizationOid":{},
-            "operation":"KielitestiSuoritusViewed"
-        }
-        """.replace("\n", "")
+            """
+            {
+                "version":1,
+                "logSeq":0,
+                "bootTime":"2025-09-29T12:00:00Z",
+                "type":"log",
+                "environment":"test",
+                "hostname":"http://localhost:8080/kielitutkinnot",
+                "timestamp":"2025-09-29T12:00:00Z"
+                ,"serviceName":"kitu",
+                "applicationType":"backend",
+                "user":{
+                    "oid":"1.2.246.562.24.19563255030"
+                },
+                "target":{
+                    "oppijaHenkiloOid":"1.2.246.562.24.19563255030"
+                },
+                "organizationOid":"1.2.246.562.10.48587687889",
+                "operation":"KielitestiSuoritusViewed"
+            }
+            """.replace("\n", "")
                 .replace(" ", "")
 
         assertEquals(expectedJson, events[0].formattedMessage)
