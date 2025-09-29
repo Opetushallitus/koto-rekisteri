@@ -352,5 +352,8 @@ interface YkiSuoritusRepository :
         WHERE rn = 1
         """,
     )
-    fun findLatestBySuoritusIds(ids: List<Int>): List<YkiSuoritusEntity>
+    fun findLatestBySuoritusIdsUnsafe(ids: List<Int>): List<YkiSuoritusEntity>
+
+    fun findLatestBySuoritusIds(ids: List<Int>): List<YkiSuoritusEntity> =
+        if (ids.isEmpty()) emptyList() else findLatestBySuoritusIdsUnsafe(ids)
 }
