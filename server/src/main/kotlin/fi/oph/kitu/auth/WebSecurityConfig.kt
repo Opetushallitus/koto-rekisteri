@@ -7,13 +7,16 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
+import org.springframework.http.HttpMethod
 import org.springframework.security.cas.web.CasAuthenticationFilter
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @Configuration
@@ -24,6 +27,19 @@ class WebSecurityConfig {
         SingleSignOutFilter().apply {
             setIgnoreInitConfiguration(true)
         }
+
+    @Order(1)
+    fun externalApiSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http {
+            securityMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/yki/api/suoritukset"))
+            csrf { disable() }
+            authorizeHttpRequests {
+                authorize(anyRequest, authenticated)
+            }
+            httpBasic {}
+        }
+        return http.build()
+    }
 
     @Bean
     fun securityFilterChain(
