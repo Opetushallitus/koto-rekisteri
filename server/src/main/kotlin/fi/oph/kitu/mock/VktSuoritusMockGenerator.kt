@@ -1,5 +1,6 @@
 package fi.oph.kitu.mock
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
@@ -13,7 +14,6 @@ import fi.oph.kitu.vkt.VktValidation
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
-import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import fi.oph.kitu.yki.Sukupuoli
 import java.time.LocalDate
 import kotlin.random.Random
@@ -34,12 +34,12 @@ class VktSuoritusMockGenerator(
         val oppilaitos =
             when (taitotaso) {
                 Koodisto.VktTaitotaso.Erinomainen -> null
-                Koodisto.VktTaitotaso.HyväJaTyydyttävä -> OidString("1.2.246.562.10.78513447389")
+                Koodisto.VktTaitotaso.HyväJaTyydyttävä -> Oid.parse("1.2.246.562.10.78513447389").getOrThrow()
             }
         val suorituksenVastaanottaja =
             when (taitotaso) {
                 Koodisto.VktTaitotaso.Erinomainen -> null
-                Koodisto.VktTaitotaso.HyväJaTyydyttävä -> OidString("1.2.246.562.24.10691606777")
+                Koodisto.VktTaitotaso.HyväJaTyydyttävä -> Oid.parse("1.2.246.562.24.10691606777").getOrThrow()
             }
         return VktSuoritus(
             taitotaso = taitotaso,
@@ -71,8 +71,7 @@ class VktSuoritusMockGenerator(
         generateRandomOppijaOid(random)
 
         return OidOppija(
-            oid =
-                OidString.from(createOid(OidClass.OPPIJA, oppijaOidIndex)),
+            oid = createOid(OidClass.OPPIJA, oppijaOidIndex),
             etunimet =
                 generateRandomFirstnames(
                     Sukupuoli.entries.random(random),
@@ -92,7 +91,7 @@ class VktSuoritusMockGenerator(
         taso: Koodisto.VktTaitotaso,
         pvm: LocalDate,
         tyypit: List<Koodisto.VktOsakoe> = Koodisto.VktOsakoe.entries,
-        oppilaitos: OidString? = null,
+        oppilaitos: Oid? = null,
         iteration: Int = 0,
     ): List<VktOsakoe> {
         val kokeet = randomTutkintopaiva(taso, pvm, tyypit, oppilaitos)
@@ -116,7 +115,7 @@ class VktSuoritusMockGenerator(
         taso: Koodisto.VktTaitotaso,
         pvm: LocalDate,
         tyypit: List<Koodisto.VktOsakoe>,
-        oppilaitos: OidString? = null,
+        oppilaitos: Oid? = null,
     ): List<VktOsakoe> {
         val arvosanat = validArvosanat(taso)
         val arviointiPvm = listOf(pvm.plusDays(60), pvm.plusDays(50), null).random(random)

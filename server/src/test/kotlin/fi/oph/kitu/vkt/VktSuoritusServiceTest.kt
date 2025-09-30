@@ -107,41 +107,6 @@ class VktSuoritusServiceTest(
     }
 
     @Test
-    fun `get oppijan suoritukset with an invalid OID for suorituksen vastaanottaja`() {
-        val generator = VktSuoritusMockGenerator()
-        val suoritus =
-            generator
-                .generateRandomVktSuoritusEntity(vktValidation)
-                .copy(suorituksenVastaanottaja = "definitely.not.an.oid")
-        suoritusRepository.save(suoritus)
-
-        val service =
-            VktSuoritusService(
-                suoritusRepository = suoritusRepository,
-                customSuoritusRepository = customSuoritusRepository,
-                osakoeRepository = osakoeRepository,
-                auditLogger = auditLogger,
-                oppijanumeroService = oppijanumeroService,
-            )
-        val tutkintoryhma =
-            CustomVktSuoritusRepository.Tutkintoryhma(
-                oppijanumero = suoritus.suorittajanOppijanumero.toString(),
-                tutkintokieli = suoritus.tutkintokieli,
-                taitotaso = suoritus.taitotaso,
-            )
-
-        val suoritukset = suoritusRepository.findAll()
-        val osakokeet = suoritukset.flatMap { it.osakokeet }
-
-        val henkilosuoritus = service.getOppijanSuoritukset(tutkintoryhma)
-        assertNotNull(henkilosuoritus)
-        assertEquals(osakokeet.size, henkilosuoritus.suoritus.osat.size)
-        henkilosuoritus.suoritus.osat.forEach {
-            assertEquals("definitely.not.an.oid", it.suorituksenVastaanottaja)
-        }
-    }
-
-    @Test
     fun `get oppijan suoritukset without suorituksen vastaanottaja`() {
         val generator = VktSuoritusMockGenerator()
         val suoritus = generator.generateRandomVktSuoritusEntity(vktValidation)

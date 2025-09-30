@@ -1,6 +1,7 @@
 package fi.oph.kitu.koski
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koodisto.KoskiKoodiviite
 import java.time.LocalDate
@@ -10,7 +11,7 @@ data class KoskiRequest(
     val opiskeluoikeudet: List<Opiskeluoikeus>,
 ) {
     data class Henkilo(
-        val oid: String,
+        val oid: Oid,
     )
 
     data class Opiskeluoikeus(
@@ -18,7 +19,7 @@ data class KoskiRequest(
         val tyyppi: Koodisto.OpiskeluoikeudenTyyppi = Koodisto.OpiskeluoikeudenTyyppi.Kielitutkinto,
         val tila: Tila,
         val suoritukset: List<KielitutkintoSuoritus>,
-        val oid: String? = null,
+        val oid: Oid? = null,
     ) {
         data class LahdeJarjestelmanId(
             val id: String,
@@ -49,7 +50,7 @@ data class KoskiRequest(
             )
 
             data class Organisaatio(
-                val oid: String,
+                val oid: Oid,
             )
 
             interface Vahvistus {

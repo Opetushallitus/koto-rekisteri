@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koodisto.Koodisto.YkiArvosana
@@ -43,11 +44,11 @@ class KoskiRequestMapper {
             null
         } else {
             KoskiRequest(
-                henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID.toString()),
+                henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID),
                 opiskeluoikeudet =
                     listOf(
                         Opiskeluoikeus(
-                            oid = ykiSuoritus.koskiOpiskeluoikeus?.toString(),
+                            oid = ykiSuoritus.koskiOpiskeluoikeus,
                             lähdejärjestelmänId =
                                 LahdeJarjestelmanId(
                                     id = "yki.${ykiSuoritus.suoritusId}",
@@ -82,14 +83,12 @@ class KoskiRequestMapper {
                                                         ykiSuoritus.tutkintokieli.name,
                                                     ),
                                             ),
-                                        toimipiste = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid.toString()),
+                                        toimipiste = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid),
                                         vahvistus =
                                             KielitutkintoSuoritus.VahvistusImpl(
                                                 päivä = ykiSuoritus.arviointipaiva,
                                                 myöntäjäOrganisaatio =
-                                                    Organisaatio(
-                                                        ykiSuoritus.jarjestajanTunnusOid.toString(),
-                                                    ),
+                                                    Organisaatio(ykiSuoritus.jarjestajanTunnusOid),
                                             ),
                                         osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus),
                                         yleisarvosana =
@@ -198,8 +197,8 @@ class KoskiRequestMapper {
         val kaikkiOsakokeetArvioitu = suoritus.osat.all { it.arviointi != null }
 
         val organisaatio: Organisaatio =
-            suoritus.osat.firstNotNullOfOrNull { it.oppilaitos?.let { Organisaatio(it.oid) } }
-                ?: Organisaatio(vktOrganisaatioOid)
+            suoritus.osat.firstNotNullOfOrNull { it.oppilaitos?.let { Organisaatio(it) } }
+                ?: Oid.parse(vktOrganisaatioOid).map { Organisaatio(it) }.getOrThrow()
 
         val arviointipaiva =
             suoritus.osat
@@ -237,11 +236,11 @@ class KoskiRequestMapper {
 
         return vahvistus.map { vahvistus ->
             KoskiRequest(
-                henkilö = Henkilo(oid = henkilo.oid.oid),
+                henkilö = Henkilo(oid = henkilo.oid),
                 opiskeluoikeudet =
                     listOf(
                         Opiskeluoikeus(
-                            oid = henkilosuoritus.suoritus.koskiOpiskeluoikeusOid?.oid,
+                            oid = henkilosuoritus.suoritus.koskiOpiskeluoikeusOid,
                             lähdejärjestelmänId = LahdeJarjestelmanId(id = "vkt.${suoritus.internalId}"),
                             tyyppi = Koodisto.OpiskeluoikeudenTyyppi.Kielitutkinto,
                             tila =
