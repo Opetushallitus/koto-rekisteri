@@ -4,12 +4,31 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.oph.kitu.TypedResult.Failure
 import fi.oph.kitu.TypedResult.Success
 import org.ietf.jgss.GSSException
+import java.io.IOException
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.io.Serializable
 
 @ConsistentCopyVisibility
 @JsonSerialize(using = com.fasterxml.jackson.databind.ser.std.ToStringSerializer::class)
 data class Oid private constructor(
-    private val value: org.ietf.jgss.Oid,
-) {
+    private var value: org.ietf.jgss.Oid,
+) : Serializable {
+    override fun toString(): String = value.toString()
+
+    constructor(valueString: String) : this(org.ietf.jgss.Oid(valueString))
+
+    @Throws(IOException::class)
+    private fun writeObject(out: ObjectOutputStream) {
+        out.writeUTF(value.toString())
+    }
+
+    @Throws(IOException::class, ClassNotFoundException::class)
+    private fun readObject(inp: ObjectInputStream) {
+        val str = inp.readUTF()
+        value = org.ietf.jgss.Oid(str)
+    }
+
     companion object {
         fun parse(source: String?): Result<Oid> =
             try {
@@ -25,10 +44,6 @@ data class Oid private constructor(
                 Failure(MalformedOidError(source))
             }
     }
-
-    fun unwrap(): org.ietf.jgss.Oid = value
-
-    override fun toString(): String = value.toString()
 }
 
 data class MalformedOidError(
