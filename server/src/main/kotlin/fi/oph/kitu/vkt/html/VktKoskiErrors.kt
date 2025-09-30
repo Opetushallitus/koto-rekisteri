@@ -35,14 +35,10 @@ object VktKoskiErrors {
             hiddenCount?.let { count ->
                 if (count > 0) {
                     viewMessage(
-                        ViewMessageData(
-                            type = ViewMessageType.INFO,
-                            text = "",
-                            render = {
-                                +"Yhteensä $count virhettä on piilotettu. "
-                                a(href = "?hidden=true") { +"Näytä piilotetut virheet" }
-                            },
-                        ),
+                        ViewMessageData.html(type = ViewMessageType.INFO) {
+                            +"Yhteensä $count virhettä on piilotettu. "
+                            a(href = "?hidden=true") { +"Näytä piilotetut virheet" }
+                        },
                     )
                 }
             } ?: article { a(href = "?hidden=false") { +"Palaa virhesivulle" } }

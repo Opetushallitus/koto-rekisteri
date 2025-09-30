@@ -294,7 +294,7 @@ class VktViewController(
             koskiErrorService.countByEntity("vkt", false).let {
                 if (it > 0) {
                     val text = "$it siirtoa KOSKI-tietovarantoon on epäonnistunut"
-                    ViewMessageData(text, ViewMessageType.ERROR) {
+                    ViewMessageData.html(ViewMessageType.ERROR) {
                         +text
                         br()
                         a(
