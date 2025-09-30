@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpSession
 import kotlinx.html.FlowContent
 import kotlinx.html.article
 import kotlinx.html.section
+import kotlinx.html.stream.createHTML
+import kotlinx.html.unsafe
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
@@ -13,15 +15,12 @@ import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.io.Serializable
 
 fun FlowContent.viewMessage(message: ViewMessageData?) {
     message?.let {
         article(classes = it.type.cssClass) {
-            if (it.render != null) {
-                it.render(this)
-            } else {
-                +it.text
-            }
+            unsafe { +it.text }
         }
     }
 }
@@ -29,14 +28,15 @@ fun FlowContent.viewMessage(message: ViewMessageData?) {
 data class ViewMessageData(
     val text: String,
     val type: ViewMessageType,
-    val render: (FlowContent.() -> Unit)? = null,
-) {
+) : Serializable {
     companion object {
+        fun html(
+            type: ViewMessageType,
+            f: FlowContent.() -> Unit,
+        ): ViewMessageData = ViewMessageData(createHTML().section { f() }, type)
+
         fun from(koskiError: KoskiErrorEntity): ViewMessageData =
-            ViewMessageData(
-                "KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTimeUTC()}: ${koskiError.message}",
-                ViewMessageType.ERROR,
-            ) {
+            html(ViewMessageType.ERROR) {
                 +"KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTimeUTC()}: "
 
                 val error = koskiError.errorJson()
@@ -53,7 +53,7 @@ data class ViewMessageData(
 
 enum class ViewMessageType(
     val cssClass: String,
-) {
+) : Serializable {
     INFO("info-text"),
     SUCCESS("success-text"),
     ERROR("error-text"),
