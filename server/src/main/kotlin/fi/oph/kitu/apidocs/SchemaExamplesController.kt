@@ -1,5 +1,6 @@
 package fi.oph.kitu.apidocs
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktArvionti
@@ -12,7 +13,6 @@ import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
-import fi.oph.kitu.vkt.tiedonsiirtoschema.OidString
 import fi.oph.kitu.vkt.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.vkt.tiedonsiirtoschema.TiedonsiirtoSuccess
 import org.springframework.http.HttpStatus
@@ -31,7 +31,7 @@ class SchemaExamplesController {
             Henkilosuoritus(
                 henkilo =
                     OidOppija(
-                        oid = OidString("1.2.246.562.240.98167097342"),
+                        oid = Oid.parse("1.2.246.562.240.98167097342").getOrThrow(),
                         etunimet = "Eeli Heikki",
                         sukunimi = "Aalto",
                     ),
@@ -72,7 +72,7 @@ class SchemaExamplesController {
             Henkilosuoritus(
                 henkilo =
                     OidOppija(
-                        oid = OidString("1.2.246.562.240.98167097342"),
+                        oid = Oid.parse("1.2.246.562.240.98167097342").getOrThrow(),
                         etunimet = "Eeli Heikki",
                         sukunimi = "Aalto",
                     ),

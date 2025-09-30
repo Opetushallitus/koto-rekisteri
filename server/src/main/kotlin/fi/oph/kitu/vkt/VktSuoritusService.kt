@@ -1,16 +1,12 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.Cache
-import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.oppijanumero.EmptyRequest
-import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.toTypedResult
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import fi.oph.kitu.vkt.html.VktTableItem
 import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
@@ -103,7 +99,7 @@ class VktSuoritusService(
                     it.firstOrNull()?.henkilo?.let { henkilo ->
                         auditLogger.log(
                             operation = AuditLogOperation.VktSuoritusViewed,
-                            oppijaHenkiloOid = Oid.parse(henkilo.oid.oid).getOrThrow(),
+                            oppijaHenkiloOid = henkilo.oid,
                         )
                     }
                 }
@@ -112,18 +108,8 @@ class VktSuoritusService(
                 suoritukset
                     .mapNotNull { it.suoritus.suorituksenVastaanottaja }
                     .toSet()
-                    .associateBy({ it.oid }, { oidString ->
-                        oidString
-                            .toOid()
-                            .toTypedResult<_, OppijanumeroException> {
-                                OppijanumeroException.MalformedOppijanumero(
-                                    EmptyRequest(),
-                                    oidString.oid,
-                                )
-                            }.fold(
-                                { oppijanumeroService.getHenkilo(it).getOrNull()?.kokoNimi() ?: oidString.toString() },
-                                { oidString.toString() },
-                            )
+                    .associateBy({ it }, { oid ->
+                        oppijanumeroService.getHenkilo(oid).getOrNull()?.kokoNimi() ?: oid.toString()
                     })
             } else {
                 mapOf()
