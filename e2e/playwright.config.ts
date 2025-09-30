@@ -14,8 +14,9 @@ const numWorkers = process.env.CI
 const workerWebServer = (workerIndex: number) => {
   const port = 8080 + workerIndex
   return {
+    timeout: 5 * 60000,
     command: "./mvnw spring-boot:run",
-    url: `http://127.0.0.1:${port}/kielitutkinnot`,
+    url: `http://localhost:${port}/kielitutkinnot`,
     reuseExistingServer: false,
     cwd: "../server/",
     env: {
