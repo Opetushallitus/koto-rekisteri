@@ -2,9 +2,10 @@ package fi.oph.kitu.tiedonsiirtoschema
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktSuoritus
-import fi.oph.kitu.yki.YkiSuoritus
+import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -16,7 +17,7 @@ data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
     inline fun <reified A> toEntity(): A? =
         when (suoritus) {
             is VktSuoritus -> suoritus.toVktSuoritusEntity(henkilo)
-            is YkiSuoritus -> TODO()
+            is YkiSuoritus -> suoritus.toYkiSuoritusEntity(henkilo)
             else -> null
         } as? A
 }
@@ -33,11 +34,16 @@ interface PolymorphicByTyyppi {
 
 @JsonSubTypes(
     JsonSubTypes.Type(value = VktSuoritus::class, name = "valtionhallinnonkielitutkinto"),
+    JsonSubTypes.Type(value = YkiSuoritus::class, name = "yleinenkielitutkinto"),
 )
 interface KielitutkinnonSuoritus :
     PolymorphicByTyyppi,
     Lahdejarjestelmallinen {
     override val tyyppi: Koodisto.SuorituksenTyyppi
+
+    val internalId: Int?
+    val koskiOpiskeluoikeusOid: Oid?
+    val koskiSiirtoKasitelty: Boolean
 }
 
 interface Osasuoritus : PolymorphicByTyyppi

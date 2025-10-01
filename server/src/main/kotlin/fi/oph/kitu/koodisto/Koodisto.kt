@@ -92,7 +92,7 @@ object Koodisto {
         override val koodistoUri: String = "kieli"
     }
 
-    enum class YkiSuorituksenNimi(
+    enum class YkiSuorituksenOsa(
         override val koodiarvo: String,
     ) : Koodiviite {
         TekstinYmmartaminen("tekstinymmartaminen"),

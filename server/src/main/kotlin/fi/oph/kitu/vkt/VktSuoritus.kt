@@ -28,9 +28,9 @@ data class VktSuoritus(
     @get:JsonProperty("osakokeet")
     override val osat: List<VktOsakoe>,
     override val lahdejarjestelmanId: LahdejarjestelmanTunniste,
-    val internalId: Int? = null,
-    val koskiOpiskeluoikeusOid: Oid? = null,
-    val koskiSiirtoKasitelty: Boolean = false,
+    override val internalId: Int? = null,
+    override val koskiOpiskeluoikeusOid: Oid? = null,
+    override val koskiSiirtoKasitelty: Boolean = false,
     val merkittyPoistettavaksi: Boolean = false,
 ) : KielitutkinnonSuoritus,
     Osasuorituksellinen {
