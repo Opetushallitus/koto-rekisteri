@@ -1,4 +1,4 @@
-package fi.oph.kitu.vkt.tiedonsiirtoschema
+package fi.oph.kitu.tiedonsiirtoschema
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode

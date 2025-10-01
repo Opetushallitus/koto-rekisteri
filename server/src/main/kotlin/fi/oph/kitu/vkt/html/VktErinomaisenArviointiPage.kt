@@ -20,9 +20,9 @@ import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
+import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktSuoritus
-import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.footer
 import kotlinx.html.h1

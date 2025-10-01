@@ -10,13 +10,13 @@ import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.html.KoskiTransferState
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
 import fi.oph.kitu.vkt.html.VktKoskiErrors
-import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.a
 import kotlinx.html.br
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo

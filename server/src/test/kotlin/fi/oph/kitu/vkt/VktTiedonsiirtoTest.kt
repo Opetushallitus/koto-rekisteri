@@ -3,7 +3,7 @@ package fi.oph.kitu.vkt
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.schema.SchemaTests
-import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
