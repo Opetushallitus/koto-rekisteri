@@ -104,6 +104,84 @@ class KoealustaServiceTests(
     @Suppress("unused")
     private lateinit var casAuthenticatedService: CasAuthenticatedService
 
+    val validSuoritus =
+        """
+        {
+              "userid": 1,
+              "firstnames": "Ranja Testi",
+              "lastname": "Öhman-Testi",
+              "preferredname": "Ranja", 
+              "SSN": "010180-9026",
+              "email": "ranja.testi@oph.fi",
+              "completions": [
+                {
+                  "courseid": 32,
+                  "coursename": "Integraatio testaus",
+                  "schoolOID": "1.2.246.562.10.1234567890",
+                  "results": [
+                    {
+                      "name": "luetun ymm\u00e4rt\u00e4minen",
+                      "quiz_grade": "A1"
+                    },
+                    {
+                      "name": "kuullun ymm\u00e4rt\u00e4minen",
+                      "quiz_grade": "B1"
+                    },
+                    {
+                      "name": "puhuminen",
+                      "quiz_grade": "A1"
+                    },
+                    {
+                      "name": "kirjoittaminen",
+                      "quiz_grade": "A1"
+                    }
+                  ],
+                  "timecompleted": 1728969131,
+                  "teacheremail": "opettaja@testi.oph.fi"
+                }
+              ]
+        }
+        """.trimIndent()
+
+    val invalidHetu =
+        """
+        {
+          "userid": 2,
+          "firstnames": "Antero",
+          "lastname": "Testi-Moikka",
+          "preferredname": "Antero",
+          "SSN": "INVALID_HETU",
+          "email": "ranja.testi@oph.fi",
+          "completions": [
+            {
+              "courseid": 32,
+              "coursename": "Integraatio testaus",
+              "schoolOID": "1.2.246.562.10.1234567890",
+              "results": [
+                {
+                  "name": "luetun ymm\u00e4rt\u00e4minen",
+                  "quiz_grade": "A1"
+                },
+                {
+                  "name": "kuullun ymm\u00e4rt\u00e4minen",
+                  "quiz_grade": "B1"
+                },
+                {
+                  "name": "puhuminen",
+                  "quiz_grade": "B1"
+                },
+                {
+                  "name": "kirjoittaminen",
+                  "quiz_grade": "B1"
+                }
+              ],
+              "timecompleted": 1728969131,
+              "teacheremail": "opettaja@testi.oph.fi"
+            }
+          ]
+        }
+        """.trimIndent()
+
     @BeforeEach
     fun nukeDb(
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
@@ -130,43 +208,7 @@ class KoealustaServiceTests(
                 withSuccess(
                     """
                     {
-                      "users": [
-                        {
-                          "userid": 1,
-                          "firstnames": "Ranja Testi",
-                          "lastname": "Öhman-Testi",
-                          "preferredname": "Ranja", 
-                          "SSN": "010180-9026",
-                          "email": "ranja.testi@oph.fi",
-                          "completions": [
-                            {
-                              "courseid": 32,
-                              "coursename": "Integraatio testaus",
-                              "schoolOID": "1.2.246.562.10.1234567890",
-                              "results": [
-                                {
-                                  "name": "luetun ymm\u00e4rt\u00e4minen",
-                                  "quiz_grade": "A1"
-                                },
-                                {
-                                  "name": "kuullun ymm\u00e4rt\u00e4minen",
-                                  "quiz_grade": "B1"
-                                },
-                                {
-                                  "name": "puhuminen",
-                                  "quiz_grade": "A1"
-                                },
-                                {
-                                  "name": "kirjoittaminen",
-                                  "quiz_grade": "A1"
-                                }
-                              ],
-                              "timecompleted": 1728969131,
-                              "teacheremail": "opettaja@testi.oph.fi"
-                            }
-                          ]
-                        }
-                      ]
+                      "users": [$validSuoritus]
                     }
                     """.trimIndent(),
                     MediaType.APPLICATION_JSON,
@@ -468,43 +510,7 @@ class KoealustaServiceTests(
                 withSuccess(
                     """
                     {
-                      "users": [
-                        {
-                          "userid": 1,
-                          "firstnames": "Antero",
-                          "lastname": "Testi-Moikka",
-                          "preferredname": "Antero", 
-                          "SSN": "INVALID_HETU",
-                          "email": "ranja.testi@oph.fi",
-                          "completions": [
-                            {
-                              "courseid": 32,
-                              "coursename": "Integraatio testaus",
-                              "schoolOID": "1.2.246.562.10.1234567890",
-                              "results": [
-                                {
-                                  "name": "luetun ymm\u00e4rt\u00e4minen",
-                                  "quiz_grade": "A1"
-                                },
-                                {
-                                  "name": "kuullun ymm\u00e4rt\u00e4minen",
-                                  "quiz_grade": "B1"
-                                },
-                                {
-                                  "name": "puhuminen",
-                                  "quiz_grade": "B1"
-                                },
-                                {
-                                  "name": "kirjoittaminen",
-                                  "quiz_grade": "B1"
-                                }
-                              ],
-                              "timecompleted": 1728969131,
-                              "teacheremail": "opettaja@testi.oph.fi"
-                            }
-                          ]
-                        }
-                      ]
+                      "users": [$invalidHetu]
                     }
                     """.trimIndent(),
                     MediaType.APPLICATION_JSON,
@@ -540,6 +546,54 @@ class KoealustaServiceTests(
             fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
             fun() = assertEquals("1.2.246.562.10.1234567890", onrBadRequestFailure.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", onrBadRequestFailure.teacherEmail),
+        )
+    }
+
+    @Test
+    fun `import with valid and invalid suoritus should return original from-timestamp and save the suoritus and error`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        koealusta
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$validSuoritus, $invalidHetu]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        koealusta.verify()
+
+        val errors = kielitestiSuoritusErrorRepository.findAll()
+        val suoritukset = kielitestiSuoritusRepository.findAll()
+
+        assertAll(
+            fun() =
+                assertEquals(
+                    expected = Instant.EPOCH,
+                    actual = lastSeen,
+                    message = "Since an error was encountered, the previous `from` parameter should have been returned",
+                ),
+            fun () = assertEquals(1, errors.count(), "There should be one saved error"),
+            fun () = assertEquals(1, suoritukset.count(), "There should be one saved suoritus"),
         )
     }
 }
