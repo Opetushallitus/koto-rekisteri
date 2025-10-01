@@ -24,5 +24,6 @@ data class LahdejarjestelmanTunniste(
 
 enum class Lahdejarjestelma {
     KIOS,
+    Solki,
     Unknown,
 }

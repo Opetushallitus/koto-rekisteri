@@ -9,10 +9,10 @@ import fi.oph.kitu.mock.VktSuoritusMockGenerator
 import fi.oph.kitu.mock.generateRandomOppijaOid
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.mock.getRandomLocalDate
+import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.tiedonsiirtoschema.OidOppija
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
@@ -261,7 +261,7 @@ class KoskiRequestMapperTest(
         val henkilosuoritus =
             Henkilosuoritus(
                 henkilo =
-                    OidOppija(
+                    Henkilo(
                         oid = henkiloOid,
                         etunimet = "Keijo",
                         sukunimi = "Keijunen",
@@ -321,7 +321,7 @@ class KoskiRequestMapperTest(
         val henkilosuoritus =
             Henkilosuoritus(
                 henkilo =
-                    OidOppija(
+                    Henkilo(
                         oid = henkiloOid,
                         etunimet = "Keijo",
                         sukunimi = "Keijunen",
@@ -372,7 +372,7 @@ class KoskiRequestMapperTest(
         val henkilosuoritus =
             Henkilosuoritus(
                 henkilo =
-                    OidOppija(
+                    Henkilo(
                         oid = henkiloOid,
                         etunimet = "Keijo",
                         sukunimi = "Keijunen",
@@ -433,7 +433,7 @@ class KoskiRequestMapperTest(
         val henkilosuoritus =
             Henkilosuoritus(
                 henkilo =
-                    OidOppija(
+                    Henkilo(
                         oid = henkiloOid,
                         etunimet = "Keijo",
                         sukunimi = "Keijunen",

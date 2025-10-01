@@ -1,12 +1,12 @@
 package fi.oph.kitu.vkt
 
 import com.fasterxml.jackson.databind.JsonMappingException
-import fi.oph.kitu.Validation
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
+import fi.oph.kitu.validation.Validation
+import fi.oph.kitu.validation.ValidationService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 @RequestMapping("/api/vkt")
 class VktTiedonsiirtoController(
     val vktRepository: VktSuoritusRepository,
-    private val vktValidation: VktValidation,
+    private val validation: ValidationService,
 ) {
     @PutMapping("/kios", produces = ["application/json"])
     @Operation(
@@ -112,15 +112,10 @@ class VktTiedonsiirtoController(
             val suoritus = data.suoritus
             when (suoritus) {
                 is VktSuoritus -> {
-                    val enrichedSuoritus =
-                        KielitutkinnonSuoritus
-                            .validateAndEnrich(
-                                data.suoritus,
-                                vktValidation,
-                            ).getOrThrow()
+                    val enrichedSuoritus = validation.validateAndEnrich(data.suoritus).getOrThrow()
                     val henkilosuoritus = Henkilosuoritus(data.henkilo, enrichedSuoritus)
                     vktRepository.save(
-                        henkilosuoritus.toVktSuoritusEntity() ?: throw RuntimeException("Failed to convert to entity"),
+                        henkilosuoritus.toEntity() ?: throw RuntimeException("Failed to convert to entity"),
                     )
                     TiedonsiirtoSuccess()
                 }

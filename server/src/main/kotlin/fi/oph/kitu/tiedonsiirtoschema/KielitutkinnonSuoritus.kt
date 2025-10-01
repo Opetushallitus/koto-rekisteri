@@ -2,37 +2,23 @@ package fi.oph.kitu.tiedonsiirtoschema
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import fi.oph.kitu.Validation
-import fi.oph.kitu.ValidationResult
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.VktSuoritus
-import fi.oph.kitu.vkt.VktSuoritusEntity
-import fi.oph.kitu.vkt.VktValidation
+import fi.oph.kitu.yki.YkiSuoritus
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
 data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
-    val henkilo: OidOppija,
+    val henkilo: Henkilo,
     val suoritus: T,
     val lisatty: OffsetDateTime? = null,
 ) {
-    fun fill(onr: OppijanumeroService): Henkilosuoritus<T>? = henkilo.fill(onr)?.let { copy(it, suoritus) }
-
-    fun toVktSuoritusEntity(): VktSuoritusEntity? =
+    inline fun <reified A> toEntity(): A? =
         when (suoritus) {
             is VktSuoritus -> suoritus.toVktSuoritusEntity(henkilo)
+            is YkiSuoritus -> TODO()
             else -> null
-        }
-
-    companion object {
-        fun from(entity: VktSuoritusEntity) =
-            Henkilosuoritus(
-                henkilo = OidOppija.from(entity),
-                suoritus = VktSuoritus.from(entity),
-                lisatty = entity.createdAt,
-            )
-    }
+        } as? A
 }
 
 @JsonTypeInfo(
@@ -52,17 +38,6 @@ interface KielitutkinnonSuoritus :
     PolymorphicByTyyppi,
     Lahdejarjestelmallinen {
     override val tyyppi: Koodisto.SuorituksenTyyppi
-
-    companion object {
-        fun validateAndEnrich(
-            suoritus: KielitutkinnonSuoritus,
-            vktValidation: VktValidation,
-        ): ValidationResult<KielitutkinnonSuoritus> =
-            when (suoritus) {
-                is VktSuoritus -> vktValidation.validateAndEnrich(suoritus)
-                else -> Validation.ok(suoritus)
-            }
-    }
 }
 
 interface Osasuoritus : PolymorphicByTyyppi

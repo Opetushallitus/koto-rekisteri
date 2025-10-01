@@ -2,6 +2,9 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.tiedonsiirtoschema.Henkilo
+import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.MappedCollection
 import org.springframework.data.relational.core.mapping.Table
@@ -49,4 +52,31 @@ data class VktSuoritusEntity(
         val arviointipaiva: LocalDate?,
         val arvosana: Koodisto.VktArvosana?,
     )
+
+    fun toHenkilosuoritus(): VktHenkilosuoritus =
+        Henkilosuoritus(
+            henkilo =
+                Henkilo(
+                    oid = suorittajanOppijanumero,
+                    etunimet = etunimi,
+                    sukunimi = sukunimi,
+                ),
+            suoritus =
+                VktSuoritus(
+                    taitotaso = taitotaso,
+                    kieli = tutkintokieli,
+                    suorituksenVastaanottaja = suorituksenVastaanottaja,
+                    suorituspaikkakunta = suorituspaikkakunta,
+                    osat =
+                        osakokeet.map {
+                            fi.oph.kitu.vkt.VktOsakoe
+                                .from(it)
+                        },
+                    lahdejarjestelmanId = LahdejarjestelmanTunniste.Companion.from(ilmoittautumisenId),
+                    internalId = id,
+                    koskiOpiskeluoikeusOid = koskiOpiskeluoikeus,
+                    koskiSiirtoKasitelty = koskiSiirtoKasitelty,
+                ),
+            lisatty = createdAt,
+        )
 }

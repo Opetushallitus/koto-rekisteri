@@ -5,9 +5,8 @@ import fi.oph.kitu.TypedResult
 import fi.oph.kitu.mapValues
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.partitionBySuccess
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
-import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktSuoritusService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -84,7 +83,7 @@ class KoskiService(
                 }
             }
 
-    fun sendVktSuoritusToKoski(suoritus: Henkilosuoritus<VktSuoritus>): TypedResult<Unit, KoskiException> =
+    fun sendVktSuoritusToKoski(suoritus: VktHenkilosuoritus): TypedResult<Unit, KoskiException> =
         tracer
             .spanBuilder("KoskiService.sendVktSuoritusToKoski")
             .startSpan()

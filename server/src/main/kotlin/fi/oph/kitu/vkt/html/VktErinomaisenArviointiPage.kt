@@ -20,9 +20,8 @@ import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktOsakoe
-import fi.oph.kitu.vkt.VktSuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.footer
 import kotlinx.html.h1
@@ -32,7 +31,7 @@ import java.time.LocalDate
 
 object VktErinomaisenArviointiPage {
     fun render(
-        data: Henkilosuoritus<VktSuoritus>,
+        data: VktHenkilosuoritus,
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
         messages: List<ViewMessageData>,

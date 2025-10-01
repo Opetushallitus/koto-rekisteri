@@ -11,9 +11,8 @@ import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktOsakoe
-import fi.oph.kitu.vkt.VktSuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -21,7 +20,7 @@ import kotlinx.html.h3
 
 object VktHyvaJaTyydyttavaTarkasteluPage {
     fun render(
-        data: Henkilosuoritus<VktSuoritus>,
+        data: VktHenkilosuoritus,
         henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
         translations: Translations,
         messages: List<ViewMessageData>,
