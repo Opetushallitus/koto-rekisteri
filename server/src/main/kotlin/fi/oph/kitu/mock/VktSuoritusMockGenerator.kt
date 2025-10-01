@@ -2,6 +2,9 @@ package fi.oph.kitu.mock
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
+import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedonsiirtoschema.OidOppija
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktOsakoe
@@ -11,9 +14,6 @@ import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
 import fi.oph.kitu.vkt.VktValidation
-import fi.oph.kitu.vkt.tiedonsiirtoschema.Lahdejarjestelma
-import fi.oph.kitu.vkt.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.vkt.tiedonsiirtoschema.OidOppija
 import fi.oph.kitu.yki.Sukupuoli
 import java.time.LocalDate
 import kotlin.random.Random

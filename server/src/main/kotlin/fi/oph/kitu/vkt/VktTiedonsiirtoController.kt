@@ -3,10 +3,10 @@ package fi.oph.kitu.vkt
 import com.fasterxml.jackson.databind.JsonMappingException
 import fi.oph.kitu.Validation
 import fi.oph.kitu.defaultObjectMapper
-import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.vkt.tiedonsiirtoschema.KielitutkinnonSuoritus
-import fi.oph.kitu.vkt.tiedonsiirtoschema.TiedonsiirtoFailure
-import fi.oph.kitu.vkt.tiedonsiirtoschema.TiedonsiirtoSuccess
+import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
+import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
+import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject

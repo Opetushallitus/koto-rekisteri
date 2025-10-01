@@ -6,8 +6,8 @@ import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.VktSuoritus
-import fi.oph.kitu.vkt.tiedonsiirtoschema.Henkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.h3
