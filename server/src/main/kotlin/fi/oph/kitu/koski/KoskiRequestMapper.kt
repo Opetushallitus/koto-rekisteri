@@ -106,11 +106,11 @@ class KoskiRequestMapper {
 
     private fun convertYkiSuoritusToKoskiOsasuoritukset(suoritusEntity: YkiSuoritusEntity): List<Osasuoritus> =
         mapOf(
-            Koodisto.YkiSuorituksenNimi.TekstinYmmartaminen to suoritusEntity.tekstinYmmartaminen,
-            Koodisto.YkiSuorituksenNimi.Kirjoittaminen to suoritusEntity.kirjoittaminen,
-            Koodisto.YkiSuorituksenNimi.PuheenYmmartaminen to suoritusEntity.puheenYmmartaminen,
-            Koodisto.YkiSuorituksenNimi.Puhuminen to suoritusEntity.puhuminen,
-            Koodisto.YkiSuorituksenNimi.RakenteetJaSanasto to suoritusEntity.rakenteetJaSanasto,
+            Koodisto.YkiSuorituksenOsa.TekstinYmmartaminen to suoritusEntity.tekstinYmmartaminen,
+            Koodisto.YkiSuorituksenOsa.Kirjoittaminen to suoritusEntity.kirjoittaminen,
+            Koodisto.YkiSuorituksenOsa.PuheenYmmartaminen to suoritusEntity.puheenYmmartaminen,
+            Koodisto.YkiSuorituksenOsa.Puhuminen to suoritusEntity.puhuminen,
+            Koodisto.YkiSuorituksenOsa.RakenteetJaSanasto to suoritusEntity.rakenteetJaSanasto,
         ).mapNotNull { (suorituksenNimi, arvosana) ->
             arvosana?.let {
                 yleisenKielitutkinnonOsa(
@@ -132,7 +132,7 @@ class KoskiRequestMapper {
         ).any { it == 10 || it == 11 }
 
     private fun yleisenKielitutkinnonOsa(
-        suorituksenNimi: Koodisto.YkiSuorituksenNimi,
+        suorituksenNimi: Koodisto.YkiSuorituksenOsa,
         arvosana: Int,
         tutkintotaso: Tutkintotaso,
         arviointipaiva: LocalDate,
