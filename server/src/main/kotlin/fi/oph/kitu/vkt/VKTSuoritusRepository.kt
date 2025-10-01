@@ -3,7 +3,6 @@ package fi.oph.kitu.vkt
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.html.VktTableItem
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
@@ -300,7 +299,7 @@ class CustomVktSuoritusRepository {
             )
 
         companion object {
-            fun from(suoritus: Henkilosuoritus<VktSuoritus>) =
+            fun from(suoritus: VktHenkilosuoritus) =
                 Tutkintoryhma(
                     oppijanumero = suoritus.henkilo.oid.toString(),
                     tutkintokieli = suoritus.suoritus.kieli,

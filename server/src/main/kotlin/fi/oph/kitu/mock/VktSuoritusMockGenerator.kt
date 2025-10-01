@@ -2,9 +2,9 @@ package fi.oph.kitu.mock
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.tiedonsiirtoschema.OidOppija
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktOsakoe
@@ -64,13 +64,13 @@ class VktSuoritusMockGenerator(
         )
     }
 
-    fun randomOppija(oppijaOidIndex: Long): OidOppija {
+    fun randomOppija(oppijaOidIndex: Long): Henkilo {
         // Tätä satunnaista oidia käytettiin aiemmin oppijan oidissa. Luodaan se edelleen, mutta ei käytetä,
         // jotta muut satunnaisarvot eivät muutu ja hajota testejä, jotka odottavat fikstuurissa olevan
         // juuri tietyt arvot.
         generateRandomOppijaOid(random)
 
-        return OidOppija(
+        return Henkilo(
             oid = createOid(OidClass.OPPIJA, oppijaOidIndex),
             etunimet =
                 generateRandomFirstnames(

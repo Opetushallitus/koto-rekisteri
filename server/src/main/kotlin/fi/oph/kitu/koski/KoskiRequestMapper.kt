@@ -21,8 +21,7 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Organ
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -188,9 +187,7 @@ class KoskiRequestMapper {
             }
     }
 
-    fun vktSuoritusToKoskiRequest(
-        henkilosuoritus: Henkilosuoritus<VktSuoritus>,
-    ): TypedResult<KoskiRequest, List<String>> {
+    fun vktSuoritusToKoskiRequest(henkilosuoritus: VktHenkilosuoritus): TypedResult<KoskiRequest, List<String>> {
         val henkilo = henkilosuoritus.henkilo
         val suoritus = henkilosuoritus.suoritus
 

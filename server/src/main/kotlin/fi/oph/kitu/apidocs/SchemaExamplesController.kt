@@ -3,10 +3,10 @@ package fi.oph.kitu.apidocs
 import fi.oph.kitu.Oid
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.tiedonsiirtoschema.OidOppija
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
 import fi.oph.kitu.vkt.VktArvionti
@@ -30,7 +30,7 @@ class SchemaExamplesController {
         exampleJson(
             Henkilosuoritus(
                 henkilo =
-                    OidOppija(
+                    Henkilo(
                         oid = Oid.parse("1.2.246.562.240.98167097342").getOrThrow(),
                         etunimet = "Eeli Heikki",
                         sukunimi = "Aalto",
@@ -71,7 +71,7 @@ class SchemaExamplesController {
         return exampleJson(
             Henkilosuoritus(
                 henkilo =
-                    OidOppija(
+                    Henkilo(
                         oid = Oid.parse("1.2.246.562.240.98167097342").getOrThrow(),
                         etunimet = "Eeli Heikki",
                         sukunimi = "Aalto",

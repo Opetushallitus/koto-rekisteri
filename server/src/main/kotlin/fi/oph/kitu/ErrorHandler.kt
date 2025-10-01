@@ -3,6 +3,7 @@ package fi.oph.kitu
 import fi.oph.kitu.dev.MockResourceNotFoundError
 import fi.oph.kitu.html.ErrorPage
 import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.vkt.VktSuoritusNotFoundError
 import io.opentelemetry.api.trace.Span
 import org.slf4j.Logger

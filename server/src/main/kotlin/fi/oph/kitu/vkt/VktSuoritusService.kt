@@ -7,7 +7,6 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import fi.oph.kitu.vkt.html.VktTableItem
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -80,21 +79,21 @@ class VktSuoritusService(
         )
 
     @WithSpan("VktSuoritusService.getSuoritus")
-    fun getSuoritus(id: Int): Optional<Henkilosuoritus<VktSuoritus>> =
+    fun getSuoritus(id: Int): Optional<VktHenkilosuoritus> =
         suoritusRepository
             .findById(id)
-            .map { Henkilosuoritus.from(it) }
+            .map { it.toHenkilosuoritus() }
 
     @WithSpan("VktSuoritusService.getOppijanSuoritukset")
     fun getOppijanSuoritukset(
         id: Tutkintoryhma,
         includeSuorituksenVastaanottajat: Boolean = true,
-    ): Henkilosuoritus<VktSuoritus>? {
+    ): VktHenkilosuoritus? {
         val ids = customSuoritusRepository.getOppijanSuoritusIds(id)
         val suoritukset =
             ids
                 .mapNotNull { suoritusRepository.findById(it).getOrNull() }
-                .map { Henkilosuoritus.from(it) }
+                .map { it.toHenkilosuoritus() }
                 .also {
                     it.firstOrNull()?.henkilo?.let { henkilo ->
                         auditLogger.log(

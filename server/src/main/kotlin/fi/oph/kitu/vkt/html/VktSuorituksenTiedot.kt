@@ -6,8 +6,7 @@ import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.VktHenkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.h3
@@ -16,7 +15,7 @@ import kotlinx.html.li
 import kotlinx.html.ul
 
 fun FlowContent.vktSuorituksenTiedot(
-    data: Henkilosuoritus<VktSuoritus>,
+    data: VktHenkilosuoritus,
     koskiTransferState: Pair<KoskiTransferState, List<String>>,
     t: Translations,
 ) {
@@ -58,7 +57,7 @@ fun FlowContent.vktSuorituksenTiedot(
 }
 
 fun FlowContent.vktTutkinnot(
-    data: Henkilosuoritus<VktSuoritus>,
+    data: VktHenkilosuoritus,
     t: Translations,
 ) {
     card(compact = true) {

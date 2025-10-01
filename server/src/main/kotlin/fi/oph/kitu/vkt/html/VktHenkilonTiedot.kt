@@ -8,12 +8,11 @@ import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.vkt.VktSuoritus
+import fi.oph.kitu.vkt.VktHenkilosuoritus
 import kotlinx.html.FlowContent
 
 fun FlowContent.vktHenkilonTiedot(
-    data: Henkilosuoritus<VktSuoritus>,
+    data: VktHenkilosuoritus,
     henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
 ) {
     henkilo

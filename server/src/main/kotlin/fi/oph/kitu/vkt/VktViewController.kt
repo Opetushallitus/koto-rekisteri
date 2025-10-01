@@ -10,7 +10,6 @@ import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.vkt.html.KoskiTransferState
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
@@ -296,7 +295,7 @@ class VktViewController(
             },
         )
 
-    private fun getKoskiTransferState(suoritus: Henkilosuoritus<VktSuoritus>): Pair<KoskiTransferState, List<String>> =
+    private fun getKoskiTransferState(suoritus: VktHenkilosuoritus): Pair<KoskiTransferState, List<String>> =
         if (suoritus.suoritus.koskiSiirtoKasitelty) {
             if (suoritus.suoritus.koskiOpiskeluoikeusOid != null) {
                 KoskiTransferState.SUCCESS to emptyList()

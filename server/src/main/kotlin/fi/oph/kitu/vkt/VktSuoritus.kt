@@ -7,16 +7,18 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.tiedonsiirtoschema.Arviointi
 import fi.oph.kitu.tiedonsiirtoschema.Arvioitava
+import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.tiedonsiirtoschema.OidOppija
 import fi.oph.kitu.tiedonsiirtoschema.Osasuorituksellinen
 import fi.oph.kitu.tiedonsiirtoschema.Osasuoritus
 import java.time.Instant
 import java.time.LocalDate
 
 // Päätason suoritus
+
+typealias VktHenkilosuoritus = Henkilosuoritus<VktSuoritus>
 
 data class VktSuoritus(
     val taitotaso: Koodisto.VktTaitotaso,
@@ -48,7 +50,7 @@ data class VktSuoritus(
         osat.maxOfOrNull { it.tutkintopaiva }
     }
 
-    fun toVktSuoritusEntity(oppija: OidOppija): VktSuoritusEntity =
+    fun toVktSuoritusEntity(oppija: Henkilo): VktSuoritusEntity =
         VktSuoritusEntity(
             ilmoittautumisenId = lahdejarjestelmanId.toString(),
             suorittajanOppijanumero = oppija.oid,
@@ -66,23 +68,10 @@ data class VktSuoritus(
         )
 
     companion object {
-        fun from(entity: VktSuoritusEntity) =
-            VktSuoritus(
-                taitotaso = entity.taitotaso,
-                kieli = entity.tutkintokieli,
-                suorituksenVastaanottaja = entity.suorituksenVastaanottaja,
-                suorituspaikkakunta = entity.suorituspaikkakunta,
-                osat = entity.osakokeet.map { VktOsakoe.from(it) },
-                lahdejarjestelmanId = LahdejarjestelmanTunniste.Companion.from(entity.ilmoittautumisenId),
-                internalId = entity.id,
-                koskiOpiskeluoikeusOid = entity.koskiOpiskeluoikeus,
-                koskiSiirtoKasitelty = entity.koskiSiirtoKasitelty,
-            )
-
         fun merge(
-            henkilosuoritukset: List<Henkilosuoritus<VktSuoritus>>,
+            henkilosuoritukset: List<VktHenkilosuoritus>,
             suorituksenVastaanottajat: Map<Oid, String>,
-        ): Henkilosuoritus<VktSuoritus> {
+        ): VktHenkilosuoritus {
             val suoritukset = henkilosuoritukset.map { it.suoritus }
 
             val oppijanumerot = henkilosuoritukset.map { it.henkilo.oid }.distinct()
