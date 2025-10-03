@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -126,4 +127,7 @@ class VktTiedonsiirtoController(
         } catch (e: Validation.ValidationException) {
             TiedonsiirtoFailure(statusCode = HttpStatus.BAD_REQUEST, errors = e.errors.map { it.toString() })
         }.toResponseEntity()
+
+    @GetMapping("/kios/j_spring_cas_security_check")
+    fun casDebugRoute(): ResponseEntity<String> = ResponseEntity.ok("Nice")
 }
