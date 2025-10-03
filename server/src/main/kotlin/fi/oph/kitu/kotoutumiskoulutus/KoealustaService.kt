@@ -10,6 +10,8 @@ import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.dao.DuplicateKeyException
+import org.springframework.data.relational.core.conversion.DbActionExecutionException
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
@@ -87,9 +89,14 @@ class KoealustaService(
             kielitestiSuoritusErrorRepository.replaceAll(validationErrors + oppijanumeroErrors)
 
             val savedSuoritukset =
-                kielitestiSuoritusRepository
-                    .saveAll(suoritukset)
-                    .also {
+                suoritukset
+                    .mapNotNull {
+                        try {
+                            kielitestiSuoritusRepository.save(it)
+                        } catch (error: DbActionExecutionException) {
+                            if (error.cause is DuplicateKeyException) null else throw error
+                        }
+                    }.also {
                         auditLogger.logAllInternalOnly("Kielitesti suoritus imported", it) { suoritus ->
                             arrayOf(
                                 "suoritus.id" to suoritus.id,

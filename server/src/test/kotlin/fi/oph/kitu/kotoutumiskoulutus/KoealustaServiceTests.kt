@@ -17,6 +17,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.convention.TestBean
+import org.springframework.test.web.client.ExpectedCount
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
@@ -594,6 +595,62 @@ class KoealustaServiceTests(
                 ),
             fun () = assertEquals(1, errors.count(), "There should be one saved error"),
             fun () = assertEquals(1, suoritukset.count(), "There should be one saved suoritus"),
+        )
+    }
+
+    @Test
+    fun `duplicate suoritus in subsequent imports are not saved`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        koealusta
+            .expect(
+                ExpectedCount.manyTimes(),
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$validSuoritus, $invalidHetu]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        val errors = kielitestiSuoritusErrorRepository.findAll()
+        val suoritukset = kielitestiSuoritusRepository.findAll()
+
+        assertAll(
+            fun() =
+                assertEquals(
+                    expected = Instant.EPOCH,
+                    actual = lastSeen,
+                    message = "Since an error was encountered, the previous `from` parameter should have been returned",
+                ),
+            fun () = assertEquals(1, errors.count(), "There should be one saved error"),
+            fun () = assertEquals(1, suoritukset.count(), "There should be one saved suoritus"),
+        )
+
+        koealustaService.importSuoritukset(from = lastSeen)
+        koealusta.verify()
+
+        val suoritukset2 = kielitestiSuoritusRepository.findAll()
+        val errors2 = kielitestiSuoritusErrorRepository.findAll()
+        assertAll(
+            fun() = assertEquals(1, suoritukset2.count()),
+            fun() = assertEquals(1, errors2.count()),
         )
     }
 }
