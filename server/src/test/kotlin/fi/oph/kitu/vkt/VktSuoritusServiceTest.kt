@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.mock.VktSuoritusMockGenerator
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -147,5 +149,40 @@ class VktSuoritusServiceTest(
         henkilosuoritus.suoritus.osat.forEach {
             assertNull(it.suorituksenVastaanottaja)
         }
+    }
+
+    @Test
+    fun `tutkintopaiva naytetaan oikein silloin, kun arvosana on huonompi uusintayrityksella`() {
+        val suorituspohja = VktSuoritusMockGenerator().generateRandomVktSuoritusEntity(vktValidation)
+
+        fun buildSuoritus(
+            tutkintopaiva: LocalDate,
+            arvosana: Koodisto.VktArvosana,
+        ) = suorituspohja
+            .copy(
+                osakokeet =
+                    suorituspohja.osakokeet
+                        .map {
+                            it.copy(
+                                tutkintopaiva = tutkintopaiva,
+                                arvosana = arvosana,
+                            )
+                        }.toSet(),
+            ).toHenkilosuoritus()
+
+        val ekaTutkintopaiva = suorituspohja.osakokeet.first().tutkintopaiva
+        val uusinnanTutkintopaiva = ekaTutkintopaiva.plusDays(30)
+
+        val suoritusyhdistelma =
+            VktSuoritus.merge(
+                listOf(
+                    buildSuoritus(ekaTutkintopaiva, Koodisto.VktArvosana.Hyvä),
+                    buildSuoritus(uusinnanTutkintopaiva, Koodisto.VktArvosana.Tyydyttävä),
+                ),
+                emptyMap(),
+            )
+
+        val tutkinto = suoritusyhdistelma.suoritus.tutkinnot.first()
+        assertEquals(ekaTutkintopaiva, tutkinto.tutkintopaivaTodistuksella())
     }
 }

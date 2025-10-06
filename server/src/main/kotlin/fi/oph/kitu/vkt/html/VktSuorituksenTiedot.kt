@@ -68,8 +68,8 @@ fun FlowContent.vktTutkinnot(
                     DisplayTableColumn("Tutkinto", width = "25%", testId = "tutkinto") {
                         +t.get(it.tyyppi)
                     },
-                    DisplayTableColumn("Viimeisin tutkintopäivä", width = "25%", testId = "tutkintopaiva") {
-                        it.viimeisinTutkintopaiva()?.let { finnishDate(it) }
+                    DisplayTableColumn("Tutkintopäivä", width = "25%", testId = "tutkintopaiva") {
+                        it.tutkintopaivaTodistuksella()?.let { finnishDate(it) }
                     },
                     DisplayTableColumn("Arvosana", width = "50%", testId = "arvosana") {
                         val puuttuvatOsakokeet = it.puuttuvatOsakokeet()

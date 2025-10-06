@@ -88,7 +88,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await expectToHaveTexts(
       tutkinnot.labels,
       "Tutkinto",
-      "Viimeisin tutkintopäivä",
+      "Tutkintopäivä",
       "Arvosana",
     )
     await tutkinnot.expectRows(
@@ -163,7 +163,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await expectToHaveTexts(
       tutkinnot.labels,
       "Tutkinto",
-      "Viimeisin tutkintopäivä",
+      "Tutkintopäivä",
       "Arvosana",
     )
     await tutkinnot.expectRows(
@@ -310,10 +310,10 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     // Tarkista onko suulliselle taidolle muodostunut arvosana
     await testForEach(
       tutkintojenArvosanat,
+      expectToHaveKoodiviite("vktarvosana", "erinomainen"),
       expectToHaveText(
         "Arvioinnit puuttuvat: <vktosakoe:kirjoittaminen>, <vktosakoe:tekstinymmartaminen>",
       ),
-      expectToHaveKoodiviite("vktarvosana", "erinomainen"),
       expectToHaveText("Arviointi puuttuu: <vktosakoe:tekstinymmartaminen>"),
     )
 
