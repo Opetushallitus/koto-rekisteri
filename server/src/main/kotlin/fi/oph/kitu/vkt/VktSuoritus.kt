@@ -42,7 +42,7 @@ data class VktSuoritus(
             VktKirjallinenKielitaito.from(osat),
             VktSuullinenKielitaito.from(osat),
             VktYmmartamisenKielitaito.from(osat),
-        ).flatten().sortedWith(compareByDescending(VktTutkinto::viimeisinTutkintopaiva).thenBy { it.tyyppi.name })
+        ).flatten().sortedWith(compareByDescending(VktTutkinto::tutkintopaivaTodistuksella).thenBy { it.tyyppi.name })
     }
 
     @get:JsonIgnore
@@ -169,11 +169,16 @@ interface VktTutkinto :
                 }
             }
 
-    @Suppress("unused")
-    fun viimeisinTutkintopaiva(): LocalDate? = osat.maxOfOrNull { it.tutkintopaiva }
-
-    @Suppress("unused")
-    fun viimeisinArviointipaiva(): LocalDate? = osat.mapNotNull { it.arviointi?.paivamaara }.maxOrNull()
+    fun tutkintopaivaTodistuksella(): LocalDate? =
+        if (puuttuvatArvioinnit().isNotEmpty()) {
+            null
+        } else {
+            arviointi()?.let { arviointi ->
+                osat
+                    .filter { it.arviointi?.arvosana == arviointi.arvosana }
+                    .maxOfOrNull { it.tutkintopaiva }
+            }
+        }
 
     fun toVktTutkintoRow(): VktSuoritusEntity.VktTutkinto {
         val kielitaidonArviointi = arviointi()
