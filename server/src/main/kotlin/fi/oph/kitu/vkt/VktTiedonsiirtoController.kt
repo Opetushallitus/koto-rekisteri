@@ -1,11 +1,8 @@
 package fi.oph.kitu.vkt
 
-import com.fasterxml.jackson.databind.JsonMappingException
-import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
-import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -13,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -107,26 +103,13 @@ class VktTiedonsiirtoController(
     fun putHenkilosuoritus(
         @RequestBody json: String,
     ): ResponseEntity<*> =
-        try {
-            val data = defaultObjectMapper.readValue(json, Henkilosuoritus::class.java)
-
-            val suoritus = data.suoritus
-            when (suoritus) {
-                is VktSuoritus -> {
-                    val enrichedSuoritus = validation.validateAndEnrich(data.suoritus).getOrThrow()
-                    val henkilosuoritus = Henkilosuoritus(data.henkilo, enrichedSuoritus)
-                    vktRepository.save(
-                        henkilosuoritus.toEntity() ?: throw RuntimeException("Failed to convert to entity"),
-                    )
-                    TiedonsiirtoSuccess()
-                }
-                else -> TiedonsiirtoFailure.forbidden("Vain VKT-kielitutkinnon siirto sallittu")
-            }
-        } catch (e: JsonMappingException) {
-            TiedonsiirtoFailure.badRequest(e.message ?: "JSON mapping failed for unknown reason")
-        } catch (e: Validation.ValidationException) {
-            TiedonsiirtoFailure(statusCode = HttpStatus.BAD_REQUEST, errors = e.errors.map { it.toString() })
-        }.toResponseEntity()
+        Henkilosuoritus.deserializationAtEndpoint<VktSuoritus>(json) { data ->
+            val enrichedSuoritus = validation.validateAndEnrich(data.suoritus).getOrThrow()
+            val henkilosuoritus = Henkilosuoritus(data.henkilo, enrichedSuoritus)
+            vktRepository.save(
+                henkilosuoritus.toEntity() ?: throw RuntimeException("Failed to convert to entity"),
+            )
+        }
 
     @GetMapping("/kios/j_spring_cas_security_check")
     fun casDebugRoute(): ResponseEntity<String> = ResponseEntity.ok("Nice")
