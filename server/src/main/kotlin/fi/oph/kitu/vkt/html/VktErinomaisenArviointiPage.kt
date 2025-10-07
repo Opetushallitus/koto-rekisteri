@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.TypedResult
+import fi.oph.kitu.growToSize
 import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Navigation.setCurrentItem
@@ -67,8 +68,8 @@ object VktErinomaisenArviointiPage {
     ) {
         fun toEntries(): List<ArvosanaFormEntry> =
             id
-                .zip(arvosana)
-                .zip(arviointipaiva)
+                .zip(arvosana.growToSize(id.size, null))
+                .zip(arviointipaiva.growToSize(id.size, null))
                 .map {
                     val arvosana = it.first.second
                     val eiSuoritusta = arvosana == Koodisto.VktArvosana.EiSuoritusta
