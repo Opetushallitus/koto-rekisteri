@@ -22,10 +22,9 @@ class YkiTiedonsiirtoController(
         @RequestBody json: String,
     ): ResponseEntity<*> =
         Henkilosuoritus.deserializationAtEndpoint<YkiSuoritus>(json) { data ->
-            val enrichedSuoritus = validationService.validateAndEnrich(data.suoritus).getOrThrow()
-            val henkilosuoritus = Henkilosuoritus(data.henkilo, enrichedSuoritus)
+            val enrichedData = validationService.validateAndEnrich(data).getOrThrow()
             val entity =
-                henkilosuoritus.toEntity<YkiSuoritusEntity>()
+                enrichedData.toEntity<YkiSuoritusEntity>()
                     ?: throw RuntimeException("Failed to convert HenkiloSuoritus to YkiSuoritusEntity")
             ykiSuoritusRepository.save(entity)
         }

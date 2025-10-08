@@ -3,6 +3,7 @@ package fi.oph.kitu.yki.suoritukset
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
+import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.yki.TutkinnonOsa
@@ -11,6 +12,8 @@ import fi.oph.kitu.yki.Tutkintotaso
 import java.lang.IllegalArgumentException
 import java.time.Instant
 import java.time.LocalDate
+
+typealias YkiHenkilosuoritus = Henkilosuoritus<YkiSuoritus>
 
 data class YkiSuoritus(
     val tutkintotaso: Tutkintotaso,

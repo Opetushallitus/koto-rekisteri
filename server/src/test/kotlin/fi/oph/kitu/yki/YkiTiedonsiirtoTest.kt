@@ -59,12 +59,10 @@ class YkiTiedonsiirtoTest {
 
     @Test
     fun `YKI-henkilosuoritus pysyy samana jsonin kautta kaytyaan`() {
-        val henkilosuoritus =
-            Henkilosuoritus(Henkilo(Oid.parse("1.2.246.562.24.20281155246").getOrThrow()), validiYkiSuoritus)
-        val json = defaultObjectMapper.writeValueAsString(henkilosuoritus)
+        val json = defaultObjectMapper.writeValueAsString(validiYkiSuoritus)
         val data = defaultObjectMapper.readValue(json, Henkilosuoritus::class.java)
 
-        assertEquals(henkilosuoritus, data)
+        assertEquals(validiYkiSuoritus, data)
     }
 
     @Test
@@ -76,19 +74,21 @@ class YkiTiedonsiirtoTest {
     @Test
     fun `Suoritusta ei voi siirtää koulutustoimijatasoisella organisaatiolla`() {
         val suoritus =
-            validiYkiSuoritus.copy(
-                jarjestaja =
-                    YkiJarjestaja(
-                        oid = Oid.parse("1.2.246.562.10.346830761110").getOrThrow(),
-                        nimi = "Helsingin kaupunki",
-                    ),
-            )
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    jarjestaja =
+                        YkiJarjestaja(
+                            oid = Oid.parse("1.2.246.562.10.346830761110").getOrThrow(),
+                            nimi = "Helsingin kaupunki",
+                        ),
+                )
+            }
 
         val result = ykiValidation.validateAndEnrich(suoritus)
 
         assertEquals(
             Validation.fail(
-                listOf("jarjestaja.oid"),
+                listOf("suoritus", "jarjestaja", "oid"),
                 "Organisaatio 1.2.246.562.10.346830761110 on väärän tyyppinen: Koulutustoimija, VarhaiskasvatuksenJarjestaja, Kunta. Sallitut tyypit: Oppilaitos, Toimipiste.",
             ),
             result,
@@ -96,35 +96,39 @@ class YkiTiedonsiirtoTest {
     }
 
     val validiYkiSuoritus =
-        YkiSuoritus(
-            tutkintotaso = Tutkintotaso.KT,
-            kieli = Tutkintokieli.FIN,
-            jarjestaja =
-                YkiJarjestaja(
-                    oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
-                    nimi = "Soveltavan kielentutkimuksen keskus",
+        Henkilosuoritus(
+            henkilo = Henkilo(Oid.parse("1.2.246.562.24.20281155246").getOrThrow()),
+            suoritus =
+                YkiSuoritus(
+                    tutkintotaso = Tutkintotaso.KT,
+                    kieli = Tutkintokieli.FIN,
+                    jarjestaja =
+                        YkiJarjestaja(
+                            oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
+                            nimi = "Soveltavan kielentutkimuksen keskus",
+                        ),
+                    tutkintopaiva = LocalDate.of(2020, 1, 1),
+                    arviointipaiva = LocalDate.of(2020, 1, 1),
+                    osat =
+                        listOf(
+                            YkiOsa(
+                                tyyppi = TutkinnonOsa.puheenYmmartaminen,
+                                arvosana = 3,
+                            ),
+                            YkiOsa(
+                                tyyppi = TutkinnonOsa.puhuminen,
+                                arvosana = 3,
+                            ),
+                        ),
+                    tarkistusarvointi = null,
+                    lahdejarjestelmanId =
+                        LahdejarjestelmanTunniste(
+                            id = "666",
+                            lahde = Lahdejarjestelma.Solki,
+                        ),
+                    internalId = null,
+                    koskiOpiskeluoikeusOid = null,
+                    koskiSiirtoKasitelty = false,
                 ),
-            tutkintopaiva = LocalDate.of(2020, 1, 1),
-            arviointipaiva = LocalDate.of(2020, 1, 1),
-            osat =
-                listOf(
-                    YkiOsa(
-                        tyyppi = TutkinnonOsa.puheenYmmartaminen,
-                        arvosana = 3,
-                    ),
-                    YkiOsa(
-                        tyyppi = TutkinnonOsa.puhuminen,
-                        arvosana = 3,
-                    ),
-                ),
-            tarkistusarvointi = null,
-            lahdejarjestelmanId =
-                LahdejarjestelmanTunniste(
-                    id = "666",
-                    lahde = Lahdejarjestelma.Solki,
-                ),
-            internalId = null,
-            koskiOpiskeluoikeusOid = null,
-            koskiSiirtoKasitelty = false,
         )
 }

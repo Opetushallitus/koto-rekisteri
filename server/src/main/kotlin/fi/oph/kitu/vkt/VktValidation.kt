@@ -8,38 +8,40 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
-class VktValidation : Validation<VktSuoritus> {
+class VktValidation : Validation<VktHenkilosuoritus> {
     @Value("\${kitu.oids.palvelukayttaja}")
     lateinit var palvelukayttajaOid: String
 
-    override fun enrich(s: VktSuoritus): VktSuoritus =
-        if (s.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
-            s.copy(
-                suorituspaikkakunta =
-                    s.suorituspaikkakunta ?: "091",
-                suorituksenVastaanottaja =
-                    s.suorituksenVastaanottaja ?: Oid.parse(palvelukayttajaOid).getOrNull(),
-            )
+    override fun enrich(s: VktHenkilosuoritus): VktHenkilosuoritus =
+        if (s.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
+            s.modifySuoritus {
+                it.copy(
+                    suorituspaikkakunta =
+                        it.suorituspaikkakunta ?: "091",
+                    suorituksenVastaanottaja =
+                        it.suorituksenVastaanottaja ?: Oid.parse(palvelukayttajaOid).getOrNull(),
+                )
+            }
         } else {
             s
         }
 
-    override fun validationAfterEnrichment(value: VktSuoritus): ValidationResult<VktSuoritus> =
+    override fun validationAfterEnrichment(value: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
         Validation.fold(
             value,
             { validateSuorituspaikkakunta(it) },
             { validateSuorituksenVastaanottaja(it) },
         )
 
-    private fun validateSuorituspaikkakunta(s: VktSuoritus): ValidationResult<VktSuoritus> =
-        if (s.suorituspaikkakunta == null) {
+    private fun validateSuorituspaikkakunta(s: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
+        if (s.suoritus.suorituspaikkakunta == null) {
             Validation.fail(listOf("suoritus", "suorituspaikkakunta"), "Suorituspaikkakunta puuttuu")
         } else {
             Validation.ok(s)
         }
 
-    private fun validateSuorituksenVastaanottaja(s: VktSuoritus): ValidationResult<VktSuoritus> =
-        if (s.suorituksenVastaanottaja == null) {
+    private fun validateSuorituksenVastaanottaja(s: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
+        if (s.suoritus.suorituksenVastaanottaja == null) {
             Validation.fail(listOf("suoritus", "suorituksenVastaanottaja"), "Suorituksen vastaanottaja puuttuu")
         } else {
             Validation.ok(s)

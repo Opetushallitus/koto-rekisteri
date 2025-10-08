@@ -104,10 +104,9 @@ class VktTiedonsiirtoController(
         @RequestBody json: String,
     ): ResponseEntity<*> =
         Henkilosuoritus.deserializationAtEndpoint<VktSuoritus>(json) { data ->
-            val enrichedSuoritus = validation.validateAndEnrich(data.suoritus).getOrThrow()
-            val henkilosuoritus = Henkilosuoritus(data.henkilo, enrichedSuoritus)
+            val enrichedData = validation.validateAndEnrich(data).getOrThrow()
             vktRepository.save(
-                henkilosuoritus.toEntity() ?: throw RuntimeException("Failed to convert to entity"),
+                enrichedData.toEntity() ?: throw RuntimeException("Failed to convert to entity"),
             )
         }
 

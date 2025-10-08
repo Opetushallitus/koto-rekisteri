@@ -19,6 +19,8 @@ data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
     val suoritus: T,
     val lisatty: OffsetDateTime? = null,
 ) {
+    fun modifySuoritus(f: (T) -> T): Henkilosuoritus<T> = copy(suoritus = f(suoritus))
+
     inline fun <reified A> toEntity(): A? =
         when (suoritus) {
             is VktSuoritus -> suoritus.toVktSuoritusEntity(henkilo)

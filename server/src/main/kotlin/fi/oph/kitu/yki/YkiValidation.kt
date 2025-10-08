@@ -6,17 +6,19 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
-import fi.oph.kitu.yki.suoritukset.YkiSuoritus
+import fi.oph.kitu.yki.suoritukset.YkiHenkilosuoritus
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 @Service
 class YkiValidation(
     val organisaatiot: OrganisaatioService,
-) : Validation<YkiSuoritus> {
-    override fun validationBeforeEnrichment(suoritus: YkiSuoritus): ValidationResult<YkiSuoritus> =
+) : Validation<YkiHenkilosuoritus> {
+    override fun validationBeforeEnrichment(suoritus: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
         validateOrganisaatiot(suoritus)
 
-    private fun validateOrganisaatiot(suoritus: YkiSuoritus): ValidationResult<YkiSuoritus> {
+    fun validateOrganisaatiot(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> {
+        val suoritus = s.suoritus
         val sallitutOrganisaatiotyypit =
             listOf(
                 Koodisto.Organisaatiotyyppi.Oppilaitos,
@@ -25,9 +27,9 @@ class YkiValidation(
 
         val oid = suoritus.jarjestaja.oid
 
-        fun fail(reason: String): ValidationResult<YkiSuoritus> =
+        fun fail(reason: String): ValidationResult<YkiHenkilosuoritus> =
             Validation.fail(
-                listOf("jarjestaja.oid"),
+                listOf("suoritus", "jarjestaja", "oid"),
                 reason,
             )
 
@@ -35,7 +37,7 @@ class YkiValidation(
             onSuccess = { org ->
                 val tyypit = org.tyypit.mapNotNull { Koodisto.Organisaatiotyyppi.of(it) }
                 if (tyypit.intersects(sallitutOrganisaatiotyypit)) {
-                    Validation.ok(suoritus)
+                    Validation.ok(s)
                 } else {
                     fail(
                         "Organisaatio $oid on väärän tyyppinen: ${
@@ -57,5 +59,10 @@ class YkiValidation(
                 )
             },
         )
+    }
+
+    companion object {
+        // Tästä päivästä alkaen yki-suorituksille ei siirrettä henkilötunnusta
+        val hetunSiirronRajapaiva = LocalDate.of(2026, 1, 1)
     }
 }
