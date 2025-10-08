@@ -9,3 +9,5 @@ inline fun <reified T> List<T>.growToSize(
     } else {
         this
     }
+
+inline fun <reified T> List<T>.intersects(other: List<T>): Boolean = intersect(other).isNotEmpty()
