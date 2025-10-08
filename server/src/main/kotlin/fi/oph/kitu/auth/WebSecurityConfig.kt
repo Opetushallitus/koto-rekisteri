@@ -1,5 +1,6 @@
 package fi.oph.kitu.auth
 
+import jakarta.servlet.http.HttpServletRequest
 import org.apereo.cas.client.session.SingleSignOutFilter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer
@@ -7,14 +8,15 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.security.cas.web.CasAuthenticationFilter
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
+import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @Configuration
 @EnableWebSecurity
@@ -26,7 +28,31 @@ class WebSecurityConfig {
         }
 
     @Bean
-    fun securityFilterChain(
+    @Order(1)
+    fun oauth2SecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http {
+            csrf { }
+            securityMatcher({ request ->
+                isOauth2Request(request)
+            })
+            authorizeHttpRequests {
+                authorize("/api/**", authenticated)
+            }
+            sessionManagement {
+                sessionCreationPolicy = SessionCreationPolicy.STATELESS
+            }
+            oauth2ResourceServer {
+                jwt {
+                    jwtAuthenticationConverter = JwtAuthenticationTokenConverter()
+                }
+            }
+        }
+        return http.build()
+    }
+
+    @Bean
+    @Order(2)
+    fun casSecurityFilterChain(
         http: HttpSecurity,
         casAuthenticationFilter: CasAuthenticationFilter,
         singleSignOutFilter: SingleSignOutFilter,
@@ -41,10 +67,11 @@ class WebSecurityConfig {
                     "/db-scheduler-api/**",
                 )
             }
+            securityMatcher({ request ->
+                !isOauth2Request(request)
+            })
             logout {
                 logoutSuccessUrl = casConfig.getCasLogoutUrl()
-                logoutUrl = "/logout"
-                logoutRequestMatcher = AntPathRequestMatcher("/logout", "GET")
             }
             authorizeHttpRequests {
                 authorize("/actuator/health", permitAll)
@@ -76,6 +103,9 @@ class WebSecurityConfig {
 
         return http.build()
     }
+
+    private fun isOauth2Request(request: HttpServletRequest): Boolean =
+        request.getHeader("Authorization")?.startsWith("Bearer ") ?: false
 
     /**
      * Konfiguraatio kun palvelua ajetaan HTTPS proxyn läpi. Käytännössä tämä
