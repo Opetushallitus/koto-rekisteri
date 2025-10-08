@@ -3,6 +3,7 @@ package fi.oph.kitu.mock
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
+import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.vkt.VktArvionti
@@ -26,7 +27,10 @@ class VktSuoritusMockGenerator(
 
     fun generateRandomVktSuoritusEntity(vktValidation: VktValidation): VktSuoritusEntity {
         index += 1
-        return vktValidation.enrich(randomSuoritus(index)).toVktSuoritusEntity(randomOppija(index))
+        val henkilo = Henkilo(Oid.parse("1.2.246.562.24.20281155246").getOrThrow())
+        val suoritus = randomSuoritus(index)
+        val henkilosuoritus = Henkilosuoritus(henkilo, suoritus)
+        return vktValidation.enrich(henkilosuoritus).suoritus.toVktSuoritusEntity(randomOppija(index))
     }
 
     fun randomSuoritus(index: Long): VktSuoritus {
