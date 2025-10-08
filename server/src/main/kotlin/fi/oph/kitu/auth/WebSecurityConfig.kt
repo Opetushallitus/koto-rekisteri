@@ -3,6 +3,7 @@ package fi.oph.kitu.auth
 import jakarta.servlet.http.HttpServletRequest
 import org.apereo.cas.client.session.SingleSignOutFilter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
@@ -29,6 +30,7 @@ class WebSecurityConfig {
 
     @Bean
     @Order(1)
+    @ConditionalOnProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri")
     fun oauth2SecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http {
             csrf { }
