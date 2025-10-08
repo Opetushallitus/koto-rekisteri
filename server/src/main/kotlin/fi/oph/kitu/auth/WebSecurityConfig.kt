@@ -109,7 +109,7 @@ class WebSecurityConfig {
 
     /**
      * Konfiguraatio kun palvelua ajetaan HTTPS proxyn läpi. Käytännössä tämä
-     * muuttaa [javax.servlet.ServletRequest.getScheme] palauttamaan
+     * muuttaa [jakarta.servlet.ServletRequest.getScheme] palauttamaan
      * `https` jolloin palvelun kautta luodut urlit muodostuvat oikein.
      *
      *
@@ -118,7 +118,7 @@ class WebSecurityConfig {
      * @return EmbeddedServletContainerCustomizer jonka Spring automaattisesti
      * tunnistaa ja lisää servlet containerin konfigurointiin
      *
-     * @see https://github.com/Opetushallitus/oppijanumerorekisteri/blob/e2de50dfc039280ff3f657456451d67e6af40bd3/henkilo-ui/src/main/java/fi/vm/sade/henkiloui/configurations/ServletContainerConfiguration.java
+     * Katso myös: [Oppijanumerorekisterin toteutus](https://github.com/Opetushallitus/oppijanumerorekisteri/blob/e2de50dfc039280ff3f657456451d67e6af40bd3/henkilo-ui/src/main/java/fi/vm/sade/henkiloui/configurations/ServletContainerConfiguration.java)
      */
     @Bean
     @ConditionalOnBooleanProperty("kitu.uses-ssl-proxy")
