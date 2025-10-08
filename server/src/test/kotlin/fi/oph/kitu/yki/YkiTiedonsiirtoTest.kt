@@ -35,7 +35,11 @@ class YkiTiedonsiirtoTest {
     @Autowired private var postgres: PostgreSQLContainer<*>? = null
     private var mockMvc: MockMvc? = null
 
-    val ykiValidation = YkiValidation(organisaatiot = MockOrganisaatioService())
+    val ykiValidation =
+        YkiValidation(
+            organisaatiot = MockOrganisaatioService(),
+            hetunSiirronRajapaiva = LocalDate.of(2026, 1, 1),
+        )
 
     @BeforeEach
     fun setup() {
@@ -72,7 +76,7 @@ class YkiTiedonsiirtoTest {
     }
 
     @Test
-    fun `Suoritusta ei voi siirtää koulutustoimijatasoisella organisaatiolla`() {
+    fun `Suoritusta ei voi siirtaa koulutustoimijatasoisella organisaatiolla`() {
         val suoritus =
             validiYkiSuoritus.modifySuoritus {
                 it.copy(
@@ -95,9 +99,30 @@ class YkiTiedonsiirtoTest {
         )
     }
 
+    @Test
+    fun `Henkilotunnusta ei voi siirtaa vuoden 2026 alusta alkaen`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    tutkintopaiva = LocalDate.of(2026, 1, 1),
+                    arviointipaiva = LocalDate.of(2026, 2, 1),
+                )
+            }
+
+        val result = ykiValidation.validateAndEnrich(suoritus)
+
+        assertEquals(
+            Validation.fail(
+                listOf("henkilo", "hetu"),
+                "Henkilötunnusta ei voi siirtää suoritukselle, jonka tutkintopäivä on 1.1.2026 tai myöhemmin",
+            ),
+            result,
+        )
+    }
+
     val validiYkiSuoritus =
         Henkilosuoritus(
-            henkilo = Henkilo(Oid.parse("1.2.246.562.24.20281155246").getOrThrow()),
+            henkilo = Henkilo(oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(), hetu = "010180-9026"),
             suoritus =
                 YkiSuoritus(
                     tutkintotaso = Tutkintotaso.KT,

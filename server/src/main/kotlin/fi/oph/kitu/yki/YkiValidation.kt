@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.intersects
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.organisaatiot.OrganisaatioService
@@ -7,15 +8,32 @@ import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
 import fi.oph.kitu.yki.suoritukset.YkiHenkilosuoritus
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
 @Service
 class YkiValidation(
     val organisaatiot: OrganisaatioService,
+    @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
+    val hetunSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
     override fun validationBeforeEnrichment(suoritus: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        validateOrganisaatiot(suoritus)
+        Validation.fold(
+            suoritus,
+            { validateOrganisaatiot(it) },
+            { validateHetu(it) },
+        )
+
+    fun validateHetu(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
+        if (s.suoritus.tutkintopaiva.isBefore(hetunSiirronRajapaiva) || s.henkilo.hetu == null) {
+            Validation.ok(s)
+        } else {
+            Validation.fail(
+                listOf("henkilo", "hetu"),
+                "Henkilötunnusta ei voi siirtää suoritukselle, jonka tutkintopäivä on ${hetunSiirronRajapaiva.finnishDate()} tai myöhemmin",
+            )
+        }
 
     fun validateOrganisaatiot(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> {
         val suoritus = s.suoritus
@@ -59,10 +77,5 @@ class YkiValidation(
                 )
             },
         )
-    }
-
-    companion object {
-        // Tästä päivästä alkaen yki-suorituksille ei siirrettä henkilötunnusta
-        val hetunSiirronRajapaiva = LocalDate.of(2026, 1, 1)
     }
 }
