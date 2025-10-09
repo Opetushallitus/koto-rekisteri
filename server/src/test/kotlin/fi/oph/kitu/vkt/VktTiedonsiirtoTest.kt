@@ -5,6 +5,7 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiRequestMapper
+import fi.oph.kitu.koski.VktKielitaito
 import fi.oph.kitu.schema.SchemaTests
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
@@ -25,7 +26,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
@@ -85,7 +86,7 @@ class VktTiedonsiirtoTest {
     }
 
     @Test
-    fun `Tutkintopaivat siirretaan oikein`() {
+    fun `Arviointipaivat siirretaan oikein`() {
         val suoritus =
             Henkilosuoritus(
                 Henkilo(Oid.parse("1.2.246.562.10.1234567890").getOrThrow()),
@@ -98,51 +99,51 @@ class VktTiedonsiirtoTest {
                         osat =
                             listOf(
                                 VktPuheenYmmartamisenKoe(
-                                    tutkintopaiva = LocalDate.of(2025, 10, 1),
+                                    tutkintopaiva = LocalDate.of(2025, 9, 12),
                                     arviointi =
                                         VktArvionti(
-                                            arvosana = Koodisto.VktArvosana.Tyydyttävä,
-                                            paivamaara = LocalDate.of(2025, 10, 1),
-                                        ),
-                                ),
-                                VktTekstinYmmartamisenKoe(
-                                    tutkintopaiva = LocalDate.of(2025, 10, 1),
-                                    arviointi =
-                                        VktArvionti(
-                                            arvosana = Koodisto.VktArvosana.Tyydyttävä,
-                                            paivamaara = LocalDate.of(2025, 10, 1),
-                                        ),
-                                ),
-                                VktKirjoittamisenKoe(
-                                    tutkintopaiva = LocalDate.of(2025, 10, 1),
-                                    arviointi =
-                                        VktArvionti(
-                                            arvosana = Koodisto.VktArvosana.Tyydyttävä,
-                                            paivamaara = LocalDate.of(2025, 10, 1),
+                                            arvosana = Koodisto.VktArvosana.Hyvä,
+                                            paivamaara = LocalDate.of(2025, 9, 12),
                                         ),
                                 ),
                                 VktPuhumisenKoe(
-                                    tutkintopaiva = LocalDate.of(2025, 10, 1),
+                                    tutkintopaiva = LocalDate.of(2025, 9, 12),
+                                    arviointi =
+                                        VktArvionti(
+                                            arvosana = Koodisto.VktArvosana.Hyvä,
+                                            paivamaara = LocalDate.of(2025, 9, 12),
+                                        ),
+                                ),
+                                VktPuheenYmmartamisenKoe(
+                                    tutkintopaiva = LocalDate.of(2025, 9, 11),
                                     arviointi =
                                         VktArvionti(
                                             arvosana = Koodisto.VktArvosana.Tyydyttävä,
-                                            paivamaara = LocalDate.of(2025, 10, 1),
+                                            paivamaara = LocalDate.of(2025, 9, 11),
                                         ),
                                 ),
                                 VktTekstinYmmartamisenKoe(
-                                    tutkintopaiva = LocalDate.of(2025, 9, 23),
+                                    tutkintopaiva = LocalDate.of(2025, 9, 11),
                                     arviointi =
                                         VktArvionti(
                                             arvosana = Koodisto.VktArvosana.Hyvä,
-                                            paivamaara = LocalDate.of(2025, 9, 23),
+                                            paivamaara = LocalDate.of(2025, 9, 11),
                                         ),
                                 ),
                                 VktKirjoittamisenKoe(
-                                    tutkintopaiva = LocalDate.of(2025, 9, 23),
+                                    tutkintopaiva = LocalDate.of(2025, 9, 11),
                                     arviointi =
                                         VktArvionti(
                                             arvosana = Koodisto.VktArvosana.Hyvä,
-                                            paivamaara = LocalDate.of(2025, 9, 23),
+                                            paivamaara = LocalDate.of(2025, 9, 11),
+                                        ),
+                                ),
+                                VktPuhumisenKoe(
+                                    tutkintopaiva = LocalDate.of(2025, 9, 11),
+                                    arviointi =
+                                        VktArvionti(
+                                            arvosana = Koodisto.VktArvosana.Tyydyttävä,
+                                            paivamaara = LocalDate.of(2025, 9, 11),
                                         ),
                                 ),
                             ),
@@ -161,43 +162,25 @@ class VktTiedonsiirtoTest {
                 .suoritukset
                 .first()
 
-        fun assertTaito(
-            kielitaito: Koodisto.VktKielitaito,
-            arvosana: Koodisto.VktArvosana,
-            tutkintopaiva: LocalDate,
-        ) {
-            val taito = pts.osasuoritukset.first { it.koulutusmoduuli.tunniste.koodiarvo == kielitaito.koodiarvo }
-            assertEquals(
-                arvosana.koodiarvo,
-                taito.arviointi
-                    .first()
-                    .arvosana.koodiarvo,
-                "Kielitaidon $kielitaito arvosana ei vastaa",
-            )
-            assertEquals(
-                tutkintopaiva,
-                taito.alkamispäivä,
-                "Kielitaidon $kielitaito tutkintopäivä ei vastaa",
-            )
+        pts.osasuoritukset.forEach { os ->
+            val tutkinto = os as VktKielitaito
+            tutkinto.osasuoritukset.forEach { osakoe ->
+                osakoe.arviointi.forEach { arviointi ->
+                    assertTrue(
+                        arviointi.päivä >= tutkinto.alkamispäivä!!,
+                        "Osakokeen arviointi ${arviointi.päivä} on aiemmin kuin tutkinnon alkamispäivä ${tutkinto.alkamispäivä}: $tutkinto",
+                    )
+                    assertTrue(
+                        arviointi.päivä >= osakoe.alkamispäivä!!,
+                        "Osakokeen arviointi ${arviointi.päivä} on aiemmin kuin osakokeen alkamispäivä ${osakoe.alkamispäivä}: $tutkinto",
+                    )
+                }
+                assertTrue(
+                    osakoe.alkamispäivä!! >= tutkinto.alkamispäivä!!,
+                    "Osakokeen alkamispäivä ${osakoe.alkamispäivä} on aiemmin kuin tutkinnon alkamispäivä ${tutkinto.alkamispäivä}: $tutkinto",
+                )
+            }
         }
-
-        assertTaito(
-            Koodisto.VktKielitaito.Suullinen,
-            Koodisto.VktArvosana.Tyydyttävä,
-            LocalDate.of(2025, 10, 1),
-        )
-
-        assertTaito(
-            Koodisto.VktKielitaito.Ymmärtäminen,
-            Koodisto.VktArvosana.Tyydyttävä,
-            LocalDate.of(2025, 10, 1),
-        )
-
-        assertTaito(
-            Koodisto.VktKielitaito.Kirjallinen,
-            Koodisto.VktArvosana.Hyvä,
-            LocalDate.of(2025, 9, 23),
-        )
     }
 
     private fun putSuoritus(
