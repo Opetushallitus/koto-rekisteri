@@ -304,7 +304,7 @@ class KoskiRequestMapper {
                                                                 alkamispäivä = osakoe.tutkintopaiva,
                                                             )
                                                         },
-                                                    alkamispäivä = kielitaito.osat.minOfOrNull { it.tutkintopaiva },
+                                                    alkamispäivä = kielitaito.tutkintopaivaTodistuksella(),
                                                 )
                                             },
                                     ),
