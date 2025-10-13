@@ -13,6 +13,7 @@ import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.tiedonsiirtoschema.Osasuorituksellinen
 import fi.oph.kitu.tiedonsiirtoschema.Osasuoritus
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.LocalDate
 
@@ -31,7 +32,7 @@ data class VktSuoritus(
     override val internalId: Int? = null,
     override val koskiOpiskeluoikeusOid: Oid? = null,
     override val koskiSiirtoKasitelty: Boolean = false,
-    val merkittyPoistettavaksi: Boolean = false,
+    @field:Schema(hidden = true) val merkittyPoistettavaksi: Boolean = false,
 ) : KielitutkinnonSuoritus,
     Osasuorituksellinen {
     override val tyyppi: Koodisto.SuorituksenTyyppi = Koodisto.SuorituksenTyyppi.ValtionhallinnonKielitutkinto
