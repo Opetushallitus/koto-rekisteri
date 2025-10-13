@@ -37,11 +37,11 @@ class VktTiedonsiirtoController(
                         examples = [
                             ExampleObject(
                                 name = "Erinomaisen taitotason ilmoittautuminen",
-                                externalValue = "/schema-examples/vkt-erinomainen-ilmoittautuminen.json",
+                                externalValue = "/kielitutkinnot/schema-examples/vkt-erinomainen-ilmoittautuminen.json",
                             ),
                             ExampleObject(
                                 name = "Hyvän ja tyydyttävän taitotason suoritus",
-                                externalValue = "/schema-examples/vkt-hyvajatyydyttava-suoritus.json",
+                                externalValue = "/kielitutkinnot/schema-examples/vkt-hyvajatyydyttava-suoritus.json",
                             ),
                         ],
                     ),
@@ -60,7 +60,7 @@ class VktTiedonsiirtoController(
                         examples = [
                             ExampleObject(
                                 name = "Onnistunut siirto",
-                                externalValue = "/schema-examples/tiedonsiirto-ok.json",
+                                externalValue = "/kielitutkinnot/schema-examples/tiedonsiirto-ok.json",
                             ),
                         ],
                     ),
@@ -76,7 +76,7 @@ class VktTiedonsiirtoController(
                         examples = [
                             ExampleObject(
                                 name = "henkilo-kenttä puuttuu tiedoista",
-                                externalValue = "/schema-examples/tiedonsiirto-bad-request.json",
+                                externalValue = "/kielitutkinnot/schema-examples/tiedonsiirto-bad-request.json",
                             ),
                         ],
                     ),
@@ -92,7 +92,7 @@ class VktTiedonsiirtoController(
                         examples = [
                             ExampleObject(
                                 name = "Ei oikeutta siirtää kyseistä suoritusta",
-                                externalValue = "/schema-examples/tiedonsiirto-forbidden.json",
+                                externalValue = "/kielitutkinnot/schema-examples/tiedonsiirto-forbidden.json",
                             ),
                         ],
                     ),

@@ -1,5 +1,8 @@
 package fi.oph.kitu.apidocs
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector
 import fi.oph.kitu.Oid
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.koodisto.Koodisto
@@ -15,6 +18,7 @@ import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -145,6 +149,31 @@ class SchemaExamplesController {
             TiedonsiirtoFailure.forbidden("Vain VKT-kielitutkinnon siirto sallittu"),
         )
 
+    @GetMapping("/tiedonsiirto-forbidden-yki.json", produces = ["application/json;charset=UTF-8"])
+    fun tiedonsiirtoForbiddenYkiResponse() =
+        exampleJson(
+            TiedonsiirtoFailure.forbidden("Vain YKI-kielitutkinnon siirto sallittu"),
+        )
+
     private fun exampleJson(data: Any): ResponseEntity<String> =
-        ResponseEntity(defaultObjectMapper.writeValueAsString(data), HttpStatus.OK)
+        ResponseEntity(objectMapper.writeValueAsString(data), HttpStatus.OK)
+
+    private val objectMapper: ObjectMapper =
+        defaultObjectMapper.copy().apply {
+            setAnnotationIntrospector(SchemaHiddenIntrospector())
+        }
+}
+
+class SchemaHiddenIntrospector : JacksonAnnotationIntrospector() {
+    override fun hasIgnoreMarker(a: AnnotatedMember): Boolean {
+        val schema = a.getAnnotation(Schema::class.java)
+        val schemas = a.allAnnotations
+        if (schemas.size() > 0) {
+            println("LOL BANG: $schemas")
+        }
+        if (schema != null && schema.hidden) {
+            return true
+        }
+        return super.hasIgnoreMarker(a)
+    }
 }

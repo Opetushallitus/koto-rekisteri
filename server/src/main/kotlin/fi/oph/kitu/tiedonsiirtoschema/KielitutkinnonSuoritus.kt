@@ -9,6 +9,7 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import java.time.LocalDate
@@ -17,6 +18,7 @@ import java.time.OffsetDateTime
 data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
     val henkilo: Henkilo,
     val suoritus: T,
+    @field:Schema(hidden = true)
     val lisatty: OffsetDateTime? = null,
 ) {
     fun modifySuoritus(f: (T) -> T): Henkilosuoritus<T> = copy(suoritus = f(suoritus))
@@ -72,8 +74,13 @@ interface KielitutkinnonSuoritus :
     Lahdejarjestelmallinen {
     override val tyyppi: Koodisto.SuorituksenTyyppi
 
+    @get:Schema(hidden = true)
     val internalId: Int?
+
+    @get:Schema(hidden = true)
     val koskiOpiskeluoikeusOid: Oid?
+
+    @get:Schema(hidden = true)
     val koskiSiirtoKasitelty: Boolean
 }
 
