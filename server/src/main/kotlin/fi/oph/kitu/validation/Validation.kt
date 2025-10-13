@@ -56,5 +56,33 @@ interface Validation<T> {
         fun <T> fail(reasons: List<ValidationError>): ValidationResult<T> =
             fi.oph.kitu.TypedResult
                 .Failure(ValidationException(reasons))
+
+        fun <T, A> assert(
+            getActual: (T) -> A,
+            path: List<String>,
+            message: String,
+            isOk: (A) -> Boolean,
+        ): (T) -> ValidationResult<T> =
+            {
+                if (isOk(getActual(it))) {
+                    ok(it)
+                } else {
+                    fail(path, message)
+                }
+            }
+
+        fun <T, A> assertEquals(
+            expected: A,
+            getActual: (T) -> A,
+            path: List<String>,
+            message: String,
+        ): (T) -> ValidationResult<T> = assert(getActual, path, message) { it == expected }
+
+        fun <T, A> assertNotEquals(
+            expected: A,
+            getActual: (T) -> A,
+            path: List<String>,
+            message: String,
+        ): (T) -> ValidationResult<T> = assert(getActual, path, message) { it != expected }
     }
 }

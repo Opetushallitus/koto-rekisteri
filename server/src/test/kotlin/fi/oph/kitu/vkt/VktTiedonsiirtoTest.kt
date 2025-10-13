@@ -183,6 +183,56 @@ class VktTiedonsiirtoTest {
         }
     }
 
+    @Test
+    fun `internalId tuominen tiedonsiirrossa aiheuttaa virheen`() {
+        val suoritus = SchemaTests.vktHenkilosuoritus
+        putSuoritus(
+            suoritus.copy(
+                suoritus = suoritus.suoritus.copy(internalId = 10),
+            ),
+        ) {
+            status { isBadRequest() }
+            jsonPath("$.errors") { value("suoritus.internalId: internalId on sisäinen kenttä, eikä sitä voi asettaa") }
+        }
+    }
+
+    @Test
+    fun `koskiSiirtoKasitelty tuominen tiedonsiirrossa aiheuttaa virheen`() {
+        val suoritus = SchemaTests.vktHenkilosuoritus
+        putSuoritus(
+            suoritus.copy(
+                suoritus = suoritus.suoritus.copy(koskiSiirtoKasitelty = true),
+            ),
+        ) {
+            status { isBadRequest() }
+            jsonPath("$.errors") {
+                value(
+                    "suoritus.koskiSiirtoKasitelty: koskiSiirtoKasitelty on sisäinen kenttä, eikä sitä voi asettaa arvoon true",
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `koskiOpiskeluoikeusOid tuominen tiedonsiirrossa aiheuttaa virheen`() {
+        val suoritus = SchemaTests.vktHenkilosuoritus
+        putSuoritus(
+            suoritus.copy(
+                suoritus =
+                    suoritus.suoritus.copy(
+                        koskiOpiskeluoikeusOid = Oid.parse("1.2.246.562.15.59238287235").getOrThrow(),
+                    ),
+            ),
+        ) {
+            status { isBadRequest() }
+            jsonPath("$.errors") {
+                value(
+                    "suoritus.koskiOpiskeluoikeusOid: koskiOpiskeluoikeusOid on sisäinen kenttä, eikä sitä voi asettaa",
+                )
+            }
+        }
+    }
+
     private fun putSuoritus(
         suoritus: Henkilosuoritus<*>,
         block: MockMvcResultMatchersDsl.() -> Unit,

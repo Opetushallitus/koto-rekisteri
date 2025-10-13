@@ -1,0 +1,41 @@
+package fi.oph.kitu.tiedonsiirtoschema
+
+import fi.oph.kitu.Oid
+import fi.oph.kitu.validation.Validation
+import fi.oph.kitu.validation.ValidationResult
+import org.springframework.stereotype.Service
+
+@Service
+class HenkilosuoritusValidation : Validation<Henkilosuoritus<*>> {
+    override fun validationBeforeEnrichment(value: Henkilosuoritus<*>): ValidationResult<Henkilosuoritus<*>> =
+        Validation.fold(
+            value,
+            validateInternalId,
+            validateKoskiSiirtoKasitelty,
+            validateKoskiOpiskeluoikeusOid,
+        )
+
+    private val validateInternalId =
+        Validation.assertEquals<Henkilosuoritus<*>, Int?>(
+            null,
+            { it.suoritus.internalId },
+            listOf("suoritus", "internalId"),
+            "internalId on sisäinen kenttä, eikä sitä voi asettaa",
+        )
+
+    private val validateKoskiSiirtoKasitelty =
+        Validation.assertNotEquals<Henkilosuoritus<*>, Boolean?>(
+            true,
+            { it.suoritus.koskiSiirtoKasitelty },
+            listOf("suoritus", "koskiSiirtoKasitelty"),
+            "koskiSiirtoKasitelty on sisäinen kenttä, eikä sitä voi asettaa arvoon true",
+        )
+
+    private val validateKoskiOpiskeluoikeusOid =
+        Validation.assertEquals<Henkilosuoritus<*>, Oid?>(
+            null,
+            { it.suoritus.koskiOpiskeluoikeusOid },
+            listOf("suoritus", "koskiOpiskeluoikeusOid"),
+            "koskiOpiskeluoikeusOid on sisäinen kenttä, eikä sitä voi asettaa",
+        )
+}
