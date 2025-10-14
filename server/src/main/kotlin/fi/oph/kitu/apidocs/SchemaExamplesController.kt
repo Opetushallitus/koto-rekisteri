@@ -18,6 +18,14 @@ import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
+import fi.oph.kitu.yki.Sukupuoli
+import fi.oph.kitu.yki.TutkinnonOsa
+import fi.oph.kitu.yki.Tutkintokieli
+import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
+import fi.oph.kitu.yki.suoritukset.YkiOsa
+import fi.oph.kitu.yki.suoritukset.YkiSuoritus
+import fi.oph.kitu.yki.suoritukset.YkiTarkastusarvointi
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -153,6 +161,80 @@ class SchemaExamplesController {
     fun tiedonsiirtoForbiddenYkiResponse() =
         exampleJson(
             TiedonsiirtoFailure.forbidden("Vain YKI-kielitutkinnon siirto sallittu"),
+        )
+
+    @GetMapping("/yki-suoritus.json", produces = ["application/json;charset=UTF-8"])
+    fun ykiSuoritus() =
+        exampleJson(
+            Henkilosuoritus(
+                henkilo =
+                    Henkilo(
+                        oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                        etunimet = "Ranja Testi",
+                        sukunimi = "Öhman-Testi",
+                        hetu = "010180-9026",
+                        sukupuoli = Sukupuoli.N,
+                        kansalaisuus = "EST",
+                        katuosoite = "Testikuja 5",
+                        postinumero = "40100",
+                        postitoimipaikka = "Testilä",
+                        email = "testi@testi.fi",
+                    ),
+                suoritus =
+                    YkiSuoritus(
+                        tutkintotaso = Tutkintotaso.YT,
+                        kieli = Tutkintokieli.FIN,
+                        jarjestaja =
+                            YkiJarjestaja(
+                                oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
+                                nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                            ),
+                        tutkintopaiva = LocalDate.of(2024, 9, 1),
+                        arviointipaiva = LocalDate.of(2024, 12, 13),
+                        osat =
+                            listOf(
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puhuminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puheenYmmartaminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.kirjoittaminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.tekstinYmmartaminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.rakenteetJaSanasto,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.yleisarvosana,
+                                    arvosana = 5,
+                                ),
+                            ),
+                        tarkistusarvointi =
+                            YkiTarkastusarvointi(
+                                saapumispaiva = LocalDate.of(2024, 12, 14),
+                                kasittelypaiva = LocalDate.of(2024, 12, 14),
+                                asiatunnus = "OPH-5000-1234",
+                                tarkistusarvioidutOsakokeet = 1,
+                                arvosanaMuuttui = 1,
+                                perustelu =
+                                    "Suorituksesta jäänyt viimeinen tehtävä arvioimatta. Arvioinnin jälkeen puhumisen taitotasoa 6.",
+                            ),
+                        lahdejarjestelmanId =
+                            LahdejarjestelmanTunniste(
+                                id = "183424",
+                                lahde = Lahdejarjestelma.Solki,
+                            ),
+                    ),
+            ),
         )
 
     private fun exampleJson(data: Any): ResponseEntity<String> =

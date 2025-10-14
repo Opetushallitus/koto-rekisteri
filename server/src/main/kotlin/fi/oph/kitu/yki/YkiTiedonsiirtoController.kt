@@ -36,7 +36,12 @@ class YkiTiedonsiirtoController(
                     Content(
                         mediaType = "application/json",
                         schema = Schema(YkiSuoritus::class),
-                        examples = [], // TODO
+                        examples = [
+                            ExampleObject(
+                                name = "Yleisen kielitutkinnon suoritus",
+                                externalValue = "/kielitutkinnot/schema-examples/yki-suoritus.json",
+                            ),
+                        ],
                     ),
                 ],
             ),
