@@ -9,6 +9,8 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.validation.Validation
+import fi.oph.kitu.yki.arvioijat.YkiArvioija
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
@@ -241,19 +243,63 @@ class YkiTiedonsiirtoTest {
         }
     }
 
+    @Test
+    fun `YKI-arvoija-json deserialisoituu YkiArvioijaksi`() {
+        val json = ClassPathResource("./yki-arvioija-example.json").file
+        val data = defaultObjectMapper.readValue(json, YkiArvioija::class.java)
+
+        assertEquals(Oid.parse("1.2.246.562.24.59267607404").getOrThrow(), data.arvioijaOid)
+        assertEquals(setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT), data.tasot)
+    }
+
+    @Test
+    fun `Validin yki-arvioijan tallennus rajapinnan kautta onnistuu`() {
+        val arvioija =
+            YkiArvioija(
+                arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),
+                henkilotunnus = "",
+                sukunimi = "Kivinen-Testi",
+                etunimet = "Petro Testi",
+                sahkopostiosoite = "devnull-2@oph.fi",
+                katuosoite = "Haltin vanha autiotupa",
+                postinumero = "99490",
+                postitoimipaikka = "Enontekiö",
+                ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
+                kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                jatkorekisterointi = false,
+                tila = YkiArvioijaTila.AKTIIVINEN,
+                kieli = Tutkintokieli.FIN,
+                tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+            )
+
+        putArvioija(arvioija) {
+            status { isOk() }
+            jsonPath("$.result") { value("OK") }
+        }
+    }
+
     private fun putSuoritus(
         suoritus: Henkilosuoritus<*>,
         block: MockMvcResultMatchersDsl.() -> Unit,
     ) {
-        putSuoritus(defaultObjectMapper.writeValueAsString(suoritus), block)
+        put("/api/yki/suoritus", defaultObjectMapper.writeValueAsString(suoritus), block)
     }
 
-    private fun putSuoritus(
+    private fun putArvioija(
+        suoritus: YkiArvioija,
+        block: MockMvcResultMatchersDsl.() -> Unit,
+    ) {
+        put("/api/yki/arvioija", defaultObjectMapper.writeValueAsString(suoritus), block)
+    }
+
+    private fun put(
+        url: String,
         suoritusJson: String,
         block: MockMvcResultMatchersDsl.() -> Unit,
     ): MockHttpServletResponse =
         mockMvc!!
-            .post("/api/yki/suoritus") {
+            .post(url) {
                 contentType = MediaType.APPLICATION_JSON
                 accept = MediaType.APPLICATION_JSON
                 content = suoritusJson

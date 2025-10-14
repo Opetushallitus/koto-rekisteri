@@ -1,0 +1,17 @@
+{
+  "arvioijaOid": "1.2.246.562.24.59267607404",
+  "henkilotunnus": "",
+  "sukunimi": "Kivinen-Testi",
+  "etunimet": "Petro Testi",
+  "sahkopostiosoite": "devnull-2@oph.fi",
+  "katuosoite": "Haltin vanha autiotupa",
+  "postinumero": "99490",
+  "postitoimipaikka": "Enontekiö",
+  "ensimmainenRekisterointipaiva": "2005-01-21",
+  "kaudenAlkupaiva": "2005-12-07",
+  "kaudenPaattymispaiva": "2020-12-07",
+  "jatkorekisterointi": false,
+  "tila": "AKTIIVINEN",
+  "kieli": "FIN",
+  "tasot": ["PT", "KT", "YT"]
+}

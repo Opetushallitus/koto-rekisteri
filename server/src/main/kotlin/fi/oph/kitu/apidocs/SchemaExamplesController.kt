@@ -22,6 +22,8 @@ import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.arvioijat.YkiArvioija
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
@@ -136,6 +138,28 @@ class SchemaExamplesController {
             ),
         )
     }
+
+    @GetMapping("/yki-arvioija.json", produces = ["application/json;charset=UTF-8"])
+    fun ykiArvioija() =
+        exampleJson(
+            YkiArvioija(
+                arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),
+                henkilotunnus = "",
+                sukunimi = "Kivinen-Testi",
+                etunimet = "Petro Testi",
+                sahkopostiosoite = "devnull-2@oph.fi",
+                katuosoite = "Haltin vanha autiotupa",
+                postinumero = "99490",
+                postitoimipaikka = "Enontekiö",
+                ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
+                kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                jatkorekisterointi = false,
+                tila = YkiArvioijaTila.AKTIIVINEN,
+                kieli = Tutkintokieli.FIN,
+                tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+            ),
+        )
 
     @GetMapping("/tiedonsiirto-ok.json", produces = ["application/json;charset=UTF-8"])
     fun tiedonsiirtoOkResponse() =
