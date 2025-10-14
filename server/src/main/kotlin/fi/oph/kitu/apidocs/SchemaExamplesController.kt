@@ -273,10 +273,6 @@ class SchemaExamplesController {
 class SchemaHiddenIntrospector : JacksonAnnotationIntrospector() {
     override fun hasIgnoreMarker(a: AnnotatedMember): Boolean {
         val schema = a.getAnnotation(Schema::class.java)
-        val schemas = a.allAnnotations
-        if (schemas.size() > 0) {
-            println("LOL BANG: $schemas")
-        }
         if (schema != null && schema.hidden) {
             return true
         }
