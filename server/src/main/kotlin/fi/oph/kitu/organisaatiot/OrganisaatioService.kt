@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.i18n.LocalizedString
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -12,6 +13,7 @@ interface OrganisaatioService {
 }
 
 @Service
+@Profile("!test")
 class OrganisaatioServiceImpl(
     val client: OrganisaatiopalveluClient,
 ) : OrganisaatioService {

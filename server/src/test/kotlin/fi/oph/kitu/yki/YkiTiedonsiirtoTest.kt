@@ -12,13 +12,18 @@ import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
+import fi.oph.kitu.yki.suoritukset.YkiTarkastusarvointi
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
+import org.springframework.http.MediaType
+import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.MockMvcResultMatchersDsl
+import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.containers.PostgreSQLContainer
@@ -156,4 +161,105 @@ class YkiTiedonsiirtoTest {
                     koskiSiirtoKasitelty = false,
                 ),
         )
+
+    @Test
+    fun `Validin yki-suorituksen tallennus rajapinnan kautta onnistuu`() {
+        val suoritus =
+            Henkilosuoritus(
+                henkilo =
+                    Henkilo(
+                        oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                        etunimet = "Ranja Testi",
+                        sukunimi = "Öhman-Testi",
+                        hetu = "010180-9026",
+                        sukupuoli = Sukupuoli.N,
+                        kansalaisuus = "EST",
+                        katuosoite = "Testikuja 5",
+                        postinumero = "40100",
+                        postitoimipaikka = "Testilä",
+                        email = "testi@testi.fi",
+                    ),
+                suoritus =
+                    YkiSuoritus(
+                        tutkintotaso = Tutkintotaso.YT,
+                        kieli = Tutkintokieli.FIN,
+                        jarjestaja =
+                            YkiJarjestaja(
+                                oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
+                                nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                            ),
+                        tutkintopaiva = LocalDate.of(2024, 9, 1),
+                        arviointipaiva = LocalDate.of(2024, 12, 13),
+                        osat =
+                            listOf(
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puhuminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puheenYmmartaminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.kirjoittaminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.tekstinYmmartaminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.rakenteetJaSanasto,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.yleisarvosana,
+                                    arvosana = 5,
+                                ),
+                            ),
+                        tarkistusarvointi =
+                            YkiTarkastusarvointi(
+                                saapumispaiva = LocalDate.of(2024, 12, 14),
+                                kasittelypaiva = LocalDate.of(2024, 12, 14),
+                                asiatunnus = "OPH-5000-1234",
+                                tarkistusarvioidutOsakokeet = 1,
+                                arvosanaMuuttui = 1,
+                                perustelu =
+                                    "Suorituksesta jäänyt viimeinen tehtävä arvioimatta. Arvioinnin jälkeen puhumisen taitotasoa 6.",
+                            ),
+                        lahdejarjestelmanId =
+                            LahdejarjestelmanTunniste(
+                                id = "183424",
+                                lahde = Lahdejarjestelma.Solki,
+                            ),
+                    ),
+            )
+
+        putSuoritus(suoritus) {
+            status { isOk() }
+            jsonPath("$.result") { value("OK") }
+        }
+    }
+
+    private fun putSuoritus(
+        suoritus: Henkilosuoritus<*>,
+        block: MockMvcResultMatchersDsl.() -> Unit,
+    ) {
+        putSuoritus(defaultObjectMapper.writeValueAsString(suoritus), block)
+    }
+
+    private fun putSuoritus(
+        suoritusJson: String,
+        block: MockMvcResultMatchersDsl.() -> Unit,
+    ): MockHttpServletResponse =
+        mockMvc!!
+            .post("/api/yki/suoritus") {
+                contentType = MediaType.APPLICATION_JSON
+                accept = MediaType.APPLICATION_JSON
+                content = suoritusJson
+            }.andExpect {
+                content { contentType(MediaType.APPLICATION_JSON) }
+                block()
+            }.andReturn()
+            .response
 }
