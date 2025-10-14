@@ -52,7 +52,6 @@ class YkiController(
                 "1.2.246.562.24.74064782358",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"nonexistentlanguagecode","PT+KT+YT"
                 "1.2.246.562.24.74064782358",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"fin","nonexistenttaso"
                 "1.2.246.562.24.74064782358",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"rus","PT+KT+YT"
-                "DELETED",,"Vesala-Testi","Fanni Testi","devnull-3@oph.fi","Alvar Aallon katu 72","40600","JYVÄSKYLÄ",2005-06-01,2018-01-01,,0,0,"swe","KT"
                 """.trimIndent(),
             ),
         )
