@@ -1,9 +1,12 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoDeserializer
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
 import fi.oph.kitu.validation.ValidationService
+import fi.oph.kitu.yki.arvioijat.YkiArvioija
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -25,6 +28,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 class YkiTiedonsiirtoController(
     private val validationService: ValidationService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
+    private val ykiArvioijaRepository: YkiArvioijaRepository,
 ) {
     @PostMapping("/suoritus")
     @Operation(
@@ -107,5 +111,69 @@ class YkiTiedonsiirtoController(
                 enrichedData.toEntity<YkiSuoritusEntity>()
                     ?: throw RuntimeException("Failed to convert HenkiloSuoritus to YkiSuoritusEntity")
             ykiSuoritusRepository.save(entity)
+        }
+
+    @PostMapping("/arvioija")
+    @Operation(
+        summary = "Yleisen kielitutkinnon arvioijan siirto Kielitutkintorekisteriin",
+        requestBody =
+            SwaggerRequestBody(
+                "Yleisen kielitutkinnon arvioija",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(YkiArvioija::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Yleisen kielitutkinnon arvioija",
+                                externalValue = "/kielitutkinnot/schema-examples/yki-arvioija.json",
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "OK",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(TiedonsiirtoSuccess::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Onnistunut siirto",
+                                externalValue = "/kielitutkinnot/schema-examples/tiedonsiirto-ok.json",
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Virheellinen suorituksen rakenne",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(TiedonsiirtoFailure::class),
+                        examples = [
+                            ExampleObject(
+                                name = "henkilo-kenttä puuttuu tiedoista",
+                                externalValue = "/kielitutkinnot/schema-examples/tiedonsiirto-bad-request.json",
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun putArvioija(
+        @RequestBody json: String,
+    ): ResponseEntity<*> =
+        TiedonsiirtoDeserializer.deserializeAndSave<YkiArvioija>(json) { arvioija ->
+            ykiArvioijaRepository.save(arvioija.toEntity())
+            TiedonsiirtoSuccess()
         }
 }
