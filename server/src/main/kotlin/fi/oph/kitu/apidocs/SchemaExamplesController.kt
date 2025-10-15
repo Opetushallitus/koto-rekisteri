@@ -168,10 +168,16 @@ class SchemaExamplesController {
             TiedonsiirtoSuccess(),
         )
 
-    @GetMapping("/tiedonsiirto-bad-request.json", produces = ["application/json;charset=UTF-8"])
-    fun tiedonsiirtoBadRequestResponse() =
+    @GetMapping("/bad-request-invalid-oid.json", produces = ["application/json;charset=UTF-8"])
+    fun badRequestInvalidOidResponse() =
         TiedonsiirtoDeserializer.deserializeAndSave<Henkilosuoritus<*>>(
             """{"henkilo":{"oid":"123"},"suoritus":{}}""",
+        ) { TiedonsiirtoSuccess() }
+
+    @GetMapping("/bad-request-arvioija-missing-value.json", produces = ["application/json;charset=UTF-8"])
+    fun badRequestArvioijaResponse() =
+        TiedonsiirtoDeserializer.deserializeAndSave<YkiArvioija>(
+            """{}""",
         ) { TiedonsiirtoSuccess() }
 
     @GetMapping("/tiedonsiirto-forbidden.json", produces = ["application/json;charset=UTF-8"])

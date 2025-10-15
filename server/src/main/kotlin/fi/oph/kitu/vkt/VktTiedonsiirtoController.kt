@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 
 @RestController
 @RequestMapping("/api/vkt")
+@Tag(name = "Valtionhallinnon kielitutkinto")
 class VktTiedonsiirtoController(
     val vktRepository: VktSuoritusRepository,
     private val validation: ValidationService,
@@ -75,8 +77,8 @@ class VktTiedonsiirtoController(
                         schema = Schema(TiedonsiirtoFailure::class),
                         examples = [
                             ExampleObject(
-                                name = "henkilo-kenttä puuttuu tiedoista",
-                                externalValue = "/kielitutkinnot/schema-examples/tiedonsiirto-bad-request.json",
+                                name = "virheellinen henkilö-oid",
+                                externalValue = "/kielitutkinnot/schema-examples/bad-request-invalid-oid.json",
                             ),
                         ],
                     ),
