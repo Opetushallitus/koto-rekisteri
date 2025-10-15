@@ -14,6 +14,7 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusValidation
 import fi.oph.kitu.yki.suoritukset.YkiTarkastusarvointi
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,7 +44,7 @@ class YkiTiedonsiirtoTest {
     private var mockMvc: MockMvc? = null
 
     val ykiValidation =
-        YkiValidation(
+        YkiSuoritusValidation(
             organisaatiot = MockOrganisaatioService(),
             hetunSiirronRajapaiva = LocalDate.of(2026, 1, 1),
         )
