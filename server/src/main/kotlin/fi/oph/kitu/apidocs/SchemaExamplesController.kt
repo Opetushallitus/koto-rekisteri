@@ -10,6 +10,7 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoDeserializer
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
 import fi.oph.kitu.vkt.VktArvionti
@@ -169,11 +170,9 @@ class SchemaExamplesController {
 
     @GetMapping("/tiedonsiirto-bad-request.json", produces = ["application/json;charset=UTF-8"])
     fun tiedonsiirtoBadRequestResponse() =
-        exampleJson(
-            TiedonsiirtoFailure.badRequest(
-                "Instantiation of [simple type, class fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus] value failed for JSON property henkilo due to missing (therefore NULL) value for creator parameter henkilo which is a non-nullable type\n at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 2] (through reference chain: fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus[\"henkilo\"])",
-            ),
-        )
+        TiedonsiirtoDeserializer.deserializeAndSave<Henkilosuoritus<*>>(
+            """{"henkilo":{"oid":"123"},"suoritus":{}}""",
+        ) { TiedonsiirtoSuccess() }
 
     @GetMapping("/tiedonsiirto-forbidden.json", produces = ["application/json;charset=UTF-8"])
     fun tiedonsiirtoForbiddenResponse() =

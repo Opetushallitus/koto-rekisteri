@@ -14,10 +14,29 @@ object TiedonsiirtoDeserializer {
         try {
             save(defaultObjectMapper.readValue(json, T::class.java))
         } catch (e: JsonMappingException) {
-            TiedonsiirtoFailure.badRequest(e.message ?: "JSON mapping failed for unknown reason")
+            e.toTiedonsiirtoFailure()
         } catch (e: Validation.ValidationException) {
             TiedonsiirtoFailure(statusCode = HttpStatus.BAD_REQUEST, errors = e.errors.map { it.toString() })
         } catch (e: Throwable) {
             TiedonsiirtoFailure(statusCode = HttpStatus.INTERNAL_SERVER_ERROR, errors = listOf("Internal server error"))
         }.toResponseEntity()
+}
+
+fun JsonMappingException.toTiedonsiirtoFailure(): TiedonsiirtoFailure {
+    val regex = Regex(".*\\[\"(.*)\"]")
+    val simplePath =
+        pathReference
+            .split("->")
+            .mapNotNull { t ->
+                regex.find(t)?.let { it.groupValues[1] }
+            }.joinToString(".")
+
+    val simpleMessage =
+        localizedMessage
+            .split("\n")
+            .first()
+            .replace("fi.oph.kitu.tiedonsiirtoschema.", "")
+            .replace("fi.oph.kitu.", "")
+
+    return TiedonsiirtoFailure.badRequest("$simplePath: $simpleMessage")
 }
