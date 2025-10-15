@@ -5,15 +5,15 @@ import fi.oph.kitu.tiedonsiirtoschema.HenkilosuoritusValidation
 import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktValidation
-import fi.oph.kitu.yki.YkiValidation
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusValidation
 import org.springframework.stereotype.Service
 
 @Service
 final class ValidationService(
     val commonValidation: HenkilosuoritusValidation,
     val vkt: VktValidation,
-    val yki: YkiValidation,
+    val yki: YkiSuoritusValidation,
 ) {
     inline fun <reified T : KielitutkinnonSuoritus> validateAndEnrich(
         hs: Henkilosuoritus<T>,

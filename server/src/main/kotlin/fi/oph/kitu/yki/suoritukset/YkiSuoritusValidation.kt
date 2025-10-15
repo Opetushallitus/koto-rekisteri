@@ -1,4 +1,4 @@
-package fi.oph.kitu.yki
+package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.intersects
@@ -7,19 +7,18 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
-import fi.oph.kitu.yki.suoritukset.YkiHenkilosuoritus
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
 @Service
-class YkiValidation(
+class YkiSuoritusValidation(
     val organisaatiot: OrganisaatioService,
     @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
     override fun validationBeforeEnrichment(suoritus: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        Validation.fold(
+        Validation.Companion.fold(
             suoritus,
             { validateOrganisaatiot(it) },
             { validateHetu(it) },
@@ -27,9 +26,9 @@ class YkiValidation(
 
     fun validateHetu(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
         if (s.suoritus.tutkintopaiva.isBefore(hetunSiirronRajapaiva) || s.henkilo.hetu == null) {
-            Validation.ok(s)
+            Validation.Companion.ok(s)
         } else {
-            Validation.fail(
+            Validation.Companion.fail(
                 listOf("henkilo", "hetu"),
                 "Henkilötunnusta ei voi siirtää suoritukselle, jonka tutkintopäivä on ${hetunSiirronRajapaiva.finnishDate()} tai myöhemmin",
             )
@@ -46,7 +45,7 @@ class YkiValidation(
         val oid = suoritus.jarjestaja.oid
 
         fun fail(reason: String): ValidationResult<YkiHenkilosuoritus> =
-            Validation.fail(
+            Validation.Companion.fail(
                 listOf("suoritus", "jarjestaja", "oid"),
                 reason,
             )
@@ -55,7 +54,7 @@ class YkiValidation(
             onSuccess = { org ->
                 val tyypit = org.tyypit.mapNotNull { Koodisto.Organisaatiotyyppi.of(it) }
                 if (tyypit.intersects(sallitutOrganisaatiotyypit)) {
-                    Validation.ok(s)
+                    Validation.Companion.ok(s)
                 } else {
                     fail(
                         "Organisaatio $oid on väärän tyyppinen: ${
