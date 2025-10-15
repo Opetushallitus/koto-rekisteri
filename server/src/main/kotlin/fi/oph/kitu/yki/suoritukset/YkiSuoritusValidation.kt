@@ -17,9 +17,9 @@ class YkiSuoritusValidation(
     @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
-    override fun validationBeforeEnrichment(suoritus: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        Validation.Companion.fold(
-            suoritus,
+    override fun validationBeforeEnrichment(value: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
+        Validation.fold(
+            value,
             { validateOrganisaatiot(it) },
             { validateHetu(it) },
         )

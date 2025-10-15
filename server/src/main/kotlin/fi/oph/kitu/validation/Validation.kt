@@ -84,5 +84,11 @@ interface Validation<T> {
             path: List<String>,
             message: String,
         ): (T) -> ValidationResult<T> = assert(getActual, path, message) { it != expected }
+
+        fun <T> assertTrue(
+            getActual: (T) -> Boolean,
+            path: List<String>,
+            message: String,
+        ): (T) -> ValidationResult<T> = assertEquals(true, getActual, path, message)
     }
 }
