@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -25,6 +26,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 
 @RestController
 @RequestMapping("/api/yki")
+@Tag(name = "Yleinen kielitutkinto")
 class YkiTiedonsiirtoController(
     private val validationService: ValidationService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
@@ -77,8 +79,8 @@ class YkiTiedonsiirtoController(
                         schema = Schema(TiedonsiirtoFailure::class),
                         examples = [
                             ExampleObject(
-                                name = "henkilo-kenttä puuttuu tiedoista",
-                                externalValue = "/kielitutkinnot/schema-examples/tiedonsiirto-bad-request.json",
+                                name = "virheellinen henkilö-oid",
+                                externalValue = "/kielitutkinnot/schema-examples/bad-request-invalid-oid.json",
                             ),
                         ],
                     ),
@@ -153,15 +155,16 @@ class YkiTiedonsiirtoController(
             ),
             ApiResponse(
                 responseCode = "400",
-                description = "Virheellinen suorituksen rakenne",
+                description = "Virheellinen arvioijan rakenne",
                 content = [
                     Content(
                         mediaType = "application/json",
                         schema = Schema(TiedonsiirtoFailure::class),
                         examples = [
                             ExampleObject(
-                                name = "henkilo-kenttä puuttuu tiedoista",
-                                externalValue = "/kielitutkinnot/schema-examples/tiedonsiirto-bad-request.json",
+                                name = "Puuttuva kenttä",
+                                externalValue =
+                                    "/kielitutkinnot/schema-examples/bad-request-arvioija-missing-value.json",
                             ),
                         ],
                     ),

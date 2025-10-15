@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
@@ -12,6 +13,7 @@ import java.io.ByteArrayInputStream
 
 @RestController
 @RequestMapping("/yki/api")
+@Tag(name = "Yleinen kielitutkinto, sisäiset rajapinnat")
 class YkiApiController(
     private val service: YkiService,
 ) {
