@@ -176,7 +176,8 @@ class YkiTiedonsiirtoController(
         @RequestBody json: String,
     ): ResponseEntity<*> =
         TiedonsiirtoDeserializer.deserializeAndSave<YkiArvioija>(json) { arvioija ->
-            ykiArvioijaRepository.save(arvioija.toEntity())
+            val validatedArvioija = validationService.validateAndEnrich(arvioija).getOrThrow()
+            ykiArvioijaRepository.save(validatedArvioija.toEntity())
             TiedonsiirtoSuccess()
         }
 }
