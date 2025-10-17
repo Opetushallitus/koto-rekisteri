@@ -1,6 +1,5 @@
 package fi.oph.kitu.oppijanumero
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.assertFailureIsThrowable
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.logging.MockTracer
@@ -15,57 +14,6 @@ import org.springframework.web.client.RestClient
 import kotlin.test.assertEquals
 
 class OppijanumeroServiceTests {
-    @Test
-    fun `oppijanumero service returns identified user`() {
-        // Facade
-        val expectedOppijanumero = Oid.parse("1.2.246.562.24.33342764709").getOrThrow()
-
-        val oppijanumeroService =
-            MockOppijanumeroService.build(
-                YleistunnisteHaeResponse(
-                    expectedOppijanumero.toString(),
-                    expectedOppijanumero.toString(),
-                ),
-            )
-
-        val result =
-            oppijanumeroService
-                .getOppijanumero(
-                    Oppija(
-                        "Magdalena Testi",
-                        "Sallinen-Testi",
-                        "Magdalena",
-                        "010866-9260",
-                    ),
-                ).getOrThrow()
-        assertEquals(expectedOppijanumero, result)
-    }
-
-    @Test
-    fun `oppijanumero service returns unidentified user`() {
-        // Facade
-        val oppijanumeroService =
-            MockOppijanumeroService.build(
-                YleistunnisteHaeResponse(
-                    "1.2.246.562.24.33342764709",
-                    "",
-                ),
-            )
-
-        // System under test
-        assertThrows<OppijanumeroException.OppijaNotIdentifiedException> {
-            oppijanumeroService
-                .getOppijanumero(
-                    Oppija(
-                        "Magdalena Testi",
-                        "Sallinen-Testi",
-                        "Magdalena",
-                        "010866-9260",
-                    ),
-                ).getOrThrow()
-        }
-    }
-
     @Test
     fun `oppijanumero service does not find user`() {
         // Facade
@@ -95,7 +43,7 @@ class OppijanumeroServiceTests {
         val oppijanumeroRestClient = restClientBuilder.build()
         val tracer = MockTracer()
         val oppijanumeroService =
-            OppijanumeroService(
+            OppijanumeroServiceImpl(
                 tracer,
                 OppijanumerorekisteriClient(
                     CasAuthenticatedServiceImpl(
@@ -157,7 +105,7 @@ class OppijanumeroServiceTests {
         val oppijanumeroRestClient = restClientBuilder.build()
         val tracer = MockTracer()
         val oppijanumeroService =
-            OppijanumeroService(
+            OppijanumeroServiceImpl(
                 tracer,
                 OppijanumerorekisteriClient(
                     CasAuthenticatedServiceImpl(

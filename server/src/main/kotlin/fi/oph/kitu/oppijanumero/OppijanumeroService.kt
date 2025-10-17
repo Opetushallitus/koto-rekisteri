@@ -7,6 +7,7 @@ import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -15,12 +16,19 @@ import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
+interface OppijanumeroService {
+    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
+
+    fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>
+}
+
 @Service
-class OppijanumeroService(
+@Profile("!test")
+class OppijanumeroServiceImpl(
     val tracer: Tracer,
     val client: OppijanumerorekisteriClient,
-) {
-    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
+) : OppijanumeroService {
+    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
         tracer
             .spanBuilder("OppijanumeroService.getOppijanumero")
             .startSpan()
@@ -56,7 +64,7 @@ class OppijanumeroService(
             }
 
     @WithSpan
-    fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
+    override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
         client.onrGet("henkilo/$oid", OppijanumerorekisteriHenkilo::class.java)
 }
 
