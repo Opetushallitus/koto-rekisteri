@@ -33,5 +33,7 @@ data class TiedonsiirtoFailure(
         fun forbidden(msg: String) = TiedonsiirtoFailure(HttpStatus.FORBIDDEN, listOf(msg))
 
         fun badRequest(msg: String) = TiedonsiirtoFailure(HttpStatus.BAD_REQUEST, listOf(msg))
+
+        fun badRequest(msgs: Iterable<String>) = TiedonsiirtoFailure(HttpStatus.BAD_REQUEST, msgs.toList())
     }
 }

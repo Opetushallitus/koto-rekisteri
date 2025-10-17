@@ -3,18 +3,18 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.defaultObjectMapper
-import fi.oph.kitu.organisaatiot.MockOrganisaatioService
+import fi.oph.kitu.isOk
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.validation.Validation
+import fi.oph.kitu.validation.ValidationService
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusValidation
 import fi.oph.kitu.yki.suoritukset.YkiTarkastusarvointi
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,18 +36,14 @@ import kotlin.test.assertEquals
 
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
-class YkiTiedonsiirtoTest {
+class YkiTiedonsiirtoTest(
+    @param:Autowired val validation: ValidationService,
+) {
     @Autowired
     private lateinit var context: WebApplicationContext
 
     @Autowired private var postgres: PostgreSQLContainer<*>? = null
     private var mockMvc: MockMvc? = null
-
-    val ykiValidation =
-        YkiSuoritusValidation(
-            organisaatiot = MockOrganisaatioService(),
-            hetunSiirronRajapaiva = LocalDate.of(2026, 1, 1),
-        )
 
     @BeforeEach
     fun setup() {
@@ -79,7 +75,7 @@ class YkiTiedonsiirtoTest {
 
     @Test
     fun `Suorituksen validoinnin happy path`() {
-        val result = ykiValidation.validateAndEnrich(validiYkiSuoritus)
+        val result = validation.validateAndEnrich(validiYkiSuoritus)
         assertEquals(Validation.ok(validiYkiSuoritus), result)
     }
 
@@ -96,7 +92,7 @@ class YkiTiedonsiirtoTest {
                 )
             }
 
-        val result = ykiValidation.validateAndEnrich(suoritus)
+        val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
             Validation.fail(
@@ -117,12 +113,30 @@ class YkiTiedonsiirtoTest {
                 )
             }
 
-        val result = ykiValidation.validateAndEnrich(suoritus)
+        val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
             Validation.fail(
                 listOf("henkilo", "hetu"),
                 "Henkilötunnusta ei voi siirtää suoritukselle, jonka tutkintopäivä on 1.1.2026 tai myöhemmin",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Oppijaa, jota ei löydy oppijanumerorekisteristä ei voi siirtää`() {
+        val suoritus =
+            validiYkiSuoritus.copy(
+                henkilo = Henkilo(oid = Oid.parse("1.2.246.562.24.20000000000").getOrThrow(), hetu = "010180-9026"),
+            )
+
+        val result = validation.validateAndEnrich(suoritus)
+
+        assertEquals(
+            Validation.fail(
+                listOf("henkilo", "oid"),
+                "Oppijanumeroa 1.2.246.562.24.20000000000 ei löydy Oppijanumerorekisteristä",
             ),
             result,
         )
