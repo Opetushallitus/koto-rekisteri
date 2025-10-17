@@ -3,6 +3,8 @@ package fi.oph.kitu.vkt
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.defaultObjectMapper
+import fi.oph.kitu.isBadRequest
+import fi.oph.kitu.isOk
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.VktKielitaito
@@ -52,8 +54,7 @@ class VktTiedonsiirtoTest {
     @Test
     fun `saving valid suoritus works`() {
         putSuoritus(SchemaTests.vktHenkilosuoritus) {
-            status { isOk() }
-            jsonPath("$.result") { value("OK") }
+            isOk()
         }
     }
 
@@ -63,7 +64,7 @@ class VktTiedonsiirtoTest {
             """
             {
               "henkilo": {
-                "oid": "1.2.246.562.10.1234567890",
+                "oid": "1.2.246.562.24.10691606777",
                 "etunimet": "Kalle",
                 "sukunimi": "Testaaja"
               },
@@ -79,9 +80,9 @@ class VktTiedonsiirtoTest {
             }
             """.trimIndent()
         putSuoritus(json) {
-            status { isBadRequest() }
-            jsonPath("$.result") { value("Failed") }
-            jsonPath("$.errors[0]") { exists() }
+            isBadRequest(
+                "suoritus.taitotaso: Instantiation of [simple type, class vkt.VktSuoritus] value failed for JSON property taitotaso due to missing (therefore NULL) value for creator parameter taitotaso which is a non-nullable type",
+            )
         }
     }
 
@@ -191,8 +192,7 @@ class VktTiedonsiirtoTest {
                 suoritus = suoritus.suoritus.copy(internalId = 10),
             ),
         ) {
-            status { isBadRequest() }
-            jsonPath("$.errors") { value("suoritus.internalId: internalId on sisäinen kenttä, eikä sitä voi asettaa") }
+            isBadRequest("suoritus.internalId: internalId on sisäinen kenttä, eikä sitä voi asettaa")
         }
     }
 
@@ -204,12 +204,9 @@ class VktTiedonsiirtoTest {
                 suoritus = suoritus.suoritus.copy(koskiSiirtoKasitelty = true),
             ),
         ) {
-            status { isBadRequest() }
-            jsonPath("$.errors") {
-                value(
-                    "suoritus.koskiSiirtoKasitelty: koskiSiirtoKasitelty on sisäinen kenttä, eikä sitä voi asettaa arvoon true",
-                )
-            }
+            isBadRequest(
+                "suoritus.koskiSiirtoKasitelty: koskiSiirtoKasitelty on sisäinen kenttä, eikä sitä voi asettaa arvoon true",
+            )
         }
     }
 
@@ -224,12 +221,9 @@ class VktTiedonsiirtoTest {
                     ),
             ),
         ) {
-            status { isBadRequest() }
-            jsonPath("$.errors") {
-                value(
-                    "suoritus.koskiOpiskeluoikeusOid: koskiOpiskeluoikeusOid on sisäinen kenttä, eikä sitä voi asettaa",
-                )
-            }
+            isBadRequest(
+                "suoritus.koskiOpiskeluoikeusOid: koskiOpiskeluoikeusOid on sisäinen kenttä, eikä sitä voi asettaa",
+            )
         }
     }
 

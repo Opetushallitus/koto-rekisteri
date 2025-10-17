@@ -239,8 +239,7 @@ class YkiTiedonsiirtoTest {
             )
 
         putSuoritus(suoritus) {
-            status { isOk() }
-            jsonPath("$.result") { value("OK") }
+            isOk()
         }
     }
 
@@ -275,8 +274,7 @@ class YkiTiedonsiirtoTest {
             )
 
         putArvioija(arvioija) {
-            status { isOk() }
-            jsonPath("$.result") { value("OK") }
+            isOk()
         }
     }
 
