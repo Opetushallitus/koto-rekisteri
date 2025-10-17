@@ -5,8 +5,7 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.mock.VktSuoritusMockGenerator
-import fi.oph.kitu.oppijanumero.MockOppijanumeroService
-import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertNull
@@ -20,46 +19,13 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
 class VktSuoritusServiceTest(
-    @Autowired private val suoritusRepository: VktSuoritusRepository,
-    @Autowired private val customSuoritusRepository: CustomVktSuoritusRepository,
-    @Autowired private val osakoeRepository: VktOsakoeRepository,
-    @Autowired private val auditLogger: AuditLogger,
-    @Autowired private val vktValidation: VktValidation,
+    @param:Autowired private val suoritusRepository: VktSuoritusRepository,
+    @param:Autowired private val customSuoritusRepository: CustomVktSuoritusRepository,
+    @param:Autowired private val osakoeRepository: VktOsakoeRepository,
+    @param:Autowired private val auditLogger: AuditLogger,
+    @param:Autowired private val vktValidation: VktValidation,
+    @param:Autowired private val oppijanumeroService: OppijanumeroService,
 ) {
-    private val oppijanumeroService =
-        MockOppijanumeroService.build(
-            henkiloResponse =
-                OppijanumerorekisteriHenkilo(
-                    oidHenkilo = "1.2.246.562.24.10691606777",
-                    hetu = null,
-                    kaikkiHetut = null,
-                    passivoitu = null,
-                    etunimet = "Vallu",
-                    kutsumanimi = "Vallu",
-                    sukunimi = "Vastaanottaja",
-                    aidinkieli = null,
-                    asiointiKieli = null,
-                    kansalaisuus = null,
-                    kasittelijaOid = null,
-                    syntymaaika = null,
-                    sukupuoli = null,
-                    kotikunta = null,
-                    oppijanumero = null,
-                    turvakielto = null,
-                    eiSuomalaistaHetua = null,
-                    yksiloity = null,
-                    yksiloityVTJ = null,
-                    yksilointiYritetty = null,
-                    duplicate = null,
-                    created = null,
-                    modified = null,
-                    vtjsynced = null,
-                    yhteystiedotRyhma = null,
-                    yksilointivirheet = null,
-                    passinumerot = null,
-                ),
-        )
-
     @BeforeEach
     fun nukeDb() {
         suoritusRepository.deleteAll()
