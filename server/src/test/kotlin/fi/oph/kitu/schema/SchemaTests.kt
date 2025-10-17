@@ -25,7 +25,7 @@ class SchemaTests {
             Henkilosuoritus(
                 henkilo =
                     Henkilo(
-                        oid = Oid.parse("1.2.246.562.10.1234567890").getOrThrow(),
+                        oid = Oid.parse("1.2.246.562.24.10691606777").getOrThrow(),
                         etunimet = "Kalle",
                         sukunimi = "Testaaja",
                     ),
