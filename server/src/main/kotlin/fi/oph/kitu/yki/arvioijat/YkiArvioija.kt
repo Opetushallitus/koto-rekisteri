@@ -27,7 +27,7 @@ data class YkiArvioija(
         YkiArvioijaEntity(
             id = null,
             rekisteriintuontiaika = OffsetDateTime.now(),
-            arvioijanOppijanumero = arvioijaOid.toString(),
+            arvioijanOppijanumero = arvioijaOid,
             henkilotunnus = henkilotunnus,
             sukunimi = sukunimi,
             etunimet = etunimet,

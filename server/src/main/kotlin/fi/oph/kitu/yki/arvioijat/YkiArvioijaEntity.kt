@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.arvioijat
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import jakarta.persistence.EnumType
@@ -14,7 +15,7 @@ data class YkiArvioijaEntity(
     @Id
     val id: Number?,
     val rekisteriintuontiaika: OffsetDateTime?,
-    val arvioijanOppijanumero: String,
+    val arvioijanOppijanumero: Oid,
     val henkilotunnus: String?,
     val sukunimi: String,
     val etunimet: String,

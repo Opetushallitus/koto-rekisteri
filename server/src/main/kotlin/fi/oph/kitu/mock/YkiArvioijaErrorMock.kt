@@ -29,32 +29,20 @@ fun generateRandomYkiArvioijaErrorEntity(): YkiArvioijaErrorEntity {
 }
 
 fun SolkiArvioijaResponse.toCsvString(): String =
-    this.arvioijanOppijanumero +
-        "," +
-        this.henkilotunnus +
-        "," +
-        this.sukunimi +
-        "," +
-        this.etunimet +
-        "," +
-        this.sahkopostiosoite +
-        "," +
-        this.katuosoite +
-        "," +
-        this.postinumero +
-        "," +
-        this.postitoimipaikka +
-        "," +
-        this.ensimmainenRekisterointipaiva +
-        "," +
-        this.kaudenAlkupaiva +
-        "," +
-        this.kaudenPaattymispaiva +
-        "," +
-        this.jatkorekisterointi +
-        "," +
-        this.tila +
-        "," +
-        this.kieli +
-        "," +
-        this.tasot
+    listOf(
+        arvioijanOppijanumero,
+        henkilotunnus,
+        sukunimi,
+        etunimet,
+        sahkopostiosoite,
+        katuosoite,
+        postinumero,
+        postitoimipaikka,
+        ensimmainenRekisterointipaiva,
+        kaudenAlkupaiva,
+        kaudenPaattymispaiva,
+        jatkorekisterointi,
+        tila,
+        kieli,
+        tasot,
+    ).joinToString(",") { it.toString() }
