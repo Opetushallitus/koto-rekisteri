@@ -38,7 +38,7 @@ class WebSecurityConfig {
                 isOauth2Request(request)
             })
             authorizeHttpRequests {
-                authorize("/api/**", authenticated)
+                authorize("/yki/api/**", hasRole("APP_KIELITUTKINTOREKISTERI_READ"))
             }
             sessionManagement {
                 sessionCreationPolicy = SessionCreationPolicy.STATELESS
