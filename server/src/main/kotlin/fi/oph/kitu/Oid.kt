@@ -8,6 +8,7 @@ import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
+import java.sql.ResultSet
 
 @ConsistentCopyVisibility
 @JsonSerialize(using = com.fasterxml.jackson.databind.ser.std.ToStringSerializer::class)
@@ -49,3 +50,5 @@ data class Oid private constructor(
 data class MalformedOidError(
     val source: String?,
 ) : Exception("Malformed Oid \"$source\"")
+
+fun ResultSet.getOid(columnLabel: String): Oid = Oid.parse(getString(columnLabel)).getOrThrow()

@@ -20,7 +20,7 @@ fun generateRandomYkiArvioijaEntity(): YkiArvioijaEntity {
     return YkiArvioijaEntity(
         id = null,
         rekisteriintuontiaika = rekisteriintuontiaika.toOffsetDateTime(),
-        arvioijanOppijanumero = randomTeacher.oppijanumero.toString(),
+        arvioijanOppijanumero = randomTeacher.oppijanumero,
         henkilotunnus = randomTeacher.hetu,
         sukunimi = randomTeacher.sukunimi,
         etunimet = randomTeacher.etunimet,

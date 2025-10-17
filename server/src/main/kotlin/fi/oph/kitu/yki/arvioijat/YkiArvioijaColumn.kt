@@ -16,7 +16,7 @@ enum class YkiArvioijaColumn(
         entityName = "arvioijanOppijanumero",
         uiHeaderValue = "Oppijanumero",
         urlParam = "oppijanumero",
-        renderValue = { +it.arvioijanOppijanumero },
+        renderValue = { +it.arvioijanOppijanumero.toString() },
     ),
 
     Hetu(

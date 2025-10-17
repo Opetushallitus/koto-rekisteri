@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
@@ -31,7 +32,7 @@ class YkiArvioijaRepositoryTest(
             YkiArvioijaEntity(
                 id = null,
                 rekisteriintuontiaika = null,
-                arvioijanOppijanumero = "1.2.246.562.24.20281155246",
+                arvioijanOppijanumero = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                 henkilotunnus = "010180-9026",
                 sukunimi = "Öhman-Testi",
                 etunimet = "Ranja Testi",
@@ -64,7 +65,7 @@ class YkiArvioijaRepositoryTest(
             YkiArvioijaEntity(
                 id = null,
                 rekisteriintuontiaika = null,
-                arvioijanOppijanumero = "1.2.246.562.24.20281155246",
+                arvioijanOppijanumero = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                 henkilotunnus = "010180-9026",
                 sukunimi = "Öhman-Testi",
                 etunimet = "Ranja Testi",
@@ -100,7 +101,7 @@ class YkiArvioijaRepositoryTest(
             YkiArvioijaEntity(
                 id = null,
                 rekisteriintuontiaika = null,
-                arvioijanOppijanumero = "1.2.246.562.24.20281155246",
+                arvioijanOppijanumero = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                 henkilotunnus = "010180-9026",
                 sukunimi = "Öhman-Testi",
                 etunimet = "Ranja Testi",

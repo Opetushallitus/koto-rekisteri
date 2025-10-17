@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import fi.oph.kitu.Oid
 import fi.oph.kitu.csvparsing.Features
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -30,7 +31,7 @@ import java.time.LocalDate
 @Features(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
 class SolkiArvioijaResponse(
     @JsonProperty("arvioijanOppijanumero")
-    val arvioijanOppijanumero: String,
+    val arvioijanOppijanumero: Oid,
     @JsonProperty("henkilotunnus")
     val henkilotunnus: String?,
     @JsonProperty("sukunimi")

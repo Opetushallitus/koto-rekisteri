@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.arvioijat
 
+import fi.oph.kitu.getOid
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.getTutkintokieli
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -64,7 +65,7 @@ class CustomYkiArvioijaRepositoryImpl(
                     i: Int,
                 ) {
                     val arvioija = arvioijat.elementAt(i)
-                    ps.setString(1, arvioija.arvioijanOppijanumero)
+                    ps.setString(1, arvioija.arvioijanOppijanumero.toString())
                     ps.setString(2, arvioija.henkilotunnus)
                     ps.setString(3, arvioija.sukunimi)
                     ps.setString(4, arvioija.etunimet)
@@ -127,7 +128,7 @@ class CustomYkiArvioijaRepositoryImpl(
                 YkiArvioijaEntity(
                     rs.getInt("id"),
                     rs.getObject("rekisteriintuontiaika", OffsetDateTime::class.java),
-                    rs.getString("arvioijan_oppijanumero"),
+                    rs.getOid("arvioijan_oppijanumero"),
                     rs.getString("henkilotunnus"),
                     rs.getString("sukunimi"),
                     rs.getString("etunimet"),
