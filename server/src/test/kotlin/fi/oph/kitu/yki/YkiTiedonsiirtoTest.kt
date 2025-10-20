@@ -2,8 +2,11 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
+import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.defaultObjectMapper
+import fi.oph.kitu.isBadRequest
 import fi.oph.kitu.isOk
+import fi.oph.kitu.mock.toInstant
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
@@ -38,6 +41,7 @@ import kotlin.test.assertEquals
 @Import(DBContainerConfiguration::class)
 class YkiTiedonsiirtoTest(
     @param:Autowired val validation: ValidationService,
+    @param:Autowired val timeService: TestTimeService,
 ) {
     @Autowired
     private lateinit var context: WebApplicationContext
@@ -268,27 +272,86 @@ class YkiTiedonsiirtoTest(
 
     @Test
     fun `Validin yki-arvioijan tallennus rajapinnan kautta onnistuu`() {
-        val arvioija =
-            YkiArvioija(
-                arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),
-                henkilotunnus = "",
-                sukunimi = "Kivinen-Testi",
-                etunimet = "Petro Testi",
-                sahkopostiosoite = "devnull-2@oph.fi",
-                katuosoite = "Haltin vanha autiotupa",
-                postinumero = "99490",
-                postitoimipaikka = "Enontekiö",
-                ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
-                kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
-                kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
-                jatkorekisterointi = false,
-                tila = YkiArvioijaTila.AKTIIVINEN,
-                kieli = Tutkintokieli.FIN,
-                tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
-            )
+        timeService.runWithFrozenClock(LocalDate.of(2025, 10, 20).toInstant()) {
+            val arvioija =
+                YkiArvioija(
+                    arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),
+                    henkilotunnus = "160800A172A",
+                    sukunimi = "Kivinen-Testi",
+                    etunimet = "Petro Testi",
+                    sahkopostiosoite = "devnull-2@oph.fi",
+                    katuosoite = "Haltin vanha autiotupa",
+                    postinumero = "99490",
+                    postitoimipaikka = "Enontekiö",
+                    ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
+                    kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                    kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                    jatkorekisterointi = false,
+                    tila = YkiArvioijaTila.AKTIIVINEN,
+                    kieli = Tutkintokieli.FIN,
+                    tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                )
 
-        putArvioija(arvioija) {
-            isOk()
+            putArvioija(arvioija) {
+                isOk()
+            }
+        }
+    }
+
+    @Test
+    fun `Hetu ja yhteystietoja ei voi siirtää yki-arvioijalle vuodesta 2026 alkaen`() {
+        timeService.runWithFrozenClock(LocalDate.of(2026, 1, 1).toInstant()) {
+            val arvioija =
+                YkiArvioija(
+                    arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),
+                    henkilotunnus = "160800A172A",
+                    sukunimi = "Kivinen-Testi",
+                    etunimet = "Petro Testi",
+                    sahkopostiosoite = "devnull-2@oph.fi",
+                    katuosoite = "Haltin vanha autiotupa",
+                    postinumero = "99490",
+                    postitoimipaikka = "Enontekiö",
+                    ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
+                    kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                    kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                    jatkorekisterointi = false,
+                    tila = YkiArvioijaTila.AKTIIVINEN,
+                    kieli = Tutkintokieli.FIN,
+                    tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                )
+
+            putArvioija(arvioija) {
+                isBadRequest(
+                    "henkilotunnus: Kenttää henkilotunnus ei voi siirtää 1.1.2026 alkaen",
+                    "sahkopostiosoite: Kenttää sahkopostiosoite ei voi siirtää 1.1.2026 alkaen",
+                    "katuosoite: Kenttää katuosoite ei voi siirtää 1.1.2026 alkaen",
+                    "postinumero: Kenttää postinumero ei voi siirtää 1.1.2026 alkaen",
+                    "postitoimipaikka: Kenttää postitoimipaikka ei voi siirtää 1.1.2026 alkaen",
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Yki-arvioijan siirto onnistuu 2026 alkaen jattamalla hetun ja yhteystiedot pois`() {
+        timeService.runWithFrozenClock(LocalDate.of(2026, 1, 1).toInstant()) {
+            val arvioija =
+                YkiArvioija(
+                    arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),
+                    sukunimi = "Kivinen-Testi",
+                    etunimet = "Petro Testi",
+                    ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
+                    kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                    kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                    jatkorekisterointi = false,
+                    tila = YkiArvioijaTila.AKTIIVINEN,
+                    kieli = Tutkintokieli.FIN,
+                    tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                )
+
+            putArvioija(arvioija) {
+                isOk()
+            }
         }
     }
 
