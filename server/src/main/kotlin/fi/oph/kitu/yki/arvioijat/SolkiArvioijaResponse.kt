@@ -30,41 +30,41 @@ import java.time.LocalDate
 )
 @Features(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
 class SolkiArvioijaResponse(
-    @JsonProperty("arvioijanOppijanumero")
+    @param:JsonProperty("arvioijanOppijanumero")
     val arvioijanOppijanumero: Oid,
-    @JsonProperty("henkilotunnus")
+    @param:JsonProperty("henkilotunnus")
     val henkilotunnus: String?,
-    @JsonProperty("sukunimi")
+    @param:JsonProperty("sukunimi")
     val sukunimi: String,
-    @JsonProperty("etunimet")
+    @param:JsonProperty("etunimet")
     val etunimet: String,
-    @JsonProperty("sahkopostiosoite")
+    @param:JsonProperty("sahkopostiosoite")
     val sahkopostiosoite: String?,
-    @JsonProperty("katuosoite")
-    val katuosoite: String,
-    @JsonProperty("postinumero")
-    val postinumero: String,
-    @JsonProperty("postitoimipaikka")
-    val postitoimipaikka: String,
-    @JsonProperty("ensimmainenRekisterointipaiva")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @param:JsonProperty("katuosoite")
+    val katuosoite: String?,
+    @param:JsonProperty("postinumero")
+    val postinumero: String?,
+    @param:JsonProperty("postitoimipaikka")
+    val postitoimipaikka: String?,
+    @param:JsonProperty("ensimmainenRekisterointipaiva")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val ensimmainenRekisterointipaiva: LocalDate,
-    @JsonProperty("kaudenAlkupaiva")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @param:JsonProperty("kaudenAlkupaiva")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val kaudenAlkupaiva: LocalDate?,
-    @JsonProperty("kaudenPaattymispaiva")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @param:JsonProperty("kaudenPaattymispaiva")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val kaudenPaattymispaiva: LocalDate?,
-    @JsonProperty("jatkorekisterointi")
-    @JsonDeserialize(using = BooleanFromNumericDeserializer::class)
+    @param:JsonProperty("jatkorekisterointi")
+    @param:JsonDeserialize(using = BooleanFromNumericDeserializer::class)
     val jatkorekisterointi: Boolean,
-    @JsonProperty("tila")
+    @param:JsonProperty("tila")
     val tila: Number,
-    @JsonProperty("kieli")
-    @JsonDeserialize(using = TutkintokieliDeserializer::class)
+    @param:JsonProperty("kieli")
+    @param:JsonDeserialize(using = TutkintokieliDeserializer::class)
     val kieli: Tutkintokieli,
-    @JsonProperty("tasot")
-    @JsonDeserialize(using = TutkintotasotFromStringDeserializer::class)
+    @param:JsonProperty("tasot")
+    @param:JsonDeserialize(using = TutkintotasotFromStringDeserializer::class)
     val tasot: Iterable<Tutkintotaso>,
 ) {
     override fun toString(): String =

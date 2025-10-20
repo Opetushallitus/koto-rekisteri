@@ -8,13 +8,13 @@ import java.time.OffsetDateTime
 
 data class YkiArvioija(
     val arvioijaOid: Oid,
-    val henkilotunnus: String,
+    val henkilotunnus: String? = null,
     val sukunimi: String,
     val etunimet: String,
-    val sahkopostiosoite: String?,
-    val katuosoite: String,
-    val postinumero: String,
-    val postitoimipaikka: String,
+    val sahkopostiosoite: String? = null,
+    val katuosoite: String? = null,
+    val postinumero: String? = null,
+    val postitoimipaikka: String? = null,
     val ensimmainenRekisterointipaiva: LocalDate,
     val kaudenAlkupaiva: LocalDate?,
     val kaudenPaattymispaiva: LocalDate?,
