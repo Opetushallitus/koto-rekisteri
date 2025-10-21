@@ -48,70 +48,70 @@ import java.time.LocalDate
 )
 @Features(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
 data class YkiSuoritusCsv(
-    @JsonProperty("suorittajanOID")
+    @param:JsonProperty("suorittajanOID")
     val suorittajanOID: Oid,
-    @JsonProperty("hetu")
+    @param:JsonProperty("hetu")
     val hetu: String,
-    @JsonProperty("sukupuoli")
+    @param:JsonProperty("sukupuoli")
     val sukupuoli: Sukupuoli?,
-    @JsonProperty("sukunimi")
+    @param:JsonProperty("sukunimi")
     val sukunimi: String,
-    @JsonProperty("etunimet")
+    @param:JsonProperty("etunimet")
     val etunimet: String,
-    @JsonProperty("kansalaisuus")
+    @param:JsonProperty("kansalaisuus")
     val kansalaisuus: String,
-    @JsonProperty("katuosoite")
+    @param:JsonProperty("katuosoite")
     val katuosoite: String,
-    @JsonProperty("postinumero")
+    @param:JsonProperty("postinumero")
     val postinumero: String,
-    @JsonProperty("postitoimipaikka")
+    @param:JsonProperty("postitoimipaikka")
     val postitoimipaikka: String,
-    @JsonProperty("email")
+    @param:JsonProperty("email")
     val email: String?,
-    @JsonProperty("suoritusID")
+    @param:JsonProperty("suoritusID")
     val suoritusID: Int,
-    @JsonProperty("lastModified")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssX", timezone = "UTC")
+    @param:JsonProperty("lastModified")
+    @param:JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssX", timezone = "UTC")
     val lastModified: Instant,
-    @JsonProperty("tutkintopaiva")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @param:JsonProperty("tutkintopaiva")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tutkintopaiva: LocalDate,
-    @JsonProperty("tutkintokieli")
-    @JsonDeserialize(using = TutkintokieliDeserializer::class)
+    @param:JsonProperty("tutkintokieli")
+    @param:JsonDeserialize(using = TutkintokieliDeserializer::class)
     val tutkintokieli: Tutkintokieli,
-    @JsonProperty("tutkintotaso")
+    @param:JsonProperty("tutkintotaso")
     val tutkintotaso: Tutkintotaso,
-    @JsonProperty("jarjestajanOID")
+    @param:JsonProperty("jarjestajanOID")
     val jarjestajanOID: Oid,
-    @JsonProperty("jarjestajanNimi")
+    @param:JsonProperty("jarjestajanNimi")
     val jarjestajanNimi: String,
-    @JsonProperty("arviointipaiva")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @param:JsonProperty("arviointipaiva")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val arviointipaiva: LocalDate,
-    @JsonProperty("tekstinYmmartaminen")
+    @param:JsonProperty("tekstinYmmartaminen")
     val tekstinYmmartaminen: Int?,
-    @JsonProperty("kirjoittaminen")
+    @param:JsonProperty("kirjoittaminen")
     val kirjoittaminen: Int?,
-    @JsonProperty("rakenteetJaSanasto")
+    @param:JsonProperty("rakenteetJaSanasto")
     val rakenteetJaSanasto: Int?,
-    @JsonProperty("puheenYmmartaminen")
+    @param:JsonProperty("puheenYmmartaminen")
     val puheenYmmartaminen: Int?,
-    @JsonProperty("puhuminen")
+    @param:JsonProperty("puhuminen")
     val puhuminen: Int?,
-    @JsonProperty("yleisarvosana")
+    @param:JsonProperty("yleisarvosana")
     val yleisarvosana: Int?,
-    @JsonProperty("tarkistusarvioinninSaapumisPvm")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @param:JsonProperty("tarkistusarvioinninSaapumisPvm")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tarkistusarvioinninSaapumisPvm: LocalDate?,
-    @JsonProperty("tarkistusarvioinninAsiatunnus")
+    @param:JsonProperty("tarkistusarvioinninAsiatunnus")
     val tarkistusarvioinninAsiatunnus: String?,
-    @JsonProperty("tarkistusarvioidutOsakokeet")
+    @param:JsonProperty("tarkistusarvioidutOsakokeet")
     val tarkistusarvioidutOsakokeet: Int?,
-    @JsonProperty("arvosanaMuuttui")
+    @param:JsonProperty("arvosanaMuuttui")
     val arvosanaMuuttui: Int?,
-    @JsonProperty("perustelu")
+    @param:JsonProperty("perustelu")
     val perustelu: String?,
-    @JsonProperty("tarkistusarvioinninKasittelyPvm")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @param:JsonProperty("tarkistusarvioinninKasittelyPvm")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
 )
