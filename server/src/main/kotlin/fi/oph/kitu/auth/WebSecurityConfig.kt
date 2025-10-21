@@ -38,7 +38,7 @@ class WebSecurityConfig {
                 isOauth2Request(request)
             })
             authorizeHttpRequests {
-                authorize("/yki/api/**", hasRole("APP_KIELITUTKINTOREKISTERI_READ"))
+                authorize("/api/yki/**", hasRole("APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS"))
             }
             sessionManagement {
                 sessionCreationPolicy = SessionCreationPolicy.STATELESS
@@ -89,7 +89,6 @@ class WebSecurityConfig {
                 }
 
                 authorize("/api/vkt/**", hasRole("APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS"))
-                authorize("/api/yki/**", hasRole("APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS"))
                 authorize("/api-docs", permitAll)
                 authorize("/swagger-ui/**", permitAll)
                 authorize("/v3/api-docs/**", permitAll)
