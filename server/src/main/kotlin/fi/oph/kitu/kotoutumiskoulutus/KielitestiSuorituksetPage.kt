@@ -5,10 +5,14 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.yki.html.errorsArticle
+import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.details
 import kotlinx.html.h1
 import kotlinx.html.h2
+import kotlinx.html.header
+import kotlinx.html.li
+import kotlinx.html.nav
 import kotlinx.html.summary
 import kotlinx.html.table
 import kotlinx.html.tbody
@@ -16,6 +20,7 @@ import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.thead
 import kotlinx.html.tr
+import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
 import kotlin.enums.enumEntries
 
@@ -34,6 +39,22 @@ object KielitestiSuorituksetPage {
             errorsArticle(errorsCount, linkTo(KielitestiViewController::virheetView).toString())
 
             article(classes = "overflow-auto") {
+                header {
+                    nav {
+                        ul {
+                            li {
+                                +"Suorituksia yhteensä: ${suoritukset.size}"
+                            }
+                            li {
+                                a(href = linkTo<KielitestiApiController> { getSuorituksetAsCsv() }.toString()) {
+                                    attributes["download"] = ""
+                                    +"Lataa tiedot CSV:nä"
+                                }
+                            }
+                        }
+                    }
+                }
+
                 table {
                     val columns = enumEntries<KielitestiSuoritusColumn>().map { it.withValue(it.renderValue) }
                     displayTableHeader(
