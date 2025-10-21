@@ -10,6 +10,8 @@ import java.time.format.DateTimeFormatter
 
 fun LocalDate.finnishDate(): String = format(DateTimeFormatter.ofPattern("d.M.yyyy"))
 
+fun LocalDate.isoDate(): String = format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
 fun Instant.finnishDateTimeUTC(): String =
     DateTimeFormatter
         .ofPattern("dd.MM.yyyy HH:mm:ssX")

@@ -2,6 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.logging.AuditLogger
@@ -16,6 +17,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
+import java.io.ByteArrayOutputStream
 import java.time.Instant
 
 @Service
@@ -25,6 +27,7 @@ class KoealustaService(
     private val mappingService: KoealustaMappingService,
     private val auditLogger: AuditLogger,
     private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+    private val csvParser: CsvParser,
     private val tracer: Tracer,
 ) {
     @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
@@ -116,4 +119,23 @@ class KoealustaService(
 
             return@use suoritukset.maxOfOrNull { it.timeCompleted } ?: from
         }
+
+    fun generateSuorituksetCsvStream(
+        orderBy: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
+        orderByDirection: SortDirection = SortDirection.DESC,
+    ): ByteArrayOutputStream =
+        tracer
+            .spanBuilder("KoealustaService.generateSuorituksetCsvStream")
+            .startSpan()
+            .use { span ->
+                val suoritukset = getSuoritukset(orderBy, orderByDirection)
+                span.setAttribute("dataCount", suoritukset.count())
+
+                val outputStream = ByteArrayOutputStream()
+                csvParser
+                    .withUseHeader(true)
+                    .streamDataAsCsv(outputStream, suoritukset.map { KielitestiSuoritusCsv.of(it) })
+
+                return@use outputStream
+            }
 }
