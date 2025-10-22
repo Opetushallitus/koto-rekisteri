@@ -1,6 +1,5 @@
-package fi.oph.kitu.yki.html
+package fi.oph.kitu.html
 
-import fi.oph.kitu.html.error
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.br

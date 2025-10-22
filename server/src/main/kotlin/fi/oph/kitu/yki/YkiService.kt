@@ -35,7 +35,7 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class YkiService(
-    @Qualifier("solkiRestClient")
+    @param:Qualifier("solkiRestClient")
     private val solkiRestClient: RestClient,
     private val suoritusRepository: YkiSuoritusRepository,
     private val suoritusErrorService: YkiSuoritusErrorService,
@@ -74,7 +74,7 @@ class YkiService(
 
                 span.setAttribute("yki.suoritukset.receivedCount", suoritukset.size.toLong())
 
-                val saved = suoritusRepository.saveAll(suoritusMapper.convertToEntityIterable(suoritukset))
+                val saved = suoritusRepository.saveAllNewEntities(suoritusMapper.convertToEntityIterable(suoritukset))
                 span.setAttribute("importedSuorituksetSize", saved.count().toLong())
                 auditLogger.logAllInternalOnly("YKI suoritus imported", saved) { suoritus ->
                     arrayOf(
@@ -117,7 +117,7 @@ class YkiService(
                 }
 
                 val importedArvioijat =
-                    arvioijaRepository.saveAll(
+                    arvioijaRepository.saveAllNewEntities(
                         arvioijaMapper.convertToEntityIterable(arvioijat),
                     )
 

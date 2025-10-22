@@ -82,7 +82,7 @@ data class KoskiErrorEntity(
     val hidden: Boolean,
 ) {
     fun errorJson(): JsonNode? {
-        val matchResult = Regex("^[\\w\\d\\s]+:\\s\"(.*)\"$").find(message)
+        val matchResult = Regex("^[\\w\\s]+:\\s\"(.*)\"$").find(message)
         return matchResult?.let {
             val json = matchResult.groupValues[1]
             val parser = defaultObjectMapper.factory.createParser(json)

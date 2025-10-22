@@ -3,15 +3,15 @@ package fi.oph.kitu.kotoutumiskoulutus.tehtavapankki
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class TehtavapankkiResponse(
-    @JsonProperty("questionbanks")
+    @param:JsonProperty("questionbanks")
     val questionbanks: List<Questionbank>,
 ) {
     data class Questionbank(
-        @JsonProperty("courseid")
+        @param:JsonProperty("courseid")
         val courseid: Int,
-        @JsonProperty("coursename")
+        @param:JsonProperty("coursename")
         val coursename: String,
-        @JsonProperty("xml")
+        @param:JsonProperty("xml")
         val xml: String,
     )
 }

@@ -18,8 +18,8 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class YkiArvioijaRepositoryTest(
-    @Autowired private val postgres: PostgreSQLContainer<*>,
-    @Autowired private val arvioijaRepository: YkiArvioijaRepository,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val arvioijaRepository: YkiArvioijaRepository,
 ) {
     @BeforeEach
     fun nukeDb() {
@@ -48,10 +48,10 @@ class YkiArvioijaRepositoryTest(
                 kieli = Tutkintokieli.SWE,
                 tasot = setOf(Tutkintotaso.YT),
             )
-        arvioijaRepository.saveAll(listOf(arvioija))
+        arvioijaRepository.saveAllNewEntities(listOf(arvioija))
 
         val arvioijaEng = arvioija.copy(kieli = Tutkintokieli.ENG)
-        val saved = arvioijaRepository.saveAll(listOf(arvioijaEng))
+        val saved = arvioijaRepository.saveAllNewEntities(listOf(arvioijaEng))
         assertEquals(1, saved.count())
         assertEquals(arvioijaEng, saved.elementAt(0).copy(id = null, rekisteriintuontiaika = null))
 
@@ -82,12 +82,12 @@ class YkiArvioijaRepositoryTest(
                 tasot = setOf(Tutkintotaso.YT),
             )
 
-        val initialSaved = arvioijaRepository.saveAll(listOf(arvioija))
+        val initialSaved = arvioijaRepository.saveAllNewEntities(listOf(arvioija))
         val arvioijat = arvioijaRepository.findAll()
         assertEquals(1, arvioijat.count())
         assertEquals(1, initialSaved.count())
 
-        val saved = arvioijaRepository.saveAll(listOf(arvioija))
+        val saved = arvioijaRepository.saveAllNewEntities(listOf(arvioija))
         val updatedArvioijat = arvioijaRepository.findAll()
         assertEquals(1, updatedArvioijat.count())
         assertEquals(0, saved.count())
@@ -118,12 +118,12 @@ class YkiArvioijaRepositoryTest(
                 tasot = setOf(Tutkintotaso.YT),
             )
 
-        arvioijaRepository.saveAll(listOf(arvioija))
+        arvioijaRepository.saveAllNewEntities(listOf(arvioija))
         val arvioijat = arvioijaRepository.findAll()
         assertEquals(1, arvioijat.count())
 
         val updatedArvioija = arvioija.copy(kaudenAlkupaiva = LocalDate.now(), jatkorekisterointi = true)
-        val saved = arvioijaRepository.saveAll(listOf(updatedArvioija))
+        val saved = arvioijaRepository.saveAllNewEntities(listOf(updatedArvioija))
         assertEquals(1, saved.count())
         assertEquals(updatedArvioija, saved.elementAt(0).copy(id = null, rekisteriintuontiaika = null))
         val updatedArvioijat = arvioijaRepository.findAll()

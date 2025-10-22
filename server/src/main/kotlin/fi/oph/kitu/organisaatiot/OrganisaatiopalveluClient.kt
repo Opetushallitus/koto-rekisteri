@@ -58,7 +58,7 @@ class OrganisaatiopalveluClient(
     /**
      * Tries to convert `HttpResponse<String>` into the given `T`.
      * If the conversion fails, it checks whether the response was OppijanumeroServiceError.
-     * In that case [OppijanumeroException.BadResponse] will be thrown.
+     * In that case [fi.oph.kitu.oppijanumero.OppijanumeroException.BadResponse] will be thrown.
      * Otherwise, the underlying exception will be thrown
      */
     @WithSpan

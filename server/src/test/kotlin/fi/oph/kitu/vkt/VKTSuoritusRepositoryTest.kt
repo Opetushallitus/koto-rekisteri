@@ -18,10 +18,10 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class VKTSuoritusRepositoryTest(
-    @Autowired private var repository: VktSuoritusRepository,
-    @Autowired private var customRepository: CustomVktSuoritusRepository,
-    @Autowired private var postgres: PostgreSQLContainer<*>,
-    @Autowired private val vktValidation: VktValidation,
+    @param:Autowired private var repository: VktSuoritusRepository,
+    @param:Autowired private var customRepository: CustomVktSuoritusRepository,
+    @param:Autowired private var postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val vktValidation: VktValidation,
 ) {
     @BeforeEach
     fun nukeDb() {

@@ -4,7 +4,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
-import fi.oph.kitu.yki.html.errorsArticle
+import fi.oph.kitu.html.errorsArticle
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.details

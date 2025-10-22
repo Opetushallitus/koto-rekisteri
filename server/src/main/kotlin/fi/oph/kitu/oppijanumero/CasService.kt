@@ -14,9 +14,9 @@ import java.net.URLEncoder
 
 @Service
 class CasService(
-    @Qualifier("casRestClient")
+    @param:Qualifier("casRestClient")
     private val casRestClient: RestClient,
-    @Qualifier("oppijanumeroRestClient")
+    @param:Qualifier("oppijanumeroRestClient")
     private val oppijanumeroRestClient: RestClient,
 ) {
     @Value("\${kitu.palvelukayttaja.username}")

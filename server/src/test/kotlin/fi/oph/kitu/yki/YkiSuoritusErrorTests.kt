@@ -24,10 +24,10 @@ import kotlin.test.assertTrue
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
 class YkiSuoritusErrorTests(
-    @Autowired private val repository: YkiSuoritusErrorRepository,
-    @Autowired private val service: YkiSuoritusErrorService,
-    @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
-    @Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val repository: YkiSuoritusErrorRepository,
+    @param:Autowired private val service: YkiSuoritusErrorService,
+    @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @BeforeEach
     fun nukeDb() {
@@ -148,7 +148,7 @@ class YkiSuoritusErrorTests(
                         ),
                 ),
             )
-        repository.saveAll(
+        repository.saveAllNewEntities(
             // Existing error
             (1..5).map {
                 generateRandomYkiSuoritusErrorEntity().copy(

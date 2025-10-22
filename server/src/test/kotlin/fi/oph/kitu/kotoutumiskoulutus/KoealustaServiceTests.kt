@@ -29,7 +29,7 @@ import kotlin.test.assertEquals
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Import(DBContainerConfiguration::class)
 class KoealustaServiceTests(
-    @Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @Suppress("unused")
     companion object {

@@ -36,17 +36,17 @@ import kotlin.test.assertNotNull
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
 class YkiServiceTests(
-    @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
-    @Autowired private val ykiSuoritusErrorService: YkiSuoritusErrorService,
-    @Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
-    @Autowired private val ykiArvioijaErrorService: YkiArvioijaErrorService,
-    @Autowired private val auditLogger: AuditLogger,
-    @Autowired private val suoritusErrorRepository: YkiSuoritusErrorRepository,
-    @Autowired private val parser: CsvParser,
-    @Autowired private val mockRestClientBuilder: RestClient.Builder,
-    @Autowired private val tracer: Tracer,
-    @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
-    @Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
+    @param:Autowired private val ykiSuoritusErrorService: YkiSuoritusErrorService,
+    @param:Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
+    @param:Autowired private val ykiArvioijaErrorService: YkiArvioijaErrorService,
+    @param:Autowired private val auditLogger: AuditLogger,
+    @param:Autowired private val suoritusErrorRepository: YkiSuoritusErrorRepository,
+    @param:Autowired private val parser: CsvParser,
+    @param:Autowired private val mockRestClientBuilder: RestClient.Builder,
+    @param:Autowired private val tracer: Tracer,
+    @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @BeforeEach
     fun nukeDb() {
@@ -100,7 +100,7 @@ class YkiServiceTests(
 
         val spans = inMemorySpanExporter.finishedSpanItems
         assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.findNextSearchRange" })
-        assertNotNull(spans.find { it.name == "CustomYkiSuoritusRepositoryImpl.saveAll" })
+        assertNotNull(spans.find { it.name == "CustomYkiSuoritusRepositoryImpl.saveAllNewEntities" })
         assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.handleErrors" })
         assertNotNull(spans.find { it.name == "CsvParser.convertCsvToData" })
 
@@ -255,7 +255,7 @@ class YkiServiceTests(
         assertEquals(1, imported.count())
 
         val spans = inMemorySpanExporter.finishedSpanItems
-        assertNotNull(spans.find { it.name == "CustomYkiArvioijaRepositoryImpl.saveAll" })
+        assertNotNull(spans.find { it.name == "CustomYkiArvioijaRepositoryImpl.saveAllNewEntities" })
         assertNotNull(spans.find { it.name == "CsvParser.convertCsvToData" })
 
         val ykiArvioijatSpan = spans.find { it.name == "YkiService.importYkiArvioijat" }

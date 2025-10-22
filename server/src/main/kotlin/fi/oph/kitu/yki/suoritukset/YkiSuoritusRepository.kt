@@ -21,7 +21,7 @@ import java.sql.Timestamp
 import java.time.LocalDate
 
 interface CustomYkiSuoritusRepository {
-    fun <S : YkiSuoritusEntity> saveAll(suoritukset: Iterable<S>): Iterable<S>
+    fun saveAllNewEntities(suoritukset: Iterable<YkiSuoritusEntity>): Iterable<YkiSuoritusEntity>
 
     fun countSuoritukset(
         searchBy: String = "",
@@ -90,7 +90,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
      * due to the unique constraint. Overriding the implementation allows explicit handling of conflicts.
      */
     @WithSpan
-    override fun <S : YkiSuoritusEntity> saveAll(suoritukset: Iterable<S>): Iterable<S> {
+    override fun saveAllNewEntities(suoritukset: Iterable<YkiSuoritusEntity>): Iterable<YkiSuoritusEntity> {
         val sql =
             """
             INSERT INTO yki_suoritus (
@@ -185,7 +185,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
 
         val savedSuoritukset = keyHolder.keyList.map { it["id"] as Int }
 
-        return if (savedSuoritukset.isEmpty()) listOf() else findSuorituksetByIdList(savedSuoritukset) as Iterable<S>
+        return if (savedSuoritukset.isEmpty()) listOf() else findSuorituksetByIdList(savedSuoritukset)
     }
 
     private fun findSuorituksetByIdList(ids: List<Int>): Iterable<YkiSuoritusEntity> {

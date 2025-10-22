@@ -5,13 +5,13 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
+import fi.oph.kitu.html.errorsArticle
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.input
+import fi.oph.kitu.html.koskiErrorsArticle
 import fi.oph.kitu.html.pagination
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
-import fi.oph.kitu.yki.html.errorsArticle
-import fi.oph.kitu.yki.html.koskiErrorsArticle
 import kotlinx.html.ButtonType
 import kotlinx.html.InputType
 import kotlinx.html.a

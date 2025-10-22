@@ -60,7 +60,7 @@ class CreateMockDataController(
     fun createYkiSuoritusMockData(
         @PathVariable count: Int?,
     ): Iterable<YkiSuoritusEntity> =
-        suoritusRepository.saveAll(
+        suoritusRepository.saveAllNewEntities(
             List(count ?: 1000) {
                 generateRandomYkiSuoritusEntity()
             },
@@ -75,7 +75,7 @@ class CreateMockDataController(
         @PathVariable count: Int?,
     ): Iterable<YkiSuoritusErrorEntity> =
         suoritusErrorRepository
-            .saveAll(
+            .saveAllNewEntities(
                 List(count ?: 3) {
                     generateRandomYkiSuoritusErrorEntity()
                 },
@@ -88,7 +88,7 @@ class CreateMockDataController(
     fun createYkiArvioijaMockData(
         @PathVariable count: Int?,
     ): Iterable<YkiArvioijaEntity> =
-        arvioijaRepository.saveAll(
+        arvioijaRepository.saveAllNewEntities(
             List(count ?: 1000) {
                 generateRandomYkiArvioijaEntity()
             },

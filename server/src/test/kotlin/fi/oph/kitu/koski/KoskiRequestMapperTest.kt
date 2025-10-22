@@ -34,7 +34,7 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class KoskiRequestMapperTest(
-    @Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @Autowired
     lateinit var koskiRequestMapper: KoskiRequestMapper
