@@ -272,7 +272,7 @@ class YkiTiedonsiirtoTest(
 
     @Test
     fun `Validin yki-arvioijan tallennus rajapinnan kautta onnistuu`() {
-        timeService.runWithFrozenClock(LocalDate.of(2025, 10, 20).toInstant()) {
+        timeService.runWithFixedClock(LocalDate.of(2025, 10, 20).toInstant()) {
             val arvioija =
                 YkiArvioija(
                     arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),
@@ -300,7 +300,7 @@ class YkiTiedonsiirtoTest(
 
     @Test
     fun `Hetu ja yhteystietoja ei voi siirtää yki-arvioijalle vuodesta 2026 alkaen`() {
-        timeService.runWithFrozenClock(LocalDate.of(2026, 1, 1).toInstant()) {
+        timeService.runWithFixedClock(LocalDate.of(2026, 1, 1).toInstant()) {
             val arvioija =
                 YkiArvioija(
                     arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),
@@ -334,7 +334,7 @@ class YkiTiedonsiirtoTest(
 
     @Test
     fun `Yki-arvioijan siirto onnistuu 2026 alkaen jattamalla hetun ja yhteystiedot pois`() {
-        timeService.runWithFrozenClock(LocalDate.of(2026, 1, 1).toInstant()) {
+        timeService.runWithFixedClock(LocalDate.of(2026, 1, 1).toInstant()) {
             val arvioija =
                 YkiArvioija(
                     arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),

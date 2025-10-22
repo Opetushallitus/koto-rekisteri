@@ -2,19 +2,14 @@ package fi.oph.kitu.logging
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
+import fi.oph.kitu.TimeService
 import fi.oph.kitu.auth.CasUserDetails
-import io.opentelemetry.sdk.resources.Resource
-import io.opentelemetry.semconv.incubating.ServiceIncubatingAttributes
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.env.Environment
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
 import java.util.concurrent.atomic.AtomicInteger
 
 const val AUDIT_LOGGER_NAME = "auditLogger"
@@ -24,12 +19,12 @@ class AuditLogger(
     @Qualifier("applicationTaskExecutor")
     private val taskExecutor: AsyncTaskExecutor,
     private val objectMapper: ObjectMapper,
-    private val clock: Clock,
+    private val timeService: TimeService,
 ) {
     private val slf4jLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
 
     private val logSeq = AtomicInteger(0)
-    private val bootTime = Instant.now(clock)
+    val bootTime = timeService.now()
 
     @Value("\${kitu.appUrl}")
     lateinit var appUrl: String
@@ -56,7 +51,7 @@ class AuditLogger(
                         type = "log",
                         environment = environment,
                         hostname = appUrl,
-                        timestamp = Instant.now(clock),
+                        timestamp = timeService.now(),
                         serviceName = "kitu",
                         applicationType = "backend",
                         user = AuditLogEntry.User(context.userOid),
