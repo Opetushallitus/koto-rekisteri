@@ -17,8 +17,8 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class DBIsoOidTest(
-    @Autowired private val jdbcTemplate: JdbcTemplate,
-    @Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val jdbcTemplate: JdbcTemplate,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @BeforeEach
     fun nukeDb() {

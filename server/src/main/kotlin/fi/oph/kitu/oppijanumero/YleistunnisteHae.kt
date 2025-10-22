@@ -8,30 +8,30 @@ interface OppijanumerorekisteriRequest
 class EmptyRequest : OppijanumerorekisteriRequest
 
 data class YleistunnisteHaeRequest(
-    @JsonProperty("etunimet")
+    @param:JsonProperty("etunimet")
     val etunimet: String,
-    @JsonProperty("hetu")
+    @param:JsonProperty("hetu")
     val hetu: String,
-    @JsonProperty("kutsumanimi")
+    @param:JsonProperty("kutsumanimi")
     val kutsumanimi: String,
-    @JsonProperty("sukunimi")
+    @param:JsonProperty("sukunimi")
     val sukunimi: String,
 ) : OppijanumerorekisteriRequest
 
 data class YleistunnisteHaeResponse(
-    @JsonProperty("oid")
+    @param:JsonProperty("oid")
     val oid: String,
-    @JsonProperty("oppijanumero")
+    @param:JsonProperty("oppijanumero")
     val oppijanumero: String?,
 )
 
 data class OppijanumeroServiceError(
-    @JsonProperty("timestamp")
+    @param:JsonProperty("timestamp")
     val timestamp: Date,
-    @JsonProperty("status")
+    @param:JsonProperty("status")
     val status: Int,
-    @JsonProperty("error")
+    @param:JsonProperty("error")
     val error: String,
-    @JsonProperty("path")
+    @param:JsonProperty("path")
     val path: String,
 )

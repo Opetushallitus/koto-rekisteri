@@ -19,7 +19,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 
 interface CustomYkiArvioijaRepository {
-    fun <S : YkiArvioijaEntity> saveAll(arvioijat: Iterable<S>): Iterable<S>
+    fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): Iterable<YkiArvioijaEntity>
 }
 
 @Repository
@@ -32,7 +32,7 @@ class CustomYkiArvioijaRepositoryImpl(
      * due to the unique constraint. Overriding the implementation allows explicit handling of conflicts.
      */
     @WithSpan
-    override fun <S : YkiArvioijaEntity> saveAll(arvioijat: Iterable<S>): Iterable<S> {
+    override fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): Iterable<YkiArvioijaEntity> {
         val sql =
             """
             INSERT INTO yki_arvioija (
@@ -95,11 +95,10 @@ class CustomYkiArvioijaRepositoryImpl(
 
         val updatedArvioijat = keyHolder.keyList.map { it["id"] as Int }
 
-        return if (updatedArvioijat.isEmpty()) listOf() else findArvioijatByIdList(updatedArvioijat) as Iterable<S>
+        return if (updatedArvioijat.isEmpty()) listOf() else findArvioijatByIdList(updatedArvioijat)
     }
 
     private fun findArvioijatByIdList(ids: List<Int>): Iterable<YkiArvioijaEntity> {
-        val idsQuery = ids.joinToString(",", "(", ")")
         val findAllQuerySql =
             """
             SELECT
@@ -150,7 +149,7 @@ class CustomYkiArvioijaRepositoryImpl(
     fun <T> ResultSet.getTypedArray(
         columnLabel: String,
         transform: (String) -> T,
-    ): Iterable<T> = ((getArray(columnLabel).array) as Array<String>).map(transform)
+    ): Iterable<T> = ((getArray(columnLabel).array) as Array<*>).map { transform(it as String) }
 }
 
 @Repository

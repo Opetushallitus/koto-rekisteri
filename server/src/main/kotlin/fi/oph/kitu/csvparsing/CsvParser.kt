@@ -121,7 +121,7 @@ class CsvParser(
                 return@use csvMapper
                     .readerFor(T::class.java)
                     .with(schema)
-                    .readValues<T?>(csvString)
+                    .readValues<T>(csvString)
                     .toTypedResults { index, e ->
                         val context = runCatching { csvString.split(lineSeparator)[index] }.getOrNull()
 

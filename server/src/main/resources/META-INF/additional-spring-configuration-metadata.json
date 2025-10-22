@@ -9,6 +9,26 @@
       "name": "kitu.kotoutumiskoulutus.koealusta.scheduling.enabled",
       "type": "java.lang.String",
       "description": "Enable koealusta import scheduling."
+    },
+    {
+      "name": "kitu.koski.username",
+      "type": "java.lang.String",
+      "description": "Username of service user used to send data to KOSKI."
+    },
+    {
+      "name": "kitu.koski.password",
+      "type": "java.lang.String",
+      "description": "Password of service user used to send data to KOSKI."
+    },
+    {
+      "name": "otel.resource.providers.aws.enabled",
+      "type": "java.lang.String",
+      "description": "Enables the AWS Resource Provides for Open Telemetry."
+    },
+    {
+      "name": "spring.session.store-type",
+      "type": "java.lang.String",
+      "description": "Chooses StoreType that you wish to use to store the sessions."
     }
   ]
 }

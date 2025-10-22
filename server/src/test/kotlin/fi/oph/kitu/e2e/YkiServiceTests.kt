@@ -20,11 +20,11 @@ import kotlin.test.assertEquals
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @Import(DBContainerConfiguration::class)
 class YkiServiceTests(
-    @Autowired val ykiService: YkiService,
-    @Autowired val ykiDevController: YkiController,
-    @Autowired val ykiSuoritusErrorRepository: YkiSuoritusErrorRepository,
-    @Autowired val ykiSuoritusRepository: YkiSuoritusRepository,
-    @Autowired val postgres: PostgreSQLContainer<*>,
+    @param:Autowired val ykiService: YkiService,
+    @param:Autowired val ykiDevController: YkiController,
+    @param:Autowired val ykiSuoritusErrorRepository: YkiSuoritusErrorRepository,
+    @param:Autowired val ykiSuoritusRepository: YkiSuoritusRepository,
+    @param:Autowired val postgres: PostgreSQLContainer<*>,
 ) {
     @BeforeEach
     fun nukeDb() {

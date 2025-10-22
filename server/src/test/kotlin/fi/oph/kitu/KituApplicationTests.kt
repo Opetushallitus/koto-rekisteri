@@ -9,7 +9,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class KituApplicationTests(
-    @Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @Test
     fun contextLoads() {

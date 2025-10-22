@@ -16,7 +16,7 @@ const val AUDIT_LOGGER_NAME = "auditLogger"
 
 @Service
 class AuditLogger(
-    @Qualifier("applicationTaskExecutor")
+    @param:Qualifier("applicationTaskExecutor")
     private val taskExecutor: AsyncTaskExecutor,
     private val objectMapper: ObjectMapper,
     private val timeService: TimeService,

@@ -30,7 +30,7 @@ data class KoskiRequest(
             val opiskeluoikeusjaksot: List<OpiskeluoikeusJakso>,
         ) {
             data class OpiskeluoikeusJakso(
-                @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+                @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
                 val alku: LocalDate,
                 val tila: Koodisto.OpiskeluoikeudenTila,
             )

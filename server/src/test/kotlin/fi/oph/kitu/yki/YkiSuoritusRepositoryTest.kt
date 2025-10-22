@@ -20,8 +20,8 @@ import kotlin.test.assertTrue
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class YkiSuoritusRepositoryTest(
-    @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
-    @Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @BeforeEach
     fun nukeDb() {
@@ -31,20 +31,20 @@ class YkiSuoritusRepositoryTest(
     @Test
     fun `suoritus is saved correctly`() {
         val suoritus = generateRandomYkiSuoritusEntity()
-        val savedSuoritukset = ykiSuoritusRepository.saveAll(listOf(suoritus)).toList()
+        val savedSuoritukset = ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus)).toList()
         assertEquals(suoritus, savedSuoritukset[0].copy(id = null))
     }
 
     @Test
     fun `saveAll returns only the saved suoritus`() {
         val initialSuoritus = generateRandomYkiSuoritusEntity()
-        ykiSuoritusRepository.saveAll(listOf(initialSuoritus)).toList()
+        ykiSuoritusRepository.saveAllNewEntities(listOf(initialSuoritus)).toList()
         val updatedSuoritus =
             initialSuoritus.copy(
                 sukupuoli = Sukupuoli.E,
                 lastModified = Instant.parse("2025-01-01T13:53:56Z"),
             )
-        val savedSuoritukset = ykiSuoritusRepository.saveAll(listOf(initialSuoritus, updatedSuoritus))
+        val savedSuoritukset = ykiSuoritusRepository.saveAllNewEntities(listOf(initialSuoritus, updatedSuoritus))
         assertEquals(1, savedSuoritukset.count())
         assertEquals(updatedSuoritus, savedSuoritukset.elementAt(0).copy(id = null))
     }
@@ -68,7 +68,7 @@ class YkiSuoritusRepositoryTest(
                 tarkistusarvioinninKasittelyPvm = null,
                 koskiOpiskeluoikeus = null,
             )
-        val savedSuoritukset = ykiSuoritusRepository.saveAll(listOf(suoritus)).toList()
+        val savedSuoritukset = ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus)).toList()
         assertEquals(suoritus, savedSuoritukset[0].copy(id = null))
     }
 
@@ -93,7 +93,7 @@ class YkiSuoritusRepositoryTest(
                 perustelu = "Tarkistusarvioinnin testi",
                 tarkistusarvioinninKasittelyPvm = LocalDate.of(2024, 10, 15),
             )
-        ykiSuoritusRepository.saveAll(listOf(suoritus, suoritus2, updatedSuoritus))
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus, suoritus2, updatedSuoritus))
 
         val suoritukset =
             ykiSuoritusRepository
@@ -115,7 +115,7 @@ class YkiSuoritusRepositoryTest(
         val suoritusENG11 = generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.ENG11)
         val suoritusENG12 = generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.ENG12)
         val suoritukset = listOf(suoritusSWE10, suoritusENG11, suoritusENG12)
-        val savedSuoritukset = ykiSuoritusRepository.saveAll(suoritukset).toList()
+        val savedSuoritukset = ykiSuoritusRepository.saveAllNewEntities(suoritukset).toList()
         assertTrue(savedSuoritukset.map { it.copy(id = null) }.containsAll(suoritukset))
     }
 
@@ -127,7 +127,7 @@ class YkiSuoritusRepositoryTest(
                 etunimet = "Testi",
                 sukunimi = "Testilä",
             )
-        ykiSuoritusRepository.saveAll(listOf(suoritus, suoritus2))
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus, suoritus2))
 
         val searchStr = "ranja"
         val suoritukset = ykiSuoritusRepository.find(searchStr)
@@ -158,7 +158,7 @@ class YkiSuoritusRepositoryTest(
                 perustelu = "Tarkistusarvioinnin testi",
                 tarkistusarvioinninKasittelyPvm = LocalDate.of(2024, 10, 15),
             )
-        ykiSuoritusRepository.saveAll(listOf(suoritus, suoritus2, updatedSuoritus))
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus, suoritus2, updatedSuoritus))
         val countDistinct = ykiSuoritusRepository.countSuoritukset()
         assertEquals(2L, countDistinct, "Assert failed for count distinct suoritukset")
         val countAll = ykiSuoritusRepository.countSuoritukset(distinct = false)

@@ -3,8 +3,8 @@ package fi.oph.kitu.yki.arvioijat
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTable
+import fi.oph.kitu.html.errorsArticle
 import fi.oph.kitu.yki.YkiViewController
-import fi.oph.kitu.yki.html.errorsArticle
 import kotlinx.html.article
 import kotlinx.html.h1
 import kotlinx.html.h2

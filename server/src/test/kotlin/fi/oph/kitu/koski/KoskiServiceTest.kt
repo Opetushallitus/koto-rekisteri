@@ -32,13 +32,13 @@ import kotlin.test.assertFailsWith
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
 class KoskiServiceTest(
-    @Autowired private val koskiRequestMapper: KoskiRequestMapper,
-    @Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
-    @Autowired private val mockRestClientBuilder: RestClient.Builder,
-    @Autowired private val tracer: Tracer,
-    @Autowired private val inMemorySpanExporter: InMemorySpanExporter,
-    @Autowired private val koskiErrorService: KoskiErrorService,
-    @Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val koskiRequestMapper: KoskiRequestMapper,
+    @param:Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
+    @param:Autowired private val mockRestClientBuilder: RestClient.Builder,
+    @param:Autowired private val tracer: Tracer,
+    @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
+    @param:Autowired private val koskiErrorService: KoskiErrorService,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @Autowired
     private lateinit var vktSuoritusService: VktSuoritusService
@@ -197,7 +197,7 @@ class KoskiServiceTest(
                 koskiErrorService,
             )
 
-        ykiSuoritusRepository.saveAll(
+        ykiSuoritusRepository.saveAllNewEntities(
             listOf(
                 generateRandomYkiSuoritusEntity(),
                 generateRandomYkiSuoritusEntity(),
@@ -268,7 +268,7 @@ class KoskiServiceTest(
                 koskiErrorService,
             )
 
-        ykiSuoritusRepository.saveAll(
+        ykiSuoritusRepository.saveAllNewEntities(
             listOf(
                 generateRandomYkiSuoritusEntity(),
                 generateRandomYkiSuoritusEntity(),

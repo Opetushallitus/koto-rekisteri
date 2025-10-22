@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.hours
 
 @Service
 class KoodistoService(
-    @Qualifier("koodistopalveluRestClient")
+    @param:Qualifier("koodistopalveluRestClient")
     private val restClient: RestClient,
     private val tracer: Tracer,
 ) {

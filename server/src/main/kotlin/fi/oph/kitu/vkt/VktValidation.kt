@@ -12,9 +12,9 @@ class VktValidation : Validation<VktHenkilosuoritus> {
     @Value("\${kitu.oids.palvelukayttaja}")
     lateinit var palvelukayttajaOid: String
 
-    override fun enrich(s: VktHenkilosuoritus): VktHenkilosuoritus =
-        if (s.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
-            s.modifySuoritus {
+    override fun enrich(value: VktHenkilosuoritus): VktHenkilosuoritus =
+        if (value.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
+            value.modifySuoritus {
                 it.copy(
                     suorituspaikkakunta =
                         it.suorituspaikkakunta ?: "091",
@@ -23,7 +23,7 @@ class VktValidation : Validation<VktHenkilosuoritus> {
                 )
             }
         } else {
-            s
+            value
         }
 
     override fun validationAfterEnrichment(value: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =

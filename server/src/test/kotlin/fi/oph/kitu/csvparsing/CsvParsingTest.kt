@@ -26,8 +26,8 @@ import kotlin.test.assertTrue
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class CsvParsingTest(
-    @Autowired val parser: CsvParser,
-    @Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired val parser: CsvParser,
+    @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     @Test
     fun `test yki suoritukset parsing`() {

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.oph.kitu.Oid
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
-import org.springframework.core.io.ClassPathResource
 import org.springframework.security.cas.authentication.CasAssertionAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -28,7 +27,7 @@ class CasUserDetailsService : AuthenticationUserDetailsService<CasAssertionAuthe
             oid,
             attributes["idpEntityId"] == "vetuma",
             attributes["kayttajaTyyppi"] as String?,
-            (attributes["roles"] as List<String>).map { SimpleGrantedAuthority(it) },
+            (attributes["roles"] as List<*>).map { SimpleGrantedAuthority(it as String) },
         )
     }
 }

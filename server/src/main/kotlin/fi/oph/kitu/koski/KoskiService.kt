@@ -21,7 +21,7 @@ import org.springframework.web.client.toEntity
 
 @Service
 class KoskiService(
-    @Qualifier("koskiRestClient")
+    @param:Qualifier("koskiRestClient")
     private val koskiRestClient: RestClient,
     private val koskiRequestMapper: KoskiRequestMapper,
     private val ykiSuoritusRepository: YkiSuoritusRepository,

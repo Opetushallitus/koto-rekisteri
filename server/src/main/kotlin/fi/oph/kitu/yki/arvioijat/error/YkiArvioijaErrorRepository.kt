@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki.arvioijat.error
 
-import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorEntity
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
@@ -20,7 +19,7 @@ interface YkiArvioijaErrorRepository :
     CustomYkiArvioijaErrorRepository
 
 interface CustomYkiArvioijaErrorRepository {
-    fun <S : YkiArvioijaErrorEntity> saveAll(errors: Iterable<S>): Iterable<S>
+    fun saveAllNewEntities(errors: Iterable<YkiArvioijaErrorEntity>): Iterable<YkiArvioijaErrorEntity>
 }
 
 @Repository
@@ -28,7 +27,7 @@ class CustomYkiArvioijaErrorRepositoryImpl(
     val jdbcTemplate: JdbcTemplate,
 ) : CustomYkiArvioijaErrorRepository {
     @WithSpan
-    override fun <S : YkiArvioijaErrorEntity> saveAll(errors: Iterable<S>): Iterable<S> {
+    override fun saveAllNewEntities(errors: Iterable<YkiArvioijaErrorEntity>): Iterable<YkiArvioijaErrorEntity> {
         val sql =
             """
             INSERT INTO yki_arvioija_error (
@@ -74,7 +73,7 @@ class CustomYkiArvioijaErrorRepositoryImpl(
 
         val savedErrors = keyHolder.keyList.map { it["id"] as Int }
 
-        return if (savedErrors.isEmpty()) listOf() else findErrorsByIdList(savedErrors) as Iterable<S>
+        return if (savedErrors.isEmpty()) listOf() else findErrorsByIdList(savedErrors)
     }
 
     private fun findErrorsByIdList(ids: List<Int>): Iterable<YkiArvioijaErrorEntity> {

@@ -13,7 +13,7 @@ class AccessLoggingConfiguration {
     @Bean
     fun logFilter(): OncePerRequestFilter =
         object : OncePerRequestFilter() {
-            private val logger = LoggerFactory.getLogger(javaClass)
+            private val logFilterLogger = LoggerFactory.getLogger(javaClass)
 
             override fun doFilterInternal(
                 request: HttpServletRequest,
@@ -24,7 +24,7 @@ class AccessLoggingConfiguration {
                     filterChain.doFilter(request, response)
                 } finally {
                     if (request.requestURI != "/actuator/health") {
-                        logger
+                        logFilterLogger
                             .atInfo()
                             .addServletResponse(response)
                             .addServletRequest(request)
