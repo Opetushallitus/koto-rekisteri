@@ -1,26 +1,36 @@
 package fi.oph.kitu
 
+import fi.oph.kitu.TimeService.Companion.clock
+import fi.oph.kitu.TimeService.Companion.zoneId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.time.Clock
 import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneOffset
 
 @Service
 @Profile("test")
 class TestTimeService : TimeService {
-    private var frozenTime: Instant? = null
+    private var fixedClock: Clock? = null
 
-    override fun today(): LocalDate = now().atZone(ZoneOffset.systemDefault()).toLocalDate()
+    override fun now(): Instant = Instant.now(fixedClock ?: clock)
 
-    override fun now(): Instant = frozenTime ?: Instant.now()
+    fun fixClock(time: Instant) {
+        fixedClock = Clock.fixed(time, zoneId)
+    }
 
-    fun runWithFrozenClock(
+    fun resetClock() {
+        fixedClock = null
+    }
+
+    fun runWithFixedClock(
         time: Instant,
         f: () -> Unit,
     ) {
-        this.frozenTime = time
-        f()
-        this.frozenTime = null
+        fixClock(time)
+        try {
+            f()
+        } finally {
+            resetClock()
+        }
     }
 }

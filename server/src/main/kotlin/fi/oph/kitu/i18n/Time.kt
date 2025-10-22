@@ -18,6 +18,12 @@ fun Instant.finnishDateTimeUTC(): String =
         .withZone(ZoneOffset.UTC)
         .format(this)
 
+fun Instant.isoDateTimeUTC(): String =
+    DateTimeFormatter
+        .ISO_OFFSET_DATE_TIME
+        .withZone(ZoneOffset.UTC)
+        .format(this)
+
 fun FlowContent.finnishDate(d: LocalDate) {
     span {
         testId("date")
