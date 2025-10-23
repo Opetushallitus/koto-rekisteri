@@ -15,6 +15,7 @@ import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationService
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
+import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
@@ -267,7 +268,7 @@ class YkiTiedonsiirtoTest(
         val data = defaultObjectMapper.readValue(json, YkiArvioija::class.java)
 
         assertEquals(Oid.parse("1.2.246.562.24.59267607404").getOrThrow(), data.arvioijaOid)
-        assertEquals(setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT), data.tasot)
+        assertEquals(setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT), data.arviointioikeudet.first().tasot)
     }
 
     @Test
@@ -284,12 +285,17 @@ class YkiTiedonsiirtoTest(
                     postinumero = "99490",
                     postitoimipaikka = "Enontekiö",
                     ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
-                    kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
-                    kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
-                    jatkorekisterointi = false,
-                    tila = YkiArvioijaTila.AKTIIVINEN,
-                    kieli = Tutkintokieli.FIN,
-                    tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                    arviointioikeudet =
+                        listOf(
+                            YkiArviointioikeus(
+                                kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                                kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                                jatkorekisterointi = false,
+                                tila = YkiArvioijaTila.AKTIIVINEN,
+                                kieli = Tutkintokieli.FIN,
+                                tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                            ),
+                        ),
                 )
 
             putArvioija(arvioija) {
@@ -312,12 +318,17 @@ class YkiTiedonsiirtoTest(
                     postinumero = "99490",
                     postitoimipaikka = "Enontekiö",
                     ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
-                    kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
-                    kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
-                    jatkorekisterointi = false,
-                    tila = YkiArvioijaTila.AKTIIVINEN,
-                    kieli = Tutkintokieli.FIN,
-                    tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                    arviointioikeudet =
+                        listOf(
+                            YkiArviointioikeus(
+                                kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                                kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                                jatkorekisterointi = false,
+                                tila = YkiArvioijaTila.AKTIIVINEN,
+                                kieli = Tutkintokieli.FIN,
+                                tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                            ),
+                        ),
                 )
 
             putArvioija(arvioija) {
@@ -341,12 +352,17 @@ class YkiTiedonsiirtoTest(
                     sukunimi = "Kivinen-Testi",
                     etunimet = "Petro Testi",
                     ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
-                    kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
-                    kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
-                    jatkorekisterointi = false,
-                    tila = YkiArvioijaTila.AKTIIVINEN,
-                    kieli = Tutkintokieli.FIN,
-                    tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                    arviointioikeudet =
+                        listOf(
+                            YkiArviointioikeus(
+                                kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                                kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                                jatkorekisterointi = false,
+                                tila = YkiArvioijaTila.AKTIIVINEN,
+                                kieli = Tutkintokieli.FIN,
+                                tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                            ),
+                        ),
                 )
 
             putArvioija(arvioija) {
