@@ -3,6 +3,7 @@ package fi.oph.kitu
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.oph.kitu.TypedResult.Failure
 import fi.oph.kitu.TypedResult.Success
+import io.swagger.v3.oas.annotations.media.Schema
 import org.ietf.jgss.GSSException
 import java.io.IOException
 import java.io.ObjectInputStream
@@ -12,6 +13,7 @@ import java.sql.ResultSet
 
 @ConsistentCopyVisibility
 @JsonSerialize(using = com.fasterxml.jackson.databind.ser.std.ToStringSerializer::class)
+@Schema(type = "string")
 data class Oid private constructor(
     private var value: org.ietf.jgss.Oid,
 ) : Serializable {
