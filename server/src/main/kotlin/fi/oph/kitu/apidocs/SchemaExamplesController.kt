@@ -25,6 +25,7 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
+import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
@@ -153,12 +154,25 @@ class SchemaExamplesController {
                 postinumero = "99490",
                 postitoimipaikka = "Enontekiö",
                 ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
-                kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
-                kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
-                jatkorekisterointi = false,
-                tila = YkiArvioijaTila.AKTIIVINEN,
-                kieli = Tutkintokieli.FIN,
-                tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                arviointioikeudet =
+                    listOf(
+                        YkiArviointioikeus(
+                            kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                            kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                            jatkorekisterointi = false,
+                            tila = YkiArvioijaTila.AKTIIVINEN,
+                            kieli = Tutkintokieli.FIN,
+                            tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                        ),
+                        YkiArviointioikeus(
+                            kaudenAlkupaiva = LocalDate.of(2006, 12, 7),
+                            kaudenPaattymispaiva = LocalDate.of(2021, 12, 7),
+                            jatkorekisterointi = false,
+                            tila = YkiArvioijaTila.AKTIIVINEN,
+                            kieli = Tutkintokieli.SWE,
+                            tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT),
+                        ),
+                    ),
             ),
         )
 

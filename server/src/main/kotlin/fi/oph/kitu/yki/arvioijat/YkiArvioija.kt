@@ -16,31 +16,37 @@ data class YkiArvioija(
     val postinumero: String? = null,
     val postitoimipaikka: String? = null,
     val ensimmainenRekisterointipaiva: LocalDate,
+    val arviointioikeudet: List<YkiArviointioikeus>,
+) {
+    fun toEntities(): List<YkiArvioijaEntity> =
+        arviointioikeudet.map {
+            YkiArvioijaEntity(
+                id = null,
+                rekisteriintuontiaika = OffsetDateTime.now(),
+                arvioijanOppijanumero = arvioijaOid,
+                henkilotunnus = henkilotunnus,
+                sukunimi = sukunimi,
+                etunimet = etunimet,
+                sahkopostiosoite = sahkopostiosoite,
+                katuosoite = katuosoite,
+                postinumero = postinumero,
+                postitoimipaikka = postitoimipaikka,
+                ensimmainenRekisterointipaiva = ensimmainenRekisterointipaiva,
+                kaudenAlkupaiva = it.kaudenAlkupaiva,
+                kaudenPaattymispaiva = it.kaudenPaattymispaiva,
+                jatkorekisterointi = it.jatkorekisterointi,
+                tila = it.tila,
+                kieli = it.kieli,
+                tasot = it.tasot,
+            )
+        }
+}
+
+data class YkiArviointioikeus(
+    val kieli: Tutkintokieli,
+    val tasot: Set<Tutkintotaso>,
+    val tila: YkiArvioijaTila,
     val kaudenAlkupaiva: LocalDate?,
     val kaudenPaattymispaiva: LocalDate?,
     val jatkorekisterointi: Boolean,
-    val tila: YkiArvioijaTila,
-    val kieli: Tutkintokieli,
-    val tasot: Set<Tutkintotaso>,
-) {
-    fun toEntity(): YkiArvioijaEntity =
-        YkiArvioijaEntity(
-            id = null,
-            rekisteriintuontiaika = OffsetDateTime.now(),
-            arvioijanOppijanumero = arvioijaOid,
-            henkilotunnus = henkilotunnus,
-            sukunimi = sukunimi,
-            etunimet = etunimet,
-            sahkopostiosoite = sahkopostiosoite,
-            katuosoite = katuosoite,
-            postinumero = postinumero,
-            postitoimipaikka = postitoimipaikka,
-            ensimmainenRekisterointipaiva = ensimmainenRekisterointipaiva,
-            kaudenAlkupaiva = kaudenAlkupaiva,
-            kaudenPaattymispaiva = kaudenPaattymispaiva,
-            jatkorekisterointi = jatkorekisterointi,
-            tila = tila,
-            kieli = kieli,
-            tasot = tasot,
-        )
-}
+)
