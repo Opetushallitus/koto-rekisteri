@@ -14,7 +14,7 @@
       "kaudenPaattymispaiva": "2020-12-07",
       "jatkorekisterointi": false,
       "tila": "AKTIIVINEN",
-      "kieli": "FIN",
+      "kieli": "fin",
       "tasot": ["PT", "KT", "YT"]
     }
   ]
