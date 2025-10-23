@@ -8,34 +8,42 @@ sealed class OppijanumeroException(
     val oppijanumeroServiceError: OppijanumeroServiceError? = null,
     cause: Throwable? = null,
 ) : Throwable(message, cause) {
+    interface HasResponse {
+        val response: ResponseEntity<String>
+    }
+
     class UnexpectedError(
         request: OppijanumerorekisteriRequest,
-        val response: ResponseEntity<String>,
+        override val response: ResponseEntity<String>,
         message: String = "Unexpected error in oppijanumero-service",
-    ) : OppijanumeroException(request, message)
+    ) : OppijanumeroException(request, message),
+        HasResponse
 
     class MalformedResponse(
         request: OppijanumerorekisteriRequest,
-        val response: ResponseEntity<String>,
+        override val response: ResponseEntity<String>,
         message: String = "Malformed response from oppijanumero-service",
         cause: Throwable,
-    ) : OppijanumeroException(request, message, cause = cause)
+    ) : OppijanumeroException(request, message, cause = cause),
+        HasResponse
 
     class BadResponse(
         request: OppijanumerorekisteriRequest,
-        val response: ResponseEntity<String>,
+        override val response: ResponseEntity<String>,
         message: String = "Bad response from oppijanumero-service",
         oppijanumeroServiceError: OppijanumeroServiceError,
         cause: Throwable,
-    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
+    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause),
+        HasResponse
 
     class BadRequest(
         request: OppijanumerorekisteriRequest,
-        val response: ResponseEntity<String>,
+        override val response: ResponseEntity<String>,
         message: String = "Bad request to oppijanumero-service",
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
         cause: Throwable? = null,
-    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
+    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause),
+        HasResponse
 
     class OppijaNotFoundException(
         request: OppijanumerorekisteriRequest,

@@ -71,6 +71,13 @@ class KoealustaMappingService(
                                 Oid.parse(user.completions.first().schoolOID).getOrNull(),
                                 moodleId = user.userid.toString(),
                                 user.completions.first().teacheremail,
+                                listOfNotNull(
+                                    "Request: ${it.request}",
+                                    when (it) {
+                                        is OppijanumeroException.HasResponse -> "Response: ${it.response}"
+                                        else -> null
+                                    },
+                                ).joinToString("\n"),
                             )
                         }?.onFailure { oppijanumeroExceptions.add(it) }
                         ?.getOrNull()
@@ -266,6 +273,7 @@ class KoealustaMappingService(
                         viesti = validationError.message,
                         virheellinenKentta = field,
                         virheellinenArvo = value,
+                        lisatietoja = null,
                     )
                 }
 
@@ -283,6 +291,7 @@ class KoealustaMappingService(
                         viesti = error.message,
                         virheellinenKentta = null,
                         virheellinenArvo = null,
+                        lisatietoja = error.debugInfo,
                     ),
                 )
         }
@@ -321,6 +330,7 @@ class KoealustaMappingService(
             schoolOid: Oid?,
             moodleId: String?,
             teacherEmail: String?,
+            val debugInfo: String?,
         ) : Error(message, schoolOid, teacherEmail)
 
         abstract class ValidationFailure(
