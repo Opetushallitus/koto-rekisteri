@@ -18,4 +18,5 @@ data class KielitestiSuoritusError(
     val viesti: String,
     val virheellinenKentta: String?,
     val virheellinenArvo: String?,
+    val lisatietoja: String?,
 )

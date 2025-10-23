@@ -2,6 +2,9 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.html.DisplayTableEnum
 import kotlinx.html.FlowContent
+import kotlinx.html.details
+import kotlinx.html.pre
+import kotlinx.html.summary
 
 enum class KielitestiSuoritusErrorColumn(
     override val entityName: String,
@@ -62,7 +65,14 @@ enum class KielitestiSuoritusErrorColumn(
         urlParam = "viesti",
         renderValue = {
             attributes["headers"] = "viesti"
-            +it.viesti
+            if (it.lisatietoja != null) {
+                details {
+                    summary { +it.viesti }
+                    pre { +it.lisatietoja }
+                }
+            } else {
+                +it.viesti
+            }
         },
     ),
     VirheellinenKentta(
