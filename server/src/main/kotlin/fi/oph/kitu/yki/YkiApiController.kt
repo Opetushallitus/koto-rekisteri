@@ -132,7 +132,7 @@ class YkiApiController(
             ),
         ],
     )
-    fun putHenkilosuoritus(
+    fun postHenkilosuoritus(
         @RequestBody json: String,
     ): ResponseEntity<*> =
         Henkilosuoritus.deserializationAtEndpoint<YkiSuoritus>(json) { data ->
@@ -201,7 +201,7 @@ class YkiApiController(
             ),
         ],
     )
-    fun putArvioija(
+    fun postArvioija(
         @RequestBody json: String,
     ): ResponseEntity<*> =
         TiedonsiirtoDeserializer.deserializeAndSave<YkiArvioija>(json) { arvioija ->

@@ -257,7 +257,7 @@ class YkiApiControllerTest(
                     ),
             )
 
-        putSuoritus(suoritus) {
+        postSuoritus(suoritus) {
             isOk()
         }
     }
@@ -298,7 +298,7 @@ class YkiApiControllerTest(
                         ),
                 )
 
-            putArvioija(arvioija) {
+            postArvioija(arvioija) {
                 isOk()
             }
         }
@@ -331,7 +331,7 @@ class YkiApiControllerTest(
                         ),
                 )
 
-            putArvioija(arvioija) {
+            postArvioija(arvioija) {
                 isBadRequest(
                     "henkilotunnus: Kenttää henkilotunnus ei voi siirtää 1.1.2026 alkaen",
                     "sahkopostiosoite: Kenttää sahkopostiosoite ei voi siirtää 1.1.2026 alkaen",
@@ -365,27 +365,27 @@ class YkiApiControllerTest(
                         ),
                 )
 
-            putArvioija(arvioija) {
+            postArvioija(arvioija) {
                 isOk()
             }
         }
     }
 
-    private fun putSuoritus(
+    private fun postSuoritus(
         suoritus: Henkilosuoritus<*>,
         block: MockMvcResultMatchersDsl.() -> Unit,
     ) {
         put("/api/yki/suoritus", defaultObjectMapper.writeValueAsString(suoritus), block)
     }
 
-    private fun putArvioija(
+    private fun postArvioija(
         suoritus: YkiArvioija,
         block: MockMvcResultMatchersDsl.() -> Unit,
     ) {
         put("/api/yki/arvioija", defaultObjectMapper.writeValueAsString(suoritus), block)
     }
 
-    private fun put(
+    private fun post(
         url: String,
         suoritusJson: String,
         block: MockMvcResultMatchersDsl.() -> Unit,
