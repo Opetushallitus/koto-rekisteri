@@ -5,6 +5,7 @@ import fi.oph.kitu.nullableBody
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.semconv.HttpAttributes
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -43,7 +44,7 @@ class CasAuthenticatedServiceImpl(
             .spanBuilder("CasAuthenticatedService.fetch")
             .startSpan()
             .use { span ->
-                span.setAttribute("http.request.method", httpMethod.name())
+                span.setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, httpMethod.name())
                 span.setAttribute("http.request.uri", endpoint)
                 span.setAttribute("http.contentType", contentType.toString())
                 span.setAttribute("http.responseType", responseType.toString())
@@ -63,6 +64,8 @@ class CasAuthenticatedServiceImpl(
                         CasError.CasAuthServiceError("Received null ResponseEntity on the first request"),
                     )
                 }
+
+                span.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, response.statusCode.value())
 
                 if (!requiresLogin(response).also { span.setAttribute("requiresLogin", it) }) {
                     return TypedResult.Success(response)
