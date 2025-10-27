@@ -87,12 +87,15 @@ class CreateMockDataController(
     )
     fun createYkiArvioijaMockData(
         @PathVariable count: Int?,
-    ): Iterable<YkiArvioijaEntity> =
-        arvioijaRepository.saveAllNewEntities(
-            List(count ?: 1000) {
-                generateRandomYkiArvioijaEntity()
-            },
-        )
+    ): Iterable<YkiArvioijaEntity> {
+        val ids =
+            arvioijaRepository.saveAllNewEntities(
+                List(count ?: 1000) {
+                    generateRandomYkiArvioijaEntity()
+                },
+            )
+        return arvioijaRepository.findAllById(ids)
+    }
 
     // Koto
     @GetMapping(

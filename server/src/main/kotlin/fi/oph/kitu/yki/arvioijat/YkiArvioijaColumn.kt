@@ -70,49 +70,70 @@ enum class YkiArvioijaColumn(
         entityName = "tila",
         uiHeaderValue = "Tila",
         urlParam = "tila",
-        renderValue = { +it.tila.name },
+        renderValue = {
+            // +it.tila.name
+            +"TODO"
+        },
     ),
 
     Kieli(
         entityName = "kieli",
         uiHeaderValue = "Kieli",
         urlParam = "kieli",
-        renderValue = { +it.kieli.name },
+        renderValue = {
+            // +it.kieli.name
+            +"TODO"
+        },
     ),
 
     Tasot(
         entityName = "tasot",
         uiHeaderValue = "Tasot",
         urlParam = "tasot",
-        renderValue = { +it.tasot.joinToString(",") { taso -> taso.name } },
+        renderValue = {
+            // +it.tasot.joinToString(",") { taso -> taso.name }
+            +"TODO"
+        },
     ),
 
     KaudenAlkupaiva(
         entityName = "kaudenAlkupaiva",
         uiHeaderValue = "Kauden Alkupäivä",
         urlParam = "kaudenalkupaiva",
-        renderValue = { +it.kaudenAlkupaiva?.toString().orEmpty() },
+        renderValue = {
+            // +it.kaudenAlkupaiva?.toString().orEmpty()
+            +"TODO"
+        },
     ),
 
     KaudenPaattymispaiva(
         entityName = "kaudenPaattymispaiva",
         uiHeaderValue = "Kauden päättymispäivä",
         urlParam = "kaudenpaattymispaiva",
-        renderValue = { +it.kaudenPaattymispaiva?.toString().orEmpty() },
+        renderValue = {
+            // +it.kaudenPaattymispaiva?.toString().orEmpty()
+            +"TODO"
+        },
     ),
 
     Jatkorekisterointi(
         entityName = "jatkorekisterointi",
         uiHeaderValue = "Jatkorekisteröinti",
         urlParam = "jatkorekisterointi",
-        renderValue = { +it.jatkorekisterointi.toString() },
+        renderValue = {
+            // +it.jatkorekisterointi.toString()
+            +"TODO"
+        },
     ),
 
     Rekisteriintuontiaika(
         entityName = "rekisteriintuontiaika",
         uiHeaderValue = "Rekisteriintuontiaika",
         urlParam = "rekisteriintuontiaika",
-        renderValue = { +it.rekisteriintuontiaika?.toString().orEmpty() },
+        renderValue = {
+            // +it.rekisteriintuontiaika?.toString().orEmpty()
+            +"TODO"
+        },
     ),
 
     // EnsimmainenRekisterointipaiva(
