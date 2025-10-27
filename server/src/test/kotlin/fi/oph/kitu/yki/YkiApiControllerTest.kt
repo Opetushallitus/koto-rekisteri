@@ -375,14 +375,14 @@ class YkiApiControllerTest(
         suoritus: Henkilosuoritus<*>,
         block: MockMvcResultMatchersDsl.() -> Unit,
     ) {
-        put("/api/yki/suoritus", defaultObjectMapper.writeValueAsString(suoritus), block)
+        post("/yki/api/suoritus", defaultObjectMapper.writeValueAsString(suoritus), block)
     }
 
     private fun postArvioija(
         suoritus: YkiArvioija,
         block: MockMvcResultMatchersDsl.() -> Unit,
     ) {
-        put("/api/yki/arvioija", defaultObjectMapper.writeValueAsString(suoritus), block)
+        post("/yki/api/arvioija", defaultObjectMapper.writeValueAsString(suoritus), block)
     }
 
     private fun post(
