@@ -40,7 +40,7 @@ import kotlin.test.assertEquals
 
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
-class YkiTiedonsiirtoTest(
+class YkiApiControllerTest(
     @param:Autowired val validation: ValidationService,
     @param:Autowired val timeService: TestTimeService,
 ) {
