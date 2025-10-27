@@ -15,40 +15,49 @@ class YkiArvioijaMappingService {
         rekisteriintuontiaika: OffsetDateTime? = null,
     ) = YkiArvioijaEntity(
         id,
-        rekisteriintuontiaika,
-        response.arvioijanOppijanumero,
-        response.henkilotunnus,
-        response.sukunimi,
-        response.etunimet,
-        response.sahkopostiosoite,
-        response.katuosoite,
-        response.postinumero,
-        response.postitoimipaikka,
-        response.ensimmainenRekisterointipaiva,
-        response.kaudenAlkupaiva,
-        response.kaudenPaattymispaiva,
-        response.jatkorekisterointi,
-        if (response.tila == 0) YkiArvioijaTila.AKTIIVINEN else YkiArvioijaTila.PASSIVOITU,
-        response.kieli,
-        tasot = response.tasot.toSet(),
+        arvioijanOppijanumero = response.arvioijanOppijanumero,
+        henkilotunnus = response.henkilotunnus,
+        sukunimi = response.sukunimi,
+        etunimet = response.etunimet,
+        sahkopostiosoite = response.sahkopostiosoite,
+        katuosoite = response.katuosoite,
+        postinumero = response.postinumero,
+        postitoimipaikka = response.postitoimipaikka,
+        arviointioikeudet =
+            listOf(
+                YkiArviointioikeusEntity(
+                    id = null,
+                    arvioijaId = id,
+                    tasot = response.tasot.toSet(),
+                    kieli = response.kieli,
+                    tila = if (response.tila == 0) YkiArvioijaTila.AKTIIVINEN else YkiArvioijaTila.PASSIVOITU,
+                    kaudenAlkupaiva = response.kaudenAlkupaiva,
+                    kaudenPaattymispaiva = response.kaudenPaattymispaiva,
+                    jatkorekisterointi = response.jatkorekisterointi,
+                    ensimmainenRekisterointipaiva = response.ensimmainenRekisterointipaiva,
+                    rekisteriintuontiaika = rekisteriintuontiaika,
+                ),
+            ),
     )
 
-    fun convertToResponse(entity: YkiArvioijaEntity) =
-        SolkiArvioijaResponse(
-            arvioijanOppijanumero = entity.arvioijanOppijanumero,
-            henkilotunnus = entity.henkilotunnus,
-            sukunimi = entity.sukunimi,
-            etunimet = entity.etunimet,
-            sahkopostiosoite = entity.sahkopostiosoite,
-            katuosoite = entity.katuosoite,
-            postinumero = entity.postinumero,
-            postitoimipaikka = entity.postitoimipaikka,
-            ensimmainenRekisterointipaiva = entity.ensimmainenRekisterointipaiva,
-            kaudenAlkupaiva = entity.kaudenAlkupaiva,
-            kaudenPaattymispaiva = entity.kaudenPaattymispaiva,
-            jatkorekisterointi = entity.jatkorekisterointi,
-            tila = entity.tila.ordinal,
-            kieli = entity.kieli,
-            tasot = entity.tasot,
-        )
+    fun convertToResponses(entity: YkiArvioijaEntity) =
+        entity.arviointioikeudet.map {
+            SolkiArvioijaResponse(
+                arvioijanOppijanumero = entity.arvioijanOppijanumero,
+                henkilotunnus = entity.henkilotunnus,
+                sukunimi = entity.sukunimi,
+                etunimet = entity.etunimet,
+                sahkopostiosoite = entity.sahkopostiosoite,
+                katuosoite = entity.katuosoite,
+                postinumero = entity.postinumero,
+                postitoimipaikka = entity.postitoimipaikka,
+                ensimmainenRekisterointipaiva = it.ensimmainenRekisterointipaiva,
+                kaudenAlkupaiva = it.kaudenAlkupaiva,
+                kaudenPaattymispaiva = it.kaudenPaattymispaiva,
+                jatkorekisterointi = it.jatkorekisterointi,
+                tila = it.tila.ordinal,
+                kieli = it.kieli,
+                tasot = it.tasot,
+            )
+        }
 }

@@ -18,28 +18,33 @@ data class YkiArvioija(
     val ensimmainenRekisterointipaiva: LocalDate,
     val arviointioikeudet: List<YkiArviointioikeus>,
 ) {
-    fun toEntities(): List<YkiArvioijaEntity> =
-        arviointioikeudet.map {
-            YkiArvioijaEntity(
-                id = null,
-                rekisteriintuontiaika = OffsetDateTime.now(),
-                arvioijanOppijanumero = arvioijaOid,
-                henkilotunnus = henkilotunnus,
-                sukunimi = sukunimi,
-                etunimet = etunimet,
-                sahkopostiosoite = sahkopostiosoite,
-                katuosoite = katuosoite,
-                postinumero = postinumero,
-                postitoimipaikka = postitoimipaikka,
-                ensimmainenRekisterointipaiva = ensimmainenRekisterointipaiva,
-                kaudenAlkupaiva = it.kaudenAlkupaiva,
-                kaudenPaattymispaiva = it.kaudenPaattymispaiva,
-                jatkorekisterointi = it.jatkorekisterointi,
-                tila = it.tila,
-                kieli = it.kieli,
-                tasot = it.tasot,
-            )
-        }
+    fun toEntity(): YkiArvioijaEntity =
+        YkiArvioijaEntity(
+            id = null,
+            arvioijanOppijanumero = arvioijaOid,
+            henkilotunnus = henkilotunnus,
+            sukunimi = sukunimi,
+            etunimet = etunimet,
+            sahkopostiosoite = sahkopostiosoite,
+            katuosoite = katuosoite,
+            postinumero = postinumero,
+            postitoimipaikka = postitoimipaikka,
+            arviointioikeudet =
+                arviointioikeudet.map {
+                    YkiArviointioikeusEntity(
+                        id = null,
+                        arvioijaId = null,
+                        kaudenAlkupaiva = it.kaudenAlkupaiva,
+                        kaudenPaattymispaiva = it.kaudenPaattymispaiva,
+                        jatkorekisterointi = it.jatkorekisterointi,
+                        tila = it.tila,
+                        kieli = it.kieli,
+                        tasot = it.tasot,
+                        ensimmainenRekisterointipaiva = ensimmainenRekisterointipaiva,
+                        rekisteriintuontiaika = OffsetDateTime.now(),
+                    )
+                },
+        )
 }
 
 data class YkiArviointioikeus(

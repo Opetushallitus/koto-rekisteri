@@ -1,25 +1,18 @@
 package fi.oph.kitu.yki.arvioijat
 
-import fi.oph.kitu.getOid
-import fi.oph.kitu.yki.Tutkintotaso
-import fi.oph.kitu.yki.getTutkintokieli
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.PreparedStatementCreatorFactory
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.PreparedStatement
-import java.sql.ResultSet
-import java.time.LocalDate
-import java.time.OffsetDateTime
 
 interface CustomYkiArvioijaRepository {
-    fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): Iterable<YkiArvioijaEntity>
+    fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int>
+
+    fun upsert(arvioija: YkiArvioijaEntity): Int
 }
 
 @Repository
@@ -32,124 +25,94 @@ class CustomYkiArvioijaRepositoryImpl(
      * due to the unique constraint. Overriding the implementation allows explicit handling of conflicts.
      */
     @WithSpan
-    override fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): Iterable<YkiArvioijaEntity> {
-        val sql =
-            """
-            INSERT INTO yki_arvioija (
-                arvioijan_oppijanumero,
-                henkilotunnus,
-                sukunimi,
-                etunimet,
-                sahkopostiosoite,
-                katuosoite,
-                postinumero,
-                postitoimipaikka,
-                ensimmainen_rekisterointipaiva,
-                kauden_alkupaiva,
-                kauden_paattymispaiva,
-                jatkorekisterointi,
-                tila,
-                kieli,
-                tasot
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT ON CONSTRAINT yki_arvioija_is_unique DO NOTHING;
-            """.trimIndent()
-        val pscf = PreparedStatementCreatorFactory(sql)
-        pscf.setGeneratedKeysColumnNames("id")
-        val preparedStatementCreator = pscf.newPreparedStatementCreator(sql, null)
+    override fun upsert(arvioija: YkiArvioijaEntity): Int {
+        val savedArvioija =
+            jdbcTemplate
+                .query(
+                    """
+                    INSERT INTO yki_arvioija (
+                        arvioijan_oppijanumero,
+                        henkilotunnus,
+                        sukunimi,
+                        etunimet,
+                        sahkopostiosoite,
+                        katuosoite,
+                        postinumero,
+                        postitoimipaikka
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT ON CONSTRAINT yki_arvioija_arvioijan_oppijanumero_key DO UPDATE
+                    SET
+                        henkilotunnus = EXCLUDED.henkilotunnus,
+                        sukunimi = EXCLUDED.sukunimi,
+                        etunimet = EXCLUDED.etunimet,
+                        sahkopostiosoite = EXCLUDED.sahkopostiosoite,
+                        katuosoite = EXCLUDED.katuosoite,
+                        postinumero = EXCLUDED.postinumero,
+                        postitoimipaikka = EXCLUDED.postitoimipaikka
+                    RETURNING *
+                    """.trimIndent(),
+                    YkiArvioijaEntity.fromRow,
+                    arvioija.arvioijanOppijanumero.toString(),
+                    arvioija.henkilotunnus,
+                    arvioija.sukunimi,
+                    arvioija.etunimet,
+                    arvioija.sahkopostiosoite,
+                    arvioija.katuosoite,
+                    arvioija.postinumero,
+                    arvioija.postitoimipaikka,
+                ).first()
 
-        val batchPreparedStatementSetter =
+        val arviointioikeusBatchSetter =
             object : BatchPreparedStatementSetter {
                 override fun setValues(
                     ps: PreparedStatement,
                     i: Int,
                 ) {
-                    val arvioija = arvioijat.elementAt(i)
-                    ps.setString(1, arvioija.arvioijanOppijanumero.toString())
-                    ps.setString(2, arvioija.henkilotunnus)
-                    ps.setString(3, arvioija.sukunimi)
-                    ps.setString(4, arvioija.etunimet)
-                    ps.setString(5, arvioija.sahkopostiosoite)
-                    ps.setString(6, arvioija.katuosoite)
-                    ps.setString(7, arvioija.postinumero)
-                    ps.setString(8, arvioija.postitoimipaikka)
-                    ps.setObject(9, arvioija.ensimmainenRekisterointipaiva)
-                    ps.setObject(10, arvioija.kaudenAlkupaiva)
-                    ps.setObject(11, arvioija.kaudenPaattymispaiva)
-                    ps.setBoolean(12, arvioija.jatkorekisterointi)
-                    ps.setString(13, arvioija.tila.toString())
-                    ps.setString(14, arvioija.kieli.toString())
-                    ps.setArray(15, ps.connection.createArrayOf("YKI_TUTKINTOTASO", arvioija.tasot.toTypedArray()))
+                    arvioija.arviointioikeudet.elementAt(i).let {
+                        ps.setInt(1, savedArvioija.id!!.toInt())
+                        ps.setString(2, it.kieli.toString())
+                        ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.toTypedArray()))
+                        ps.setString(4, it.tila.toString())
+                        ps.setObject(5, it.kaudenAlkupaiva)
+                        ps.setObject(6, it.kaudenPaattymispaiva)
+                        ps.setBoolean(7, it.jatkorekisterointi)
+                        ps.setObject(8, it.ensimmainenRekisterointipaiva)
+                    }
                 }
 
-                override fun getBatchSize(): Int = arvioijat.count()
+                override fun getBatchSize(): Int = arvioija.arviointioikeudet.count()
             }
 
-        val keyHolder = GeneratedKeyHolder()
+        val oikeusIds =
+            jdbcTemplate.batchUpdate(
+                """
+                INSERT INTO yki_arviointioikeus(
+                    arvioija_id,
+                    kieli,
+                    tasot,
+                    tila,
+                    kauden_alkupaiva,
+                    kauden_paattymispaiva,
+                    jatkorekisterointi,
+                    ensimmainen_rekisterointipaiva
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT ON CONSTRAINT yki_arviointioikeus_unique_arvioija_kieli DO UPDATE SET
+                    tasot = EXCLUDED.tasot,
+                    tila = EXCLUDED.tila,
+                    kauden_alkupaiva = EXCLUDED.kauden_alkupaiva,
+                    kauden_paattymispaiva = EXCLUDED.kauden_paattymispaiva,
+                    jatkorekisterointi = EXCLUDED.jatkorekisterointi,
+                    ensimmainen_rekisterointipaiva = EXCLUDED.ensimmainen_rekisterointipaiva
+                RETURNING *
+                """.trimIndent(),
+                arviointioikeusBatchSetter,
+            )
 
-        jdbcTemplate.batchUpdate(
-            preparedStatementCreator,
-            batchPreparedStatementSetter,
-            keyHolder,
-        )
-
-        val updatedArvioijat = keyHolder.keyList.map { it["id"] as Int }
-
-        return if (updatedArvioijat.isEmpty()) listOf() else findArvioijatByIdList(updatedArvioijat)
+        return savedArvioija.id!!.toInt()
     }
 
-    private fun findArvioijatByIdList(ids: List<Int>): Iterable<YkiArvioijaEntity> {
-        val findAllQuerySql =
-            """
-            SELECT
-                id,
-                rekisteriintuontiaika,
-                arvioijan_oppijanumero,
-                henkilotunnus,
-                sukunimi,
-                etunimet,
-                sahkopostiosoite,
-                katuosoite,
-                postinumero,
-                postitoimipaikka,
-                ensimmainen_rekisterointipaiva,
-                kauden_alkupaiva,
-                kauden_paattymispaiva,
-                jatkorekisterointi,
-                tila,
-                kieli,
-                tasot
-            FROM yki_arvioija
-            WHERE id IN (:ids)
-            """.trimIndent()
-        return namedParameterJdbcTemplate
-            .query(findAllQuerySql, MapSqlParameterSource("ids", ids)) { rs, _ ->
-                YkiArvioijaEntity(
-                    rs.getInt("id"),
-                    rs.getObject("rekisteriintuontiaika", OffsetDateTime::class.java),
-                    rs.getOid("arvioijan_oppijanumero"),
-                    rs.getString("henkilotunnus"),
-                    rs.getString("sukunimi"),
-                    rs.getString("etunimet"),
-                    rs.getString("sahkopostiosoite"),
-                    rs.getString("katuosoite"),
-                    rs.getString("postinumero"),
-                    rs.getString("postitoimipaikka"),
-                    rs.getObject("ensimmainen_rekisterointipaiva", LocalDate::class.java),
-                    rs.getObject("kauden_alkupaiva", LocalDate::class.java),
-                    rs.getObject("kauden_paattymispaiva", LocalDate::class.java),
-                    rs.getBoolean("jatkorekisterointi"),
-                    rs.getYkiArvioijaTila("tila"),
-                    rs.getTutkintokieli("kieli"),
-                    rs.getTypedArray("tasot") { taso -> Tutkintotaso.valueOf(taso) }.toSet(),
-                )
-            }
-    }
-
-    fun <T> ResultSet.getTypedArray(
-        columnLabel: String,
-        transform: (String) -> T,
-    ): Iterable<T> = ((getArray(columnLabel).array) as Array<*>).map { transform(it as String) }
+    @WithSpan
+    override fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int> = arvioijat.map { upsert(it) }
 }
 
 @Repository

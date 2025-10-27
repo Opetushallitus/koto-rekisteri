@@ -206,7 +206,7 @@ class YkiApiController(
     ): ResponseEntity<*> =
         TiedonsiirtoDeserializer.deserializeAndSave<YkiArvioija>(json) { arvioija ->
             val validatedArvioija = validationService.validateAndEnrich(arvioija).getOrThrow()
-            ykiArvioijaRepository.saveAllNewEntities(validatedArvioija.toEntities())
+            ykiArvioijaRepository.upsert(validatedArvioija.toEntity())
             TiedonsiirtoSuccess()
         }
 }

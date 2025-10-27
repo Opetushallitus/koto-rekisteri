@@ -13,7 +13,11 @@ fun generateRandomYkiArvioijaErrorEntity(): YkiArvioijaErrorEntity {
 
     val arvioijaEntity = generateRandomYkiArvioijaEntity()
 
-    val csv = YkiArvioijaMappingService().convertToResponse(arvioijaEntity).toCsvString()
+    val csv =
+        YkiArvioijaMappingService()
+            .convertToResponses(arvioijaEntity)
+            .first()
+            .toCsvString()
 
     return YkiArvioijaErrorEntity(
         id = null,

@@ -310,12 +310,16 @@ class YkiServiceTests(
             )
 
         assertDoesNotThrow {
-            ykiService.importYkiArvioijat()
+            try {
+                ykiService.importYkiArvioijat()
+            } catch (e: Throwable) {
+                throw e
+            }
         }
         var arvioijat = ykiArvioijaRepository.findAll()
         assertEquals(2, arvioijat.count())
         val ranjaBeforeUpdate = arvioijat.find { it.etunimet.startsWith("Ranja") }
-        assertEquals(YkiArvioijaTila.PASSIVOITU, ranjaBeforeUpdate?.tila)
+        assertEquals(YkiArvioijaTila.PASSIVOITU, ranjaBeforeUpdate?.arviointioikeudet?.first()?.tila)
 
         Thread.sleep(1000L)
 
@@ -325,13 +329,12 @@ class YkiServiceTests(
 
         arvioijat = ykiArvioijaRepository.findAll()
 
-        // 3 people entries, 1 updated entry => 4 entries total
-        // Note that there are rows that are duplicated in both the first and
-        // the second import. Those should be imported only once.
-        assertEquals(4, arvioijat.count())
+        assertEquals(3, arvioijat.count())
+
         val ranjaAfterUpdate =
             arvioijat
                 .filter { it.etunimet.startsWith("Ranja") }
+                .flatMap { it.arviointioikeudet }
                 .maxByOrNull { it.rekisteriintuontiaika ?: OffsetDateTime.MIN }
         assertEquals(YkiArvioijaTila.AKTIIVINEN, ranjaAfterUpdate?.tila)
     }

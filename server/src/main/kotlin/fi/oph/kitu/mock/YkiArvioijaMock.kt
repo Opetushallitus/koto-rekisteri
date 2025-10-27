@@ -4,6 +4,7 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
+import fi.oph.kitu.yki.arvioijat.YkiArviointioikeusEntity
 import java.time.LocalDate
 import kotlin.random.Random
 
@@ -19,7 +20,6 @@ fun generateRandomYkiArvioijaEntity(): YkiArvioijaEntity {
 
     return YkiArvioijaEntity(
         id = null,
-        rekisteriintuontiaika = rekisteriintuontiaika.toOffsetDateTime(),
         arvioijanOppijanumero = randomTeacher.oppijanumero,
         henkilotunnus = randomTeacher.hetu,
         sukunimi = randomTeacher.sukunimi,
@@ -28,12 +28,20 @@ fun generateRandomYkiArvioijaEntity(): YkiArvioijaEntity {
         katuosoite = randomTeacher.katuosoite,
         postinumero = randomTeacher.postinumero,
         postitoimipaikka = randomTeacher.postitoimipaikka,
-        ensimmainenRekisterointipaiva = ensimmainenRekisterointipaiva,
-        kaudenAlkupaiva = kaudenAlkupaiva,
-        kaudenPaattymispaiva = kaudenPaattymispaiva,
-        jatkorekisterointi = Random.nextBoolean(),
-        tila = YkiArvioijaTila.entries.random(),
-        kieli = Tutkintokieli.entries.random(),
-        tasot = List(Tutkintotaso.entries.size) { Tutkintotaso.entries.random() }.toSet(),
+        arviointioikeudet =
+            listOf(
+                YkiArviointioikeusEntity(
+                    id = null,
+                    arvioijaId = null,
+                    kaudenAlkupaiva = kaudenAlkupaiva,
+                    kaudenPaattymispaiva = kaudenPaattymispaiva,
+                    jatkorekisterointi = Random.nextBoolean(),
+                    tila = YkiArvioijaTila.entries.random(),
+                    kieli = Tutkintokieli.entries.random(),
+                    tasot = List(Tutkintotaso.entries.size) { Tutkintotaso.entries.random() }.toSet(),
+                    ensimmainenRekisterointipaiva = ensimmainenRekisterointipaiva,
+                    rekisteriintuontiaika = rekisteriintuontiaika.toOffsetDateTime(),
+                ),
+            ),
     )
 }

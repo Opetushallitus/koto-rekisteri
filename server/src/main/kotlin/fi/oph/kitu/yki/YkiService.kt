@@ -123,7 +123,7 @@ class YkiService(
 
                 span.setAttribute("yki.arvioijat.importedCount", importedArvioijat.count())
 
-                auditLogger.logAllInternalOnly("YKI arvioija imported", importedArvioijat) { arvioija ->
+                auditLogger.logAllInternalOnly("YKI arvioija imported", arvioijat) { arvioija ->
                     arrayOf(
                         "principal" to "yki.importArvioijat",
                         "peer.service" to PeerService.Solki.value,
