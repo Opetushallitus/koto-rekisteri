@@ -144,6 +144,7 @@ class YkiApiController(
         }
 
     @PostMapping("/arvioija")
+    @Secured("ROLE_APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS")
     @Operation(
         summary = "Yleisen kielitutkinnon arvioijan siirto Kielitutkintorekisteriin",
         requestBody =
