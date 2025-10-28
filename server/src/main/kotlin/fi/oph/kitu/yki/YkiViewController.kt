@@ -7,6 +7,7 @@ import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
@@ -142,14 +143,14 @@ class YkiViewController(
 
     @GetMapping("/arvioijat")
     fun arvioijatView(
-        sortColumn: YkiArvioijaColumn = YkiArvioijaColumn.Rekisteriintuontiaika,
-        sortDirection: SortDirection = SortDirection.DESC,
+        sortColumn: YkiArvioijaColumn = YkiArvioijaColumn.Sukunimi,
+        sortDirection: SortDirection = SortDirection.ASC,
     ): ResponseEntity<String> =
         ResponseEntity.ok(
             YkiArvioijaPage.render(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
-                arvioijat = ykiService.allArvioijat(sortColumn, sortDirection),
+                arvioijat = ykiService.allArvioijat(sortColumn, sortDirection).group(),
                 errorsCount = arvioijaErrorService.countErrors(),
             ),
         )
