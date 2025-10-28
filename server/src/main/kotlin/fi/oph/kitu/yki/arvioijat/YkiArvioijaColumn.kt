@@ -13,7 +13,7 @@ enum class YkiArvioijaColumn(
     // id not added
 
     Oppijanumero(
-        entityName = "arvioijanOppijanumero",
+        entityName = "arvioijan_oppijanumero",
         uiHeaderValue = "Oppijanumero",
         urlParam = "oppijanumero",
         renderValue = { +it.arvioijanOppijanumero.toString() },
@@ -70,75 +70,54 @@ enum class YkiArvioijaColumn(
         entityName = "tila",
         uiHeaderValue = "Tila",
         urlParam = "tila",
-        renderValue = {
-            // +it.tila.name
-            +"TODO"
-        },
+        renderValue = {},
     ),
 
     Kieli(
         entityName = "kieli",
         uiHeaderValue = "Kieli",
         urlParam = "kieli",
-        renderValue = {
-            // +it.kieli.name
-            +"TODO"
-        },
+        renderValue = {},
     ),
 
     Tasot(
         entityName = "tasot",
         uiHeaderValue = "Tasot",
         urlParam = "tasot",
-        renderValue = {
-            // +it.tasot.joinToString(",") { taso -> taso.name }
-            +"TODO"
-        },
+        renderValue = {},
     ),
 
     KaudenAlkupaiva(
-        entityName = "kaudenAlkupaiva",
-        uiHeaderValue = "Kauden Alkupäivä",
+        entityName = "kauden_alkupaiva",
+        uiHeaderValue = "Kauden alkupäivä",
         urlParam = "kaudenalkupaiva",
-        renderValue = {
-            // +it.kaudenAlkupaiva?.toString().orEmpty()
-            +"TODO"
-        },
+        renderValue = {},
     ),
 
     KaudenPaattymispaiva(
-        entityName = "kaudenPaattymispaiva",
+        entityName = "kauden_paattymispaiva",
         uiHeaderValue = "Kauden päättymispäivä",
         urlParam = "kaudenpaattymispaiva",
-        renderValue = {
-            // +it.kaudenPaattymispaiva?.toString().orEmpty()
-            +"TODO"
-        },
+        renderValue = {},
     ),
 
     Jatkorekisterointi(
         entityName = "jatkorekisterointi",
         uiHeaderValue = "Jatkorekisteröinti",
         urlParam = "jatkorekisterointi",
-        renderValue = {
-            // +it.jatkorekisterointi.toString()
-            +"TODO"
-        },
+        renderValue = {},
     ),
 
     Rekisteriintuontiaika(
         entityName = "rekisteriintuontiaika",
         uiHeaderValue = "Rekisteriintuontiaika",
         urlParam = "rekisteriintuontiaika",
-        renderValue = {
-            // +it.rekisteriintuontiaika?.toString().orEmpty()
-            +"TODO"
-        },
+        renderValue = {},
     ),
 
     // EnsimmainenRekisterointipaiva(
     //    dbColumn = "ensimmainenRekisterointipaiva",
     //    uiHeaderValue = "Ensimmäinen Rekisteröintipäivä",
-    //    renderValue = { +it.ensimmainenRekisterointipaiva?.toString().orEmpty() },
+    //    renderValue = {},
     // ),
 }

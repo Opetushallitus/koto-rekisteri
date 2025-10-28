@@ -32,17 +32,17 @@ describe("Yleinen kielitutkinto arvioijat page", () => {
       table.labels,
       "Oppijanumero",
       "Henkilötunnus",
-      "Sukunimi",
+      "Sukunimi ▲",
       "Etunimet",
       "Sähköposti",
       "Osoite",
       "Tila",
       "Kieli",
       "Tasot",
-      "Kauden Alkupäivä",
+      "Kauden alkupäivä",
       "Kauden päättymispäivä",
       "Jatkorekisteröinti",
-      "Rekisteriintuontiaika ▼",
+      "Rekisteriintuontiaika",
     )
     await expect(table.rows).toHaveCount(4)
   })
@@ -53,8 +53,6 @@ describe("Yleinen kielitutkinto arvioijat page", () => {
     const table = ykiArvioijatPage.table
 
     // ascending order
-    await table.head.getByTestId("sukunimi").getByRole("link").click()
-
     await expect(table.rows.first().getByTestId("sukunimi")).toHaveText(
       "Andersson-Testi",
     )

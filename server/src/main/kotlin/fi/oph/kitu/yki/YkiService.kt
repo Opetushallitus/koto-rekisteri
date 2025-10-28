@@ -4,14 +4,13 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
-import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
@@ -194,11 +193,11 @@ class YkiService(
 
     @WithSpan
     fun allArvioijat(
-        orderBy: YkiArvioijaColumn = YkiArvioijaColumn.Rekisteriintuontiaika,
-        orderByDirection: SortDirection = SortDirection.DESC,
-    ): List<YkiArvioijaEntity> =
+        orderBy: YkiArvioijaColumn = YkiArvioijaColumn.Sukunimi,
+        orderByDirection: SortDirection = SortDirection.ASC,
+    ): List<YkiArvioijaArviointioikeus> =
         arvioijaRepository
-            .findAllSorted(orderBy.entityName, orderByDirection)
+            .allArviontioikeudet(orderBy, orderByDirection)
             .toList()
             .also {
                 auditLogger.logAllInternalOnly("Yki arvioija viewed", it) { arvioija ->

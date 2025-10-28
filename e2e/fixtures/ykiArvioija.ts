@@ -10,7 +10,6 @@ export const create = async () => {
 }
 
 export interface YkiArvioija {
-  rekisteriintuontiaika: string | null
   arvioijanOppijanumero: string
   henkilotunnus: string | null
   sukunimi: string
@@ -19,28 +18,19 @@ export interface YkiArvioija {
   katuosoite: string
   postinumero: string
   postitoimipaikka: string
-  ensimmainenRekisterointipaiva: string
+  arviointioikeudet: YkiArviointioikeus[]
+}
+
+export interface YkiArviointioikeus {
+  kieli: string
+  tasot: Set<string>
+  tila: string
   kaudenAlkupaiva: string | null
   kaudenPaattymispaiva: string | null
   jatkorekisterointi: boolean
-  tila: string
-  kieli: string
-  tasot: Set<string>
+  ensimmainenRekisterointipaiva: string
+  rekisteriintuontiaika: string | null
 }
-
-type CreateArvioijaArgs = Partial<
-  Omit<
-    YkiArvioija,
-    | "arvioijanOppijanumero"
-    | "henkilotunnus"
-    | "sukunimi"
-    | "etunimet"
-    | "sahkopostiosoite"
-    | "katuosoite"
-    | "postinumero"
-    | "postitoimipaikka"
-  >
->
 
 const createArvioija = (
   person: FixturePerson,
@@ -53,7 +43,7 @@ const createArvioija = (
     tila = "AKTIIVINEN",
     kieli = "FIN",
     tasot = new Set(["PT", "KT", "YT"]),
-  }: CreateArvioijaArgs,
+  }: Partial<YkiArviointioikeus>,
 ) => {
   const p = peopleFixture[person]
   return {
@@ -92,40 +82,49 @@ export const fixtureData = {
   magdalena: createArvioija("magdalena", {}),
 } as const
 
-const insertQuery = (arvioija: YkiArvioija) => SQL`
-  INSERT INTO yki_arvioija (arvioijan_oppijanumero,
-                            henkilotunnus,
-                            sukunimi,
-                            etunimet,
-                            sahkopostiosoite,
-                            katuosoite,
-                            postinumero,
-                            postitoimipaikka,
-                            ensimmainen_rekisterointipaiva,
-                            kauden_alkupaiva,
-                            kauden_paattymispaiva,
-                            jatkorekisterointi,
-                            tila,
-                            kieli,
-                            tasot)
-  VALUES (${arvioija.arvioijanOppijanumero},
-          ${arvioija.henkilotunnus},
-          ${arvioija.sukunimi},
-          ${arvioija.etunimet},
-          ${arvioija.sahkopostiosoite},
-          ${arvioija.katuosoite},
-          ${arvioija.postinumero},
-          ${arvioija.postitoimipaikka},
-          ${arvioija.ensimmainenRekisterointipaiva},
-          ${arvioija.kaudenAlkupaiva},
-          ${arvioija.kaudenPaattymispaiva},
-          ${arvioija.jatkorekisterointi},
-          ${arvioija.tila},
-          ${arvioija.kieli},
-          ${arvioija.tasot})
-`
-
 export type YkiArvioijaName = keyof typeof fixtureData
 
-export const insert = async (db: TestDB, arvioija: YkiArvioijaName) =>
-  await db.dbClient.query(insertQuery(fixtureData[arvioija]))
+export const insert = async (db: TestDB, arvioijaName: YkiArvioijaName) => {
+  const arvioija = fixtureData[arvioijaName]
+
+  const arvioijaId = (
+    await db.dbClient.query<{ id: number }>(SQL`
+      INSERT INTO yki_arvioija (arvioijan_oppijanumero,
+                                henkilotunnus,
+                                sukunimi,
+                                etunimet,
+                                sahkopostiosoite,
+                                katuosoite,
+                                postinumero,
+                                postitoimipaikka)
+      VALUES (${arvioija.arvioijanOppijanumero},
+              ${arvioija.henkilotunnus},
+              ${arvioija.sukunimi},
+              ${arvioija.etunimet},
+              ${arvioija.sahkopostiosoite},
+              ${arvioija.katuosoite},
+              ${arvioija.postinumero},
+              ${arvioija.postitoimipaikka})
+      RETURNING id
+  `)
+  )[0].id
+
+  await db.dbClient.query(SQL`
+      INSERT INTO yki_arviointioikeus (arvioija_id,
+                                       ensimmainen_rekisterointipaiva,
+                                       kauden_alkupaiva,
+                                       kauden_paattymispaiva,
+                                       jatkorekisterointi,
+                                       tila,
+                                       kieli,
+                                       tasot)
+      VALUES (${arvioijaId},
+              ${arvioija.ensimmainenRekisterointipaiva},
+              ${arvioija.kaudenAlkupaiva},
+              ${arvioija.kaudenPaattymispaiva},
+              ${arvioija.jatkorekisterointi},
+              ${arvioija.tila},
+              ${arvioija.kieli},
+              ${arvioija.tasot})
+  `)
+}

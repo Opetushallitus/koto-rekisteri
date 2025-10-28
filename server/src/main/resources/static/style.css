@@ -254,3 +254,7 @@ table td input {
     opacity: 1;
   }
 }
+
+td {
+  vertical-align: top;
+}
