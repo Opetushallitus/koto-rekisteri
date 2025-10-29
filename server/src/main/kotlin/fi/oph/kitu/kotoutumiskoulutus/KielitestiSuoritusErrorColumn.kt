@@ -1,9 +1,10 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.html.DisplayTableEnum
+import fi.oph.kitu.html.json
+import fi.oph.kitu.toJsonNode
 import kotlinx.html.FlowContent
 import kotlinx.html.details
-import kotlinx.html.pre
 import kotlinx.html.summary
 
 enum class KielitestiSuoritusErrorColumn(
@@ -68,7 +69,7 @@ enum class KielitestiSuoritusErrorColumn(
             if (it.lisatietoja != null) {
                 details {
                     summary { +it.viesti }
-                    pre { +it.lisatietoja }
+                    json(it.lisatietoja.toJsonNode())
                 }
             } else {
                 +it.viesti

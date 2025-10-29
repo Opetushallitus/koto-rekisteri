@@ -7,13 +7,17 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.TypedResult.Failure
 import fi.oph.kitu.TypedResult.Success
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.KoealustaSuorituksetResponse.User.Completion
 import fi.oph.kitu.oppijanumero.Oppija
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.oppijanumero.OppijanumeroServiceError
+import fi.oph.kitu.oppijanumero.OppijanumerorekisteriRequest
 import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -71,13 +75,11 @@ class KoealustaMappingService(
                                 Oid.parse(user.completions.first().schoolOID).getOrNull(),
                                 moodleId = user.userid.toString(),
                                 user.completions.first().teacheremail,
-                                listOfNotNull(
-                                    "Request: ${it.request}",
-                                    when (it) {
-                                        is OppijanumeroException.HasResponse -> "Response: ${it.response}"
-                                        else -> null
-                                    },
-                                ).joinToString("\n"),
+                                OppijanumerorekisteriDebugInfo
+                                    .from(
+                                        it.request,
+                                        if (it is OppijanumeroException.HasResponse) it.response else null,
+                                    ).toString(),
                             )
                         }?.onFailure { oppijanumeroExceptions.add(it) }
                         ?.getOrNull()
@@ -382,6 +384,39 @@ class KoealustaMappingService(
                 val field: String,
                 val value: String,
             ) : Validation(userId, """Malformed value "$value" in "$field" for user "$userId"""")
+        }
+    }
+}
+
+interface DebugInfo {
+    val source: String
+}
+
+data class OppijanumerorekisteriDebugInfo(
+    val request: OppijanumerorekisteriRequest,
+    val error: OppijanumeroServiceError?,
+    val rawResponse: String?,
+) : DebugInfo {
+    override val source = "oppijanumerorekisteri"
+
+    override fun toString(): String = defaultObjectMapper.writeValueAsString(this)
+
+    companion object {
+        fun from(
+            request: OppijanumerorekisteriRequest,
+            response: ResponseEntity<String>?,
+        ): OppijanumerorekisteriDebugInfo {
+            val error =
+                try {
+                    response?.body?.let { defaultObjectMapper.readValue<OppijanumeroServiceError>(it) }
+                } catch (_: Exception) {
+                    null
+                }
+            return OppijanumerorekisteriDebugInfo(
+                request = request,
+                error = error,
+                rawResponse = if (error == null) response?.body else null,
+            )
         }
     }
 }

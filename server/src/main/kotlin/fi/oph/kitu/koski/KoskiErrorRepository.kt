@@ -1,10 +1,8 @@
 package fi.oph.kitu.koski
 
-import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.TextNode
-import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.toJsonNode
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import org.springframework.data.annotation.Id
 import org.springframework.data.jdbc.repository.query.Modifying
@@ -84,13 +82,7 @@ data class KoskiErrorEntity(
     fun errorJson(): JsonNode? {
         val matchResult = Regex("^[\\w\\s]+:\\s\"(.*)\"$").find(message)
         return matchResult?.let {
-            val json = matchResult.groupValues[1]
-            val parser = defaultObjectMapper.factory.createParser(json)
-            return try {
-                defaultObjectMapper.readTree(parser)
-            } catch (_: JsonParseException) {
-                TextNode(json)
-            }
+            matchResult.groupValues[1].toJsonNode()
         }
     }
 }
