@@ -39,7 +39,12 @@ class OppijanumeroServiceImpl(
                 require(oppija.kutsumanimi.isNotEmpty()) { "kutsumanimi cannot be empty" }
 
                 val requestBody =
-                    YleistunnisteHaeRequest(oppija.etunimet, oppija.hetu, oppija.kutsumanimi, oppija.sukunimi)
+                    YleistunnisteHaeRequest(
+                        oppija.etunimet,
+                        oppija.hetu,
+                        oppija.kutsumanimi,
+                        oppija.sukunimi,
+                    )
 
                 client
                     .onrPost("yleistunniste/hae", requestBody, YleistunnisteHaeResponse::class.java)
@@ -109,15 +114,15 @@ class OppijanumerorekisteriClient(
         // At this point, CAS-authentication is done succesfully,
         // but we still need to check endpoint specific statuses
         val rawResponse = rawResult.value
-        if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
-            return TypedResult.Failure(OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest()))
+        return if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
+            TypedResult.Failure(OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest()))
         } else if (rawResponse.statusCode.is4xxClientError) {
-            return TypedResult.Failure(OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse))
+            TypedResult.Failure(OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse))
         } else if (!rawResponse.statusCode.is2xxSuccessful) {
-            throw OppijanumeroException.UnexpectedError(body ?: EmptyRequest(), rawResponse)
+            TypedResult.Failure(OppijanumeroException.UnexpectedError(body ?: EmptyRequest(), rawResponse))
+        } else {
+            deserializeResponse(body ?: EmptyRequest(), rawResult.value, responseType)
         }
-
-        return deserializeResponse(body ?: EmptyRequest(), rawResult.value, responseType)
     }
 
     /**

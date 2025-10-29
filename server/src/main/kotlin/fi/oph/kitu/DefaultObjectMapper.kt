@@ -1,8 +1,11 @@
 package fi.oph.kitu
 
+import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
@@ -43,4 +46,13 @@ val defaultObjectMapper by lazy {
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
     mapper
+}
+
+fun String.toJsonNode(): JsonNode {
+    val parser = defaultObjectMapper.factory.createParser(this)
+    return try {
+        defaultObjectMapper.readTree(parser)
+    } catch (_: JsonParseException) {
+        TextNode(this)
+    }
 }

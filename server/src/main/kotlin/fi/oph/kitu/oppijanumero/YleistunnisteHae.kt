@@ -34,4 +34,6 @@ data class OppijanumeroServiceError(
     val error: String,
     @param:JsonProperty("path")
     val path: String,
+    @param:JsonProperty("message")
+    val message: String?,
 )
