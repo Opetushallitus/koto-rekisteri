@@ -69,17 +69,19 @@ class KoealustaMappingService(
                     oppija
                         ?.let(oppijanumeroService::getOppijanumero)
                         ?.mapFailure {
-                            Error.OppijanumeroFailure(
-                                it,
-                                "Oppijanumeron haku epäonnistui: ${it.oppijanumeroServiceError?.error ?: it.message ?: "ei tarkempia tietoja"}",
-                                Oid.parse(user.completions.first().schoolOID).getOrNull(),
-                                moodleId = user.userid.toString(),
-                                user.completions.first().teacheremail,
+                            val debugInfo =
                                 OppijanumerorekisteriDebugInfo
                                     .from(
                                         it.request,
                                         if (it is OppijanumeroException.HasResponse) it.response else null,
-                                    ).toString(),
+                                    )
+                            Error.OppijanumeroFailure(
+                                it,
+                                "Oppijanumeron haku epäonnistui: ${debugInfo.message() ?: it.oppijanumeroServiceError?.error ?: it.message ?: "ei tarkempia tietoja"}",
+                                Oid.parse(user.completions.first().schoolOID).getOrNull(),
+                                moodleId = user.userid.toString(),
+                                user.completions.first().teacheremail,
+                                debugInfo.toString(),
                             )
                         }?.onFailure { oppijanumeroExceptions.add(it) }
                         ?.getOrNull()
@@ -394,12 +396,21 @@ interface DebugInfo {
 
 data class OppijanumerorekisteriDebugInfo(
     val request: OppijanumerorekisteriRequest,
+    val detectedTypicalErrors: List<String>,
     val error: OppijanumeroServiceError?,
     val rawResponse: String?,
 ) : DebugInfo {
     override val source = "oppijanumerorekisteri"
 
     override fun toString(): String = defaultObjectMapper.writeValueAsString(this)
+
+    fun message(): String? =
+        when (detectedTypicalErrors.size) {
+            0 -> null
+            1 -> detectedTypicalErrors[0]
+            2 -> "${detectedTypicalErrors[0]} ja 1 muu virhe"
+            else -> "${detectedTypicalErrors[0]} ja ${detectedTypicalErrors.size - 1} muuta virhettä"
+        }
 
     companion object {
         fun from(
@@ -412,8 +423,19 @@ data class OppijanumerorekisteriDebugInfo(
                 } catch (_: Exception) {
                     null
                 }
+
+            val detectedTypicalErrors: List<String> =
+                error?.message?.let { msg ->
+                    mapOf(
+                        "Nick name must be one of the first names" to "Kutsumanimen on oltava yksi etunimistä",
+                        "Invalid pattern. Must contain an alphabetic character" to
+                            "Kutsumanimessä ei saa olla erikoismerkkejä, mukaanlukien välilyönti",
+                    ).mapNotNull { if (msg.contains(it.key)) it.value else null }
+                } ?: emptyList()
+
             return OppijanumerorekisteriDebugInfo(
                 request = request,
+                detectedTypicalErrors = detectedTypicalErrors,
                 error = error,
                 rawResponse = if (error == null) response?.body else null,
             )
