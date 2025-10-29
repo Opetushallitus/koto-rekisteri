@@ -424,7 +424,7 @@ data class OppijanumerorekisteriDebugInfo(
                     null
                 }
 
-            val detectedTypicalErrors: List<String> =
+            val validationErrors: List<String> =
                 error?.message?.let { msg ->
                     mapOf(
                         "Nick name must be one of the first names" to "Kutsumanimen on oltava yksi etunimistä",
@@ -433,9 +433,19 @@ data class OppijanumerorekisteriDebugInfo(
                     ).mapNotNull { if (msg.contains(it.key)) it.value else null }
                 } ?: emptyList()
 
+            val statusCodeMessages: List<String> =
+                listOfNotNull(
+                    when (response?.statusCode?.value()) {
+                        401 -> "Kielitutkintorekisterin järjestelmätunnuksen käyttöoikeudet eivät ole riittävät"
+                        404 -> "Henkilöä ei löydy Oppijanumerorekisteristä"
+                        409 -> "Kirjoitusvirhe henkilötunnuksessa tai nimessä"
+                        else -> null
+                    },
+                )
+
             return OppijanumerorekisteriDebugInfo(
                 request = request,
-                detectedTypicalErrors = detectedTypicalErrors,
+                detectedTypicalErrors = validationErrors + statusCodeMessages,
                 error = error,
                 rawResponse = if (error == null) response?.body else null,
             )
