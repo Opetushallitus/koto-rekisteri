@@ -25,10 +25,6 @@ class YkiArvioijaValidation(
                     .map { value }
             },
             shouldBeNull("henkilotunnus") { it.henkilotunnus },
-            shouldBeNull("sahkopostiosoite") { it.sahkopostiosoite },
-            shouldBeNull("katuosoite") { it.katuosoite },
-            shouldBeNull("postinumero") { it.postinumero },
-            shouldBeNull("postitoimipaikka") { it.postitoimipaikka },
         )
 
     private fun <T> shouldBeNull(

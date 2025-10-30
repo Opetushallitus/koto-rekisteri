@@ -305,7 +305,7 @@ class YkiApiControllerTest(
     }
 
     @Test
-    fun `Hetu ja yhteystietoja ei voi siirtää yki-arvioijalle vuodesta 2026 alkaen`() {
+    fun `Henkilötunnusta ei voi siirtää yki-arvioijalle vuodesta 2026 alkaen`() {
         timeService.runWithFixedClock(LocalDate.of(2026, 1, 1).toInstant()) {
             val arvioija =
                 YkiArvioija(
@@ -334,23 +334,23 @@ class YkiApiControllerTest(
             postArvioija(arvioija) {
                 isBadRequest(
                     "henkilotunnus: Kenttää henkilotunnus ei voi siirtää 1.1.2026 alkaen",
-                    "sahkopostiosoite: Kenttää sahkopostiosoite ei voi siirtää 1.1.2026 alkaen",
-                    "katuosoite: Kenttää katuosoite ei voi siirtää 1.1.2026 alkaen",
-                    "postinumero: Kenttää postinumero ei voi siirtää 1.1.2026 alkaen",
-                    "postitoimipaikka: Kenttää postitoimipaikka ei voi siirtää 1.1.2026 alkaen",
                 )
             }
         }
     }
 
     @Test
-    fun `Yki-arvioijan siirto onnistuu 2026 alkaen jattamalla hetun ja yhteystiedot pois`() {
+    fun `Yki-arvioijan siirto onnistuu 2026 alkaen jättämällä hetu pois`() {
         timeService.runWithFixedClock(LocalDate.of(2026, 1, 1).toInstant()) {
             val arvioija =
                 YkiArvioija(
                     arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow(),
                     sukunimi = "Kivinen-Testi",
                     etunimet = "Petro Testi",
+                    sahkopostiosoite = "devnull-2@oph.fi",
+                    katuosoite = "Haltin vanha autiotupa",
+                    postinumero = "99490",
+                    postitoimipaikka = "Enontekiö",
                     ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
                     arviointioikeudet =
                         listOf(
