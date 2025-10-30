@@ -12,9 +12,9 @@ data class YkiArvioija(
     val sukunimi: String,
     val etunimet: String,
     val sahkopostiosoite: String? = null,
-    val katuosoite: String? = null,
-    val postinumero: String? = null,
-    val postitoimipaikka: String? = null,
+    val katuosoite: String,
+    val postinumero: String,
+    val postitoimipaikka: String,
     val ensimmainenRekisterointipaiva: LocalDate,
     val arviointioikeudet: List<YkiArviointioikeus>,
 ) {

@@ -41,11 +41,11 @@ class SolkiArvioijaResponse(
     @param:JsonProperty("sahkopostiosoite")
     val sahkopostiosoite: String?,
     @param:JsonProperty("katuosoite")
-    val katuosoite: String?,
+    val katuosoite: String,
     @param:JsonProperty("postinumero")
-    val postinumero: String?,
+    val postinumero: String,
     @param:JsonProperty("postitoimipaikka")
-    val postitoimipaikka: String?,
+    val postitoimipaikka: String,
     @param:JsonProperty("ensimmainenRekisterointipaiva")
     @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val ensimmainenRekisterointipaiva: LocalDate,

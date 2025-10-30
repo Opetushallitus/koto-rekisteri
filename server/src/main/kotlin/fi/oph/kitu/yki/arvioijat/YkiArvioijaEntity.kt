@@ -23,9 +23,9 @@ data class YkiArvioijaEntity(
     val sukunimi: String,
     val etunimet: String,
     val sahkopostiosoite: String?,
-    val katuosoite: String?,
-    val postinumero: String?,
-    val postitoimipaikka: String?,
+    val katuosoite: String,
+    val postinumero: String,
+    val postitoimipaikka: String,
     @MappedCollection(keyColumn = "id", idColumn = "arvioija_id")
     val arviointioikeudet: List<YkiArviointioikeusEntity>,
 ) {

@@ -155,9 +155,9 @@ data class YkiArvioijaArviointioikeus(
     val sukunimi: String,
     val etunimet: String,
     val sahkopostiosoite: String?,
-    val katuosoite: String?,
-    val postinumero: String?,
-    val postitoimipaikka: String?,
+    val katuosoite: String,
+    val postinumero: String,
+    val postitoimipaikka: String,
     @Enumerated(EnumType.STRING)
     val kieli: Tutkintokieli,
     val tasot: Set<Tutkintotaso>,
