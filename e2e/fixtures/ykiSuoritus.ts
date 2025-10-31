@@ -33,6 +33,7 @@ export interface YkiSuoritus {
   arvosanaMuuttui: string[]
   perustelu: string
   tarkistusarvioinninKasittelyPvm: string
+  arviointitila: string
 }
 
 type CreateYkiSuoritusArgs = Omit<
@@ -72,6 +73,7 @@ const createYkiSuoritus = (
     arvosanaMuuttui,
     perustelu,
     tarkistusarvioinninKasittelyPvm,
+    arviointitila,
   }: CreateYkiSuoritusArgs,
 ): YkiSuoritus => {
   const p = peopleFixture[person]
@@ -111,6 +113,7 @@ const createYkiSuoritus = (
     arvosanaMuuttui,
     perustelu,
     tarkistusarvioinninKasittelyPvm,
+    arviointitila,
   }
 }
 
@@ -138,6 +141,7 @@ export const fixtureData = {
     arvosanaMuuttui: null,
     perustelu: null,
     tarkistusarvioinninKasittelyPvm: null,
+    arviointitila: "ARVIOITU",
   }),
   ranjaTarkistus: createYkiSuoritus("ranja", {
     kansalaisuus: "EST",
@@ -162,6 +166,7 @@ export const fixtureData = {
     arvosanaMuuttui: ["PU"],
     perustelu: "Tarkistusarvioinnin testi",
     tarkistusarvioinninKasittelyPvm: "2024-10-20",
+    arviointitila: "ARVIOITU",
   }),
   petro: createYkiSuoritus("petro", {
     kansalaisuus: "EST",
@@ -186,6 +191,7 @@ export const fixtureData = {
     arvosanaMuuttui: null,
     perustelu: null,
     tarkistusarvioinninKasittelyPvm: null,
+    arviointitila: "ARVIOITU",
   }),
   magdalena: createYkiSuoritus("magdalena", {
     kansalaisuus: "FIN",
@@ -210,6 +216,7 @@ export const fixtureData = {
     arvosanaMuuttui: null,
     perustelu: null,
     tarkistusarvioinninKasittelyPvm: null,
+    arviointitila: "ARVIOITU",
   }),
 } as const
 
@@ -244,7 +251,8 @@ const insertQuery = (suoritus: YkiSuoritus) => SQL`
         tarkistusarvioidut_osakokeet,
         arvosana_muuttui,
         perustelu,
-        tarkistusarvioinnin_kasittely_pvm
+        tarkistusarvioinnin_kasittely_pvm,
+        arviointitila
     ) VALUES (${suoritus.suorittajanOid},
               ${suoritus.hetu},
               ${suoritus.sukupuoli},
@@ -274,7 +282,8 @@ const insertQuery = (suoritus: YkiSuoritus) => SQL`
               ${suoritus.tarkistusarvioidutOsakokeet},
               ${suoritus.arvosanaMuuttui},
               ${suoritus.perustelu},
-              ${suoritus.tarkistusarvioinninKasittelyPvm})
+              ${suoritus.tarkistusarvioinninKasittelyPvm},
+              ${suoritus.arviointitila})
 `
 
 export type YkiSuorittajaName = keyof typeof fixtureData

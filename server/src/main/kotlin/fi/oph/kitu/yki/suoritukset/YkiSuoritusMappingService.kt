@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa.Companion.toTutkinnonOsaSet
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -49,6 +50,7 @@ class YkiSuoritusMappingService {
         csv.tarkistusarvioinninKasittelyPvm,
         Oid.parse(koskiOpiskeluoikeus).getOrNull(),
         false,
+        arviointitila = Arviointitila.ARVIOITU, // CSV:stä tulee vain arvioituja suorituksia
     )
 
     @WithSpan

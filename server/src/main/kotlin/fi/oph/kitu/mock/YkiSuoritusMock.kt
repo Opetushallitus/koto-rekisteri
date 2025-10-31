@@ -1,5 +1,6 @@
 package fi.oph.kitu.mock
 
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -70,5 +71,6 @@ fun generateRandomYkiSuoritusEntity(
         tarkistusarvioinninKasittelyPvm = tarkistusarvioinninKasittelyPvm,
         koskiOpiskeluoikeus = null,
         koskiSiirtoKasitelty = false,
+        arviointitila = Arviointitila.ARVIOITU,
     )
 }

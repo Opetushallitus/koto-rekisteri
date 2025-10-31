@@ -55,15 +55,17 @@ class KoskiRequestMapper {
                             tila =
                                 Tila(
                                     opiskeluoikeusjaksot =
-                                        listOf(
+                                        listOfNotNull(
                                             OpiskeluoikeusJakso(
                                                 alku = ykiSuoritus.tutkintopaiva,
                                                 tila = Koodisto.OpiskeluoikeudenTila.Lasna,
                                             ),
-                                            OpiskeluoikeusJakso(
-                                                alku = ykiSuoritus.arviointipaiva,
-                                                tila = Koodisto.OpiskeluoikeudenTila.Paattynyt,
-                                            ),
+                                            ykiSuoritus.arviointipaiva?.let {
+                                                OpiskeluoikeusJakso(
+                                                    alku = ykiSuoritus.arviointipaiva,
+                                                    tila = Koodisto.OpiskeluoikeudenTila.Paattynyt,
+                                                )
+                                            },
                                         ),
                                 ),
                             suoritukset =
@@ -84,11 +86,13 @@ class KoskiRequestMapper {
                                             ),
                                         toimipiste = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid),
                                         vahvistus =
-                                            KielitutkintoSuoritus.VahvistusImpl(
-                                                päivä = ykiSuoritus.arviointipaiva,
-                                                myöntäjäOrganisaatio =
-                                                    Organisaatio(ykiSuoritus.jarjestajanTunnusOid),
-                                            ),
+                                            ykiSuoritus.arviointipaiva?.let {
+                                                KielitutkintoSuoritus.VahvistusImpl(
+                                                    päivä = ykiSuoritus.arviointipaiva,
+                                                    myöntäjäOrganisaatio =
+                                                        Organisaatio(ykiSuoritus.jarjestajanTunnusOid),
+                                                )
+                                            },
                                         osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus),
                                         yleisarvosana =
                                             ykiSuoritus.yleisarvosana?.let {
@@ -113,12 +117,14 @@ class KoskiRequestMapper {
             Koodisto.YkiSuorituksenOsa.RakenteetJaSanasto to suoritusEntity.rakenteetJaSanasto,
         ).mapNotNull { (suorituksenNimi, arvosana) ->
             arvosana?.let {
-                yleisenKielitutkinnonOsa(
-                    suorituksenNimi,
-                    arvosana,
-                    suoritusEntity.tutkintotaso,
-                    suoritusEntity.arviointipaiva,
-                )
+                suoritusEntity.arviointipaiva?.let {
+                    yleisenKielitutkinnonOsa(
+                        suorituksenNimi,
+                        arvosana,
+                        suoritusEntity.tutkintotaso,
+                        suoritusEntity.arviointipaiva,
+                    )
+                }
             }
         }
 
