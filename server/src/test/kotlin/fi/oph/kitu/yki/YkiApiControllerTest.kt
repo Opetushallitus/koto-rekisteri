@@ -147,6 +147,61 @@ class YkiApiControllerTest(
         )
     }
 
+    @Test
+    fun `Arvioitua suoritusta ei voi siirtää, jos siltä puuttuu arviointipäivä`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus { it.copy(arviointipaiva = null) }
+
+        val result = validation.validateAndEnrich(suoritus)
+
+        assertEquals(
+            Validation.fail(
+                listOf("suoritus", "arviointipaiva"),
+                "Arviointitila on ARVIOITU, mutta arviointipäivä puuttuu",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Ei-arvioitua suoritusta ei voi siirtää, jos sillä on arviointipäivä`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus { it.copy(arviointitila = Arviointitila.ARVIOITAVANA) }
+
+        val result = validation.validateAndEnrich(suoritus)
+
+        assertEquals(
+            Validation.fail(
+                listOf("suoritus", "arviointipaiva"),
+                "Arviointitila on ARVIOITAVANA, mutta arviointipäivä on määritelty",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Arvioitua suoritusta ei voi siirtää, jos siltä puuttuu yksikin arvosana`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    osat =
+                        it.osat.mapIndexed { i, osa ->
+                            if (i == 1) osa.copy(arvosana = null) else osa
+                        },
+                )
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+
+        assertEquals(
+            Validation.fail(
+                listOf("suoritus", "osat", "1", "arvosana"),
+                "Arviointitila on ARVIOITU, mutta arviointi puuttuu osakokeelta 'PU'",
+            ),
+            result,
+        )
+    }
+
     val validiYkiSuoritus =
         Henkilosuoritus(
             henkilo = Henkilo(oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(), hetu = "010180-9026"),
