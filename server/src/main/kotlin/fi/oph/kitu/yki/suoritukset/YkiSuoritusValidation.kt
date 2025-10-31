@@ -7,6 +7,7 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
+import fi.oph.kitu.yki.Arviointitila
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -22,6 +23,7 @@ class YkiSuoritusValidation(
             value,
             { validateOrganisaatiot(it) },
             { validateHetu(it) },
+            { validateArvointitila(it) },
         )
 
     fun validateHetu(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
@@ -77,4 +79,43 @@ class YkiSuoritusValidation(
             },
         )
     }
+
+    fun validateArvointitila(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
+        when (s.suoritus.arviointitila) {
+            Arviointitila.ARVIOITU -> {
+                Validation.fold(
+                    s,
+                    Validation.assertTrue(
+                        { it.suoritus.arviointipaiva != null },
+                        listOf("suoritus", "arviointipaiva"),
+                        "Arviointitila on ARVIOITU, mutta arviointipäivä puuttuu",
+                    ),
+                    *(
+                        s.suoritus.osat
+                            .mapIndexed { i, osakoe ->
+                                Validation.assertTrue<YkiHenkilosuoritus>(
+                                    { osakoe.arvosana != null },
+                                    listOf("suoritus", "osat", i.toString(), "arvosana"),
+                                    "Arviointitila on ARVIOITU, mutta arviointi puuttuu osakokeelta '${osakoe.tyyppi.name}'",
+                                )
+                            }.toTypedArray()
+                    ),
+                )
+            }
+
+            Arviointitila.ARVIOITAVANA,
+            Arviointitila.EI_SUORITUSTA,
+            Arviointitila.KESKEYTETTY,
+            Arviointitila.UUSINTA,
+            Arviointitila.TARKISTUSARVIOITU,
+            ->
+                Validation.fold(
+                    s,
+                    Validation.assertTrue(
+                        { it.suoritus.arviointipaiva == null },
+                        listOf("suoritus", "arviointipaiva"),
+                        "Arviointitila on ${s.suoritus.arviointitila}, mutta arviointipäivä on määritelty",
+                    ),
+                )
+        }
 }
