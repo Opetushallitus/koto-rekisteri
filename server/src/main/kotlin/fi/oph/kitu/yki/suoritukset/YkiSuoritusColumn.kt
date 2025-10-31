@@ -111,6 +111,13 @@ enum class YkiSuoritusColumn(
         renderValue = { +it.jarjestajanNimi },
     ),
 
+    Arviointitila(
+        entityName = "arviointitila",
+        uiHeaderValue = "Arviointitila",
+        urlParam = "arviointitila",
+        renderValue = { +it.arviointitila.viewText },
+    ),
+
     Arviointipaiva(
         entityName = "arviointipaiva",
         uiHeaderValue = "Arviointipäivä",

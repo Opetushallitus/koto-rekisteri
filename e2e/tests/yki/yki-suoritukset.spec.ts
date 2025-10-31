@@ -199,38 +199,43 @@ describe('"YKI Suoritukset" -page', () => {
       ],
     },
     {
-      column: "Arviointipäivä",
+      column: "Arviointitila",
       tableColumnIndex: 14,
+      order: ["Arviointi valmis", "Arviointi valmis", "Arviointi valmis"],
+    },
+    {
+      column: "Arviointipäivä",
+      tableColumnIndex: 15,
       order: ["2025-05-04", "2024-11-14", "2024-11-14"],
     },
     {
       column: "Tekstin ymmärtäminen",
-      tableColumnIndex: 15,
-      order: ["6", "5", "1"],
-    },
-    {
-      column: "Kirjoittaminen",
       tableColumnIndex: 16,
       order: ["6", "5", "1"],
     },
     {
-      column: "Rakenteet ja sanasto",
+      column: "Kirjoittaminen",
       tableColumnIndex: 17,
+      order: ["6", "5", "1"],
+    },
+    {
+      column: "Rakenteet ja sanasto",
+      tableColumnIndex: 18,
       order: ["9", "8", "1"],
     },
     {
       column: "Puheen ymmärtäminen",
-      tableColumnIndex: 18,
+      tableColumnIndex: 19,
       order: ["5", "4", "2"],
     },
     {
       column: "Puhuminen",
-      tableColumnIndex: 19,
+      tableColumnIndex: 20,
       order: ["11", "9", "3"],
     },
     {
       column: "Yleisarvosana",
-      tableColumnIndex: 20,
+      tableColumnIndex: 21,
       order: ["10", "9", "1"],
     },
   ] as const
