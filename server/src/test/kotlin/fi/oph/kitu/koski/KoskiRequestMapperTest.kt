@@ -218,7 +218,7 @@ class KoskiRequestMapperTest(
     }
 
     @Test
-    fun `drop whole suoritus if even osakoe is keskeytetty`() {
+    fun `drop whole suoritus if even one osakoe is keskeytetty`() {
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(
                 tutkintokieli = Tutkintokieli.SME,

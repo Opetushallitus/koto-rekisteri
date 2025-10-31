@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -35,7 +36,7 @@ data class YkiSuoritusEntity(
     val tutkintotaso: Tutkintotaso,
     val jarjestajanTunnusOid: Oid,
     val jarjestajanNimi: String,
-    val arviointipaiva: LocalDate,
+    val arviointipaiva: LocalDate?,
     val tekstinYmmartaminen: Int?,
     val kirjoittaminen: Int?,
     val rakenteetJaSanasto: Int?,
@@ -64,6 +65,8 @@ data class YkiSuoritusEntity(
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
     val koskiOpiskeluoikeus: Oid?,
     val koskiSiirtoKasitelty: Boolean?,
+    @Enumerated(EnumType.STRING)
+    val arviointitila: Arviointitila,
 ) {
     companion object
 }
