@@ -22,6 +22,7 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
 import fi.oph.kitu.vkt.VktHenkilosuoritus
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -39,7 +40,7 @@ class KoskiRequestMapper {
 
     @WithSpan
     fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): KoskiRequest? =
-        if (isVilpillinenTaiKeskeytettySuoritus(ykiSuoritus)) {
+        if (isVilpillinenTaiKeskeytettyTaiArvioimatonSuoritus(ykiSuoritus)) {
             null
         } else {
             KoskiRequest(
@@ -128,14 +129,15 @@ class KoskiRequestMapper {
             }
         }
 
-    private fun isVilpillinenTaiKeskeytettySuoritus(suoritusEntity: YkiSuoritusEntity): Boolean =
-        listOf(
-            suoritusEntity.tekstinYmmartaminen,
-            suoritusEntity.kirjoittaminen,
-            suoritusEntity.puheenYmmartaminen,
-            suoritusEntity.puhuminen,
-            suoritusEntity.rakenteetJaSanasto,
-        ).any { it == 10 || it == 11 }
+    private fun isVilpillinenTaiKeskeytettyTaiArvioimatonSuoritus(suoritusEntity: YkiSuoritusEntity): Boolean =
+        suoritusEntity.arviointitila != Arviointitila.ARVIOITU ||
+            listOf(
+                suoritusEntity.tekstinYmmartaminen,
+                suoritusEntity.kirjoittaminen,
+                suoritusEntity.puheenYmmartaminen,
+                suoritusEntity.puhuminen,
+                suoritusEntity.rakenteetJaSanasto,
+            ).any { it == 10 || it == 11 }
 
     private fun yleisenKielitutkinnonOsa(
         suorituksenNimi: Koodisto.YkiSuorituksenOsa,
