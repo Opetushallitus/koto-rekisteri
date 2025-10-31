@@ -18,7 +18,7 @@ const val AUDIT_LOGGER_NAME = "auditLogger"
 class AuditLogger(
     @param:Qualifier("applicationTaskExecutor")
     private val taskExecutor: AsyncTaskExecutor,
-    private val objectMapper: ObjectMapper,
+    val objectMapper: ObjectMapper,
     private val timeService: TimeService,
 ) {
     private val slf4jLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
