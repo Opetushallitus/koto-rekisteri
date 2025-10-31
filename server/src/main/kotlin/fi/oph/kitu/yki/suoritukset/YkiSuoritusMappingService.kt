@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
@@ -48,6 +49,7 @@ class YkiSuoritusMappingService {
         csv.tarkistusarvioinninKasittelyPvm,
         Oid.parse(koskiOpiskeluoikeus).getOrNull(),
         false,
+        arviointitila = Arviointitila.ARVIOITU, // CSV:stä tulee vain arvioituja suorituksia
     )
 
     @WithSpan
