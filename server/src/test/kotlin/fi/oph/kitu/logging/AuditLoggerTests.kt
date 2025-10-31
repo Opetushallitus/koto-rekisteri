@@ -5,7 +5,6 @@ import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.auth.CasUserDetails
-import fi.oph.kitu.i18n.isoDateTimeUTC
 import fi.oph.kitu.mock.generateRandomOppijaOid
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -34,6 +33,8 @@ import ch.qos.logback.classic.Logger as LogbackLogger
 class AuditLoggerTests(
     @param:Autowired val timeService: TestTimeService,
 ) {
+    @Autowired
+    private lateinit var auditLogger: AuditLogger
     private val logbackLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME) as LogbackLogger
 
     private val listAppender = ListAppender<ILoggingEvent>()
@@ -99,7 +100,7 @@ class AuditLoggerTests(
             {
                 "version":1,
                 "logSeq":0,
-                "bootTime":"${auditLogger.bootTime.isoDateTimeUTC()}",
+                "bootTime":${auditLogger.objectMapper.writeValueAsString(auditLogger.bootTime)},
                 "type":"log",
                 "environment":"test",
                 "hostname":"http://localhost:8080/kielitutkinnot",
