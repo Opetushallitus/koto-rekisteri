@@ -87,7 +87,7 @@ data class YkiSuoritusCsv(
     val jarjestajanNimi: String,
     @param:JsonProperty("arviointipaiva")
     @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    val arviointipaiva: LocalDate,
+    val arviointipaiva: LocalDate?,
     @param:JsonProperty("tekstinYmmartaminen")
     val tekstinYmmartaminen: Int?,
     @param:JsonProperty("kirjoittaminen")

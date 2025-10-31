@@ -6,6 +6,7 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.TutkinnonOsa.Companion.toTutkinnonOsaSet
 import fi.oph.kitu.yki.Tutkintokieli
@@ -21,9 +22,10 @@ data class YkiSuoritus(
     val kieli: Tutkintokieli,
     val jarjestaja: YkiJarjestaja,
     val tutkintopaiva: LocalDate,
-    val arviointipaiva: LocalDate,
+    val arviointipaiva: LocalDate?,
     val osat: List<YkiOsa>,
     val tarkistusarvointi: YkiTarkastusarvointi? = null,
+    val arviointitila: Arviointitila,
     override val lahdejarjestelmanId: LahdejarjestelmanTunniste,
     override val internalId: Int? = null,
     override val koskiOpiskeluoikeusOid: Oid? = null,
@@ -73,6 +75,7 @@ data class YkiSuoritus(
             tarkistusarvioinninKasittelyPvm = tarkistusarvointi?.kasittelypaiva,
             koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,
             koskiSiirtoKasitelty = koskiSiirtoKasitelty,
+            arviointitila = arviointitila,
         )
     }
 }
@@ -84,7 +87,7 @@ data class YkiJarjestaja(
 
 data class YkiOsa(
     val tyyppi: TutkinnonOsa,
-    val arvosana: Int,
+    val arvosana: Int?,
 )
 
 data class YkiTarkastusarvointi(

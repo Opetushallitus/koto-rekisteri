@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa
@@ -84,7 +85,8 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         perustelu,
         tarkistusarvioinnin_kasittely_pvm,
         koski_opiskeluoikeus,
-        koski_siirto_kasitelty
+        koski_siirto_kasitelty,
+        arviointitila
         """.trimIndent()
 
     /**
@@ -126,8 +128,9 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 arvosana_muuttui,
                 perustelu,
                 tarkistusarvioinnin_kasittely_pvm,
-                koski_opiskeluoikeus
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                koski_opiskeluoikeus,
+                arviointitila
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT ON CONSTRAINT unique_suoritus DO NOTHING;
             """.trimIndent()
         val pscf = PreparedStatementCreatorFactory(sql)
@@ -184,6 +187,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                     ps.setObject(29, suoritus.perustelu)
                     ps.setObject(30, suoritus.tarkistusarvioinninKasittelyPvm)
                     ps.setString(31, suoritus.koskiOpiskeluoikeus?.toString())
+                    ps.setString(32, suoritus.arviointitila.toString())
                 }
 
                 override fun getBatchSize() = suoritukset.count()
@@ -345,6 +349,7 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
         Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),
         rs.getBoolean("koski_siirto_kasitelty"),
+        Arviointitila.valueOf(rs.getString("arviointitila")),
     )
 
 @Repository
