@@ -40,7 +40,7 @@ class YkiApiController(
     private val ykiArvioijaRepository: YkiArvioijaRepository,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
 ) {
-    @GetMapping("/suoritukset", produces = ["text/csv"])
+    @GetMapping("/suoritukset", "/suoritus", produces = ["text/csv"])
     fun getSuorituksetAsCsv(
         @RequestParam("includeVersionHistory", required = false) includeVersionHistory: Boolean?,
     ): ResponseEntity<Resource> =
