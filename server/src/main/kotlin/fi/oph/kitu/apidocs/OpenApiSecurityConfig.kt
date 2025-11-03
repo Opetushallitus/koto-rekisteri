@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.security.SecurityScheme
 import org.springdoc.core.customizers.GlobalOpenApiCustomizer
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.util.UriComponentsBuilder
 
@@ -23,6 +24,7 @@ const val OAUTH_SECURITY_SCHEME = "oauth_client_credentials"
         ),
 )
 @Configuration
+@ConditionalOnProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri")
 class OpenApiSecurityConfig : GlobalOpenApiCustomizer {
     @Value($$"${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     lateinit var oauthIssuerUri: String
@@ -40,6 +42,7 @@ class OpenApiSecurityConfig : GlobalOpenApiCustomizer {
                             // En löytänyt tapaa kysyä Spring Securityltä suoraan token-urlia, joten joudumme muodostamaan sen käsin tässä.
                             OAuthFlow()
                                 .tokenUrl(
+                                    // Javan URI-luokan uri.resolve(path) ylikirjoittaa koko polun, joten käytetään Springin UriComponentsBuilder-helpperiä polkusegmenttien lisäämiseksi loppuun.
                                     oauthUriBuilder()
                                         .pathSegment("oauth2", "token")
                                         .build()
