@@ -61,6 +61,7 @@ class YkiApiController(
 
     @PostMapping("/suoritus")
     @Secured("ROLE_APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS")
+    @Tag(name = "oauth2")
     @Operation(
         summary = "Yleisen kielitutkinnon suoritusten siirto Kielitutkintorekisteriin",
         requestBody =
@@ -145,6 +146,7 @@ class YkiApiController(
 
     @PostMapping("/arvioija")
     @Secured("ROLE_APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS")
+    @Tag(name = "oauth2")
     @Operation(
         summary = "Yleisen kielitutkinnon arvioijan siirto Kielitutkintorekisteriin",
         requestBody =

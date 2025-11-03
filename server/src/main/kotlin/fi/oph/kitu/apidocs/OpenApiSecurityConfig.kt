@@ -16,7 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder
 
 const val OAUTH_SECURITY_SCHEME = "oauth_client_credentials"
 
-/** Konfiguroidaan OpenAPI/Swagger-autentikaatio ohjelmallisesti, koska autentikaatio riippuu ajonaikaisesta auktorisaatiopalvelimen osoitteesta, joten emme voi laittaa sitä annotaatioon.  */
+/** Konfiguroidaan OpenAPI-dokumentaation / Swagger-sivun käyttämä autentikaatio ohjelmallisesti, koska autentikaatio riippuu ajonaikaisesta auktorisaatiopalvelimen osoitteesta, joten emme voi laittaa sitä annotaatioon.  */
 @OpenAPIDefinition(
     info =
         Info(
@@ -58,18 +58,23 @@ class OpenApiSecurityConfig : GlobalOpenApiCustomizer {
                 ),
         )
 
-        val oauthPaths = listOf("/yki/api/suoritus", "/yki/api/arvioija")
-
-        for (path in oauthPaths) {
-            openApi.paths
-                .get(path)
-                ?.post
-                ?.security(
-                    listOf(
-                        SecurityRequirement()
-                            .addList(OAUTH_SECURITY_SCHEME, listOf("APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS")),
-                    ),
+        // Oletus: OAuth2-autentikaatiota tukevat endpointit on merkitty "oauth2"-tagilla. Näin meidän ei tarvitse kovakoodata listaa kyseisistä endpointeista tänne piiloon. Toisaalta nyt pitää muistaa lisätä kyseinen tag jokaiselle OAuth2-endpointille.
+        // Huom: Tämä ainoastaan lisää Swaggeriin tuen OAuth2-autentikaatiolle. Springin varsinainen autentikaatio-konfiguraatio on konfiguroitu metodissa [fi.oph.kitu.auth.WebSecurityConfig.oauth2SecurityFilterChain].
+        openApi.paths.values
+            .flatMap { endpoint ->
+                listOf(
+                    endpoint?.post,
+                    endpoint?.put,
+                    endpoint?.get,
+                    endpoint?.delete,
                 )
-        }
+            }.filterNotNull()
+            .filter { operation -> operation.tags?.contains("oauth2") ?: false }
+            .forEach { operation ->
+                operation.addSecurityItem(
+                    SecurityRequirement()
+                        .addList(OAUTH_SECURITY_SCHEME, listOf("APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS")),
+                )
+            }
     }
 }
