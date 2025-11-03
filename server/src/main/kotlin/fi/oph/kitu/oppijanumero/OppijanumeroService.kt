@@ -42,7 +42,7 @@ class OppijanumeroServiceImpl(
                     YleistunnisteHaeRequest(
                         oppija.etunimet,
                         oppija.hetu,
-                        oppija.kutsumanimi,
+                        oppija.kutsumanimi.split(" ").first(),
                         oppija.sukunimi,
                     )
 
