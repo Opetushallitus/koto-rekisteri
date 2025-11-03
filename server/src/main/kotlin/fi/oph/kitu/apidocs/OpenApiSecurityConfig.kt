@@ -16,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder
 
 const val OAUTH_SECURITY_SCHEME = "oauth_client_credentials"
 
+/** Konfiguroidaan OpenAPI/Swagger-autentikaatio ohjelmallisesti, koska autentikaatio riippuu ajonaikaisesta auktorisaatiopalvelimen osoitteesta, joten emme voi laittaa sitä annotaatioon.  */
 @OpenAPIDefinition(
     info =
         Info(
