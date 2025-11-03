@@ -11,16 +11,11 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import io.swagger.v3.oas.annotations.security.OAuthFlow
-import io.swagger.v3.oas.annotations.security.OAuthFlows
-import io.swagger.v3.oas.annotations.security.OAuthScope
-import io.swagger.v3.oas.annotations.security.SecurityScheme
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
@@ -39,16 +34,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 @RestController
 @RequestMapping("/yki/api")
 @Tag(name = "Yleinen kielitutkinto")
-@SecurityScheme(
-    type = SecuritySchemeType.OAUTH2,
-    flows =
-        OAuthFlows(
-            clientCredentials =
-                OAuthFlow(
-                    scopes = [OAuthScope("foo")],
-                ),
-        ),
-)
 class YkiApiController(
     private val service: YkiService,
     private val validationService: ValidationService,
