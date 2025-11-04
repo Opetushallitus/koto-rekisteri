@@ -7,6 +7,7 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.yki.TutkinnonOsa
+import fi.oph.kitu.yki.TutkinnonOsa.Companion.toTutkinnonOsaSet
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.lang.IllegalArgumentException
@@ -64,8 +65,10 @@ data class YkiSuoritus(
             yleisarvosana = arvosana(TutkinnonOsa.yleisarvosana),
             tarkistusarvioinninSaapumisPvm = tarkistusarvointi?.saapumispaiva,
             tarkistusarvioinninAsiatunnus = tarkistusarvointi?.asiatunnus,
-            tarkistusarvioidutOsakokeet = tarkistusarvointi?.tarkistusarvioidutOsakokeet,
-            arvosanaMuuttui = tarkistusarvointi?.arvosanaMuuttui,
+            tarkistusarvioidutOsakokeet =
+                tarkistusarvointi?.tarkistusarvioidutOsakokeet?.toTutkinnonOsaSet(),
+            arvosanaMuuttui =
+                tarkistusarvointi?.arvosanaMuuttui?.toTutkinnonOsaSet(),
             perustelu = tarkistusarvointi?.perustelu,
             tarkistusarvioinninKasittelyPvm = tarkistusarvointi?.kasittelypaiva,
             koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,

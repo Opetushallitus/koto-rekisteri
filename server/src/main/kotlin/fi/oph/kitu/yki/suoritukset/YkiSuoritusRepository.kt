@@ -2,7 +2,9 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.jdbc.getTypedArrayOrNull
 import fi.oph.kitu.yki.Sukupuoli
+import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -165,8 +167,20 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                     ps.setObject(24, suoritus.yleisarvosana)
                     ps.setObject(25, suoritus.tarkistusarvioinninSaapumisPvm)
                     ps.setObject(26, suoritus.tarkistusarvioinninAsiatunnus)
-                    ps.setObject(27, suoritus.tarkistusarvioidutOsakokeet)
-                    ps.setObject(28, suoritus.arvosanaMuuttui)
+                    ps.setArray(
+                        27,
+                        ps.connection.createArrayOf(
+                            "text",
+                            suoritus.tarkistusarvioidutOsakokeet?.toTypedArray(),
+                        ),
+                    )
+                    ps.setArray(
+                        28,
+                        ps.connection.createArrayOf(
+                            "text",
+                            suoritus.arvosanaMuuttui?.toTypedArray(),
+                        ),
+                    )
                     ps.setObject(29, suoritus.perustelu)
                     ps.setObject(30, suoritus.tarkistusarvioinninKasittelyPvm)
                     ps.setString(31, suoritus.koskiOpiskeluoikeus?.toString())
@@ -325,8 +339,8 @@ fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity 
         rs.getObject("yleisarvosana", Integer::class.java)?.toInt(),
         rs.getObject("tarkistusarvioinnin_saapumis_pvm", LocalDate::class.java),
         rs.getString("tarkistusarvioinnin_asiatunnus"),
-        rs.getObject("tarkistusarvioidut_osakokeet", Integer::class.java)?.toInt(),
-        rs.getObject("arvosana_muuttui", Integer::class.java)?.toInt(),
+        rs.getTypedArrayOrNull("tarkistusarvioidut_osakokeet") { taso -> TutkinnonOsa.valueOf(taso) }?.toSet(),
+        rs.getTypedArrayOrNull("arvosana_muuttui") { taso -> TutkinnonOsa.valueOf(taso) }?.toSet(),
         rs.getString("perustelu"),
         rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
         Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),

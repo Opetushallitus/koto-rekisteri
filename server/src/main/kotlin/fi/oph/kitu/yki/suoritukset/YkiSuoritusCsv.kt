@@ -106,9 +106,9 @@ data class YkiSuoritusCsv(
     @param:JsonProperty("tarkistusarvioinninAsiatunnus")
     val tarkistusarvioinninAsiatunnus: String?,
     @param:JsonProperty("tarkistusarvioidutOsakokeet")
-    val tarkistusarvioidutOsakokeet: Int?,
+    val tarkistusarvioidutOsakokeet: String?,
     @param:JsonProperty("arvosanaMuuttui")
-    val arvosanaMuuttui: Int?,
+    val arvosanaMuuttui: String?,
     @param:JsonProperty("perustelu")
     val perustelu: String?,
     @param:JsonProperty("tarkistusarvioinninKasittelyPvm")

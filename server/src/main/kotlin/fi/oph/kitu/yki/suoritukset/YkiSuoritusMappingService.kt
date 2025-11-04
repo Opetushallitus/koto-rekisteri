@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.Sukupuoli
+import fi.oph.kitu.yki.TutkinnonOsa.Companion.toTutkinnonOsaSet
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 
@@ -42,8 +43,8 @@ class YkiSuoritusMappingService {
         csv.yleisarvosana,
         csv.tarkistusarvioinninSaapumisPvm,
         csv.tarkistusarvioinninAsiatunnus,
-        csv.tarkistusarvioidutOsakokeet,
-        csv.arvosanaMuuttui,
+        csv.tarkistusarvioidutOsakokeet?.toInt()?.toTutkinnonOsaSet(),
+        csv.arvosanaMuuttui?.toInt()?.toTutkinnonOsaSet(),
         csv.perustelu,
         csv.tarkistusarvioinninKasittelyPvm,
         Oid.parse(koskiOpiskeluoikeus).getOrNull(),
@@ -81,8 +82,8 @@ class YkiSuoritusMappingService {
             yleisarvosana = entity.yleisarvosana,
             tarkistusarvioinninSaapumisPvm = entity.tarkistusarvioinninSaapumisPvm,
             tarkistusarvioinninAsiatunnus = entity.tarkistusarvioinninAsiatunnus,
-            tarkistusarvioidutOsakokeet = entity.tarkistusarvioidutOsakokeet,
-            arvosanaMuuttui = entity.arvosanaMuuttui,
+            tarkistusarvioidutOsakokeet = entity.tarkistusarvioidutOsakokeet?.joinToString(" "),
+            arvosanaMuuttui = entity.arvosanaMuuttui?.joinToString(" "),
             perustelu = entity.perustelu,
             tarkistusarvioinninKasittelyPvm = entity.tarkistusarvioinninKasittelyPvm,
         )

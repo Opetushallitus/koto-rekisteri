@@ -29,8 +29,8 @@ export interface YkiSuoritus {
   yleisarvosana: number
   tarkistusarvioinninSaapumisPvm: string
   tarkistusarvioinninAsiatunnus: string
-  tarkistusarvioidutOsakokeet: number
-  arvosanaMuuttui: number
+  tarkistusarvioidutOsakokeet: string[]
+  arvosanaMuuttui: string[]
   perustelu: string
   tarkistusarvioinninKasittelyPvm: string
 }
@@ -158,8 +158,8 @@ export const fixtureData = {
     yleisarvosana: 1,
     tarkistusarvioinninSaapumisPvm: "2024-10-01",
     tarkistusarvioinninAsiatunnus: "123123",
-    tarkistusarvioidutOsakokeet: 1,
-    arvosanaMuuttui: 1,
+    tarkistusarvioidutOsakokeet: ["PU"],
+    arvosanaMuuttui: ["PU"],
     perustelu: "Tarkistusarvioinnin testi",
     tarkistusarvioinninKasittelyPvm: "2024-10-20",
   }),
