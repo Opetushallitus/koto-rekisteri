@@ -88,8 +88,8 @@ class YkiSuoritusRepositoryTest(
                 yleisarvosana = 3,
                 tarkistusarvioinninSaapumisPvm = LocalDate.of(2024, 10, 1),
                 tarkistusarvioinninAsiatunnus = "123123",
-                tarkistusarvioidutOsakokeet = 2,
-                arvosanaMuuttui = 4,
+                tarkistusarvioidutOsakokeet = setOf(TutkinnonOsa.puhuminen, TutkinnonOsa.puheenYmmartaminen),
+                arvosanaMuuttui = setOf(TutkinnonOsa.puhuminen),
                 perustelu = "Tarkistusarvioinnin testi",
                 tarkistusarvioinninKasittelyPvm = LocalDate.of(2024, 10, 15),
             )
@@ -153,8 +153,8 @@ class YkiSuoritusRepositoryTest(
                 yleisarvosana = 3,
                 tarkistusarvioinninSaapumisPvm = LocalDate.of(2024, 10, 1),
                 tarkistusarvioinninAsiatunnus = "123123",
-                tarkistusarvioidutOsakokeet = 2,
-                arvosanaMuuttui = 4,
+                tarkistusarvioidutOsakokeet = setOf(TutkinnonOsa.puhuminen, TutkinnonOsa.puheenYmmartaminen),
+                arvosanaMuuttui = setOf(TutkinnonOsa.puhuminen),
                 perustelu = "Tarkistusarvioinnin testi",
                 tarkistusarvioinninKasittelyPvm = LocalDate.of(2024, 10, 15),
             )

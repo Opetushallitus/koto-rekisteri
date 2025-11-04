@@ -154,8 +154,16 @@ object YkiSuorituksetPage {
                                                     +suoritus.tarkistusarvioinninSaapumisPvm.toString()
                                                 }
                                                 td { +suoritus.tarkistusarvioinninAsiatunnus.orEmpty() }
-                                                td { +suoritus.tarkistusarvioidutOsakokeet?.toString().orEmpty() }
-                                                td { +suoritus.arvosanaMuuttui?.toString().orEmpty() }
+                                                td {
+                                                    +suoritus.tarkistusarvioidutOsakokeet
+                                                        ?.joinToString(", ") { it.viewText }
+                                                        .orEmpty()
+                                                }
+                                                td {
+                                                    +suoritus.arvosanaMuuttui
+                                                        ?.joinToString(", ") { it.viewText }
+                                                        .orEmpty()
+                                                }
                                                 td { +suoritus.perustelu.orEmpty() }
                                                 td {
                                                     +suoritus.tarkistusarvioinninKasittelyPvm?.toString().orEmpty()

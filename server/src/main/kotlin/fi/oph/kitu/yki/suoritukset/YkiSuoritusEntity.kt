@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.Sukupuoli
+import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import jakarta.persistence.EnumType
@@ -44,22 +45,8 @@ data class YkiSuoritusEntity(
     val yleisarvosana: Int?,
     val tarkistusarvioinninSaapumisPvm: LocalDate?,
     val tarkistusarvioinninAsiatunnus: String?,
-    /*
-     * kokonaisluku 0–15, tulkitaan bittimaskina
-     * 1=puhuminen
-     * 2=kirjoittaminen
-     * 4=tekstin ymmärtäminen
-     * 8=puheen ymmärtäminen
-     * */
-    val tarkistusarvioidutOsakokeet: Int?,
-    /*
-     * kokonaisluku 0–15, tulkitaan bittimaskina
-     * 1=puhuminen
-     * 2=kirjoittaminen
-     * 4=tekstin ymmärtäminen
-     * 8=puheen ymmärtäminen
-     * */
-    val arvosanaMuuttui: Int?,
+    val tarkistusarvioidutOsakokeet: Set<TutkinnonOsa>?,
+    val arvosanaMuuttui: Set<TutkinnonOsa>?,
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
     val koskiOpiskeluoikeus: Oid?,

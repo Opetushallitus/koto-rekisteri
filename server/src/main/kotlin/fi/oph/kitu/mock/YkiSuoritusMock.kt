@@ -1,5 +1,6 @@
 package fi.oph.kitu.mock
 
+import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
@@ -63,8 +64,8 @@ fun generateRandomYkiSuoritusEntity(
         yleisarvosana = (0..maxArvosana).random(),
         tarkistusarvioinninSaapumisPvm = tarkistusarvioinninSaapumisPvm,
         tarkistusarvioinninAsiatunnus = (0..9999999999999).random().toString(),
-        tarkistusarvioidutOsakokeet = 2,
-        arvosanaMuuttui = 1,
+        tarkistusarvioidutOsakokeet = setOf(TutkinnonOsa.puhuminen),
+        arvosanaMuuttui = setOf(TutkinnonOsa.puhuminen),
         perustelu = listOf("Erinomainen", "Hyvä", "Ihan hyvä", "Tyydyttävä", "Huono").random(),
         tarkistusarvioinninKasittelyPvm = tarkistusarvioinninKasittelyPvm,
         koskiOpiskeluoikeus = null,
