@@ -2,8 +2,9 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.yki.Arviointitila
+import fi.oph.kitu.jdbc.getTypedArray
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
