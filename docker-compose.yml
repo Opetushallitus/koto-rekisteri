@@ -13,17 +13,8 @@ services:
     ports:
       - "5432:5432"
 
-  collector:
-    image: public.ecr.aws/aws-observability/aws-otel-collector:v0.45.1
-    command: ["--config=/etc/otel-collector-config.yml"]
-    volumes:
-      - ./otel-config.yml:/etc/otel-collector-config.yml
-    ports:
-      - "4318:4318" # OTLP HTTP
-    depends_on:
-      - jaeger
-
   jaeger:
     image: jaegertracing/jaeger:latest
     ports:
       - "16686:16686" # UI
+      - "4318:4318" # OTLP HTTP
