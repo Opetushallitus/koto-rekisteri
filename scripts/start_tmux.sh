@@ -30,11 +30,6 @@ WINDOW="database"
 tmux rename-window -t $SESS_NAME:0 "$WINDOW"
 tmux send-keys -t $SESS_NAME:"$WINDOW.0" "$REPO_ROOT/scripts/start_database_docker.sh" C-m
 
-# Window 1: OpenTelemetry collector
-WINDOW="otel-collector"
-tmux new-window -t $SESS_NAME -n "$WINDOW"
-tmux send-keys -t $SESS_NAME:"$WINDOW" "docker compose up collector" C-m
-
 # Window 2: OpenTelemetry tracing
 WINDOW="otel-tracing"
 tmux new-window -t $SESS_NAME -n "$WINDOW"
