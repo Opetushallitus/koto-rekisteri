@@ -47,7 +47,6 @@ skriptille voi antaa `--setup-only` parametrin. Tällöin suoritetaan kehitysymp
 
 1. Navigoi `Settings` -> `Plugins`
 2. Asenna tai varmista, että ainakin seuraavat pluginit on asennettu:
-   - Handlebars/Mustache
    - Ktlint
    - Kotlin
    - Maven
