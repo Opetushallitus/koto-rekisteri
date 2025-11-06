@@ -45,7 +45,7 @@ class GlobalControllerExceptionHandler(
                 span.setStatus(StatusCode.ERROR)
             }
 
-    @ExceptionHandler
+    @ExceptionHandler(produces = ["text/html"])
     fun handleServerException(error: Throwable): ResponseEntity<String> {
         val traceId = Span.current().spanContext?.traceId
         val isLocal = environment.activeProfiles.contains("local")
