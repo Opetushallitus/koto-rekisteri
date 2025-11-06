@@ -10,7 +10,6 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoDeserializer
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
 import fi.oph.kitu.vkt.VktArvionti
@@ -185,15 +184,23 @@ class SchemaExamplesController {
 
     @GetMapping("/bad-request-invalid-oid.json", produces = ["application/json;charset=UTF-8"])
     fun badRequestInvalidOidResponse() =
-        TiedonsiirtoDeserializer.deserializeAndSave<Henkilosuoritus<*>>(
-            """{"henkilo":{"oid":"123"},"suoritus":{}}""",
-        ) { TiedonsiirtoSuccess() }
+        exampleJson(
+            TiedonsiirtoFailure.badRequest(
+                "JSON parse error: Cannot construct instance of `fi.oph.kitu.Oid`, problem: Improperly formatted Object Identifier String - 123",
+            ),
+        )
 
     @GetMapping("/bad-request-arvioija-missing-value.json", produces = ["application/json;charset=UTF-8"])
     fun badRequestArvioijaResponse() =
-        TiedonsiirtoDeserializer.deserializeAndSave<YkiArvioija>(
-            """{}""",
-        ) { TiedonsiirtoSuccess() }
+        exampleJson(
+            TiedonsiirtoFailure.badRequest(
+                (
+                    "JSON parse error: Instantiation of [simple type, class fi.oph.kitu.yki.arvioijat.YkiArvioija]" +
+                        " value failed for JSON property arvioijaOid due to missing (therefore NULL) value for" +
+                        " creator parameter arvioijaOid which is a non-nullable type"
+                ),
+            ),
+        )
 
     @GetMapping("/tiedonsiirto-forbidden.json", produces = ["application/json;charset=UTF-8"])
     fun tiedonsiirtoForbiddenResponse() =

@@ -7,7 +7,6 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import io.swagger.v3.oas.annotations.media.Schema
-import org.springframework.http.ResponseEntity
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -19,31 +18,14 @@ data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
 ) {
     fun modifySuoritus(f: (T) -> T): Henkilosuoritus<T> = copy(suoritus = f(suoritus))
 
-    inline fun <reified A> toEntity(): A? =
+    inline fun <reified A> toEntity(): A =
         when (suoritus) {
             is VktSuoritus -> suoritus.toVktSuoritusEntity(henkilo)
             is YkiSuoritus -> suoritus.toYkiSuoritusEntity(henkilo)
-            else -> null
-        } as? A
-
-    companion object {
-        inline fun <reified T : KielitutkinnonSuoritus> deserializationAtEndpoint(
-            json: String,
-            save: (data: Henkilosuoritus<T>) -> Unit,
-        ): ResponseEntity<*> =
-            TiedonsiirtoDeserializer.deserializeAndSave<Henkilosuoritus<*>>(json) { data ->
-                when (data.suoritus) {
-                    is T -> {
-                        save(Henkilosuoritus(data.henkilo, data.suoritus))
-                        TiedonsiirtoSuccess()
-                    }
-                    else ->
-                        TiedonsiirtoFailure.badRequest(
-                            "Vain ${T::class.simpleName} mukainen kielitutkinnon siirto sallittu",
-                        )
-                }
-            }
-    }
+            else -> throw RuntimeException(
+                "Failed to convert to entity: not implemented for Henkilosuoritus<${suoritus::class.simpleName}>",
+            )
+        } as A
 }
 
 @JsonTypeInfo(

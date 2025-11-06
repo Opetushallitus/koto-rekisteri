@@ -3,60 +3,47 @@ package fi.oph.kitu
 import fi.oph.kitu.dev.MockResourceNotFoundError
 import fi.oph.kitu.html.ErrorPage
 import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.vkt.VktSuoritusNotFoundError
 import io.opentelemetry.api.trace.Span
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import io.opentelemetry.api.trace.StatusCode
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.env.Environment
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.web.client.RestClientException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
-import java.time.Instant
-
-data class RestErrorMessage(
-    val timestamp: Instant = Instant.now(),
-    val status: Int,
-    val error: String,
-    val messages: List<String>?,
-)
 
 @ControllerAdvice
 class GlobalControllerExceptionHandler(
     val environment: Environment,
 ) {
-    private val logger: Logger = LoggerFactory.getLogger(GlobalControllerExceptionHandler::class.java)
-
     @Value("\${trace-ui:}")
     private lateinit var traceUiUrl: String
 
     @ExceptionHandler
-    fun handleValidationException(e: Validation.ValidationException): ResponseEntity<RestErrorMessage> =
-        ResponseEntity(
-            RestErrorMessage(
-                status = HttpStatus.BAD_REQUEST.value(),
-                error = "Bad request: validation error",
-                messages = e.errors.map { it.toString() },
-            ),
-            HttpStatus.BAD_REQUEST,
-        )
+    fun handleValidationException(e: Validation.ValidationException): ResponseEntity<TiedonsiirtoFailure> =
+        TiedonsiirtoFailure
+            .badRequest(e.errors.map { it.toString() })
+            .toResponseEntity()
+            .also {
+                val span = Span.current()
+                span.recordException(e)
+                span.setStatus(StatusCode.ERROR)
+            }
 
     @ExceptionHandler
-    fun handleRestClientException(ex: RestClientException): ResponseEntity<RestErrorMessage> {
-        logger.error(ex.stackTraceToString())
-        return ResponseEntity(
-            RestErrorMessage(
-                status = HttpStatus.SERVICE_UNAVAILABLE.value(),
-                error = "Service Unavailable",
-                messages = listOf("Call to external API failed"),
-            ),
-            HttpStatus.SERVICE_UNAVAILABLE,
-        )
-    }
+    fun handleHttpMessageNotReadableException(e: HttpMessageNotReadableException): ResponseEntity<TiedonsiirtoFailure> =
+        TiedonsiirtoFailure
+            .badRequest(e.message.toString())
+            .toResponseEntity()
+            .also {
+                val span = Span.current()
+                span.recordException(e)
+                span.setStatus(StatusCode.ERROR)
+            }
 
     @ExceptionHandler
     fun handleServerException(error: Throwable): ResponseEntity<String> {
