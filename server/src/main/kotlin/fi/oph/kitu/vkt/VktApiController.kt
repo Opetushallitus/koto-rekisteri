@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 @RestController
 @RequestMapping("/api/vkt")
 @Tag(name = "Valtionhallinnon kielitutkinto")
-class VktTiedonsiirtoController(
+class VktApiController(
     val vktRepository: VktSuoritusRepository,
     private val validation: ValidationService,
 ) {
@@ -103,14 +103,12 @@ class VktTiedonsiirtoController(
         ],
     )
     fun putHenkilosuoritus(
-        @RequestBody json: String,
-    ): ResponseEntity<*> =
-        Henkilosuoritus.deserializationAtEndpoint<VktSuoritus>(json) { data ->
-            val enrichedData = validation.validateAndEnrich(data).getOrThrow()
-            vktRepository.save(
-                enrichedData.toEntity() ?: throw RuntimeException("Failed to convert to entity"),
-            )
-        }
+        @RequestBody data: Henkilosuoritus<VktSuoritus>,
+    ): ResponseEntity<*> {
+        val enrichedData = validation.validateAndEnrich(data).getOrThrow()
+        vktRepository.save(enrichedData.toEntity())
+        return TiedonsiirtoSuccess().toResponseEntity()
+    }
 
     @GetMapping("/kios/j_spring_cas_security_check")
     fun casDebugRoute(): ResponseEntity<String> = ResponseEntity.ok("Nice")

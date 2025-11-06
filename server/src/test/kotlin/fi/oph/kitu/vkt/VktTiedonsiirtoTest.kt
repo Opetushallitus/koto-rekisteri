@@ -81,7 +81,7 @@ class VktTiedonsiirtoTest {
             """.trimIndent()
         putSuoritus(json) {
             isBadRequest(
-                "suoritus.taitotaso: Instantiation of [simple type, class vkt.VktSuoritus] value failed for JSON property taitotaso due to missing (therefore NULL) value for creator parameter taitotaso which is a non-nullable type",
+                "JSON parse error: Instantiation of [simple type, class fi.oph.kitu.vkt.VktSuoritus] value failed for JSON property taitotaso due to missing (therefore NULL) value for creator parameter taitotaso which is a non-nullable type",
             )
         }
     }

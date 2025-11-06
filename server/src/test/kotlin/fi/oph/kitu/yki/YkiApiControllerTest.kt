@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TestTimeService
@@ -11,8 +12,6 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.validation.Validation
-import fi.oph.kitu.validation.ValidationService
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
@@ -41,8 +40,8 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class YkiApiControllerTest(
-    @param:Autowired val validation: ValidationService,
     @param:Autowired val timeService: TestTimeService,
+    @param:Autowired val controller: YkiApiController,
 ) {
     @Autowired
     private lateinit var context: WebApplicationContext
@@ -58,187 +57,6 @@ class YkiApiControllerTest(
                 .apply { springSecurity() }
                 .build()
     }
-
-    @Test
-    fun `YKI-json deserialisoituu Henkilosuoritukseksi`() {
-        val json = ClassPathResource("./yki-tiedonsiirto-example.json").file
-        val data = defaultObjectMapper.readValue(json, Henkilosuoritus::class.java)
-        val suoritus = data.suoritus as YkiSuoritus
-
-        assertEquals("010180-9026", data.henkilo.hetu)
-        assertEquals(Lahdejarjestelma.Solki, suoritus.lahdejarjestelmanId.lahde)
-        assertEquals(6, suoritus.osat.size)
-    }
-
-    @Test
-    fun `YKI-henkilosuoritus pysyy samana jsonin kautta kaytyaan`() {
-        val json = defaultObjectMapper.writeValueAsString(validiYkiSuoritus)
-        val data = defaultObjectMapper.readValue(json, Henkilosuoritus::class.java)
-
-        assertEquals(validiYkiSuoritus, data)
-    }
-
-    @Test
-    fun `Suorituksen validoinnin happy path`() {
-        val result = validation.validateAndEnrich(validiYkiSuoritus)
-        assertEquals(Validation.ok(validiYkiSuoritus), result)
-    }
-
-    @Test
-    fun `Suoritusta ei voi siirtaa koulutustoimijatasoisella organisaatiolla`() {
-        val suoritus =
-            validiYkiSuoritus.modifySuoritus {
-                it.copy(
-                    jarjestaja =
-                        YkiJarjestaja(
-                            oid = Oid.parse("1.2.246.562.10.346830761110").getOrThrow(),
-                            nimi = "Helsingin kaupunki",
-                        ),
-                )
-            }
-
-        val result = validation.validateAndEnrich(suoritus)
-
-        assertEquals(
-            Validation.fail(
-                listOf("suoritus", "jarjestaja", "oid"),
-                "Organisaatio 1.2.246.562.10.346830761110 on väärän tyyppinen: Koulutustoimija, VarhaiskasvatuksenJarjestaja, Kunta. Sallitut tyypit: Oppilaitos, Toimipiste.",
-            ),
-            result,
-        )
-    }
-
-    @Test
-    fun `Henkilotunnusta ei voi siirtaa vuoden 2026 alusta alkaen`() {
-        val suoritus =
-            validiYkiSuoritus.modifySuoritus {
-                it.copy(
-                    tutkintopaiva = LocalDate.of(2026, 1, 1),
-                    arviointipaiva = LocalDate.of(2026, 2, 1),
-                )
-            }
-
-        val result = validation.validateAndEnrich(suoritus)
-
-        assertEquals(
-            Validation.fail(
-                listOf("henkilo", "hetu"),
-                "Henkilötunnusta ei voi siirtää suoritukselle, jonka tutkintopäivä on 1.1.2026 tai myöhemmin",
-            ),
-            result,
-        )
-    }
-
-    @Test
-    fun `Oppijaa, jota ei löydy oppijanumerorekisteristä ei voi siirtää`() {
-        val suoritus =
-            validiYkiSuoritus.copy(
-                henkilo = Henkilo(oid = Oid.parse("1.2.246.562.24.20000000000").getOrThrow(), hetu = "010180-9026"),
-            )
-
-        val result = validation.validateAndEnrich(suoritus)
-
-        assertEquals(
-            Validation.fail(
-                listOf("henkilo", "oid"),
-                "Oppijanumeroa 1.2.246.562.24.20000000000 ei löydy Oppijanumerorekisteristä",
-            ),
-            result,
-        )
-    }
-
-    @Test
-    fun `Arvioitua suoritusta ei voi siirtää, jos siltä puuttuu arviointipäivä`() {
-        val suoritus =
-            validiYkiSuoritus.modifySuoritus { it.copy(arviointipaiva = null) }
-
-        val result = validation.validateAndEnrich(suoritus)
-
-        assertEquals(
-            Validation.fail(
-                listOf("suoritus", "arviointipaiva"),
-                "Arviointitila on ARVIOITU, mutta arviointipäivä puuttuu",
-            ),
-            result,
-        )
-    }
-
-    @Test
-    fun `Ei-arvioitua suoritusta ei voi siirtää, jos sillä on arviointipäivä`() {
-        val suoritus =
-            validiYkiSuoritus.modifySuoritus { it.copy(arviointitila = Arviointitila.ARVIOITAVANA) }
-
-        val result = validation.validateAndEnrich(suoritus)
-
-        assertEquals(
-            Validation.fail(
-                listOf("suoritus", "arviointipaiva"),
-                "Arviointitila on ARVIOITAVANA, mutta arviointipäivä on määritelty",
-            ),
-            result,
-        )
-    }
-
-    @Test
-    fun `Arvioitua suoritusta ei voi siirtää, jos siltä puuttuu yksikin arvosana`() {
-        val suoritus =
-            validiYkiSuoritus.modifySuoritus {
-                it.copy(
-                    osat =
-                        it.osat.mapIndexed { i, osa ->
-                            if (i == 1) osa.copy(arvosana = null) else osa
-                        },
-                )
-            }
-
-        val result = validation.validateAndEnrich(suoritus)
-
-        assertEquals(
-            Validation.fail(
-                listOf("suoritus", "osat", "1", "arvosana"),
-                "Arviointitila on ARVIOITU, mutta arviointi puuttuu osakokeelta 'PU'",
-            ),
-            result,
-        )
-    }
-
-    val validiYkiSuoritus =
-        Henkilosuoritus(
-            henkilo = Henkilo(oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(), hetu = "010180-9026"),
-            suoritus =
-                YkiSuoritus(
-                    tutkintotaso = Tutkintotaso.KT,
-                    kieli = Tutkintokieli.FIN,
-                    jarjestaja =
-                        YkiJarjestaja(
-                            oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
-                            nimi = "Soveltavan kielentutkimuksen keskus",
-                        ),
-                    tutkintopaiva = LocalDate.of(2020, 1, 1),
-                    arviointipaiva = LocalDate.of(2020, 1, 1),
-                    arviointitila = Arviointitila.ARVIOITU,
-                    osat =
-                        listOf(
-                            YkiOsa(
-                                tyyppi = TutkinnonOsa.puheenYmmartaminen,
-                                arvosana = 3,
-                            ),
-                            YkiOsa(
-                                tyyppi = TutkinnonOsa.puhuminen,
-                                arvosana = 3,
-                            ),
-                        ),
-                    tarkistusarvointi = null,
-                    lahdejarjestelmanId =
-                        LahdejarjestelmanTunniste(
-                            id = "666",
-                            lahde = Lahdejarjestelma.Solki,
-                        ),
-                    internalId = null,
-                    koskiOpiskeluoikeusOid = null,
-                    koskiSiirtoKasitelty = false,
-                ),
-        )
 
     @Test
     fun `Validin yki-suorituksen tallennus rajapinnan kautta onnistuu`() {
@@ -316,6 +134,22 @@ class YkiApiControllerTest(
 
         postSuoritus(suoritus) {
             isOk()
+        }
+    }
+
+    @Test
+    fun `YKI-suoritus virheellisellä OIDilla palauttaa virheen`() {
+        val data =
+            defaultObjectMapper
+                .readValue(
+                    ClassPathResource("./yki-suoritus-invalid-oid-example.json").file,
+                    JsonNode::class.java,
+                ).toString()
+
+        post("/yki/api/suoritus", data) {
+            isBadRequest(
+                "JSON parse error: Cannot construct instance of `fi.oph.kitu.Oid`, problem: Improperly formatted Object Identifier String - 123",
+            )
         }
     }
 

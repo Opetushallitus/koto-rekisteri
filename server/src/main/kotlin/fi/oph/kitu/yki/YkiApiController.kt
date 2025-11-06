@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoDeserializer
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
 import fi.oph.kitu.validation.ValidationService
@@ -10,6 +9,8 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
@@ -134,15 +135,26 @@ class YkiApiController(
         ],
     )
     fun postHenkilosuoritus(
-        @RequestBody json: String,
-    ): ResponseEntity<*> =
-        Henkilosuoritus.deserializationAtEndpoint<YkiSuoritus>(json) { data ->
-            val enrichedData = validationService.validateAndEnrich(data).getOrThrow()
-            val entity =
+        @RequestBody data: Henkilosuoritus<YkiSuoritus>,
+    ): ResponseEntity<*> {
+        val enrichedData = validationService.validateAndEnrich(data).getOrThrow()
+        val entity =
+            try {
                 enrichedData.toEntity<YkiSuoritusEntity>()
-                    ?: throw RuntimeException("Failed to convert HenkiloSuoritus to YkiSuoritusEntity")
-            ykiSuoritusRepository.save(entity)
-        }
+            } catch (e: IllegalArgumentException) {
+                return TiedonsiirtoFailure
+                    .badRequest(e.message.toString())
+                    .toResponseEntity()
+                    .also {
+                        val span = Span.current()
+                        span.recordException(e)
+                        span.setStatus(StatusCode.ERROR)
+                    }
+            }
+
+        ykiSuoritusRepository.save(entity)
+        return TiedonsiirtoSuccess().toResponseEntity()
+    }
 
     @PostMapping("/arvioija")
     @Secured("ROLE_APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS")
@@ -204,11 +216,10 @@ class YkiApiController(
         ],
     )
     fun postArvioija(
-        @RequestBody json: String,
-    ): ResponseEntity<*> =
-        TiedonsiirtoDeserializer.deserializeAndSave<YkiArvioija>(json) { arvioija ->
-            val validatedArvioija = validationService.validateAndEnrich(arvioija).getOrThrow()
-            ykiArvioijaRepository.upsert(validatedArvioija.toEntity())
-            TiedonsiirtoSuccess()
-        }
+        @RequestBody arvioija: YkiArvioija,
+    ): ResponseEntity<*> {
+        val validatedArvioija = validationService.validateAndEnrich(arvioija).getOrThrow()
+        ykiArvioijaRepository.upsert(validatedArvioija.toEntity())
+        return TiedonsiirtoSuccess().toResponseEntity()
+    }
 }
