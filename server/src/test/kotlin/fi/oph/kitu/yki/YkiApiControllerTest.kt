@@ -154,6 +154,22 @@ class YkiApiControllerTest(
     }
 
     @Test
+    fun `YKI-suoritus puuttuvilla etunimillä palauttaa virheen`() {
+        val data =
+            defaultObjectMapper
+                .readValue(
+                    ClassPathResource("./yki-suoritus-missing-firstnames-example.json").file,
+                    JsonNode::class.java,
+                ).toString()
+
+        post("/yki/api/suoritus", data) {
+            isBadRequest(
+                "Etunimet puuttuu",
+            )
+        }
+    }
+
+    @Test
     fun `YKI-arvoija-json deserialisoituu YkiArvioijaksi`() {
         val json = ClassPathResource("./yki-arvioija-example.json").file
         val data = defaultObjectMapper.readValue(json, YkiArvioija::class.java)
