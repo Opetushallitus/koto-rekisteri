@@ -119,8 +119,8 @@ class YkiApiControllerTest(
                                 saapumispaiva = LocalDate.of(2024, 12, 14),
                                 kasittelypaiva = LocalDate.of(2024, 12, 14),
                                 asiatunnus = "OPH-5000-1234",
-                                tarkistusarvioidutOsakokeet = 1,
-                                arvosanaMuuttui = 1,
+                                tarkistusarvioidutOsakokeet = listOf(TutkinnonOsa.puhuminen),
+                                arvosanaMuuttui = listOf(TutkinnonOsa.puhuminen),
                                 perustelu =
                                     "Suorituksesta jäänyt viimeinen tehtävä arvioimatta. Arvioinnin jälkeen puhumisen taitotasoa 6.",
                             ),

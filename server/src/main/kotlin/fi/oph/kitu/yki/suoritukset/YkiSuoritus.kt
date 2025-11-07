@@ -8,7 +8,6 @@ import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
-import fi.oph.kitu.yki.TutkinnonOsa.Companion.toTutkinnonOsaSet
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.lang.IllegalArgumentException
@@ -67,10 +66,8 @@ data class YkiSuoritus(
             yleisarvosana = arvosana(TutkinnonOsa.yleisarvosana),
             tarkistusarvioinninSaapumisPvm = tarkistusarvointi?.saapumispaiva,
             tarkistusarvioinninAsiatunnus = tarkistusarvointi?.asiatunnus,
-            tarkistusarvioidutOsakokeet =
-                tarkistusarvointi?.tarkistusarvioidutOsakokeet?.toTutkinnonOsaSet(),
-            arvosanaMuuttui =
-                tarkistusarvointi?.arvosanaMuuttui?.toTutkinnonOsaSet(),
+            tarkistusarvioidutOsakokeet = tarkistusarvointi?.tarkistusarvioidutOsakokeet?.toSet(),
+            arvosanaMuuttui = tarkistusarvointi?.arvosanaMuuttui?.toSet(),
             perustelu = tarkistusarvointi?.perustelu,
             tarkistusarvioinninKasittelyPvm = tarkistusarvointi?.kasittelypaiva,
             koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,
@@ -94,7 +91,7 @@ data class YkiTarkastusarvointi(
     val saapumispaiva: LocalDate,
     val kasittelypaiva: LocalDate?,
     val asiatunnus: String,
-    val tarkistusarvioidutOsakokeet: Int?,
-    val arvosanaMuuttui: Int?,
+    val tarkistusarvioidutOsakokeet: List<TutkinnonOsa>?,
+    val arvosanaMuuttui: List<TutkinnonOsa>?,
     val perustelu: String,
 )
