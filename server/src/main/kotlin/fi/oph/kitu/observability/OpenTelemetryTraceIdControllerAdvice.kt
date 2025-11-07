@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice
 
 @ControllerAdvice
-class OpenTelemetryTraceIdAdvice : ResponseBodyAdvice<Any> {
+class OpenTelemetryTraceIdControllerAdvice : ResponseBodyAdvice<Any> {
     public override fun supports(
         returnType: MethodParameter,
         converterType: Class<out HttpMessageConverter<*>>,
