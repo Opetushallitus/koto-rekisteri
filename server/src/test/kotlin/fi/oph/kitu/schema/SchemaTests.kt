@@ -96,7 +96,7 @@ class SchemaTests {
                                     arvosana = 3,
                                 ),
                             ),
-                        tarkistusarvointi = null,
+                        tarkistusarviointi = null,
                         lahdejarjestelmanId =
                             LahdejarjestelmanTunniste(
                                 id = "666",

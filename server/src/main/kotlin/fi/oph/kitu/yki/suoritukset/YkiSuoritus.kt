@@ -23,7 +23,7 @@ data class YkiSuoritus(
     val tutkintopaiva: LocalDate,
     val arviointipaiva: LocalDate?,
     val osat: List<YkiOsa>,
-    val tarkistusarvointi: YkiTarkastusarvointi? = null,
+    val tarkistusarviointi: YkiTarkastusarviointi? = null,
     val arviointitila: Arviointitila,
     override val lahdejarjestelmanId: LahdejarjestelmanTunniste,
     override val internalId: Int? = null,
@@ -64,12 +64,12 @@ data class YkiSuoritus(
             puheenYmmartaminen = arvosana(TutkinnonOsa.puheenYmmartaminen),
             puhuminen = arvosana(TutkinnonOsa.puhuminen),
             yleisarvosana = arvosana(TutkinnonOsa.yleisarvosana),
-            tarkistusarvioinninSaapumisPvm = tarkistusarvointi?.saapumispaiva,
-            tarkistusarvioinninAsiatunnus = tarkistusarvointi?.asiatunnus,
-            tarkistusarvioidutOsakokeet = tarkistusarvointi?.tarkistusarvioidutOsakokeet?.toSet(),
-            arvosanaMuuttui = tarkistusarvointi?.arvosanaMuuttui?.toSet(),
-            perustelu = tarkistusarvointi?.perustelu,
-            tarkistusarvioinninKasittelyPvm = tarkistusarvointi?.kasittelypaiva,
+            tarkistusarvioinninSaapumisPvm = tarkistusarviointi?.saapumispaiva,
+            tarkistusarvioinninAsiatunnus = tarkistusarviointi?.asiatunnus,
+            tarkistusarvioidutOsakokeet = tarkistusarviointi?.tarkistusarvioidutOsakokeet?.toSet(),
+            arvosanaMuuttui = tarkistusarviointi?.arvosanaMuuttui?.toSet(),
+            perustelu = tarkistusarviointi?.perustelu,
+            tarkistusarvioinninKasittelyPvm = tarkistusarviointi?.kasittelypaiva,
             koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,
             koskiSiirtoKasitelty = koskiSiirtoKasitelty,
             arviointitila = arviointitila,
@@ -87,7 +87,7 @@ data class YkiOsa(
     val arvosana: Int?,
 )
 
-data class YkiTarkastusarvointi(
+data class YkiTarkastusarviointi(
     val saapumispaiva: LocalDate,
     val kasittelypaiva: LocalDate?,
     val asiatunnus: String,

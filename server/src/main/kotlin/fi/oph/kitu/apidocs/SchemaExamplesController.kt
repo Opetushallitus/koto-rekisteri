@@ -29,7 +29,7 @@ import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
-import fi.oph.kitu.yki.suoritukset.YkiTarkastusarvointi
+import fi.oph.kitu.yki.suoritukset.YkiTarkastusarviointi
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -270,8 +270,8 @@ class SchemaExamplesController {
                                     arvosana = 5,
                                 ),
                             ),
-                        tarkistusarvointi =
-                            YkiTarkastusarvointi(
+                        tarkistusarviointi =
+                            YkiTarkastusarviointi(
                                 saapumispaiva = LocalDate.of(2024, 12, 14),
                                 kasittelypaiva = LocalDate.of(2024, 12, 14),
                                 asiatunnus = "OPH-5000-1234",
