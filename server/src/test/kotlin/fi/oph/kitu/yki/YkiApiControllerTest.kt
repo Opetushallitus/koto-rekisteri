@@ -18,7 +18,7 @@ import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
-import fi.oph.kitu.yki.suoritukset.YkiTarkastusarvointi
+import fi.oph.kitu.yki.suoritukset.YkiTarkastusarviointi
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -114,8 +114,8 @@ class YkiApiControllerTest(
                                     arvosana = 5,
                                 ),
                             ),
-                        tarkistusarvointi =
-                            YkiTarkastusarvointi(
+                        tarkistusarviointi =
+                            YkiTarkastusarviointi(
                                 saapumispaiva = LocalDate.of(2024, 12, 14),
                                 kasittelypaiva = LocalDate.of(2024, 12, 14),
                                 asiatunnus = "OPH-5000-1234",
@@ -165,6 +165,23 @@ class YkiApiControllerTest(
         post("/yki/api/suoritus", data) {
             isBadRequest(
                 "Etunimet puuttuu",
+            )
+        }
+    }
+
+    @Test
+    fun `Suoritus muuttuneilla arvosanoilla, joita ei oltu tarkistettavana, palauttaa virheen`() {
+        val data =
+            defaultObjectMapper
+                .readValue(
+                    ClassPathResource("./yki-suoritus-invalid-tarkistusarviointi-example.json").file,
+                    JsonNode::class.java,
+                ).toString()
+
+        post("/yki/api/suoritus", data) {
+            isBadRequest(
+                "suoritus.tarkistusarviointi.arvosanaMuuttui: Muuttuneet arvosanat sisälsivät osakokeita, jotka eivät olleet osa tarkistettavia osakokeita",
+                "suoritus.tarkistusarviointi.kasittelypaiva: Käsittelypäivä on ennen saapumispäivää",
             )
         }
     }
