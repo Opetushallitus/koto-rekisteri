@@ -2,7 +2,7 @@
   "henkilo": {
     "oid": "1.2.246.562.24.20281155246",
     "sukunimi": "Öhman-Testi",
-    "etunimet": null,
+    "etunimet": "Mikaela",
     "hetu": "010180-9026",
     "sukupuoli": "N",
     "kansalaisuus": "EST",
@@ -50,10 +50,10 @@
     ],
     "tarkistusarviointi": {
       "saapumispaiva": "2024-12-14",
-      "kasittelypaiva": "2024-12-14",
+      "kasittelypaiva": "2024-12-12",
       "asiatunnus": "OPH-5000-1234",
-      "tarkistusarvioidutOsakokeet": ["PU"],
-      "arvosanaMuuttui": [],
+      "tarkistusarvioidutOsakokeet": ["KI"],
+      "arvosanaMuuttui": ["PU"],
       "perustelu": "Suorituksesta jäänyt viimeinen tehtävä arvioimatta. Arvioinnin jälkeen puhumisen taitotasoa 6."
     },
     "lahdejarjestelmanId": {

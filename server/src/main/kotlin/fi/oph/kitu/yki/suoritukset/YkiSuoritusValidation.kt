@@ -24,6 +24,7 @@ class YkiSuoritusValidation(
             { validateOrganisaatiot(it) },
             { validateHetu(it) },
             { validateArvointitila(it) },
+            { validateTarkistusarviointi(it) },
         )
 
     fun validateHetu(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
@@ -118,4 +119,34 @@ class YkiSuoritusValidation(
                     ),
                 )
         }
+
+    fun validateTarkistusarviointi(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
+        Validation.fold(
+            s,
+            Validation.assertTrue(
+                {
+                    val tarkastettavatOsakokeet =
+                        it.suoritus.tarkistusarviointi
+                            ?.tarkistusarvioidutOsakokeet
+                            .orEmpty()
+                    val muuttuneetOsakokeet =
+                        it.suoritus.tarkistusarviointi
+                            ?.arvosanaMuuttui
+                            .orEmpty()
+
+                    muuttuneetOsakokeet.minus(tarkastettavatOsakokeet).isEmpty()
+                },
+                path = listOf("suoritus", "tarkistusarviointi", "arvosanaMuuttui"),
+                message =
+                    "Muuttuneet arvosanat sisälsivät osakokeita, jotka eivät olleet osa tarkistettavia osakokeita",
+            ),
+            Validation.assertTrue(
+                {
+                    (it.suoritus.tarkistusarviointi?.saapumispaiva ?: LocalDate.MIN) <=
+                        (it.suoritus.tarkistusarviointi?.kasittelypaiva ?: LocalDate.MAX)
+                },
+                path = listOf("suoritus", "tarkistusarviointi", "kasittelypaiva"),
+                message = "Käsittelypäivä on ennen saapumispäivää",
+            ),
+        )
 }
