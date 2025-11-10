@@ -2,6 +2,7 @@ package fi.oph.kitu.koodisto
 
 import com.fasterxml.jackson.annotation.JsonValue
 import fi.oph.kitu.organisaatiot.KoodiviiteUri
+import fi.oph.kitu.yki.Tutkintotaso
 
 object Koodisto {
     interface Koodiviite {
@@ -108,22 +109,68 @@ object Koodisto {
 
     enum class YkiArvosana(
         override val koodiarvo: String,
+        val viewText: String,
     ) : Koodiviite {
-        PT1("1"),
-        PT2("2"),
-        KT3("3"),
-        KT4("4"),
-        YT5("5"),
-        YT6("6"),
-        ALLE1("alle1"),
-        ALLE3("alle3"),
-        ALLE5("alle5"),
-        EiVoiArvioida("9"),
-        Keskeytetty("10"),
-        Vilppi("11"),
+        PT1("1", "1"),
+        PT2("2", "2"),
+        KT3("3", "3"),
+        KT4("4", "4"),
+        YT5("5", "5"),
+        YT6("6", "6"),
+        ALLE1("alle1", "Alle 1"),
+        ALLE3("alle3", "Alle 3"),
+        ALLE5("alle5", "Alle 5"),
+        EiVoiArvioida("9", "Ei voi arvioida"),
+        Keskeytetty("10", "Keskeytetty"),
+        Vilppi("11", "Vilppi"),
         ;
 
         override val koodistoUri: String = "ykiarvosana"
+
+        companion object {
+            fun of(
+                arvosana: Int,
+                tutkintotaso: Tutkintotaso,
+            ): YkiArvosana =
+                when (tutkintotaso) {
+                    Tutkintotaso.PT ->
+                        when (arvosana) {
+                            0 -> ALLE1
+                            1 -> PT1
+                            2 -> PT2
+                            9 -> EiVoiArvioida
+                            10 -> Keskeytetty
+                            11 -> Vilppi
+                            else -> throw IllegalArgumentException(
+                                "Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso",
+                            )
+                        }
+                    Tutkintotaso.KT ->
+                        when (arvosana) {
+                            3 -> KT3
+                            4 -> KT4
+                            0, 1, 2 -> ALLE3
+                            9 -> EiVoiArvioida
+                            10 -> Keskeytetty
+                            11 -> Vilppi
+                            else -> throw IllegalArgumentException(
+                                "Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso",
+                            )
+                        }
+                    Tutkintotaso.YT ->
+                        when (arvosana) {
+                            5 -> YT5
+                            6 -> YT6
+                            0, 1, 2, 3, 4 -> ALLE5
+                            9 -> EiVoiArvioida
+                            10 -> Keskeytetty
+                            11 -> Vilppi
+                            else -> throw IllegalArgumentException(
+                                "Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso",
+                            )
+                        }
+                }
+        }
     }
 
     enum class VktTaitotaso(
