@@ -97,10 +97,7 @@ class KoskiRequestMapper {
                                         osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus),
                                         yleisarvosana =
                                             ykiSuoritus.yleisarvosana?.let {
-                                                koodistoYkiArvosana(
-                                                    it,
-                                                    ykiSuoritus.tutkintotaso,
-                                                ).toKoski()
+                                                YkiArvosana.of(it, ykiSuoritus.tutkintotaso).toKoski()
                                             },
                                     ),
                                 ),
@@ -152,48 +149,12 @@ class KoskiRequestMapper {
         arviointi =
             listOf(
                 Arvosana(
-                    arvosana = koodistoYkiArvosana(arvosana, tutkintotaso).toKoski(),
+                    arvosana = YkiArvosana.of(arvosana, tutkintotaso).toKoski(),
                     päivä = arviointipaiva,
                 ),
             ),
         alkamispäivä = null,
     )
-
-    private fun koodistoYkiArvosana(
-        arvosana: Int,
-        tutkintotaso: Tutkintotaso,
-    ) = when (tutkintotaso) {
-        Tutkintotaso.PT ->
-            when (arvosana) {
-                0 -> YkiArvosana.ALLE1
-                1 -> YkiArvosana.PT1
-                2 -> YkiArvosana.PT2
-                9 -> YkiArvosana.EiVoiArvioida
-                10 -> YkiArvosana.Keskeytetty
-                11 -> YkiArvosana.Vilppi
-                else -> throw IllegalArgumentException("Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso")
-            }
-        Tutkintotaso.KT ->
-            when (arvosana) {
-                3 -> YkiArvosana.KT3
-                4 -> YkiArvosana.KT4
-                0, 1, 2 -> YkiArvosana.ALLE3
-                9 -> YkiArvosana.EiVoiArvioida
-                10 -> YkiArvosana.Keskeytetty
-                11 -> YkiArvosana.Vilppi
-                else -> throw IllegalArgumentException("Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso")
-            }
-        Tutkintotaso.YT ->
-            when (arvosana) {
-                5 -> YkiArvosana.YT5
-                6 -> YkiArvosana.YT6
-                0, 1, 2, 3, 4 -> YkiArvosana.ALLE5
-                9 -> YkiArvosana.EiVoiArvioida
-                10 -> YkiArvosana.Keskeytetty
-                11 -> YkiArvosana.Vilppi
-                else -> throw IllegalArgumentException("Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso")
-            }
-    }
 
     fun vktSuoritusToKoskiRequest(henkilosuoritus: VktHenkilosuoritus): TypedResult<KoskiRequest, List<String>> {
         val henkilo = henkilosuoritus.henkilo

@@ -258,3 +258,7 @@ table td input {
 td {
   vertical-align: top;
 }
+
+.invalid-value {
+  color: var(--oph-orange3);
+}

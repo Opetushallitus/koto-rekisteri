@@ -1,7 +1,10 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.html.DisplayTableEnum
+import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.yki.Tutkintotaso
 import kotlinx.html.FlowContent
+import kotlinx.html.span
 
 /**
  * Enum class representing columns in YKI Suoritus.
@@ -129,41 +132,54 @@ enum class YkiSuoritusColumn(
         entityName = "tekstin_ymmartaminen",
         uiHeaderValue = "Tekstin ymmärtäminen",
         urlParam = "tekstinymmartaminen",
-        renderValue = { +it.tekstinYmmartaminen?.toString().orEmpty() },
+        renderValue = { ykiArvosana(it.tekstinYmmartaminen, it.tutkintotaso) },
     ),
 
     Kirjoittaminen(
         entityName = "kirjoittaminen",
         uiHeaderValue = "Kirjoittaminen",
         urlParam = "kirjoittaminen",
-        renderValue = { +it.kirjoittaminen?.toString().orEmpty() },
+        renderValue = { ykiArvosana(it.kirjoittaminen, it.tutkintotaso) },
     ),
 
     RakenteetJaSanasto(
         entityName = "rakenteet_ja_sanasto",
         uiHeaderValue = "Rakenteet ja sanasto",
         urlParam = "rakenteetjasanasto",
-        renderValue = { +it.rakenteetJaSanasto?.toString().orEmpty() },
+        renderValue = { ykiArvosana(it.rakenteetJaSanasto, it.tutkintotaso) },
     ),
 
     PuheenYmmartamainen(
         entityName = "puheen_ymmartaminen",
         uiHeaderValue = "Puheen ymmärtäminen",
         urlParam = "puheenymmartamainen",
-        renderValue = { +it.puheenYmmartaminen?.toString().orEmpty() },
+        renderValue = { ykiArvosana(it.puheenYmmartaminen, it.tutkintotaso) },
     ),
 
     Puhuminen(
         entityName = "puhuminen",
         uiHeaderValue = "Puhuminen",
         urlParam = "puhuminen",
-        renderValue = { +it.puhuminen?.toString().orEmpty() },
+        renderValue = { ykiArvosana(it.puhuminen, it.tutkintotaso) },
     ),
 
     Yleisarvosana(
         entityName = "yleisarvosana",
         uiHeaderValue = "Yleisarvosana",
         urlParam = "yleisarvosana",
-        renderValue = { +it.yleisarvosana?.toString().orEmpty() },
+        renderValue = { ykiArvosana(it.yleisarvosana, it.tutkintotaso) },
     ),
+}
+
+fun FlowContent.ykiArvosana(
+    arvosana: Int?,
+    taso: Tutkintotaso,
+) = arvosana?.let {
+    try {
+        +Koodisto.YkiArvosana.of(arvosana, taso).viewText
+    } catch (_: IllegalArgumentException) {
+        span(classes = "invalid-value") {
+            +arvosana.toString()
+        }
+    }
 }

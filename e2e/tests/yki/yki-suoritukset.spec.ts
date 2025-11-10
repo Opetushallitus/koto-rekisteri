@@ -211,34 +211,35 @@ describe('"YKI Suoritukset" -page', () => {
     {
       column: "Tekstin ymmärtäminen",
       tableColumnIndex: 16,
-      order: ["6", "5", "1"],
+      order: ["6", "5", "Alle 5"],
     },
     {
       column: "Kirjoittaminen",
       tableColumnIndex: 17,
-      order: ["6", "5", "1"],
+      order: ["6", "5", "Alle 5"],
     },
     {
       column: "Rakenteet ja sanasto",
       tableColumnIndex: 18,
-      order: ["9", "8", "1"],
+      order: ["Ei voi arvioida", "8", "Alle 5"],
     },
     {
       column: "Puheen ymmärtäminen",
       tableColumnIndex: 19,
-      order: ["5", "4", "2"],
+      order: ["5", "Alle 5", "Alle 5"],
     },
     {
       column: "Puhuminen",
       tableColumnIndex: 20,
-      order: ["11", "9", "3"],
+      order: ["Vilppi", "Ei voi arvioida", "Alle 5"],
     },
     {
       column: "Yleisarvosana",
       tableColumnIndex: 21,
-      order: ["10", "9", "1"],
+      order: ["Keskeytetty", "Ei voi arvioida", "Alle 5"],
     },
   ] as const
+
   for (const testCase of sortTestCases) {
     const { column, tableColumnIndex, order } = testCase
     const reverseOrder = [...order].reverse()
