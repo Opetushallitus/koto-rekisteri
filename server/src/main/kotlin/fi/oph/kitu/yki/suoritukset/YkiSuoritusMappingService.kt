@@ -51,7 +51,12 @@ class YkiSuoritusMappingService {
         tarkistusarviointiHyvaksyttyPvm = null,
         Oid.parse(koskiOpiskeluoikeus).getOrNull(),
         false,
-        arviointitila = KituArviointitila.ARVIOITU, // CSV:stä tulee vain arvioituja suorituksia
+        arviointitila =
+            if (csv.tarkistusarvioinninKasittelyPvm == null) {
+                KituArviointitila.ARVIOITU
+            } else {
+                KituArviointitila.TARKISTUSARVIOITU
+            },
     )
 
     @WithSpan
