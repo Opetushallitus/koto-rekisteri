@@ -22,7 +22,6 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
 import fi.oph.kitu.vkt.VktHenkilosuoritus
-import fi.oph.kitu.yki.KituArviointitila
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -40,7 +39,7 @@ class KoskiRequestMapper {
 
     @WithSpan
     fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): KoskiRequest? =
-        if (isVilpillinenTaiKeskeytettyTaiArvioimatonSuoritus(ykiSuoritus)) {
+        if (isKoskiSiirtoEstetty(ykiSuoritus)) {
             null
         } else {
             KoskiRequest(
@@ -126,8 +125,8 @@ class KoskiRequestMapper {
             }
         }
 
-    private fun isVilpillinenTaiKeskeytettyTaiArvioimatonSuoritus(suoritusEntity: YkiSuoritusEntity): Boolean =
-        suoritusEntity.arviointitila != KituArviointitila.ARVIOITU ||
+    private fun isKoskiSiirtoEstetty(suoritusEntity: YkiSuoritusEntity): Boolean =
+        !suoritusEntity.arviointitila.arviointiValmis() ||
             listOf(
                 suoritusEntity.tekstinYmmartaminen,
                 suoritusEntity.kirjoittaminen,
