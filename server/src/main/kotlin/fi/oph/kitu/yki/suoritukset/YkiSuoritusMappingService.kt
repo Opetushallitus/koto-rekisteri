@@ -48,6 +48,7 @@ class YkiSuoritusMappingService {
         csv.arvosanaMuuttui?.toInt()?.toTutkinnonOsaSet(),
         csv.perustelu,
         csv.tarkistusarvioinninKasittelyPvm,
+        tarkistusarviointiHyvaksyttyPvm = null,
         Oid.parse(koskiOpiskeluoikeus).getOrNull(),
         false,
         arviointitila = Arviointitila.ARVIOITU, // CSV:stä tulee vain arvioituja suorituksia

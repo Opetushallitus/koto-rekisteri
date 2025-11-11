@@ -69,6 +69,7 @@ fun generateRandomYkiSuoritusEntity(
         arvosanaMuuttui = setOf(TutkinnonOsa.puhuminen),
         perustelu = listOf("Erinomainen", "Hyvä", "Ihan hyvä", "Tyydyttävä", "Huono").random(),
         tarkistusarvioinninKasittelyPvm = tarkistusarvioinninKasittelyPvm,
+        tarkistusarviointiHyvaksyttyPvm = null,
         koskiOpiskeluoikeus = null,
         koskiSiirtoKasitelty = false,
         arviointitila = Arviointitila.ARVIOITU,

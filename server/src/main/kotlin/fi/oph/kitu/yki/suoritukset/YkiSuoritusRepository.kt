@@ -1,8 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.jdbc.getTypedArray
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
@@ -11,41 +9,17 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.jdbc.repository.query.Query
-import org.springframework.data.repository.CrudRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
-import org.springframework.stereotype.Repository
+import org.springframework.stereotype.Service
 import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.sql.Timestamp
-import java.time.LocalDate
 
-interface CustomYkiSuoritusRepository {
-    fun saveAllNewEntities(suoritukset: Iterable<YkiSuoritusEntity>): Iterable<YkiSuoritusEntity>
-
-    fun countSuoritukset(
-        searchBy: String = "",
-        distinct: Boolean = true,
-    ): Long
-
-    fun find(
-        searchBy: String = "",
-        column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
-        direction: SortDirection = SortDirection.DESC,
-        distinct: Boolean = true,
-        limit: Int? = null,
-        offset: Int? = null,
-    ): Iterable<YkiSuoritusEntity>
-
-    fun findSuorituksetWithNoKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity>
-}
-
-@Repository
-class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
+@Service
+class YkiSuoritusRepository {
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
 
@@ -65,7 +39,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         postinumero,
         postitoimipaikka,
         email,
-        suoritus_id,
+        yki_suoritus.suoritus_id,
         last_modified,
         tutkintopaiva,
         tutkintokieli,
@@ -85,6 +59,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         arvosana_muuttui,
         perustelu,
         tarkistusarvioinnin_kasittely_pvm,
+        tarkistusarviointi_hyvaksytty_pvm,
         koski_opiskeluoikeus,
         koski_siirto_kasitelty,
         arviointitila
@@ -95,7 +70,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
      * due to the unique constraint. Overriding the implementation allows explicit handling of conflicts.
      */
     @WithSpan
-    override fun saveAllNewEntities(suoritukset: Iterable<YkiSuoritusEntity>): Iterable<YkiSuoritusEntity> {
+    fun saveAllNewEntities(suoritukset: Iterable<YkiSuoritusEntity>): Iterable<YkiSuoritusEntity> {
         val sql =
             """
             INSERT INTO yki_suoritus (
@@ -130,8 +105,9 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 perustelu,
                 tarkistusarvioinnin_kasittely_pvm,
                 koski_opiskeluoikeus,
+                koski_siirto_kasitelty,
                 arviointitila
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT ON CONSTRAINT unique_suoritus DO NOTHING;
             """.trimIndent()
         val pscf = PreparedStatementCreatorFactory(sql)
@@ -145,50 +121,7 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                     i: Int,
                 ) {
                     val suoritus = suoritukset.elementAt(i)
-                    ps.setString(1, suoritus.suorittajanOID.toString())
-                    ps.setString(2, suoritus.hetu)
-                    ps.setString(3, suoritus.sukupuoli.toString())
-                    ps.setString(4, suoritus.sukunimi)
-                    ps.setString(5, suoritus.etunimet)
-                    ps.setString(6, suoritus.kansalaisuus)
-                    ps.setString(7, suoritus.katuosoite)
-                    ps.setString(8, suoritus.postinumero)
-                    ps.setString(9, suoritus.postitoimipaikka)
-                    ps.setString(10, suoritus.email)
-                    ps.setInt(11, suoritus.suoritusId)
-                    ps.setTimestamp(12, Timestamp(suoritus.lastModified.toEpochMilli()))
-                    ps.setObject(13, suoritus.tutkintopaiva)
-                    ps.setString(14, suoritus.tutkintokieli.toString())
-                    ps.setString(15, suoritus.tutkintotaso.toString())
-                    ps.setString(16, suoritus.jarjestajanTunnusOid.toString())
-                    ps.setString(17, suoritus.jarjestajanNimi)
-                    ps.setObject(18, suoritus.arviointipaiva)
-                    ps.setObject(19, suoritus.tekstinYmmartaminen)
-                    ps.setObject(20, suoritus.kirjoittaminen)
-                    ps.setObject(21, suoritus.rakenteetJaSanasto)
-                    ps.setObject(22, suoritus.puheenYmmartaminen)
-                    ps.setObject(23, suoritus.puhuminen)
-                    ps.setObject(24, suoritus.yleisarvosana)
-                    ps.setObject(25, suoritus.tarkistusarvioinninSaapumisPvm)
-                    ps.setObject(26, suoritus.tarkistusarvioinninAsiatunnus)
-                    ps.setArray(
-                        27,
-                        ps.connection.createArrayOf(
-                            "text",
-                            suoritus.tarkistusarvioidutOsakokeet?.toTypedArray(),
-                        ),
-                    )
-                    ps.setArray(
-                        28,
-                        ps.connection.createArrayOf(
-                            "text",
-                            suoritus.arvosanaMuuttui?.toTypedArray(),
-                        ),
-                    )
-                    ps.setObject(29, suoritus.perustelu)
-                    ps.setObject(30, suoritus.tarkistusarvioinninKasittelyPvm)
-                    ps.setString(31, suoritus.koskiOpiskeluoikeus?.toString())
-                    ps.setString(32, suoritus.arviointitila.toString())
+                    setInsertValues(ps, suoritus)
                 }
 
                 override fun getBatchSize() = suoritukset.count()
@@ -211,21 +144,23 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         val suoritusIds = ids.joinToString(",", "(", ")")
         val findSavedQuerySql =
             """
-            SELECT
-                $allColumns
-            FROM yki_suoritus
+            SELECT $allColumns
+            $fromYkiSuoritus
             WHERE id IN $suoritusIds
             """.trimIndent()
-        return jdbcTemplate
-            .query(findSavedQuerySql) { rs, _ ->
-                YkiSuoritusEntity.fromResultSet(rs)
-            }
+        return jdbcTemplate.query(findSavedQuerySql, YkiSuoritusEntity.fromRow)
     }
 
     private fun selectQuery(
         distinct: Boolean,
         columns: String = allColumns,
-    ): String = if (distinct) "SELECT DISTINCT ON (suoritus_id) $columns" else "SELECT $columns"
+    ): String = if (distinct) "SELECT DISTINCT ON (yki_suoritus.suoritus_id) $columns" else "SELECT $columns"
+
+    private val fromYkiSuoritus =
+        """
+        FROM yki_suoritus 
+        LEFT JOIN yki_suoritus_lisatieto ON yki_suoritus.suoritus_id = yki_suoritus_lisatieto.suoritus_id
+        """.trimIndent()
 
     private fun pagingQuery(
         limit: Int?,
@@ -243,20 +178,20 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
             OR jarjestajan_nimi ILIKE :search_str
         """.trimIndent()
 
-    override fun find(
-        searchBy: String,
-        column: YkiSuoritusColumn,
-        direction: SortDirection,
-        distinct: Boolean,
-        limit: Int?,
-        offset: Int?,
+    fun find(
+        searchBy: String = "",
+        column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
+        direction: SortDirection = SortDirection.DESC,
+        distinct: Boolean = true,
+        limit: Int? = null,
+        offset: Int? = null,
     ): Iterable<YkiSuoritusEntity> {
         val searchStr = "%$searchBy%"
         val findAllQuerySql =
             """
             SELECT * FROM
                 (${selectQuery(distinct)}
-                FROM yki_suoritus
+                $fromYkiSuoritus
                 ${whereQuery()}
                 ORDER BY suoritus_id, last_modified DESC)
             ORDER BY ${column.entityName} $direction
@@ -270,36 +205,32 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
                 "offset" to offset,
             )
 
-        return jdbcNamedParameterTemplate.query(findAllQuerySql, params) { rs, _ ->
-            YkiSuoritusEntity.fromResultSet(rs)
-        }
+        return jdbcNamedParameterTemplate.query(findAllQuerySql, params, YkiSuoritusEntity.fromRow)
     }
 
-    override fun findSuorituksetWithNoKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> {
+    fun findSuorituksetWithNoKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> {
         val sql =
             """
             SELECT * FROM
                 (SELECT DISTINCT ON (suoritus_id) $allColumns
-                FROM yki_suoritus
-                ORDER BY suoritus_id, last_modified DESC)
+                $fromYkiSuoritus
+                ORDER BY suoritus_id, last_modified DESC) as ysaC
             WHERE NOT koski_siirto_kasitelty
             """.trimIndent()
-        return jdbcNamedParameterTemplate.query(sql) { rs, _ ->
-            YkiSuoritusEntity.fromResultSet(rs)
-        }
+        return jdbcNamedParameterTemplate.query(sql, YkiSuoritusEntity.fromRow)
     }
 
-    override fun countSuoritukset(
-        searchBy: String,
-        distinct: Boolean,
+    fun countSuoritukset(
+        searchBy: String = "",
+        distinct: Boolean = true,
     ): Long {
         val sql =
             """
             SELECT COUNT(id) FROM
                 (${selectQuery(distinct, "id")}
-                FROM yki_suoritus
+                $fromYkiSuoritus
                 ${whereQuery()}
-                ORDER BY suoritus_id)
+                ORDER BY yki_suoritus.suoritus_id)
             """.trimIndent()
         val searchStr = "%$searchBy%"
         val params =
@@ -313,57 +244,15 @@ class CustomYkiSuoritusRepositoryImpl : CustomYkiSuoritusRepository {
         )
             ?: 0
     }
-}
 
-fun YkiSuoritusEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusEntity =
-    YkiSuoritusEntity(
-        rs.getInt("id"),
-        Oid.parse(rs.getString("suorittajan_oid")).getOrThrow(),
-        rs.getString("hetu"),
-        Sukupuoli.valueOf(rs.getString("sukupuoli")),
-        rs.getString("sukunimi"),
-        rs.getString("etunimet"),
-        rs.getString("kansalaisuus"),
-        rs.getString("katuosoite"),
-        rs.getString("postinumero"),
-        rs.getString("postitoimipaikka"),
-        rs.getString("email"),
-        rs.getInt("suoritus_id"),
-        rs.getTimestamp("last_modified").toInstant(),
-        rs.getObject("tutkintopaiva", LocalDate::class.java),
-        Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
-        Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
-        Oid.parse(rs.getString("jarjestajan_tunnus_oid")).getOrThrow(),
-        rs.getString("jarjestajan_nimi"),
-        rs.getObject("arviointipaiva", LocalDate::class.java),
-        rs.getObject("tekstin_ymmartaminen", Integer::class.java)?.toInt(),
-        rs.getObject("kirjoittaminen", Integer::class.java)?.toInt(),
-        rs.getObject("rakenteet_ja_sanasto", Integer::class.java)?.toInt(),
-        rs.getObject("puheen_ymmartaminen", Integer::class.java)?.toInt(),
-        rs.getObject("puhuminen", Integer::class.java)?.toInt(),
-        rs.getObject("yleisarvosana", Integer::class.java)?.toInt(),
-        rs.getObject("tarkistusarvioinnin_saapumis_pvm", LocalDate::class.java),
-        rs.getString("tarkistusarvioinnin_asiatunnus"),
-        rs.getTypedArrayOrNull("tarkistusarvioidut_osakokeet") { taso -> TutkinnonOsa.valueOf(taso) }?.toSet(),
-        rs.getTypedArrayOrNull("arvosana_muuttui") { taso -> TutkinnonOsa.valueOf(taso) }?.toSet(),
-        rs.getString("perustelu"),
-        rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
-        Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),
-        rs.getBoolean("koski_siirto_kasitelty"),
-        Arviointitila.valueOf(rs.getString("arviointitila")),
-    )
-
-@Repository
-interface YkiSuoritusRepository :
-    CrudRepository<YkiSuoritusEntity, Int>,
-    CustomYkiSuoritusRepository {
-    @Query(
-        """
+    fun findLatestBySuoritusIdsUnsafe(ids: List<Int>): List<YkiSuoritusEntity> =
+        jdbcNamedParameterTemplate.query(
+            """
         WITH suoritus AS (
             SELECT
                 *,
                 row_number() OVER (PARTITION BY suoritus_id ORDER BY last_modified DESC) rn
-            FROM yki_suoritus
+            $fromYkiSuoritus
             WHERE suoritus_id IN (:ids) 
             ORDER BY last_modified DESC
         )
@@ -371,9 +260,149 @@ interface YkiSuoritusRepository :
         FROM suoritus
         WHERE rn = 1
         """,
-    )
-    fun findLatestBySuoritusIdsUnsafe(ids: List<Int>): List<YkiSuoritusEntity>
+            mapOf("ids" to ids),
+            YkiSuoritusEntity.fromRow,
+        )
 
     fun findLatestBySuoritusIds(ids: List<Int>): List<YkiSuoritusEntity> =
         if (ids.isEmpty()) emptyList() else findLatestBySuoritusIdsUnsafe(ids)
+
+    fun save(suoritus: YkiSuoritusEntity) {
+        val query =
+            """
+            INSERT INTO yki_suoritus (
+                suorittajan_oid,
+                hetu,
+                sukupuoli,
+                sukunimi,
+                etunimet,
+                kansalaisuus,
+                katuosoite,
+                postinumero,
+                postitoimipaikka,
+                email,
+                suoritus_id,
+                last_modified,
+                tutkintopaiva,
+                tutkintokieli,
+                tutkintotaso,
+                jarjestajan_tunnus_oid,
+                jarjestajan_nimi,
+                arviointipaiva,
+                tekstin_ymmartaminen,
+                kirjoittaminen,
+                rakenteet_ja_sanasto,
+                puheen_ymmartaminen,
+                puhuminen,
+                yleisarvosana,
+                tarkistusarvioinnin_saapumis_pvm,
+                tarkistusarvioinnin_asiatunnus,
+                tarkistusarvioidut_osakokeet,
+                arvosana_muuttui,
+                perustelu,
+                tarkistusarvioinnin_kasittely_pvm,
+                koski_opiskeluoikeus,
+                koski_siirto_kasitelty,
+                arviointitila
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT ON CONSTRAINT unique_suoritus DO UPDATE SET
+                suorittajan_oid = EXCLUDED.suorittajan_oid,
+                hetu = EXCLUDED.hetu,
+                sukupuoli = EXCLUDED.sukupuoli,
+                sukunimi = EXCLUDED.sukunimi,
+                etunimet = EXCLUDED.etunimet,
+                kansalaisuus = EXCLUDED.kansalaisuus,
+                katuosoite = EXCLUDED.katuosoite,
+                postinumero = EXCLUDED.postinumero,
+                postitoimipaikka = EXCLUDED.postitoimipaikka,
+                email = EXCLUDED.email,
+                tutkintopaiva = EXCLUDED.tutkintopaiva,
+                tutkintokieli = EXCLUDED.tutkintokieli,
+                tutkintotaso = EXCLUDED.tutkintotaso,
+                jarjestajan_tunnus_oid = EXCLUDED.jarjestajan_tunnus_oid,
+                jarjestajan_nimi = EXCLUDED.jarjestajan_nimi,
+                arviointipaiva = EXCLUDED.arviointipaiva,
+                tekstin_ymmartaminen = EXCLUDED.tekstin_ymmartaminen,
+                kirjoittaminen = EXCLUDED.kirjoittaminen,
+                rakenteet_ja_sanasto = EXCLUDED.rakenteet_ja_sanasto,
+                puheen_ymmartaminen = EXCLUDED.puheen_ymmartaminen,
+                puhuminen = EXCLUDED.puhuminen,
+                yleisarvosana = EXCLUDED.yleisarvosana,
+                tarkistusarvioinnin_saapumis_pvm = EXCLUDED.tarkistusarvioinnin_saapumis_pvm,
+                tarkistusarvioinnin_asiatunnus = EXCLUDED.tarkistusarvioinnin_asiatunnus,
+                tarkistusarvioidut_osakokeet = EXCLUDED.tarkistusarvioidut_osakokeet,
+                arvosana_muuttui = EXCLUDED.arvosana_muuttui,
+                perustelu = EXCLUDED.perustelu,
+                tarkistusarvioinnin_kasittely_pvm = EXCLUDED.tarkistusarvioinnin_kasittely_pvm,
+                koski_opiskeluoikeus = EXCLUDED.koski_opiskeluoikeus,
+                koski_siirto_kasitelty = EXCLUDED.koski_siirto_kasitelty,
+                arviointitila = EXCLUDED.arviointitila
+            """.trimIndent()
+
+        jdbcTemplate.update(query) {
+            setInsertValues(it, suoritus)
+        }
+    }
+
+    fun findAll(): List<YkiSuoritusEntity> =
+        jdbcTemplate.query(
+            "SELECT * $fromYkiSuoritus",
+            YkiSuoritusEntity.fromRow,
+        )
+
+    fun deleteAll() {
+        jdbcTemplate.execute("TRUNCATE TABLE yki_suoritus_lisatieto")
+        jdbcTemplate.execute("TRUNCATE TABLE yki_suoritus")
+    }
+
+    private fun setInsertValues(
+        ps: PreparedStatement,
+        suoritus: YkiSuoritusEntity,
+    ) {
+        ps.setString(1, suoritus.suorittajanOID.toString())
+        ps.setString(2, suoritus.hetu)
+        ps.setString(3, suoritus.sukupuoli.toString())
+        ps.setString(4, suoritus.sukunimi)
+        ps.setString(5, suoritus.etunimet)
+        ps.setString(6, suoritus.kansalaisuus)
+        ps.setString(7, suoritus.katuosoite)
+        ps.setString(8, suoritus.postinumero)
+        ps.setString(9, suoritus.postitoimipaikka)
+        ps.setString(10, suoritus.email)
+        ps.setInt(11, suoritus.suoritusId)
+        ps.setTimestamp(12, Timestamp(suoritus.lastModified.toEpochMilli()))
+        ps.setObject(13, suoritus.tutkintopaiva)
+        ps.setString(14, suoritus.tutkintokieli.toString())
+        ps.setString(15, suoritus.tutkintotaso.toString())
+        ps.setString(16, suoritus.jarjestajanTunnusOid.toString())
+        ps.setString(17, suoritus.jarjestajanNimi)
+        ps.setObject(18, suoritus.arviointipaiva)
+        ps.setObject(19, suoritus.tekstinYmmartaminen)
+        ps.setObject(20, suoritus.kirjoittaminen)
+        ps.setObject(21, suoritus.rakenteetJaSanasto)
+        ps.setObject(22, suoritus.puheenYmmartaminen)
+        ps.setObject(23, suoritus.puhuminen)
+        ps.setObject(24, suoritus.yleisarvosana)
+        ps.setObject(25, suoritus.tarkistusarvioinninSaapumisPvm)
+        ps.setObject(26, suoritus.tarkistusarvioinninAsiatunnus)
+        ps.setArray(
+            27,
+            ps.connection.createArrayOf(
+                "text",
+                suoritus.tarkistusarvioidutOsakokeet?.toTypedArray(),
+            ),
+        )
+        ps.setArray(
+            28,
+            ps.connection.createArrayOf(
+                "text",
+                suoritus.arvosanaMuuttui?.toTypedArray(),
+            ),
+        )
+        ps.setObject(29, suoritus.perustelu)
+        ps.setObject(30, suoritus.tarkistusarvioinninKasittelyPvm)
+        ps.setString(31, suoritus.koskiOpiskeluoikeus?.toString())
+        ps.setBoolean(32, suoritus.koskiSiirtoKasitelty ?: false)
+        ps.setString(33, suoritus.arviointitila.toString())
+    }
 }
