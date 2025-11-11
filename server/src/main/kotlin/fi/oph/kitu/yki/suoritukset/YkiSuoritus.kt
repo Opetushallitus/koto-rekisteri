@@ -70,6 +70,7 @@ data class YkiSuoritus(
             arvosanaMuuttui = tarkistusarviointi?.arvosanaMuuttui?.toSet(),
             perustelu = tarkistusarviointi?.perustelu,
             tarkistusarvioinninKasittelyPvm = tarkistusarviointi?.kasittelypaiva,
+            tarkistusarviointiHyvaksyttyPvm = null,
             koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,
             koskiSiirtoKasitelty = koskiSiirtoKasitelty,
             arviointitila = arviointitila,
