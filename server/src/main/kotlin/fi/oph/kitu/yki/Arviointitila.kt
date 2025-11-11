@@ -23,5 +23,8 @@ enum class KituArviointitila(
     ARVIOITU("Arviointi valmis"),
     UUSINTA("Uusinta teknisen virheen vuoksi"),
     TARKISTUSARVIOITU("Tarkistusarviointi tehty"),
-    TARKITUSARVIOINTI_HYVAKSYTTY("Tarkitusarviointi hyväksytty"),
+    TARKISTUSARVIOINTI_HYVAKSYTTY("Tarkitusarviointi hyväksytty"),
+    ;
+
+    fun arviointiValmis() = this == ARVIOITU || this == TARKISTUSARVIOINTI_HYVAKSYTTY
 }
