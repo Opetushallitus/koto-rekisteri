@@ -10,6 +10,7 @@ import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.koskiErrorsArticle
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.yki.KituArviointitila
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
 import kotlinx.html.ButtonType
@@ -148,6 +149,7 @@ object YkiSuorituksetPage {
                                                 th { +"Arvosana muuttui?" }
                                                 th { +"Perustelu" }
                                                 th { +"Käsittelypäivä" }
+                                                th { +"Tutkintolautakunnan hyväksyntä" }
                                             }
                                             tr {
                                                 td {
@@ -167,6 +169,17 @@ object YkiSuorituksetPage {
                                                 td { +suoritus.perustelu.orEmpty() }
                                                 td {
                                                     +suoritus.tarkistusarvioinninKasittelyPvm?.toString().orEmpty()
+                                                }
+                                                td {
+                                                    if (suoritus.arviointitila ==
+                                                        KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY
+                                                    ) {
+                                                        +(
+                                                            suoritus.tarkistusarviointiHyvaksyttyPvm?.let {
+                                                                it.toString()
+                                                            } ?: "Ennen 14.11.2025"
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
