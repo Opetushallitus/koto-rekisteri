@@ -86,7 +86,7 @@ class YkiApiControllerTest(
                             ),
                         tutkintopaiva = LocalDate.of(2024, 9, 1),
                         arviointipaiva = LocalDate.of(2024, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
+                        arviointitila = SolkiArviointitila.ARVIOITU,
                         osat =
                             listOf(
                                 YkiOsa(

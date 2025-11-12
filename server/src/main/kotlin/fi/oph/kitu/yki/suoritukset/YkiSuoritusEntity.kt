@@ -2,7 +2,7 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
-import fi.oph.kitu.yki.Arviointitila
+import fi.oph.kitu.yki.KituArviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
@@ -56,7 +56,7 @@ data class YkiSuoritusEntity(
     val koskiOpiskeluoikeus: Oid?,
     val koskiSiirtoKasitelty: Boolean?,
     @Enumerated(EnumType.STRING)
-    val arviointitila: Arviointitila,
+    val arviointitila: KituArviointitila,
 ) {
     companion object {
         val fromRow: RowMapper<YkiSuoritusEntity> =
@@ -100,7 +100,7 @@ data class YkiSuoritusEntity(
                     rs.getObject("tarkistusarviointi_hyvaksytty_pvm", LocalDate::class.java),
                     Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),
                     rs.getBoolean("koski_siirto_kasitelty"),
-                    Arviointitila.valueOf(rs.getString("arviointitila")),
+                    KituArviointitila.valueOf(rs.getString("arviointitila")),
                 )
             }
     }

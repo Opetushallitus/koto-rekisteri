@@ -18,7 +18,7 @@ import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
-import fi.oph.kitu.yki.Arviointitila
+import fi.oph.kitu.yki.SolkiArviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
@@ -242,7 +242,7 @@ class SchemaExamplesController {
                             ),
                         tutkintopaiva = LocalDate.of(2024, 9, 1),
                         arviointipaiva = LocalDate.of(2024, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
+                        arviointitila = SolkiArviointitila.ARVIOITU,
                         osat =
                             listOf(
                                 YkiOsa(

@@ -1,12 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.jdbc.getTypedArrayOrNull
-import fi.oph.kitu.yki.Arviointitila
-import fi.oph.kitu.yki.Sukupuoli
-import fi.oph.kitu.yki.TutkinnonOsa
-import fi.oph.kitu.yki.Tutkintokieli
-import fi.oph.kitu.yki.Tutkintotaso
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
