@@ -7,7 +7,7 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
-import fi.oph.kitu.yki.Arviointitila
+import fi.oph.kitu.yki.SolkiArviointitila
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -83,7 +83,7 @@ class YkiSuoritusValidation(
 
     fun validateArvointitila(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
         when (s.suoritus.arviointitila) {
-            Arviointitila.ARVIOITU -> {
+            SolkiArviointitila.ARVIOITU -> {
                 Validation.fold(
                     s,
                     Validation.assertTrue(
@@ -104,11 +104,11 @@ class YkiSuoritusValidation(
                 )
             }
 
-            Arviointitila.ARVIOITAVANA,
-            Arviointitila.EI_SUORITUSTA,
-            Arviointitila.KESKEYTETTY,
-            Arviointitila.UUSINTA,
-            Arviointitila.TARKISTUSARVIOITU,
+            SolkiArviointitila.ARVIOITAVANA,
+            SolkiArviointitila.EI_SUORITUSTA,
+            SolkiArviointitila.KESKEYTETTY,
+            SolkiArviointitila.UUSINTA,
+            SolkiArviointitila.TARKISTUSARVIOITU,
             ->
                 Validation.fold(
                     s,

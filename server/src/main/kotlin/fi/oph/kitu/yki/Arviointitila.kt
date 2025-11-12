@@ -1,6 +1,20 @@
 package fi.oph.kitu.yki
 
-enum class Arviointitila(
+// Arviointitilat, joita Solki lähettää Kielitutkintorekisteriin
+enum class SolkiArviointitila {
+    ARVIOITAVANA,
+    EI_SUORITUSTA,
+    KESKEYTETTY,
+    ARVIOITU,
+    UUSINTA,
+    TARKISTUSARVIOITU,
+    ;
+
+    fun toKituArviointitila(): KituArviointitila = KituArviointitila.valueOf(name)
+}
+
+// Solki-arviointitilat + Kielitutkintorekisterin omat tilat
+enum class KituArviointitila(
     val viewText: String,
 ) {
     ARVIOITAVANA("Suoritus arvioitavana"),
@@ -9,4 +23,5 @@ enum class Arviointitila(
     ARVIOITU("Arviointi valmis"),
     UUSINTA("Uusinta teknisen virheen vuoksi"),
     TARKISTUSARVIOITU("Tarkistusarviointi tehty"),
+    TARKITUSARVIOINTI_HYVAKSYTTY("Tarkitusarviointi hyväksytty"),
 }
