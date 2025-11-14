@@ -6,7 +6,7 @@ enum class SolkiArviointitila {
     EI_SUORITUSTA,
     KESKEYTETTY,
     ARVIOITU,
-    UUSINTA,
+    UUSITTAVA,
     TARKISTUSARVIOITU,
     ;
 
@@ -21,7 +21,7 @@ enum class KituArviointitila(
     EI_SUORITUSTA("Ei suoritusta"),
     KESKEYTETTY("Suoritus keskeytetty"),
     ARVIOITU("Arviointi valmis"),
-    UUSINTA("Uusinta teknisen virheen vuoksi"),
+    UUSITTAVA("Uusittava teknisen virheen vuoksi"),
     TARKISTUSARVIOITU("Tarkistusarviointi tehty"),
     TARKISTUSARVIOINTI_HYVAKSYTTY("Tarkitusarviointi hyväksytty"),
     ;
