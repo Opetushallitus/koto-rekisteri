@@ -1,0 +1,1 @@
+ALTER TYPE yki_arviointitila RENAME VALUE 'UUSINTA' TO 'UUSITTAVA';

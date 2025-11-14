@@ -107,7 +107,7 @@ class YkiSuoritusValidation(
             SolkiArviointitila.ARVIOITAVANA,
             SolkiArviointitila.EI_SUORITUSTA,
             SolkiArviointitila.KESKEYTETTY,
-            SolkiArviointitila.UUSINTA,
+            SolkiArviointitila.UUSITTAVA,
             SolkiArviointitila.TARKISTUSARVIOITU,
             ->
                 Validation.fold(
