@@ -3,6 +3,7 @@ package fi.oph.kitu.oppijanumero
 import fi.oph.kitu.assertFailureIsThrowable
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.logging.MockTracer
+import fi.oph.kitu.oauth2client.OAuth2Client
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
@@ -17,14 +18,10 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service does not find user`() {
         // Facade
-        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
-        val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
+        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumerorekisteri-service")
         val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
         mockServer
-            .addCasFlow(
-                serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
-                serviceEndpoint = "yleistunniste/hae",
-            ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
+            .expect(requestTo("http://localhost:8080/oppijanumerorekisteri-service/yleistunniste/hae"))
             .andRespond(
                 withStatus(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -39,28 +36,18 @@ class OppijanumeroServiceTests {
                         """.trimIndent(),
                     ),
             )
-        val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
         val tracer = MockTracer()
         val oppijanumeroService =
             OppijanumeroServiceImpl(
                 tracer,
                 OppijanumerorekisteriClient(
-                    CasAuthenticatedServiceImpl(
-                        oppijanumeroRestClient,
-                        CasService(
-                            casRestClient,
-                            oppijanumeroRestClient,
-                        ).apply {
-                            serviceUrl = "http://localhost:8080/cas/login"
-                            onrUsername = "username"
-                            onrPassword = "password"
-                        },
-                        tracer,
+                    OAuth2Client(
+                        restClient = oppijanumeroRestClient,
+                        tracer = tracer,
                     ),
-                ).apply {
-                    serviceUrl = "http://localhost:8080/oppijanumero-service"
-                },
+                    "http://localhost:8080/oppijanumerorekisteri-service",
+                ),
             )
 
         assertThrows<OppijanumeroException.OppijaNotFoundException> {
@@ -79,14 +66,10 @@ class OppijanumeroServiceTests {
     @Test
     fun `oppijanumero service received bad request`() {
         // Facade
-        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumero-service")
-        val casRestClientBuilder = createRestClientBuilderWithCasFlow("http://localhost:8080/cas")
+        val restClientBuilder = RestClient.builder().baseUrl("http://localhost:8080/oppijanumerorekisteri-service")
         val mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
         mockServer
-            .addCasFlow(
-                serviceBaseUrl = "http://localhost:8080/oppijanumero-service",
-                serviceEndpoint = "yleistunniste/hae",
-            ).expect(requestTo("http://localhost:8080/oppijanumero-service/yleistunniste/hae"))
+            .expect(requestTo("http://localhost:8080/oppijanumerorekisteri-service/yleistunniste/hae"))
             .andRespond(
                 withStatus(HttpStatus.CONFLICT)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -101,28 +84,18 @@ class OppijanumeroServiceTests {
                         """.trimIndent(),
                     ),
             )
-        val casRestClient = casRestClientBuilder.build()
         val oppijanumeroRestClient = restClientBuilder.build()
         val tracer = MockTracer()
         val oppijanumeroService =
             OppijanumeroServiceImpl(
                 tracer,
                 OppijanumerorekisteriClient(
-                    CasAuthenticatedServiceImpl(
-                        oppijanumeroRestClient,
-                        CasService(
-                            casRestClient,
-                            oppijanumeroRestClient,
-                        ).apply {
-                            serviceUrl = "http://localhost:8080/cas/login"
-                            onrUsername = "username"
-                            onrPassword = "password"
-                        },
-                        tracer,
+                    OAuth2Client(
+                        restClient = oppijanumeroRestClient,
+                        tracer = tracer,
                     ),
-                ).apply {
-                    serviceUrl = "http://localhost:8080/oppijanumero-service"
-                },
+                    "http://localhost:8080/oppijanumerorekisteri-service",
+                ),
             )
         val result =
             oppijanumeroService.getOppijanumero(
@@ -143,41 +116,41 @@ class OppijanumeroServiceTests {
     @Test
     fun `Ramonan parsinta onnistuu`() {
         val json = """{
-          "oidHenkilo": "1.2.246.562.98.89505889280",
-          "hetu": "271258-9988",
-          "kaikkiHetut": [],
-          "passivoitu": false,
-          "etunimet": "Ramona Ulla",
-          "kutsumanimi": "Ramona Ulla",
-          "sukunimi": "Tuulispää",
-          "aidinkieli": {
-            "kieliKoodi": "VK",
-            "kieliTyyppi": null
-          },
-          "asiointiKieli": {
-            "kieliKoodi": "VK",
-            "kieliTyyppi": null
-          },
-          "kansalaisuus": [],
-          "kasittelijaOid": "testidatantuonti",
-          "syntymaaika": "1958-12-27",
-          "sukupuoli": "2",
-          "kotikunta": null,
-          "oppijanumero": "1.2.246.562.98.89505889280",
-          "turvakielto": false,
-          "eiSuomalaistaHetua": false,
-          "yksiloity": false,
-          "yksiloityVTJ": true,
-          "yksilointiYritetty": true,
-          "duplicate": false,
-          "created": 1741614259903,
-          "modified": 1741614259903,
-          "vtjsynced": null,
-          "yhteystiedotRyhma": [],
-          "yksilointivirheet": [],
-          "passinumerot": [],
-          "kielisyys": []
-        }"""
+              "oidHenkilo": "1.2.246.562.98.89505889280",
+              "hetu": "271258-9988",
+              "kaikkiHetut": [],
+              "passivoitu": false,
+              "etunimet": "Ramona Ulla",
+              "kutsumanimi": "Ramona Ulla",
+              "sukunimi": "Tuulispää",
+              "aidinkieli": {
+                "kieliKoodi": "VK",
+                "kieliTyyppi": null
+              },
+              "asiointiKieli": {
+                "kieliKoodi": "VK",
+                "kieliTyyppi": null
+              },
+              "kansalaisuus": [],
+              "kasittelijaOid": "testidatantuonti",
+              "syntymaaika": "1958-12-27",
+              "sukupuoli": "2",
+              "kotikunta": null,
+              "oppijanumero": "1.2.246.562.98.89505889280",
+              "turvakielto": false,
+              "eiSuomalaistaHetua": false,
+              "yksiloity": false,
+              "yksiloityVTJ": true,
+              "yksilointiYritetty": true,
+              "duplicate": false,
+              "created": 1741614259903,
+              "modified": 1741614259903,
+              "vtjsynced": null,
+              "yhteystiedotRyhma": [],
+              "yksilointivirheet": [],
+              "passinumerot": [],
+              "kielisyys": []
+            }"""
 
         val obj = defaultObjectMapper.readValue(json, OppijanumerorekisteriHenkilo::class.java)
 
