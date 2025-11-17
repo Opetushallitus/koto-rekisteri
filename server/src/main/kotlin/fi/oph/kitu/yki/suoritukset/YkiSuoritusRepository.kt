@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.PreparedStatementCreatorFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.sql.PreparedStatement
 import java.sql.Timestamp
 import java.time.Instant
@@ -148,17 +149,6 @@ class YkiSuoritusRepository {
         return jdbcTemplate.query(findSavedQuerySql, YkiSuoritusEntity.fromRow)
     }
 
-    private fun findSuorituksetBySuoritusIdList(ids: List<Int>): Iterable<YkiSuoritusEntity> {
-        val suoritusIds = ids.joinToString(",", "(", ")")
-        val findSavedQuerySql =
-            """
-            SELECT $allColumns
-            $fromYkiSuoritus
-            WHERE yki_suoritus.suoritus_id IN $suoritusIds
-            """.trimIndent()
-        return jdbcTemplate.query(findSavedQuerySql, YkiSuoritusEntity.fromRow)
-    }
-
     private fun selectQuery(
         distinct: Boolean,
         columns: String = allColumns,
@@ -246,13 +236,20 @@ class YkiSuoritusRepository {
                     .thenByDescending { it.tarkistusarvioinninSaapumisPvm },
             )
 
+    @Transactional
     fun hyvaksyTarkistusarvioinnit(
         suoritusIds: List<Int>,
         pvm: LocalDate,
     ): Int {
-        findSuorituksetBySuoritusIdList(suoritusIds).forEach { suoritus ->
+        findLatestBySuoritusIds(suoritusIds).forEach { suoritus ->
+            if (!suoritus.arviointitila.tarkistusarvioitu()) {
+                throw IllegalStateException(
+                    "Tarkistusarvioimatonta suoritusta ${suoritus.suoritusId} ei voi asettaa hyväksytyksi",
+                )
+            }
             save(
                 suoritus.copy(
+                    id = null,
                     arviointitila = KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
                     lastModified = Instant.now(),
                 ),
@@ -302,9 +299,9 @@ class YkiSuoritusRepository {
         WITH suoritus AS (
             SELECT
                 *,
-                row_number() OVER (PARTITION BY suoritus_id ORDER BY last_modified DESC) rn
+                row_number() OVER (PARTITION BY yki_suoritus.suoritus_id ORDER BY last_modified DESC) rn
             $fromYkiSuoritus
-            WHERE suoritus_id IN (:ids) 
+            WHERE yki_suoritus.suoritus_id IN (:ids) 
             ORDER BY last_modified DESC
         )
         SELECT *
