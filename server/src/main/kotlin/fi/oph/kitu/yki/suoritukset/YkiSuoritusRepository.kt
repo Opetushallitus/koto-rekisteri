@@ -222,11 +222,12 @@ class YkiSuoritusRepository {
         jdbcTemplate
             .query(
                 """
-                ${selectQuery(distinct = true)}
-                $fromYkiSuoritus
+                SELECT * FROM
+                    (SELECT DISTINCT ON (suoritus_id) $allColumns
+                    $fromYkiSuoritus
+                    ORDER BY suoritus_id, last_modified DESC) as ysaC
                 WHERE arviointitila = ?
                    OR arviointitila = ?
-                ORDER BY suoritus_id, last_modified DESC
                 """.trimIndent(),
                 YkiSuoritusEntity.fromRow,
                 KituArviointitila.TARKISTUSARVIOITU.name,
