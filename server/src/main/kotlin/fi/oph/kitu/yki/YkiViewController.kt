@@ -3,6 +3,7 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.ViewMessage
 import fi.oph.kitu.html.httpParams
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper
@@ -16,6 +17,7 @@ import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.view.RedirectView
+import java.time.LocalDate
 
 @Controller
 @RequestMapping("/yki")
@@ -211,6 +214,45 @@ class YkiViewController(
             }?.let {
                 ResponseEntity.ok(KoskiRequestMapper.getObjectMapper().writeValueAsString(it))
             } ?: ResponseEntity.notFound().build()
+
+    @GetMapping("/tarkistusarvioinnit", produces = ["text/html"])
+    fun tarkistusArvioinnitView(viewMessage: ViewMessage? = null): ResponseEntity<String> =
+        ykiSuoritusRepository.findTarkistusarvoidutSuoritukset().let {
+            ResponseEntity.ok(
+                YkiTarkistusarvioinnitPage.render(
+                    suoritukset = it.toList(),
+                    message = viewMessage?.consume(),
+                ),
+            )
+        }
+
+    @PostMapping("/tarkistusarvioinnit")
+    fun hyvaksyTarkistusArvioinnit(
+        @RequestParam suoritukset: List<Int>? = null,
+        @RequestParam hyvaksyttyPvm: LocalDate? = null,
+        viewMessage: ViewMessage? = null,
+    ): RedirectView {
+        suoritukset?.let {
+            val updated =
+                ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(
+                    suoritusIds = suoritukset,
+                    pvm = hyvaksyttyPvm ?: LocalDate.now(),
+                )
+            viewMessage?.showSuccess(
+                if (updated > 1) {
+                    "$updated tarkistusarviointia merkitty hyväksytyksi"
+                } else {
+                    "1 tarkistusarviointi merkitty hyväksytyksi"
+                },
+            )
+        }
+
+        return RedirectView(
+            linkTo(
+                methodOn(YkiViewController::class.java).tarkistusArvioinnitView(),
+            ).toString(),
+        )
+    }
 
     companion object {
         const val YKI_SEARCH_KEY = "YkiSearch"

@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.yki.KituArviointitila
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
@@ -11,6 +12,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Service
 import java.sql.PreparedStatement
 import java.sql.Timestamp
+import java.time.Instant
+import java.time.LocalDate
 
 @Service
 class YkiSuoritusRepository {
@@ -145,6 +148,17 @@ class YkiSuoritusRepository {
         return jdbcTemplate.query(findSavedQuerySql, YkiSuoritusEntity.fromRow)
     }
 
+    private fun findSuorituksetBySuoritusIdList(ids: List<Int>): Iterable<YkiSuoritusEntity> {
+        val suoritusIds = ids.joinToString(",", "(", ")")
+        val findSavedQuerySql =
+            """
+            SELECT $allColumns
+            $fromYkiSuoritus
+            WHERE yki_suoritus.suoritus_id IN $suoritusIds
+            """.trimIndent()
+        return jdbcTemplate.query(findSavedQuerySql, YkiSuoritusEntity.fromRow)
+    }
+
     private fun selectQuery(
         distinct: Boolean,
         columns: String = allColumns,
@@ -212,6 +226,45 @@ class YkiSuoritusRepository {
             WHERE NOT koski_siirto_kasitelty
             """.trimIndent()
         return jdbcNamedParameterTemplate.query(sql, YkiSuoritusEntity.fromRow)
+    }
+
+    fun findTarkistusarvoidutSuoritukset(): Iterable<YkiSuoritusEntity> =
+        jdbcTemplate.query(
+            """
+            ${selectQuery(distinct = true)}
+            $fromYkiSuoritus
+            WHERE arviointitila = ?
+               OR arviointitila = ?
+            ORDER BY suoritus_id, last_modified DESC
+            """.trimIndent(),
+            YkiSuoritusEntity.fromRow,
+            KituArviointitila.TARKISTUSARVIOITU.name,
+            KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY.name,
+        )
+
+    fun hyvaksyTarkistusarvioinnit(
+        suoritusIds: List<Int>,
+        pvm: LocalDate,
+    ): Int {
+        findSuorituksetBySuoritusIdList(suoritusIds).forEach { suoritus ->
+            save(
+                suoritus.copy(
+                    arviointitila = KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
+                    lastModified = Instant.now(),
+                ),
+            )
+        }
+
+        return jdbcTemplate.update(
+            """
+            INSERT INTO yki_suoritus_lisatieto (suoritus_id, tarkistusarviointi_hyvaksytty_pvm)
+                VALUES ${suoritusIds.joinToString(",") { "(?, ?)"}}
+            ON CONFLICT ON CONSTRAINT yki_suoritus_lisatieto_pkey
+                DO UPDATE SET
+                    tarkistusarviointi_hyvaksytty_pvm = EXCLUDED.tarkistusarviointi_hyvaksytty_pvm
+            """.trimIndent(),
+            *suoritusIds.flatMap { listOf(it, pvm) }.toTypedArray<Any>(),
+        )
     }
 
     fun countSuoritukset(

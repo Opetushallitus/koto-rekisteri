@@ -15,6 +15,7 @@ object Navigation {
                 listOf(
                     MenuItem.of("Suoritukset", YkiViewController::suorituksetGetView),
                     MenuItem.of("Arvioijat", YkiViewController::arvioijatView),
+                    MenuItem.of("Tarkistusarvioinnit", YkiViewController::tarkistusArvioinnitView),
                 ),
             ),
             MenuItemGroup(
