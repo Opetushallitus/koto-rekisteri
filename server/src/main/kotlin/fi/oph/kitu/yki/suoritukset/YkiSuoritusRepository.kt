@@ -229,18 +229,22 @@ class YkiSuoritusRepository {
     }
 
     fun findTarkistusarvoidutSuoritukset(): Iterable<YkiSuoritusEntity> =
-        jdbcTemplate.query(
-            """
-            ${selectQuery(distinct = true)}
-            $fromYkiSuoritus
-            WHERE arviointitila = ?
-               OR arviointitila = ?
-            ORDER BY suoritus_id, last_modified DESC
-            """.trimIndent(),
-            YkiSuoritusEntity.fromRow,
-            KituArviointitila.TARKISTUSARVIOITU.name,
-            KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY.name,
-        )
+        jdbcTemplate
+            .query(
+                """
+                ${selectQuery(distinct = true)}
+                $fromYkiSuoritus
+                WHERE arviointitila = ?
+                   OR arviointitila = ?
+                ORDER BY suoritus_id, last_modified DESC
+                """.trimIndent(),
+                YkiSuoritusEntity.fromRow,
+                KituArviointitila.TARKISTUSARVIOITU.name,
+                KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY.name,
+            ).sortedWith(
+                compareByDescending(YkiSuoritusEntity::tarkistusarvioinninKasittelyPvm)
+                    .thenByDescending { it.tarkistusarvioinninSaapumisPvm },
+            )
 
     fun hyvaksyTarkistusarvioinnit(
         suoritusIds: List<Int>,
