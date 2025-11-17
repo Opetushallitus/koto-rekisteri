@@ -3,7 +3,7 @@ package fi.oph.kitu.html
 import kotlinx.html.ARTICLE
 import kotlinx.html.FlowContent
 import kotlinx.html.article
-import kotlinx.html.div
+import kotlinx.html.fieldSet
 import kotlinx.html.option
 import kotlinx.html.section
 import kotlinx.html.select
@@ -45,5 +45,13 @@ fun FlowContent.itemSelect(
                 +it.title
             }
         }
+    }
+}
+
+// https://picocss.com/docs/group
+fun FlowContent.horizontalGroup(f: FlowContent.() -> Unit) {
+    fieldSet {
+        attributes["role"] = "group"
+        f()
     }
 }
