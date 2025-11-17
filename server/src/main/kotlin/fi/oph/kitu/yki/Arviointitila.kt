@@ -27,4 +27,6 @@ enum class KituArviointitila(
     ;
 
     fun arviointiValmis() = this == ARVIOITU || this == TARKISTUSARVIOINTI_HYVAKSYTTY
+
+    fun tarkistusarvioitu() = this == TARKISTUSARVIOITU || this == TARKISTUSARVIOINTI_HYVAKSYTTY
 }
