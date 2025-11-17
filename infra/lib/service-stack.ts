@@ -140,6 +140,13 @@ export class ServiceStack extends Stack {
               "palvelukayttaja-password",
             ),
           ),
+          PALVELUKAYTTAJA_OAUTH2_SECRET: aws_ecs.Secret.fromSecretsManager(
+            aws_secretsmanager.Secret.fromSecretNameV2(
+              this,
+              "PalvelukayttajaOAuth2Secret",
+              "palvelukayttaja-oauth2-secret",
+            ),
+          ),
           YKI_API_PASSWORD: aws_ecs.Secret.fromSecretsManager(
             aws_secretsmanager.Secret.fromSecretNameV2(
               this,

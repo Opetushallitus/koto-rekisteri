@@ -2,21 +2,14 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
-import fi.oph.kitu.TypedResult
-import fi.oph.kitu.oppijanumero.CasAuthenticatedService
-import fi.oph.kitu.oppijanumero.CasAuthenticatedServiceMock
-import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.bean.override.convention.TestBean
 import org.springframework.test.web.client.ExpectedCount
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
@@ -31,80 +24,6 @@ import kotlin.test.assertEquals
 class KoealustaServiceTests(
     @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
-    @Suppress("unused")
-    companion object {
-        @JvmStatic
-        fun casAuthenticatedService(): CasAuthenticatedService =
-            CasAuthenticatedServiceMock(
-                posts =
-                    mapOf(
-                        // happy-path
-                        CasAuthenticatedServiceMock.toKey(
-                            HttpMethod.POST,
-                            "http://localhost:8080/oppijanumero-service/yleistunniste/hae",
-                            YleistunnisteHaeRequest(
-                                etunimet = "Ranja Testi",
-                                hetu = "010180-9026",
-                                kutsumanimi = "Ranja",
-                                sukunimi = "Öhman-Testi",
-                            ),
-                            contentType = MediaType.APPLICATION_JSON,
-                            responseType = String::class.java,
-                        ) to
-                            TypedResult.Success(
-                                ResponseEntity.ok().body(
-                                    """
-                                    {
-                                        "oid": "1.2.246.562.24.33342764709",
-                                        "oppijanumero": "1.2.246.562.24.33342764709"
-                                    }
-                                    """.trimIndent(),
-                                ),
-                            ),
-                        // Oppija not identified
-                        CasAuthenticatedServiceMock.toKey(
-                            HttpMethod.POST,
-                            "http://localhost:8080/oppijanumero-service/yleistunniste/hae",
-                            YleistunnisteHaeRequest(
-                                etunimet = "Antero",
-                                hetu = "WRONG_HETU",
-                                kutsumanimi = "Antero",
-                                sukunimi = "Testi-Moikka",
-                            ),
-                            contentType = MediaType.APPLICATION_JSON,
-                            responseType = String::class.java,
-                        ) to
-                            TypedResult.Success(
-                                ResponseEntity.ok().body(
-                                    """
-                                    {
-                                        "oid": "1.2.246.562.24.33342764709",
-                                        "oppijanumero": ""
-                                    }
-                                    """.trimIndent(),
-                                ),
-                            ),
-                        // Bad request
-                        CasAuthenticatedServiceMock.toKey(
-                            HttpMethod.POST,
-                            "http://localhost:8080/oppijanumero-service/yleistunniste/hae",
-                            YleistunnisteHaeRequest(
-                                etunimet = "Antero",
-                                hetu = "INVALID_HETU",
-                                kutsumanimi = "Antero",
-                                sukunimi = "Testi-Moikka",
-                            ),
-                            contentType = MediaType.APPLICATION_JSON,
-                            responseType = String::class.java,
-                        ) to TypedResult.Success(ResponseEntity.badRequest().body("Bad request")),
-                    ),
-            )
-    }
-
-    @TestBean
-    @Suppress("unused")
-    private lateinit var casAuthenticatedService: CasAuthenticatedService
-
     val validSuoritus =
         """
         {

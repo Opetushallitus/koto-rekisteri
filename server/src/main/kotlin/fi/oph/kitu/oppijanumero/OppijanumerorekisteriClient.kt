@@ -1,4 +1,4 @@
-package fi.oph.kitu.organisaatiot
+package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.defaultObjectMapper
@@ -11,24 +11,30 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
-class OrganisaatiopalveluClient(
+class OppijanumerorekisteriClient(
     val restClient: OAuth2Client,
-    @param:Value("\${kitu.organisaatiopalvelu.service.url}")
+    @param:Value("\${kitu.oppijanumero.service.url}")
     val serviceUrl: String,
 ) {
     @WithSpan
-    fun <T> get(
+    fun <T> onrGet(
         endpoint: String,
         responseType: Class<T>,
     ) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint, responseType = responseType)
 
     @WithSpan
-    fun <T, R : OrganisaatiopalveluRequest> fetch(
+    fun <T, R : OppijanumerorekisteriRequest> onrPost(
+        endpoint: String,
+        body: R,
+        clazz: Class<T>,
+    ) = fetch<T, R>(HttpMethod.POST, endpoint, body, clazz)
+
+    fun <T, R : OppijanumerorekisteriRequest> fetch(
         httpMethod: HttpMethod,
         endpoint: String,
-        body: OrganisaatiopalveluRequest? = null,
+        body: OppijanumerorekisteriRequest? = null,
         responseType: Class<T>,
-    ): TypedResult<T, OrganisaatiopalveluException> {
+    ): TypedResult<T, OppijanumeroException> {
         val uri = "$serviceUrl/$endpoint"
 
         val rawResponse =
@@ -39,29 +45,29 @@ class OrganisaatiopalveluClient(
                 responseType = responseType,
             )
 
-        if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
-            return TypedResult.Failure(OrganisaatiopalveluException.NotFoundException(body ?: EmptyRequest()))
+        return if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
+            TypedResult.Failure(OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest()))
         } else if (rawResponse.statusCode.is4xxClientError) {
-            return TypedResult.Failure(OrganisaatiopalveluException.BadRequest(body ?: EmptyRequest(), rawResponse))
+            TypedResult.Failure(OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse))
         } else if (!rawResponse.statusCode.is2xxSuccessful) {
-            throw OrganisaatiopalveluException.UnexpectedError(body ?: EmptyRequest(), rawResponse)
+            TypedResult.Failure(OppijanumeroException.UnexpectedError(body ?: EmptyRequest(), rawResponse))
+        } else {
+            deserializeResponse(body ?: EmptyRequest(), rawResponse, responseType)
         }
-
-        return deserializeResponse(body ?: EmptyRequest(), rawResponse, responseType)
     }
 
     /**
      * Tries to convert `HttpResponse<String>` into the given `T`.
      * If the conversion fails, it checks whether the response was OppijanumeroServiceError.
-     * In that case [fi.oph.kitu.oppijanumero.OppijanumeroException.BadResponse] will be thrown.
+     * In that case [OppijanumeroException.BadResponse] will be thrown.
      * Otherwise, the underlying exception will be thrown
      */
     @WithSpan
     fun <T> deserializeResponse(
-        request: OrganisaatiopalveluRequest,
+        request: OppijanumerorekisteriRequest,
         response: ResponseEntity<String>,
         clazz: Class<T>,
-    ): TypedResult<T, OrganisaatiopalveluException> =
+    ): TypedResult<T, OppijanumeroException> =
         TypedResult
             .runCatching {
                 defaultObjectMapper.readValue(response.body, clazz)
@@ -70,19 +76,19 @@ class OrganisaatiopalveluClient(
                     .runCatching {
                         defaultObjectMapper.readValue(
                             response.body,
-                            OrganisaatiopalveluError::class.java,
+                            OppijanumeroServiceError::class.java,
                         )
                     }.fold(
-                        onSuccess = { orgError ->
-                            OrganisaatiopalveluException.BadResponse(
+                        onSuccess = { onrError ->
+                            OppijanumeroException.BadResponse(
                                 request = request,
                                 response = response,
-                                organisaatiopalveluError = orgError,
+                                oppijanumeroServiceError = onrError,
                                 cause = decodeError,
                             )
                         },
                         onFailure = { _ ->
-                            OrganisaatiopalveluException.MalformedResponse(
+                            OppijanumeroException.MalformedResponse(
                                 request = request,
                                 response = response,
                                 cause = decodeError,
