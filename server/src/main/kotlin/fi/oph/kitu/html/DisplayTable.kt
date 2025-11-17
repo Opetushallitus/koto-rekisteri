@@ -4,6 +4,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.reverse
 import fi.oph.kitu.toSymbol
 import kotlinx.html.FlowContent
+import kotlinx.html.InputType
 import kotlinx.html.TABLE
 import kotlinx.html.TBODY
 import kotlinx.html.a
@@ -46,10 +47,14 @@ fun <T> TABLE.displayTableHeader(
     sortDirection: SortDirection? = null,
     urlParams: Map<String, String?> = emptyMap(),
     preserveSortDirection: Boolean,
+    selectableRows: Boolean,
 ) {
     val sortedByKey = sortedBy?.urlParam
     thead {
         tr {
+            if (selectableRows) {
+                th {}
+            }
             columns.forEach {
                 th {
                     attributes["id"] = it.sortKey ?: ""
@@ -96,12 +101,20 @@ fun <T> TABLE.displayTableBody(
     rowTestId: ((T) -> String)? = null,
     tbodyClasses: String? = null,
     rowClasses: String? = null,
+    selectableRow: ((T) -> CheckboxKey?)? = null,
     afterRow: TBODY.(T) -> Unit = {},
 ) {
     tbody(tbodyClasses) {
         rows.forEach { row ->
             tr(classes = rowClasses) {
                 testId(rowTestId?.let { it(row) })
+                selectableRow?.let {
+                    td {
+                        selectableRow(row)?.let { key ->
+                            input(type = InputType.checkBox, name = key.name, value = key.value)
+                        }
+                    }
+                }
                 columns.forEach { column ->
                     td {
                         testId(column.testId)
@@ -123,6 +136,7 @@ fun <T> FlowContent.displayTable(
     rowTestId: ((T) -> String)? = null,
     rowClasses: String? = null,
     urlParams: Map<String, String?> = emptyMap(),
+    selectableRowName: ((T) -> CheckboxKey?)? = null,
 ) {
     table(classes = "striped") {
         testId(testId)
@@ -133,6 +147,7 @@ fun <T> FlowContent.displayTable(
             sortDirection = sortDirection,
             urlParams = urlParams,
             preserveSortDirection = true,
+            selectableRows = selectableRowName != null,
         )
 
         displayTableBody(
@@ -140,6 +155,7 @@ fun <T> FlowContent.displayTable(
             columns = columns,
             rowTestId = rowTestId,
             rowClasses = rowClasses,
+            selectableRow = selectableRowName,
         )
     }
 }
@@ -149,3 +165,8 @@ fun <K, V> httpParams(params: Map<K, V?>): String =
         .filter { (_, value) -> value != null }
         .map { (key, value) -> "$key=${urlEncode(value?.toString().orEmpty())}" }
         .joinToString("&")}"
+
+data class CheckboxKey(
+    val name: String,
+    val value: String,
+)

@@ -29,6 +29,7 @@ object KielitestiSuoritusErrorPage {
                         sortedBy = sortColumn,
                         sortDirection = sortDirection,
                         preserveSortDirection = false,
+                        selectableRows = false,
                     )
 
                     displayTableBody(
