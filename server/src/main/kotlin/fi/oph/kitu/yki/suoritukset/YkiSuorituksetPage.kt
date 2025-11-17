@@ -128,6 +128,7 @@ object YkiSuorituksetPage {
                                 "page" to "${pagination.currentPageNumber}",
                             ),
                         preserveSortDirection = false,
+                        selectableRows = false,
                     )
 
                     displayTableBody(

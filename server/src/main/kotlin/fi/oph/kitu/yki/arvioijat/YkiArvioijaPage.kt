@@ -40,6 +40,7 @@ object YkiArvioijaPage {
                         sortedBy = sortColumn,
                         sortDirection = sortDirection,
                         preserveSortDirection = true,
+                        selectableRows = false,
                     )
                     tbody {
                         arvioijat.forEach { arvioija ->
