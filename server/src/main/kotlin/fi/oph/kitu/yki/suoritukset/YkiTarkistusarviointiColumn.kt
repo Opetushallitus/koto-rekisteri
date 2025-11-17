@@ -69,7 +69,7 @@ enum class YkiTarkistusarviointiColumn(
         uiHeaderValue = "Arvosana muuttui",
         urlParam = "arvosanamuutui",
         renderValue = {
-            +it.tarkistusarvioidutOsakokeet
+            +it.arvosanaMuuttui
                 ?.joinToString(", ") { it.viewText }
                 .orEmpty()
         },
