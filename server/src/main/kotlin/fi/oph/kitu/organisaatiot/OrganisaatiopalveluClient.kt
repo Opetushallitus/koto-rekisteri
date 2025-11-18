@@ -2,17 +2,23 @@ package fi.oph.kitu.organisaatiot
 
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.defaultObjectMapper
-import fi.oph.kitu.oauth2client.OAuth2Client
+import fi.oph.kitu.nullableBody
+import fi.oph.kitu.retrieveEntitySafely
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestClient
+import java.net.URI
 
 @Service
 class OrganisaatiopalveluClient(
-    val restClient: OAuth2Client,
+    @param:Qualifier("oauth2RestClient")
+    val restClient: RestClient,
     @param:Value("\${kitu.organisaatiopalvelu.service.url}")
     val serviceUrl: String,
 ) {
@@ -32,12 +38,16 @@ class OrganisaatiopalveluClient(
         val uri = "$serviceUrl/$endpoint"
 
         val rawResponse =
-            restClient.fetch(
-                httpMethod = httpMethod,
-                uri = uri,
-                body = body,
-                responseType = responseType,
-            )
+            restClient
+                .method(httpMethod)
+                .uri(URI.create(uri))
+                .contentType(MediaType.APPLICATION_JSON)
+                .nullableBody(body)
+                .retrieveEntitySafely(String::class.java)
+
+        if (rawResponse == null) {
+            throw RuntimeException("Failed to fetch data from organisaatiopalvelu")
+        }
 
         if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
             return TypedResult.Failure(OrganisaatiopalveluException.NotFoundException(body ?: EmptyRequest()))
