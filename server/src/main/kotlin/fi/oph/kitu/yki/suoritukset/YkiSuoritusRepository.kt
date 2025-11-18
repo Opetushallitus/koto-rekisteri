@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.yki.KituArviointitila
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
@@ -243,9 +244,22 @@ class YkiSuoritusRepository {
         pvm: LocalDate,
     ): Int {
         findLatestBySuoritusIds(suoritusIds).forEach { suoritus ->
+            val suorituksenNimi by lazy {
+                "'${suoritus.suorittajanOID} ${suoritus.sukunimi} ${suoritus.etunimet}, ${suoritus.tutkintotaso} ${suoritus.tutkintokieli}'"
+            }
             if (!suoritus.arviointitila.tarkistusarvioitu()) {
                 throw IllegalStateException(
-                    "Tarkistusarvioimatonta suoritusta ${suoritus.suoritusId} ei voi asettaa hyväksytyksi",
+                    "Tarkistusarvioimatonta suoritusta $suorituksenNimi ei voi asettaa hyväksytyksi",
+                )
+            }
+            if (suoritus.tarkistusarvioinninKasittelyPvm == null) {
+                throw IllegalStateException(
+                    "Tarkistusarviointia suoritukselle $suorituksenNimi ei voi hyväksyä, ennen kuin se on käsitelty.",
+                )
+            }
+            if (suoritus.tarkistusarvioinninKasittelyPvm.isAfter(pvm)) {
+                throw IllegalStateException(
+                    "Tarkistusarviointi suoritukselle $suorituksenNimi ei voi hyväksyä päivämäärällä ${pvm.finnishDate()}, koska se on aiemmin kuin käsittelypäivä ${suoritus.tarkistusarvioinninKasittelyPvm.finnishDate()}.",
                 )
             }
             save(
