@@ -22,6 +22,8 @@ class OAuth2RestClientConfiguration {
         val requestInterceptor =
             OAuth2ClientHttpRequestInterceptor(authorizedClientManager)
 
+        requestInterceptor.setClientRegistrationIdResolver { "kielitutkintorekisteri-client" }
+
         return builder
             .requestInterceptor(requestInterceptor)
             .defaultHeaders { headers ->
