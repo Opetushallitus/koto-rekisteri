@@ -13,14 +13,6 @@ enum class YkiTarkistusarviointiColumn(
     override val urlParam: String,
     val renderValue: FlowContent.(YkiSuoritusEntity) -> Unit,
 ) : DisplayTableEnum {
-    Oppijanumero(
-        entityName = "oppijanumero",
-        uiHeaderValue = "Oppijanumero",
-        urlParam = "oppijanumero",
-        renderValue = {
-            +it.suorittajanOID.toString()
-        },
-    ),
     Sukunimi(
         entityName = "sukunimi",
         uiHeaderValue = "Sukunimi",
@@ -32,6 +24,24 @@ enum class YkiTarkistusarviointiColumn(
         uiHeaderValue = "Etunimet",
         urlParam = "etunimet",
         renderValue = { +it.etunimet },
+    ),
+    Kieli(
+        entityName = "kieli",
+        uiHeaderValue = "Kieli",
+        urlParam = "kieli",
+        renderValue = { +it.tutkintokieli.name },
+    ),
+    Tutkintotaso(
+        entityName = "tutkintotaso",
+        uiHeaderValue = "Tutkintotaso",
+        urlParam = "tutkintotaso",
+        renderValue = { +it.tutkintotaso.name },
+    ),
+    TutkintoPvm(
+        entityName = "tutkintoPvm",
+        uiHeaderValue = "Tutkintopäivä",
+        urlParam = "tutkintoPvm",
+        renderValue = { +it.tutkintopaiva.finnishDate() },
     ),
     SaapumisPvm(
         entityName = "saapumispvm",
@@ -66,7 +76,7 @@ enum class YkiTarkistusarviointiColumn(
             ul {
                 it.tarkistusarvioidutOsakokeet.orEmpty().map { osakoe ->
                     li {
-                        +"Tarkistettu ${osakoe.viewText.lowercase()}: "
+                        +"${osakoe.viewText}: "
                         if (it.arvosanaMuuttui?.contains(osakoe) == true) {
                             +"Arvosana muuttui: ${it.arvosana(osakoe) ?: "-"}"
                         } else {
