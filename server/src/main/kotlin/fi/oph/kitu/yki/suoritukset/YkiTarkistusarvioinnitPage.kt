@@ -31,6 +31,7 @@ object YkiTarkistusarvioinnitPage {
 
             ykiTarkistusarviointiTable(
                 title = "Odottavat lautakunnan hyväksyntää",
+                submitButtonText = "Merkitse hyväksyntä valituille",
                 suoritukset =
                     suoritukset.filter {
                         it.arviointitila == KituArviointitila.TARKISTUSARVIOITU
@@ -39,6 +40,7 @@ object YkiTarkistusarvioinnitPage {
 
             ykiTarkistusarviointiTable(
                 title = "Hyväksytyt suoritukset",
+                submitButtonText = "Korjaa hyväksymispäivämäärä valituille",
                 suoritukset =
                     suoritukset.filter {
                         it.arviointitila == KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY
@@ -48,6 +50,7 @@ object YkiTarkistusarvioinnitPage {
 
     fun FlowContent.ykiTarkistusarviointiTable(
         title: String,
+        submitButtonText: String,
         suoritukset: List<YkiSuoritusEntity>,
     ) {
         if (suoritukset.isNotEmpty()) {
@@ -65,7 +68,7 @@ object YkiTarkistusarvioinnitPage {
                         name = "hyvaksyttyPvm",
                         value = LocalDate.now().format(ISO_LOCAL_DATE),
                     )
-                    input(type = InputType.submit, value = "Merkitse hyväksyntä valituille")
+                    input(type = InputType.submit, value = submitButtonText)
                 }
 
                 card(overflowAuto = true, compact = true) {

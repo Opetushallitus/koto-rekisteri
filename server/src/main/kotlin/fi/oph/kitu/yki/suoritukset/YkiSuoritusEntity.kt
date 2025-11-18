@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
 import fi.oph.kitu.yki.KituArviointitila
 import fi.oph.kitu.yki.Sukupuoli
@@ -58,6 +59,24 @@ data class YkiSuoritusEntity(
     @Enumerated(EnumType.STRING)
     val arviointitila: KituArviointitila,
 ) {
+    fun arvosana(osakoe: TutkinnonOsa): Int? =
+        when (osakoe) {
+            TutkinnonOsa.PU -> puhuminen
+            TutkinnonOsa.KI -> kirjoittaminen
+            TutkinnonOsa.TY -> tekstinYmmartaminen
+            TutkinnonOsa.PY -> puheenYmmartaminen
+            TutkinnonOsa.RS -> rakenteetJaSanasto
+            TutkinnonOsa.YL -> yleisarvosana
+        }
+
+    fun tarkistusarviointiHyvaksyttyViewText(): String? =
+        tarkistusarviointiHyvaksyttyPvm?.finnishDate()
+            ?: if (arviointitila == KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY) {
+                "Ennen 14.11.2025"
+            } else {
+                null
+            }
+
     companion object {
         val fromRow: RowMapper<YkiSuoritusEntity> =
             RowMapper { rs, _ ->

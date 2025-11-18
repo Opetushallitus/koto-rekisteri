@@ -3,6 +3,9 @@ package fi.oph.kitu.yki.suoritukset
 import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.i18n.finnishDate
 import kotlinx.html.FlowContent
+import kotlinx.html.li
+import kotlinx.html.p
+import kotlinx.html.ul
 
 enum class YkiTarkistusarviointiColumn(
     override val entityName: String?,
@@ -46,7 +49,7 @@ enum class YkiTarkistusarviointiColumn(
         entityName = "hyvaksyntapvm",
         uiHeaderValue = "Hyväksytty",
         urlParam = "hyvaksyntapvm",
-        renderValue = { +it.tarkistusarviointiHyvaksyttyPvm?.finnishDate().orEmpty() },
+        renderValue = { +it.tarkistusarviointiHyvaksyttyViewText().orEmpty() },
     ),
     Asiatunnus(
         entityName = "asiatunnus",
@@ -54,30 +57,24 @@ enum class YkiTarkistusarviointiColumn(
         urlParam = "asiatunnus",
         renderValue = { +it.tarkistusarvioinninAsiatunnus.orEmpty() },
     ),
-    Osakokeet(
-        entityName = "osakokeet",
-        uiHeaderValue = "Osakokeet",
-        urlParam = "osakokeet",
+    Muutokset(
+        entityName = "arviointi",
+        uiHeaderValue = "Tarkistusarviointi",
+        urlParam = "arviointi",
         renderValue = {
-            +it.tarkistusarvioidutOsakokeet
-                ?.joinToString(", ") { it.viewText }
-                .orEmpty()
+            it.perustelu?.let { x -> p { +x } }
+            ul {
+                it.tarkistusarvioidutOsakokeet.orEmpty().map { osakoe ->
+                    li {
+                        +"Tarkistettu ${osakoe.viewText.lowercase()}: "
+                        if (it.arvosanaMuuttui?.contains(osakoe) == true) {
+                            +"Arvosana muuttui: ${it.arvosana(osakoe) ?: "-"}"
+                        } else {
+                            +"Arvosana ei muuttunut"
+                        }
+                    }
+                }
+            }
         },
-    ),
-    ArvosanaMuuttui(
-        entityName = "arvosanaMuuttui",
-        uiHeaderValue = "Arvosana muuttui",
-        urlParam = "arvosanamuutui",
-        renderValue = {
-            +it.arvosanaMuuttui
-                ?.joinToString(", ") { it.viewText }
-                .orEmpty()
-        },
-    ),
-    Perustelu(
-        entityName = "perustelu",
-        uiHeaderValue = "Perustelu",
-        urlParam = "perustelu",
-        renderValue = { +it.perustelu.orEmpty() },
     ),
 }
