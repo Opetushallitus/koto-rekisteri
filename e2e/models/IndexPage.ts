@@ -15,4 +15,9 @@ export default class IndexPage extends BasePage {
     const ykiLinkList = this.getPageContent().getByTestId("yki-links")
     return ykiLinkList.getByRole("link", { name: "Suoritukset" })
   }
+
+  getYkiTarkistusarvioinnitLink() {
+    const ykiLinkList = this.getPageContent().getByTestId("yki-links")
+    return ykiLinkList.getByRole("link", { name: "Tarkistusarvioinnit" })
+  }
 }

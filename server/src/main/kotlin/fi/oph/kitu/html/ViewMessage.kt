@@ -20,6 +20,7 @@ import java.io.Serializable
 fun FlowContent.viewMessage(message: ViewMessageData?) {
     message?.let {
         article(classes = it.type.cssClass) {
+            testId("viewMessage")
             unsafe { +it.text }
         }
     }
