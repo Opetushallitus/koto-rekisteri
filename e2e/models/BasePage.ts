@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test"
+import { Locator, Page } from "@playwright/test"
 import { Config, createConfig } from "../config"
 
 type GotoParams = Parameters<Page["goto"]>[1]
@@ -7,9 +7,12 @@ export default class BasePage {
   protected readonly page: Page
   protected readonly config: Config
 
+  viewMessage: Locator
+
   constructor(page: Page, config: Config) {
     this.page = page
     this.config = config
+    this.viewMessage = page.getByTestId("viewMessage")
   }
 
   protected async goto(url: string, params?: GotoParams) {

@@ -107,6 +107,7 @@ const withEmptyDatabase = (pool: pg.Pool) => async () => {
         koto_suoritus_error,
         yki_suoritus,
         yki_suoritus_error,
+        yki_suoritus_lisatieto,
         yki_arvioija,
         yki_arviointioikeus,
         vkt_suoritus,

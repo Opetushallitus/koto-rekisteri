@@ -201,7 +201,11 @@ describe('"YKI Suoritukset" -page', () => {
     {
       column: "Arviointitila",
       tableColumnIndex: 14,
-      order: ["Arviointi valmis", "Arviointi valmis", "Arviointi valmis"],
+      order: [
+        "Tarkistusarviointi tehty",
+        "Arviointi valmis",
+        "Arviointi valmis",
+      ],
     },
     {
       column: "Arviointipäivä",

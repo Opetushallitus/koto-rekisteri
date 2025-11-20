@@ -18,11 +18,13 @@ import VktSuorituksenTiedotPage from "../models/vkt/VktSuorituksenTiedotPage"
 import VktHjtSuorituksetPage from "../models/vkt/VktHjtSuorituksetPage"
 import VktArvioidutSuorituksetPage from "../models/vkt/VktArvioidutSuorituksetPage"
 import YkiArvioijatPage from "../models/yki/YkiArvioijatPage"
+import YkiTarkistusarvioinnitPage from "../models/yki/YkiTarkistusarvioinnitPage"
 
 interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
   ykiArvioijatPage: YkiArvioijatPage
   ykiSuorituksetErrorPage: YkiSuorituksetErrorPage
+  ykiTarkistusarvioinnitPage: YkiTarkistusarvioinnitPage
   kielitestiSuorituksetPage: KielitestiSuorituksetPage
   kielitestiErrorPage: KielitestiErrorPage
   indexPage: IndexPage
@@ -77,6 +79,13 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   ykiSuorituksetErrorPage: async ({ page, config }, use) => {
     const ykiSuorituksetErrorPage = new YkiSuorituksetErrorPage(page, config)
     await use(ykiSuorituksetErrorPage)
+  },
+  ykiTarkistusarvioinnitPage: async ({ page, config }, use) => {
+    const ykiTarkistusarvioinnitPage = new YkiTarkistusarvioinnitPage(
+      page,
+      config,
+    )
+    await use(ykiTarkistusarvioinnitPage)
   },
   config: [
     async ({}, use) => {

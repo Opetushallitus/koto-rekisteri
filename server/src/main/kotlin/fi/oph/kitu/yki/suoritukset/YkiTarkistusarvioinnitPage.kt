@@ -8,6 +8,7 @@ import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.horizontalGroup
 import fi.oph.kitu.html.input
+import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.yki.KituArviointitila
 import kotlinx.html.FlowContent
@@ -36,15 +37,17 @@ object YkiTarkistusarvioinnitPage {
                     suoritukset.filter {
                         it.arviointitila == KituArviointitila.TARKISTUSARVIOITU
                     },
+                testId = "odottaaHyvaksyntaa",
             )
 
             ykiTarkistusarviointiTable(
-                title = "Hyväksytyt suoritukset",
+                title = "Hyväksytyt tarkistusarvioinnit",
                 submitButtonText = "Korjaa hyväksymispäivämäärä valituille",
                 suoritukset =
                     suoritukset.filter {
                         it.arviointitila == KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY
                     },
+                testId = "hyvaksytty",
             )
         }
 
@@ -52,6 +55,7 @@ object YkiTarkistusarvioinnitPage {
         title: String,
         submitButtonText: String,
         suoritukset: List<YkiSuoritusEntity>,
+        testId: String,
     ) {
         if (suoritukset.isNotEmpty()) {
             formPost(action = "") {
@@ -67,8 +71,12 @@ object YkiTarkistusarvioinnitPage {
                         type = InputType.date,
                         name = "hyvaksyttyPvm",
                         value = LocalDate.now().format(ISO_LOCAL_DATE),
-                    )
-                    input(type = InputType.submit, value = submitButtonText)
+                    ) {
+                        testId(testId + "Date")
+                    }
+                    input(type = InputType.submit, value = submitButtonText) {
+                        testId(testId + "Submit")
+                    }
                 }
 
                 card(overflowAuto = true, compact = true) {
@@ -78,6 +86,7 @@ object YkiTarkistusarvioinnitPage {
                         selectableRowName = {
                             CheckboxKey(name = "suoritukset", value = it.suoritusId.toString())
                         },
+                        testId = testId + "Table",
                     )
                 }
             }
