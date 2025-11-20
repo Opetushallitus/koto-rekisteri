@@ -157,8 +157,8 @@ export class ServiceStack extends Stack {
           PALVELUKAYTTAJA_OAUTH2_SECRET: aws_ecs.Secret.fromSecretsManager(
             aws_secretsmanager.Secret.fromSecretNameV2(
               this,
-              "PalvelukayttajaOAuth2Secret",
-              "palvelukayttaja-oauth2-secret",
+              "PalvelukayttajaOAuthPassword",
+              "palvelukayttaja-oauth-password",
             ),
           ),
         },
