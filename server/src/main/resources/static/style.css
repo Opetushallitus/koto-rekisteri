@@ -259,6 +259,11 @@ td {
   vertical-align: top;
 }
 
+td p {
+  max-width: 30vw;
+  text-wrap: auto;
+}
+
 .invalid-value {
   color: var(--oph-orange3);
 }
