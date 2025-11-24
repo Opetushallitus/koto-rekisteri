@@ -132,15 +132,16 @@ class CustomYkiArvioijaRepositoryImpl(
         orderBy: YkiArvioijaColumn,
         orderByDirection: SortDirection,
     ): List<YkiArvioijaArviointioikeus> =
-        jdbcTemplate.query(
-            """
-            SELECT *
-            FROM yki_arvioija
-            JOIN yki_arviointioikeus ON yki_arvioija.id = yki_arviointioikeus.arvioija_id
-            ORDER BY ${orderBy.entityName} $orderByDirection
-            """.trimIndent(),
-            YkiArvioijaArviointioikeus.fromRow,
-        )
+        jdbcTemplate
+            .query(
+                """
+                SELECT *
+                FROM yki_arvioija
+                JOIN yki_arviointioikeus ON yki_arvioija.id = yki_arviointioikeus.arvioija_id
+                ORDER BY ${orderBy.entityName} $orderByDirection
+                """.trimIndent(),
+                YkiArvioijaArviointioikeus.fromRow,
+            ).filterNotNull()
 }
 
 @Repository
