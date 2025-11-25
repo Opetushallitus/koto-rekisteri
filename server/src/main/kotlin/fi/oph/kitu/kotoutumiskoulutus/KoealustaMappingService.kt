@@ -135,10 +135,10 @@ class KoealustaMappingService(
 
         return Success(
             Oppija(
-                etunimet = koealustaUser.firstnames,
-                hetu = koealustaUser.SSN,
-                kutsumanimi = koealustaUser.preferredname,
-                sukunimi = koealustaUser.lastname,
+                etunimet = koealustaUser.firstnames.trim(),
+                hetu = koealustaUser.SSN.trim(),
+                kutsumanimi = koealustaUser.preferredname.trim(),
+                sukunimi = koealustaUser.lastname.trim(),
             ),
         )
     }
@@ -240,9 +240,9 @@ class KoealustaMappingService(
 
         return Success(
             KielitestiSuoritus(
-                firstNames = user.firstnames,
-                lastName = user.lastname,
-                preferredname = user.preferredname,
+                firstNames = user.firstnames.trim(),
+                lastName = user.lastname.trim(),
+                preferredname = user.preferredname.trim(),
                 email = user.email,
                 oppijanumero = oppijanumero,
                 timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
