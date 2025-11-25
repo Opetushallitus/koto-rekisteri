@@ -3,7 +3,6 @@ package fi.oph.kitu.kotoutumiskoulutus
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -16,6 +15,7 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers.request
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.Instant
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @SpringBootTest
@@ -570,6 +570,95 @@ class KoealustaServiceTests(
         assertAll(
             fun() = assertEquals(1, suoritukset2.count()),
             fun() = assertEquals(1, errors2.count()),
+        )
+    }
+
+    @Test
+    fun `import removes leading and trailing whitespace from names and ssn`(
+        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val validSuoritus =
+            """
+            {
+                  "userid": 1,
+                  "firstnames": " Ranja Testi ",
+                  "lastname": " Öhman-Testi ",
+                  "preferredname": " Ranja ", 
+                  "SSN": " 010180-9026 ",
+                  "email": "ranja.testi@oph.fi",
+                  "completions": [
+                    {
+                      "courseid": 32,
+                      "coursename": "Integraatio testaus",
+                      "schoolOID": "1.2.246.562.10.1234567890",
+                      "results": [
+                        {
+                          "name": "luetun ymm\u00e4rt\u00e4minen",
+                          "quiz_grade": "A1"
+                        },
+                        {
+                          "name": "kuullun ymm\u00e4rt\u00e4minen",
+                          "quiz_grade": "B1"
+                        },
+                        {
+                          "name": "puhuminen",
+                          "quiz_grade": "A1"
+                        },
+                        {
+                          "name": "kirjoittaminen",
+                          "quiz_grade": "A1"
+                        }
+                      ],
+                      "timecompleted": 1728969131,
+                      "teacheremail": "opettaja@testi.oph.fi"
+                    }
+                  ]
+            }
+            """.trimIndent()
+
+        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$validSuoritus]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        // System under test
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        mockServer.verify()
+
+        assertAll(
+            fun () = assertEquals(emptyList(), kielitestiSuoritusErrorRepository.findAll()),
+            fun () = assertEquals(Instant.parse("2024-10-15T05:12:11Z"), lastSeen),
+        )
+
+        val ranja = kielitestiSuoritusRepository.findById(1).get()
+
+        assertAll(
+            fun () = assertEquals("Ranja Testi", ranja.firstNames),
+            fun () = assertEquals("Öhman-Testi", ranja.lastName),
+            fun () = assertEquals("Ranja", ranja.preferredname),
+            fun () = assertEquals(Oid.parse("1.2.246.562.24.33342764709").getOrThrow(), ranja.oppijanumero),
+            fun () = assertEquals(0, kielitestiSuoritusErrorRepository.findAll().count()),
         )
     }
 }
