@@ -149,7 +149,7 @@ object YkiSuorituksetPage {
                                                 th { +"Arvosana muuttui?" }
                                                 th { +"Perustelu" }
                                                 th { +"Käsittelypäivä" }
-                                                th { +"Tutkintolautakunnan hyväksyntä" }
+                                                th { +"Tutkintotoimikunnan hyväksyntä" }
                                             }
                                             tr {
                                                 td {
