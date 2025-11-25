@@ -41,6 +41,7 @@ object YkiArvioijaPage {
                         sortDirection = sortDirection,
                         preserveSortDirection = true,
                         selectableRows = false,
+                        tableId = "arvioijat-table",
                     )
                     tbody {
                         arvioijat.forEach { arvioija ->
