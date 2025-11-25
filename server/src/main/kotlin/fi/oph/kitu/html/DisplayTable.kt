@@ -16,6 +16,7 @@ import kotlinx.html.th
 import kotlinx.html.thead
 import kotlinx.html.tr
 import org.apereo.cas.client.util.CommonUtils.urlEncode
+import java.util.UUID
 import kotlin.collections.plus
 
 data class DisplayTableColumn<T>(
@@ -48,12 +49,15 @@ fun <T> TABLE.displayTableHeader(
     urlParams: Map<String, String?> = emptyMap(),
     preserveSortDirection: Boolean,
     selectableRows: Boolean,
+    tableId: String,
 ) {
     val sortedByKey = sortedBy?.urlParam
     thead {
         tr {
             if (selectableRows) {
-                th {}
+                td {
+                    input(type = InputType.checkBox)
+                }
             }
             columns.forEach {
                 th {
@@ -138,7 +142,10 @@ fun <T> FlowContent.displayTable(
     urlParams: Map<String, String?> = emptyMap(),
     selectableRowName: ((T) -> CheckboxKey?)? = null,
 ) {
+    val tableId = "table-${UUID.randomUUID()}"
+
     table(classes = "striped") {
+        attributes["id"] = tableId
         testId(testId)
         debugTrace()
         displayTableHeader(
@@ -148,6 +155,7 @@ fun <T> FlowContent.displayTable(
             urlParams = urlParams,
             preserveSortDirection = true,
             selectableRows = selectableRowName != null,
+            tableId = tableId,
         )
 
         displayTableBody(
@@ -156,6 +164,33 @@ fun <T> FlowContent.displayTable(
             rowTestId = rowTestId,
             rowClasses = rowClasses,
             selectableRow = selectableRowName,
+        )
+    }
+
+    selectableRowName?.let {
+        javascript(
+            """
+            const toggleAllCb = document
+              .getElementById("$tableId")
+              .querySelector('thead input[type="checkbox"]');
+              
+            const cbs = [
+              ...document
+                .getElementById("$tableId")
+                .querySelectorAll('tbody input[type="checkbox"]'),
+            ];
+            
+            toggleAllCb.addEventListener("change", () => {
+              const toggleOn = cbs.some((cb) => !cb.checked);
+              cbs.forEach((cb) => (cb.checked = toggleOn));
+              toggleAllCb.checked = toggleOn;
+            });
+            
+            cbs.forEach(cb => cb.addEventListener("change", () => {
+              const toggleOn = cbs.some((cb) => !cb.checked);
+              toggleAllCb.checked = !toggleOn;
+            }));
+            """.trimIndent(),
         )
     }
 }

@@ -30,6 +30,7 @@ object KielitestiSuoritusErrorPage {
                         sortDirection = sortDirection,
                         preserveSortDirection = false,
                         selectableRows = false,
+                        tableId = "kielitesti-suoritukset-virheet-table",
                     )
 
                     displayTableBody(

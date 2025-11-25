@@ -128,6 +128,7 @@ object YkiSuorituksetPage {
                             ),
                         preserveSortDirection = false,
                         selectableRows = false,
+                        tableId = "suoritukset-table",
                     )
 
                     displayTableBody(

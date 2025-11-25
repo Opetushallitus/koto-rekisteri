@@ -63,6 +63,7 @@ object KielitestiSuorituksetPage {
                         sortDirection = sortDirection,
                         preserveSortDirection = false,
                         selectableRows = false,
+                        tableId = "kielitesti-suoritukset-table",
                     )
                     displayTableBody(
                         rows = suoritukset,
