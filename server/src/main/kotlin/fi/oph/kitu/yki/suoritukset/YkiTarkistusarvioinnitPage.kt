@@ -31,7 +31,7 @@ object YkiTarkistusarvioinnitPage {
             viewMessage(message)
 
             ykiTarkistusarviointiTable(
-                title = "Odottavat lautakunnan hyväksyntää",
+                title = "Odottavat tutkintotoimikunnan hyväksyntää",
                 submitButtonText = "Merkitse hyväksyntä valituille",
                 suoritukset =
                     suoritukset.filter {
@@ -63,7 +63,7 @@ object YkiTarkistusarvioinnitPage {
 
                 label {
                     attributes["for"] = "hyvaksyttyPvm"
-                    +"Tutkintolautakunnan kokouksen päivämäärä"
+                    +"Tutkintotoimikunnan kokouksen päivämäärä"
                 }
                 horizontalGroup {
                     input(
