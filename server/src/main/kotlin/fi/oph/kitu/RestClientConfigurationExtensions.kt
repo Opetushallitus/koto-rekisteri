@@ -22,7 +22,7 @@ fun <T> RestClient.RequestBodySpec.nullableBody(body: T?): RestClient.RequestBod
  *  - response body is null (eg. HTTP 204 No Content)
  *  - Serialization issue converting into `T`.
  */
-fun <T> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): ResponseEntity<T>? =
+fun <T : Any> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): ResponseEntity<T>? =
     this.exchange { request, response ->
         ResponseEntity
             .status(response.statusCode)
