@@ -34,7 +34,7 @@ class MockOppijanumeroService : OppijanumeroService {
             "WRONG_HETU" ->
                 TypedResult.Failure(OppijanumeroException.OppijaNotIdentifiedException(request))
             else ->
-                hetuToOid[oppija.hetu]?.let { oid ->
+                oppijaToOid[oppija]?.let { oid ->
                     TypedResult.Success(Oid.parse(oid).getOrThrow())
                 } ?: TypedResult.Failure(
                     OppijanumeroException.OppijaNotFoundException(request),
@@ -51,9 +51,20 @@ class MockOppijanumeroService : OppijanumeroService {
         }
 
     companion object {
-        val hetuToOid =
+        val oppijaToOid =
             mapOf(
-                "010180-9026" to "1.2.246.562.24.33342764709",
+                Oppija(
+                    "Ranja Testi",
+                    "010180-9026",
+                    "Ranja",
+                    "Öhman-Testi",
+                ) to "1.2.246.562.24.33342764709",
+                Oppija(
+                    "Minerva Alli Aniitta",
+                    "040265-9985",
+                    "Aniitta",
+                    "Marttila",
+                ) to "1.2.246.562.24.92472049678",
             )
     }
 }

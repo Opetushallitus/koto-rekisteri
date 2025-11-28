@@ -6,6 +6,9 @@ export interface KotoError {
   suorittajanOid: string
   hetu: string
   nimi: string
+  etunimet: string
+  sukunimi: string
+  kutsumanimi: string | null
   schoolOid: Oid
   teacherEmail: string
   virheenLuontiaika: string
@@ -34,6 +37,9 @@ const createError = (
     suorittajanOid: p.oppijanumero,
     hetu: p.hetu,
     nimi: `${p.etunimet} ${p.sukunimi}`,
+    etunimet: p.etunimet,
+    sukunimi: p.sukunimi,
+    kutsumanimi: p.kutsumanimi,
     schoolOid,
     teacherEmail,
     virheenLuontiaika,
@@ -74,6 +80,9 @@ export const fixtureData = {
     suorittajanOid: null,
     hetu: null,
     nimi: " ",
+    etunimet: " ",
+    sukunimi: " ",
+    kutsumanimi: null,
     schoolOid: null,
     teacherEmail: null,
     viesti: "Unexpected error",
@@ -88,6 +97,9 @@ const insertQuery = (virhe: KotoError) => SQL`
       suorittajan_oid,
       hetu,
       nimi,
+      etunimet,
+      sukunimi,
+      kutsumanimi,
       viesti,
       virheen_luontiaika,
       virheellinen_kentta,
@@ -98,6 +110,9 @@ const insertQuery = (virhe: KotoError) => SQL`
              ${virhe.suorittajanOid},
              ${virhe.hetu},
              ${virhe.nimi},
+             ${virhe.etunimet},
+             ${virhe.sukunimi},
+             ${virhe.kutsumanimi},
              ${virhe.viesti},
              ${virhe.virheenLuontiaika},
              ${virhe.virheellinenKentta},

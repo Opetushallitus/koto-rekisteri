@@ -12,6 +12,9 @@ data class KielitestiSuoritusError(
     val suorittajanOid: String?,
     val hetu: String?,
     val nimi: String,
+    val etunimet: String,
+    val sukunimi: String,
+    val kutsumanimi: String?,
     val schoolOid: Oid?,
     val teacherEmail: String?,
     val virheenLuontiaika: Instant,
@@ -19,4 +22,5 @@ data class KielitestiSuoritusError(
     val virheellinenKentta: String?,
     val virheellinenArvo: String?,
     val lisatietoja: String?,
+    val onrLisatietoja: String? = null,
 )
