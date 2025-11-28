@@ -186,6 +186,23 @@ class KoealustaMappingService(
             Success(value)
         }
 
+    fun tryEachEtunimiAsKutsumanimi(error: KielitestiSuoritusError): Oppija? {
+        if (error.hetu == null) return null
+
+        return error.etunimet.split(" ")
+            .map { etunimi ->
+                Oppija(
+                    etunimet = error.etunimet,
+                    kutsumanimi = etunimi,
+                    sukunimi = error.sukunimi,
+                    hetu = error.hetu
+                )
+            }
+            .firstOrNull { oppija ->
+                oppijanumeroService.getOppijanumero(oppija).getOrNull() != null
+            }
+    }
+
     fun completionToEntity(
         user: User,
         oppijanumero: Oid?,
@@ -271,6 +288,9 @@ class KoealustaMappingService(
                         suorittajanOid = error.oppijanumero.toString(),
                         hetu = error.koealustaUser.SSN,
                         nimi = "${error.koealustaUser.lastname} ${error.koealustaUser.firstnames}",
+                        etunimet = error.koealustaUser.firstnames,
+                        sukunimi = error.koealustaUser.lastname,
+                        kutsumanimi = error.koealustaUser.preferredname,
                         schoolOid = error.schoolOid,
                         teacherEmail = error.teacherEmail,
                         virheenLuontiaika = now,
@@ -289,6 +309,9 @@ class KoealustaMappingService(
                         hetu = (error.oppijanumeroException.request as YleistunnisteHaeRequest).hetu,
                         nimi =
                             "${error.oppijanumeroException.request.sukunimi} ${error.oppijanumeroException.request.etunimet}",
+                        etunimet = error.oppijanumeroException.request.etunimet,
+                        sukunimi = error.oppijanumeroException.request.sukunimi,
+                        kutsumanimi = error.oppijanumeroException.request.kutsumanimi,
                         schoolOid = error.schoolOid,
                         teacherEmail = error.teacherEmail,
                         virheenLuontiaika = now,
