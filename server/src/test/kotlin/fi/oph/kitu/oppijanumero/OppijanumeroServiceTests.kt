@@ -51,9 +51,9 @@ class OppijanumeroServiceTests {
                 .getOppijanumero(
                     Oppija(
                         "Magdalena Testi",
-                        "Sallinen-Testi",
-                        "Magdalena",
                         "010866-9260",
+                        "Magdalena",
+                        "Sallinen-Testi",
                     ),
                 ).getOrThrow()
         }
