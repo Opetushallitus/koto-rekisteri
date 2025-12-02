@@ -2,10 +2,10 @@ package fi.oph.kitu
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.StreamReadConstraints
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.http.ResponseEntity
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.web.client.RestClient
+import tools.jackson.databind.json.JsonMapper
 
 fun <T> RestClient.RequestBodySpec.nullableBody(body: T?): RestClient.RequestBodySpec =
     if (body == null) {
@@ -34,28 +34,17 @@ fun <T : Any> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): R
 fun RestClient.Builder.withJacksonStreamMaxStringLength(maxStringLength: Int = 200_000_000): RestClient.Builder =
     this
         .clone()
-        .messageConverters { messageConverters ->
-            val newConverters =
-                messageConverters.map { converter ->
-                    if (converter is MappingJackson2HttpMessageConverter) {
-                        val newObjectMapper = createObjectMapperWithLargerBuffer(maxStringLength)
-                        MappingJackson2HttpMessageConverter(newObjectMapper)
-                    } else {
-                        converter
-                    }
-                }
-            messageConverters.clear()
-            newConverters.forEach { messageConverters.add(it) }
+        .configureMessageConverters { configurer ->
+            configurer.withJsonConverter(
+                JacksonJsonHttpMessageConverter(
+                    JsonMapper.builder(
+                        JsonFactory.builder().streamReadConstraints(
+                            StreamReadConstraints
+                                .builder()
+                                .maxStringLength(maxStringLength)
+                                .build(),
+                        ),
+                    ),
+                ),
+            )
         }
-
-private fun createObjectMapperWithLargerBuffer(maxStringLen: Int): ObjectMapper =
-    ObjectMapper(
-        JsonFactory
-            .builder()
-            .streamReadConstraints(
-                StreamReadConstraints
-                    .builder()
-                    .maxStringLength(maxStringLen)
-                    .build(),
-            ).build(),
-    )
