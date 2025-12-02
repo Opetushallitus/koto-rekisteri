@@ -11,8 +11,11 @@ import kotlinx.html.*
 
 fun FlowContent.json(node: JsonNode) {
     when (node) {
-        is ArrayNode -> ul { node.forEach { li { json(it) } } }
-        is ObjectNode ->
+        is ArrayNode -> {
+            ul { node.forEach { li { json(it) } } }
+        }
+
+        is ObjectNode -> {
             ul {
                 node.properties().forEach { prop ->
                     li {
@@ -24,8 +27,18 @@ fun FlowContent.json(node: JsonNode) {
                     }
                 }
             }
-        is TextNode -> +node.textValue()
-        is NumericNode -> +node.asText()
-        else -> +node.toString()
+        }
+
+        is TextNode -> {
+            +node.textValue()
+        }
+
+        is NumericNode -> {
+            +node.asText()
+        }
+
+        else -> {
+            +node.toString()
+        }
     }
 }

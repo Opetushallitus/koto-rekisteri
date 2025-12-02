@@ -33,12 +33,18 @@ fun FlowContent.vktSuorituksenTiedot(
                     KoskiTransferState.NOT_READY -> {
                         +"Tiedoissa puutteita tai virheitä, eivätkä ole valmiit siirrettäväksi KOSKI-tietovarantoon."
                     }
-                    KoskiTransferState.PENDING ->
+
+                    KoskiTransferState.PENDING -> {
                         +"Yritys tietojen siirrosta KOSKI-tietovarantoon ajastettu."
-                    KoskiTransferState.SUCCESS ->
+                    }
+
+                    KoskiTransferState.SUCCESS -> {
                         +"Tiedot siirretty KOSKI-tietovarantoon."
-                    KoskiTransferState.INVALID ->
+                    }
+
+                    KoskiTransferState.INVALID -> {
                         +"Tiedonsiirtotila on virheellinen."
+                    }
                 }
                 if (koskiTransferState.second.isNotEmpty()) {
                     ul {

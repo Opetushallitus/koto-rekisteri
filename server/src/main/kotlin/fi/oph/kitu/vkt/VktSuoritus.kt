@@ -103,27 +103,37 @@ data class VktSuoritus(
                         val vastaanottaja =
                             suorituksenVastaanottajat[suoritus.suorituksenVastaanottaja]
                         when (osa) {
-                            is VktKirjoittamisenKoe ->
+                            is VktKirjoittamisenKoe -> {
                                 osa.copy(
                                     suorituksenVastaanottaja = vastaanottaja,
                                     suorituspaikkakunta = suoritus.suorituspaikkakunta,
                                 )
-                            is VktTekstinYmmartamisenKoe ->
+                            }
+
+                            is VktTekstinYmmartamisenKoe -> {
                                 osa.copy(
                                     suorituksenVastaanottaja = vastaanottaja,
                                     suorituspaikkakunta = suoritus.suorituspaikkakunta,
                                 )
-                            is VktPuhumisenKoe ->
+                            }
+
+                            is VktPuhumisenKoe -> {
                                 osa.copy(
                                     suorituksenVastaanottaja = vastaanottaja,
                                     suorituspaikkakunta = suoritus.suorituspaikkakunta,
                                 )
-                            is VktPuheenYmmartamisenKoe ->
+                            }
+
+                            is VktPuheenYmmartamisenKoe -> {
                                 osa.copy(
                                     suorituksenVastaanottaja = vastaanottaja,
                                     suorituspaikkakunta = suoritus.suorituspaikkakunta,
                                 )
-                            else -> osa
+                            }
+
+                            else -> {
+                                osa
+                            }
                         }
                     }
                 }
@@ -304,35 +314,41 @@ interface VktOsakoe :
     companion object {
         fun from(row: VktSuoritusEntity.VktOsakoe) =
             when (row.tyyppi) {
-                Koodisto.VktOsakoe.Kirjoittaminen ->
+                Koodisto.VktOsakoe.Kirjoittaminen -> {
                     VktKirjoittamisenKoe(
                         row.tutkintopaiva,
                         VktArvionti.from(row),
                         row.id,
                         merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
-                Koodisto.VktOsakoe.TekstinYmmärtäminen ->
+                }
+
+                Koodisto.VktOsakoe.TekstinYmmärtäminen -> {
                     VktTekstinYmmartamisenKoe(
                         row.tutkintopaiva,
                         VktArvionti.from(row),
                         row.id,
                         merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
+                }
 
-                Koodisto.VktOsakoe.Puhuminen ->
+                Koodisto.VktOsakoe.Puhuminen -> {
                     VktPuhumisenKoe(
                         row.tutkintopaiva,
                         VktArvionti.from(row),
                         row.id,
                         merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
-                Koodisto.VktOsakoe.PuheenYmmärtäminen ->
+                }
+
+                Koodisto.VktOsakoe.PuheenYmmärtäminen -> {
                     VktPuheenYmmartamisenKoe(
                         row.tutkintopaiva,
                         VktArvionti.from(row),
                         row.id,
                         merkittyPoistettavaksi = row.merkittyPoistettavaksi,
                     )
+                }
             }
     }
 }

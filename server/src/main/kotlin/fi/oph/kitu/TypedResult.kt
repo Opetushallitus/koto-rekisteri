@@ -23,12 +23,16 @@ sealed class TypedResult<Value, Error> {
 
     fun getOrThrow(): Value =
         when (this) {
-            is Success -> this.value
-            is Failure ->
+            is Success -> {
+                this.value
+            }
+
+            is Failure -> {
                 when (this.error) {
                     is Throwable -> throw this.error
                     else -> throw IllegalStateException("Tried to get value of a failed result: ${this.error}")
                 }
+            }
         }
 
     fun errorOrNull(): Error? =
@@ -48,7 +52,10 @@ sealed class TypedResult<Value, Error> {
 
     fun onSuccess(onSuccess: (Value) -> Unit): TypedResult<Value, Error> {
         when (this) {
-            is Success<Value, *> -> onSuccess(this.value)
+            is Success<Value, *> -> {
+                onSuccess(this.value)
+            }
+
             is Failure<*, *> -> {}
         }
 
@@ -58,7 +65,10 @@ sealed class TypedResult<Value, Error> {
     fun onFailure(onFailure: (Error) -> Unit): TypedResult<Value, Error> {
         when (this) {
             is Success<*, *> -> {}
-            is Failure<*, Error> -> onFailure(this.error)
+
+            is Failure<*, Error> -> {
+                onFailure(this.error)
+            }
         }
 
         return this

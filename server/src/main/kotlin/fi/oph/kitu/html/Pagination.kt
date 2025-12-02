@@ -35,32 +35,42 @@ fun FlowContent.pagination(
         ul {
             items.forEach { item ->
                 when (item.type) {
-                    ItemType.Ellipsis -> li(classes = "ellipsis") { +item.type.symbol }
-                    ItemType.Previous ->
+                    ItemType.Ellipsis -> {
+                        li(classes = "ellipsis") { +item.type.symbol }
+                    }
+
+                    ItemType.Previous -> {
                         li(classes = "previous") {
                             maybeLink(
                                 if (currentPageNumber > 1) href(item.page ?: -1) else null,
                                 item.type.symbol,
                             )
                         }
-                    ItemType.Next ->
+                    }
+
+                    ItemType.Next -> {
                         li(classes = "next") {
                             maybeLink(
                                 if (currentPageNumber < numberOfPages) href(item.page ?: -1) else null,
                                 item.type.symbol,
                             )
                         }
-                    ItemType.Page ->
+                    }
+
+                    ItemType.Page -> {
                         li(classes = if (currentPageNumber == item.page) "current" else null) {
                             maybeLink(
                                 if (currentPageNumber != item.page) href(item.page ?: -1) else null,
                                 item.page.toString(),
                             )
                         }
-                    else ->
+                    }
+
+                    else -> {
                         li {
                             a(href = href(item.page ?: -1)) { +item.type.symbol }
                         }
+                    }
                 }
             }
         }

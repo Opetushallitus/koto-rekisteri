@@ -43,10 +43,13 @@ private fun LocalDate.getSeparator(): String =
     when {
         this.isAfter(LocalDate.of(2100, 1, 1))
         -> "B"
+
         this in (LocalDate.of(2000, 1, 1))..LocalDate.of(2100, 1, 1)
         -> "A"
+
         this in LocalDate.of(1900, 1, 1)..LocalDate.of(2000, 1, 1)
         -> "-"
+
         else
         -> "+"
     }

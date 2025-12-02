@@ -21,7 +21,9 @@ data class Henkilosuoritus<T : KielitutkinnonSuoritus>(
     inline fun <reified A> toEntity(): A =
         when (suoritus) {
             is VktSuoritus -> suoritus.toVktSuoritusEntity(henkilo)
+
             is YkiSuoritus -> suoritus.toYkiSuoritusEntity(henkilo)
+
             else -> throw RuntimeException(
                 "Failed to convert to entity: not implemented for Henkilosuoritus<${suoritus::class.simpleName}>",
             )

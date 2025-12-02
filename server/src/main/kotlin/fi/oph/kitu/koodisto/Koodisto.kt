@@ -133,42 +133,65 @@ object Koodisto {
                 tutkintotaso: Tutkintotaso,
             ): YkiArvosana =
                 when (tutkintotaso) {
-                    Tutkintotaso.PT ->
+                    Tutkintotaso.PT -> {
                         when (arvosana) {
                             0 -> ALLE1
+
                             1 -> PT1
+
                             2 -> PT2
+
                             9 -> EiVoiArvioida
+
                             10 -> Keskeytetty
+
                             11 -> Vilppi
+
                             else -> throw IllegalArgumentException(
                                 "Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso",
                             )
                         }
-                    Tutkintotaso.KT ->
+                    }
+
+                    Tutkintotaso.KT -> {
                         when (arvosana) {
                             3 -> KT3
+
                             4 -> KT4
+
                             0, 1, 2 -> ALLE3
+
                             9 -> EiVoiArvioida
+
                             10 -> Keskeytetty
+
                             11 -> Vilppi
+
                             else -> throw IllegalArgumentException(
                                 "Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso",
                             )
                         }
-                    Tutkintotaso.YT ->
+                    }
+
+                    Tutkintotaso.YT -> {
                         when (arvosana) {
                             5 -> YT5
+
                             6 -> YT6
+
                             0, 1, 2, 3, 4 -> ALLE5
+
                             9 -> EiVoiArvioida
+
                             10 -> Keskeytetty
+
                             11 -> Vilppi
+
                             else -> throw IllegalArgumentException(
                                 "Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso",
                             )
                         }
+                    }
                 }
         }
     }

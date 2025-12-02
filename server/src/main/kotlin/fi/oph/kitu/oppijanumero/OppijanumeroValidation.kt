@@ -18,16 +18,19 @@ class OppijanumeroValidation(
                 onSuccess = { Validation.ok(oid) },
                 onFailure = {
                     when (it) {
-                        is OppijanumeroException.OppijaNotFoundException ->
+                        is OppijanumeroException.OppijaNotFoundException -> {
                             Validation.fail(
                                 path,
                                 "Oppijanumeroa $oid ei löydy Oppijanumerorekisteristä",
                             )
-                        else ->
+                        }
+
+                        else -> {
                             Validation.fail(
                                 path,
                                 "Oppijanumeron tarkastus epäonnistui (${it::class.simpleName}). Yritä myöhemmin uudestaan.",
                             )
+                        }
                     }
                 },
             )

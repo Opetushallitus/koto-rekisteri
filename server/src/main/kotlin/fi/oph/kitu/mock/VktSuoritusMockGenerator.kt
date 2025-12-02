@@ -150,16 +150,19 @@ class VktSuoritusMockGenerator(
 
     fun validArvosanat(taso: Koodisto.VktTaitotaso) =
         when (taso) {
-            Koodisto.VktTaitotaso.Erinomainen ->
+            Koodisto.VktTaitotaso.Erinomainen -> {
                 listOf(
                     Koodisto.VktArvosana.Erinomainen,
                     Koodisto.VktArvosana.Hylätty,
                 )
-            Koodisto.VktTaitotaso.HyväJaTyydyttävä ->
+            }
+
+            Koodisto.VktTaitotaso.HyväJaTyydyttävä -> {
                 listOf(
                     Koodisto.VktArvosana.Hyvä,
                     Koodisto.VktArvosana.Tyydyttävä,
                     Koodisto.VktArvosana.Hylätty,
                 )
+            }
         }
 }
