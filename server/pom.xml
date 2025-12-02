@@ -32,8 +32,6 @@
         <kotlin.compiler.apiVersion>2.1</kotlin.compiler.apiVersion>
 
         <flyway.version>11.18.0</flyway.version>
-        <jackson.version>2.20.1</jackson.version>
-        <jackson.annotations.version>2.20</jackson.annotations.version>
         <opentelemetry-semconv.version>1.37.0</opentelemetry-semconv.version>
         <opentelemetry.instrumentation.version>2.22.0</opentelemetry.instrumentation.version>
     </properties>
@@ -318,36 +316,30 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <!-- dependencies of CSV parser -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <!-- CSV parser -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-csv</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.annotations.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
@@ -389,20 +381,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-restclient</artifactId>
-        </dependency>
-        <dependency>
-            <!--
-            To help with migrating from Jackson 2 to Jackson 3, the spring.jackson.use-jackson2-defaults property has
-            been introduced. When set to true, the auto-configured JsonMapper will have defaults that align as closely
-            as possible with those of Jackson 2 in Spring Boot 3.x.
-
-            We strongly recommend trying to adopt Jackson 3 if at all possible, however, if you are unable to do so
-            Spring Boot 4.0 also provides a spring-boot-jackson2 module. This module ships in a deprecated form and
-            will be removed in a future release. It’s intended as a stop-gap for users that need more time to migrate
-            to Jackson 3.
-            -->
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-jackson2</artifactId>
         </dependency>
     </dependencies>
 
