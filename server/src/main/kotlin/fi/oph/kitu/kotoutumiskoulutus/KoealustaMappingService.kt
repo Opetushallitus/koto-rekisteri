@@ -263,7 +263,7 @@ class KoealustaMappingService(
     fun convertError(error: Error): List<KielitestiSuoritusError> {
         val now = Instant.now()
         return when (error) {
-            is Error.ValidationFailure ->
+            is Error.ValidationFailure -> {
                 error.validationErrors.map { validationError ->
                     val (field, value) = parseValidationError(validationError)
                     KielitestiSuoritusError(
@@ -284,8 +284,9 @@ class KoealustaMappingService(
                         onrLisatietoja = null,
                     )
                 }
+            }
 
-            is Error.OppijanumeroFailure ->
+            is Error.OppijanumeroFailure -> {
                 listOf(
                     KielitestiSuoritusError(
                         id = null,
@@ -306,6 +307,7 @@ class KoealustaMappingService(
                         onrLisatietoja = null,
                     ),
                 )
+            }
         }
     }
 

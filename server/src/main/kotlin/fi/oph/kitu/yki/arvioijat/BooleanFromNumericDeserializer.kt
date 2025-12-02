@@ -11,7 +11,9 @@ class BooleanFromNumericDeserializer : JsonDeserializer<Boolean>() {
         ctxt: DeserializationContext,
     ) = when (p.text) {
         "0" -> false
+
         "1" -> true
+
         else -> throw InvalidFormatException(
             p,
             "Expected '0' or '1' for Boolean field",

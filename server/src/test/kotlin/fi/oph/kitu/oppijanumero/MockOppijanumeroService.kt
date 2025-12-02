@@ -27,18 +27,23 @@ class MockOppijanumeroService : OppijanumeroService {
             )
 
         return when (oppija.hetu) {
-            "INVALID_HETU" ->
+            "INVALID_HETU" -> {
                 TypedResult.Failure(
                     OppijanumeroException.BadRequest(request, response = ResponseEntity.badRequest().build()),
                 )
-            "WRONG_HETU" ->
+            }
+
+            "WRONG_HETU" -> {
                 TypedResult.Failure(OppijanumeroException.OppijaNotIdentifiedException(request))
-            else ->
+            }
+
+            else -> {
                 oppijaToOid[oppija]?.let { oid ->
                     TypedResult.Success(Oid.parse(oid).getOrThrow())
                 } ?: TypedResult.Failure(
                     OppijanumeroException.OppijaNotFoundException(request),
                 )
+            }
         }
     }
 

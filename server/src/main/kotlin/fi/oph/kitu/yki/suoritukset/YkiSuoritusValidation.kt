@@ -71,10 +71,13 @@ class YkiSuoritusValidation(
             onFailure = {
                 fail(
                     when (it) {
-                        is OrganisaatiopalveluException.NotFoundException ->
+                        is OrganisaatiopalveluException.NotFoundException -> {
                             "Organisaatiota ${suoritus.jarjestaja.oid} ei löydy organisaatiopalvelusta"
-                        else ->
+                        }
+
+                        else -> {
                             "Organisaation validointi epäonnistui"
+                        }
                     },
                 )
             },
@@ -109,7 +112,7 @@ class YkiSuoritusValidation(
             SolkiArviointitila.KESKEYTETTY,
             SolkiArviointitila.UUSITTAVA,
             SolkiArviointitila.TARKISTUSARVIOITU,
-            ->
+            -> {
                 Validation.fold(
                     s,
                     Validation.assertTrue(
@@ -118,6 +121,7 @@ class YkiSuoritusValidation(
                         "Arviointitila on ${s.suoritus.arviointitila}, mutta arviointipäivä on määritelty",
                     ),
                 )
+            }
         }
 
     fun validateTarkistusarviointi(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =

@@ -41,11 +41,13 @@ fun FlowContent.vktHenkilonTiedot(
                 cardContent {
                     error(
                         when (it) {
-                            is OppijanumeroException.OppijaNotFoundException ->
+                            is OppijanumeroException.OppijaNotFoundException -> {
                                 "Oppijasta ei löydy tietoja Oppijanumerorekisteristä"
+                            }
 
-                            else ->
+                            else -> {
                                 "Oppijan tietojen haku Oppijanumerorekisteristä epäonnistui"
+                            }
                         },
                     )
                 }
