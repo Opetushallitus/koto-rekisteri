@@ -3,8 +3,8 @@ package fi.oph.kitu
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Bean
-import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
+import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import java.nio.file.Paths
 
@@ -12,7 +12,7 @@ import java.nio.file.Paths
 class DBContainerConfiguration {
     @Bean
     @ServiceConnection
-    fun postgresContainer(): PostgreSQLContainer<*> {
+    fun postgresContainer(): PostgreSQLContainer {
         val image =
             ImageFromDockerfile()
                 .withDockerfile(Paths.get("..", "possu.Dockerfile"))
