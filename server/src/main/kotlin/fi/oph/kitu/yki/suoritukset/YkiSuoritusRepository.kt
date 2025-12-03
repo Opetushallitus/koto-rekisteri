@@ -413,6 +413,41 @@ class YkiSuoritusRepository {
             YkiSuoritusEntity.fromRow,
         )
 
+    fun findSuorituksetWithUnsentArvioinninTila(): List<YkiSuoritusEntity> =
+        jdbcTemplate
+            .query(
+                """
+                SELECT DISTINCT ON (yki_suoritus.suoritus_id)
+                    $allColumns
+                FROM
+                    yki_suoritus
+                    LEFT JOIN yki_arviointitilan_lahetys ON yki_suoritus.suoritus_id = yki_arviointitilan_lahetys.suoritus_id
+                WHERE
+                    yki_arviointitilan_lahetys.lahetetty IS NULL
+                    OR yki_arviointitilan_lahetys.lahetetty < yki_suoritus.last_modified
+                ORDER BY
+                    yki_suoritus.suoritus_id,
+                    last_modified DESC
+                """.trimIndent(),
+                YkiSuoritusEntity.fromRow,
+            )
+
+    fun setArvioinninTilaSent(suoritusIds: List<Int>) =
+        if (suoritusIds.isNotEmpty()) {
+            jdbcTemplate.update(
+                """
+                INSERT INTO yki_suoritus_lisatieto (suoritus_id, arviointitila_lahetetty)
+                    VALUES ${suoritusIds.joinToString(",") { "(?, now())" }}
+                ON CONFLICT ON CONSTRAINT yki_suoritus_lisatieto_pkey
+                    DO UPDATE SET
+                        arviointitila_lahetetty = now();
+                """.trimIndent(),
+                *suoritusIds.toTypedArray(),
+            )
+        } else {
+            0
+        }
+
     fun deleteAll() {
         jdbcTemplate.execute("TRUNCATE TABLE yki_suoritus_lisatieto")
         jdbcTemplate.execute("TRUNCATE TABLE yki_suoritus")
