@@ -417,20 +417,19 @@ class YkiSuoritusRepository {
         jdbcTemplate
             .query(
                 """
-                SELECT DISTINCT ON (yki_suoritus.suoritus_id)
-                    $allColumns
-                FROM
-                    yki_suoritus
-                    LEFT JOIN yki_arviointitilan_lahetys ON yki_suoritus.suoritus_id = yki_arviointitilan_lahetys.suoritus_id
+                    ${selectQuery(distinct = true)}
+                    $fromYkiSuoritus
                 WHERE
-                    yki_arviointitilan_lahetys.lahetetty IS NULL
-                    OR yki_arviointitilan_lahetys.lahetetty < yki_suoritus.last_modified
+                    arviointitila_lahetetty IS NULL
+                    OR arviointitila_lahetetty < last_modified
                 ORDER BY
                     yki_suoritus.suoritus_id,
                     last_modified DESC
                 """.trimIndent(),
                 YkiSuoritusEntity.fromRow,
             )
+
+    fun setArvioinninTilaSent(suoritusId: Int) = setArvioinninTilaSent(listOf(suoritusId))
 
     fun setArvioinninTilaSent(suoritusIds: List<Int>) =
         if (suoritusIds.isNotEmpty()) {

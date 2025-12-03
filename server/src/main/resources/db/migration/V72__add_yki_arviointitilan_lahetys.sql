@@ -1,6 +1,3 @@
-CREATE TABLE "yki_arviointitilan_lahetys"
-(
-    "suoritus_id" integer NOT NULL,
-    "lahetetty"   timestamp with time zone NOT NULL DEFAULT NOW(),
-    PRIMARY KEY ("suoritus_id")
-);
+ALTER TABLE "yki_suoritus_lisatieto"
+    ALTER COLUMN "tarkistusarviointi_hyvaksytty_pvm" DROP NOT NULL,
+    ADD COLUMN "arviointitila_lahetetty" timestamp with time zone;

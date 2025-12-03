@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
@@ -47,6 +48,7 @@ class YkiServiceTests(
     @param:Autowired private val tracer: Tracer,
     @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
     @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val ilmoittautumisjarjestelmaService: IlmoittautumisjarjestelmaService,
 ) {
     @BeforeEach
     fun nukeDb() {
@@ -86,6 +88,7 @@ class YkiServiceTests(
                 parser = parser,
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
+                ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
             )
 
         // Act
@@ -145,6 +148,7 @@ class YkiServiceTests(
                 parser = parser,
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
+                ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
             )
 
         // Act
@@ -189,6 +193,7 @@ class YkiServiceTests(
                 parser = parser,
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
+                ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
             )
 
         // Act
@@ -245,6 +250,7 @@ class YkiServiceTests(
                 parser = parser,
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
+                ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
             )
 
         assertDoesNotThrow {
@@ -307,6 +313,7 @@ class YkiServiceTests(
                 parser = parser,
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
+                ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
             )
 
         assertDoesNotThrow {
@@ -386,6 +393,7 @@ class YkiServiceTests(
                 parser = parser,
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
+                ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
             )
 
         assertThrows<YkiService.Error.CsvConversionError> {
