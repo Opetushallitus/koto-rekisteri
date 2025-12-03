@@ -15,6 +15,8 @@ export interface KotoError {
   viesti: string
   virheellinenKentta: string
   virheellinenArvo: string
+  lisatietoja: string | null
+  onrLisatietoja: string | null
 }
 
 type CreateErrorArgs = Partial<
@@ -30,6 +32,8 @@ const createError = (
     viesti,
     virheellinenKentta,
     virheellinenArvo,
+    lisatietoja = null,
+    onrLisatietoja = null,
   }: CreateErrorArgs,
 ) => {
   const p = peopleFixture[person]
@@ -46,6 +50,8 @@ const createError = (
     viesti,
     virheellinenKentta,
     virheellinenArvo,
+    lisatietoja,
+    onrLisatietoja,
   }
 }
 
@@ -76,6 +82,14 @@ export const fixtureData = {
     virheellinenArvo: "en kerro, arvaa!",
     virheenLuontiaika: "2042-12-22T22:42:42Z",
   }),
+  virheEino: createError("eino", {
+    schoolOid: "1.2.246.562.10.0987654321",
+    teacherEmail: "yksi-opettajista@testi.oph.fi",
+    viesti: "Kirjoitusvirhe henkilötunnuksessa tai nimessä",
+    virheenLuontiaika: "2042-12-22T22:42:42Z",
+    onrLisatietoja:
+      "etunimet: Eino Test, kutsumanimi: Eino, sukunimi: Välimaa-Testi",
+  }),
   withNullValues: {
     suorittajanOid: null,
     hetu: null,
@@ -89,6 +103,8 @@ export const fixtureData = {
     virheellinenKentta: null,
     virheellinenArvo: null,
     virheenLuontiaika: "2024-11-22T10:49:49Z",
+    lisatietoja: null,
+    onrLisatietoja: null,
   },
 } as const
 
@@ -105,7 +121,9 @@ const insertQuery = (virhe: KotoError) => SQL`
       virheellinen_kentta,
       virheellinen_arvo,
       school_oid,
-      teacher_email)
+      teacher_email,
+      lisatietoja,
+      onr_lisatietoja)
   VALUES (
              ${virhe.suorittajanOid},
              ${virhe.hetu},
@@ -118,7 +136,9 @@ const insertQuery = (virhe: KotoError) => SQL`
              ${virhe.virheellinenKentta},
              ${virhe.virheellinenArvo},
              ${virhe.schoolOid},
-             ${virhe.teacherEmail})
+             ${virhe.teacherEmail},
+             ${virhe.lisatietoja},
+             ${virhe.onrLisatietoja})
 `
 
 export type KotoErrorName = keyof typeof fixtureData
