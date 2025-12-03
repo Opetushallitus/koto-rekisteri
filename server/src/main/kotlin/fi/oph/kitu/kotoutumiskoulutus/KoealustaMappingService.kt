@@ -14,6 +14,7 @@ import fi.oph.kitu.oppijanumero.Oppija
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.oppijanumero.OppijanumeroServiceError
+import fi.oph.kitu.oppijanumero.OppijanumeroTroubleshootingService
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriRequest
 import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -25,6 +26,7 @@ import java.time.Instant
 class KoealustaMappingService(
     private val jacksonObjectMapper: ObjectMapper,
     private val oppijanumeroService: OppijanumeroService,
+    private val oppijanumeroTroubleshootingService: OppijanumeroTroubleshootingService,
 ) {
     private inline fun <reified T> tryParseMoodleResponse(json: String): T {
         try {
@@ -75,6 +77,14 @@ class KoealustaMappingService(
                                         it.request,
                                         if (it is OppijanumeroException.HasResponse) it.response else null,
                                     )
+
+                            val onrInfo =
+                                oppijanumeroTroubleshootingService
+                                    .troubleshootOppijaNameCombinations(oppija)
+                                    ?.let { success ->
+                                        "etunimet: ${success.etunimet}, kutsumanimi: ${success.kutsumanimi}, sukunimi: ${success.sukunimi}"
+                                    }
+
                             Error.OppijanumeroFailure(
                                 it,
                                 "Oppijanumeron haku epäonnistui: ${debugInfo.message() ?: it.oppijanumeroServiceError?.error ?: it.message ?: "ei tarkempia tietoja"}",
@@ -82,6 +92,7 @@ class KoealustaMappingService(
                                 moodleId = user.userid.toString(),
                                 user.completions.first().teacheremail,
                                 debugInfo.toString(),
+                                onrInfo,
                             )
                         }?.onFailure { oppijanumeroExceptions.add(it) }
                         ?.getOrNull()
@@ -304,7 +315,7 @@ class KoealustaMappingService(
                         virheellinenKentta = null,
                         virheellinenArvo = null,
                         lisatietoja = error.debugInfo,
-                        onrLisatietoja = null,
+                        onrLisatietoja = error.onrInfo,
                     ),
                 )
             }
@@ -345,6 +356,7 @@ class KoealustaMappingService(
             moodleId: String?,
             teacherEmail: String?,
             val debugInfo: String?,
+            val onrInfo: String? = null,
         ) : Error(message, schoolOid, teacherEmail)
 
         abstract class ValidationFailure(

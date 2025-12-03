@@ -76,6 +76,15 @@ enum class KielitestiSuoritusErrorColumn(
             }
         },
     ),
+    Ratkaisuehdotus(
+        entityName = "onrLisatietoja",
+        uiHeaderValue = "Ratkaisuehdotus",
+        urlParam = "onrLisatietoja",
+        renderValue = {
+            attributes["headers"] = "ratkaisuehdotus"
+            +it.onrLisatietoja.orEmpty()
+        },
+    ),
     VirheellinenKentta(
         entityName = "virheellinenKentta",
         uiHeaderValue = "Virheellinen kenttä",

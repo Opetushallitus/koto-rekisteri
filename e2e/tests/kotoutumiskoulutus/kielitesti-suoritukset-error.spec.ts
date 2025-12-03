@@ -66,6 +66,24 @@ describe('"Koto Suoritukset" -page', () => {
     )
   })
 
+  test("ratkaisuehdotus column is displayed properly", async ({
+    db,
+    kielitestiErrorPage,
+    kotoSuoritusError,
+  }) => {
+    await kotoSuoritusError.insert(db, "virheEino")
+    await kielitestiErrorPage.open()
+
+    const errors = await kielitestiErrorPage.getErrorTableBody()
+    const ratkaisuehdotusCell = errors.getByText(
+      fixtureData.virheEino.onrLisatietoja,
+    )
+    await expect(ratkaisuehdotusCell).toHaveAttribute(
+      "headers",
+      "ratkaisuehdotus",
+    )
+  })
+
   test("koto suoritukset error page handles null values in error properly", async ({
     page,
     kielitestiErrorPage,
@@ -133,13 +151,18 @@ describe('"Koto Suoritukset" -page', () => {
       ],
     },
     {
-      column: "Virheellinen kenttä",
+      column: "Ratkaisuehdotus",
       tableColumnIndex: 6,
+      order: ["", ""],
+    },
+    {
+      column: "Virheellinen kenttä",
+      tableColumnIndex: 7,
       order: ["yksi niistä", "puhuminen", "kirjoittaminen"],
     },
     {
       column: "Virheellinen arvo",
-      tableColumnIndex: 7,
+      tableColumnIndex: 8,
       order: ["virheellinen arvosana", "tyhjää täynnä", "en kerro, arvaa!"],
     },
   ] as const
