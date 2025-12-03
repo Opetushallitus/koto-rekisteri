@@ -16,6 +16,8 @@ data class YkiArvioinninTilaRequest(
     fun isNotEmpty(): Boolean = tilat.isNotEmpty()
 
     companion object {
+        fun of(entity: YkiSuoritusEntity) = YkiArvioinninTilaRequest(listOf(YkiArvioinninTila.of(entity)))
+
         fun of(entities: List<YkiSuoritusEntity>) = YkiArvioinninTilaRequest(entities.map { YkiArvioinninTila.of(it) })
     }
 }

@@ -4,6 +4,7 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
@@ -42,6 +43,7 @@ class YkiService(
     private val arvioijaRepository: YkiArvioijaRepository,
     private val arvioijaMapper: YkiArvioijaMappingService,
     private val arvioijaErrorService: YkiArvioijaErrorService,
+    private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
     private val auditLogger: AuditLogger,
     private val parser: CsvParser,
     private val tracer: Tracer,
@@ -74,6 +76,8 @@ class YkiService(
                 span.setAttribute("yki.suoritukset.receivedCount", suoritukset.size.toLong())
 
                 val saved = suoritusRepository.saveAllNewEntities(suoritusMapper.convertToEntityIterable(suoritukset))
+                ilmoittautumisjarjestelma.sendAllUpdatedArvioinninTilat()
+
                 span.setAttribute("importedSuorituksetSize", saved.count().toLong())
                 auditLogger.logAllInternalOnly("YKI suoritus imported", saved) { suoritus ->
                     arrayOf(
