@@ -5,6 +5,7 @@ import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessage
 import fi.oph.kitu.html.httpParams
+import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
@@ -45,6 +46,7 @@ class YkiViewController(
     private val koskiErrorService: KoskiErrorService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
     private val koskiRequestMapper: KoskiRequestMapper,
+    private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetGetView(
@@ -246,6 +248,7 @@ class YkiViewController(
                         "1 tarkistusarviointi merkitty hyväksytyksi"
                     },
                 )
+                ilmoittautumisjarjestelma.sendAllUpdatedArvioinninTilat()
             } catch (e: IllegalStateException) {
                 viewMessage?.showError(e.message ?: "Tuntematon virhe")
             }

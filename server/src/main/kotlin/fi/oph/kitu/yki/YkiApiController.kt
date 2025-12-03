@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
@@ -40,6 +41,7 @@ class YkiApiController(
     private val validationService: ValidationService,
     private val ykiArvioijaRepository: YkiArvioijaRepository,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
+    private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
 ) {
     @GetMapping("/suoritukset", "/suoritus", produces = ["text/csv"])
     fun getSuorituksetAsCsv(
@@ -153,6 +155,7 @@ class YkiApiController(
             }
 
         ykiSuoritusRepository.save(entity)
+        ilmoittautumisjarjestelma.sendArvioinninTila(entity)
         return TiedonsiirtoSuccess().toResponseEntity()
     }
 
