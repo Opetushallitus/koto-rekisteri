@@ -38,12 +38,14 @@ fun RestClient.Builder.withJacksonStreamMaxStringLength(maxStringLength: Int = 2
             configurer.withJsonConverter(
                 JacksonJsonHttpMessageConverter(
                     JsonMapper.builder(
-                        JsonFactory.builder().streamReadConstraints(
-                            StreamReadConstraints
-                                .builder()
-                                .maxStringLength(maxStringLength)
-                                .build(),
-                        ),
+                        JsonFactory
+                            .builder()
+                            .streamReadConstraints(
+                                StreamReadConstraints
+                                    .builder()
+                                    .maxStringLength(maxStringLength)
+                                    .build(),
+                            ).build() as tools.jackson.core.json.JsonFactory,
                     ),
                 ),
             )
