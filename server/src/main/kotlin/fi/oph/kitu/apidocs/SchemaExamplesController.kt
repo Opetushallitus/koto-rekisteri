@@ -1,8 +1,5 @@
 package fi.oph.kitu.apidocs
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector
 import fi.oph.kitu.Oid
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.koodisto.Koodisto
@@ -36,6 +33,10 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.cfg.MapperConfig
+import tools.jackson.databind.introspect.AnnotatedMember
+import tools.jackson.databind.introspect.JacksonAnnotationIntrospector
 import java.time.LocalDate
 
 @Controller
@@ -293,17 +294,18 @@ class SchemaExamplesController {
         ResponseEntity(objectMapper.writeValueAsString(data), HttpStatus.OK)
 
     private val objectMapper: ObjectMapper =
-        defaultObjectMapper.copy().apply {
-            setAnnotationIntrospector(SchemaHiddenIntrospector())
-        }
+        defaultObjectMapper.rebuild().annotationIntrospector(SchemaHiddenIntrospector()).build()
 }
 
 class SchemaHiddenIntrospector : JacksonAnnotationIntrospector() {
-    override fun hasIgnoreMarker(a: AnnotatedMember): Boolean {
+    override fun hasIgnoreMarker(
+        config: MapperConfig<*>?,
+        a: AnnotatedMember,
+    ): Boolean {
         val schema = a.getAnnotation(Schema::class.java)
         if (schema != null && schema.hidden) {
             return true
         }
-        return super.hasIgnoreMarker(a)
+        return super.hasIgnoreMarker(config, a)
     }
 }

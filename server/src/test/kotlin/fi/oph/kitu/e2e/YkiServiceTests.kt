@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.ResponseEntity
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.Instant
 import kotlin.test.assertEquals
 
@@ -24,7 +24,7 @@ class YkiServiceTests(
     @param:Autowired val ykiDevController: YkiController,
     @param:Autowired val ykiSuoritusErrorRepository: YkiSuoritusErrorRepository,
     @param:Autowired val ykiSuoritusRepository: YkiSuoritusRepository,
-    @param:Autowired val postgres: PostgreSQLContainer<*>,
+    @param:Autowired val postgres: PostgreSQLContainer,
 ) {
     @BeforeEach
     fun nukeDb() {

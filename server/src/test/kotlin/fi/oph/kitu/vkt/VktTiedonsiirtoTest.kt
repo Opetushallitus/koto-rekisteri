@@ -25,25 +25,22 @@ import org.springframework.test.web.servlet.MockMvcResultMatchersDsl
 import org.springframework.test.web.servlet.put
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
-class VktTiedonsiirtoTest {
-    @Autowired
-    private lateinit var koskiRequestMapper: KoskiRequestMapper
-
-    @Autowired
-    private lateinit var context: WebApplicationContext
-
-    @Autowired private var postgres: PostgreSQLContainer<*>? = null
+class VktTiedonsiirtoTest(
+    @param:Autowired private var postgres: PostgreSQLContainer,
+    @param:Autowired private var koskiRequestMapper: KoskiRequestMapper,
+    @param:Autowired private var context: WebApplicationContext,
+) {
     private var mockMvc: MockMvc? = null
 
     @BeforeEach
-    fun setup() {
+    fun beforeEach() {
         mockMvc =
             MockMvcBuilders
                 .webAppContextSetup(context)

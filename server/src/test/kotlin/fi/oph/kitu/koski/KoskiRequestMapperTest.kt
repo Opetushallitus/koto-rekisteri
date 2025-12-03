@@ -1,6 +1,5 @@
 package fi.oph.kitu.koski
 
-import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
@@ -26,7 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import kotlin.random.Random
 import kotlin.test.assertEquals
@@ -34,11 +36,11 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class KoskiRequestMapperTest(
-    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer,
+    @param:Autowired private val objectMapper: ObjectMapper,
 ) {
     @Autowired
     lateinit var koskiRequestMapper: KoskiRequestMapper
-    private val objectMapper = KoskiRequestMapper.getObjectMapper()
 
     private val oid: Oid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
     private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.12345678910").getOrThrow()
@@ -64,9 +66,8 @@ class KoskiRequestMapperTest(
         val koskiRequest = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
         val expectedJson =
             objectMapper
-                .readValue(
+                .readValue<JsonNode>(
                     ClassPathResource("./koski-request-example.json").file,
-                    JsonNode::class.java,
                 ).toString()
         val koskiRequestJson = objectMapper.writeValueAsString(koskiRequest)
         assertEquals(expectedJson, koskiRequestJson)

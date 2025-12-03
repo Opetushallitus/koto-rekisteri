@@ -1,6 +1,5 @@
 package fi.oph.kitu.koski
 
-import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.toJsonNode
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
@@ -12,6 +11,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.stereotype.Service
+import tools.jackson.databind.JsonNode
 import java.time.Instant
 
 @Repository

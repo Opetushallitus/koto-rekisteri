@@ -1,8 +1,5 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.TypedResult.Failure
@@ -19,16 +16,18 @@ import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 import java.time.Instant
 
 @Service
 class KoealustaMappingService(
-    private val jacksonObjectMapper: ObjectMapper,
+    private val jacksonObjectMapper: JsonMapper,
     private val oppijanumeroService: OppijanumeroService,
 ) {
     private inline fun <reified T> tryParseMoodleResponse(json: String): T {
         try {
-            return jacksonObjectMapper.enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION).readValue<T>(json)
+            return jacksonObjectMapper.readValue(json)
         } catch (e: Throwable) {
             throw tryParseMoodleError(json, e)
         }
@@ -263,7 +262,7 @@ class KoealustaMappingService(
     fun convertError(error: Error): List<KielitestiSuoritusError> {
         val now = Instant.now()
         return when (error) {
-            is Error.ValidationFailure ->
+            is Error.ValidationFailure -> {
                 error.validationErrors.map { validationError ->
                     val (field, value) = parseValidationError(validationError)
                     KielitestiSuoritusError(
@@ -284,8 +283,9 @@ class KoealustaMappingService(
                         onrLisatietoja = null,
                     )
                 }
+            }
 
-            is Error.OppijanumeroFailure ->
+            is Error.OppijanumeroFailure -> {
                 listOf(
                     KielitestiSuoritusError(
                         id = null,
@@ -306,6 +306,7 @@ class KoealustaMappingService(
                         onrLisatietoja = null,
                     ),
                 )
+            }
         }
     }
 

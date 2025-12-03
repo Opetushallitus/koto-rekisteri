@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.LocalDate
 import kotlin.jvm.optionals.getOrNull
 import kotlin.test.Test
@@ -20,7 +20,7 @@ import kotlin.test.assertEquals
 class VKTSuoritusRepositoryTest(
     @param:Autowired private var repository: VktSuoritusRepository,
     @param:Autowired private var customRepository: CustomVktSuoritusRepository,
-    @param:Autowired private var postgres: PostgreSQLContainer<*>,
+    @param:Autowired private var postgres: PostgreSQLContainer,
     @param:Autowired private val vktValidation: VktValidation,
 ) {
     @BeforeEach

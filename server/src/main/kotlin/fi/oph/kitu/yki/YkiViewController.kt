@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.view.RedirectView
+import tools.jackson.databind.ObjectMapper
 import java.time.LocalDate
 
 @Controller
@@ -45,6 +46,7 @@ class YkiViewController(
     private val koskiErrorService: KoskiErrorService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
     private val koskiRequestMapper: KoskiRequestMapper,
+    private val objectMapper: ObjectMapper,
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetGetView(
@@ -212,7 +214,7 @@ class YkiViewController(
             ?.let {
                 koskiRequestMapper.ykiSuoritusToKoskiRequest(it)
             }?.let {
-                ResponseEntity.ok(KoskiRequestMapper.getObjectMapper().writeValueAsString(it))
+                ResponseEntity.ok(objectMapper.writeValueAsString(it))
             } ?: ResponseEntity.notFound().build()
 
     @GetMapping("/tarkistusarvioinnit", produces = ["text/html"])

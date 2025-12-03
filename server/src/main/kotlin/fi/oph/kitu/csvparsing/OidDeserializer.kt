@@ -1,16 +1,16 @@
 package fi.oph.kitu.csvparsing
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
 import fi.oph.kitu.Oid
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.deser.std.StdDeserializer
 
-class OidDeserializer : JsonDeserializer<Oid>() {
+class OidDeserializer : StdDeserializer<Oid>(Oid::class.java) {
     override fun deserialize(
-        parser: JsonParser?,
-        context: DeserializationContext?,
+        p: JsonParser?,
+        ctxt: DeserializationContext?,
     ): Oid? =
-        parser?.valueAsString?.let {
+        p?.valueAsString?.let {
             Oid.parse(it).getOrNull()
         }
 }

@@ -23,7 +23,7 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers.request
 import org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -38,7 +38,7 @@ class KoskiServiceTest(
     @param:Autowired private val tracer: Tracer,
     @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
     @param:Autowired private val koskiErrorService: KoskiErrorService,
-    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer,
 ) {
     @Autowired
     private lateinit var vktSuoritusService: VktSuoritusService

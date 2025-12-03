@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.servlet.view.RedirectView
+import tools.jackson.databind.ObjectMapper
 
 @Controller
 @RequestMapping("/vkt")
@@ -40,6 +41,7 @@ class VktViewController(
     private val oppijanumeroService: OppijanumeroService,
     private val koskiErrorService: KoskiErrorService,
     private val koskiRequestMapper: KoskiRequestMapper,
+    private val objectMapper: ObjectMapper,
 ) {
     @GetMapping("/erinomainen/ilmoittautuneet", produces = ["text/html"])
     fun erinomaisenTaitotasonIlmoittautuneetView(
@@ -274,7 +276,7 @@ class VktViewController(
         vktSuoritukset
             .getOppijanSuoritukset(CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso))
             ?.let { koskiRequestMapper.vktSuoritusToKoskiRequest(it).getOrNull() }
-            ?.let { ResponseEntity.ok(KoskiRequestMapper.getObjectMapper().writeValueAsString(it)) }
+            ?.let { ResponseEntity.ok(objectMapper.writeValueAsString(it)) }
             ?: ResponseEntity.notFound().build()
 
     private fun getMessages(): List<ViewMessageData> =

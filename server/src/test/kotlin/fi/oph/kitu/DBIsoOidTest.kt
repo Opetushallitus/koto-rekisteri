@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.jdbc.core.JdbcTemplate
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
@@ -18,7 +18,7 @@ import kotlin.test.assertEquals
 @Import(DBContainerConfiguration::class)
 class DBIsoOidTest(
     @param:Autowired private val jdbcTemplate: JdbcTemplate,
-    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer,
 ) {
     @BeforeEach
     fun nukeDb() {

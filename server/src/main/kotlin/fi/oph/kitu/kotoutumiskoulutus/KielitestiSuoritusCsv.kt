@@ -3,9 +3,9 @@ package fi.oph.kitu.kotoutumiskoulutus
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import com.fasterxml.jackson.databind.MapperFeature
 import fi.oph.kitu.Oid
 import fi.oph.kitu.csvparsing.Features
+import tools.jackson.databind.MapperFeature
 import java.time.Instant
 
 @JsonPropertyOrder(

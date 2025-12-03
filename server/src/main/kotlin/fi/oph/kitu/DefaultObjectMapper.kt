@@ -1,58 +1,33 @@
 package fi.oph.kitu
 
-import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.node.TextNode
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
-import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
+import tools.jackson.core.JacksonException
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.node.StringNode
+import tools.jackson.module.kotlin.kotlinModule
 
 /**
  * Yleiskäyttöinen json-mapper, jolle on konffattu:
  *
- *      - Tuki ISO-aikaleimoille
+ *      - Tuki ISO-aikaleimoille (Jackson 3 tukee näitä oletuksena)
  *      - Tuki Kotlin-tietotyypeille
  *      - Nätti JSON-tulostus
  *      - Ei välitä yllättävistä propertyista
  */
 val defaultObjectMapper by lazy {
-    val mapper = ObjectMapper()
-
-    val javaTime =
-        JavaTimeModule()
-            .addSerializer(LocalDate::class.java, LocalDateSerializer(DateTimeFormatter.ISO_LOCAL_DATE))
-            .addSerializer(
-                LocalDateTime::class.java,
-                LocalDateTimeSerializer(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-            ).addSerializer(
-                ZonedDateTime::class.java,
-                ZonedDateTimeSerializer(DateTimeFormatter.ISO_ZONED_DATE_TIME),
-            )
-
-    mapper.registerKotlinModule()
-    mapper.registerModule(javaTime)
-    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    mapper.enable(SerializationFeature.INDENT_OUTPUT)
-
-    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-
-    mapper
+    JsonMapper
+        .builder()
+        .addModule(kotlinModule())
+        .enable(SerializationFeature.INDENT_OUTPUT)
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .build()
 }
 
-fun String.toJsonNode(): JsonNode {
-    val parser = defaultObjectMapper.factory.createParser(this)
-    return try {
-        defaultObjectMapper.readTree(parser)
-    } catch (_: JsonParseException) {
-        TextNode(this)
+fun String.toJsonNode(): JsonNode =
+    try {
+        defaultObjectMapper.readTree(this)
+    } catch (_: JacksonException) {
+        StringNode(this)
     }
-}
