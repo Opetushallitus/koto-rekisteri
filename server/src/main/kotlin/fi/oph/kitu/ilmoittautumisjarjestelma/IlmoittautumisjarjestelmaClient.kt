@@ -14,16 +14,24 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import java.net.URI
 
+interface IlmoittautumisjarjestelmaClient {
+    fun <T> post(
+        endpoint: String,
+        body: IlmoittautumisjarjestelmaRequest,
+        responseType: Class<T>,
+    ): TypedResult<T, out IlmoittautumisjarjestelmaException>
+}
+
 @Service
 @ConditionalOnProperty("kitu.ilmoittautumispalvelu.service.url")
-class IlmoittautumisjarjestelmaClient(
+class IlmoittautumisjarjestelmaClientImpl(
     @param:Qualifier("oauth2RestClient")
     val restClient: RestClient,
     @param:Value("\${kitu.ilmoittautumispalvelu.service.url}")
     val serviceUrl: String,
-) {
+) : IlmoittautumisjarjestelmaClient {
     @WithSpan
-    fun <T> post(
+    override fun <T> post(
         endpoint: String,
         body: IlmoittautumisjarjestelmaRequest,
         responseType: Class<T>,
