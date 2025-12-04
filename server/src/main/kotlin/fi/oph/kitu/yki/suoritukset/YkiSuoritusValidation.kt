@@ -86,7 +86,9 @@ class YkiSuoritusValidation(
 
     fun validateArvointitila(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
         when (s.suoritus.arviointitila) {
-            SolkiArviointitila.ARVIOITU -> {
+            SolkiArviointitila.ARVIOITU,
+            SolkiArviointitila.TARKISTUSARVIOITU,
+            -> {
                 Validation.fold(
                     s,
                     Validation.assertTrue(
@@ -111,7 +113,6 @@ class YkiSuoritusValidation(
             SolkiArviointitila.EI_SUORITUSTA,
             SolkiArviointitila.KESKEYTETTY,
             SolkiArviointitila.UUSITTAVA,
-            SolkiArviointitila.TARKISTUSARVIOITU,
             -> {
                 Validation.fold(
                     s,
