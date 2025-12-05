@@ -59,3 +59,22 @@ data class YkiSuorituksenTunniste(
             )
     }
 }
+
+sealed interface IlmoittautumisjarjestelmaResponse {
+    val status: IlmoittautumisjarjestelmaStatus
+}
+
+enum class IlmoittautumisjarjestelmaStatus {
+    OK,
+    ERROR,
+}
+
+class IlmoittautumisjarjestelmaSuccessResponse : IlmoittautumisjarjestelmaResponse {
+    override val status = IlmoittautumisjarjestelmaStatus.OK
+}
+
+data class IlmoittautumisjarjestelmaErrorResponse(
+    val message: String,
+) : IlmoittautumisjarjestelmaResponse {
+    override val status = IlmoittautumisjarjestelmaStatus.ERROR
+}

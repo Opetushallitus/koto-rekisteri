@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity
 
 sealed class IlmoittautumisjarjestelmaException(
     val request: IlmoittautumisjarjestelmaRequest,
-    val response: ResponseEntity<String>,
+    val response: ResponseEntity<String>?,
     message: String,
     cause: Throwable? = null,
 ) : Throwable(message, cause) {

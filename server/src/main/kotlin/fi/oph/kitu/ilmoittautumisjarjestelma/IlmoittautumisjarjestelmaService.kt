@@ -1,5 +1,6 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -14,7 +15,9 @@ interface IlmoittautumisjarjestelmaService {
 
     fun sendArvioinninTila(suoritus: YkiSuoritusEntity)
 
-    fun sendArvioinninTilat(request: YkiArvioinninTilaRequest)
+    fun sendArvioinninTilat(
+        request: YkiArvioinninTilaRequest,
+    ): TypedResult<out IlmoittautumisjarjestelmaResponse?, out IlmoittautumisjarjestelmaException>
 }
 
 @Service
@@ -37,11 +40,14 @@ class IlmoittautumisjarjestelmaServiceImpl(
     }
 
     @WithSpan
-    override fun sendArvioinninTilat(request: YkiArvioinninTilaRequest) {
+    override fun sendArvioinninTilat(
+        request: YkiArvioinninTilaRequest,
+    ): TypedResult<out IlmoittautumisjarjestelmaResponse?, out IlmoittautumisjarjestelmaException> =
         if (request.isNotEmpty()) {
-            client.post("/api/arviointitila", request, Unit::class.java)
+            client.post("/api/arviointitila", request, IlmoittautumisjarjestelmaResponse::class.java)
+        } else {
+            TypedResult.Success(null)
         }
-    }
 }
 
 @Service
@@ -60,7 +66,10 @@ class IlmoittautumisjarjestelmaServiceMock : IlmoittautumisjarjestelmaService {
     }
 
     @WithSpan
-    override fun sendArvioinninTilat(request: YkiArvioinninTilaRequest) {
+    override fun sendArvioinninTilat(
+        request: YkiArvioinninTilaRequest,
+    ): TypedResult<IlmoittautumisjarjestelmaResponse?, out IlmoittautumisjarjestelmaException> {
         logger.debug("sendArvioinninTilat called but no client configured, skipping.")
+        return TypedResult.Success(null)
     }
 }
