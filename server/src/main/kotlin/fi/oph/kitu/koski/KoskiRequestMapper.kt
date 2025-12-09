@@ -126,7 +126,7 @@ class KoskiRequestMapper {
         }
 
     private fun isKoskiSiirtoEstetty(suoritusEntity: YkiSuoritusEntity): Boolean =
-        !suoritusEntity.arviointitila.arviointiValmis() ||
+        !suoritusEntity.arviointitila.arvioitu() ||
             listOf(
                 suoritusEntity.tekstinYmmartaminen,
                 suoritusEntity.kirjoittaminen,

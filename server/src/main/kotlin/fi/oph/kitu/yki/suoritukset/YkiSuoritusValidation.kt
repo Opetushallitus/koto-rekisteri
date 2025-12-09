@@ -7,7 +7,6 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
-import fi.oph.kitu.yki.SolkiArviointitila
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -85,44 +84,37 @@ class YkiSuoritusValidation(
     }
 
     fun validateArvointitila(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        when (s.suoritus.arviointitila) {
-            SolkiArviointitila.ARVIOITU,
-            SolkiArviointitila.TARKISTUSARVIOITU,
-            -> {
-                Validation.fold(
-                    s,
-                    Validation.assertTrue(
-                        { it.suoritus.arviointipaiva != null },
-                        listOf("suoritus", "arviointipaiva"),
-                        "Arviointitila on ARVIOITU, mutta arviointipäivä puuttuu",
-                    ),
-                    *(
-                        s.suoritus.osat
-                            .mapIndexed { i, osakoe ->
-                                Validation.assertTrue<YkiHenkilosuoritus>(
-                                    { osakoe.arvosana != null },
-                                    listOf("suoritus", "osat", i.toString(), "arvosana"),
-                                    "Arviointitila on ARVIOITU, mutta arviointi puuttuu osakokeelta '${osakoe.tyyppi.name}'",
-                                )
-                            }.toTypedArray()
-                    ),
-                )
-            }
-
-            SolkiArviointitila.ARVIOITAVANA,
-            SolkiArviointitila.EI_SUORITUSTA,
-            SolkiArviointitila.KESKEYTETTY,
-            SolkiArviointitila.UUSITTAVA,
-            -> {
-                Validation.fold(
-                    s,
-                    Validation.assertTrue(
-                        { it.suoritus.arviointipaiva == null },
-                        listOf("suoritus", "arviointipaiva"),
-                        "Arviointitila on ${s.suoritus.arviointitila}, mutta arviointipäivä on määritelty",
-                    ),
-                )
-            }
+        if (s.suoritus.arviointitila
+                .toKituArviointitila()
+                .arvioitu()
+        ) {
+            Validation.fold(
+                s,
+                Validation.assertTrue(
+                    { it.suoritus.arviointipaiva != null },
+                    listOf("suoritus", "arviointipaiva"),
+                    "Arviointitilan '${s.suoritus.arviointitila}' mukaan suoritus on arvioitu, mutta arviointipäivä puuttuu",
+                ),
+                *(
+                    s.suoritus.osat
+                        .mapIndexed { i, osakoe ->
+                            Validation.assertTrue<YkiHenkilosuoritus>(
+                                { osakoe.arvosana != null },
+                                listOf("suoritus", "osat", i.toString(), "arvosana"),
+                                "Arviointitilan '${s.suoritus.arviointitila}' mukaan suoritus on arvioitu, mutta arviointi puuttuu osakokeelta '${osakoe.tyyppi.name}'",
+                            )
+                        }.toTypedArray()
+                ),
+            )
+        } else {
+            Validation.fold(
+                s,
+                Validation.assertTrue(
+                    { it.suoritus.arviointipaiva == null },
+                    listOf("suoritus", "arviointipaiva"),
+                    "Arviointitilan '${s.suoritus.arviointitila}' mukaan suoritusta ei ole vielä arvioitu, mutta arviointipäivä on määritelty",
+                ),
+            )
         }
 
     fun validateTarkistusarviointi(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =

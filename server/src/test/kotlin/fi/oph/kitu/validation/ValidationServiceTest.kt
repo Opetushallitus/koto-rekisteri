@@ -142,7 +142,7 @@ class ValidationServiceTest(
         assertEquals(
             Validation.fail(
                 listOf("suoritus", "arviointipaiva"),
-                "Arviointitila on ARVIOITU, mutta arviointipäivä puuttuu",
+                "Arviointitilan 'ARVIOITU' mukaan suoritus on arvioitu, mutta arviointipäivä puuttuu",
             ),
             result,
         )
@@ -151,14 +151,14 @@ class ValidationServiceTest(
     @Test
     fun `Ei-arvioitua suoritusta ei voi siirtää, jos sillä on arviointipäivä`() {
         val suoritus =
-            validiYkiSuoritus.modifySuoritus { it.copy(arviointitila = SolkiArviointitila.ARVIOITAVANA) }
+            validiYkiSuoritus.modifySuoritus { it.copy(arviointitila = SolkiArviointitila.ARVIOITAVA) }
 
         val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
             Validation.fail(
                 listOf("suoritus", "arviointipaiva"),
-                "Arviointitila on ARVIOITAVANA, mutta arviointipäivä on määritelty",
+                "Arviointitilan 'ARVIOITAVA' mukaan suoritusta ei ole vielä arvioitu, mutta arviointipäivä on määritelty",
             ),
             result,
         )
@@ -181,7 +181,7 @@ class ValidationServiceTest(
         assertEquals(
             Validation.fail(
                 listOf("suoritus", "osat", "1", "arvosana"),
-                "Arviointitila on ARVIOITU, mutta arviointi puuttuu osakokeelta 'PU'",
+                "Arviointitilan 'ARVIOITU' mukaan suoritus on arvioitu, mutta arviointi puuttuu osakokeelta 'PU'",
             ),
             result,
         )
