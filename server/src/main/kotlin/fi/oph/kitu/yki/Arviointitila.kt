@@ -30,7 +30,7 @@ enum class KituArviointitila(
     TARKISTUSARVIOINTI_HYVAKSYTTY("Tarkitusarviointi hyväksytty"),
     ;
 
-    fun arvioitu() = this == ARVIOITU || tarkistusarvioitu()
+    fun arvioitu() = listOf(ARVIOITU, TARKISTUSARVIOITAVA).contains(this) || tarkistusarvioitu()
 
     fun tarkistusarvioitu() = listOf(TARKISTUSARVIOITU, TARKISTUSARVIOINTI_HYVAKSYTTY).contains(this)
 }
