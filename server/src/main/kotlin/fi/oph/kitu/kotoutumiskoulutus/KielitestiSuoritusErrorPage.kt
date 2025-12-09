@@ -1,12 +1,16 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
+import fi.oph.kitu.i18n.LocalizedString
 import kotlinx.html.article
+import kotlinx.html.div
 import kotlinx.html.h1
 import kotlinx.html.h2
+import kotlinx.html.small
 import kotlinx.html.table
 import kotlin.enums.enumEntries
 
@@ -15,6 +19,7 @@ object KielitestiSuoritusErrorPage {
         sortColumn: KielitestiSuoritusErrorColumn,
         sortDirection: SortDirection,
         errors: Iterable<KielitestiSuoritusError>,
+        organisaatioidenNimet: Map<Oid, LocalizedString>,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -23,7 +28,24 @@ object KielitestiSuoritusErrorPage {
             h2 { +"Suoritusten tuonnin virheet" }
             article(classes = "overflow-auto") {
                 table(classes = "compact striped") {
-                    val columns = enumEntries<KielitestiSuoritusErrorColumn>().map { it.withValue(it.renderValue) }
+                    val columns =
+                        enumEntries<KielitestiSuoritusErrorColumn>().map {
+                            when (it) {
+                                KielitestiSuoritusErrorColumn.SchoolOid -> {
+                                    it.withValue { row ->
+                                        organisaatioidenNimet[row.schoolOid]?.let { name ->
+                                            div { +name.toString() }
+                                        }
+                                        small { +row.schoolOid.toString() }
+                                    }
+                                }
+
+                                else -> {
+                                    it.withValue(it.renderValue)
+                                }
+                            }
+                        }
+
                     displayTableHeader(
                         columns = columns,
                         sortedBy = sortColumn,

@@ -2,6 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.html.json
+import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.toJsonNode
 import kotlinx.html.FlowContent
 import kotlinx.html.details
@@ -35,7 +36,7 @@ enum class KielitestiSuoritusErrorColumn(
     ),
     SchoolOid(
         entityName = "schoolOid",
-        uiHeaderValue = "Organisaation OID",
+        uiHeaderValue = "Organisaatio",
         urlParam = "schooloid",
         renderValue = {
             attributes["headers"] = "schoolOid"
@@ -57,7 +58,7 @@ enum class KielitestiSuoritusErrorColumn(
         urlParam = "virheenluontiaika",
         renderValue = {
             attributes["headers"] = "virheenLuontiaika"
-            +it.virheenLuontiaika.toString()
+            +it.virheenLuontiaika.finnishDateTimeUTC()
         },
     ),
     Viesti(

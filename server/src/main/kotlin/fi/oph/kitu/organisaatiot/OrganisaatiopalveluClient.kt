@@ -13,7 +13,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import java.net.URI
+import org.springframework.web.util.UriComponentsBuilder
 
 @Service
 class OrganisaatiopalveluClient(
@@ -25,22 +25,26 @@ class OrganisaatiopalveluClient(
     @WithSpan
     fun <T> get(
         endpoint: String,
+        query: Map<String, Any> = emptyMap(),
         responseType: Class<T>,
-    ) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint, responseType = responseType)
+    ) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint, query, responseType = responseType)
 
     @WithSpan
     fun <T, R : OrganisaatiopalveluRequest> fetch(
         httpMethod: HttpMethod,
         endpoint: String,
+        query: Map<String, Any>,
         body: OrganisaatiopalveluRequest? = null,
         responseType: Class<T>,
     ): TypedResult<T, OrganisaatiopalveluException> {
-        val uri = "$serviceUrl/$endpoint"
+        val uriBuilder = UriComponentsBuilder.fromUriString("$serviceUrl/$endpoint")
+        query.forEach { (key, value) -> uriBuilder.queryParam(key, value) }
+        val uri = uriBuilder.build().toUri()
 
         val rawResponse =
             restClient
                 .method(httpMethod)
-                .uri(URI.create(uri))
+                .uri(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .nullableBody(body)
                 .retrieveEntitySafely(String::class.java)
