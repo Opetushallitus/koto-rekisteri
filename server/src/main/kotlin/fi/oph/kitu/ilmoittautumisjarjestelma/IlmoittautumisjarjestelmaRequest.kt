@@ -1,5 +1,6 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.KituArviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
@@ -13,6 +14,7 @@ sealed interface IlmoittautumisjarjestelmaRequest
 data class YkiArvioinninTilaRequest(
     val tilat: List<YkiArvioinninTila>,
 ) : IlmoittautumisjarjestelmaRequest {
+    @JsonIgnore
     fun isNotEmpty(): Boolean = tilat.isNotEmpty()
 
     companion object {
