@@ -1,12 +1,15 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
+import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.dev.YkiController
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.toJsonNode
 import fi.oph.kitu.yki.KituArviointitila
 import fi.oph.kitu.yki.SolkiArviointitila
 import fi.oph.kitu.yki.Sukupuoli
@@ -27,6 +30,7 @@ import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.ResponseEntity
 import java.time.Instant
 import java.time.LocalDate
@@ -47,6 +51,32 @@ class IlmoittautumisjarjestelmaServiceTests(
     fun setup() {
         suoritukset.deleteAll()
         ilmoittautumisjarjestelma.reset()
+    }
+
+    @Test
+    fun `Tietomalli vastaa odotettua`() {
+        val mapper = defaultObjectMapper
+
+        val data =
+            YkiArvioinninTilaRequest.of(
+                listOf(
+                    entity,
+                    entity.copy(
+                        suorittajanOID = Oid.parse("1.2.246.562.24.10691606000").getOrThrow(),
+                        arviointitila = KituArviointitila.ARVIOITAVA,
+                        tutkintopaiva = LocalDate.of(2022, 1, 1),
+                        tutkintokieli = Tutkintokieli.SWE,
+                        tutkintotaso = Tutkintotaso.PT,
+                    ),
+                ),
+            )
+
+        val expectedJson =
+            ClassPathResource("./kios-request-example.json").file.readText().toJsonNode()
+
+        val actualJson = mapper.valueToTree<JsonNode>(data)
+
+        assertEquals(expectedJson, actualJson)
     }
 
     @Test
@@ -126,6 +156,14 @@ class IlmoittautumisjarjestelmaServiceTests(
                             ),
                             YkiOsa(
                                 tyyppi = TutkinnonOsa.puhuminen,
+                                arvosana = 3,
+                            ),
+                            YkiOsa(
+                                tyyppi = TutkinnonOsa.kirjoittaminen,
+                                arvosana = 3,
+                            ),
+                            YkiOsa(
+                                tyyppi = TutkinnonOsa.tekstinYmmartaminen,
                                 arvosana = 3,
                             ),
                         ),
