@@ -57,7 +57,7 @@ const createError = (
 
 export const fixtureData = {
   suoritusVirhe: createError("ranja", {
-    schoolOid: "1.2.246.562.10.1234567890",
+    schoolOid: "1.2.246.562.10.14893989377",
     teacherEmail: "opettaja@testi.oph.fi",
     viesti:
       'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
@@ -66,7 +66,7 @@ export const fixtureData = {
     virheenLuontiaika: "2024-11-22T10:49:49Z",
   }),
   virhePetro: createError("petro", {
-    schoolOid: "1.2.246.562.10.1234567891",
+    schoolOid: "1.2.246.562.10.14893989377",
     teacherEmail: "toinen-opettaja@testi.oph.fi",
     viesti:
       'Malformed quiz grade "kirjoittaminen" on course "Integraatio testaus" for user "2"',
@@ -75,7 +75,7 @@ export const fixtureData = {
     virheenLuontiaika: "2025-05-26T12:34:56Z",
   }),
   virheMagdalena: createError("magdalena", {
-    schoolOid: "1.2.246.562.10.0987654321",
+    schoolOid: "1.2.246.562.10.59904379811",
     teacherEmail: "yksi-opettajista@testi.oph.fi",
     viesti: "testiviesti, ei tekstiviesti",
     virheellinenKentta: "yksi niistä",
@@ -83,7 +83,7 @@ export const fixtureData = {
     virheenLuontiaika: "2042-12-22T22:42:42Z",
   }),
   virheEino: createError("eino", {
-    schoolOid: "1.2.246.562.10.0987654321",
+    schoolOid: "1.2.246.562.10.59904379811",
     teacherEmail: "yksi-opettajista@testi.oph.fi",
     viesti: "Kirjoitusvirhe henkilötunnuksessa tai nimessä",
     virheenLuontiaika: "2042-12-22T22:42:42Z",
