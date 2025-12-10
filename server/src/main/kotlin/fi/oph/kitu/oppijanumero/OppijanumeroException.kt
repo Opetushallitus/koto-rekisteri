@@ -47,10 +47,12 @@ sealed class OppijanumeroException(
 
     class OppijaNotFoundException(
         request: OppijanumerorekisteriRequest,
+        override val response: ResponseEntity<String>,
         message: String = "Oppija not found from oppijanumero-service",
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
         cause: Throwable? = null,
-    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
+    ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause),
+        HasResponse
 
     class OppijaNotIdentifiedException(
         request: OppijanumerorekisteriRequest,

@@ -56,7 +56,7 @@ class OppijanumerorekisteriClient(
         }
 
         return if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
-            TypedResult.Failure(OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest()))
+            TypedResult.Failure(OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest(), rawResponse))
         } else if (rawResponse.statusCode.is4xxClientError) {
             TypedResult.Failure(OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse))
         } else if (!rawResponse.statusCode.is2xxSuccessful) {

@@ -353,7 +353,119 @@ class KoealustaServiceTests(
                 ),
             fun() =
                 assertEquals(
-                    "Oppijanumeron haku epäonnistui: Oppija not found from oppijanumero-service",
+                    "Oppijanumeron haku epäonnistui: Henkilöä ei löydy Oppijanumerorekisteristä",
+                    oppijaValidationFailure.viesti,
+                ),
+        )
+    }
+
+    @Test
+    fun `import with typo in name adds info to onrLisatietoja`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        koealusta
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [
+                        {
+                          "userid": 1,
+                          "firstnames": "Vanja Testi",
+                          "lastname": "Öhman-Testi",
+                          "preferredname": "Testi", 
+                          "SSN": "010180-9026",
+                          "email": "ranja.testi@oph.fi",
+                          "completions": [
+                            {
+                              "courseid": 32,
+                              "coursename": "Integraatio testaus",
+                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "results": [
+                                {
+                                  "name": "luetun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "A1"
+                                },
+                                {
+                                  "name": "kuullun ymm\u00e4rt\u00e4minen",
+                                  "quiz_grade": "B1"
+                                },
+                                {
+                                  "name": "puhuminen",
+                                  "quiz_grade": "A1"
+                                },
+                                {
+                                  "name": "kirjoittaminen",
+                                  "quiz_grade": "A1"
+                                }
+                              ],
+                              "timecompleted": 1728969131,
+                              "teacheremail": "opettaja@testi.oph.fi"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        koealusta.verify()
+
+        assertEquals(
+            expected = Instant.parse("1970-01-01T00:00:00Z"),
+            actual = lastSeen,
+            message = "since an error was encountered, use the previous `from` parameter as the last seen date",
+        )
+
+        val errors = kielitestiSuoritusErrorRepository.findAll().toList()
+
+        assertEquals(1, errors.size)
+
+        val oppijaValidationFailure = errors.first()
+
+        assertAll(
+            fun() =
+                assertEquals(
+                    "Öhman-Testi",
+                    oppijaValidationFailure.sukunimi,
+                ),
+            fun() =
+                assertEquals(
+                    "Testi",
+                    oppijaValidationFailure.kutsumanimi,
+                ),
+            fun() =
+                assertEquals(
+                    "Vanja Testi",
+                    oppijaValidationFailure.etunimet,
+                ),
+            fun() =
+                assertEquals(
+                    """
+                    Oppijanumerorekisteristä ei löytynyt oppijanumeroa, kun kaikkia etunimiä testattiin kutsumanimenä ja etu- ja sukunimi vaihdettiin päittäin.
+                    Mahdollisesti henkilötunnuksessa tai jossain nimistä on kirjoitusvirhe, joku nimi puuttuu, tai nimet ovat väärässä järjestyksessä.
+                    """.trimIndent(),
+                    oppijaValidationFailure.onrLisatietoja,
+                ),
+            fun() =
+                assertEquals(
+                    "Oppijanumeron haku epäonnistui: Henkilöä ei löydy Oppijanumerorekisteristä",
                     oppijaValidationFailure.viesti,
                 ),
         )
@@ -571,6 +683,14 @@ class KoealustaServiceTests(
                 assertEquals(
                     "Oppijanumeron haku epäonnistui: Bad request to oppijanumero-service",
                     onrBadRequestFailure.viesti,
+                ),
+            fun() =
+                assertEquals(
+                    """
+                    Oppijanumerorekisteristä ei löytynyt oppijanumeroa, kun kaikkia etunimiä testattiin kutsumanimenä ja etu- ja sukunimi vaihdettiin päittäin.
+                    Mahdollisesti henkilötunnuksessa tai jossain nimistä on kirjoitusvirhe, joku nimi puuttuu, tai nimet ovat väärässä järjestyksessä.
+                    """.trimIndent(),
+                    onrBadRequestFailure.onrLisatietoja,
                 ),
             fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
             fun() = assertEquals("1.2.246.562.10.1234567890", onrBadRequestFailure.schoolOid.toString()),

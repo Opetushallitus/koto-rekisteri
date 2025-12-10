@@ -18,6 +18,7 @@ import fi.oph.kitu.oppijanumero.OppijanumeroTroubleshootingService
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriRequest
 import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -71,19 +72,15 @@ class KoealustaMappingService(
                     oppija
                         ?.let(oppijanumeroService::getOppijanumero)
                         ?.mapFailure {
+                            val response = if (it is OppijanumeroException.HasResponse) it.response else null
                             val debugInfo =
                                 OppijanumerorekisteriDebugInfo
                                     .from(
                                         it.request,
-                                        if (it is OppijanumeroException.HasResponse) it.response else null,
+                                        response,
                                     )
 
-                            val onrInfo =
-                                oppijanumeroTroubleshootingService
-                                    .troubleshootOppijaNameCombinations(oppija)
-                                    ?.let { success ->
-                                        "etunimet: ${success.etunimet}, kutsumanimi: ${success.kutsumanimi}, sukunimi: ${success.sukunimi}"
-                                    }
+                            val onrInfo = troubleshootOppijanumero(oppija, response)
 
                             Error.OppijanumeroFailure(
                                 it,
@@ -119,6 +116,31 @@ class KoealustaMappingService(
 
         return Pair(suoritukset, validationFailure)
     }
+
+    fun troubleshootOppijanumero(
+        oppija: Oppija,
+        response: ResponseEntity<String>?,
+    ): String =
+        if (response != null && (
+                response.statusCode == HttpStatus.BAD_REQUEST ||
+                    response.statusCode == HttpStatus.NOT_FOUND ||
+                    response.statusCode == HttpStatus.CONFLICT
+            )
+        ) {
+            val notFound =
+                """
+                Oppijanumerorekisteristä ei löytynyt oppijanumeroa, kun kaikkia etunimiä testattiin kutsumanimenä ja etu- ja sukunimi vaihdettiin päittäin.
+                Mahdollisesti henkilötunnuksessa tai jossain nimistä on kirjoitusvirhe, joku nimi puuttuu, tai nimet ovat väärässä järjestyksessä.
+                """.trimIndent()
+            oppijanumeroTroubleshootingService
+                .troubleshootOppijaNameCombinations(oppija)
+                ?.let { success ->
+                    "etunimet: ${success.etunimet}, kutsumanimi: ${success.kutsumanimi}, sukunimi: ${success.sukunimi}"
+                }
+                ?: notFound
+        } else {
+            "Oppijanumerorekisterin virhe ei viittaa virheellisiin oppijan nimitietoihin. Tarkista virheviesti."
+        }
 
     fun toOppija(koealustaUser: User): TypedResult<Oppija, Error.OppijaValidationFailure> {
         val errors = mutableListOf<Error.Validation>()

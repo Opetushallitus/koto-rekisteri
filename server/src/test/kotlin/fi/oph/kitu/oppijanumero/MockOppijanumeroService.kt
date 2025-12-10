@@ -41,7 +41,7 @@ class MockOppijanumeroService : OppijanumeroService {
                 oppijaToOid[oppija]?.let { oid ->
                     TypedResult.Success(Oid.parse(oid).getOrThrow())
                 } ?: TypedResult.Failure(
-                    OppijanumeroException.OppijaNotFoundException(request),
+                    OppijanumeroException.OppijaNotFoundException(request, ResponseEntity.notFound().build()),
                 )
             }
         }
@@ -52,7 +52,9 @@ class MockOppijanumeroService : OppijanumeroService {
             val source = ClassPathResource("./opintopolku-mocks/oppijanumerorekisteri-service/henkilo/$oid.json").file
             TypedResult.Success(defaultObjectMapper.readValue(source, OppijanumerorekisteriHenkilo::class.java))
         } catch (_: FileNotFoundException) {
-            TypedResult.Failure(OppijanumeroException.OppijaNotFoundException(EmptyRequest()))
+            TypedResult.Failure(
+                OppijanumeroException.OppijaNotFoundException(EmptyRequest(), ResponseEntity.notFound().build()),
+            )
         }
 
     companion object {
