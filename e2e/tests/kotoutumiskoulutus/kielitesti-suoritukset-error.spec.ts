@@ -2,6 +2,26 @@ import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 import { fixtureData } from "../../fixtures/kotoError"
 import { enumerate } from "../../util/arrays"
 
+const toFinnishDateTime = (isoString: string) => {
+  const t = new Date(isoString)
+  return [
+    t.getUTCDate(),
+    ".",
+    t.getUTCMonth() + 1,
+    ".",
+    t.getUTCFullYear(),
+    " ",
+    t.getUTCHours(),
+    ":",
+    t.getUTCMinutes(),
+    ":",
+    t.getUTCSeconds(),
+    "Z",
+  ]
+    .map((x) => (typeof x == "number" ? x.toString().padStart(2, "0") : x))
+    .join("")
+}
+
 describe('"Koto Suoritukset" -page', () => {
   beforeEach(async ({ db, basePage, kotoSuoritusError }) => {
     await db.withEmptyDatabase()
@@ -38,7 +58,7 @@ describe('"Koto Suoritukset" -page', () => {
     const schoolOidCell = errors.getByText(virheFixture.schoolOid)
     const teacherEmailCell = errors.getByText(virheFixture.teacherEmail)
     const virheenLuontiaikaCell = errors.getByText(
-      virheFixture.virheenLuontiaika,
+      toFinnishDateTime(virheFixture.virheenLuontiaika),
     )
     const viestiCell = errors.getByText(virheFixture.viesti)
     const virheellinenKenttaCell = errors.getByText(
@@ -115,12 +135,12 @@ describe('"Koto Suoritukset" -page', () => {
       ],
     },
     {
-      column: "Organisaation OID",
+      column: "Organisaatio",
       tableColumnIndex: 2,
       order: [
-        "1.2.246.562.10.1234567891",
-        "1.2.246.562.10.1234567890",
-        "1.2.246.562.10.0987654321",
+        "1.2.246.562.10.59904379811",
+        "1.2.246.562.10.14893989377",
+        "1.2.246.562.10.14893989377",
       ],
     },
     {
@@ -136,9 +156,9 @@ describe('"Koto Suoritukset" -page', () => {
       column: "Virheen luontiaika",
       tableColumnIndex: 4,
       order: [
-        "2024-11-22T10:49:49Z",
-        "2025-05-26T12:34:56Z",
-        "2042-12-22T22:42:42Z",
+        toFinnishDateTime("2024-11-22T10:49:49Z"),
+        toFinnishDateTime("2025-05-26T12:34:56Z"),
+        toFinnishDateTime("2042-12-22T22:42:42Z"),
       ],
     },
     {

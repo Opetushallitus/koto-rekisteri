@@ -36,7 +36,10 @@ object KielitestiSuoritusErrorPage {
                                         organisaatioidenNimet[row.schoolOid]?.let { name ->
                                             div { +name.toString() }
                                         }
-                                        small { +row.schoolOid.toString() }
+                                        small {
+                                            attributes["headers"] = "schoolOid"
+                                            +row.schoolOid.toString()
+                                        }
                                     }
                                 }
 

@@ -15,8 +15,7 @@ fun LocalDate.isoDate(): String = format(DateTimeFormatter.ofPattern("yyyy-MM-dd
 fun Instant.finnishDateTimeUTC(): String =
     DateTimeFormatter
         .ofPattern("dd.MM.yyyy HH:mm:ssX")
-        .withZone(ZoneOffset.UTC)
-        .format(this)
+        .format(this.atZone(ZoneOffset.UTC))
 
 fun FlowContent.finnishDate(d: LocalDate) {
     span {
