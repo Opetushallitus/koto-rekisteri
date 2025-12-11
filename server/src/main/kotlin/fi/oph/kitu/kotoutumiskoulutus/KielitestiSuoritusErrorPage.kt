@@ -10,7 +10,6 @@ import kotlinx.html.article
 import kotlinx.html.div
 import kotlinx.html.h1
 import kotlinx.html.h2
-import kotlinx.html.small
 import kotlinx.html.table
 import kotlin.enums.enumEntries
 
@@ -30,23 +29,7 @@ object KielitestiSuoritusErrorPage {
                 table(classes = "compact striped") {
                     val columns =
                         enumEntries<KielitestiSuoritusErrorColumn>().map {
-                            when (it) {
-                                KielitestiSuoritusErrorColumn.SchoolOid -> {
-                                    it.withValue { row ->
-                                        organisaatioidenNimet[row.schoolOid]?.let { name ->
-                                            div { +name.toString() }
-                                        }
-                                        small {
-                                            attributes["headers"] = "schoolOid"
-                                            +row.schoolOid.toString()
-                                        }
-                                    }
-                                }
-
-                                else -> {
-                                    it.withValue(it.renderValue)
-                                }
-                            }
+                            it.withValue(it.renderValue(organisaatioidenNimet))
                         }
 
                     displayTableHeader(
