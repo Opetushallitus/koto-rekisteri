@@ -1,10 +1,9 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.html.json
-import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.organisaatiot.Organisaationimet
 import fi.oph.kitu.toJsonNode
 import kotlinx.html.FlowContent
 import kotlinx.html.details
@@ -16,7 +15,7 @@ enum class KielitestiSuoritusErrorColumn(
     override val entityName: String,
     override val uiHeaderValue: String,
     override val urlParam: String,
-    val renderValue: (Map<Oid, LocalizedString>) -> FlowContent.(KielitestiSuoritusError) -> Unit,
+    val renderValue: (Organisaationimet) -> FlowContent.(KielitestiSuoritusError) -> Unit,
 ) : DisplayTableEnum {
     Henkilötunnus(
         entityName = "hetu",
