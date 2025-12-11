@@ -1,6 +1,6 @@
 package fi.oph.kitu.koodisto
 
-import fi.oph.kitu.Cache
+import fi.oph.kitu.cache.InMemoryCache
 import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -36,7 +36,7 @@ class KoodistoService(
             }
 
     private val cachedKoodistot =
-        Cache<String, List<KoodistopalveluKoodiviite>>(ttl = 1.hours) {
+        InMemoryCache<String, List<KoodistopalveluKoodiviite>>(ttl = 1.hours) {
             fetchKoodisto(it)
         }
 }

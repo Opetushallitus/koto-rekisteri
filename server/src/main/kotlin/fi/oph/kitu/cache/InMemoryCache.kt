@@ -1,9 +1,9 @@
-package fi.oph.kitu
+package fi.oph.kitu.cache
 
 import java.time.LocalDateTime
 import kotlin.time.Duration
 
-class Cache<I, O>(
+class InMemoryCache<I, O>(
     val ttl: Duration,
     val fn: (I) -> O?,
 ) {

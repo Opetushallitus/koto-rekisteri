@@ -1,7 +1,7 @@
 package fi.oph.kitu.vkt
 
-import fi.oph.kitu.Cache
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.cache.InMemoryCache
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogOperation
@@ -141,7 +141,7 @@ class VktSuoritusService(
     fun requestTransferToKoski(id: Tutkintoryhma) = customSuoritusRepository.requestTransferToKoski(id)
 
     private val listRowCounts =
-        Cache(ttl = 5.minutes) { params: Triple<Koodisto.VktTaitotaso, Boolean?, String?> ->
+        InMemoryCache(ttl = 5.minutes) { params: Triple<Koodisto.VktTaitotaso, Boolean?, String?> ->
             customSuoritusRepository.numberOfRowsForListView(
                 taitotaso = params.first,
                 arvioidut = params.second,
