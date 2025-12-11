@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
+typealias Organisaationimet = Map<Oid, LocalizedString>
+
 abstract class OrganisaatioService {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -26,7 +28,7 @@ abstract class OrganisaatioService {
         lakkautetut: Boolean = false,
     ): TypedResult<GetOrganisaatiohierarkiaResponse, OrganisaatiopalveluException>
 
-    val nimet: Map<Oid, LocalizedString> by lazy {
+    val nimet: Organisaationimet by lazy {
         logger.info("Populating organisaatioService.nimet cache")
         val result = getOrganisaatiohierarkia().fold({ it.getNames() }, { emptyMap() })
         logger.info("Populated organisaatioService.nimet cache")
@@ -114,7 +116,7 @@ data class GetOrganisaatiohierarkiaResponse(
     val numHits: Int,
     val organisaatiot: List<Organisaatiohierarkia>,
 ) {
-    fun getNames(): Map<Oid, LocalizedString> = organisaatiot.flatMap { it.getNames() }.toMap()
+    fun getNames(): Organisaationimet = organisaatiot.flatMap { it.getNames() }.toMap()
 }
 
 data class Organisaatiohierarkia(

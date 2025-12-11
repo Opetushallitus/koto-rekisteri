@@ -1,11 +1,10 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
-import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.organisaatiot.Organisaationimet
 import kotlinx.html.article
 import kotlinx.html.div
 import kotlinx.html.h1
@@ -18,7 +17,7 @@ object KielitestiSuoritusErrorPage {
         sortColumn: KielitestiSuoritusErrorColumn,
         sortDirection: SortDirection,
         errors: Iterable<KielitestiSuoritusError>,
-        organisaatioidenNimet: Map<Oid, LocalizedString>,
+        organisaatioidenNimet: Organisaationimet,
     ): String =
         Page.renderHtml(
             wideContent = true,
