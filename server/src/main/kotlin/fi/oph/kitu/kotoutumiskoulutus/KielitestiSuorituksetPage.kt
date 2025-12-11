@@ -5,6 +5,7 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.html.errorsArticle
+import fi.oph.kitu.organisaatiot.Organisaationimet
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.details
@@ -30,6 +31,7 @@ object KielitestiSuorituksetPage {
         sortDirection: SortDirection,
         suoritukset: List<KielitestiSuoritus>,
         errorsCount: Long,
+        organisaationimet: Organisaationimet,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -56,7 +58,10 @@ object KielitestiSuorituksetPage {
                 }
 
                 table {
-                    val columns = enumEntries<KielitestiSuoritusColumn>().map { it.withValue(it.renderValue) }
+                    val columns =
+                        enumEntries<KielitestiSuoritusColumn>().map {
+                            it.withValue(it.renderValue(organisaationimet))
+                        }
                     displayTableHeader(
                         columns = columns,
                         sortedBy = sortColumn,
