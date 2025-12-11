@@ -5,7 +5,7 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.html.errorsArticle
-import fi.oph.kitu.organisaatiot.Organisaationimet
+import fi.oph.kitu.organisaatiot.Organisaatiot
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.details
@@ -31,7 +31,7 @@ object KielitestiSuorituksetPage {
         sortDirection: SortDirection,
         suoritukset: List<KielitestiSuoritus>,
         errorsCount: Long,
-        organisaationimet: Organisaationimet,
+        organisaationimet: Organisaatiot,
     ): String =
         Page.renderHtml(
             wideContent = true,

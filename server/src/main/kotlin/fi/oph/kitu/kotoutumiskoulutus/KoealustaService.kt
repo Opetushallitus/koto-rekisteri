@@ -148,12 +148,17 @@ class KoealustaService(
         orderByDirection: SortDirection,
     ): List<KielitestiSuoritus> =
         when (orderBy) {
-            KielitestiSuoritusColumn.Organisaatio ->
+            KielitestiSuoritusColumn.Organisaatio -> {
+                val nimet = organisaatioService.getOrganisaatiot().nimet
                 this.sortedWithDirectionBy(orderByDirection) {
                     it.schoolOid
-                        ?.let { oid -> organisaatioService.nimet[oid]?.toString() }
+                        ?.let { oid -> nimet[oid]?.toString() }
                         ?: it.schoolOid?.toString().orEmpty()
                 }
-            else -> this
+            }
+
+            else -> {
+                this
+            }
         }
 }
