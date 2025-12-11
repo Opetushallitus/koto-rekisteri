@@ -8,6 +8,8 @@ import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
+import fi.oph.kitu.organisaatiot.OrganisaatioService
+import fi.oph.kitu.sortedWithDirectionBy
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
@@ -28,6 +30,7 @@ class KoealustaService(
     private val auditLogger: AuditLogger,
     private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
     private val csvParser: CsvParser,
+    private val organisaatioService: OrganisaatioService,
     private val tracer: Tracer,
 ) {
     @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
@@ -45,6 +48,7 @@ class KoealustaService(
         kielitestiSuoritusRepository
             .findAllSorted(orderBy.entityName, orderByDirection)
             .toList()
+            .sortByName(orderBy, orderByDirection)
             .also {
                 auditLogger.logAllInternalOnly("Kielitesti suoritus viewed", it) { suoritus ->
                     arrayOf(
@@ -138,4 +142,18 @@ class KoealustaService(
 
                 return@use outputStream
             }
+
+    fun List<KielitestiSuoritus>.sortByName(
+        orderBy: KielitestiSuoritusColumn,
+        orderByDirection: SortDirection,
+    ): List<KielitestiSuoritus> =
+        when (orderBy) {
+            KielitestiSuoritusColumn.Organisaatio ->
+                this.sortedWithDirectionBy(orderByDirection) {
+                    it.schoolOid
+                        ?.let { oid -> organisaatioService.nimet[oid]?.toString() }
+                        ?: it.schoolOid?.toString().orEmpty()
+                }
+            else -> this
+        }
 }
