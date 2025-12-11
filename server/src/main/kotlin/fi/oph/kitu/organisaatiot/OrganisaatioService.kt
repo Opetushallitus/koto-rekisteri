@@ -3,11 +3,11 @@ package fi.oph.kitu.organisaatiot
 import com.fasterxml.jackson.annotation.JsonValue
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
+import fi.oph.kitu.cache.PersistentCache
 import fi.oph.kitu.i18n.LocalizedString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Profile
@@ -15,11 +15,17 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
-typealias Organisaationimet = Map<Oid, LocalizedString>
+data class Organisaatiot(
+    val nimet: Map<Oid, LocalizedString>,
+) {
+    companion object {
+        val EMPTY = Organisaatiot(emptyMap())
+    }
+}
 
-abstract class OrganisaatioService {
-    private val logger = LoggerFactory.getLogger(javaClass)
-
+abstract class OrganisaatioService(
+    val cache: PersistentCache,
+) {
     abstract fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException>
 
     abstract fun getOrganisaatiohierarkia(
@@ -28,19 +34,18 @@ abstract class OrganisaatioService {
         lakkautetut: Boolean = false,
     ): TypedResult<GetOrganisaatiohierarkiaResponse, OrganisaatiopalveluException>
 
-    val nimet: Organisaationimet by lazy {
-        logger.info("Populating organisaatioService.nimet cache")
-        val result = getOrganisaatiohierarkia().fold({ it.getNames() }, { emptyMap() })
-        logger.info("Populated organisaatioService.nimet cache")
-        result
-    }
+    fun getOrganisaatiot(): Organisaatiot =
+        cache.getAsap(Organisaatiot::class.java, "OrganisaatioService.organisaatiot") {
+            getOrganisaatiohierarkia().map { it.getOrganisaatiot() }.getOrNull()
+        } ?: Organisaatiot.EMPTY
 }
 
 @Service
 @Profile("!test ")
 class OrganisaatioServiceImpl(
     val client: OrganisaatiopalveluClient,
-) : OrganisaatioService() {
+    cache: PersistentCache,
+) : OrganisaatioService(cache) {
     override fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException> =
         client.get("api/$oid", responseType = GetOrganisaatioResponse::class.java)
 
@@ -68,7 +73,7 @@ class OrganisaatioPalveluStartupTasks(
 ) : ApplicationRunner {
     override fun run(args: ApplicationArguments?) {
         CoroutineScope(Dispatchers.Default).launch {
-            organisaatioService.nimet
+            organisaatioService.getOrganisaatiot() // Lataa tuoreet nimet välimuistiin
         }
     }
 }
@@ -116,7 +121,7 @@ data class GetOrganisaatiohierarkiaResponse(
     val numHits: Int,
     val organisaatiot: List<Organisaatiohierarkia>,
 ) {
-    fun getNames(): Organisaationimet = organisaatiot.flatMap { it.getNames() }.toMap()
+    fun getOrganisaatiot(): Organisaatiot = Organisaatiot(organisaatiot.flatMap { it.getNames() }.toMap())
 }
 
 data class Organisaatiohierarkia(

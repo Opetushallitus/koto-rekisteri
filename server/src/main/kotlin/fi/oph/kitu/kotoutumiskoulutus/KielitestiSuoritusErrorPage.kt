@@ -4,9 +4,8 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
-import fi.oph.kitu.organisaatiot.Organisaationimet
+import fi.oph.kitu.organisaatiot.Organisaatiot
 import kotlinx.html.article
-import kotlinx.html.div
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.table
@@ -17,7 +16,7 @@ object KielitestiSuoritusErrorPage {
         sortColumn: KielitestiSuoritusErrorColumn,
         sortDirection: SortDirection,
         errors: Iterable<KielitestiSuoritusError>,
-        organisaatioidenNimet: Organisaationimet,
+        organisaatioidenNimet: Organisaatiot,
     ): String =
         Page.renderHtml(
             wideContent = true,

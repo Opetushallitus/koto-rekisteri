@@ -28,7 +28,7 @@ class KielitestiViewController(
                         .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
                         .count()
                         .toLong(),
-                organisaationimet = organisaatioService.nimet,
+                organisaationimet = organisaatioService.getOrganisaatiot(),
             ),
         )
 
@@ -42,7 +42,7 @@ class KielitestiViewController(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
                 errors = suoritusService.getErrors(sortColumn, sortDirection),
-                organisaatioidenNimet = organisaatioService.nimet,
+                organisaatioidenNimet = organisaatioService.getOrganisaatiot(),
             ),
         )
 }

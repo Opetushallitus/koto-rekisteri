@@ -1,14 +1,14 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.html.DisplayTableEnum
-import fi.oph.kitu.organisaatiot.Organisaationimet
+import fi.oph.kitu.organisaatiot.Organisaatiot
 import kotlinx.html.FlowContent
 
 enum class KielitestiSuoritusColumn(
     override val entityName: String,
     override val uiHeaderValue: String,
     override val urlParam: String,
-    val renderValue: (Organisaationimet) -> FlowContent.(KielitestiSuoritus) -> Unit,
+    val renderValue: (Organisaatiot) -> FlowContent.(KielitestiSuoritus) -> Unit,
 ) : DisplayTableEnum {
     Sukunimi(
         entityName = "lastName",
@@ -42,9 +42,11 @@ enum class KielitestiSuoritusColumn(
         entityName = "schoolOid",
         uiHeaderValue = "Organisaatio",
         urlParam = "organisaatio",
-        renderValue = { organisaationimet ->
+        renderValue = { orgs ->
             {
-                organisaationimet[it.schoolOid]?.let { name -> +name.toString() } ?: +it.schoolOid.toString()
+                orgs.nimet[it.schoolOid]?.let { name ->
+                    +name.toString()
+                } ?: +it.schoolOid.toString()
             }
         },
     ),
