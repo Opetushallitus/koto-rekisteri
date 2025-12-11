@@ -28,6 +28,7 @@ class KielitestiViewController(
                         .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
                         .count()
                         .toLong(),
+                organisaationimet = organisaatioService.nimet,
             ),
         )
 
