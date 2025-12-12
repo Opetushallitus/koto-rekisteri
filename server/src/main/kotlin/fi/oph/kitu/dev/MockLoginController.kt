@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import org.springframework.hateoas.server.mvc.linkTo
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -19,6 +19,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
@@ -46,25 +47,80 @@ class MockLoginController(
     fun mocklogin(
         request: HttpServletRequest,
         response: HttpServletResponse,
+    ): ResponseEntity<Unit> = mockLoginForUser(MockUser.DEFAULT, request, response)
+
+    @GetMapping("/mocklogin/{user}")
+    fun mocklogin2(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        @PathVariable user: MockUser,
+    ): ResponseEntity<Unit> = mockLoginForUser(user, request, response)
+
+    private fun mockLoginForUser(
+        user: MockUser,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
     ): ResponseEntity<Unit> {
-        val userDetails =
-            CasUserDetails(
-                name = "kitu_mocklogin",
-                // Can be any valid OID. Currently oppijanumero for Ranja Testi Öhman-Testi
-                oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
-                strongAuth = false,
-                kayttajaTyyppi = "VIRKAILIJA",
-                authorities =
-                    listOf(
-                        SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI"),
-                        SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_READ"),
-                        SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_READ_1.2.246.562.10.00000000001"),
-                        SimpleGrantedAuthority("ROLE_APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS"),
-                    ),
+        val userDetails = user.login.toCasUserDetails()
+        val authentication =
+            UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.authorities,
             )
-        val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
         SecurityContextHolder.getContext().authentication = authentication
         securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response)
-        return ResponseEntity.status(HttpStatus.FOUND).location(linkTo(HomeController::home).toUri()).build()
+
+        return if (user.login.authorities.contains("ROLE_APP_KIELITUTKINTOREKISTERI_READ")) {
+            ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(linkTo(HomeController::home).toUri())
+                .build()
+        } else {
+            ResponseEntity
+                .ok()
+                .build()
+        }
     }
+}
+
+data class MockLogin(
+    val name: String,
+    val authorities: List<String>,
+) {
+    fun toCasUserDetails() =
+        CasUserDetails(
+            name = name,
+            // Can be any valid OID. Currently oppijanumero for Ranja Testi Öhman-Testi
+            oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+            strongAuth = false,
+            kayttajaTyyppi = "VIRKAILIJA",
+            authorities = authorities.map { SimpleGrantedAuthority(it) },
+        )
+}
+
+enum class MockUser(
+    val login: MockLogin,
+) {
+    DEFAULT(
+        MockLogin(
+            name = "kitu_mocklogin",
+            authorities =
+                listOf(
+                    "ROLE_APP_KIELITUTKINTOREKISTERI",
+                    "ROLE_APP_KIELITUTKINTOREKISTERI_READ",
+                    "ROLE_APP_KIELITUTKINTOREKISTERI_READ_1.2.246.562.10.00000000001",
+                    "ROLE_APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS",
+                ),
+        ),
+    ),
+    KIOS(
+        MockLogin(
+            name = "kitu_mocklogin_kios",
+            authorities =
+                listOf(
+                    "ROLE_APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS",
+                ),
+        ),
+    ),
 }

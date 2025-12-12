@@ -1,5 +1,6 @@
 import { Locator, Page } from "@playwright/test"
 import { Config, createConfig } from "../config"
+import { expect } from "../fixtures/baseFixture"
 
 type GotoParams = Parameters<Page["goto"]>[1]
 
@@ -29,8 +30,9 @@ export default class BasePage {
     await dropdown.getByText(navLinkText).click()
   }
 
-  async login() {
-    await this.goto("dev/mocklogin")
+  async login(user?: string) {
+    const response = await this.goto(user ? `dev/mocklogin/${user}` : "dev/mocklogin")
+    expect(response.status()).toBe(200)
   }
 
   getPageContent() {
