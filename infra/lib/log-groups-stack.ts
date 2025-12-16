@@ -9,6 +9,7 @@ import {
 } from "aws-cdk-lib/aws-logs"
 import { Construct } from "constructs"
 import { CfnTransactionSearchConfig } from "aws-cdk-lib/aws-xray"
+import { ServicePrincipal } from "aws-cdk-lib/aws-iam"
 
 export interface LogGroupsStackProps extends StackProps {
   alarmsSnsTopic: aws_sns.ITopic
@@ -46,9 +47,7 @@ export class LogGroupsStack extends Stack {
       logGroupName: "KituServiceAudit",
     })
 
-    new CfnTransactionSearchConfig(this, "TransactionSearch", {
-      indexingPercentage: 100,
-    })
+    this.enableTransactionSearch()
 
     const errorsAlarm = this.serviceLogGroup
       .addMetricFilter("Errors", {
@@ -73,5 +72,48 @@ export class LogGroupsStack extends Stack {
 
     errorsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
     errorsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
+  }
+
+  /** Enable Transaction Search.
+   *
+   * This enables querying traces older than 30 days.
+   *
+   * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Transaction-Search.html
+   * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Transaction-Search-Cloudformation.html
+   */
+  private enableTransactionSearch() {
+    // This enables Transaction Search.
+    new CfnTransactionSearchConfig(this, "TransactionSearch", {
+      indexingPercentage: 100,
+    })
+
+    // The rest is granting XRay write rights to the Transaction Search log groups that store the trace data.
+    const thisAccountCondition = {
+      ArnLike: {
+        "aws:SourceArn": `arn:${this.partition}:xray:${this.region}:${this.account}:*`,
+      },
+      StringEquals: {
+        "aws:SourceAccount": this.account,
+      },
+    }
+
+    const xray =
+      ServicePrincipal.fromStaticServicePrincipleName("xray").withConditions(
+        thisAccountCondition,
+      )
+
+    const transactionSearchSpans = LogGroup.fromLogGroupName(
+      this,
+      "TransactionSearchSpans",
+      "aws/spans",
+    )
+    const applicationSignalsData = LogGroup.fromLogGroupName(
+      this,
+      "ApplicationSignalsData",
+      "/aws/application-signals/data",
+    )
+
+    transactionSearchSpans.grantWrite(xray)
+    applicationSignalsData.grantWrite(xray)
   }
 }
