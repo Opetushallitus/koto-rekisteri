@@ -62,7 +62,13 @@ class KoealustaService(
     fun getErrors(
         sortColumn: KielitestiSuoritusErrorColumn,
         sortDirection: SortDirection,
-    ) = kielitestiSuoritusErrorRepository.findAllSorted(sortColumn.entityName, sortDirection)
+    ) = kielitestiSuoritusErrorRepository
+        .findAllSorted(sortColumn.entityName, sortDirection)
+        .also {
+            auditLogger.logAllInternalOnly("Kielitesti suoritus error viewed", it) { error ->
+                arrayOf("suoritus.error.id" to error.id)
+            }
+        }
 
     fun importSuoritukset(from: Instant): Instant =
         tracer.spanBuilder("koealusta.import.suoritukset").startSpan().use { span ->
