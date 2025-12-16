@@ -2,6 +2,7 @@ package fi.oph.kitu.koski
 
 import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.toJsonNode
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import org.springframework.data.annotation.Id
@@ -90,6 +91,7 @@ data class KoskiErrorEntity(
 @Service
 class KoskiErrorService(
     val repository: KoskiErrorRepository,
+    private val auditLogger: AuditLogger,
 ) {
     fun save(
         id: KoskiErrorMappingId,
@@ -109,14 +111,27 @@ class KoskiErrorService(
         repository.setHidden(id.mappedId(), id.entityName, hidden)
     }
 
-    fun findById(id: KoskiErrorMappingId): KoskiErrorEntity? = repository.find(id)
+    fun findById(id: KoskiErrorMappingId): KoskiErrorEntity? =
+        repository
+            .find(id)
+            ?.also {
+                auditLogger.logAllInternalOnly("Koski ${it.entity}-export error viewed", listOf(it)) { error ->
+                    arrayOf("koski.error.id" to error.id)
+                }
+            }
 
     fun reset(id: KoskiErrorMappingId) = repository.delete(id)
 
     fun findAllByEntity(
         entity: String,
         hidden: Boolean,
-    ) = repository.findAllByEntityAndHidden(entity, hidden)
+    ) = repository
+        .findAllByEntityAndHidden(entity, hidden)
+        .also {
+            auditLogger.logAllInternalOnly("Koski $entity-export error viewed", it) { error ->
+                arrayOf("koski.error.id" to error.id)
+            }
+        }
 
     fun countByEntity(
         entity: String,
