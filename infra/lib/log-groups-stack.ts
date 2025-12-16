@@ -8,6 +8,7 @@ import {
   LogGroup,
 } from "aws-cdk-lib/aws-logs"
 import { Construct } from "constructs"
+import { CfnTransactionSearchConfig } from "aws-cdk-lib/aws-xray"
 
 export interface LogGroupsStackProps extends StackProps {
   alarmsSnsTopic: aws_sns.ITopic
@@ -43,6 +44,10 @@ export class LogGroupsStack extends Stack {
     })
     this.serviceAuditLogGroup = new LogGroup(this, "ServiceAudit", {
       logGroupName: "KituServiceAudit",
+    })
+
+    new CfnTransactionSearchConfig(this, "TransactionSearch", {
+      indexingPercentage: 100,
     })
 
     const errorsAlarm = this.serviceLogGroup
