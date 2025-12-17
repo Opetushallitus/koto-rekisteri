@@ -50,7 +50,7 @@ const publicRoutes: Record<string, HttpMethod[]> = {
   "actuator/health": ["GET"],
   "api-docs": ["GET"],
   "swagger-ui/index.html": ["GET"],
-  "schema-examples/yki-suoritus.json": ["GET"]
+  "schema-examples/yki-suoritus.json": ["GET"],
 }
 
 const allRoutes = { ...viewRoutes, ...apiRoutes, ...publicRoutes }
@@ -59,6 +59,19 @@ describe("Käyttöoikeustestit", () => {
   beforeAll(async ({ db, vktSuoritus, config }) => {
     await db.withEmptyDatabase()
     await vktSuoritus.create(config.baseUrl)
+  })
+
+  describe("Kirjautumaton", () => {
+    const happyRoutes = publicRoutes
+
+    Object.entries(allRoutes).forEach(([url, methods]) => {
+      methods.forEach((method) => {
+        const expectOk = happyRoutes[url]?.includes(method) === true
+        test(testName(method, url, expectOk), async ({ request, config }) => {
+          await makeRequest(request, method, url, expectOk, config)
+        })
+      })
+    })
   })
 
   describe("CAS", () => {
@@ -128,10 +141,7 @@ function defineCasTests(
   Object.entries(urls).forEach(([url, methods]) => {
     methods.forEach((method) => {
       const expectOk = happyUrls[url]?.includes(method) === true
-      test(`Vastaus pyynnölle ${expectOk ? "ei ole" : "on"} 403: ${method} ${url}`, async ({
-        browser,
-        config,
-      }) => {
+      test(testName(method, url, expectOk), async ({ browser, config }) => {
         const context = await browser.newContext({ storageState: statePath })
         await makeRequest(context.request, method, url, expectOk, config)
       })
@@ -163,15 +173,16 @@ function defineOAuth2Tests(
     methods.forEach((method) => {
       const expectOk = happyUrls[url]?.includes(method) === true
 
-      test(`Vastaus pyynnölle ${expectOk ? "ei ole" : "on"} 403: ${method} ${url}`, async ({
-        request,
-        config,
-      }) => {
+      test(testName(method, url, expectOk), async ({ request, config }) => {
         console.log(`Call ${method} ${url} with token ${accessToken}`)
         await makeRequest(request, method, url, expectOk, config, accessToken)
       })
     })
   })
+}
+
+function testName(method: HttpMethod, url: string, expectOk: boolean) {
+  return `${expectOk ? "Sallitaan" : "Ei sallita"}: ${method} ${url}`
 }
 
 async function makeRequest(
