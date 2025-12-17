@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, test } from "../../fixtures/baseFixture"
 import { APIRequestContext } from "@playwright/test"
 import { Config } from "../../config"
 
+type MockUser = "ROOT" | "KIOS" | "SOLKI" | "NO_ROLES"
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "GET_404"
 
 const viewRoutes: Record<string, HttpMethod[]> = {
@@ -75,6 +76,12 @@ describe("Käyttöoikeustestit", () => {
   })
 
   describe("CAS", () => {
+    describe("Käyttäjä, jolla ei ole Kielitutkintopalvelun rooleja", () => {
+      defineCasTests("NO_ROLES", allRoutes, {
+        ...publicRoutes,
+      })
+    })
+
     describe("Pääkäyttäjä", () => {
       defineCasTests("ROOT", allRoutes, {
         ...publicRoutes,
@@ -99,6 +106,12 @@ describe("Käyttöoikeustestit", () => {
   })
 
   describe("OAuth2", () => {
+    describe("Käyttäjä, jolla ei ole Kielitutkintopalvelun rooleja", () => {
+      defineOAuth2Tests("NO_ROLES", allRoutes, {
+        ...publicRoutes,
+      })
+    })
+
     describe("Pääkäyttäjä", () => {
       defineOAuth2Tests("ROOT", allRoutes, {
         ...publicRoutes,
@@ -126,7 +139,7 @@ describe("Käyttöoikeustestit", () => {
 })
 
 function defineCasTests(
-  user: string,
+  user: MockUser,
   urls: Record<string, HttpMethod[]>,
   happyUrls: Record<string, HttpMethod[]>,
 ) {
@@ -150,7 +163,7 @@ function defineCasTests(
 }
 
 function defineOAuth2Tests(
-  clientId: string,
+  clientId: MockUser,
   urls: Record<string, HttpMethod[]>,
   happyUrls: Record<string, HttpMethod[]>,
 ) {
