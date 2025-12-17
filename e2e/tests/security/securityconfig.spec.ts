@@ -46,7 +46,14 @@ const apiRoutes: Record<string, HttpMethod[]> = {
   "api/vkt/kios": ["PUT"],
 }
 
-const allRoutes = { ...viewRoutes, ...apiRoutes }
+const publicRoutes: Record<string, HttpMethod[]> = {
+  "actuator/health": ["GET"],
+  "api-docs": ["GET"],
+  "swagger-ui/index.html": ["GET"],
+  "schema-examples/yki-suoritus.json": ["GET"]
+}
+
+const allRoutes = { ...viewRoutes, ...apiRoutes, ...publicRoutes }
 
 describe("Käyttöoikeustestit", () => {
   beforeAll(async ({ db, vktSuoritus, config }) => {
@@ -56,17 +63,23 @@ describe("Käyttöoikeustestit", () => {
 
   describe("CAS", () => {
     describe("Pääkäyttäjä", () => {
-      defineCasTests("ROOT", allRoutes, allRoutes)
+      defineCasTests("ROOT", allRoutes, {
+        ...publicRoutes,
+        ...viewRoutes,
+        ...apiRoutes,
+      })
     })
 
     describe("KIOS / Ilmoittautumisjärjestelmä", () => {
       defineCasTests("KIOS", allRoutes, {
+        ...publicRoutes,
         "api/vkt/kios": ["PUT"],
       })
     })
 
     describe("Solki", () => {
       defineCasTests("SOLKI", allRoutes, {
+        ...publicRoutes,
         // YKI-rajapinnat eivät ole konfiguroitu käytettäväksi CAS-autentikoinnin kanssa
       })
     })
@@ -74,17 +87,24 @@ describe("Käyttöoikeustestit", () => {
 
   describe("OAuth2", () => {
     describe("Pääkäyttäjä", () => {
-      defineCasTests("ROOT", allRoutes, allRoutes)
+      defineOAuth2Tests("ROOT", allRoutes, {
+        ...publicRoutes,
+        "api/vkt/kios": ["PUT"],
+        "yki/api/suoritukset": ["POST"],
+        "yki/api/arvioija": ["POST"],
+      })
     })
 
     describe("KIOS / Ilmoittautumisjärjestelmä", () => {
       defineOAuth2Tests("KIOS", allRoutes, {
+        ...publicRoutes,
         "api/vkt/kios": ["PUT"],
       })
     })
 
     describe("Solki", () => {
       defineOAuth2Tests("SOLKI", allRoutes, {
+        ...publicRoutes,
         "yki/api/suoritukset": ["POST"],
         "yki/api/arvioija": ["POST"],
       })
