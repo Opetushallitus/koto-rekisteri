@@ -1,6 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.auth.AuthorizeVirkailija
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
 @RequestMapping("/koto-kielitesti", produces = ["text/html"])
+@AuthorizeVirkailija
 class KielitestiViewController(
     private val suoritusService: KoealustaService,
     private val organisaatioService: OrganisaatioService,

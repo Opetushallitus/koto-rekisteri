@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt
 
+import fi.oph.kitu.auth.AuthorizeVirkailijaOrVktKirjoitus
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
@@ -21,6 +22,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 
 @RestController
 @RequestMapping("/api/vkt")
+@AuthorizeVirkailijaOrVktKirjoitus
 @Tag(name = "Valtionhallinnon kielitutkinto")
 class VktApiController(
     val vktRepository: VktSuoritusRepository,

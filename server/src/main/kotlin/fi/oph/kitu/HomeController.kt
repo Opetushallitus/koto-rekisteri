@@ -1,5 +1,6 @@
 package fi.oph.kitu
 
+import fi.oph.kitu.auth.AuthorizeVirkailija
 import fi.oph.kitu.html.Navigation.mainNavigation
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.testId
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@AuthorizeVirkailija
 class HomeController {
     @GetMapping("/", produces = ["text/html"])
     fun home(): ResponseEntity<String> =

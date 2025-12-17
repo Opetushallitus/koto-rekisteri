@@ -84,9 +84,6 @@ class WebSecurityConfig {
                     disable()
                 }
             }
-            securityMatcher({ request ->
-                !isOauth2Request(request)
-            })
             logout {
                 logoutSuccessUrl = casConfig.getCasLogoutUrl()
             }

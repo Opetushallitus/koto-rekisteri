@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.auth.AuthorizeVirkailijaOrYkiKirjoitus
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
@@ -23,7 +24,6 @@ import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.annotation.Secured
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -35,6 +35,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 
 @RestController
 @RequestMapping("/yki/api")
+@AuthorizeVirkailijaOrYkiKirjoitus
 @Tag(name = "Yleinen kielitutkinto")
 class YkiApiController(
     private val service: YkiService,
@@ -63,7 +64,6 @@ class YkiApiController(
             )
 
     @PostMapping("/suoritus")
-    @Secured("ROLE_APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS")
     @Tag(name = "oauth2")
     @Operation(
         summary = "Yleisen kielitutkinnon suoritusten siirto Kielitutkintorekisteriin",
@@ -160,7 +160,6 @@ class YkiApiController(
     }
 
     @PostMapping("/arvioija")
-    @Secured("ROLE_APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS")
     @Tag(name = "oauth2")
     @Operation(
         summary = "Yleisen kielitutkinnon arvioijan siirto Kielitutkintorekisteriin",
