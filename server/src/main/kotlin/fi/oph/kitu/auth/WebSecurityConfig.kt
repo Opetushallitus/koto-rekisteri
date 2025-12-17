@@ -131,3 +131,21 @@ class WebSecurityConfig {
             )
         }
 }
+
+@Profile("e2e")
+@Configuration
+class TestJwtConfig {
+    @Bean
+    fun jwtDecoder(): NimbusJwtDecoder {
+        val decoder = NimbusJwtDecoder.withSecretKey(E2E_TEST_SECRET_KEY).build()
+
+        // Throws and halts application startup if the token is invalid.
+        decoder.decode(
+            MockUser.ROOT.login
+                .toOAuthTokenResponse()
+                .access_token,
+        )
+
+        return decoder
+    }
+}
