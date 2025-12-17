@@ -43,3 +43,6 @@ cdk.out/
 
 ### Mise ###
 .mise.local.toml
+
+### E2E state files ###
+/e2e/browserstate/
