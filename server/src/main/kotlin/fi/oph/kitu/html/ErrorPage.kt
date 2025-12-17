@@ -59,6 +59,18 @@ object ErrorPage {
             HttpStatus.BAD_REQUEST,
         )
 
+    fun accessDenied(
+        traceId: String?,
+        traceUrl: String?,
+    ): ResponseEntity<String> =
+        ResponseEntity(
+            Page.renderHtml {
+                h1 { +"Ei tarvittavia käyttöoikeuksia" }
+                traceInfo(traceId, traceUrl)
+            },
+            HttpStatus.FORBIDDEN,
+        )
+
     fun FlowContent.traceInfo(
         traceId: String?,
         traceUrl: String?,

@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.auth.AuthorizeVirkailija
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessage
@@ -39,6 +40,7 @@ import java.time.LocalDate
 
 @Controller
 @RequestMapping("/yki")
+@AuthorizeVirkailija
 class YkiViewController(
     private val ykiService: YkiService,
     private val suoritusErrorService: YkiSuoritusErrorService,

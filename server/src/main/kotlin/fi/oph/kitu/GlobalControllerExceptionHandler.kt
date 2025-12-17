@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.env.Environment
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
@@ -65,6 +66,9 @@ class GlobalControllerExceptionHandler(
 
             is MethodArgumentTypeMismatchException,
             -> ErrorPage.badRequest(traceId, traceUrl)
+
+            is AccessDeniedException,
+            -> ErrorPage.accessDenied(traceId, traceUrl)
 
             else -> ErrorPage.error(error, traceId, traceUrl, isLocal)
         }
