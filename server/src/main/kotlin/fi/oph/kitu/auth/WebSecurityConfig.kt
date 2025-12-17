@@ -1,7 +1,5 @@
 package fi.oph.kitu.auth
 
-import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
-import fi.oph.kitu.dev.MockUser
 import jakarta.servlet.http.HttpServletRequest
 import org.apereo.cas.client.session.SingleSignOutFilter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
@@ -11,7 +9,6 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.security.cas.web.CasAuthenticationFilter
@@ -19,7 +16,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import kotlin.collections.contains
@@ -145,22 +141,4 @@ class WebSecurityConfig {
                 },
             )
         }
-}
-
-@Profile("e2e")
-@Configuration
-class TestJwtConfig {
-    @Bean
-    fun jwtDecoder(): NimbusJwtDecoder {
-        val decoder = NimbusJwtDecoder.withSecretKey(E2E_TEST_SECRET_KEY).build()
-
-        // Throws and halts application startup if the token is invalid.
-        decoder.decode(
-            MockUser.ROOT.login
-                .toOAuthTokenResponse()
-                .access_token,
-        )
-
-        return decoder
-    }
 }
