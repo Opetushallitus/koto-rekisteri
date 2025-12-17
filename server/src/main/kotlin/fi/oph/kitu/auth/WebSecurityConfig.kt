@@ -1,5 +1,7 @@
 package fi.oph.kitu.auth
 
+import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
+import fi.oph.kitu.dev.MockUser
 import jakarta.servlet.http.HttpServletRequest
 import org.apereo.cas.client.session.SingleSignOutFilter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
@@ -9,15 +11,18 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.security.cas.web.CasAuthenticationFilter
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import kotlin.collections.contains
 
 @Configuration
 @EnableWebSecurity
@@ -31,9 +36,19 @@ class WebSecurityConfig {
     @Bean
     @Order(1)
     @ConditionalOnProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri")
-    fun oauth2SecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun oauth2SecurityFilterChain(
+        http: HttpSecurity,
+        environment: Environment,
+    ): SecurityFilterChain {
         http {
-            csrf { }
+            authorizeHttpRequests {
+                authorize(anyRequest, authenticated)
+            }
+            csrf {
+                if (environment.activeProfiles.contains("e2e")) {
+                    disable()
+                }
+            }
             securityMatcher({ request ->
                 isOauth2Request(request)
             })
@@ -65,6 +80,9 @@ class WebSecurityConfig {
                     "/api/**",
                     "/db-scheduler-api/**",
                 )
+                if (environment.activeProfiles.contains("e2e")) {
+                    disable()
+                }
             }
             securityMatcher({ request ->
                 !isOauth2Request(request)
