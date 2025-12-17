@@ -176,6 +176,13 @@ enum class MockUser(
                 ),
         ),
     ),
+    NO_ROLES(
+        MockLogin(
+            name = "kitu_mocklogin_no_roles",
+            authorities =
+                listOf(),
+        ),
+    ),
 }
 
 data class OAuthTokenResponse(
