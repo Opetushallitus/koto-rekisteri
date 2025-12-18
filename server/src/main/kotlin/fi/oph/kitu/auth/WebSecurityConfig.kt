@@ -1,8 +1,11 @@
 package fi.oph.kitu.auth
 
+import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
+import fi.oph.kitu.dev.MockUser
 import jakarta.servlet.http.HttpServletRequest
 import org.apereo.cas.client.session.SingleSignOutFilter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
@@ -11,14 +14,31 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
+import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.cas.web.CasAuthenticationFilter
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
+import org.springframework.security.config.annotation.web.AuthorizeHttpRequestsDsl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import kotlin.collections.contains
+
+fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations(roleType: RoleType) {
+    authorize(PUT, "/api/vkt/kios", hasAuthority(Authority.VKT_TALLENNUS.by(roleType)))
+    authorize(POST, "/yki/api/suoritus", hasAuthority(Authority.YKI_TALLENNUS.by(roleType)))
+    authorize(POST, "/yki/api/arvioija", hasAuthority(Authority.YKI_TALLENNUS.by(roleType)))
+
+    authorize("/actuator/health", permitAll)
+    authorize("/api-docs", permitAll)
+    authorize("/swagger-ui/**", permitAll)
+    authorize("/v3/api-docs/**", permitAll)
+    authorize("/schema-examples/**", permitAll)
+}
 
 @Configuration
 @EnableWebSecurity
@@ -38,7 +58,8 @@ class WebSecurityConfig {
     ): SecurityFilterChain {
         http {
             authorizeHttpRequests {
-                authorize(anyRequest, authenticated)
+                configureCommonAuthorizations(RoleType.OAUTH2)
+                authorize(anyRequest, denyAll)
             }
             csrf {
                 if (environment.activeProfiles.contains("e2e")) {
@@ -84,7 +105,7 @@ class WebSecurityConfig {
                 logoutSuccessUrl = casConfig.getCasLogoutUrl()
             }
             authorizeHttpRequests {
-                authorize("/actuator/health", permitAll)
+                configureCommonAuthorizations(RoleType.CAS)
 
                 if ((
                         environment.activeProfiles.contains("local") ||
@@ -96,12 +117,7 @@ class WebSecurityConfig {
                     authorize("/dev/**", permitAll)
                 }
 
-                authorize("/api/vkt/**", hasRole("APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS"))
-                authorize("/api-docs", permitAll)
-                authorize("/swagger-ui/**", permitAll)
-                authorize("/v3/api-docs/**", permitAll)
-                authorize("/schema-examples/**", permitAll)
-                authorize(anyRequest, hasRole("APP_KIELITUTKINTOREKISTERI_READ"))
+                authorize(anyRequest, hasAuthority(Authority.VIRKAILIJA.role()))
             }
             exceptionHandling {
                 this.authenticationEntryPoint = authenticationEntryPoint
@@ -141,4 +157,22 @@ class WebSecurityConfig {
                 },
             )
         }
+}
+
+@Configuration
+@ConditionalOnMissingBean(JwtDecoder::class)
+class TestJwtConfig {
+    @Bean
+    fun jwtDecoder(): NimbusJwtDecoder {
+        val decoder = NimbusJwtDecoder.withSecretKey(E2E_TEST_SECRET_KEY).build()
+
+        // Throws and halts application startup if the token is invalid.
+        decoder.decode(
+            MockUser.ROOT.login
+                .toOAuthTokenResponse()
+                .access_token,
+        )
+
+        return decoder
+    }
 }

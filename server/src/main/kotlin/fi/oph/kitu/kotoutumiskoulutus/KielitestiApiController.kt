@@ -1,6 +1,5 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import fi.oph.kitu.auth.AuthorizeVirkailija
 import fi.oph.kitu.i18n.isoDate
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.core.io.InputStreamResource
@@ -15,7 +14,6 @@ import java.time.LocalDate
 
 @RestController
 @RequestMapping("/koto-kielitesti/api")
-@AuthorizeVirkailija
 @Tag(name = "Kotoutumiskoulutuksen kielitesti, sisäiset rajapinnat")
 class KielitestiApiController(
     private val service: KoealustaService,

@@ -1,7 +1,6 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.auth.AuthorizeVirkailija
 import fi.oph.kitu.html.ViewMessage
 import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.ViewMessageType
@@ -35,7 +34,6 @@ import org.springframework.web.servlet.view.RedirectView
 
 @Controller
 @RequestMapping("/vkt")
-@AuthorizeVirkailija
 class VktViewController(
     private val vktSuoritukset: VktSuoritusService,
     private val localizationService: LocalizationService,

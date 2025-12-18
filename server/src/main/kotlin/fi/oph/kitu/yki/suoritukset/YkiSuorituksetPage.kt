@@ -47,7 +47,7 @@ object YkiSuorituksetPage {
         versionHistory: Boolean,
         errorsCount: Long,
         koskiErrorsCount: Long,
-        csrfToken: CsrfToken,
+        csrfToken: CsrfToken?,
     ): String =
         Page.renderHtml(
             wideContent = true,

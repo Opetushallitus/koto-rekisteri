@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.auth.AuthorizeVirkailijaOrYkiKirjoitus
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
@@ -35,7 +34,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 
 @RestController
 @RequestMapping("/yki/api")
-@AuthorizeVirkailijaOrYkiKirjoitus
 @Tag(name = "Yleinen kielitutkinto")
 class YkiApiController(
     private val service: YkiService,

@@ -1,7 +1,6 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.auth.AuthorizeVirkailija
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessage
@@ -40,7 +39,6 @@ import java.time.LocalDate
 
 @Controller
 @RequestMapping("/yki")
-@AuthorizeVirkailija
 class YkiViewController(
     private val ykiService: YkiService,
     private val suoritusErrorService: YkiSuoritusErrorService,
@@ -78,7 +76,7 @@ class YkiViewController(
         page: Int = 1,
         sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         sortDirection: SortDirection = SortDirection.DESC,
-        csrfToken: CsrfToken = KituRequest.currentCsrfToken(),
+        csrfToken: CsrfToken? = KituRequest.currentCsrfToken(),
         session: HttpSession,
     ): ResponseEntity<String> {
         session.setAttribute(YKI_SEARCH_KEY, search)
@@ -92,7 +90,7 @@ class YkiViewController(
         page: Int,
         sortColumn: YkiSuoritusColumn,
         sortDirection: SortDirection,
-        csrfToken: CsrfToken,
+        csrfToken: CsrfToken?,
     ): ResponseEntity<String> {
         val totalSuoritukset = ykiService.countSuoritukset(search, versionHistory)
         return ResponseEntity.ok(
