@@ -2,6 +2,7 @@ package fi.oph.kitu.dev
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret
 import fi.oph.kitu.Oid
+import fi.oph.kitu.auth.Authority
 import fi.oph.kitu.auth.CasUserDetails
 import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
 import jakarta.annotation.PostConstruct
@@ -101,7 +102,7 @@ class MockLoginController(
 
 data class MockLogin(
     val name: String,
-    val authorities: List<String>,
+    val authorities: List<Authority>,
 ) {
     fun toCasUserDetails() =
         CasUserDetails(
@@ -110,7 +111,7 @@ data class MockLogin(
             oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
             strongAuth = false,
             kayttajaTyyppi = "VIRKAILIJA",
-            authorities = authorities.map { SimpleGrantedAuthority(it) },
+            authorities = authorities.map { SimpleGrantedAuthority(it.role()) },
         )
 
     fun toOAuthTokenResponse(): OAuthTokenResponse {
@@ -139,10 +140,9 @@ enum class MockUser(
             name = "kitu_mocklogin",
             authorities =
                 listOf(
-                    "ROLE_APP_KIELITUTKINTOREKISTERI",
-                    "ROLE_APP_KIELITUTKINTOREKISTERI_READ",
-                    "ROLE_APP_KIELITUTKINTOREKISTERI_READ_1.2.246.562.10.00000000001",
-                    "ROLE_APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS",
+                    Authority.VIRKAILIJA,
+                    Authority.YKI_TALLENNUS,
+                    Authority.VKT_TALLENNUS,
                 ),
         ),
     ),
@@ -151,10 +151,9 @@ enum class MockUser(
             name = "kitu_mocklogin",
             authorities =
                 listOf(
-                    "ROLE_APP_KIELITUTKINTOREKISTERI",
-                    "ROLE_APP_KIELITUTKINTOREKISTERI_READ",
-                    "ROLE_APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS",
-                    "ROLE_APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS",
+                    Authority.VIRKAILIJA,
+                    Authority.YKI_TALLENNUS,
+                    Authority.VKT_TALLENNUS,
                 ),
         ),
     ),
@@ -163,7 +162,7 @@ enum class MockUser(
             name = "kitu_mocklogin_kios",
             authorities =
                 listOf(
-                    "ROLE_APP_KIELITUTKINTOREKISTERI_VKT_KIELITUTKINTOJEN_KIRJOITUS",
+                    Authority.VKT_TALLENNUS,
                 ),
         ),
     ),
@@ -172,7 +171,7 @@ enum class MockUser(
             name = "kitu_mocklogin_solki",
             authorities =
                 listOf(
-                    "ROLE_APP_KIELITUTKINTOREKISTERI_YKI_TALLENNUS",
+                    Authority.YKI_TALLENNUS,
                 ),
         ),
     ),

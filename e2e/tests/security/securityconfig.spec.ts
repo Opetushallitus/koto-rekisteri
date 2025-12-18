@@ -3,58 +3,74 @@ import { APIRequestContext } from "@playwright/test"
 import { Config } from "../../config"
 
 type MockUser = "ROOT" | "KIOS" | "SOLKI" | "NO_ROLES"
-type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "GET_404"
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE"
+type Route = `${HttpMethod} /${string}`
 
-const viewRoutes: Record<string, HttpMethod[]> = {
+const viewRoutes = [
   // HomeController
-  "": ["GET"],
+  "GET /",
 
   // YkiViewController
-  "yki/suoritukset": ["GET"],
-  "yki/suoritukset/virheet": ["GET"],
-  "yki/arvioijat": ["GET"],
-  "yki/arvioijat/virheet": ["GET"],
-  "yki/koski-virheet": ["GET"],
-  "yki/koski-virheet/piilota/1/true": ["GET"],
-  "yki/koski-request/1": ["GET"],
-  "yki/tarkistusarvioinnit": ["GET"],
+  "GET /yki/suoritukset",
+  "GET /yki/suoritukset/virheet",
+  "GET /yki/arvioijat",
+  "GET /yki/arvioijat/virheet",
+  "GET /yki/koski-virheet",
+  "GET /yki/koski-virheet/piilota/1/true",
+  "GET /yki/koski-request/1",
+  "GET /yki/tarkistusarvioinnit",
 
   // KielitestiViewController
-  "koto-kielitesti/suoritukset": ["GET"],
-  "koto-kielitesti/suoritukset/virheet": ["GET"],
+  "GET /koto-kielitesti/suoritukset",
+  "GET /koto-kielitesti/suoritukset/virheet",
 
   // VktViewController
-  "vkt/erinomainen/ilmoittautuneet": ["GET"],
-  "vkt/erinomainen/arvioidut": ["GET"],
-  "vkt/hyvajatyydyttava/suoritukset": ["GET"],
-  "vkt/suoritukset/1.2.246.562.24.00000000856/SWE/Erinomainen": ["GET", "POST"],
-  "vkt/koski-virheet": ["GET"],
-  "koski-virheet/piilota/1.2.246.562.24.00000000856/SWE/Erinomainen/true": [
-    "GET_404",
-  ],
-  "koski-request/1.2.246.562.24.00000000856/SWE/Erinomainen/true": ["GET_404"],
-}
+  "GET /vkt/erinomainen/ilmoittautuneet",
+  "GET /vkt/erinomainen/arvioidut",
+  "GET /vkt/hyvajatyydyttava/suoritukset",
+  "GET /vkt/suoritukset/1.2.246.562.24.00000000856/SWE/Erinomainen",
+  "POST /vkt/suoritukset/1.2.246.562.24.00000000856/SWE/Erinomainen",
+  "GET /vkt/koski-virheet",
+  "GET /vkt/koski-virheet/piilota/1.2.246.562.24.00000000856/SWE/Erinomainen/true",
+  "GET /vkt/koski-request/1.2.246.562.24.00000000856/SWE/Erinomainen",
+] satisfies Route[]
 
-const apiRoutes: Record<string, HttpMethod[]> = {
+const apiRoutes = [
   // YkiApiController
-  "yki/api/suoritukset": ["GET", "POST"],
-  "yki/api/arvioija": ["POST"],
+  "GET /yki/api/suoritukset",
+  "POST /yki/api/suoritus",
+  "POST /yki/api/arvioija",
 
   // KielitestiApiController
-  "koto-kielitesti/api/suoritukset": ["GET"],
+  "GET /koto-kielitesti/api/suoritukset",
 
   // VktApiController
-  "api/vkt/kios": ["PUT"],
-}
+  "PUT /api/vkt/kios",
+] satisfies Route[]
 
-const publicRoutes: Record<string, HttpMethod[]> = {
-  "actuator/health": ["GET"],
-  "api-docs": ["GET"],
-  "swagger-ui/index.html": ["GET"],
-  "schema-examples/yki-suoritus.json": ["GET"],
-}
+const publicRoutes = [
+  "GET /actuator/health",
+  "GET /api-docs",
+  "GET /swagger-ui/index.html",
+  "GET /schema-examples/yki-suoritus.json",
+] satisfies Route[]
 
-const allRoutes = { ...viewRoutes, ...apiRoutes, ...publicRoutes }
+const allRoutes = [...viewRoutes, ...apiRoutes, ...publicRoutes]
+
+type DefinedRoute = (typeof allRoutes)[0]
+type ExpectedStatusCodes<
+  T extends DefinedRoute = DefinedRoute,
+  N extends number = number,
+> = Partial<Record<T, N>>
+
+function expectStatusCodeFor<T extends DefinedRoute, N extends number>(
+  routes: T[],
+  statusCode: N,
+): ExpectedStatusCodes<T, N> {
+  return Object.fromEntries(
+    routes.map((route) => [route, statusCode]),
+  ) as ExpectedStatusCodes<T, N>
+}
 
 describe("Käyttöoikeustestit", () => {
   beforeAll(async ({ db, vktSuoritus, config }) => {
@@ -63,76 +79,72 @@ describe("Käyttöoikeustestit", () => {
   })
 
   describe("Kirjautumaton", () => {
-    const happyRoutes = publicRoutes
-
-    Object.entries(allRoutes).forEach(([url, methods]) => {
-      methods.forEach((method) => {
-        const expectOk = happyRoutes[url]?.includes(method) === true
-        test(testName(method, url, expectOk), async ({ request, config }) => {
-          await makeRequest(request, method, url, expectOk, config)
-        })
+    const openPublicRoutes = expectStatusCodeFor(publicRoutes, 200)
+    allRoutes.forEach((route) => {
+      const expectedStatus = openPublicRoutes[route]
+      test(testName(route, expectedStatus), async ({ request, config }) => {
+        await makeRequest(request, config, route, expectedStatus)
       })
     })
   })
 
   describe("CAS", () => {
     describe("Käyttäjä, jolla ei ole Kielitutkintopalvelun rooleja", () => {
-      defineCasTests("NO_ROLES", allRoutes, {
-        ...publicRoutes,
-      })
+      defineCasTests("NO_ROLES", expectStatusCodeFor(publicRoutes, 200))
     })
 
     describe("Pääkäyttäjä", () => {
-      defineCasTests("ROOT", allRoutes, {
-        ...publicRoutes,
-        ...viewRoutes,
-        ...apiRoutes,
+      defineCasTests("ROOT", {
+        ...expectStatusCodeFor(allRoutes, 200),
+        "GET /yki/koski-request/1": 404,
+        "POST /vkt/suoritukset/1.2.246.562.24.00000000856/SWE/Erinomainen": 400,
+        "POST /yki/api/suoritus": 400,
+        "POST /yki/api/arvioija": 400,
+        "PUT /api/vkt/kios": 400,
       })
     })
 
     describe("KIOS / Ilmoittautumisjärjestelmä", () => {
-      defineCasTests("KIOS", allRoutes, {
-        ...publicRoutes,
-        "api/vkt/kios": ["PUT"],
+      defineCasTests("KIOS", {
+        ...expectStatusCodeFor(publicRoutes, 200),
+        "PUT /api/vkt/kios": 400,
       })
     })
 
     describe("Solki", () => {
-      defineCasTests("SOLKI", allRoutes, {
-        ...publicRoutes,
-        // YKI-rajapinnat eivät ole konfiguroitu käytettäväksi CAS-autentikoinnin kanssa
+      defineCasTests("SOLKI", {
+        ...expectStatusCodeFor(publicRoutes, 200),
+        "POST /yki/api/suoritus": 400,
+        "POST /yki/api/arvioija": 400,
       })
     })
   })
 
   describe("OAuth2", () => {
     describe("Käyttäjä, jolla ei ole Kielitutkintopalvelun rooleja", () => {
-      defineOAuth2Tests("NO_ROLES", allRoutes, {
-        ...publicRoutes,
-      })
+      defineOAuth2Tests("NO_ROLES", expectStatusCodeFor(publicRoutes, 200))
     })
 
     describe("Pääkäyttäjä", () => {
-      defineOAuth2Tests("ROOT", allRoutes, {
-        ...publicRoutes,
-        "api/vkt/kios": ["PUT"],
-        "yki/api/suoritukset": ["POST"],
-        "yki/api/arvioija": ["POST"],
+      defineOAuth2Tests("ROOT", {
+        ...expectStatusCodeFor(publicRoutes, 200),
+        "POST /yki/api/suoritus": 400,
+        "POST /yki/api/arvioija": 400,
+        "PUT /api/vkt/kios": 400,
       })
     })
-
     describe("KIOS / Ilmoittautumisjärjestelmä", () => {
-      defineOAuth2Tests("KIOS", allRoutes, {
-        ...publicRoutes,
-        "api/vkt/kios": ["PUT"],
+      defineOAuth2Tests("KIOS", {
+        ...expectStatusCodeFor(publicRoutes, 200),
+        "PUT /api/vkt/kios": 400,
       })
     })
 
     describe("Solki", () => {
-      defineOAuth2Tests("SOLKI", allRoutes, {
-        ...publicRoutes,
-        "yki/api/suoritukset": ["POST"],
-        "yki/api/arvioija": ["POST"],
+      defineOAuth2Tests("SOLKI", {
+        ...expectStatusCodeFor(publicRoutes, 200),
+        "POST /yki/api/suoritus": 400,
+        "POST /yki/api/arvioija": 400,
       })
     })
   })
@@ -140,8 +152,7 @@ describe("Käyttöoikeustestit", () => {
 
 function defineCasTests(
   user: MockUser,
-  urls: Record<string, HttpMethod[]>,
-  happyUrls: Record<string, HttpMethod[]>,
+  expectedStatusCodes: ExpectedStatusCodes,
 ) {
   const statePath = `browserstate/securitytests-${user}.json`
 
@@ -151,21 +162,18 @@ function defineCasTests(
     await request.storageState({ path: statePath })
   })
 
-  Object.entries(urls).forEach(([url, methods]) => {
-    methods.forEach((method) => {
-      const expectOk = happyUrls[url]?.includes(method) === true
-      test(testName(method, url, expectOk), async ({ browser, config }) => {
-        const context = await browser.newContext({ storageState: statePath })
-        await makeRequest(context.request, method, url, expectOk, config)
-      })
+  allRoutes.forEach((route) => {
+    const expectedStatus = expectedStatusCodes[route]
+    test(testName(route, expectedStatus), async ({ browser, config }) => {
+      const context = await browser.newContext({ storageState: statePath })
+      await makeRequest(context.request, config, route, expectedStatus)
     })
   })
 }
 
 function defineOAuth2Tests(
   clientId: MockUser,
-  urls: Record<string, HttpMethod[]>,
-  happyUrls: Record<string, HttpMethod[]>,
+  expectedStatusCodes: ExpectedStatusCodes,
 ) {
   let accessToken: string | null = null
 
@@ -182,28 +190,23 @@ function defineOAuth2Tests(
     accessToken = body.access_token
   })
 
-  Object.entries(urls).forEach(([url, methods]) => {
-    methods.forEach((method) => {
-      const expectOk = happyUrls[url]?.includes(method) === true
-
-      test(testName(method, url, expectOk), async ({ request, config }) => {
-        console.log(`Call ${method} ${url} with token ${accessToken}`)
-        await makeRequest(request, method, url, expectOk, config, accessToken)
-      })
+  allRoutes.forEach((route) => {
+    const expectedStatus = expectedStatusCodes[route]
+    test(testName(route, expectedStatus), async ({ request, config }) => {
+      await makeRequest(request, config, route, expectedStatus, accessToken)
     })
   })
 }
 
-function testName(method: HttpMethod, url: string, expectOk: boolean) {
-  return `${expectOk ? "Sallitaan" : "Ei sallita"}: ${method} ${url}`
+function testName(route: DefinedRoute, expectedStatus?: number) {
+  return `Palauttaa ${expectedStatus || 403}: ${route}`
 }
 
 async function makeRequest(
   request: APIRequestContext,
-  method: HttpMethod,
-  url: string,
-  expectOk: boolean,
   config: Config,
+  route: DefinedRoute,
+  expectedStatusCode?: number,
   accessToken?: string,
 ) {
   const options = accessToken
@@ -214,38 +217,36 @@ async function makeRequest(
       }
     : null
 
+  const { method, path } = splitRoute(route, config)
   let response = null
-  let extraErrorCodes = []
 
   switch (method) {
     case "GET":
-      response = await request.get(config.baseUrl + url, options)
-      break
-    case "GET_404":
-      response = await request.get(config.baseUrl + url, options)
-      extraErrorCodes = [404] // Käytetään poluille, joille ei ole alustettu testifikstuuria
+      response = await request.get(path, options)
       break
     case "POST":
-      response = await request.post(config.baseUrl + url, options)
-      extraErrorCodes = [400, 500] // 400 tai 500 saadaan, kun yritetään lähettää virheellistä dataa
+      response = await request.post(path, options)
       break
     case "PUT":
-      response = await request.put(config.baseUrl + url, options)
-      extraErrorCodes = [400, 500] // 400 tai 500 saadaan, kun yritetään lähettää virheellistä dataa
+      response = await request.put(path, options)
       break
     case "DELETE":
-      response = await request.delete(config.baseUrl + url, options)
+      response = await request.delete(path, options)
       break
     default:
       throw new Error(`Unsupported method: ${method}`)
   }
 
-  console.log(response)
-  console.log((await response.body()).toString())
-
-  if (expectOk) {
-    expect(response.status()).not.toBe(403)
-  } else {
-    expect([403, ...extraErrorCodes]).toContain(response.status())
+  try {
+    expect(response.status()).toBe(expectedStatusCode || 403)
+  } catch (e) {
+    console.log(response)
+    console.log((await response.body()).toString())
+    throw e
   }
+}
+
+function splitRoute(route: Route, config: Config) {
+  const [method, path] = route.split(" ")
+  return { method: method as HttpMethod, path: config.baseUrl + path.slice(1) }
 }
