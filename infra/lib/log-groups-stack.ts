@@ -1,15 +1,15 @@
 import { aws_sns, Stack, StackProps } from "aws-cdk-lib"
 import { Stats, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
+import { ServicePrincipal } from "aws-cdk-lib/aws-iam"
 import {
   CustomDataIdentifier,
   DataProtectionPolicy,
   FilterPattern,
   LogGroup,
 } from "aws-cdk-lib/aws-logs"
-import { Construct } from "constructs"
 import { CfnTransactionSearchConfig } from "aws-cdk-lib/aws-xray"
-import { ServicePrincipal } from "aws-cdk-lib/aws-iam"
+import { Construct } from "constructs"
 
 export interface LogGroupsStackProps extends StackProps {
   alarmsSnsTopic: aws_sns.ITopic
@@ -99,15 +99,22 @@ export class LogGroupsStack extends Stack {
       },
     })
 
-    const transactionSearchSpans = LogGroup.fromLogGroupName(
+    const transactionSearchSpans = new LogGroup(
       this,
       "TransactionSearchSpans",
-      "aws/spans",
+      {
+        logGroupName: "aws/spans",
+        retention: 30,
+      },
     )
-    const applicationSignalsData = LogGroup.fromLogGroupName(
+
+    const applicationSignalsData = new LogGroup(
       this,
       "ApplicationSignalsData",
-      "/aws/application-signals/data",
+      {
+        logGroupName: "/aws/application-signals/data",
+        retention: 30,
+      },
     )
 
     transactionSearchSpans.grantWrite(xray)
