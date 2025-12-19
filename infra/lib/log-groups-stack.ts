@@ -88,19 +88,18 @@ export class LogGroupsStack extends Stack {
     })
 
     // The rest is granting XRay write rights to the Transaction Search log groups that store the trace data.
-    const thisAccountCondition = {
-      ArnLike: {
-        "aws:SourceArn": `arn:${this.partition}:xray:${this.region}:${this.account}:*`,
-      },
-      StringEquals: {
-        "aws:SourceAccount": this.account,
-      },
-    }
-
-    const xray =
-      ServicePrincipal.fromStaticServicePrincipleName("xray").withConditions(
-        thisAccountCondition,
-      )
+    const xray = new ServicePrincipal("xray", {
+      conditions: [
+        {
+          ArnLike: {
+            "aws:SourceArn": `arn:${this.partition}:xray:${this.region}:${this.account}:*`,
+          },
+          StringEquals: {
+            "aws:SourceAccount": this.account,
+          },
+        },
+      ],
+    })
 
     const transactionSearchSpans = LogGroup.fromLogGroupName(
       this,
