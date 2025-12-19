@@ -125,7 +125,7 @@ export class LogGroupsStack extends Stack {
     transactionSearchSpans.grantWrite(xray)
     applicationSignalsData.grantWrite(xray)
 
-    // Transaction Search cannot be enabled until it has write access to the the log groups specified above.
+    // Transaction Search cannot be enabled until it has write access to the log groups specified above.
     //
     // This means that we need to tell CloudFormation that the transactionSearchConfig resource has to be created *after* the ResourcePolicy resources of these log groups, but CDK does not expose the resource policy resources of L2 log group constructs.
     //
