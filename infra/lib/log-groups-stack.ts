@@ -83,7 +83,7 @@ export class LogGroupsStack extends Stack {
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Transaction-Search-Cloudformation.html
    */
   private enableTransactionSearch() {
-    // This enables Transaction Search.
+    // This enables Transaction Search. CDK doesn't have a L2 construct for TS yet.
     const transactionSearchConfig = new CfnTransactionSearchConfig(
       this,
       "TransactionSearch",
