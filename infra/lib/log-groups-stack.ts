@@ -104,22 +104,16 @@ export class LogGroupsStack extends Stack {
       },
     })
 
-    const transactionSearchSpans = new LogGroup(
+    const transactionSearchSpans = LogGroup.fromLogGroupName(
       this,
       "TransactionSearchSpans",
-      {
-        logGroupName: "aws/spans",
-        retention: 30,
-      },
+      "aws/spans",
     )
 
-    const applicationSignalsData = new LogGroup(
+    const applicationSignalsData = LogGroup.fromLogGroupName(
       this,
       "ApplicationSignalsData",
-      {
-        logGroupName: "/aws/application-signals/data",
-        retention: 30,
-      },
+      "/aws/application-signals/data",
     )
 
     transactionSearchSpans.grantWrite(xray)
