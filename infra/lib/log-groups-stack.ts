@@ -129,7 +129,10 @@ export class LogGroupsStack extends Stack {
     //
     // This means that we need to tell CloudFormation that the transactionSearchConfig resource has to be created *after* the ResourcePolicy resources of these log groups, but CDK does not expose the resource policy resources of L2 log group constructs.
     //
-    // Instead, we use the .node property to reach into the L1 resource level and find the appropriate ResourcePolicy resource.
+    // Instead, we use the .node property to reach into the L1 resource level and find the appropriate ResourcePolicy resource. AWS has various documentation pages on this:
+    //
+    // CDK guide: https://docs.aws.amazon.com/cdk/v2/guide/cfn-layer.html
+    // Knowledge Center: https://repost.aws/knowledge-center/cdk-retrieve-construct-objects
     //
     // The end result is that the TransactionSearch resource in cdk.out/assembly-${env}/${env}LogGroups.template.json contains this property:
     //
