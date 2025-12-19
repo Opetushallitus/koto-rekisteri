@@ -3,6 +3,7 @@ import { Stats, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { ServicePrincipal } from "aws-cdk-lib/aws-iam"
 import {
+  CfnResourcePolicy,
   CustomDataIdentifier,
   DataProtectionPolicy,
   FilterPattern,
@@ -83,9 +84,13 @@ export class LogGroupsStack extends Stack {
    */
   private enableTransactionSearch() {
     // This enables Transaction Search.
-    new CfnTransactionSearchConfig(this, "TransactionSearch", {
-      indexingPercentage: 100,
-    })
+    const transactionSearchConfig = new CfnTransactionSearchConfig(
+      this,
+      "TransactionSearch",
+      {
+        indexingPercentage: 100,
+      },
+    )
 
     // The rest is granting XRay write rights to the Transaction Search log groups that store the trace data.
     const xray = new ServicePrincipal("xray", {
@@ -119,5 +124,37 @@ export class LogGroupsStack extends Stack {
 
     transactionSearchSpans.grantWrite(xray)
     applicationSignalsData.grantWrite(xray)
+
+    // Transaction Search cannot be enabled until it has write access to the the log groups specified above.
+    //
+    // This means that we need to tell CloudFormation that the transactionSearchConfig resource has to be created *after* the ResourcePolicy resources of these log groups, but CDK does not expose the resource policy resources of L2 log group constructs.
+    //
+    // Instead, we use the .node property to reach into the L1 resource level and find the appropriate ResourcePolicy resource.
+    //
+    // The end result is that the TransactionSearch resource in cdk.out/assembly-${env}/${env}LogGroups.template.json contains this property:
+    //
+    //   "DependsOn": [
+    //     "ApplicationSignalsDataPolicyResourcePolicy921BB654",
+    //     "TransactionSearchSpansPolicyResourcePolicy81B12951"
+    //    ],
+
+    // Use the following for loop to print the IDs of the children of the L2 LogGroup construct.
+    // I guessed that the node with ID 'ResourcePolicy' is the one we want.
+    // for (const child of transactionSearchSpans.node.findAll()) {
+    //   console.info(child.node.id)
+    // }
+
+    transactionSearchConfig.addDependency(
+      // Note that findChild() only searches *direct* children, so we need to traverse the tree until we reach the resource policy.
+      transactionSearchSpans.node
+        .findChild("Policy")
+        .node.findChild("ResourcePolicy") as CfnResourcePolicy,
+    )
+    transactionSearchConfig.addDependency(
+      // Note that findChild() only searches *direct* children, so we need to traverse the tree until we reach the resource policy.
+      applicationSignalsData.node
+        .findChild("Policy")
+        .node.findChild("ResourcePolicy") as CfnResourcePolicy,
+    )
   }
 }
