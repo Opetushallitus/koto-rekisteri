@@ -4,6 +4,7 @@ import { Config } from "../../config"
 
 type MockUser = "ROOT" | "KIOS" | "SOLKI" | "NO_ROLES"
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE"
+type ContentType = "application/x-www-form-urlencoded" | "application/json"
 type Route = `${HttpMethod} /${string}`
 
 const viewRoutes = [
@@ -97,7 +98,6 @@ describe("Käyttöoikeustestit", () => {
       defineCasTests("ROOT", {
         ...expectStatusCodeFor(allRoutes, 200),
         "GET /yki/koski-request/1": 404,
-        "POST /vkt/suoritukset/1.2.246.562.24.00000000856/SWE/Erinomainen": 400,
         "POST /yki/api/suoritus": 400,
         "POST /yki/api/arvioija": 400,
         "PUT /api/vkt/kios": 400,
@@ -209,16 +209,24 @@ async function makeRequest(
   expectedStatusCode?: number,
   accessToken?: string,
 ) {
-  const options = accessToken
-    ? {
-        headers: {
-          authorization: `Bearer ${accessToken}`,
-        },
-      }
-    : null
-
   const { method, path } = splitRoute(route, config)
   let response = null
+
+  const contentType: ContentType | null =
+    method == "POST" || method == "PUT"
+      ? route.includes("/api/")
+        ? "application/json"
+        : "application/x-www-form-urlencoded"
+      : null
+
+  const headers = [
+    accessToken ? ["Authorization", `Bearer ${accessToken}`] : null,
+    contentType ? ["Content-Type", contentType] : null,
+  ].filter(Boolean)
+
+  const options = {
+    headers: Object.fromEntries(headers),
+  }
 
   switch (method) {
     case "GET":
