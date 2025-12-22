@@ -21,10 +21,10 @@ import kotlinx.html.br
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -201,12 +201,16 @@ class VktViewController(
         )
     }
 
-    @PostMapping("/suoritukset/{oppijanumero}/{kieli}/{taso}", produces = ["text/html"])
+    @PostMapping(
+        "/suoritukset/{oppijanumero}/{kieli}/{taso}",
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
+        produces = ["text/html"],
+    )
     fun saveIlmoittautuneenArviointi(
         @PathVariable oppijanumero: String,
         @PathVariable kieli: Koodisto.Tutkintokieli,
         @PathVariable taso: Koodisto.VktTaitotaso,
-        @ModelAttribute form: VktErinomaisenArviointiPage.ArvosanaFormData,
+        form: VktErinomaisenArviointiPage.ArvosanaFormData,
         viewMessage: ViewMessage,
     ): RedirectView {
         form.toEntries().forEach {

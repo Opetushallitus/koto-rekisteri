@@ -62,14 +62,18 @@ object VktErinomaisenArviointiPage {
         }
 
     data class ArvosanaFormData(
-        val id: List<Int>,
-        val arvosana: List<Koodisto.VktArvosana?>,
-        val arviointipaiva: List<LocalDate?>,
+        val id: List<Int>?,
+        val arvosana: List<Koodisto.VktArvosana?>?,
+        val arviointipaiva: List<LocalDate?>?,
     ) {
-        fun toEntries(): List<ArvosanaFormEntry> =
-            id
-                .zip(arvosana.growToSize(id.size, null))
-                .zip(arviointipaiva.growToSize(id.size, null))
+        fun toEntries(): List<ArvosanaFormEntry> {
+            val ids = id.orEmpty()
+            val arvosanat = arvosana.orEmpty()
+            val arviointipaivat = arviointipaiva.orEmpty()
+
+            return ids
+                .zip(arvosanat.growToSize(ids.size, null))
+                .zip(arviointipaivat.growToSize(ids.size, null))
                 .map {
                     val arvosana = it.first.second
                     val eiSuoritusta = arvosana == Koodisto.VktArvosana.EiSuoritusta
@@ -80,6 +84,7 @@ object VktErinomaisenArviointiPage {
                         merkittyPoistettavaksi = eiSuoritusta,
                     )
                 }
+        }
 
         data class ArvosanaFormEntry(
             val id: Int,
