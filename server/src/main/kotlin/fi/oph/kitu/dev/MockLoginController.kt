@@ -10,9 +10,11 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
+import java.net.URI
 import java.util.Date
 import javax.crypto.spec.SecretKeySpec
 import kotlin.system.exitProcess
@@ -43,6 +46,9 @@ class MockLoginController(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val securityContextRepository = HttpSessionSecurityContextRepository()
+
+    @Value("\${kitu.appUrl}")
+    private lateinit var rootUrl: String
 
     @PostConstruct
     fun init() {
@@ -80,7 +86,11 @@ class MockLoginController(
         SecurityContextHolder.getContext().authentication = authentication
         securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response)
 
-        return ResponseEntity.ok().build()
+        return if (user.login.authorities.contains(Authority.VIRKAILIJA)) {
+            ResponseEntity.status(HttpStatus.FOUND).location(URI.create(rootUrl)).build()
+        } else {
+            ResponseEntity.ok().build()
+        }
     }
 
     @PostMapping(
