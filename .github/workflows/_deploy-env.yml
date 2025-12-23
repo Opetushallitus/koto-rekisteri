@@ -13,7 +13,12 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        type: environment
+        type: choice
+        options:
+          - Dev
+          - Test
+          - Prod
+          - Util
         description: Target environment
       action:
         type: choice
