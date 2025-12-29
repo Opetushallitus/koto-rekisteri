@@ -30,7 +30,7 @@ export class GithubActionsStack extends Stack {
         },
         StringLike: {
           "token.actions.githubusercontent.com:sub":
-            "repo:Opetushallitus/koto-rekisteri:*",
+            "repo:Opetushallitus/kielitutkintorekisteri:*",
         },
       }),
     })
