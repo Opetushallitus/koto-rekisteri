@@ -148,7 +148,7 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>cloudwatchlogs</artifactId>
         </dependency>
-        <!-- https://github.com/Opetushallitus/koto-rekisteri/security/dependabot/44 -->
+        <!-- https://github.com/Opetushallitus/kielitutkintorekisteri/security/dependabot/44 -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-http2</artifactId>
@@ -211,7 +211,7 @@
             <version>2.11.0</version>
             <scope>test</scope>
         </dependency>
-        <!-- https://github.com/Opetushallitus/koto-rekisteri/security/dependabot/27 -->
+        <!-- https://github.com/Opetushallitus/kielitutkintorekisteri/security/dependabot/27 -->
         <dependency>
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
