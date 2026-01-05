@@ -119,101 +119,103 @@ describe('"Koto Suoritukset" -page', () => {
     expect(errors).toHaveLength(2)
   })
 
-  const sortTestCases = [
-    {
-      column: "Henkilötunnus",
-      tableColumnIndex: 0,
-      order: ["010866-9260", "010180-9026", "010116A9518"],
-    },
-    {
-      column: "Nimi",
-      tableColumnIndex: 1,
-      order: [
-        "Ranja Testi Öhman-Testi",
-        "Petro Testi Kivinen-Testi",
-        "Magdalena Testi Sallinen-Testi",
-      ],
-    },
-    {
-      column: "Organisaatio",
-      tableColumnIndex: 2,
-      order: [
-        "1.2.246.562.10.59904379811",
-        "1.2.246.562.10.14893989377",
-        "1.2.246.562.10.14893989377",
-      ],
-    },
-    {
-      column: "Opettajan sähköpostiosoite",
-      tableColumnIndex: 3,
-      order: [
-        "yksi-opettajista@testi.oph.fi",
-        "toinen-opettaja@testi.oph.fi",
-        "opettaja@testi.oph.fi",
-      ],
-    },
-    {
-      column: "Virheen luontiaika",
-      tableColumnIndex: 4,
-      order: [
-        toFinnishDateTime("2024-11-22T10:49:49Z"),
-        toFinnishDateTime("2025-05-26T12:34:56Z"),
-        toFinnishDateTime("2042-12-22T22:42:42Z"),
-      ],
-    },
-    {
-      column: "Virheviesti",
-      tableColumnIndex: 5,
-      order: [
-        'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
-        "testiviesti, ei tekstiviesti",
-        'Malformed quiz grade "kirjoittaminen" on course "Integraatio testaus" for user "2"',
-      ],
-    },
-    {
-      column: "Ratkaisuehdotus",
-      tableColumnIndex: 6,
-      order: ["", ""],
-    },
-    {
-      column: "Virheellinen kenttä",
-      tableColumnIndex: 7,
-      order: ["yksi niistä", "puhuminen", "kirjoittaminen"],
-    },
-    {
-      column: "Virheellinen arvo",
-      tableColumnIndex: 8,
-      order: ["virheellinen arvosana", "tyhjää täynnä", "en kerro, arvaa!"],
-    },
-  ] as const
-  for (const testCase of sortTestCases) {
-    const { column, tableColumnIndex, order } = testCase
-    const reverseOrder = [...order].reverse()
+  describe("Sorting", () => {
+    const sortTestCases = [
+      {
+        column: "Henkilötunnus",
+        tableColumnIndex: 0,
+        order: ["010866-9260", "010180-9026", "010116A9518"],
+      },
+      {
+        column: "Nimi",
+        tableColumnIndex: 1,
+        order: [
+          "Ranja Testi Öhman-Testi",
+          "Petro Testi Kivinen-Testi",
+          "Magdalena Testi Sallinen-Testi",
+        ],
+      },
+      {
+        column: "Organisaatio",
+        tableColumnIndex: 2,
+        order: [
+          "Vallilan ala-aste\n1.2.246.562.10.59904379811",
+          "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus\n1.2.246.562.10.14893989377",
+          "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus\n1.2.246.562.10.14893989377",
+        ],
+      },
+      {
+        column: "Opettajan sähköpostiosoite",
+        tableColumnIndex: 3,
+        order: [
+          "yksi-opettajista@testi.oph.fi",
+          "toinen-opettaja@testi.oph.fi",
+          "opettaja@testi.oph.fi",
+        ],
+      },
+      {
+        column: "Virheen luontiaika",
+        tableColumnIndex: 4,
+        order: [
+          toFinnishDateTime("2024-11-22T10:49:49Z"),
+          toFinnishDateTime("2025-05-26T12:34:56Z"),
+          toFinnishDateTime("2042-12-22T22:42:42Z"),
+        ],
+      },
+      {
+        column: "Virheviesti",
+        tableColumnIndex: 5,
+        order: [
+          'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
+          "testiviesti, ei tekstiviesti",
+          'Malformed quiz grade "kirjoittaminen" on course "Integraatio testaus" for user "2"',
+        ],
+      },
+      {
+        column: "Ratkaisuehdotus",
+        tableColumnIndex: 6,
+        order: ["", ""],
+      },
+      {
+        column: "Virheellinen kenttä",
+        tableColumnIndex: 7,
+        order: ["yksi niistä", "puhuminen", "kirjoittaminen"],
+      },
+      {
+        column: "Virheellinen arvo",
+        tableColumnIndex: 8,
+        order: ["virheellinen arvosana", "tyhjää täynnä", "en kerro, arvaa!"],
+      },
+    ] as const
+    for (const testCase of sortTestCases) {
+      const { column, tableColumnIndex, order } = testCase
+      const reverseOrder = [...order].reverse()
 
-    test(`registry data can be sorted by "${column}"`, async ({
-      kielitestiErrorPage: page,
-      kotoSuoritusError,
-      db,
-    }) => {
-      await kotoSuoritusError.insert(db, "virheMagdalena")
-      await kotoSuoritusError.insert(db, "virhePetro")
+      test(`registry data can be sorted by "${column}"`, async ({
+        kielitestiErrorPage: page,
+        kotoSuoritusError,
+        db,
+      }) => {
+        await kotoSuoritusError.insert(db, "virheMagdalena")
+        await kotoSuoritusError.insert(db, "virhePetro")
 
-      await page.open()
+        await page.open()
 
-      const sortByLink = page.getTableColumnHeaderLink(column)
-      await sortByLink.click()
+        const sortByLink = page.getTableColumnHeaderLink(column)
+        await sortByLink.click()
 
-      for (const [expected, row] of enumerate(order)) {
-        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
-        await expect(actualValue).toHaveText(expected)
-      }
+        for (const [expected, row] of enumerate(order)) {
+          const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+          await expect(actualValue).toHaveText(expected)
+        }
 
-      await sortByLink.click()
+        await sortByLink.click()
 
-      for (const [expected, row] of enumerate(reverseOrder)) {
-        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
-        await expect(actualValue).toHaveText(expected)
-      }
-    })
-  }
+        for (const [expected, row] of enumerate(reverseOrder)) {
+          const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+          await expect(actualValue).toHaveText(expected)
+        }
+      })
+    }
+  })
 })

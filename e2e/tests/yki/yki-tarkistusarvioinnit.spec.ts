@@ -3,12 +3,18 @@ import { expectToHaveTexts } from "../../util/expect"
 
 describe("YKI-tarkastusarvioinnit", () => {
   beforeEach(
-    async ({ db, ykiSuoritus, basePage, ykiTarkistusarvioinnitPage }) => {
+    async ({
+      db,
+      oauth,
+      ykiSuoritus,
+      basePage,
+      ykiTarkistusarvioinnitPage,
+    }) => {
       await db.withEmptyDatabase()
-      await ykiSuoritus.insert(db, "ranjaTarkistus")
-      await ykiSuoritus.insert(db, "petro")
-      await ykiSuoritus.insert(db, "magdalenaTarkistettu")
-      await ykiSuoritus.insert(db, "einoTarkistettuJaHyvaksytty")
+      await ykiSuoritus.insert(oauth, "ranjaTarkistus")
+      await ykiSuoritus.insert(oauth, "petro")
+      await ykiSuoritus.insert(oauth, "magdalenaTarkistettu")
+      await ykiSuoritus.insert(oauth, "einoTarkistettuJaHyvaksytty")
       await basePage.login()
       await ykiTarkistusarvioinnitPage.open()
     },
@@ -65,7 +71,7 @@ describe("YKI-tarkastusarvioinnit", () => {
     await ykiTarkistusarvioinnitPage.odottaaSubmit.click()
 
     await expect(ykiTarkistusarvioinnitPage.viewMessage).toContainText(
-      "arkistusarviointi suoritukselle '1.2.246.562.24.33342764709 Sallinen-Testi Magdalena Testi, PT FIN' ei voi hyväksyä päivämäärällä 10.10.2025, koska se on aiemmin kuin käsittelypäivä 20.10.2025.",
+      "arkistusarviointi suoritukselle '1.2.246.562.24.33342764709 Sallinen-Testi Magdalena Testi, PT FIN' ei voi hyväksyä päivämäärällä 10.10.2025, koska se on aiemmin kuin käsittelypäivä 22.10.2025.",
     )
   })
 
