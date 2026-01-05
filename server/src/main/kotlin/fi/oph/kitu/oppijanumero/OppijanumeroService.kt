@@ -15,7 +15,7 @@ interface OppijanumeroService {
 }
 
 @Service
-@Profile("!test")
+@Profile("!test && !e2e")
 class OppijanumeroServiceImpl(
     val tracer: Tracer,
     val client: OppijanumerorekisteriClient,
