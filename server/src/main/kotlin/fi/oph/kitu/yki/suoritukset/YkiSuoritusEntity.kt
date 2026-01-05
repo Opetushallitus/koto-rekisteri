@@ -3,7 +3,7 @@ package fi.oph.kitu.yki.suoritukset
 import fi.oph.kitu.Oid
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
-import fi.oph.kitu.yki.KituArviointitila
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
@@ -57,7 +57,7 @@ data class YkiSuoritusEntity(
     val koskiOpiskeluoikeus: Oid?,
     val koskiSiirtoKasitelty: Boolean?,
     @Enumerated(EnumType.STRING)
-    val arviointitila: KituArviointitila,
+    val arviointitila: Arviointitila,
 ) {
     fun arvosana(osakoe: TutkinnonOsa): Int? =
         when (osakoe) {
@@ -71,7 +71,7 @@ data class YkiSuoritusEntity(
 
     fun tarkistusarviointiHyvaksyttyViewText(): String? =
         tarkistusarviointiHyvaksyttyPvm?.finnishDate()
-            ?: if (arviointitila == KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY) {
+            ?: if (arviointitila == Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY) {
                 "Ennen 14.11.2025"
             } else {
                 null
@@ -129,7 +129,7 @@ data class YkiSuoritusEntity(
                     rs.getObject("tarkistusarviointi_hyvaksytty_pvm", LocalDate::class.java),
                     Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),
                     rs.getBoolean("koski_siirto_kasitelty"),
-                    KituArviointitila.valueOf(rs.getString("arviointitila")),
+                    Arviointitila.valueOf(rs.getString("arviointitila")),
                 )
             }
     }

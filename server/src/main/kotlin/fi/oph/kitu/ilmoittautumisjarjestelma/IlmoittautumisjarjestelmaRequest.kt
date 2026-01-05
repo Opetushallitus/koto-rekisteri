@@ -2,7 +2,7 @@ package fi.oph.kitu.ilmoittautumisjarjestelma
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.oph.kitu.Oid
-import fi.oph.kitu.yki.KituArviointitila
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -26,7 +26,7 @@ data class YkiArvioinninTilaRequest(
 
 data class YkiArvioinninTila(
     val suoritus: YkiSuorituksenTunniste,
-    val tila: KituArviointitila,
+    val tila: Arviointitila,
 ) {
     companion object {
         fun of(entity: YkiSuoritusEntity) =
