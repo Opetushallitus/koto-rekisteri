@@ -19,6 +19,7 @@ import VktHjtSuorituksetPage from "../models/vkt/VktHjtSuorituksetPage"
 import VktArvioidutSuorituksetPage from "../models/vkt/VktArvioidutSuorituksetPage"
 import YkiArvioijatPage from "../models/yki/YkiArvioijatPage"
 import YkiTarkistusarvioinnitPage from "../models/yki/YkiTarkistusarvioinnitPage"
+import { OauthRequestContext } from "./oauthRequestContext"
 
 interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
@@ -39,6 +40,7 @@ interface Fixtures {
   vktHjtSuorituksetPage: VktHjtSuorituksetPage
   vktArvioidutSuorituksetPage: VktArvioidutSuorituksetPage
   vktSuoritus: typeof vktSuoritusFixture
+  oauth: OauthRequestContext
 }
 
 export type TestDB = ReturnType<typeof createTestDatabase>
@@ -131,6 +133,9 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   },
   vktArvioidutSuorituksetPage: async ({ page, config }, use) => {
     await use(new VktArvioidutSuorituksetPage(page, config))
+  },
+  oauth: async ({ config, request }, use) => {
+    await use(new OauthRequestContext(config, request))
   },
 })
 

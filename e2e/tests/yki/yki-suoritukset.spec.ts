@@ -5,12 +5,12 @@ import { enumerate } from "../../util/arrays"
 const fs = node_fs.promises
 
 describe('"YKI Suoritukset" -page', () => {
-  beforeEach(async ({ db, basePage, ykiSuoritus, ykiSuoritusError }) => {
+  beforeEach(async ({ db, oauth, basePage, ykiSuoritus, ykiSuoritusError }) => {
     await db.withEmptyDatabase()
-    await ykiSuoritus.insert(db, "ranja")
-    await ykiSuoritus.insert(db, "ranjaTarkistus")
-    await ykiSuoritus.insert(db, "petro")
-    await ykiSuoritus.insert(db, "magdalena")
+    await ykiSuoritus.insert(oauth, "ranja")
+    await ykiSuoritus.insert(oauth, "ranjaTarkistus")
+    await ykiSuoritus.insert(oauth, "petro")
+    await ykiSuoritus.insert(oauth, "magdalena")
     await ykiSuoritusError.insert(db, "missingOid")
     //await ykiSuoritusError.insert(db, "invalidSex")
 
@@ -111,162 +111,164 @@ describe('"YKI Suoritukset" -page', () => {
     ) // Validate headers
   })
 
-  const sortTestCases = [
-    {
-      column: "Oppijanumero",
-      tableColumnIndex: 0,
-      order: [
-        "1.2.246.562.24.59267607404",
-        "1.2.246.562.24.33342764709",
-        "1.2.246.562.24.20281155246",
-      ],
-    },
-    {
-      column: "Sukunimi",
-      tableColumnIndex: 1,
-      order: ["Öhman-Testi", "Sallinen-Testi", "Kivinen-Testi"],
-    },
-    {
-      column: "Etunimi",
-      tableColumnIndex: 2,
-      order: ["Ranja Testi", "Petro Testi", "Magdalena Testi"],
-    },
-    {
-      column: "Sukupuoli",
-      tableColumnIndex: 3,
-      order: ["N", "N", "M"],
-    },
-    {
-      column: "Henkilötunnus",
-      tableColumnIndex: 4,
-      order: ["010866-9260", "010180-9026", "010116A9518"],
-    },
-    {
-      column: "Kansalaisuus",
-      tableColumnIndex: 5,
-      order: ["FIN", "EST", "EST"],
-    },
-    {
-      column: "Osoite",
-      tableColumnIndex: 6,
-      order: [
-        "Testikuja 5, 40100 Testilä",
-        "Testikuja 10, 40200 Testinsuu",
-        "Testikoto 10, 40300 Koestamo",
-      ],
-    },
-    {
-      column: "Sähköposti",
-      tableColumnIndex: 7,
-      order: ["testi@testi.fi", "testi.petro@testi.fi", "devnull-14@oph.fi"],
-    },
-    {
-      column: "Suorituksen tunniste",
-      tableColumnIndex: 8,
-      order: ["183424", "172836", "123123"],
-    },
-    {
-      column: "Tutkintopäivä",
-      tableColumnIndex: 9,
-      order: ["2024-08-25", "2024-09-01", "2025-01-12"],
-    },
-    {
-      column: "Tutkintokieli",
-      tableColumnIndex: 10,
-      order: ["SWE10", "FIN", "FIN"],
-    },
-    {
-      column: "Tutkintotaso",
-      tableColumnIndex: 11,
-      order: ["YT", "YT", "PT"],
-    },
-    {
-      column: "Järjestäjän OID",
-      tableColumnIndex: 12,
-      order: [
-        "1.2.246.562.10.14893989377",
-        "1.2.246.562.10.14893989377",
-        "1.2.246.562.10.14893989377",
-      ],
-    },
-    {
-      column: "Järjestäjän nimi",
-      tableColumnIndex: 13,
-      order: [
-        "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-        "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-        "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-      ],
-    },
-    {
-      column: "Arviointitila",
-      tableColumnIndex: 14,
-      order: [
-        "Tarkistusarviointi tehty",
-        "Arviointi valmis",
-        "Arviointi valmis",
-      ],
-    },
-    {
-      column: "Arviointipäivä",
-      tableColumnIndex: 15,
-      order: ["2025-05-04", "2024-11-14", "2024-11-14"],
-    },
-    {
-      column: "Tekstin ymmärtäminen",
-      tableColumnIndex: 16,
-      order: ["6", "5", "Alle 5"],
-    },
-    {
-      column: "Kirjoittaminen",
-      tableColumnIndex: 17,
-      order: ["6", "5", "Alle 5"],
-    },
-    {
-      column: "Rakenteet ja sanasto",
-      tableColumnIndex: 18,
-      order: ["Ei voi arvioida", "8", "Alle 5"],
-    },
-    {
-      column: "Puheen ymmärtäminen",
-      tableColumnIndex: 19,
-      order: ["5", "Alle 5", "Alle 5"],
-    },
-    {
-      column: "Puhuminen",
-      tableColumnIndex: 20,
-      order: ["Vilppi", "Ei voi arvioida", "Alle 5"],
-    },
-    {
-      column: "Yleisarvosana",
-      tableColumnIndex: 21,
-      order: ["Keskeytetty", "Ei voi arvioida", "Alle 5"],
-    },
-  ] as const
+  describe("Sorting", () => {
+    const sortTestCases = [
+      {
+        column: "Oppijanumero",
+        tableColumnIndex: 0,
+        order: [
+          "1.2.246.562.24.59267607404",
+          "1.2.246.562.24.33342764709",
+          "1.2.246.562.24.20281155246",
+        ],
+      },
+      {
+        column: "Sukunimi",
+        tableColumnIndex: 1,
+        order: ["Öhman-Testi", "Sallinen-Testi", "Kivinen-Testi"],
+      },
+      {
+        column: "Etunimi",
+        tableColumnIndex: 2,
+        order: ["Ranja Testi", "Petro Testi", "Magdalena Testi"],
+      },
+      {
+        column: "Sukupuoli",
+        tableColumnIndex: 3,
+        order: ["N", "N", "M"],
+      },
+      {
+        column: "Henkilötunnus",
+        tableColumnIndex: 4,
+        order: ["010866-9260", "010180-9026", "010116A9518"],
+      },
+      {
+        column: "Kansalaisuus",
+        tableColumnIndex: 5,
+        order: ["FIN", "EST", "EST"],
+      },
+      {
+        column: "Osoite",
+        tableColumnIndex: 6,
+        order: [
+          "Testikuja 5, 40100 Testilä",
+          "Testikuja 10, 40200 Testinsuu",
+          "Testikoto 10, 40300 Koestamo",
+        ],
+      },
+      {
+        column: "Sähköposti",
+        tableColumnIndex: 7,
+        order: ["testi@testi.fi", "testi.petro@testi.fi", "devnull-14@oph.fi"],
+      },
+      {
+        column: "Suorituksen tunniste",
+        tableColumnIndex: 8,
+        order: ["183424", "172836", "123123"],
+      },
+      {
+        column: "Tutkintopäivä",
+        tableColumnIndex: 9,
+        order: ["2024-08-25", "2024-09-01", "2025-01-12"],
+      },
+      {
+        column: "Tutkintokieli",
+        tableColumnIndex: 10,
+        order: ["SWE10", "FIN", "FIN"],
+      },
+      {
+        column: "Tutkintotaso",
+        tableColumnIndex: 11,
+        order: ["YT", "YT", "PT"],
+      },
+      {
+        column: "Järjestäjän OID",
+        tableColumnIndex: 12,
+        order: [
+          "1.2.246.562.10.14893989377",
+          "1.2.246.562.10.14893989377",
+          "1.2.246.562.10.14893989377",
+        ],
+      },
+      {
+        column: "Järjestäjän nimi",
+        tableColumnIndex: 13,
+        order: [
+          "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+          "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+          "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+        ],
+      },
+      {
+        column: "Arviointitila",
+        tableColumnIndex: 14,
+        order: [
+          "Tarkistusarviointi tehty",
+          "Arviointi valmis",
+          "Arviointi valmis",
+        ],
+      },
+      {
+        column: "Arviointipäivä",
+        tableColumnIndex: 15,
+        order: ["2025-05-04", "2024-11-14", "2024-11-14"],
+      },
+      {
+        column: "Tekstin ymmärtäminen",
+        tableColumnIndex: 16,
+        order: ["6", "5", "Alle 5"],
+      },
+      {
+        column: "Kirjoittaminen",
+        tableColumnIndex: 17,
+        order: ["6", "5", "Alle 5"],
+      },
+      {
+        column: "Rakenteet ja sanasto",
+        tableColumnIndex: 18,
+        order: ["Ei voi arvioida", "8", "Alle 5"],
+      },
+      {
+        column: "Puheen ymmärtäminen",
+        tableColumnIndex: 19,
+        order: ["5", "Alle 5", "Alle 5"],
+      },
+      {
+        column: "Puhuminen",
+        tableColumnIndex: 20,
+        order: ["Vilppi", "Ei voi arvioida", "Alle 5"],
+      },
+      {
+        column: "Yleisarvosana",
+        tableColumnIndex: 21,
+        order: ["Keskeytetty", "Ei voi arvioida", "Alle 5"],
+      },
+    ] as const
 
-  for (const testCase of sortTestCases) {
-    const { column, tableColumnIndex, order } = testCase
-    const reverseOrder = [...order].reverse()
+    for (const testCase of sortTestCases) {
+      const { column, tableColumnIndex, order } = testCase
+      const reverseOrder = [...order].reverse()
 
-    test(`registry data can be sorted by "${column}"`, async ({
-      ykiSuorituksetPage: page,
-    }) => {
-      await page.open()
+      test(`registry data can be sorted by "${column}"`, async ({
+        ykiSuorituksetPage: page,
+      }) => {
+        await page.open()
 
-      const sortByLink = page.getTableColumnHeaderLink(column)
-      await sortByLink.click()
+        const sortByLink = page.getTableColumnHeaderLink(column)
+        await sortByLink.click()
 
-      for (const [expected, row] of enumerate(order)) {
-        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
-        await expect(actualValue).toHaveText(expected)
-      }
+        for (const [expected, row] of enumerate(order)) {
+          const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+          await expect(actualValue).toHaveText(expected)
+        }
 
-      await sortByLink.click()
+        await sortByLink.click()
 
-      for (const [expected, row] of enumerate(reverseOrder)) {
-        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
-        await expect(actualValue).toHaveText(expected)
-      }
-    })
-  }
+        for (const [expected, row] of enumerate(reverseOrder)) {
+          const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+          await expect(actualValue).toHaveText(expected)
+        }
+      })
+    }
+  })
 })

@@ -1,6 +1,9 @@
 import SQL from "sql-template-strings"
-import { TestDB } from "./baseFixture"
+import { expect, TestDB } from "./baseFixture"
 import { FixturePerson, peopleFixture } from "./basePeopleFixture"
+import { Config } from "../config"
+import { APIRequestContext } from "@playwright/test"
+import { OauthRequestContext } from "./oauthRequestContext"
 
 export interface YkiSuoritus {
   suorittajanOid: string
@@ -161,11 +164,11 @@ export const fixtureData = {
     puhuminen: 3,
     yleisarvosana: 1,
     tarkistusarvioinninSaapumisPvm: "2024-10-01",
-    tarkistusarvioinninAsiatunnus: "123123",
+    tarkistusarvioinninAsiatunnus: "OPH-14893989377-1",
     tarkistusarvioidutOsakokeet: ["PU"],
     arvosanaMuuttui: ["PU"],
     perustelu: "Tarkistusarvioinnin testi",
-    tarkistusarvioinninKasittelyPvm: "2024-10-20",
+    tarkistusarvioinninKasittelyPvm: "2024-10-21",
     arviointitila: "TARKISTUSARVIOITU",
   }),
   petro: createYkiSuoritus("petro", {
@@ -236,11 +239,11 @@ export const fixtureData = {
     puhuminen: 9,
     yleisarvosana: 10,
     tarkistusarvioinninSaapumisPvm: "2025-10-01",
-    tarkistusarvioinninAsiatunnus: "123123",
+    tarkistusarvioinninAsiatunnus: "OPH-14893989377-2",
     tarkistusarvioidutOsakokeet: ["PU"],
     arvosanaMuuttui: ["PU"],
     perustelu: "Tarkistusarvioinnin testi",
-    tarkistusarvioinninKasittelyPvm: "2025-10-20",
+    tarkistusarvioinninKasittelyPvm: "2025-10-22",
     arviointitila: "TARKISTUSARVIOITU",
   }),
   einoTarkistettuJaHyvaksytty: createYkiSuoritus("eino", {
@@ -261,7 +264,7 @@ export const fixtureData = {
     puhuminen: 9,
     yleisarvosana: 10,
     tarkistusarvioinninSaapumisPvm: "2024-10-01",
-    tarkistusarvioinninAsiatunnus: "123125",
+    tarkistusarvioinninAsiatunnus: "OPH-14893989377-1",
     tarkistusarvioidutOsakokeet: ["PU"],
     arvosanaMuuttui: ["PU"],
     perustelu: "Tarkistusarvioinnin testi",
@@ -270,73 +273,79 @@ export const fixtureData = {
   }),
 } as const
 
-const insertQuery = (suoritus: YkiSuoritus) => SQL`
-    INSERT INTO yki_suoritus(
-        suorittajan_oid,
-        hetu,
-        sukupuoli,
-        sukunimi,
-        etunimet,
-        kansalaisuus,
-        katuosoite,
-        postinumero,
-        postitoimipaikka,
-        email,
-        suoritus_id,
-        last_modified,
-        tutkintopaiva,
-        tutkintokieli,
-        tutkintotaso,
-        jarjestajan_tunnus_oid,
-        jarjestajan_nimi,
-        arviointipaiva,
-        tekstin_ymmartaminen,
-        kirjoittaminen,
-        rakenteet_ja_sanasto,
-        puheen_ymmartaminen,
-        puhuminen,
-        yleisarvosana,
-        tarkistusarvioinnin_saapumis_pvm,
-        tarkistusarvioinnin_asiatunnus,
-        tarkistusarvioidut_osakokeet,
-        arvosana_muuttui,
-        perustelu,
-        tarkistusarvioinnin_kasittely_pvm,
-        arviointitila
-    ) VALUES (${suoritus.suorittajanOid},
-              ${suoritus.hetu},
-              ${suoritus.sukupuoli},
-              ${suoritus.sukunimi},
-              ${suoritus.etunimet},
-              ${suoritus.kansalaisuus},
-              ${suoritus.katuosoite},
-              ${suoritus.postinumero},
-              ${suoritus.postitoimipaikka},
-              ${suoritus.email},
-              ${suoritus.suoritusId},
-              ${suoritus.lastModified},
-              ${suoritus.tutkintopaiva},
-              ${suoritus.tutkintokieli},
-              ${suoritus.tutkintotaso},
-              ${suoritus.jarjestajanTunnusOid},
-              ${suoritus.jarjestajanNimi},
-              ${suoritus.arviointipaiva},
-              ${suoritus.tekstinYmmartaminen},
-              ${suoritus.kirjoittaminen},
-              ${suoritus.rakenteetJaSanasto},
-              ${suoritus.puheenYmmartaminen},
-              ${suoritus.puhuminen},
-              ${suoritus.yleisarvosana},
-              ${suoritus.tarkistusarvioinninSaapumisPvm},
-              ${suoritus.tarkistusarvioinninAsiatunnus},
-              ${suoritus.tarkistusarvioidutOsakokeet},
-              ${suoritus.arvosanaMuuttui},
-              ${suoritus.perustelu},
-              ${suoritus.tarkistusarvioinninKasittelyPvm},
-              ${suoritus.arviointitila})
-`
-
 export type YkiSuorittajaName = keyof typeof fixtureData
 
-export const insert = async (db: TestDB, suoritus: YkiSuorittajaName) =>
-  await db.dbClient.query(insertQuery(fixtureData[suoritus]))
+export const insert = async (
+  oauth: OauthRequestContext,
+  suoritusName: YkiSuorittajaName,
+) => {
+  const data = fixtureData[suoritusName]
+
+  const osa = (tyyppi: string, arvosana?: number) =>
+    arvosana ? { tyyppi, arvosana } : undefined
+
+  const suoritus = {
+    henkilo: {
+      oid: data.suorittajanOid,
+      etunimet: data.etunimet,
+      sukunimi: data.sukunimi,
+      hetu: data.hetu,
+      sukupuoli: data.sukupuoli,
+      kansalaisuus: data.kansalaisuus,
+      katuosoite: data.katuosoite,
+      postinumero: data.postinumero,
+      postitoimipaikka: data.postitoimipaikka,
+      email: data.email,
+    },
+    suoritus: {
+      tyyppi: "yleinenkielitutkinto",
+      tutkintotaso: data.tutkintotaso,
+      kieli: data.tutkintokieli.toLowerCase(),
+      jarjestaja: {
+        oid: data.jarjestajanTunnusOid,
+        nimi: data.jarjestajanNimi,
+      },
+      tutkintopaiva: data.tutkintopaiva,
+      arviointipaiva: data.arviointipaiva,
+      osat: [
+        osa("PU", data.puhuminen),
+        osa("KI", data.kirjoittaminen),
+        osa("PY", data.puheenYmmartaminen),
+        osa("TY", data.tekstinYmmartaminen),
+        osa("RS", data.rakenteetJaSanasto),
+        osa("YL", data.yleisarvosana),
+      ].filter(Boolean),
+      tarkistusarviointi: data.tarkistusarvioinninAsiatunnus
+        ? {
+            saapumispaiva: data.tarkistusarvioinninSaapumisPvm,
+            kasittelypaiva: data.tarkistusarvioinninKasittelyPvm,
+            asiatunnus: data.tarkistusarvioinninAsiatunnus,
+            tarkistusarvioidutOsakokeet: data.tarkistusarvioidutOsakokeet,
+            arvosanaMuuttui: data.arvosanaMuuttui,
+            perustelu: data.perustelu,
+          }
+        : undefined,
+      arviointitila: data.arviointitila,
+      lahdejarjestelmanId: {
+        id: data.suoritusId,
+        lahde: "Solki",
+      },
+    },
+  }
+
+  const authHeader = await oauth.getAuthorizationHeader("ROOT")
+
+  const response = await fetch(
+    new URL("/kielitutkinnot/yki/api/suoritus", oauth.baseUrl),
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader,
+      },
+      body: JSON.stringify(suoritus),
+    },
+  )
+
+  expect(response.status).toBe(200)
+}
