@@ -10,7 +10,7 @@ import fi.oph.kitu.html.horizontalGroup
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
-import fi.oph.kitu.yki.KituArviointitila
+import fi.oph.kitu.yki.Arviointitila
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
 import kotlinx.html.h1
@@ -35,7 +35,7 @@ object YkiTarkistusarvioinnitPage {
                 submitButtonText = "Merkitse hyväksyntä valituille",
                 suoritukset =
                     suoritukset.filter {
-                        it.arviointitila == KituArviointitila.TARKISTUSARVIOITU
+                        it.arviointitila == Arviointitila.TARKISTUSARVIOITU
                     },
                 testId = "odottaaHyvaksyntaa",
             )
@@ -45,7 +45,7 @@ object YkiTarkistusarvioinnitPage {
                 submitButtonText = "Korjaa hyväksymispäivämäärä valituille",
                 suoritukset =
                     suoritukset.filter {
-                        it.arviointitila == KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY
+                        it.arviointitila == Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY
                     },
                 testId = "hyvaksytty",
             )

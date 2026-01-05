@@ -10,8 +10,7 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.toJsonNode
-import fi.oph.kitu.yki.KituArviointitila
-import fi.oph.kitu.yki.SolkiArviointitila
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
@@ -63,7 +62,7 @@ class IlmoittautumisjarjestelmaServiceTests(
                     entity,
                     entity.copy(
                         suorittajanOID = Oid.parse("1.2.246.562.24.10691606000").getOrThrow(),
-                        arviointitila = KituArviointitila.ARVIOITAVA,
+                        arviointitila = Arviointitila.ARVIOITAVA,
                         tutkintopaiva = LocalDate.of(2022, 1, 1),
                         tutkintokieli = Tutkintokieli.SWE,
                         tutkintotaso = Tutkintotaso.PT,
@@ -117,7 +116,7 @@ class IlmoittautumisjarjestelmaServiceTests(
 
         assertEquals(
             ilmoittautumisjarjestelma.latestRequest(),
-            YkiArvioinninTilaRequest.of(entity.copy(arviointitila = KituArviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY)),
+            YkiArvioinninTilaRequest.of(entity.copy(arviointitila = Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY)),
         )
     }
 
@@ -147,7 +146,7 @@ class IlmoittautumisjarjestelmaServiceTests(
                         ),
                     tutkintopaiva = LocalDate.of(2020, 1, 1),
                     arviointipaiva = LocalDate.of(2020, 1, 1),
-                    arviointitila = SolkiArviointitila.TARKISTUSARVIOITU,
+                    arviointitila = Arviointitila.TARKISTUSARVIOITU,
                     osat =
                         listOf(
                             YkiOsa(

@@ -84,10 +84,7 @@ class YkiSuoritusValidation(
     }
 
     fun validateArvointitila(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        if (s.suoritus.arviointitila
-                .toKituArviointitila()
-                .arvioitu()
-        ) {
+        if (s.suoritus.arviointitila.arvioitu()) {
             Validation.fold(
                 s,
                 Validation.assertTrue(

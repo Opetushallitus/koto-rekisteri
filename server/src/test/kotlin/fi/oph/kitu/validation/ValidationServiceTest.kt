@@ -6,7 +6,7 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.yki.SolkiArviointitila
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -39,7 +39,7 @@ class ValidationServiceTest(
                         ),
                     tutkintopaiva = LocalDate.of(2020, 1, 1),
                     arviointipaiva = LocalDate.of(2020, 1, 1),
-                    arviointitila = SolkiArviointitila.ARVIOITU,
+                    arviointitila = Arviointitila.ARVIOITU,
                     osat =
                         listOf(
                             YkiOsa(
@@ -151,7 +151,7 @@ class ValidationServiceTest(
     @Test
     fun `Ei-arvioitua suoritusta ei voi siirtää, jos sillä on arviointipäivä`() {
         val suoritus =
-            validiYkiSuoritus.modifySuoritus { it.copy(arviointitila = SolkiArviointitila.ARVIOITAVA) }
+            validiYkiSuoritus.modifySuoritus { it.copy(arviointitila = Arviointitila.ARVIOITAVA) }
 
         val result = validation.validateAndEnrich(suoritus)
 
