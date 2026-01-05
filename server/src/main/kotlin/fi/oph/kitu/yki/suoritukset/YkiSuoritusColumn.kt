@@ -73,7 +73,7 @@ enum class YkiSuoritusColumn(
     ),
 
     SuoritusId(
-        entityName = "suoritus_id",
+        entityName = "yki_suoritus.suoritus_id",
         uiHeaderValue = "Suorituksen tunniste",
         urlParam = "suoritusid",
         renderValue = { +it.suoritusId.toString() },
