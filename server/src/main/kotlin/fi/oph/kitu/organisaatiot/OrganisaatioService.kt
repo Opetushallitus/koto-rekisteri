@@ -41,7 +41,7 @@ abstract class OrganisaatioService(
 }
 
 @Service
-@Profile("!test ")
+@Profile("!test && !e2e")
 class OrganisaatioServiceImpl(
     val client: OrganisaatiopalveluClient,
     cache: PersistentCache,
