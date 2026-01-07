@@ -7,9 +7,8 @@ import {
   CustomDataIdentifier,
   DataProtectionPolicy,
   FilterPattern,
-  LogGroup,
-  LogRetention,
-  RetentionDays,
+  LogGroup, LogRetention,
+  RetentionDays
 } from "aws-cdk-lib/aws-logs"
 import { CfnTransactionSearchConfig } from "aws-cdk-lib/aws-xray"
 import { Construct } from "constructs"
