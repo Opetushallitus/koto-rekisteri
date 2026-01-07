@@ -39,7 +39,7 @@ class KoskiService(
 
                 if (koskiRequest == null) {
                     val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
-                    ykiSuoritusRepository.save(suoritus)
+                    ykiSuoritusRepository.save(suoritus, true)
                     return TypedResult.Success(suoritus)
                 } else {
                     val koskiResponse =
@@ -78,7 +78,7 @@ class KoskiService(
                             koskiOpiskeluoikeus = Oid.parse(koskiOpiskeluoikeus).getOrThrow(),
                             koskiSiirtoKasitelty = true,
                         )
-                    ykiSuoritusRepository.save(suoritus)
+                    ykiSuoritusRepository.save(suoritus, true)
                     return TypedResult.Success(suoritus)
                 }
             }
