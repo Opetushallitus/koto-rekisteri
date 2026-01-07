@@ -33,7 +33,7 @@ class YkiSuoritusRepository {
     @WithSpan
     @Transactional
     fun saveAllNewEntities(suoritukset: Iterable<YkiSuoritusEntity>): Iterable<YkiSuoritusEntity> {
-        val savedSuoritukset = suoritukset.mapNotNull { save(it) }
+        val savedSuoritukset = suoritukset.mapNotNull { save(it, false) }
         return findSuorituksetByIdList(savedSuoritukset)
     }
 
@@ -117,6 +117,7 @@ class YkiSuoritusRepository {
                     arviointitila = Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
                     lastModified = Instant.now(),
                 ),
+                true,
             )
         }
 
@@ -164,8 +165,11 @@ class YkiSuoritusRepository {
         }
 
     @Transactional
-    fun save(suoritus: YkiSuoritusEntity): Int? =
-        insertSuoritus(suoritus)?.let { suoritusId ->
+    fun save(
+        suoritus: YkiSuoritusEntity,
+        updateOnConflict: Boolean,
+    ): Int? =
+        insertSuoritus(suoritus, updateOnConflict)?.let { suoritusId ->
 
             val osakokeet = suoritus.osakokeet()
             val osakoeIds =
@@ -253,7 +257,10 @@ class YkiSuoritusRepository {
         jdbcTemplate.execute("TRUNCATE TABLE yki_suoritus CASCADE")
     }
 
-    private fun insertSuoritus(suoritus: YkiSuoritusEntity): Int? {
+    private fun insertSuoritus(
+        suoritus: YkiSuoritusEntity,
+        updateOnConflict: Boolean = false,
+    ): Int? {
         val values =
             mapOf(
                 "suorittajan_oid" to suoritus.suorittajanOID.toString(),
@@ -280,7 +287,11 @@ class YkiSuoritusRepository {
         return insertInto(
             table = "yki_suoritus",
             values = values,
-            onConflict = UpdateOnConflict(Constraint("unique_suoritus"), values.keys),
+            onConflict =
+                UpdateOnConflict(
+                    Constraint("unique_suoritus"),
+                    if (updateOnConflict) values.keys else setOf("last_modified"),
+                ),
         )
     }
 

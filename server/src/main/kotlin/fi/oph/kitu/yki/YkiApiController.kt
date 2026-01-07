@@ -152,7 +152,7 @@ class YkiApiController(
                     }
             }
 
-        ykiSuoritusRepository.save(entity)
+        ykiSuoritusRepository.save(entity, false)
         ilmoittautumisjarjestelma.sendArvioinninTila(entity)
         return TiedonsiirtoSuccess().toResponseEntity()
     }
