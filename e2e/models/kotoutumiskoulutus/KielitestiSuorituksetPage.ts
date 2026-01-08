@@ -52,4 +52,10 @@ export default class KielitestiSuorituksetPage extends BasePage {
   getErrorLink() {
     return this.getContent().locator(".error-text").getByRole("link")
   }
+
+  getCSVDownloadLink() {
+    return this.getPageContent().getByRole("link", {
+      name: "Lataa tiedot CSV:nä",
+    })
+  }
 }

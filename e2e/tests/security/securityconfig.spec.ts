@@ -44,6 +44,7 @@ const apiRoutes = [
 
   // KielitestiApiController
   "GET /koto-kielitesti/api/suoritukset",
+  "GET /koto-kielitesti/api/suoritukset/virheet",
 
   // VktApiController
   "PUT /api/vkt/kios",

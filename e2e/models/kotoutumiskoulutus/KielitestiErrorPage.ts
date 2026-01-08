@@ -42,4 +42,10 @@ export default class KielitestiErrorPage extends BasePage {
   getTableColumnHeaderLink(text: string) {
     return this.getErrorsTable().getByRole("link", { name: text })
   }
+
+  getCSVDownloadLink() {
+    return this.getPageContent().getByRole("link", {
+      name: "Lataa tiedot CSV:nä",
+    })
+  }
 }
