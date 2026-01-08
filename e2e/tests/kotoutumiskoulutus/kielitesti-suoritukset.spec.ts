@@ -1,5 +1,8 @@
+import * as node_fs from "node:fs"
 import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 import { enumerate } from "../../util/arrays"
+
+const fs = node_fs.promises
 
 describe("Kotoutumiskoulutuksen kielitesti -page", () => {
   beforeEach(async ({ db, kotoSuoritus, basePage }) => {
@@ -111,4 +114,27 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
       }
     })
   }
+
+  test("should download koto-suoritukset CSV and verify its content", async ({
+    page,
+    kielitestiSuorituksetPage,
+  }) => {
+    await kielitestiSuorituksetPage.open()
+
+    // Intercept the download
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      kielitestiSuorituksetPage.getCSVDownloadLink().click(),
+    ])
+
+    // Save the file to a temporary location
+    const path = await download.path()
+    expect(path).not.toBeNull()
+
+    const csvContent = await fs.readFile(path!, "utf8")
+    let headers =
+      "sukunimi,etunimet,sahkoposti,kurssinNimi,suoritusaika,oppijanumero,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen"
+
+    expect(csvContent).toContain(headers)
+  })
 })

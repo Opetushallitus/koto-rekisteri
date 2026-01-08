@@ -149,6 +149,24 @@ class KoealustaService(
                 return@use outputStream
             }
 
+    fun generateErrorsCsvStream(
+        orderBy: KielitestiSuoritusErrorColumn = KielitestiSuoritusErrorColumn.VirheenLuontiaika,
+        orderByDirection: SortDirection = SortDirection.DESC,
+    ): ByteArrayOutputStream =
+        tracer
+            .spanBuilder("KoealustaService.generateErrorsCsvStream")
+            .startSpan()
+            .use { span ->
+                val errors = getErrors(orderBy, orderByDirection)
+                span.setAttribute("dataCount", errors.count())
+                val outputStream = ByteArrayOutputStream()
+                csvParser
+                    .withUseHeader(true)
+                    .streamDataAsCsv(outputStream, errors)
+
+                return@use outputStream
+            }
+
     fun List<KielitestiSuoritus>.sortByName(
         orderBy: KielitestiSuoritusColumn,
         orderByDirection: SortDirection,

@@ -33,4 +33,20 @@ class KielitestiApiController(
                     ),
                 ),
             )
+
+    @GetMapping("/suoritukset/virheet", produces = ["text/csv"])
+    fun getErrorsAsCsv(): ResponseEntity<Resource> =
+        ResponseEntity
+            .ok()
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .header("Content-Disposition", "attachment; filename=koto-suoritukset-${LocalDate.now().isoDate()}.csv")
+            .body(
+                InputStreamResource(
+                    ByteArrayInputStream(
+                        service
+                            .generateErrorsCsvStream()
+                            .toByteArray(),
+                    ),
+                ),
+            )
 }

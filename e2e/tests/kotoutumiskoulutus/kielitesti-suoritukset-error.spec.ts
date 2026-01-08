@@ -1,6 +1,9 @@
+import * as node_fs from "node:fs"
 import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 import { fixtureData } from "../../fixtures/kotoError"
 import { enumerate } from "../../util/arrays"
+
+const fs = node_fs.promises
 
 const toFinnishDateTime = (isoString: string) => {
   const t = new Date(isoString)
@@ -217,5 +220,30 @@ describe('"Koto Suoritukset" -page', () => {
         }
       })
     }
+  })
+
+  test("should download koto-errors CSV and verify its content", async ({
+    page,
+    kielitestiErrorPage,
+  }) => {
+    await kielitestiErrorPage.open()
+
+    // Intercept the download
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      kielitestiErrorPage.getCSVDownloadLink().click(),
+    ])
+
+    // Save the file to a temporary location
+    const path = await download.path()
+    expect(path).not.toBeNull()
+
+    const csvContent = await fs.readFile(path!, "utf8")
+    let headers =
+      "virheenLuontiaika,suorittajanOid,hetu,nimi,etunimet,sukunimi,kutsumanimi,schoolOid,teacherEmail,viesti,lisatietoja,onrLisatietoja,virheellinenKentta,virheellinenArvo"
+    let ranjaError =
+      '2024-11-22T10:49:49Z,"1.2.246.562.24.20281155246",010180-9026,"Ranja Testi Öhman-Testi","Ranja Testi",Öhman-Testi,Ranja,"1.2.246.562.10.14893989377",opettaja@testi.oph.fi,"Unexpectedly missing quiz grade ""puhuminen"" on course ""Integraatio testaus"" for user ""1""",,,puhuminen,"virheellinen arvosana'
+    expect(csvContent).toContain(headers)
+    expect(csvContent).toContain(ranjaError)
   })
 })

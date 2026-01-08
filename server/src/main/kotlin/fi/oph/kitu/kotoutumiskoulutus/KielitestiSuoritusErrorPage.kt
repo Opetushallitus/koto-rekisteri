@@ -5,10 +5,16 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.organisaatiot.Organisaatiot
+import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.h1
 import kotlinx.html.h2
+import kotlinx.html.header
+import kotlinx.html.li
+import kotlinx.html.nav
 import kotlinx.html.table
+import kotlinx.html.ul
+import org.springframework.hateoas.server.mvc.linkTo
 import kotlin.enums.enumEntries
 
 object KielitestiSuoritusErrorPage {
@@ -24,6 +30,21 @@ object KielitestiSuoritusErrorPage {
             h1 { +"Kotoutumiskoulutuksen kielitaidon päättötesti" }
             h2 { +"Suoritusten tuonnin virheet" }
             article(classes = "overflow-auto") {
+                header {
+                    nav {
+                        ul {
+                            li {
+                                +"Virheitä yhteensä: ${errors.count()}"
+                            }
+                            li {
+                                a(href = linkTo<KielitestiApiController> { getErrorsAsCsv() }.toString()) {
+                                    attributes["download"] = ""
+                                    +"Lataa tiedot CSV:nä"
+                                }
+                            }
+                        }
+                    }
+                }
                 table(classes = "compact striped") {
                     val columns =
                         enumEntries<KielitestiSuoritusErrorColumn>().map {
