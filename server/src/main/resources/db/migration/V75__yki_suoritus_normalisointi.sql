@@ -91,6 +91,7 @@ WITH tarkistusarviointi_row AS (
                                                             perustelu
         FROM yki_suoritus
         WHERE tarkistusarvioinnin_asiatunnus IS NOT NULL
+          AND tarkistusarvioinnin_asiatunnus <> ''
         ORDER BY tarkistusarvioinnin_asiatunnus, last_modified DESC
         RETURNING
             id AS tarkistusarviointi_id,
