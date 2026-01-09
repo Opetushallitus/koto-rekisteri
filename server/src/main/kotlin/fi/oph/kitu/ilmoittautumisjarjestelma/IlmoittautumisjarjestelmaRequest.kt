@@ -1,6 +1,5 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.oph.kitu.Oid
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
@@ -14,8 +13,9 @@ sealed interface IlmoittautumisjarjestelmaRequest
 data class YkiArvioinninTilaRequest(
     val tilat: List<YkiArvioinninTila>,
 ) : IlmoittautumisjarjestelmaRequest {
-    @JsonIgnore
-    fun isNotEmpty(): Boolean = tilat.isNotEmpty()
+    init {
+        require(tilat.isNotEmpty()) { "Tilat list must not be empty" }
+    }
 
     companion object {
         fun of(entity: YkiSuoritusEntity) = YkiArvioinninTilaRequest(listOf(YkiArvioinninTila.of(entity)))
@@ -62,21 +62,34 @@ data class YkiSuorituksenTunniste(
     }
 }
 
-sealed interface IlmoittautumisjarjestelmaResponse {
-    val status: IlmoittautumisjarjestelmaStatus
+data class IlmoittautumisjarjestelmaResponse(
+    val hyvaksytyt: Int,
+    val virheet: List<IlmoittautumisjarjestelmaResponseError>?,
+) {
+    companion object {
+        fun empty() = IlmoittautumisjarjestelmaResponse(0, null)
+
+        fun ok(hyvaksytyt: Int) = IlmoittautumisjarjestelmaResponse(hyvaksytyt, null)
+
+        fun errorFor(
+            suoritus: YkiSuoritusEntity,
+            error: String,
+        ) = IlmoittautumisjarjestelmaResponse(
+            hyvaksytyt = 1,
+            virheet =
+                listOf(
+                    IlmoittautumisjarjestelmaResponseError(
+                        suoritus = YkiSuorituksenTunniste.of(suoritus),
+                        tila = suoritus.arviointitila,
+                        virhe = error,
+                    ),
+                ),
+        )
+    }
 }
 
-enum class IlmoittautumisjarjestelmaStatus {
-    OK,
-    ERROR,
-}
-
-class IlmoittautumisjarjestelmaSuccessResponse : IlmoittautumisjarjestelmaResponse {
-    override val status = IlmoittautumisjarjestelmaStatus.OK
-}
-
-data class IlmoittautumisjarjestelmaErrorResponse(
-    val message: String,
-) : IlmoittautumisjarjestelmaResponse {
-    override val status = IlmoittautumisjarjestelmaStatus.ERROR
-}
+data class IlmoittautumisjarjestelmaResponseError(
+    val suoritus: YkiSuorituksenTunniste,
+    val tila: Arviointitila,
+    val virhe: String,
+)
