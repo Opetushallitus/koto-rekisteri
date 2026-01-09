@@ -156,7 +156,21 @@ class IlmoittautumisjarjestelmaServiceTests(
         }
 
         val savedSuoritus = ykiSuoritusRepository.findLatestBySuoritusIds(listOf(entity.suoritusId)).first()
-        assertEquals("Unexpected error", savedSuoritus.arviointitilanLahetysvirhe)
+        assertEquals(
+            """Unexpected error; request: {
+  "tilat" : [ {
+    "suoritus" : {
+      "oppijanumero" : "1.2.246.562.24.10691606777",
+      "tutkintopaiva" : "2020-01-01",
+      "tutkintokieli" : "fin",
+      "tutkintotaso" : "KT",
+      "osakokeet" : [ "PU", "KI", "TY", "PY" ]
+    },
+    "tila" : "TARKISTUSARVIOITU"
+  } ]
+}; response status: 404 NOT_FOUND""",
+            savedSuoritus.arviointitilanLahetysvirhe,
+        )
     }
 
     @Autowired

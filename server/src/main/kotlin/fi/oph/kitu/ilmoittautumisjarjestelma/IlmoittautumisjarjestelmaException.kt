@@ -1,5 +1,6 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
+import fi.oph.kitu.defaultObjectMapper
 import org.springframework.http.ResponseEntity
 
 sealed class IlmoittautumisjarjestelmaException(
@@ -26,4 +27,13 @@ sealed class IlmoittautumisjarjestelmaException(
         response: ResponseEntity<String>,
         cause: Throwable? = null,
     ) : IlmoittautumisjarjestelmaException(request, response, "Malformed response", cause)
+
+    fun debugString(): String =
+        listOfNotNull(
+            message,
+            "request: ${defaultObjectMapper.writeValueAsString(request)}",
+            response?.statusCode?.let { "response status: $it" },
+            response?.body?.let { "response body: $it" },
+            cause?.let { "cause: $it" },
+        ).joinToString("; ")
 }
