@@ -169,6 +169,13 @@ enum class YkiSuoritusColumn(
         urlParam = "yleisarvosana",
         renderValue = { ykiArvosana(it.yleisarvosana, it.tutkintotaso) },
     ),
+
+    ArviointitilaLahetetty(
+        entityName = "arviointitila_lahetetty",
+        uiHeaderValue = "Tila lähetetty",
+        urlParam = "arviointitilalahetetty",
+        renderValue = { +(it.arviointitilanLahetysvirhe ?: it.arviointitilaLahetetty?.toString() ?: "") },
+    ),
 }
 
 fun FlowContent.ykiArvosana(
