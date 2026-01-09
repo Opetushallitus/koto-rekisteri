@@ -46,7 +46,13 @@ class YkiSuoritusRepositoryTest(
             )
         val savedSuoritukset = ykiSuoritusRepository.saveAllNewEntities(listOf(initialSuoritus, updatedSuoritus))
         assertEquals(1, savedSuoritukset.count())
-        assertEquals(updatedSuoritus, savedSuoritukset.elementAt(0).copy(id = null))
+        assertEquals(
+            updatedSuoritus,
+            savedSuoritukset.elementAt(0).copy(
+                id = null,
+                lastModified = Instant.parse("2025-01-01T13:53:56Z"),
+            ),
+        )
     }
 
     @Test
