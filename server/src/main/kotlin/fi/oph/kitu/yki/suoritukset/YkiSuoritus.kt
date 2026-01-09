@@ -74,6 +74,8 @@ data class YkiSuoritus(
             koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,
             koskiSiirtoKasitelty = koskiSiirtoKasitelty,
             arviointitila = arviointitila,
+            arviointitilaLahetetty = null,
+            arviointitilanLahetysvirhe = null,
         )
     }
 }

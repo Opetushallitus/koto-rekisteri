@@ -57,6 +57,8 @@ class YkiSuoritusMappingService {
             } else {
                 Arviointitila.TARKISTUSARVIOITU
             },
+        arviointitilaLahetetty = null,
+        arviointitilanLahetysvirhe = null,
     )
 
     @WithSpan

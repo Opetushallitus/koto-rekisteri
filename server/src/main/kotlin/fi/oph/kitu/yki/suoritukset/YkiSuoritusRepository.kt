@@ -223,34 +223,49 @@ class YkiSuoritusRepository {
                 buildSql(
                     selectSuoritukset(viimeisin = true),
                     """
-                        WHERE
-                            arviointitila_lahetetty IS NULL
-                            OR arviointitila_lahetetty < last_modified
-                        ORDER BY
-                            yki_suoritus.suoritus_id,
-                            last_modified DESC 
+                    WHERE arviointitila_lahetetty IS NULL
+                       OR arviointitila_lahetetty < last_modified
                     """,
                 ),
                 YkiSuoritusEntity.fromRow,
             )
 
-    fun setArvioinninTilaSent(suoritusId: Int) = setArvioinninTilaSent(listOf(suoritusId))
-
     fun setArvioinninTilaSent(suoritusIds: List<Int>) =
-        if (suoritusIds.isNotEmpty()) {
-            jdbcTemplate.update(
-                """
-                INSERT INTO yki_suoritus_lisatieto (suoritus_id, arviointitila_lahetetty)
-                    VALUES ${suoritusIds.joinToString(",") { "(?, now())" }}
-                ON CONFLICT ON CONSTRAINT yki_suoritus_lisatieto_pkey
-                    DO UPDATE SET
-                        arviointitila_lahetetty = now();
-                """.trimIndent(),
-                *suoritusIds.toTypedArray(),
+        suoritusIds.forEach { suoritusId ->
+            insertInto<Unit>(
+                table = "yki_suoritus_lisatieto",
+                values =
+                    mapOf(
+                        "suoritus_id" to suoritusId,
+                        "arviointitila_lahetetty" to Timestamp(Instant.now().toEpochMilli()),
+                        "arviointitilan_lahetysvirhe" to null,
+                    ),
+                onConflict =
+                    UpdateOnConflict(
+                        Constraint("yki_suoritus_lisatieto_pkey"),
+                        listOf("arviointitila_lahetetty"),
+                    ),
+                returning = null,
             )
-        } else {
-            0
         }
+
+    fun setArvioinninTilanLahetysvirhe(
+        suoritusId: Int,
+        message: String,
+    ) = insertInto<Unit>(
+        table = "yki_suoritus_lisatieto",
+        values =
+            mapOf(
+                "suoritus_id" to suoritusId,
+                "arviointitilan_lahetysvirhe" to message,
+            ),
+        onConflict =
+            UpdateOnConflict(
+                Constraint("yki_suoritus_lisatieto_pkey"),
+                listOf("arviointitilan_lahetysvirhe"),
+            ),
+        returning = null,
+    )
 
     fun deleteAll() {
         jdbcTemplate.execute("TRUNCATE TABLE yki_suoritus_lisatieto")
@@ -450,6 +465,7 @@ object YkiSuoritusSql {
                 yki_suoritus.*,
                 arvosana.*,
                 yki_suoritus_lisatieto.arviointitila_lahetetty,
+                yki_suoritus_lisatieto.arviointitilan_lahetysvirhe,
                 tarkistusarviointi_agg.tarkistusarvioidut_osakokeet,
                 tarkistusarviointi_agg.arvosana_muuttui,
                 yki_tarkistusarviointi.asiatunnus as tarkistusarvioinnin_asiatunnus,

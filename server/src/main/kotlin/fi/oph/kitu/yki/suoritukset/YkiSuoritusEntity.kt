@@ -13,6 +13,7 @@ import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.jdbc.core.RowMapper
+import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
 
@@ -58,6 +59,8 @@ data class YkiSuoritusEntity(
     val koskiSiirtoKasitelty: Boolean?,
     @Enumerated(EnumType.STRING)
     val arviointitila: Arviointitila,
+    val arviointitilaLahetetty: Timestamp?,
+    val arviointitilanLahetysvirhe: String?,
 ) {
     fun arvosana(osakoe: TutkinnonOsa): Int? =
         when (osakoe) {
@@ -130,6 +133,8 @@ data class YkiSuoritusEntity(
                     Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),
                     rs.getBoolean("koski_siirto_kasitelty"),
                     Arviointitila.valueOf(rs.getString("arviointitila")),
+                    rs.getTimestamp("arviointitila_lahetetty"),
+                    rs.getString("arviointitilan_lahetysvirhe"),
                 )
             }
     }

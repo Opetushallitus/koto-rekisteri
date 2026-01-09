@@ -73,5 +73,7 @@ fun generateRandomYkiSuoritusEntity(
         koskiOpiskeluoikeus = null,
         koskiSiirtoKasitelty = false,
         arviointitila = Arviointitila.ARVIOITU,
+        arviointitilaLahetetty = null,
+        arviointitilanLahetysvirhe = null,
     )
 }
