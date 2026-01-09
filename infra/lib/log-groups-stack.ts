@@ -109,13 +109,8 @@ export class LogGroupsStack extends Stack {
     const transactionSearchSpans = LogGroup.fromLogGroupName(
       this,
       "TransactionSearchSpans",
-      "/aws/spans",
+      "aws/spans",
     )
-
-    new LogRetention(this, "TransactionSearchSpansRetention", {
-      logGroupName: "/aws/spans",
-      retention: RetentionDays.THREE_YEARS,
-    })
 
     const applicationSignalsData = LogGroup.fromLogGroupName(
       this,
