@@ -26,11 +26,8 @@ class IlmoittautumisjarjestelmaServiceImpl(
     override fun sendAllUpdatedArvioinninTilat() {
         val suoritukset = suoritusRepository.findSuorituksetWithUnsentArvioinninTila()
         if (suoritukset.isNotEmpty()) {
-            // Testailun vuoksi lähetetään kaikki yksitellen:
-            suoritukset.forEach { sendArvioinninTila(it) }
-
-            // val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritukset))
-            // saveResponse(suoritukset, response)
+            val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritukset))
+            saveResponse(suoritukset, response)
         }
     }
 

@@ -105,8 +105,7 @@ class IlmoittautumisjarjestelmaServiceTests(
 
         val suoritukset = suoritukset.findAll()
         assertEquals(3, suoritukset.size)
-        assertEquals(3, ilmoittautumisjarjestelmaClient.requests.size)
-        // assertEquals(3, (ilmoittautumisjarjestelmaClient.latestRequest() as? YkiArvioinninTilaRequest)?.tilat?.size)
+        assertEquals(3, (ilmoittautumisjarjestelmaClient.latestRequest() as? YkiArvioinninTilaRequest)?.tilat?.size)
     }
 
     @Test
