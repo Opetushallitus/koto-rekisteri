@@ -3,6 +3,7 @@ package fi.oph.kitu.ilmoittautumisjarjestelma
 import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
+import fi.oph.kitu.TypedResult
 import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.dev.YkiController
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
@@ -25,6 +26,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkastusarviointi
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -42,14 +44,14 @@ class IlmoittautumisjarjestelmaServiceTests(
     @param:Autowired val ykiApi: YkiApiController,
     @param:Autowired val ykiView: YkiViewController,
     @param:Autowired val suoritukset: YkiSuoritusRepository,
-    @param:Autowired val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaClientMock,
+    @param:Autowired val ilmoittautumisjarjestelmaClient: IlmoittautumisjarjestelmaClientMock,
     @param:Autowired val ykiCsvImport: YkiService,
     @param:Autowired val ykiDevController: YkiController,
 ) {
     @BeforeEach
     fun setup() {
         suoritukset.deleteAll()
-        ilmoittautumisjarjestelma.reset()
+        ilmoittautumisjarjestelmaClient.reset()
     }
 
     @Test
@@ -80,9 +82,9 @@ class IlmoittautumisjarjestelmaServiceTests(
 
     @Test
     fun `YKI-tietojen lisäys triggeröi arviointitilan lähetyksen ilmoittautumisjärjestelmään`() {
-        assertNull(ilmoittautumisjarjestelma.latestRequest())
+        assertNull(ilmoittautumisjarjestelmaClient.latestRequest())
         ykiApi.postHenkilosuoritus(suoritus)
-        assertEquals(ilmoittautumisjarjestelma.latestRequest(), YkiArvioinninTilaRequest.of(entity))
+        assertEquals(ilmoittautumisjarjestelmaClient.latestRequest(), YkiArvioinninTilaRequest.of(entity))
     }
 
     @Test
@@ -103,23 +105,62 @@ class IlmoittautumisjarjestelmaServiceTests(
 
         val suoritukset = suoritukset.findAll()
         assertEquals(3, suoritukset.size)
-        assertEquals(3, (ilmoittautumisjarjestelma.latestRequest() as? YkiArvioinninTilaRequest)?.tilat?.size)
+        assertEquals(3, (ilmoittautumisjarjestelmaClient.latestRequest() as? YkiArvioinninTilaRequest)?.tilat?.size)
     }
 
     @Test
     fun `Tarkistusarvioinnin hyväksyminen triggeröi arviointitilan lähetyksen ilmoittautumisjärjestelmään`() {
         ykiApi.postHenkilosuoritus(suoritus)
-        ilmoittautumisjarjestelma.reset()
+
+        assertEquals(
+            ilmoittautumisjarjestelmaClient.latestRequest(),
+            YkiArvioinninTilaRequest.of(entity.copy(arviointitila = Arviointitila.TARKISTUSARVIOITU)),
+        )
 
         val suoritus = suoritukset.findTarkistusarvoidutSuoritukset().first()
         ykiView.hyvaksyTarkistusArvioinnit(listOf(suoritus.suoritusId))
 
         assertEquals(
-            ilmoittautumisjarjestelma.latestRequest(),
+            ilmoittautumisjarjestelmaClient.latestRequest(),
             YkiArvioinninTilaRequest.of(entity.copy(arviointitila = Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY)),
         )
     }
 
+    @Test
+    fun `Epäonnistunut kutsu #1 ei aiheuta poikkeusta rajapinnassa, mutta poikkeus tallennetaan virhetauluun`() {
+        ilmoittautumisjarjestelmaClient.response =
+            TypedResult.Success(
+                IlmoittautumisjarjestelmaResponse.errorFor(entity, "SUORITUSTA_EI_LOYDY"),
+            )
+
+        assertDoesNotThrow {
+            ykiApi.postHenkilosuoritus(suoritus)
+        }
+
+        val savedSuoritus = ykiSuoritusRepository.findLatestBySuoritusIds(listOf(entity.suoritusId)).first()
+        assertEquals("SUORITUSTA_EI_LOYDY", savedSuoritus.arviointitilanLahetysvirhe)
+    }
+
+    @Test
+    fun `Epäonnistunut kutsu #2 ei aiheuta poikkeusta rajapinnassa, mutta poikkeus tallennetaan virhetauluun`() {
+        ilmoittautumisjarjestelmaClient.response =
+            TypedResult.Failure(
+                IlmoittautumisjarjestelmaException.UnexpectedError(
+                    request = YkiArvioinninTilaRequest.of(entity),
+                    response = ResponseEntity.notFound().build(),
+                ),
+            )
+
+        assertDoesNotThrow {
+            ykiApi.postHenkilosuoritus(suoritus)
+        }
+
+        val savedSuoritus = ykiSuoritusRepository.findLatestBySuoritusIds(listOf(entity.suoritusId)).first()
+        assertEquals("Unexpected error", savedSuoritus.arviointitilanLahetysvirhe)
+    }
+
+    @Autowired
+    private lateinit var ykiSuoritusRepository: YkiSuoritusRepository
     val suoritus =
         Henkilosuoritus(
             henkilo =

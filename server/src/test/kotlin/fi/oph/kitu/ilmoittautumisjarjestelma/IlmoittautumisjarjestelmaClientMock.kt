@@ -8,9 +8,15 @@ import org.springframework.stereotype.Service
 @Profile("test")
 class IlmoittautumisjarjestelmaClientMock : IlmoittautumisjarjestelmaClient {
     val requests = mutableListOf<IlmoittautumisjarjestelmaRequest>()
+    val defaultResponse: TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException> =
+        TypedResult.Success(IlmoittautumisjarjestelmaResponse.ok(1))
+
+    var response: TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException> =
+        defaultResponse
 
     fun reset() {
         requests.clear()
+        response = defaultResponse
     }
 
     fun latestRequest() = requests.lastOrNull()
@@ -22,6 +28,6 @@ class IlmoittautumisjarjestelmaClientMock : IlmoittautumisjarjestelmaClient {
     ): TypedResult<T, out IlmoittautumisjarjestelmaException> {
         requests.add(body)
         @Suppress("UNCHECKED_CAST")
-        return TypedResult.Success(null as T)
+        return response as TypedResult<T, out IlmoittautumisjarjestelmaException>
     }
 }
