@@ -72,7 +72,7 @@ class IlmoittautumisjarjestelmaServiceImpl(
         suoritukset.forEach { suoritus ->
             suoritusRepository.setArvioinninTilanLahetysvirhe(
                 suoritus.suoritusId,
-                exception.message ?: exception.toString(),
+                exception.debugString(),
             )
         }
     })
