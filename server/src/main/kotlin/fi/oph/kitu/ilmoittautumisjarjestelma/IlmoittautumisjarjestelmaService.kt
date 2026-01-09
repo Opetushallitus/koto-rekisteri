@@ -42,7 +42,7 @@ class IlmoittautumisjarjestelmaServiceImpl(
         request: YkiArvioinninTilaRequest,
     ): TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException> =
         client.post(
-            "/yki/v2/api/oauth2/registration/evaluation",
+            "yki/v2/api/oauth2/registration/evaluation",
             request,
             IlmoittautumisjarjestelmaResponse::class.java,
         )
