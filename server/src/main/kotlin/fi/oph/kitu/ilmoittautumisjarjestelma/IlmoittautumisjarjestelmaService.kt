@@ -14,10 +14,6 @@ interface IlmoittautumisjarjestelmaService {
     fun sendAllUpdatedArvioinninTilat()
 
     fun sendArvioinninTila(suoritus: YkiSuoritusEntity)
-
-    fun sendArvioinninTilat(
-        request: YkiArvioinninTilaRequest,
-    ): TypedResult<out IlmoittautumisjarjestelmaResponse?, out IlmoittautumisjarjestelmaException>
 }
 
 @Service
@@ -29,25 +25,57 @@ class IlmoittautumisjarjestelmaServiceImpl(
     @WithSpan
     override fun sendAllUpdatedArvioinninTilat() {
         val suoritukset = suoritusRepository.findSuorituksetWithUnsentArvioinninTila()
-        sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritukset))
-        suoritusRepository.setArvioinninTilaSent(suoritukset.map { it.suoritusId })
+        if (suoritukset.isNotEmpty()) {
+            val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritukset))
+            saveResponse(suoritukset, response)
+        }
     }
 
     @WithSpan
     override fun sendArvioinninTila(suoritus: YkiSuoritusEntity) {
-        sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritus))
-        suoritusRepository.setArvioinninTilaSent(suoritus.suoritusId)
+        val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritus))
+        saveResponse(listOf(suoritus), response)
     }
 
     @WithSpan
-    override fun sendArvioinninTilat(
+    private fun sendArvioinninTilat(
         request: YkiArvioinninTilaRequest,
-    ): TypedResult<out IlmoittautumisjarjestelmaResponse?, out IlmoittautumisjarjestelmaException> =
-        if (request.isNotEmpty()) {
-            client.post("/api/arviointitila", request, IlmoittautumisjarjestelmaResponse::class.java)
-        } else {
-            TypedResult.Success(null)
+    ): TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException> =
+        client.post(
+            "/yki/v2/api/oauth2/registration/evaluation",
+            request,
+            IlmoittautumisjarjestelmaResponse::class.java,
+        )
+
+    private fun saveResponse(
+        suoritukset: List<YkiSuoritusEntity>,
+        response: TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException>,
+    ) = response.fold({ response ->
+        val virheIds =
+            response.virheet
+                ?.let { virheet ->
+                    val tunnisteIds = suoritukset.associate { YkiSuorituksenTunniste.of(it) to it.suoritusId }
+                    virheet.associate { tunnisteIds[it.suoritus] to it.virhe }
+                }.orEmpty()
+
+        val (failedSuoritukset, okSuoritukset) = suoritukset.partition { virheIds.containsKey(it.suoritusId) }
+
+        if (okSuoritukset.isNotEmpty()) {
+            suoritusRepository.setArvioinninTilaSent(okSuoritukset.map { it.suoritusId })
         }
+        virheIds.forEach { suoritusId, virhe ->
+            suoritusId?.let {
+                suoritusRepository.setArvioinninTilanLahetysvirhe(suoritusId, virhe)
+            }
+        }
+    }, { exception ->
+        suoritukset.forEach { suoritus ->
+            suoritusRepository.setArvioinninTilanLahetysvirhe(
+                suoritus.suoritusId,
+                exception.message ?: exception.toString(),
+            )
+        }
+    })
 }
 
 @Service
@@ -63,13 +91,5 @@ class IlmoittautumisjarjestelmaServiceMock : IlmoittautumisjarjestelmaService {
     @WithSpan
     override fun sendArvioinninTila(suoritus: YkiSuoritusEntity) {
         logger.debug("sendArvioinninTila called but no client configured, skipping.")
-    }
-
-    @WithSpan
-    override fun sendArvioinninTilat(
-        request: YkiArvioinninTilaRequest,
-    ): TypedResult<IlmoittautumisjarjestelmaResponse?, out IlmoittautumisjarjestelmaException> {
-        logger.debug("sendArvioinninTilat called but no client configured, skipping.")
-        return TypedResult.Success(null)
     }
 }
