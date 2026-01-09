@@ -71,7 +71,7 @@ class IlmoittautumisjarjestelmaServiceTests(
             )
 
         val expectedJson =
-            ClassPathResource("./kios-request-example.json").file.readText().toJsonNode()
+            ClassPathResource("kios-arviointitila-request-example.json").file.readText().toJsonNode()
 
         val actualJson = mapper.valueToTree<JsonNode>(data)
 
