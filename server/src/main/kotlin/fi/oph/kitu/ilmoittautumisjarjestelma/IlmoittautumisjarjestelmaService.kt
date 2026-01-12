@@ -24,7 +24,11 @@ class IlmoittautumisjarjestelmaServiceImpl(
 ) : IlmoittautumisjarjestelmaService {
     @WithSpan
     override fun sendAllUpdatedArvioinninTilat() {
-        val suoritukset = suoritusRepository.findSuorituksetWithUnsentArvioinninTila()
+        val suoritukset =
+            suoritusRepository
+                .findSuorituksetWithUnsentArvioinninTila()
+                .filter { it.arviointitilanLahetysvirhe != "SUORITUSTA_EI_LOYDY" }
+
         if (suoritukset.isNotEmpty()) {
             val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritukset))
             saveResponse(suoritukset, response)
