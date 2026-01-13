@@ -3,189 +3,192 @@
  * 2016 SpryMedia Ltd - datatables.net/license
  */
 
-;(function (factory) {
-  if (typeof define === "function" && define.amd) {
-    // AMD
-    define(["jquery", "datatables.net", "datatables.net-buttons"], function (
-      $,
-    ) {
-      return factory($, window, document)
-    })
-  } else if (typeof exports === "object") {
-    // CommonJS
-    module.exports = function (root, $) {
-      if (!root) {
-        root = window
-      }
+(function( factory ){
+	if ( typeof define === 'function' && define.amd ) {
+		// AMD
+		define( ['jquery', 'datatables.net', 'datatables.net-buttons'], function ( $ ) {
+			return factory( $, window, document );
+		} );
+	}
+	else if ( typeof exports === 'object' ) {
+		// CommonJS
+		module.exports = function (root, $) {
+			if ( ! root ) {
+				root = window;
+			}
 
-      if (!$ || !$.fn.dataTable) {
-        $ = require("datatables.net")(root, $).$
-      }
+			if ( ! $ || ! $.fn.dataTable ) {
+				$ = require('datatables.net')(root, $).$;
+			}
 
-      if (!$.fn.dataTable.Buttons) {
-        require("datatables.net-buttons")(root, $)
-      }
+			if ( ! $.fn.dataTable.Buttons ) {
+				require('datatables.net-buttons')(root, $);
+			}
 
-      return factory($, root, root.document)
-    }
-  } else {
-    // Browser
-    factory(jQuery, window, document)
-  }
-})(function ($, window, document, undefined) {
-  "use strict"
-  var DataTable = $.fn.dataTable
+			return factory( $, root, root.document );
+		};
+	}
+	else {
+		// Browser
+		factory( jQuery, window, document );
+	}
+}(function( $, window, document, undefined ) {
+'use strict';
+var DataTable = $.fn.dataTable;
 
-  var _link = document.createElement("a")
 
-  /**
-   * Clone link and style tags, taking into account the need to change the source
-   * path.
-   *
-   * @param  {node}     el Element to convert
-   */
-  var _styleToAbs = function (el) {
-    var url
-    var clone = $(el).clone()[0]
-    var linkHost
+var _link = document.createElement( 'a' );
 
-    if (clone.nodeName.toLowerCase() === "link") {
-      clone.href = _relToAbs(clone.href)
-    }
+/**
+ * Clone link and style tags, taking into account the need to change the source
+ * path.
+ *
+ * @param  {node}     el Element to convert
+ */
+var _styleToAbs = function( el ) {
+	var url;
+	var clone = $(el).clone()[0];
+	var linkHost;
 
-    return clone.outerHTML
-  }
+	if ( clone.nodeName.toLowerCase() === 'link' ) {
+		clone.href = _relToAbs( clone.href );
+	}
 
-  /**
-   * Convert a URL from a relative to an absolute address so it will work
-   * correctly in the popup window which has no base URL.
-   *
-   * @param  {string} href URL
-   */
-  var _relToAbs = function (href) {
-    // Assign to a link on the original page so the browser will do all the
-    // hard work of figuring out where the file actually is
-    _link.href = href
-    var linkHost = _link.host
+	return clone.outerHTML;
+};
 
-    // IE doesn't have a trailing slash on the host
-    // Chrome has it on the pathname
-    if (linkHost.indexOf("/") === -1 && _link.pathname.indexOf("/") !== 0) {
-      linkHost += "/"
-    }
+/**
+ * Convert a URL from a relative to an absolute address so it will work
+ * correctly in the popup window which has no base URL.
+ *
+ * @param  {string} href URL
+ */
+var _relToAbs = function( href ) {
+	// Assign to a link on the original page so the browser will do all the
+	// hard work of figuring out where the file actually is
+	_link.href = href;
+	var linkHost = _link.host;
 
-    return _link.protocol + "//" + linkHost + _link.pathname + _link.search
-  }
+	// IE doesn't have a trailing slash on the host
+	// Chrome has it on the pathname
+	if ( linkHost.indexOf('/') === -1 && _link.pathname.indexOf('/') !== 0) {
+		linkHost += '/';
+	}
 
-  DataTable.ext.buttons.print = {
-    className: "buttons-print",
+	return _link.protocol+"//"+linkHost+_link.pathname+_link.search;
+};
 
-    text: function (dt) {
-      return dt.i18n("buttons.print", "Print")
-    },
 
-    action: function (e, dt, button, config) {
-      var data = dt.buttons.exportData(config.exportOptions)
-      var addRow = function (d, tag) {
-        var str = "<tr>"
+DataTable.ext.buttons.print = {
+	className: 'buttons-print',
 
-        for (var i = 0, ien = d.length; i < ien; i++) {
-          str += "<" + tag + ">" + d[i] + "</" + tag + ">"
-        }
+	text: function ( dt ) {
+		return dt.i18n( 'buttons.print', 'Print' );
+	},
 
-        return str + "</tr>"
-      }
+	action: function ( e, dt, button, config ) {
+		var data = dt.buttons.exportData( config.exportOptions );
+		var addRow = function ( d, tag ) {
+			var str = '<tr>';
 
-      // Construct a table for printing
-      var html = '<table class="' + dt.table().node().className + '">'
+			for ( var i=0, ien=d.length ; i<ien ; i++ ) {
+				str += '<'+tag+'>'+d[i]+'</'+tag+'>';
+			}
 
-      if (config.header) {
-        html += "<thead>" + addRow(data.header, "th") + "</thead>"
-      }
+			return str + '</tr>';
+		};
 
-      html += "<tbody>"
-      for (var i = 0, ien = data.body.length; i < ien; i++) {
-        html += addRow(data.body[i], "td")
-      }
-      html += "</tbody>"
+		// Construct a table for printing
+		var html = '<table class="'+dt.table().node().className+'">';
 
-      if (config.footer && data.footer) {
-        html += "<tfoot>" + addRow(data.footer, "th") + "</tfoot>"
-      }
+		if ( config.header ) {
+			html += '<thead>'+ addRow( data.header, 'th' ) +'</thead>';
+		}
 
-      // Open a new window for the printable table
-      var win = window.open("", "")
-      var title = config.title
+		html += '<tbody>';
+		for ( var i=0, ien=data.body.length ; i<ien ; i++ ) {
+			html += addRow( data.body[i], 'td' );
+		}
+		html += '</tbody>';
 
-      if (typeof title === "function") {
-        title = title()
-      }
+		if ( config.footer && data.footer ) {
+			html += '<tfoot>'+ addRow( data.footer, 'th' ) +'</tfoot>';
+		}
 
-      if (title.indexOf("*") !== -1) {
-        title = title.replace("*", $("title").text())
-      }
+		// Open a new window for the printable table
+		var win = window.open( '', '' );
+		var title = config.title;
 
-      win.document.close()
+		if ( typeof title === 'function' ) {
+			title = title();
+		}
 
-      // Inject the title and also a copy of the style and link tags from this
-      // document so the table can retain its base styling. Note that we have
-      // to use string manipulation as IE won't allow elements to be created
-      // in the host document and then appended to the new window.
-      var head = "<title>" + title + "</title>"
-      $("style, link").each(function () {
-        head += _styleToAbs(this)
-      })
+		if ( title.indexOf( '*' ) !== -1 ) {
+			title= title.replace( '*', $('title').text() );
+		}
 
-      try {
-        win.document.head.innerHTML = head // Work around for Edge
-      } catch (e) {
-        $(win.document.head).html(head) // Old IE
-      }
+		win.document.close();
 
-      // Inject the table and other surrounding information
-      win.document.body.innerHTML =
-        "<h1>" +
-        title +
-        "</h1>" +
-        "<div>" +
-        (typeof config.message === "function"
-          ? config.message(dt, button, config)
-          : config.message) +
-        "</div>" +
-        html
+		// Inject the title and also a copy of the style and link tags from this
+		// document so the table can retain its base styling. Note that we have
+		// to use string manipulation as IE won't allow elements to be created
+		// in the host document and then appended to the new window.
+		var head = '<title>'+title+'</title>';
+		$('style, link').each( function () {
+			head += _styleToAbs( this );
+		} );
 
-      $(win.document.body).addClass("dt-print-view")
+		try {
+			win.document.head.innerHTML = head; // Work around for Edge
+		}
+		catch (e) {
+			$(win.document.head).html( head ); // Old IE
+		}
 
-      $("img", win.document.body).each(function (i, img) {
-        img.setAttribute("src", _relToAbs(img.getAttribute("src")))
-      })
+		// Inject the table and other surrounding information
+		win.document.body.innerHTML =
+			'<h1>'+title+'</h1>'+
+			'<div>'+
+				(typeof config.message === 'function' ?
+					config.message( dt, button, config ) :
+					config.message
+				)+
+			'</div>'+
+			html;
 
-      if (config.customize) {
-        config.customize(win)
-      }
+		$(win.document.body).addClass('dt-print-view');
 
-      setTimeout(function () {
-        if (config.autoPrint) {
-          win.print() // blocking - so close will not
-          win.close() // execute until this is done
-        }
-      }, 250)
-    },
+		$('img', win.document.body).each( function ( i, img ) {
+			img.setAttribute( 'src', _relToAbs( img.getAttribute('src') ) );
+		} );
 
-    title: "*",
+		if ( config.customize ) {
+			config.customize( win );
+		}
 
-    message: "",
+		setTimeout( function () {
+			if ( config.autoPrint ) {
+				win.print(); // blocking - so close will not
+				win.close(); // execute until this is done
+			}
+		}, 250 );
+	},
 
-    exportOptions: {},
+	title: '*',
 
-    header: true,
+	message: '',
 
-    footer: false,
+	exportOptions: {},
 
-    autoPrint: true,
+	header: true,
 
-    customize: null,
-  }
+	footer: false,
 
-  return DataTable.Buttons
-})
+	autoPrint: true,
+
+	customize: null
+};
+
+
+return DataTable.Buttons;
+}));
