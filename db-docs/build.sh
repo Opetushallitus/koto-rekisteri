@@ -31,4 +31,5 @@ docker run \
   -p "$PASSWORD" \
   -s=public
 
-prettier --write output
+# Tallenna viimeisin migraation versio tiedostoon CI:llä ajettavaa checkiä varten
+bash latest_migration.sh > docversion
