@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database name="kitu-dev" schema="public" type="PostgreSQL - 16.8 (Debian 16.8-1.pgdg120+1)">
+   <sequences>
+      <sequence increment="1" name="koto_suoritus_error_id_seq" startValue="1"/>
+      <sequence increment="1" name="koto_suoritus_id_seq" startValue="1"/>
+      <sequence increment="1" name="vkt_osakoe_id_seq" startValue="1"/>
+      <sequence increment="1" name="vkt_suoritus_id_seq" startValue="1"/>
+      <sequence increment="1" name="vkt_tutkinto_id_seq" startValue="1"/>
+      <sequence increment="1" name="yki_arvioija_error_id_seq" startValue="1"/>
+      <sequence increment="1" name="yki_arvioija_id_seq" startValue="1"/>
+      <sequence increment="1" name="yki_suoritus_error_id_seq" startValue="1"/>
+      <sequence increment="1" name="yki_suoritus_id_seq" startValue="1"/>
+   </sequences>
+   <tables>
+      <table name="cache" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="key" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="value" nullable="false" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="updated_at" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="expires_at" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="key" sequenceNumberInPK="1"/>
+         <index name="cache_pkey" unique="true">
+            <column ascending="true" name="key"/>
+         </index>
+      </table>
+      <table name="flyway_schema_history" numRows="61" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="installed_rank" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="version" nullable="true" remarks="" size="50" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="description" nullable="false" remarks="" size="200" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="type" nullable="false" remarks="" size="20" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="script" nullable="false" remarks="" size="1000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="checksum" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="installed_by" nullable="false" remarks="" size="100" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="7" name="installed_on" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="execution_time" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="success" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="installed_rank" sequenceNumberInPK="1"/>
+         <index name="flyway_schema_history_pk" unique="true">
+            <column ascending="true" name="installed_rank"/>
+         </index>
+         <index name="flyway_schema_history_s_idx" unique="false">
+            <column ascending="true" name="success"/>
+         </index>
+      </table>
+      <table name="koski_error" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="entity" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="message" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="3" name="timestamp" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="4" name="hidden" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <index name="koski_error_id_entity_idx" unique="true">
+            <column ascending="true" name="id"/>
+            <column ascending="true" name="entity"/>
+         </index>
+      </table>
+      <table name="koto_suoritus" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('koto_suoritus_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="first_names" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="last_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="oppijanumero" nullable="false" remarks="" size="2147483647" type="henkilo_oid" typeCode="2001"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="time_completed" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="6" name="courseid" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''::text" digits="0" id="7" name="coursename" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''::text" digits="0" id="8" name="preferredname" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="school_oid" nullable="false" remarks="" size="2147483647" type="organisaatio_oid" typeCode="2001"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="teacher_email" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="luetun_ymmartaminen_result" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="kuullun_ymmartaminen_result" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="puhe_result" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="kirjoittaminen_result" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="koto_suoritus_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="unique_koto_suoritus" unique="true">
+            <column ascending="true" name="courseid"/>
+            <column ascending="true" name="oppijanumero"/>
+            <column ascending="true" name="time_completed"/>
+         </index>
+      </table>
+      <table name="koto_suoritus_error" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('koto_suoritus_error_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="suorittajan_oid" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="hetu" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="nimi" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="viesti" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="virheen_luontiaika" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="virheellinen_kentta" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="virheellinen_arvo" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="school_oid" nullable="true" remarks="" size="2147483647" type="organisaatio_oid" typeCode="2001"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="teacher_email" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="lisatietoja" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="etunimet" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="sukunimi" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="kutsumanimi" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="onr_lisatietoja" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="koto_suoritus_error_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="scheduled_execution_logs" numRows="316" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="task_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="task_instance" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="task_data" nullable="true" remarks="" size="2147483647" type="bytea" typeCode="-2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="picked_by" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="time_started" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="time_finished" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="succeeded" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="duration_ms" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="exception_class" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="exception_message" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="exception_stacktrace" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="scheduled_execution_logs_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="stl_exception_class_idx" unique="false">
+            <column ascending="true" name="exception_class"/>
+         </index>
+         <index name="stl_started_idx" unique="false">
+            <column ascending="true" name="time_started"/>
+         </index>
+         <index name="stl_task_name_idx" unique="false">
+            <column ascending="true" name="task_name"/>
+         </index>
+      </table>
+      <table name="scheduled_tasks" numRows="7" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="task_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="task_instance" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="task_data" nullable="true" remarks="" size="2147483647" type="bytea" typeCode="-2"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="execution_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="picked" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="picked_by" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="last_success" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="last_failure" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="consecutive_failures" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="last_heartbeat" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="version" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <primaryKey column="task_name" sequenceNumberInPK="1"/>
+         <primaryKey column="task_instance" sequenceNumberInPK="2"/>
+         <index name="scheduled_tasks_pkey" unique="true">
+            <column ascending="true" name="task_name"/>
+            <column ascending="true" name="task_instance"/>
+         </index>
+         <index name="execution_time_idx" unique="false">
+            <column ascending="true" name="execution_time"/>
+         </index>
+         <index name="last_heartbeat_idx" unique="false">
+            <column ascending="true" name="last_heartbeat"/>
+         </index>
+      </table>
+      <table name="spring_session" numRows="1" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="primary_id" nullable="false" remarks="" size="36" type="bpchar" typeCode="1">
+            <child column="session_primary_id" foreignKey="spring_session_attributes_fk" implied="false" onDeleteCascade="true" schema="public" table="spring_session_attributes"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="session_id" nullable="false" remarks="" size="36" type="bpchar" typeCode="1"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="creation_time" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="last_access_time" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="max_inactive_interval" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="expiry_time" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="principal_name" nullable="true" remarks="" size="100" type="varchar" typeCode="12"/>
+         <primaryKey column="primary_id" sequenceNumberInPK="1"/>
+         <index name="spring_session_pk" unique="true">
+            <column ascending="true" name="primary_id"/>
+         </index>
+         <index name="spring_session_ix1" unique="true">
+            <column ascending="true" name="session_id"/>
+         </index>
+         <index name="spring_session_ix2" unique="false">
+            <column ascending="true" name="expiry_time"/>
+         </index>
+         <index name="spring_session_ix3" unique="false">
+            <column ascending="true" name="principal_name"/>
+         </index>
+      </table>
+      <table name="spring_session_attributes" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="session_primary_id" nullable="false" remarks="" size="36" type="bpchar" typeCode="1">
+            <parent column="primary_id" foreignKey="spring_session_attributes_fk" implied="false" onDeleteCascade="true" schema="public" table="spring_session"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="attribute_name" nullable="false" remarks="" size="200" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="attribute_bytes" nullable="false" remarks="" size="2147483647" type="bytea" typeCode="-2"/>
+         <primaryKey column="session_primary_id" sequenceNumberInPK="1"/>
+         <primaryKey column="attribute_name" sequenceNumberInPK="2"/>
+         <index name="spring_session_attributes_pk" unique="true">
+            <column ascending="true" name="session_primary_id"/>
+            <column ascending="true" name="attribute_name"/>
+         </index>
+      </table>
+      <table name="vkt_osakoe" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('vkt_osakoe_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="suoritus_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="vkt_osakoe_suoritus_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="vkt_suoritus"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="tyyppi" nullable="false" remarks="" size="2147483647" type="vkt_osakokeen_tyyppi" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="tutkintopaiva" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="arviointipaiva" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="arvosana" nullable="true" remarks="" size="2147483647" type="vkt_arvosana" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="6" name="created_at" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="merkitty_poistettavaksi" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="vkt_osakoe_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="vkt_suoritus" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('vkt_suoritus_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="suoritus_id" foreignKey="vkt_osakoe_suoritus_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="vkt_osakoe"/>
+            <child column="suoritus_id" foreignKey="vkt_tutkinto_suoritus_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="vkt_tutkinto"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="ilmoittautumisen_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="suorittajan_oppijanumero" nullable="false" remarks="" size="2147483647" type="henkilo_oid" typeCode="2001"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="etunimi" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="sukunimi" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="tutkintokieli" nullable="false" remarks="" size="2147483647" type="vkt_tutkintokieli" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="ilmoittautumisen_tila" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="suorituspaikkakunta" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="taitotaso" nullable="false" remarks="" size="2147483647" type="vkt_taitotaso" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="suorituksen_vastaanottaja" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="10" name="created_at" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="koski_opiskeluoikeus" nullable="true" remarks="" size="2147483647" type="opiskeluoikeus_oid" typeCode="2001"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="12" name="koski_siirto_kasitelty" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="vkt_suoritus_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="vkt_suoritus_taitotaso_ilmoittautumisen_id_idx" unique="false">
+            <column ascending="true" name="taitotaso"/>
+            <column ascending="true" name="ilmoittautumisen_id"/>
+         </index>
+      </table>
+      <table name="vkt_tutkinto" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('vkt_tutkinto_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="suoritus_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="vkt_tutkinto_suoritus_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="vkt_suoritus"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="tyyppi" nullable="false" remarks="" size="2147483647" type="vkt_tutkinnon_tyyppi" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="arviointipaiva" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="arvosana" nullable="true" remarks="" size="2147483647" type="vkt_arvosana" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="5" name="created_at" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="vkt_tutkinto_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="yki_arvioija" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('yki_arvioija_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="arvioija_id" foreignKey="yki_arviointioikeus_arvioija_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="yki_arviointioikeus"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="arvioijan_oppijanumero" nullable="false" remarks="" size="2147483647" type="henkilo_oid" typeCode="2001"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="henkilotunnus" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="sukunimi" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="etunimet" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="sahkopostiosoite" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="katuosoite" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="postinumero" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="postitoimipaikka" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="yki_arvioija_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="yki_arvioija_arvioijan_oppijanumero_key" unique="true">
+            <column ascending="true" name="arvioijan_oppijanumero"/>
+         </index>
+      </table>
+      <table name="yki_arvioija_error" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('yki_arvioija_error_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="arvioijan_oid" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="hetu" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="nimi" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="virheellinen_kentta" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="virheellinen_arvo" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="virheellinen_rivi" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="virheen_rivinumero" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="virheen_luontiaika" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="yki_arvioija_error_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="unique_arvioija_error_virheellinen_rivi_is_unique" unique="true">
+            <column ascending="true" name="virheellinen_rivi"/>
+         </index>
+      </table>
+      <table name="yki_arviointioikeus" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="arvioija_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="yki_arviointioikeus_arvioija_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="yki_arvioija"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="kieli" nullable="false" remarks="" size="2147483647" type="yki_tutkintokieli" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="tasot" nullable="false" remarks="" size="2147483647" type="_text" typeCode="2003"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="tila" nullable="true" remarks="" size="2147483647" type="yki_arvioija_tila" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="kauden_alkupaiva" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="kauden_paattymispaiva" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="7" name="jatkorekisterointi" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="ensimmainen_rekisterointipaiva" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="9" name="rekisteriintuontiaika" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="yki_arviointioikeus_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="yki_arviointioikeus_unique_arvioija_kieli" unique="true">
+            <column ascending="true" name="arvioija_id"/>
+            <column ascending="true" name="kieli"/>
+         </index>
+      </table>
+      <table name="yki_osakoe" numRows="4349" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="osakoe_id" foreignKey="yki_osakoe_tarkistusarviointi_osakoe_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="yki_osakoe_tarkistusarviointi"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="suoritus_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="yki_osakoe_suoritus_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="yki_suoritus"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="tyyppi" nullable="false" remarks="" size="2147483647" type="yki_osakoetyyppi" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="arviointipaiva" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="arvosana" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="yki_osakoe_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="yki_osakoe_suoritus_id_tyyppi_idx" unique="true">
+            <column ascending="true" name="suoritus_id"/>
+            <column ascending="true" name="tyyppi"/>
+         </index>
+      </table>
+      <table name="yki_osakoe_tarkistusarviointi" numRows="732" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="osakoe_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="yki_osakoe_tarkistusarviointi_osakoe_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="yki_osakoe"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="tarkistusarviointi_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="yki_osakoe_tarkistusarviointi_tarkistusarviointi_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="yki_tarkistusarviointi"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="arvosana_muuttui" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
+      </table>
+      <table name="yki_suoritus" numRows="774" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('yki_suoritus_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="suoritus_id" foreignKey="yki_osakoe_suoritus_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="yki_osakoe"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="suorittajan_oid" nullable="false" remarks="" size="2147483647" type="henkilo_oid" typeCode="2001"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sukunimi" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="etunimet" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="tutkintopaiva" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="tutkintokieli" nullable="false" remarks="" size="2147483647" type="yki_tutkintokieli" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="tutkintotaso" nullable="false" remarks="" size="2147483647" type="yki_tutkintotaso" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="jarjestajan_tunnus_oid" nullable="false" remarks="" size="2147483647" type="organisaatio_oid" typeCode="2001"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="jarjestajan_nimi" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="hetu" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="sukupuoli" nullable="false" remarks="" size="2147483647" type="yki_sukupuoli" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="kansalaisuus" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="katuosoite" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="postinumero" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="postitoimipaikka" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="email" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="suoritus_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="17" name="last_modified" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="koski_opiskeluoikeus" nullable="true" remarks="" size="2147483647" type="opiskeluoikeus_oid" typeCode="2001"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="19" name="koski_siirto_kasitelty" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="arviointitila" nullable="false" remarks="" size="2147483647" type="yki_arviointitila" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="yki_suoritus_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="unique_suoritus" unique="true">
+            <column ascending="true" name="suoritus_id"/>
+            <column ascending="true" name="last_modified"/>
+         </index>
+      </table>
+      <table name="yki_suoritus_error" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('yki_suoritus_error_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="suorittajan_oid" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="hetu" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="nimi" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="last_modified" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="virheellinen_kentta" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="virheellinen_arvo" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="virheellinen_rivi" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="virheen_rivinumero" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="virheen_luontiaika" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="yki_suoritus_error_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="unique_suoritus_error_virheellinen_rivi_is_unique" unique="true">
+            <column ascending="true" name="virheellinen_rivi"/>
+         </index>
+      </table>
+      <table name="yki_suoritus_lisatieto" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="suoritus_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="tarkistusarviointi_hyvaksytty_pvm" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="2" name="arviointitila_lahetetty" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="arviointitilan_lahetysvirhe" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="suoritus_id" sequenceNumberInPK="1"/>
+         <index name="yki_suoritus_lisatieto_pkey" unique="true">
+            <column ascending="true" name="suoritus_id"/>
+         </index>
+      </table>
+      <table name="yki_tarkistusarviointi" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="tarkistusarviointi_id" foreignKey="yki_osakoe_tarkistusarviointi_tarkistusarviointi_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="yki_osakoe_tarkistusarviointi"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="saapumispaiva" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="kasittelypaiva" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="asiatunnus" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="perustelu" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="yki_tarkistusarviointi_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="yki_tarkistusarviointi_asiatunnus_key" unique="true">
+            <column ascending="true" name="asiatunnus"/>
+         </index>
+      </table>
+   </tables>
+   <routines>
+      <routine dataAccess="MODIFIES" deterministic="false" name="add_created_at()" returnType="trigger" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="plpgsql"><![CDATA[Redacted, use --include-routine-definition]]></definition>
+         <parameters>
+            <parameter mode="IN"/>
+         </parameters>
+      </routine>
+   </routines>
+</database>
