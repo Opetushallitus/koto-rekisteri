@@ -1,5 +1,12 @@
 # Kielitutkintorekisteri
 
+Kielitutkintorekisteriin säilötään tutkintojen ja kieliosaamisen tunnustaminen -yksikön hallinnoimiin kielitutkintoihin
+liittyviä rekisteritietoja. Kielitutkintorekisteriä käyttävät Opetushallituksen virkailijat, mutta rekisteritietoja
+viedään KOSKI-palveluun ja siten niitä voidaan näyttää Oma Opintopolun asiakkaille.
+
+- [Ulkoiset rajapintakuvaukset](https://virkailija.testiopintopolku.fi/kielitutkinnot/api-docs)
+- [Tietokantaskeeman dokumentaatio](https://opetushallitus.github.io/kielitutkintorekisteri/db)
+
 ## Riippuvuudet
 
 - mise
