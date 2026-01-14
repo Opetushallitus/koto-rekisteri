@@ -12,6 +12,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpMethod.POST
@@ -161,6 +162,7 @@ class WebSecurityConfig {
 
 @Configuration
 @ConditionalOnMissingBean(JwtDecoder::class)
+@Profile("test", "e2e")
 class TestJwtConfig {
     @Bean
     fun jwtDecoder(): NimbusJwtDecoder {
