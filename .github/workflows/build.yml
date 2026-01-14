@@ -132,6 +132,37 @@ jobs:
       - name: Check formatting
         run: ./scripts/check-formatting.sh
 
+  build_docs:
+    name: Build documentation page
+    runs-on: ubuntu-24.04
+    needs: update_tools_cache
+    permissions:
+      id-token: write
+      pages: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install tools
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Build index.html
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./docs/output
+      - name: Build database documentation
+        run: |
+          sudo chmod -R 777 docs/output
+          CI=true docs/build.sh
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/output
+      - uses: actions/deploy-pages@v4
+
   build_image:
     name: Build image
     runs-on: ubuntu-24.04
