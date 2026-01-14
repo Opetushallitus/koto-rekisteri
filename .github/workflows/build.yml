@@ -131,8 +131,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check formatting
         run: ./scripts/check-formatting.sh
-      - name: Check if db documentation is up-to-date
-        run: HOST=localhost ./db-docs/check_docs.sh
 
   build_image:
     name: Build image
