@@ -63,9 +63,7 @@ class WebSecurityConfig {
                 authorize(anyRequest, denyAll)
             }
             csrf {
-                if (environment.activeProfiles.contains("e2e")) {
-                    disable()
-                }
+                disable()
             }
             securityMatcher({ request ->
                 isOauth2Request(request)
