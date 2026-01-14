@@ -29,10 +29,10 @@ import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import kotlin.collections.contains
 
-fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations(roleType: RoleType) {
-    authorize(PUT, "/api/vkt/kios", hasAuthority(Authority.VKT_TALLENNUS.by(roleType)))
-    authorize(POST, "/yki/api/suoritus", hasAuthority(Authority.YKI_TALLENNUS.by(roleType)))
-    authorize(POST, "/yki/api/arvioija", hasAuthority(Authority.YKI_TALLENNUS.by(roleType)))
+fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations() {
+    authorize(PUT, "/api/vkt/kios", hasAnyAuthority(*Authority.VKT_TALLENNUS.authStrings()))
+    authorize(POST, "/yki/api/suoritus", hasAnyAuthority(*Authority.YKI_TALLENNUS.authStrings()))
+    authorize(POST, "/yki/api/arvioija", hasAnyAuthority(*Authority.YKI_TALLENNUS.authStrings()))
 
     authorize("/actuator/health", permitAll)
     authorize("/api-docs", permitAll)
@@ -59,7 +59,7 @@ class WebSecurityConfig {
     ): SecurityFilterChain {
         http {
             authorizeHttpRequests {
-                configureCommonAuthorizations(RoleType.OAUTH2)
+                configureCommonAuthorizations()
                 authorize(anyRequest, denyAll)
             }
             csrf {
@@ -104,7 +104,7 @@ class WebSecurityConfig {
                 logoutSuccessUrl = casConfig.getCasLogoutUrl()
             }
             authorizeHttpRequests {
-                configureCommonAuthorizations(RoleType.CAS)
+                configureCommonAuthorizations()
 
                 if ((
                         environment.activeProfiles.contains("local") ||
