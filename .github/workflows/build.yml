@@ -159,7 +159,7 @@ jobs:
         run: |
           sudo chmod -R 777 docs/output
           CI=true docs/build.sh
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: docs/output
       - uses: actions/deploy-pages@v4
