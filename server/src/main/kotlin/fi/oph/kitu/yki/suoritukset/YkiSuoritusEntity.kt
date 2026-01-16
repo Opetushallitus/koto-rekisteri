@@ -22,7 +22,7 @@ data class YkiSuoritusEntity(
     @Id
     val id: Int?,
     val suorittajanOID: Oid,
-    val hetu: String,
+    val hetu: String?,
     @Enumerated(EnumType.STRING)
     val sukupuoli: Sukupuoli,
     val sukunimi: String,
