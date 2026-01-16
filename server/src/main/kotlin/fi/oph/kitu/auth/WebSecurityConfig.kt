@@ -39,6 +39,7 @@ fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations() {
     authorize("/swagger-ui/**", permitAll)
     authorize("/v3/api-docs/**", permitAll)
     authorize("/schema-examples/**", permitAll)
+    authorize("/uml/**", permitAll)
 }
 
 @Configuration
