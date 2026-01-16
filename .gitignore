@@ -47,3 +47,4 @@ cdk.out/
 ### E2E state files ###
 /e2e/browserstate/
 /docs/output/
+/uml/
