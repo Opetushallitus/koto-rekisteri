@@ -42,7 +42,7 @@ class YkiSuoritusRepositoryTest(
         val updatedSuoritus =
             initialSuoritus.copy(
                 sukupuoli = Sukupuoli.E,
-                lastModified = Instant.parse("2025-01-01T13:53:56Z"),
+                lastModified = Instant.parse("2025-01-02T13:53:56Z"),
             )
         val savedSuoritukset = ykiSuoritusRepository.saveAllNewEntities(listOf(initialSuoritus, updatedSuoritus))
         assertEquals(1, savedSuoritukset.count())
@@ -50,7 +50,7 @@ class YkiSuoritusRepositoryTest(
             updatedSuoritus,
             savedSuoritukset.elementAt(0).copy(
                 id = null,
-                lastModified = Instant.parse("2025-01-01T13:53:56Z"),
+                lastModified = Instant.parse("2025-01-02T13:53:56Z"),
             ),
         )
     }
