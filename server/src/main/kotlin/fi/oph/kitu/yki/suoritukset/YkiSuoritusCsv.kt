@@ -51,7 +51,7 @@ data class YkiSuoritusCsv(
     @param:JsonProperty("suorittajanOID")
     val suorittajanOID: Oid,
     @param:JsonProperty("hetu")
-    val hetu: String,
+    val hetu: String?,
     @param:JsonProperty("sukupuoli")
     val sukupuoli: Sukupuoli?,
     @param:JsonProperty("sukunimi")

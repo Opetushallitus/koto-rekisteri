@@ -41,7 +41,7 @@ data class YkiSuoritus(
         return YkiSuoritusEntity(
             id = internalId,
             suorittajanOID = henkilo.oid,
-            hetu = henkilo.hetu ?: throw IllegalArgumentException("Hetu puuttuu"),
+            hetu = henkilo.hetu,
             sukupuoli = henkilo.sukupuoli ?: throw IllegalArgumentException("Sukupuoli puuttuu"),
             sukunimi = henkilo.sukunimi ?: throw IllegalArgumentException("Sukunimi puuttuu"),
             etunimet = henkilo.etunimet ?: throw IllegalArgumentException("Etunimet puuttuu"),

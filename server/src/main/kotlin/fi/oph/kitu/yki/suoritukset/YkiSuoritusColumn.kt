@@ -48,7 +48,7 @@ enum class YkiSuoritusColumn(
         entityName = "hetu",
         uiHeaderValue = "Henkilötunnus",
         urlParam = "hetu",
-        renderValue = { +it.hetu },
+        renderValue = { +it.hetu.orEmpty() },
     ),
 
     Kansalaisuus(
