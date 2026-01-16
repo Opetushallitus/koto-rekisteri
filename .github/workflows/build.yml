@@ -136,7 +136,7 @@ jobs:
     name: Build documentation page
     runs-on: ubuntu-24.04
     needs: update_tools_cache
-    if: github.ref_name == 'main'
+    # if: github.ref_name == 'main'
     permissions:
       id-token: write
       pages: write
@@ -150,7 +150,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Build index.html
+      - name: Build component documentation
+        run: |
+          mkdir -p docs/uml
+          docs/build-uml.sh
+      - name: Build html files from markdown files
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
