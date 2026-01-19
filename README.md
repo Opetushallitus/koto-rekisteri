@@ -6,6 +6,7 @@ viedään KOSKI-palveluun ja siten niitä voidaan näyttää Oma Opintopolun asi
 
 - [Ulkoiset rajapintakuvaukset](https://virkailija.testiopintopolku.fi/kielitutkinnot/api-docs)
 - [Tietokantaskeeman dokumentaatio](https://opetushallitus.github.io/kielitutkintorekisteri/db)
+- Beans-komponenttikompositio: [Untuva](https://opetushallitus.github.io/kielitutkintorekisteri/uml/untuva) / [QA](https://opetushallitus.github.io/kielitutkintorekisteri/uml/qa) / [Tuotanto](https://opetushallitus.github.io/kielitutkintorekisteri/uml/prod)
 
 ## Riippuvuudet
 
