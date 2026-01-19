@@ -9,7 +9,6 @@ packages=(
   "koski"
   "kotoutumiskoulutus"
   "logging"
-  "mock"
   "oauth2client"
   "observability"
   "oppijanumero"
@@ -78,6 +77,15 @@ function generate_markdown() {
   done
 }
 
-load_pumls "untuva" "https://virkailija.untuvaopintopolku.fi/kielitutkinnot"
-generate_images "untuva"
-generate_markdown "untuva"
+function load_and_generate() {
+  local env="$1"
+  local source_url="$2"
+
+  load_pumls "$env" "$source_url"
+  generate_images "$env"
+  generate_markdown "$env"
+}
+
+load_and_generate "untuva" "https://virkailija.untuvaopintopolku.fi/kielitutkinnot"
+load_and_generate "qa" "https://virkailija.testiopintopolku.fi/kielitutkinnot"
+load_and_generate "prod" "https://virkailija.opintopolku.fi/kielitutkinnot"
