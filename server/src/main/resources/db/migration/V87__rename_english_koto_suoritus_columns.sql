@@ -1,0 +1,12 @@
+ALTER TABLE koto_suoritus RENAME COLUMN first_names to etunimet;
+ALTER TABLE koto_suoritus RENAME COLUMN last_name to sukunimi;
+ALTER TABLE koto_suoritus RENAME COLUMN preferredname to kutsumanimi;
+ALTER TABLE koto_suoritus RENAME COLUMN time_completed to suoritusaika;
+ALTER TABLE koto_suoritus RENAME COLUMN courseid to kurssi_id;
+ALTER TABLE koto_suoritus RENAME COLUMN coursename to kurssi;
+ALTER TABLE koto_suoritus RENAME COLUMN school_oid to oppilaitos_oid;
+ALTER TABLE koto_suoritus RENAME COLUMN teacher_email to opettajan_email;
+ALTER TABLE koto_suoritus RENAME COLUMN luetun_ymmartaminen_result to luetun_ymmartaminen;
+ALTER TABLE koto_suoritus RENAME COLUMN kuullun_ymmartaminen_result to kuullun_ymmartaminen;
+ALTER TABLE koto_suoritus RENAME COLUMN puhe_result to puhe;
+ALTER TABLE koto_suoritus RENAME COLUMN kirjoittaminen_result to kirjoittaminen;

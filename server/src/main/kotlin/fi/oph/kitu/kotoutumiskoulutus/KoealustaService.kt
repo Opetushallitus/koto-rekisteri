@@ -127,7 +127,7 @@ class KoealustaService(
                 return@use from
             }
 
-            return@use suoritukset.maxOfOrNull { it.timeCompleted } ?: from
+            return@use suoritukset.maxOfOrNull { it.suoritusaika } ?: from
         }
 
     fun generateSuorituksetCsvStream(
@@ -175,9 +175,9 @@ class KoealustaService(
             KielitestiSuoritusColumn.Organisaatio -> {
                 val nimet = organisaatioService.getOrganisaatiot().nimet
                 this.sortedWithDirectionBy(orderByDirection) {
-                    it.schoolOid
+                    it.oppilaitosOid
                         ?.let { oid -> nimet[oid]?.toString() }
-                        ?: it.schoolOid?.toString().orEmpty()
+                        ?: it.oppilaitosOid?.toString().orEmpty()
                 }
             }
 

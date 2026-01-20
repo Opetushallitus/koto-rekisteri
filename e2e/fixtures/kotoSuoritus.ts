@@ -3,59 +3,59 @@ import { TestDB } from "./baseFixture"
 import { Email, FixturePerson, Oid, peopleFixture } from "./basePeopleFixture"
 
 export interface KotoSuoritus {
-  firstNames: string
-  lastName: string
-  preferredName: string
+  etunimet: string
+  sukunimi: string
+  kutsumanimi: string
   oppijanumero: Oid
-  schoolOid: Oid
+  oppilaitosOid: Oid
   email: Email
-  timeCompleted: string
-  luetunYmmartaminenResult: string
-  kuullunYmmartaminenResult: string
-  puheResult: string
-  kirjoittaminenResult: string
-  teacherEmail: string
-  courseId: number
-  courseName: string
+  suoritusaika: string
+  luetunYmmartaminen: string
+  kuullunYmmartaminen: string
+  puhe: string
+  kirjoittaminen: string
+  opettajanEmail: string
+  kurssiId: number
+  kurssi: string
 }
 
 type CreateSuoritusArgs = Partial<
   Omit<
     KotoSuoritus,
-    "firstNames" | "lastName" | "preferredName" | "email" | "oppijanumero"
+    "etunimet" | "sukunimi" | "kutsumanimi" | "email" | "oppijanumero"
   >
 >
 
 const createSuoritus = (
   person: FixturePerson,
   {
-    schoolOid = "1.2.3.4.5.6",
-    luetunYmmartaminenResult = "A1",
-    kuullunYmmartaminenResult = "B1",
-    puheResult = "75",
-    kirjoittaminenResult = "B1",
-    teacherEmail = "opettaja@testi.oph.fi",
-    timeCompleted = "2024-11-22 10:49:49",
-    courseId = 32,
-    courseName = "Integraatio testaus",
+    oppilaitosOid = "1.2.3.4.5.6",
+    luetunYmmartaminen = "A1",
+    kuullunYmmartaminen = "B1",
+    puhe = "75",
+    kirjoittaminen = "B1",
+    opettajanEmail = "opettaja@testi.oph.fi",
+    suoritusaika = "2024-11-22 10:49:49",
+    kurssiId = 32,
+    kurssi = "Integraatio testaus",
   }: CreateSuoritusArgs,
 ) => {
   const p = peopleFixture[person]
   return {
-    firstNames: p.etunimet,
-    lastName: p.sukunimi,
-    preferredName: p.kutsumanimi,
+    etunimet: p.etunimet,
+    sukunimi: p.sukunimi,
+    kutsumanimi: p.kutsumanimi,
     oppijanumero: p.oppijanumero,
     email: p.email,
-    schoolOid,
-    timeCompleted,
-    luetunYmmartaminenResult,
-    kuullunYmmartaminenResult,
-    kirjoittaminenResult,
-    puheResult,
-    teacherEmail,
-    courseId,
-    courseName,
+    oppilaitosOid: oppilaitosOid,
+    suoritusaika: suoritusaika,
+    luetunYmmartaminen: luetunYmmartaminen,
+    kuullunYmmartaminen: kuullunYmmartaminen,
+    kirjoittaminen: kirjoittaminen,
+    puhe: puhe,
+    opettajanEmail: opettajanEmail,
+    kurssiId: kurssiId,
+    kurssi: kurssi,
   }
 }
 
@@ -76,32 +76,32 @@ export const fixtureData = {
 } as const
 
 const insertQuery = (suoritus: KotoSuoritus) => SQL`
-  INSERT INTO koto_suoritus (first_names,
-                             last_name,
+  INSERT INTO koto_suoritus (etunimet,
+                             sukunimi,
                              oppijanumero,
-                             school_oid,
+                             oppilaitos_oid,
                              email,
-                             time_completed,
-                             luetun_ymmartaminen_result,
-                             kuullun_ymmartaminen_result,
-                             puhe_result,
-                             kirjoittaminen_result,
-                             teacher_email,
-                             courseid,
-                             coursename)
-  VALUES (${suoritus.firstNames},
-          ${suoritus.lastName},
+                             suoritusaika,
+                             luetun_ymmartaminen,
+                             kuullun_ymmartaminen,
+                             puhe,
+                             kirjoittaminen,
+                             opettajan_email,
+                             kurssi_id,
+                             kurssi)
+  VALUES (${suoritus.etunimet},
+          ${suoritus.sukunimi},
           ${suoritus.oppijanumero},
-          ${suoritus.schoolOid},
+          ${suoritus.oppilaitosOid},
           ${suoritus.email},
-          ${suoritus.timeCompleted},
-          ${suoritus.luetunYmmartaminenResult},
-          ${suoritus.kuullunYmmartaminenResult},
-          ${suoritus.puheResult},
-          ${suoritus.kirjoittaminenResult},
-          ${suoritus.teacherEmail},
-          ${suoritus.courseId},
-          ${suoritus.courseName})
+          ${suoritus.suoritusaika},
+          ${suoritus.luetunYmmartaminen},
+          ${suoritus.kuullunYmmartaminen},
+          ${suoritus.puhe},
+          ${suoritus.kirjoittaminen},
+          ${suoritus.opettajanEmail},
+          ${suoritus.kurssiId},
+          ${suoritus.kurssi})
 `
 
 export type KotoSuorittajaName = keyof typeof fixtureData

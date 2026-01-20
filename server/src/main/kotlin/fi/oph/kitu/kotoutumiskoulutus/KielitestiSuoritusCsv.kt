@@ -38,16 +38,16 @@ data class KielitestiSuoritusCsv(
     companion object {
         fun of(s: KielitestiSuoritus): KielitestiSuoritusCsv =
             KielitestiSuoritusCsv(
-                sukunimi = s.lastName,
-                etunimet = s.firstNames,
+                sukunimi = s.sukunimi,
+                etunimet = s.etunimet,
                 sahkoposti = s.email,
-                kurssinNimi = s.coursename,
-                suoritusaika = s.timeCompleted,
+                kurssinNimi = s.kurssi,
+                suoritusaika = s.suoritusaika,
                 oppijanumero = s.oppijanumero,
-                luetunYmmartaminen = s.luetunYmmartaminenResult,
-                kuullunYmmartaminen = s.kuullunYmmartaminenResult,
-                puhuminen = s.puheResult,
-                kirjoittaminen = s.kirjoittaminenResult,
+                luetunYmmartaminen = s.luetunYmmartaminen,
+                kuullunYmmartaminen = s.kuullunYmmartaminen,
+                puhuminen = s.puhe,
+                kirjoittaminen = s.kirjoittaminen,
             )
     }
 }

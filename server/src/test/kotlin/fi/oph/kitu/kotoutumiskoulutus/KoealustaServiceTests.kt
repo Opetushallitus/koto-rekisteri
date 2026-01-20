@@ -153,8 +153,8 @@ class KoealustaServiceTests(
         val ranja = kielitestiSuoritusRepository.findById(1).get()
 
         assertAll(
-            fun () = assertEquals("Integraatio testaus", ranja.coursename),
-            fun () = assertEquals(Oid.parse("1.2.246.562.10.1234567890").getOrThrow(), ranja.schoolOid),
+            fun () = assertEquals("Integraatio testaus", ranja.kurssi),
+            fun () = assertEquals(Oid.parse("1.2.246.562.10.1234567890").getOrThrow(), ranja.oppilaitosOid),
             fun () = assertEquals(Oid.parse("1.2.246.562.24.33342764709").getOrThrow(), ranja.oppijanumero),
             fun () = assertEquals(0, kielitestiSuoritusErrorRepository.findAll().count()),
         )
@@ -883,9 +883,9 @@ class KoealustaServiceTests(
         val ranja = kielitestiSuoritusRepository.findById(1).get()
 
         assertAll(
-            fun () = assertEquals("Ranja Testi", ranja.firstNames),
-            fun () = assertEquals("Öhman-Testi", ranja.lastName),
-            fun () = assertEquals("Ranja", ranja.preferredname),
+            fun () = assertEquals("Ranja Testi", ranja.etunimet),
+            fun () = assertEquals("Öhman-Testi", ranja.sukunimi),
+            fun () = assertEquals("Ranja", ranja.kutsumanimi),
             fun () = assertEquals(Oid.parse("1.2.246.562.24.33342764709").getOrThrow(), ranja.oppijanumero),
             fun () = assertEquals(0, kielitestiSuoritusErrorRepository.findAll().count()),
         )

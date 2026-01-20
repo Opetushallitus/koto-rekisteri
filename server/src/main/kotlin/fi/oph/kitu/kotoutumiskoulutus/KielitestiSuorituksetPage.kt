@@ -96,10 +96,10 @@ object KielitestiSuorituksetPage {
                                         tbody {
                                             tr {
                                                 td { +suoritus.oppijanumero.toString() }
-                                                td { +suoritus.luetunYmmartaminenResult }
-                                                td { +suoritus.kuullunYmmartaminenResult }
-                                                td { +suoritus.puheResult }
-                                                td { +suoritus.kirjoittaminenResult.orEmpty() }
+                                                td { +suoritus.luetunYmmartaminen }
+                                                td { +suoritus.kuullunYmmartaminen }
+                                                td { +suoritus.puhe }
+                                                td { +suoritus.kirjoittaminen.orEmpty() }
                                             }
                                         }
                                     }
