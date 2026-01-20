@@ -24,13 +24,13 @@ describe("YKI-tarkastusarvioinnit", () => {
     ykiTarkistusarvioinnitPage,
   }) => {
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.odottaaTable.getCellsOfColumn("etunimi"),
+      ykiTarkistusarvioinnitPage.odottaaTable.getCellsOfColumn("etunimet"),
       "Magdalena Testi",
       "Ranja Testi",
     )
 
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn("etunimi"),
+      ykiTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn("etunimet"),
       "Eino Testi",
     )
   })
@@ -49,12 +49,12 @@ describe("YKI-tarkastusarvioinnit", () => {
     )
 
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.odottaaTable.getCellsOfColumn("etunimi"),
+      ykiTarkistusarvioinnitPage.odottaaTable.getCellsOfColumn("etunimet"),
       "Ranja Testi",
     )
 
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn("etunimi"),
+      ykiTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn("etunimet"),
       "Magdalena Testi",
       "Eino Testi",
     )
@@ -108,7 +108,7 @@ describe("YKI-tarkastusarvioinnit", () => {
     ykiTarkistusarvioinnitPage,
   }) => {
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.odottaaTable.getCellsOfColumn("etunimi"),
+      ykiTarkistusarvioinnitPage.odottaaTable.getCellsOfColumn("etunimet"),
       "Magdalena Testi",
       "Ranja Testi",
     )
@@ -117,7 +117,7 @@ describe("YKI-tarkastusarvioinnit", () => {
     await expect(ykiTarkistusarvioinnitPage.viewMessage).not.toBeVisible()
 
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.odottaaTable.getCellsOfColumn("etunimi"),
+      ykiTarkistusarvioinnitPage.odottaaTable.getCellsOfColumn("etunimet"),
       "Magdalena Testi",
       "Ranja Testi",
     )

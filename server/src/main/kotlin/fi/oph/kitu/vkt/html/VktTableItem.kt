@@ -17,7 +17,7 @@ data class VktTableItem(
             RowMapper { rs, _ ->
                 VktTableItem(
                     oppijanumero = rs.getString("suorittajan_oppijanumero"),
-                    etunimet = rs.getString("etunimi"),
+                    etunimet = rs.getString("etunimet"),
                     sukunimi = rs.getString("sukunimi"),
                     kieli = Koodisto.Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
                     taso = Koodisto.VktTaitotaso.valueOf(rs.getString("taitotaso")),

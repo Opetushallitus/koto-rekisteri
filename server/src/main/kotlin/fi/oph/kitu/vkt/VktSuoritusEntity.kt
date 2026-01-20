@@ -18,7 +18,7 @@ data class VktSuoritusEntity(
     val id: Int? = null,
     val ilmoittautumisenId: String,
     val suorittajanOppijanumero: Oid,
-    val etunimi: String,
+    val etunimet: String,
     val sukunimi: String,
     val tutkintokieli: Koodisto.Tutkintokieli,
     val ilmoittautumisenTila: String,
@@ -58,7 +58,7 @@ data class VktSuoritusEntity(
             henkilo =
                 Henkilo(
                     oid = suorittajanOppijanumero,
-                    etunimet = etunimi,
+                    etunimet = etunimet,
                     sukunimi = sukunimi,
                 ),
             suoritus =

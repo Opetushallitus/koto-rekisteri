@@ -73,7 +73,7 @@ class CustomVktSuoritusRepository {
             rivi AS (
                 SELECT
                     s.suorittajan_oppijanumero,
-                    array_to_string(array_agg(distinct nimi.etunimi), ' / ') etunimi,
+                    array_to_string(array_agg(distinct nimi.etunimet), ' / ') etunimet,
                     array_to_string(array_agg(distinct nimi.sukunimi), ' / ') sukunimi,
                     s.tutkintokieli,
                     s.taitotaso,
@@ -84,7 +84,7 @@ class CustomVktSuoritusRepository {
                     JOIN vkt_osakoe ok ON ok.suoritus_id = s.id
                     JOIN LATERAL (
                         SELECT
-                            etunimi,
+                            etunimet,
                             sukunimi
                         FROM vkt_suoritus
                         WHERE vkt_suoritus.suorittajan_oppijanumero = s.suorittajan_oppijanumero
@@ -260,7 +260,7 @@ class CustomVktSuoritusRepository {
                         (
                             search.textTokens.map { token ->
                                 listOf(
-                                    "etunimi ILIKE",
+                                    "etunimet ILIKE",
                                     "sukunimi ILIKE",
                                     "suorittajan_oppijanumero LIKE",
                                 ).joinToString(" OR ") { "($it ${token.sql})" }
@@ -280,7 +280,7 @@ class CustomVktSuoritusRepository {
         override val urlParam: String,
     ) : DisplayTableEnum {
         Sukunimi("sukunimi", "Sukunimi", "sukunimi"),
-        Etunimet("etunimi", "Etunimet", "etunimet"),
+        Etunimet("etunimet", "Etunimet", "etunimet"),
         Kieli("tutkintokieli", "Tutkintokieli", "kieli"),
         Taitotaso("taitotaso", "Taitotaso", "taitotaso"),
         Tutkintopaiva("tutkintopaiva", "Tutkintopäivä", "tutkintopaiva"),
