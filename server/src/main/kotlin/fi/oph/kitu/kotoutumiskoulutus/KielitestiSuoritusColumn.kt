@@ -11,17 +11,17 @@ enum class KielitestiSuoritusColumn(
     val renderValue: (Organisaatiot) -> FlowContent.(KielitestiSuoritus) -> Unit,
 ) : DisplayTableEnum {
     Sukunimi(
-        entityName = "lastName",
+        entityName = "sukunimi",
         uiHeaderValue = "Sukunimi",
         urlParam = "sukunimi",
-        renderValue = { { +it.lastName } },
+        renderValue = { { +it.sukunimi } },
     ),
 
     Etunimet(
-        entityName = "firstNames",
+        entityName = "etunimet",
         uiHeaderValue = "Etunimet",
         urlParam = "etunimet",
-        renderValue = { { +it.firstNames } },
+        renderValue = { { +it.etunimet } },
     ),
 
     Sahkoposti(
@@ -32,29 +32,29 @@ enum class KielitestiSuoritusColumn(
     ),
 
     KurssinNimi(
-        entityName = "coursename",
+        entityName = "kurssi",
         uiHeaderValue = "Kurssin nimi",
         urlParam = "kurssinnimi",
-        renderValue = { { +it.coursename } },
+        renderValue = { { +it.kurssi } },
     ),
 
     Organisaatio(
-        entityName = "schoolOid",
+        entityName = "oppilaitosOid",
         uiHeaderValue = "Organisaatio",
         urlParam = "organisaatio",
         renderValue = { orgs ->
             {
-                orgs.nimet[it.schoolOid]?.let { name ->
+                orgs.nimet[it.oppilaitosOid]?.let { name ->
                     +name.toString()
-                } ?: +it.schoolOid.toString()
+                } ?: +it.oppilaitosOid.toString()
             }
         },
     ),
 
     Suoritusaika(
-        entityName = "timeCompleted",
+        entityName = "suoritusaika",
         uiHeaderValue = "Suoritusaika",
         urlParam = "suoritusaika",
-        renderValue = { { +it.timeCompleted.toString() } },
+        renderValue = { { +it.suoritusaika.toString() } },
     ),
 }

@@ -55,11 +55,11 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
 
     const firstSuoritus = kielitestiSuorituksetPage.getSuoritusRow().nth(0)
     await expect(firstSuoritus).toBeVisible()
-    await expect(firstSuoritus).toContainText(anniina.firstNames)
+    await expect(firstSuoritus).toContainText(anniina.etunimet)
 
     const thirdSuoritus = kielitestiSuorituksetPage.getSuoritusRow().nth(2)
     await expect(thirdSuoritus).toBeVisible()
-    await expect(thirdSuoritus).toContainText(magdalena.firstNames)
+    await expect(thirdSuoritus).toContainText(magdalena.etunimet)
   })
 
   const sortTestCases = [

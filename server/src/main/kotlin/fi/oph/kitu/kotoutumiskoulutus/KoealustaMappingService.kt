@@ -273,20 +273,20 @@ class KoealustaMappingService(
 
         return Success(
             KielitestiSuoritus(
-                firstNames = user.firstnames.trim(),
-                lastName = user.lastname.trim(),
-                preferredname = user.preferredname.trim(),
+                etunimet = user.firstnames.trim(),
+                sukunimi = user.lastname.trim(),
+                kutsumanimi = user.preferredname.trim(),
                 email = user.email,
                 oppijanumero = oppijanumero,
-                timeCompleted = Instant.ofEpochSecond(completion.timecompleted),
-                schoolOid = schoolOid,
-                courseid = completion.courseid,
-                coursename = completion.coursename,
-                luetunYmmartaminenResult = luetunYmmartaminen.quiz_grade,
-                kuullunYmmartaminenResult = kuullunYmmartaminen.quiz_grade,
-                puheResult = puhe.quiz_grade,
-                kirjoittaminenResult = kirjoittaminen.quiz_grade,
-                teacherEmail = completion.teacheremail,
+                suoritusaika = Instant.ofEpochSecond(completion.timecompleted),
+                oppilaitosOid = schoolOid,
+                kurssiId = completion.courseid,
+                kurssi = completion.coursename,
+                luetunYmmartaminen = luetunYmmartaminen.quiz_grade,
+                kuullunYmmartaminen = kuullunYmmartaminen.quiz_grade,
+                puhe = puhe.quiz_grade,
+                kirjoittaminen = kirjoittaminen.quiz_grade,
+                opettajanEmail = completion.teacheremail,
             ),
         )
     }
