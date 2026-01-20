@@ -25,21 +25,7 @@ class PlantUmlService(
 
         val rows = mutableListOf<String>()
 
-        beanNames.forEach { beanName ->
-            beanFactory.getUmlItem(beanName)?.let { umlItem ->
-                rows.add(umlItem.toString())
-                beanFactory.getDependenciesForBean(beanName).forEach { dep ->
-                    val depName = runCatching { beanFactory.getBean(dep).javaClass.name }.getOrNull()
-                    val cleanDepName = makeCleanName(dep, depName)
-                    if (cleanDepName == umlItem.factory) {
-                        rows.add("$cleanDepName *-- ${umlItem.name}")
-                    } else {
-                        beanFactory.getUmlItem(dep)?.let { rows.add(it.toString()) }
-                        rows.add("${umlItem.name} --> $cleanDepName")
-                    }
-                }
-            }
-        }
+        beanNames.forEach { beanName -> buildUml(rows, beanName) }
 
         return if (rows.isEmpty()) {
             null
@@ -56,59 +42,136 @@ class PlantUmlService(
             ).joinToString("\n")
         }
     }
+
+    private fun buildUml(
+        rows: MutableList<String>,
+        beanName: String,
+        processedBeans: List<String> = emptyList(),
+    ) {
+        if (beanName in processedBeans || beanName.contains("$") || beanName.contains("@")) return
+        beanFactory.getUmlItem(beanName)?.let { umlItem ->
+            rows.addAll(umlItem.generatePuml(beanFactory))
+            val processed = processedBeans + beanName
+            umlItem.dependencies.forEach { dep -> buildUml(rows, dep, processed) }
+            umlItem.children.forEach { child -> buildUml(rows, child, processed) }
+        }
+    }
 }
 
 fun ConfigurableListableBeanFactory.getUmlItem(beanName: String): UmlItem? {
-    val bd = getBeanDefinition(beanName)
+    fun beansFromConfig(configBeanName: String): List<String> =
+        beanDefinitionNames
+            .map { name -> name to getBeanDefinition(name) }
+            .filter { (_, bd) ->
+                bd.factoryBeanName == configBeanName
+            }.map { (name, _) ->
+                name
+            }
 
-    return bd.beanClassName?.let { className ->
-        makeCleanName(
-            beanName,
-            className,
-        )?.let { name ->
-            UmlItem(
-                name,
-                if (isAnnotatedConfiguration(bd)) {
-                    UmlItemType.CONFIGURATION_BEAN
-                } else if (isAnnotatedService(bd)) {
-                    UmlItemType.SERVICE_BEAN
-                } else if (isAnnotatedRepository(bd)) {
-                    UmlItemType.REPOSITORY_BEAN
-                } else if (isAnnotatedController(bd)) {
-                    UmlItemType.CONTROLLER_BEAN
-                } else {
-                    UmlItemType.GENERIC_BEAN
-                },
+    val bd =
+        runCatching { getBeanDefinition(beanName) }.getOrNull()
+            ?: return UmlItem(
+                name = beanName,
+                type = UmlItemType.GENERIC_BEAN,
+                dependencies = emptyList(),
+                children = emptyList(),
             )
-        }
-    }
-        ?: UmlItem(
-            beanName,
-            UmlItemType.METHOD_BEAN,
-            makeCleanName(
-                "UNKNOWN",
-                (bd.factoryBeanName ?: bd.factoryMethodName)?.let { getBean(it).javaClass.name },
-            ),
-        )
+
+    val itemType = UmlItemType.of(bd)
+
+    return UmlItem(
+        name = beanName,
+        type = itemType,
+        dependencies = getDependenciesForBean(beanName).toList(),
+        children = beansFromConfig(beanName),
+    )
 }
+
+fun ConfigurableListableBeanFactory.getUmlItemChild(
+    parentName: String,
+    beanName: String,
+): UmlItem? =
+    runCatching { getBeanDefinition(beanName) }.getOrNull()?.let { bd ->
+        UmlItem(
+            name = "$parentName.$beanName",
+            type = UmlItemType.METHOD_BEAN,
+            dependencies = getDependenciesForBean(beanName).toList().filter { it != bd.factoryBeanName },
+            children = emptyList(),
+        )
+    }
 
 data class UmlItem(
     val name: String,
     val type: UmlItemType,
-    val factory: String? = null,
+    val dependencies: List<String>,
+    val children: List<String>,
 ) {
-    fun fullName(): String {
-        val fullName =
-            factory?.let {
-                "${factory.substringBeforeLast(".")}.$name"
-            } ?: name
-        return listOfNotNull(
-            fullName,
-            type.stereotype?.let { "<<$it>>" },
-        ).joinToString(" ")
+    fun generatePuml(beanFactory: ConfigurableListableBeanFactory): List<String> {
+        return beanNameToDisplayName(beanFactory, name)?.let { cleanName ->
+            if (cleanName.startsWith("Kielitutkintorekisteri")) {
+                val stereotype = type.stereotype?.let { " <<$it>>" }.orEmpty()
+
+                return (
+                    listOf("$type $cleanName$stereotype") +
+                        dependencies.mapNotNull {
+                            beanNameToDisplayName(beanFactory, it)?.let { "$cleanName --> $it" }
+                        } +
+                        children.flatMap {
+                            val parentName = cleanName.substringBeforeLast(".")
+                            beanFactory
+                                .getUmlItemChild(
+                                    parentName = parentName,
+                                    beanName = it,
+                                )?.generatePuml(beanFactory)
+                                ?.flatMap { child ->
+                                    listOf(child) + "$cleanName *-- $it"
+                                }.orEmpty()
+                        }
+                )
+            } else {
+                val packageName = cleanName.substringBefore(".")
+                listOf("package $packageName {}") +
+                    dependencies
+                        .mapNotNull {
+                            beanNameToDisplayName(beanFactory, it)?.let { depCleanName ->
+                                if (depCleanName.startsWith("Kielitutkintorekisteri")) {
+                                    "$packageName --> $depCleanName"
+                                } else {
+                                    null
+                                }
+                            }
+                        }
+            }
+        } ?: emptyList()
     }
 
-    override fun toString(): String = "${type.pumlType} ${fullName()}"
+    private fun beanNameToDisplayName(
+        beanFactory: ConfigurableListableBeanFactory,
+        beanName: String,
+    ): String? = clean(runCatching { beanFactory.getBean(beanName) }.getOrNull()?.javaClass?.name ?: beanName)
+
+    private fun clean(cn: String): String? =
+        (
+            if (cn.startsWith("jdk.") || cn.startsWith("java.")) {
+                null
+            } else if (cn.startsWith("fi.oph.kitu")) {
+                cn.replace("fi.oph.kitu.", "Kielitutkintorekisteri.")
+            } else if (cn.startsWith("org.springframework")) {
+                "Spring.${cn.substringAfterLast(".")}"
+            } else if (cn.startsWith("io.opentelemetry")) {
+                "OpenTelemetry.${cn.substringAfterLast(".")}"
+            } else if (cn.startsWith("com.github.kagkarlsson.scheduler")) {
+                "Scheduler.${cn.substringAfterLast(".")}"
+            } else if (cn.startsWith("com.fasterxml.jackson")) {
+                "Jackson.${cn.substringAfterLast(".")}"
+            } else if (cn.startsWith("org.apereo.cas")) {
+                "CAS.${cn.substringAfterLast(".")}"
+            } else if (cn.startsWith("org.flyway")) {
+                "Flyway.${cn.substringAfterLast(".")}"
+            } else {
+                cn
+            }
+        )?.substringBefore("@")?.substringBefore("$")
 }
 
 enum class UmlItemType(
@@ -124,33 +187,18 @@ enum class UmlItemType(
     ;
 
     override fun toString(): String = pumlType
-}
 
-fun makeCleanName(
-    name: String,
-    className: String?,
-): String? =
-    (
-        className?.let { cn ->
-            if (cn.startsWith("jdk.") || cn.startsWith("java.")) {
-                null
-            } else if (cn.startsWith("fi.oph.kitu")) {
-                cn.replace("fi.oph.kitu.", "Kielitutkintorekisteri.")
-            } else if (cn.startsWith("org.springframework")) {
-                "Spring.${cn.substringAfterLast(".")}"
-            } else if (cn.startsWith("io.opentelemetry")) {
-                "OpenTelemetry.${cn.substringAfterLast(".")}"
-            } else if (cn.startsWith("com.github.kagkarlsson.scheduler")) {
-                "Scheduler.${cn.substringAfterLast(".")}"
-            } else if (cn.startsWith("com.fasterxml.jackson")) {
-                "Jackson.${cn.substringAfterLast(".")}"
-            } else if (cn.startsWith("org.apereo.cas")) {
-                "CAS.${cn.substringAfterLast(".")}"
-            } else {
-                cn
+    companion object {
+        fun of(bd: BeanDefinition): UmlItemType =
+            when {
+                isAnnotatedConfiguration(bd) -> CONFIGURATION_BEAN
+                isAnnotatedService(bd) -> SERVICE_BEAN
+                isAnnotatedRepository(bd) -> REPOSITORY_BEAN
+                isAnnotatedController(bd) -> CONTROLLER_BEAN
+                else -> GENERIC_BEAN
             }
-        } ?: name
-    ).substringBefore("$$")
+    }
+}
 
 fun isAnnotatedConfiguration(beanDefinition: BeanDefinition): Boolean =
     beanDefinition is AnnotatedBeanDefinition &&
