@@ -12,7 +12,7 @@ class OppijanumeroTroubleshootingService(
     fun tryEachEtunimiAsKutsumanimi(oppija: Oppija): Oppija? =
         oppija.etunimet
             .split(" ")
-            .map { etunimi -> oppija.copy(kutsumanimi = etunimi) }
+            .map { etunimet -> oppija.copy(kutsumanimi = etunimet) }
             .firstOrNull { oppija -> oppijanumeroService.getOppijanumero(oppija).isSuccess }
 
     fun switchEtunimetAndSukunimi(oppija: Oppija): Oppija? =

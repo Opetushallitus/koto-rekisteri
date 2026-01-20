@@ -67,7 +67,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await testSorting("sukunimi", "Väänänen", "Salo")
 
     // Testataan loputkin kentät
-    await testSorting("etunimi", "Aarni Eino", "Eero Hugo")
+    await testSorting("etunimet", "Aarni Eino", "Eero Hugo")
     await testSorting("tutkintopaiva", "27.2.2000", "29.3.2003")
   })
 
@@ -333,7 +333,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       await vktIlmoittautuneetPage.search("fiona")
 
       await expectToHaveTexts(
-        vktIlmoittautuneetPage.table.getCellsOfColumn("etunimi"),
+        vktIlmoittautuneetPage.table.getCellsOfColumn("etunimet"),
         "Fiona Kerttu",
         "Fiona Roosa",
       )

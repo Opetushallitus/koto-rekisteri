@@ -55,7 +55,7 @@ data class VktSuoritus(
         VktSuoritusEntity(
             ilmoittautumisenId = lahdejarjestelmanId.toString(),
             suorittajanOppijanumero = oppija.oid,
-            etunimi = oppija.etunimet.orEmpty(),
+            etunimet = oppija.etunimet.orEmpty(),
             sukunimi = oppija.sukunimi.orEmpty(),
             tutkintokieli = kieli,
             ilmoittautumisenTila = "",

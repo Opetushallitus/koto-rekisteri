@@ -40,7 +40,7 @@ class VktSuoritusServiceTest(
                 .generateRandomVktSuoritusEntity(vktValidation)
                 .copy(
                     suorittajanOppijanumero = suoritus.suorittajanOppijanumero,
-                    etunimi = suoritus.etunimi,
+                    etunimet = suoritus.etunimet,
                     sukunimi = suoritus.sukunimi,
                     tutkintokieli = suoritus.tutkintokieli,
                     taitotaso = suoritus.taitotaso,
@@ -83,7 +83,7 @@ class VktSuoritusServiceTest(
                 .generateRandomVktSuoritusEntity(vktValidation)
                 .copy(
                     suorittajanOppijanumero = suoritus.suorittajanOppijanumero,
-                    etunimi = suoritus.etunimi,
+                    etunimet = suoritus.etunimet,
                     sukunimi = suoritus.sukunimi,
                     tutkintokieli = suoritus.tutkintokieli,
                     taitotaso = suoritus.taitotaso,

@@ -20,7 +20,7 @@ enum class YkiTarkistusarviointiColumn(
         renderValue = { +it.sukunimi },
     ),
     Etunimet(
-        entityName = "etunimi",
+        entityName = "etunimet",
         uiHeaderValue = "Etunimet",
         urlParam = "etunimet",
         renderValue = { +it.etunimet },
