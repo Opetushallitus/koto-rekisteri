@@ -182,7 +182,7 @@ class YkiViewController(
         return ResponseEntity.ok(
             YkiKoskiErrors.render(
                 errors = koskiErrorService.findAllByEntity("yki", hidden),
-                suoritukset = ykiSuoritusRepository.findLatestBySuoritusIds(suoritusIds),
+                suoritukset = ykiSuoritusRepository.findLatestBySolkiIds(suoritusIds),
                 hiddenCount = hiddenCount,
             ),
         )
@@ -209,7 +209,7 @@ class YkiViewController(
         @PathVariable suoritusId: Int,
     ): ResponseEntity<String> =
         ykiSuoritusRepository
-            .findLatestBySuoritusIds(listOf(suoritusId))
+            .findLatestBySolkiIds(listOf(suoritusId))
             .firstOrNull()
             ?.let {
                 koskiRequestMapper.ykiSuoritusToKoskiRequest(it)

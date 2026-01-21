@@ -50,7 +50,7 @@ class KoskiRequestMapper {
                             oid = ykiSuoritus.koskiOpiskeluoikeus,
                             lähdejärjestelmänId =
                                 LahdeJarjestelmanId(
-                                    id = "yki.${ykiSuoritus.suoritusId}",
+                                    id = "yki.${ykiSuoritus.solkiId}",
                                 ),
                             tila =
                                 Tila(

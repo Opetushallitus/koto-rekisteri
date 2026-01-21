@@ -82,7 +82,7 @@ class YkiService(
                 auditLogger.logAllInternalOnly("YKI suoritus imported", saved) { suoritus ->
                     arrayOf(
                         "principal" to "yki.importSuoritukset",
-                        "suoritus.id" to suoritus.suoritusId,
+                        "suoritus.id" to suoritus.solkiId,
                     )
                 }
 

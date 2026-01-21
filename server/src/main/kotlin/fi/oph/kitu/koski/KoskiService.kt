@@ -54,7 +54,7 @@ class KoskiService(
                                 .toEntity<KoskiResponse>()
                         } catch (e: RestClientException) {
                             return TypedResult.Failure(
-                                KoskiException(YkiMappingId(ykiSuoritusEntity.suoritusId), e.message),
+                                KoskiException(YkiMappingId(ykiSuoritusEntity.solkiId), e.message),
                             )
                         }
 
@@ -67,7 +67,7 @@ class KoskiService(
                     if (koskiOpiskeluoikeus == null) {
                         return TypedResult.Failure(
                             KoskiException(
-                                YkiMappingId(ykiSuoritusEntity.suoritusId),
+                                YkiMappingId(ykiSuoritusEntity.solkiId),
                                 "KOSKI opiskeluoikeus OID missing from response",
                             ),
                         )
@@ -123,7 +123,7 @@ class KoskiService(
     fun sendYkiSuorituksetToKoski() {
         val suoritukset = ykiSuoritusRepository.findSuorituksetWithNoKoskiopiskeluoikeus()
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
-        reportErrors(results.mapValues { YkiMappingId(it.suoritusId) })
+        reportErrors(results.mapValues { YkiMappingId(it.solkiId) })
     }
 
     @WithSpan
