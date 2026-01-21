@@ -54,7 +54,7 @@ data class VktSuoritus(
     fun toVktSuoritusEntity(oppija: Henkilo): VktSuoritusEntity =
         VktSuoritusEntity(
             ilmoittautumisenId = lahdejarjestelmanId.toString(),
-            suorittajanOppijanumero = oppija.oid,
+            suorittajanOid = oppija.oid,
             etunimet = oppija.etunimet.orEmpty(),
             sukunimi = oppija.sukunimi.orEmpty(),
             tutkintokieli = kieli,

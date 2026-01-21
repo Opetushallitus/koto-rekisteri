@@ -33,7 +33,7 @@ class VKTSuoritusRepositoryTest(
         val suoritus =
             VktSuoritusEntity(
                 ilmoittautumisenId = "1",
-                suorittajanOppijanumero = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
                 etunimet = "Testi",
                 sukunimi = "Testinen",
                 tutkintokieli = Koodisto.Tutkintokieli.FIN,

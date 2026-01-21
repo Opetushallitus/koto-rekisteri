@@ -34,7 +34,7 @@ class CustomVktSuoritusRepository {
                     *,
                     row_number() OVER (PARTITION BY ilmoittautumisen_id ORDER BY created_at DESC) rn
                 FROM vkt_suoritus
-                WHERE suorittajan_oppijanumero = :oppijanumero
+                WHERE suorittajan_oid = :oppijanumero
                 AND tutkintokieli = :tutkintokieli
                 AND taitotaso = :taitotaso
             )
@@ -72,7 +72,7 @@ class CustomVktSuoritusRepository {
             ),
             rivi AS (
                 SELECT
-                    s.suorittajan_oppijanumero,
+                    s.suorittajan_oid,
                     array_to_string(array_agg(distinct nimi.etunimet), ' / ') etunimet,
                     array_to_string(array_agg(distinct nimi.sukunimi), ' / ') sukunimi,
                     s.tutkintokieli,
@@ -87,12 +87,12 @@ class CustomVktSuoritusRepository {
                             etunimet,
                             sukunimi
                         FROM vkt_suoritus
-                        WHERE vkt_suoritus.suorittajan_oppijanumero = s.suorittajan_oppijanumero
+                        WHERE vkt_suoritus.suorittajan_oid = s.suorittajan_oid
                         ORDER BY created_at DESC
                         LIMIT 1) AS nimi ON TRUE
                 ${whereAll("rn = 1", tutkintopaivaCondition(search.dateTokens))}
                 GROUP BY
-                    s.suorittajan_oppijanumero,
+                    s.suorittajan_oid,
                     s.tutkintokieli,
                     s.taitotaso
             )
@@ -139,7 +139,7 @@ class CustomVktSuoritusRepository {
                 JOIN vkt_osakoe ok ON ok.suoritus_id = s.id
                 ${whereAll("rn = 1", tutkintopaivaCondition(search.dateTokens))}
                 GROUP BY
-                    s.suorittajan_oppijanumero,
+                    s.suorittajan_oid,
                     s.tutkintokieli,
                     s.taitotaso
             )
@@ -155,7 +155,7 @@ class CustomVktSuoritusRepository {
         val query =
             """
             SELECT
-                suorittajan_oppijanumero oppijanumero,
+                suorittajan_oid oppijanumero,
                 tutkintokieli,
                 taitotaso
             FROM
@@ -169,7 +169,7 @@ class CustomVktSuoritusRepository {
                         vkt_osakoe.suoritus_id = vkt_suoritus.id
                         AND arvosana IS NULL)
             GROUP BY
-                suorittajan_oppijanumero,
+                suorittajan_oid,
                 tutkintokieli,
                 taitotaso
             """.trimIndent()
@@ -189,7 +189,7 @@ class CustomVktSuoritusRepository {
                 koski_siirto_kasitelty = true,
                 koski_opiskeluoikeus = :koski_oid
             WHERE
-                suorittajan_oppijanumero = :oppijanumero
+                suorittajan_oid = :oppijanumero
                 AND tutkintokieli = :tutkintokieli
                 AND taitotaso = :taitotaso
             """.trimIndent()
@@ -207,7 +207,7 @@ class CustomVktSuoritusRepository {
             SET
                 koski_siirto_kasitelty = false
             WHERE
-                suorittajan_oppijanumero = :oppijanumero
+                suorittajan_oid = :oppijanumero
                 AND tutkintokieli = :tutkintokieli
                 AND taitotaso = :taitotaso
             """.trimIndent()
@@ -262,7 +262,7 @@ class CustomVktSuoritusRepository {
                                 listOf(
                                     "etunimet ILIKE",
                                     "sukunimi ILIKE",
-                                    "suorittajan_oppijanumero LIKE",
+                                    "suorittajan_oid LIKE",
                                 ).joinToString(" OR ") { "($it ${token.sql})" }
                             }
                         ),
