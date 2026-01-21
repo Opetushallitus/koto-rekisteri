@@ -39,7 +39,7 @@ class VktSuoritusServiceTest(
             generator
                 .generateRandomVktSuoritusEntity(vktValidation)
                 .copy(
-                    suorittajanOppijanumero = suoritus.suorittajanOppijanumero,
+                    suorittajanOid = suoritus.suorittajanOid,
                     etunimet = suoritus.etunimet,
                     sukunimi = suoritus.sukunimi,
                     tutkintokieli = suoritus.tutkintokieli,
@@ -58,7 +58,7 @@ class VktSuoritusServiceTest(
             )
         val tutkintoryhma =
             CustomVktSuoritusRepository.Tutkintoryhma(
-                oppijanumero = suoritus.suorittajanOppijanumero.toString(),
+                oppijanumero = suoritus.suorittajanOid.toString(),
                 tutkintokieli = suoritus.tutkintokieli,
                 taitotaso = suoritus.taitotaso,
             )
@@ -82,7 +82,7 @@ class VktSuoritusServiceTest(
             generator
                 .generateRandomVktSuoritusEntity(vktValidation)
                 .copy(
-                    suorittajanOppijanumero = suoritus.suorittajanOppijanumero,
+                    suorittajanOid = suoritus.suorittajanOid,
                     etunimet = suoritus.etunimet,
                     sukunimi = suoritus.sukunimi,
                     tutkintokieli = suoritus.tutkintokieli,
@@ -101,7 +101,7 @@ class VktSuoritusServiceTest(
             )
         val tutkintoryhma =
             CustomVktSuoritusRepository.Tutkintoryhma(
-                oppijanumero = suoritus.suorittajanOppijanumero.toString(),
+                oppijanumero = suoritus.suorittajanOid.toString(),
                 tutkintokieli = suoritus.tutkintokieli,
                 taitotaso = suoritus.taitotaso,
             )

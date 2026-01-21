@@ -16,7 +16,7 @@ data class VktTableItem(
         val fromRow: RowMapper<VktTableItem> =
             RowMapper { rs, _ ->
                 VktTableItem(
-                    oppijanumero = rs.getString("suorittajan_oppijanumero"),
+                    oppijanumero = rs.getString("suorittajan_oid"),
                     etunimet = rs.getString("etunimet"),
                     sukunimi = rs.getString("sukunimi"),
                     kieli = Koodisto.Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
