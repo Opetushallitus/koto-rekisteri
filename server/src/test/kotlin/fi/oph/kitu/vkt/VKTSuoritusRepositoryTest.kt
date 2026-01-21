@@ -37,7 +37,6 @@ class VKTSuoritusRepositoryTest(
                 etunimet = "Testi",
                 sukunimi = "Testinen",
                 tutkintokieli = Koodisto.Tutkintokieli.FIN,
-                ilmoittautumisenTila = "COMPLETED",
                 suorituspaikkakunta = "Helsinki",
                 taitotaso = Koodisto.VktTaitotaso.Erinomainen,
                 suorituksenVastaanottaja = null,
