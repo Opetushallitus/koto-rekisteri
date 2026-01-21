@@ -58,7 +58,6 @@ data class VktSuoritus(
             etunimet = oppija.etunimet.orEmpty(),
             sukunimi = oppija.sukunimi.orEmpty(),
             tutkintokieli = kieli,
-            ilmoittautumisenTila = "",
             suorituspaikkakunta = suorituspaikkakunta,
             taitotaso = taitotaso,
             suorituksenVastaanottaja = suorituksenVastaanottaja,

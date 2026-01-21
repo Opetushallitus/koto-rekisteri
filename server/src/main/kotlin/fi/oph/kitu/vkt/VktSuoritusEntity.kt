@@ -21,7 +21,6 @@ data class VktSuoritusEntity(
     val etunimet: String,
     val sukunimi: String,
     val tutkintokieli: Koodisto.Tutkintokieli,
-    val ilmoittautumisenTila: String,
     val suorituspaikkakunta: String?,
     val taitotaso: Koodisto.VktTaitotaso,
     val suorituksenVastaanottaja: Oid?,
