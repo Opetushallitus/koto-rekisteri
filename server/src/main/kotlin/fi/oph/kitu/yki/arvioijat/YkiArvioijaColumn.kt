@@ -2,7 +2,6 @@ package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.html.DisplayTableEnum
 import kotlinx.html.FlowContent
-import kotlin.toString
 
 enum class YkiArvioijaColumn(
     override val entityName: String,
@@ -13,10 +12,10 @@ enum class YkiArvioijaColumn(
     // id not added
 
     Oppijanumero(
-        entityName = "arvioijan_oppijanumero",
+        entityName = "arvioija_oid",
         uiHeaderValue = "Oppijanumero",
         urlParam = "oppijanumero",
-        renderValue = { +it.arvioijanOppijanumero.toString() },
+        renderValue = { +it.arvioijaOid.toString() },
     ),
 
     Hetu(

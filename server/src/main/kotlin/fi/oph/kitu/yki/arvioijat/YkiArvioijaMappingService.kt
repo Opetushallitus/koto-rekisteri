@@ -15,7 +15,7 @@ class YkiArvioijaMappingService {
         rekisteriintuontiaika: OffsetDateTime? = null,
     ) = YkiArvioijaEntity(
         id,
-        arvioijanOppijanumero = response.arvioijanOppijanumero,
+        arvioijaOid = response.arvioijanOppijanumero,
         henkilotunnus = response.henkilotunnus,
         sukunimi = response.sukunimi,
         etunimet = response.etunimet,
@@ -43,7 +43,7 @@ class YkiArvioijaMappingService {
     fun convertToResponses(entity: YkiArvioijaEntity) =
         entity.arviointioikeudet.map {
             SolkiArvioijaResponse(
-                arvioijanOppijanumero = entity.arvioijanOppijanumero,
+                arvioijanOppijanumero = entity.arvioijaOid,
                 henkilotunnus = entity.henkilotunnus,
                 sukunimi = entity.sukunimi,
                 etunimet = entity.etunimet,

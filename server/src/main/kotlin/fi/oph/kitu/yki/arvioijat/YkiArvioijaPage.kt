@@ -52,7 +52,7 @@ object YkiArvioijaPage {
                                         td {
                                             attributes["rowspan"] = rowSpan
                                             testId("")
-                                            +arvioija.arvioijanOppijanumero.toString()
+                                            +arvioija.arvioijaOid.toString()
                                         }
                                         td {
                                             attributes["rowspan"] = rowSpan

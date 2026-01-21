@@ -48,7 +48,7 @@ const createArvioija = (
   const p = peopleFixture[person]
   return {
     rekisteriintuontiaika,
-    arvioijanOppijanumero: p.oppijanumero,
+    arvioijaOid: p.oppijanumero,
     henkilotunnus: p.hetu,
     sukunimi: p.sukunimi,
     etunimet: p.etunimet,
@@ -89,7 +89,7 @@ export const insert = async (db: TestDB, arvioijaName: YkiArvioijaName) => {
 
   const arvioijaId = (
     await db.dbClient.query<{ id: number }>(SQL`
-      INSERT INTO yki_arvioija (arvioijan_oppijanumero,
+      INSERT INTO yki_arvioija (arvioija_oid,
                                 henkilotunnus,
                                 sukunimi,
                                 etunimet,
@@ -97,7 +97,7 @@ export const insert = async (db: TestDB, arvioijaName: YkiArvioijaName) => {
                                 katuosoite,
                                 postinumero,
                                 postitoimipaikka)
-      VALUES (${arvioija.arvioijanOppijanumero},
+      VALUES (${arvioija.arvioijaOid},
               ${arvioija.henkilotunnus},
               ${arvioija.sukunimi},
               ${arvioija.etunimet},

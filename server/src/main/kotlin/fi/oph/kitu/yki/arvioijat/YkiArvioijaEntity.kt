@@ -18,7 +18,7 @@ import java.time.OffsetDateTime
 data class YkiArvioijaEntity(
     @Id
     val id: Number?,
-    val arvioijanOppijanumero: Oid,
+    val arvioijaOid: Oid,
     val henkilotunnus: String?,
     val sukunimi: String,
     val etunimet: String,
@@ -34,7 +34,7 @@ data class YkiArvioijaEntity(
             RowMapper { rs, _ ->
                 YkiArvioijaEntity(
                     id = rs.getInt("id"),
-                    arvioijanOppijanumero = rs.getOid("arvioijan_oppijanumero"),
+                    arvioijaOid = rs.getOid("arvioija_oid"),
                     henkilotunnus = rs.getString("henkilotunnus"),
                     sukunimi = rs.getString("sukunimi"),
                     etunimet = rs.getString("etunimet"),
