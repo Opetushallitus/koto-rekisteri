@@ -21,7 +21,7 @@ fun generateRandomYkiArvioijaErrorEntity(): YkiArvioijaErrorEntity {
 
     return YkiArvioijaErrorEntity(
         id = null,
-        arvioijanOid = arvioijaEntity.arvioijanOppijanumero.toString(),
+        arvioijanOid = arvioijaEntity.arvioijaOid.toString(),
         hetu = arvioijaEntity.henkilotunnus,
         nimi = "${arvioijaEntity.sukunimi} ${arvioijaEntity.etunimet}",
         virheellinenKentta = virheellinenKentta,

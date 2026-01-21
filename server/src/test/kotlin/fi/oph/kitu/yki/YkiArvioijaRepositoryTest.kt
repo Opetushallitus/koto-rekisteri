@@ -48,7 +48,7 @@ class YkiArvioijaRepositoryTest(
         val arvioija =
             YkiArvioijaEntity(
                 id = null,
-                arvioijanOppijanumero = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                arvioijaOid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                 henkilotunnus = "010180-9026",
                 sukunimi = "Öhman-Testi",
                 etunimet = "Ranja Testi",
@@ -82,7 +82,7 @@ class YkiArvioijaRepositoryTest(
         val arvioija =
             YkiArvioijaEntity(
                 id = null,
-                arvioijanOppijanumero = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                arvioijaOid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                 henkilotunnus = "010180-9026",
                 sukunimi = "Öhman-Testi",
                 etunimet = "Ranja Testi",
@@ -125,7 +125,7 @@ class YkiArvioijaRepositoryTest(
         val arvioija =
             YkiArvioijaEntity(
                 id = null,
-                arvioijanOppijanumero = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                arvioijaOid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                 henkilotunnus = "010180-9026",
                 sukunimi = "Öhman-Testi",
                 etunimet = "Ranja Testi",

@@ -20,7 +20,7 @@ fun generateRandomYkiArvioijaEntity(): YkiArvioijaEntity {
 
     return YkiArvioijaEntity(
         id = null,
-        arvioijanOppijanumero = randomTeacher.oppijanumero,
+        arvioijaOid = randomTeacher.oppijanumero,
         henkilotunnus = randomTeacher.hetu,
         sukunimi = randomTeacher.sukunimi,
         etunimet = randomTeacher.etunimet,

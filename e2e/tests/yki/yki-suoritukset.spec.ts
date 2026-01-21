@@ -162,7 +162,7 @@ describe('"YKI Suoritukset" -page', () => {
         order: ["testi@testi.fi", "testi.petro@testi.fi", "devnull-14@oph.fi"],
       },
       {
-        column: "Suorituksen tunniste",
+        column: "Solki-tunniste",
         tableColumnIndex: 8,
         order: ["183424", "172836", "123123"],
       },

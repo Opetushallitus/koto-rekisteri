@@ -45,7 +45,7 @@ class CustomYkiArvioijaRepositoryImpl(
                 .query(
                     """
                     INSERT INTO yki_arvioija (
-                        arvioijan_oppijanumero,
+                        arvioija_oid,
                         henkilotunnus,
                         sukunimi,
                         etunimet,
@@ -54,7 +54,7 @@ class CustomYkiArvioijaRepositoryImpl(
                         postinumero,
                         postitoimipaikka
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT ON CONSTRAINT yki_arvioija_arvioijan_oppijanumero_key DO UPDATE
+                    ON CONFLICT (arvioija_oid) DO UPDATE
                     SET
                         henkilotunnus = EXCLUDED.henkilotunnus,
                         sukunimi = EXCLUDED.sukunimi,
@@ -66,7 +66,7 @@ class CustomYkiArvioijaRepositoryImpl(
                     RETURNING *
                     """.trimIndent(),
                     YkiArvioijaEntity.fromRow,
-                    arvioija.arvioijanOppijanumero.toString(),
+                    arvioija.arvioijaOid.toString(),
                     arvioija.henkilotunnus,
                     arvioija.sukunimi,
                     arvioija.etunimet,
@@ -176,7 +176,7 @@ data class YkiArvioijaArviointioikeus(
         ) = arvioija?.let {
             arviointioikeus?.let {
                 YkiArvioijaArviointioikeus(
-                    arvioijanOppijanumero = arvioija.arvioijanOppijanumero,
+                    arvioijanOppijanumero = arvioija.arvioijaOid,
                     henkilotunnus = arvioija.henkilotunnus,
                     sukunimi = arvioija.sukunimi,
                     etunimet = arvioija.etunimet,
@@ -200,7 +200,7 @@ data class YkiArvioijaArviointioikeus(
             val head = aas.first()
             return YkiArvioijaEntity(
                 id = null,
-                arvioijanOppijanumero = head.arvioijanOppijanumero,
+                arvioijaOid = head.arvioijanOppijanumero,
                 henkilotunnus = head.henkilotunnus,
                 sukunimi = head.sukunimi,
                 etunimet = head.etunimet,

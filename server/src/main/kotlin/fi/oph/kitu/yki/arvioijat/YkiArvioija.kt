@@ -21,7 +21,7 @@ data class YkiArvioija(
     fun toEntity(): YkiArvioijaEntity =
         YkiArvioijaEntity(
             id = null,
-            arvioijanOppijanumero = arvioijaOid,
+            arvioijaOid = arvioijaOid,
             henkilotunnus = henkilotunnus,
             sukunimi = sukunimi,
             etunimet = etunimet,
