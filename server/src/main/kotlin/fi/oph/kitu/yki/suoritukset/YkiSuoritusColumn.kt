@@ -72,11 +72,11 @@ enum class YkiSuoritusColumn(
         renderValue = { +it.email.orEmpty() },
     ),
 
-    SuoritusId(
-        entityName = "yki_suoritus.suoritus_id",
-        uiHeaderValue = "Suorituksen tunniste",
-        urlParam = "suoritusid",
-        renderValue = { +it.suoritusId.toString() },
+    SolkiId(
+        entityName = "yki_suoritus.solki_id",
+        uiHeaderValue = "Solki-tunniste",
+        urlParam = "solkiId",
+        renderValue = { +it.solkiId.toString() },
     ),
 
     Tutkintopaiva(

@@ -92,7 +92,7 @@ class YkiSuoritusRepository {
         suoritusIds: List<Int>,
         pvm: LocalDate,
     ): Int {
-        findLatestBySuoritusIds(suoritusIds).forEach { suoritus ->
+        findLatestBySolkiIds(suoritusIds).forEach { suoritus ->
             val suorituksenNimi by lazy {
                 "'${suoritus.suorittajanOID} ${suoritus.sukunimi} ${suoritus.etunimet}, ${suoritus.tutkintotaso} ${suoritus.tutkintokieli}'"
             }
@@ -123,7 +123,7 @@ class YkiSuoritusRepository {
 
         return jdbcTemplate.update(
             """
-            INSERT INTO yki_suoritus_lisatieto (suoritus_id, tarkistusarviointi_hyvaksytty_pvm)
+            INSERT INTO yki_suoritus_lisatieto (solki_id, tarkistusarviointi_hyvaksytty_pvm)
                 VALUES ${suoritusIds.joinToString(",") { "(?, ?)" }}
             ON CONFLICT ON CONSTRAINT yki_suoritus_lisatieto_pkey
                 DO UPDATE SET
@@ -153,12 +153,12 @@ class YkiSuoritusRepository {
             ?: 0
     }
 
-    fun findLatestBySuoritusIds(ids: List<Int>): List<YkiSuoritusEntity> =
+    fun findLatestBySolkiIds(ids: List<Int>): List<YkiSuoritusEntity> =
         if (ids.isEmpty()) {
             emptyList()
         } else {
             jdbcNamedParameterTemplate.query(
-                selectSuoritukset(viimeisin = true, "WHERE yki_suoritus.suoritus_id IN (:ids)"),
+                selectSuoritukset(viimeisin = true, "WHERE yki_suoritus.solki_id IN (:ids)"),
                 mapOf("ids" to ids),
                 YkiSuoritusEntity.fromRow,
             )
@@ -236,7 +236,7 @@ class YkiSuoritusRepository {
                 table = "yki_suoritus_lisatieto",
                 values =
                     mapOf(
-                        "suoritus_id" to suoritusId,
+                        "solki_id" to suoritusId,
                         "arviointitila_lahetetty" to Timestamp(Instant.now().toEpochMilli()),
                         "arviointitilan_lahetysvirhe" to null,
                     ),
@@ -256,7 +256,7 @@ class YkiSuoritusRepository {
         table = "yki_suoritus_lisatieto",
         values =
             mapOf(
-                "suoritus_id" to suoritusId,
+                "solki_id" to suoritusId,
                 "arviointitilan_lahetysvirhe" to message,
             ),
         onConflict =
@@ -293,7 +293,7 @@ class YkiSuoritusRepository {
                 "postinumero" to suoritus.postinumero,
                 "postitoimipaikka" to suoritus.postitoimipaikka,
                 "email" to suoritus.email,
-                "suoritus_id" to suoritus.suoritusId.toString(),
+                "solki_id" to suoritus.solkiId.toString(),
                 "last_modified" to Timestamp(suoritus.lastModified.toEpochMilli()),
                 "koski_opiskeluoikeus" to suoritus.koskiOpiskeluoikeus?.toString(),
                 "koski_siirto_kasitelty" to (suoritus.koskiSiirtoKasitelty ?: false),
@@ -416,7 +416,7 @@ object YkiSuoritusSql {
         ${selectQuery(viimeisin)}
         FROM yki_suoritus
         ORDER BY
-            suoritus_id,
+            solki_id,
             last_modified DESC
         """.trimIndent()
 
@@ -478,13 +478,13 @@ object YkiSuoritusSql {
                 LEFT JOIN $arvosanaTable AS arvosana ON arvosana.suoritus_id = yki_suoritus.id
                 LEFT JOIN $tarkistusarvointiAggregationTable AS tarkistusarviointi_agg ON tarkistusarviointi_agg.suoritus_id = yki_suoritus.id
                 LEFT JOIN yki_tarkistusarviointi ON yki_tarkistusarviointi.id = tarkistusarviointi_agg.tarkistusarviointi_id
-                LEFT JOIN yki_suoritus_lisatieto ON yki_suoritus.suoritus_id = yki_suoritus_lisatieto.suoritus_id
+                LEFT JOIN yki_suoritus_lisatieto ON yki_suoritus.solki_id = yki_suoritus_lisatieto.solki_id
         """.trimIndent()
 
     fun selectQuery(
         distinct: Boolean,
         columns: String = "*",
-    ): String = if (distinct) "SELECT DISTINCT ON (yki_suoritus.suoritus_id) $columns" else "SELECT $columns"
+    ): String = if (distinct) "SELECT DISTINCT ON (yki_suoritus.solki_id) $columns" else "SELECT $columns"
 
     fun pagingQuery(
         limit: Int?,

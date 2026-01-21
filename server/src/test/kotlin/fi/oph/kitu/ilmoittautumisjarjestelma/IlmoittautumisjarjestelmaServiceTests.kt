@@ -118,7 +118,7 @@ class IlmoittautumisjarjestelmaServiceTests(
         )
 
         val suoritus = suoritukset.findTarkistusarvoidutSuoritukset().first()
-        ykiView.hyvaksyTarkistusArvioinnit(listOf(suoritus.suoritusId))
+        ykiView.hyvaksyTarkistusArvioinnit(listOf(suoritus.solkiId))
 
         assertEquals(
             ilmoittautumisjarjestelmaClient.latestRequest(),
@@ -137,7 +137,7 @@ class IlmoittautumisjarjestelmaServiceTests(
             ykiApi.postHenkilosuoritus(suoritus)
         }
 
-        val savedSuoritus = ykiSuoritusRepository.findLatestBySuoritusIds(listOf(entity.suoritusId)).first()
+        val savedSuoritus = ykiSuoritusRepository.findLatestBySolkiIds(listOf(entity.solkiId)).first()
         assertEquals("SUORITUSTA_EI_LOYDY", savedSuoritus.arviointitilanLahetysvirhe)
     }
 
@@ -155,7 +155,7 @@ class IlmoittautumisjarjestelmaServiceTests(
             ykiApi.postHenkilosuoritus(suoritus)
         }
 
-        val savedSuoritus = ykiSuoritusRepository.findLatestBySuoritusIds(listOf(entity.suoritusId)).first()
+        val savedSuoritus = ykiSuoritusRepository.findLatestBySolkiIds(listOf(entity.solkiId)).first()
         assertEquals(
             """Unexpected error; request: {
   "tilat" : [ {

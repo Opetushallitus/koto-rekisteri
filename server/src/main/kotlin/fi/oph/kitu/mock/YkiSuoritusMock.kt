@@ -45,7 +45,7 @@ fun generateRandomYkiSuoritusEntity(
         postinumero = randomPerson.postinumero,
         postitoimipaikka = randomPerson.postitoimipaikka,
         email = randomPerson.email,
-        suoritusId = Random.nextInt(100000, 999999),
+        solkiId = Random.nextInt(100000, 999999),
         lastModified = lastModified,
         tutkintopaiva = tutkintopaiva,
         tutkintokieli =

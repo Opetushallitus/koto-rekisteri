@@ -32,7 +32,7 @@ data class YkiSuoritusEntity(
     val postinumero: String,
     val postitoimipaikka: String,
     val email: String?,
-    val suoritusId: Int,
+    val solkiId: Int,
     val lastModified: Instant,
     val tutkintopaiva: LocalDate,
     @Enumerated(EnumType.STRING)
@@ -105,7 +105,7 @@ data class YkiSuoritusEntity(
                     rs.getString("postinumero"),
                     rs.getString("postitoimipaikka"),
                     rs.getString("email"),
-                    rs.getInt("suoritus_id"),
+                    rs.getInt("solki_id"),
                     rs.getTimestamp("last_modified").toInstant(),
                     rs.getObject("tutkintopaiva", LocalDate::class.java),
                     Tutkintokieli.valueOf(rs.getString("tutkintokieli")),

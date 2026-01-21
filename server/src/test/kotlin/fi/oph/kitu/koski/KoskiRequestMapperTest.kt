@@ -48,7 +48,7 @@ class KoskiRequestMapperTest(
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(
                 suorittajanOID = oid,
-                suoritusId = 123456,
+                solkiId = 123456,
                 tutkintopaiva = LocalDate.of(2025, 1, 1),
                 arviointipaiva = LocalDate.of(2025, 1, 3),
                 tutkintotaso = Tutkintotaso.PT,
@@ -77,7 +77,7 @@ class KoskiRequestMapperTest(
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(
                 suorittajanOID = oid,
-                suoritusId = 123456,
+                solkiId = 123456,
                 tutkintopaiva = LocalDate.of(2025, 1, 1),
                 arviointipaiva = LocalDate.of(2025, 1, 3),
                 tutkintotaso = Tutkintotaso.PT,

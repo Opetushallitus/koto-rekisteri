@@ -58,14 +58,14 @@ class IlmoittautumisjarjestelmaServiceImpl(
         val virheIds =
             response.virheet
                 ?.let { virheet ->
-                    val tunnisteIds = suoritukset.associate { YkiSuorituksenTunniste.of(it) to it.suoritusId }
+                    val tunnisteIds = suoritukset.associate { YkiSuorituksenTunniste.of(it) to it.solkiId }
                     virheet.associate { tunnisteIds[it.suoritus] to it.virhe }
                 }.orEmpty()
 
-        val (failedSuoritukset, okSuoritukset) = suoritukset.partition { virheIds.containsKey(it.suoritusId) }
+        val (failedSuoritukset, okSuoritukset) = suoritukset.partition { virheIds.containsKey(it.solkiId) }
 
         if (okSuoritukset.isNotEmpty()) {
-            suoritusRepository.setArvioinninTilaSent(okSuoritukset.map { it.suoritusId })
+            suoritusRepository.setArvioinninTilaSent(okSuoritukset.map { it.solkiId })
         }
         virheIds.forEach { suoritusId, virhe ->
             suoritusId?.let {
@@ -75,7 +75,7 @@ class IlmoittautumisjarjestelmaServiceImpl(
     }, { exception ->
         suoritukset.forEach { suoritus ->
             suoritusRepository.setArvioinninTilanLahetysvirhe(
-                suoritus.suoritusId,
+                suoritus.solkiId,
                 exception.debugString(),
             )
         }

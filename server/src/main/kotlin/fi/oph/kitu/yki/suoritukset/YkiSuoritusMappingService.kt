@@ -76,7 +76,7 @@ class YkiSuoritusMappingService {
             postinumero = entity.postinumero,
             postitoimipaikka = entity.postitoimipaikka,
             email = entity.email,
-            suoritusID = entity.suoritusId,
+            suoritusID = entity.solkiId,
             lastModified = entity.lastModified,
             tutkintopaiva = entity.tutkintopaiva,
             tutkintokieli = entity.tutkintokieli,

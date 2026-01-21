@@ -73,7 +73,7 @@ class KoskiServiceTest(
                   "oid": "1.2.246.562.15.50209741037",
                   "versionumero": 1,
                   "lähdejärjestelmänId": {
-                    "id": "${suoritus.suoritusId}",
+                    "id": "${suoritus.solkiId}",
                     "lähdejärjestelmä": {
                       "koodiarvo": "kielitutkintorekisteri",
                       "nimi": {
@@ -146,7 +146,7 @@ class KoskiServiceTest(
 
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus)
         assertTrue(updatedSuoritus is TypedResult.Failure)
-        assertEquals(YkiMappingId(suoritus.suoritusId), updatedSuoritus.errorOrNull()?.suoritusId)
+        assertEquals(YkiMappingId(suoritus.solkiId), updatedSuoritus.errorOrNull()?.suoritusId)
     }
 
     @Test

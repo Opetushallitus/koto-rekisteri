@@ -84,7 +84,7 @@ object YkiTarkistusarvioinnitPage {
                         rows = suoritukset,
                         columns = enumEntries<YkiTarkistusarviointiColumn>().map { it.withValue(it.renderValue) },
                         selectableRowName = {
-                            CheckboxKey(name = "suoritukset", value = it.suoritusId.toString())
+                            CheckboxKey(name = "suoritukset", value = it.solkiId.toString())
                         },
                         testId = testId + "Table",
                     )

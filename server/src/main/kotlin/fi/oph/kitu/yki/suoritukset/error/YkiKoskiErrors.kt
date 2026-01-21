@@ -11,7 +11,6 @@ import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.YkiMappingId
-import fi.oph.kitu.vkt.html.VktKoskiErrors.hideErrorUrl
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import kotlinx.html.a
@@ -37,7 +36,7 @@ object YkiKoskiErrors {
                         YkiMappingId.Companion
                             .parse(error.id)
                             ?.suoritusId
-                            ?.let { id -> suoritukset.find { it.suoritusId == id } }
+                            ?.let { id -> suoritukset.find { it.solkiId == id } }
                             ?.let { error.id to it }
                     }.toMap()
 
@@ -64,7 +63,7 @@ object YkiKoskiErrors {
                                 +(errorIdToSuoritusMap[error.id]?.suorittajanOID?.toString() ?: "???")
                             },
                             Column.SuorituksenTunniste.withValue { error ->
-                                +(errorIdToSuoritusMap[error.id]?.suoritusId?.toString() ?: "#${error.id}")
+                                +(errorIdToSuoritusMap[error.id]?.solkiId?.toString() ?: "#${error.id}")
                             },
                             Column.Aikaleima.withValue {
                                 +it.timestamp.finnishDateTimeUTC()
