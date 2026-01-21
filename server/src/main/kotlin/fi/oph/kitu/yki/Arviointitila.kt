@@ -9,7 +9,6 @@ enum class Arviointitila(
 
     EI_SUORITUSTA("Ei suoritusta"),
     KESKEYTETTY("Suoritus keskeytetty"),
-    UUSITTAVA("Uusittava teknisen virheen vuoksi"),
 
     TARKISTUSARVIOITAVA("Suoritus tarkistusarvioitavana"),
     TARKISTUSARVIOITU("Tarkistusarviointi tehty"),
