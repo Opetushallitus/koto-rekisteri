@@ -32,7 +32,7 @@ data class OppijanumerorekisteriHenkilo(
     val yksilointivirheet: List<Yksilointivirhe>?,
     val passinumerot: List<String>?,
 ) {
-    fun hetut() = listOfNotNull(hetu) + (kaikkiHetut.orEmpty())
+    fun hetut() = (listOfNotNull(hetu) + (kaikkiHetut.orEmpty())).distinct()
 
     fun kokoNimi() = "$etunimet $sukunimi"
 
