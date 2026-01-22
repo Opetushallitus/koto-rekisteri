@@ -239,7 +239,7 @@ jobs:
       - name: Build component documentation
         run: |
           mkdir -p docs/uml
-          docs/build-uml.sh
+          docs/build-uml.sh untuva qa prod
       - name: Build html files from markdown files
         uses: actions/jekyll-build-pages@v1
         with:
