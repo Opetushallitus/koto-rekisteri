@@ -16,8 +16,7 @@ packages=(
   "tiedonsiirtoschema"
   "validation"
   "vkt"
-  "yki.suoritukset"
-  "yki.arvioijat"
+  "yki"
 )
 
 BASEDIR=$(dirname "$0")
