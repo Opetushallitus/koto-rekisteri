@@ -88,18 +88,14 @@ function load_and_generate() {
 for arg in "$@"; do
   if [[ "$arg" == "local" ]]; then
     load_and_generate "local" "http://localhost:8080/kielitutkinnot"
-    break
   fi
   if [[ "$arg" == "untuva" ]]; then
     load_and_generate "untuva" "https://virkailija.untuvaopintopolku.fi/kielitutkinnot"
-    break
   fi
   if [[ "$arg" == "qa" ]]; then
     load_and_generate "qa" "https://virkailija.testiopintopolku.fi/kielitutkinnot"
-    break
   fi
   if [[ "$arg" == "prod" ]]; then
     load_and_generate "prod" "https://virkailija.opintopolku.fi/kielitutkinnot"
-    break
   fi
 done
