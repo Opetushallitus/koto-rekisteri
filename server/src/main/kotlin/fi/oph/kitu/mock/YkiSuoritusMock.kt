@@ -50,7 +50,7 @@ fun generateRandomYkiSuoritusEntity(
         tutkintopaiva = tutkintopaiva,
         tutkintokieli =
             Tutkintokieli.entries
-                .minus(Tutkintokieli.legacyEntries())
+                .minus(Tutkintokieli.legacyEntries)
                 .toTypedArray()
                 .random(),
         tutkintotaso = tutkintotaso,

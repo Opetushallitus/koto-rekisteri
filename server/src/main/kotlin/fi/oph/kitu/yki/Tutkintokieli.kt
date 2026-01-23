@@ -28,8 +28,10 @@ enum class Tutkintokieli(
     ENG12("eng12"),
     ;
 
+    fun isLegacy(): Boolean = this in legacyEntries
+
     companion object {
-        fun legacyEntries() = setOf(SWE10, ENG11, ENG12)
+        val legacyEntries = setOf(SWE10, ENG11, ENG12)
 
         @JvmStatic
         @JsonCreator
