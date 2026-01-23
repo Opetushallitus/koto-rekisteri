@@ -176,7 +176,7 @@ export const fixtureData = {
     suoritusId: 123123,
     lastModified: "2024-09-10T14:53:56Z",
     tutkintopaiva: "2024-08-25",
-    tutkintokieli: "SWE10",
+    tutkintokieli: "SWE",
     tutkintotaso: "YT",
     jarjestajanTunnusOid: "1.2.246.562.10.14893989377",
     jarjestajanNimi:
