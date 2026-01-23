@@ -174,7 +174,7 @@ describe('"YKI Suoritukset" -page', () => {
       {
         column: "Tutkintokieli",
         tableColumnIndex: 10,
-        order: ["SWE10", "FIN", "FIN"],
+        order: ["SWE", "FIN", "FIN"],
       },
       {
         column: "Tutkintotaso",
