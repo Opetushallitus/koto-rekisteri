@@ -217,6 +217,85 @@ class YkiApiControllerTest(
     }
 
     @Test
+    fun `Suoritus vanhentuneella kielikoodilla palauttaa virheen`() {
+        val suoritus =
+            Henkilosuoritus(
+                henkilo =
+                    Henkilo(
+                        oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                        etunimet = "Ranja Testi",
+                        sukunimi = "Öhman-Testi",
+                        hetu = null,
+                        sukupuoli = Sukupuoli.N,
+                        kansalaisuus = "EST",
+                        katuosoite = "Testikuja 5",
+                        postinumero = "40100",
+                        postitoimipaikka = "Testilä",
+                        email = "testi@testi.fi",
+                    ),
+                suoritus =
+                    YkiSuoritus(
+                        tutkintotaso = Tutkintotaso.YT,
+                        kieli = Tutkintokieli.ENG11,
+                        jarjestaja =
+                            YkiJarjestaja(
+                                oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
+                                nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                            ),
+                        tutkintopaiva = LocalDate.of(2026, 9, 1),
+                        arviointipaiva = LocalDate.of(2026, 12, 13),
+                        arviointitila = Arviointitila.ARVIOITU,
+                        osat =
+                            listOf(
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puhuminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puheenYmmartaminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.kirjoittaminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.tekstinYmmartaminen,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.rakenteetJaSanasto,
+                                    arvosana = 5,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.yleisarvosana,
+                                    arvosana = 5,
+                                ),
+                            ),
+                        tarkistusarviointi =
+                            YkiTarkastusarviointi(
+                                saapumispaiva = LocalDate.of(2024, 12, 14),
+                                kasittelypaiva = LocalDate.of(2024, 12, 14),
+                                asiatunnus = "OPH-5000-1234",
+                                tarkistusarvioidutOsakokeet = listOf(TutkinnonOsa.puhuminen),
+                                arvosanaMuuttui = listOf(TutkinnonOsa.puhuminen),
+                                perustelu =
+                                    "Suorituksesta jäänyt viimeinen tehtävä arvioimatta. Arvioinnin jälkeen puhumisen taitotasoa 6.",
+                            ),
+                        lahdejarjestelmanId =
+                            LahdejarjestelmanTunniste(
+                                id = "183424",
+                                lahde = Lahdejarjestelma.Solki,
+                            ),
+                    ),
+            )
+
+        postSuoritus(suoritus) {
+            isBadRequest("suoritus.kieli: Käytöstä poistuneita kielikoodeja (SWE10, ENG11, ENG12) ei voi käyttää")
+        }
+    }
+
+    @Test
     fun `YKI-suoritus virheellisellä OIDilla palauttaa virheen`() {
         val data =
             defaultObjectMapper

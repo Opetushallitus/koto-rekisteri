@@ -7,6 +7,7 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
+import fi.oph.kitu.yki.Tutkintokieli
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -24,6 +25,7 @@ class YkiSuoritusValidation(
             { validateHetu(it) },
             { validateArvointitila(it) },
             { validateTarkistusarviointi(it) },
+            { validateKielikoodi(it) },
         )
 
     fun validateHetu(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
@@ -141,6 +143,16 @@ class YkiSuoritusValidation(
                 },
                 path = listOf("suoritus", "tarkistusarviointi", "kasittelypaiva"),
                 message = "Käsittelypäivä on ennen saapumispäivää",
+            ),
+        )
+
+    fun validateKielikoodi(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
+        Validation.fold(
+            s,
+            Validation.assertTrue(
+                { !it.suoritus.kieli.isLegacy() || it.suoritus.tutkintopaiva.isBefore(LocalDate.of(2017, 1, 1)) },
+                listOf("suoritus", "kieli"),
+                "Käytöstä poistuneita kielikoodeja (${Tutkintokieli.legacyEntries.joinToString(", ") }) ei voi käyttää",
             ),
         )
 }
