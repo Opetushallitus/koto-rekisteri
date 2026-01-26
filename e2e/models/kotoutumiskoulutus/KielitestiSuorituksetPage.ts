@@ -58,4 +58,10 @@ export default class KielitestiSuorituksetPage extends BasePage {
       name: "Lataa tiedot CSV:nä",
     })
   }
+
+  async search(query: string) {
+    await this.getContent().getByTestId("search").fill(query)
+    await this.getContent().getByTestId("search-button").click()
+    await this.page.waitForLoadState("networkidle")
+  }
 }

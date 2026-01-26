@@ -26,6 +26,7 @@ import java.time.Instant
 class KoealustaService(
     val restClientBuilder: RestClient.Builder,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+    private val customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
     private val mappingService: KoealustaMappingService,
     private val auditLogger: AuditLogger,
     private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
@@ -44,11 +45,11 @@ class KoealustaService(
     fun getSuoritukset(
         orderBy: KielitestiSuoritusColumn,
         orderByDirection: SortDirection,
+        search: String? = null,
     ): List<KielitestiSuoritus> =
-        kielitestiSuoritusRepository
-            .findAllSorted(orderBy.entityName, orderByDirection)
+        customKielitestiSuoritusRepository
+            .findSuoritukset(search, orderBy, orderByDirection)
             .toList()
-            .sortByName(orderBy, orderByDirection)
             .also {
                 auditLogger.logAllInternalOnly("Kielitesti suoritus viewed", it) { suoritus ->
                     arrayOf(

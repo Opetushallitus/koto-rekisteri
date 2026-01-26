@@ -17,18 +17,20 @@ class KielitestiViewController(
     fun suorituksetView(
         sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
         sortDirection: SortDirection = SortDirection.DESC,
+        search: String? = null,
     ): ResponseEntity<String> =
         ResponseEntity.ok(
             KielitestiSuorituksetPage.render(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
-                suoritukset = suoritusService.getSuoritukset(sortColumn, sortDirection),
+                suoritukset = suoritusService.getSuoritukset(sortColumn, sortDirection, search),
                 errorsCount =
                     suoritusService
                         .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
                         .count()
                         .toLong(),
                 organisaationimet = organisaatioService.getOrganisaatiot(),
+                search = search ?: "",
             ),
         )
 

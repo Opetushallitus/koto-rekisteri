@@ -115,6 +115,38 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     })
   }
 
+  test("search registry data with first and last name", async ({
+    kielitestiSuorituksetPage,
+  }) => {
+    await kielitestiSuorituksetPage.open()
+    await kielitestiSuorituksetPage.search("magdalena sallinen")
+    const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
+    await expect(suoritukset).toHaveCount(1)
+  })
+
+  test("search registry data with oppijanumero", async ({
+    kielitestiSuorituksetPage,
+  }) => {
+    await kielitestiSuorituksetPage.open()
+    await kielitestiSuorituksetPage.search("1.2.246.562.24.33342764709")
+    const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
+    await expect(suoritukset).toHaveCount(1)
+  })
+
+  test("search results can be sorted", async ({
+    kielitestiSuorituksetPage,
+  }) => {
+    await kielitestiSuorituksetPage.open()
+    await kielitestiSuorituksetPage.search("devnull-1")
+    const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
+    await kielitestiSuorituksetPage.getTableColumnHeaderLink("Sukunimi").click()
+    const firstSuoritus = kielitestiSuorituksetPage.getSuoritusColumn(0, 0)
+    const lastSuoritus = kielitestiSuorituksetPage.getSuoritusColumn(2, 0)
+    await expect(suoritukset).toHaveCount(3)
+    await expect(firstSuoritus).toHaveText("Välimaa-Testi")
+    await expect(lastSuoritus).toHaveText("Sallinen-Testi")
+  })
+
   test("should download koto-suoritukset CSV and verify its content", async ({
     page,
     kielitestiSuorituksetPage,

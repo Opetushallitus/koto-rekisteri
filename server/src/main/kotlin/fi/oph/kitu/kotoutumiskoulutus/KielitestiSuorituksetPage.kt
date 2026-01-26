@@ -5,13 +5,22 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.displayTableBody
 import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.html.errorsArticle
+import fi.oph.kitu.html.testId
 import fi.oph.kitu.organisaatiot.Organisaatiot
+import kotlinx.html.ButtonType
+import kotlinx.html.FormMethod
+import kotlinx.html.InputType
 import kotlinx.html.a
 import kotlinx.html.article
+import kotlinx.html.button
 import kotlinx.html.details
+import kotlinx.html.fieldSet
+import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.header
+import kotlinx.html.id
+import kotlinx.html.input
 import kotlinx.html.li
 import kotlinx.html.nav
 import kotlinx.html.summary
@@ -32,6 +41,7 @@ object KielitestiSuorituksetPage {
         suoritukset: List<KielitestiSuoritus>,
         errorsCount: Long,
         organisaationimet: Organisaatiot,
+        search: String,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -39,6 +49,25 @@ object KielitestiSuorituksetPage {
             h1 { +"Kotoutumiskoulutuksen kielitaidon päättötesti" }
             h2 { +"Suoritukset" }
             errorsArticle(errorsCount, linkTo(KielitestiViewController::virheetView).toString())
+
+            form(action = "", method = FormMethod.get, classes = "grid center-vertically") {
+                fieldSet {
+                    attributes["role"] = "search"
+                    input {
+                        testId("search")
+                        id = "search"
+                        type = InputType.search
+                        name = "search"
+                        value = search
+                        placeholder = "Oppijanumero, nimi tai muu hakusana"
+                    }
+                    button {
+                        testId("search-button")
+                        type = ButtonType.submit
+                        +"Suodata"
+                    }
+                }
+            }
 
             article(classes = "overflow-auto") {
                 header {
@@ -69,6 +98,7 @@ object KielitestiSuorituksetPage {
                         preserveSortDirection = false,
                         selectableRows = false,
                         tableId = "kielitesti-suoritukset-table",
+                        urlParams = mapOf("search" to search),
                     )
                     displayTableBody(
                         rows = suoritukset,
