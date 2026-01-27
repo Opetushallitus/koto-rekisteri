@@ -37,7 +37,9 @@ class YkiSuoritusRepositoryTest(
 
     @Test
     fun `saveAll returns only the saved suoritus`() {
-        val initialSuoritus = generateRandomYkiSuoritusEntity()
+        val initialSuoritus =
+            generateRandomYkiSuoritusEntity()
+                .copy(lastModified = Instant.parse("2025-01-01T10:00:00Z"))
         ykiSuoritusRepository.saveAllNewEntities(listOf(initialSuoritus)).toList()
         val updatedSuoritus =
             initialSuoritus.copy(
@@ -48,10 +50,7 @@ class YkiSuoritusRepositoryTest(
         assertEquals(1, savedSuoritukset.count())
         assertEquals(
             updatedSuoritus,
-            savedSuoritukset.elementAt(0).copy(
-                id = null,
-                lastModified = Instant.parse("2025-01-02T13:53:56Z"),
-            ),
+            savedSuoritukset.elementAt(0).copy(id = null),
         )
     }
 
