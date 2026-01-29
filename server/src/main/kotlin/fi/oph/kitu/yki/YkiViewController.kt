@@ -9,6 +9,7 @@ import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
+import fi.oph.kitu.rewriteAttribute
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
@@ -79,7 +80,7 @@ class YkiViewController(
         csrfToken: CsrfToken? = KituRequest.currentCsrfToken(),
         session: HttpSession,
     ): ResponseEntity<String> {
-        session.setAttribute(YKI_SEARCH_KEY, search)
+        session.rewriteAttribute(YKI_SEARCH_KEY, search)
         return handleSuorituksetView(search, versionHistory, limit, page, sortColumn, sortDirection, csrfToken)
     }
 
