@@ -2,6 +2,7 @@ package fi.oph.kitu.koski
 
 import com.github.kagkarlsson.scheduler.task.Task
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
+import fi.oph.kitu.ConditionalOnNonEmptyProperty
 import fi.oph.kitu.ExtendedSchedules
 import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
@@ -12,27 +13,38 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @ConditionalOnBooleanProperty(name = ["kitu.koski.scheduling.enabled"])
-class KoskiScheduledTask(
+@ConditionalOnNonEmptyProperty("kitu.koski.scheduling.yki.schedule")
+class KoskiYkiScheduledTask(
     private val tracer: Tracer,
 ) {
-    @Value("\${kitu.koski.scheduling.send.schedule}")
-    lateinit var koskiSendSuorituksetSchedule: String
+    @Value("\${kitu.koski.scheduling.yki.schedule}")
+    lateinit var ykiSchedule: String
 
     @Bean
     fun sendYkiSuoritukset(koskiService: KoskiService): Task<Void> =
         Tasks
-            .recurring("KOSKI-send-YKI-suoritukset", ExtendedSchedules.parse(koskiSendSuorituksetSchedule))
+            .recurring("KOSKI-send-YKI-suoritukset", ExtendedSchedules.parse(ykiSchedule))
             .execute { _, _ ->
                 tracer.spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute").startSpan().use { span ->
                     span.setAttribute("task.name", "KOSKI-send-YKI-suoritukset")
                     koskiService.sendYkiSuorituksetToKoski()
                 }
             }
+}
+
+@Configuration
+@ConditionalOnBooleanProperty(name = ["kitu.koski.scheduling.enabled"])
+@ConditionalOnNonEmptyProperty("kitu.koski.scheduling.vkt.schedule")
+class KoskiVktScheduledTask(
+    private val tracer: Tracer,
+) {
+    @Value("\${kitu.koski.scheduling.vkt.schedule}")
+    lateinit var vktSchedule: String
 
     @Bean
     fun sendVktSuoritukset(koskiService: KoskiService): Task<Void> =
         Tasks
-            .recurring("KOSKI-send-VKT-suoritukset", ExtendedSchedules.parse(koskiSendSuorituksetSchedule))
+            .recurring("KOSKI-send-VKT-suoritukset", ExtendedSchedules.parse(vktSchedule))
             .execute { _, _ ->
                 tracer.spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute").startSpan().use { span ->
                     span.setAttribute("task.name", "KOSKI-send-VKT-suoritukset")
