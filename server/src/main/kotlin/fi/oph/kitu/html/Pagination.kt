@@ -181,6 +181,7 @@ enum class ItemType(
 }
 
 data class Pagination(
+    val numberOfItems: Int,
     val currentPageNumber: Int,
     val numberOfPages: Int,
     val url: (pageNumber: Int) -> String = { "?page=$it" },
@@ -195,6 +196,7 @@ data class Pagination(
             autoHide: Boolean = true,
         ): Pagination =
             Pagination(
+                numberOfItems = numberOfRows,
                 currentPageNumber = currentPageNumber,
                 numberOfPages = numberOfRows.floorDiv(pageSize) + numberOfRows.rem(pageSize).sign.absoluteValue,
                 url = url,
