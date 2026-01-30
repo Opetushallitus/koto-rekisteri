@@ -1,4 +1,4 @@
-import { aws_kms, aws_sns, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib"
+import { aws_sns, Stack, StackProps } from "aws-cdk-lib"
 import { Stats, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { ServicePrincipal } from "aws-cdk-lib/aws-iam"
@@ -42,16 +42,10 @@ export class LogGroupsStack extends Stack {
       logGroupAuditDestination: dataProtectionAuditLogGroup,
     })
 
-    const serviceLogGroupKey = new aws_kms.Key(this, "KituServiceLogGroupKey", {
-      removalPolicy: RemovalPolicy.RETAIN,
-    })
-
     this.serviceLogGroup = new LogGroup(this, "Service", {
-      logGroupName: "KituServiceLog",
+      logGroupName: "KituService",
       dataProtectionPolicy,
-      encryptionKey: serviceLogGroupKey,
     })
-
     this.serviceAuditLogGroup = new LogGroup(this, "ServiceAudit", {
       logGroupName: "KituServiceAudit",
     })
