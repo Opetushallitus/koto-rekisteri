@@ -8,10 +8,10 @@ Eräajot määritellään koodilla ja niiden aikataulutus tulee tavallisesti pro
 
 Eräajot voi käynnistää myös manuaalisesti ja niiden ajohistoriaa tarkastella käyttöliittymästä, joka löytyy seuraavista osoitteista:
 
-- Untuva: [https://virkailija.untuvaopintopolku.fi/kielitutkinnot/db-scheduler]()
-- QA: [https://virkailija.testiopintopolku.fi/kielitutkinnot/db-scheduler]()
-- Tuotanto: [https://virkailija.opintopolku.fi/kielitutkinnot/db-scheduler]()
-- Lokaali: [http://localhost:8080/kielitutkinnot/db-scheduler]()
+- [Untuva](https://virkailija.untuvaopintopolku.fi/kielitutkinnot/db-scheduler)
+- [QA](https://virkailija.testiopintopolku.fi/kielitutkinnot/db-scheduler)
+- [Tuotanto](https://virkailija.opintopolku.fi/kielitutkinnot/db-scheduler)
+- [Paikallinen kehitysympäristö](http://localhost:8080/kielitutkinnot/db-scheduler)
 
 ## Yleinen kielitutkinto
 
