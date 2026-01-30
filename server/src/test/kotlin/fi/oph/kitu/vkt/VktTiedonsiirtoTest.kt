@@ -227,6 +227,41 @@ class VktTiedonsiirtoTest {
         }
     }
 
+    @Test
+    fun `Hyvän ja tyydyttävän taidon suoritus arvioimattomalla osakokeella aiheuttaa virheen`() {
+        val suoritus = SchemaTests.vktHenkilosuoritus
+        putSuoritus(
+            suoritus.copy(
+                suoritus =
+                    suoritus.suoritus.copy(
+                        taitotaso = Koodisto.VktTaitotaso.HyväJaTyydyttävä,
+                        suorituksenVastaanottaja = Oid.parse("1.2.246.562.24.91757873900").getOrThrow(),
+                        suorituspaikkakunta = "049",
+                        osat =
+                            listOf(
+                                VktKirjoittamisenKoe(
+                                    tutkintopaiva = LocalDate.of(2025, 9, 11),
+                                    arviointi =
+                                        VktArvionti(
+                                            arvosana = Koodisto.VktArvosana.Hyvä,
+                                            paivamaara = LocalDate.of(2025, 9, 12),
+                                        ),
+                                    suorituksenVastaanottaja = "1.2.246.562.24.91757873900",
+                                    suorituspaikkakunta = "049",
+                                ),
+                                VktPuhumisenKoe(tutkintopaiva = LocalDate.of(2025, 9, 11)),
+                            ),
+                    ),
+            ),
+        ) {
+            isBadRequest(
+                "suoritus.osakokeet.arviointi: Suorituksella on arvioimattomia osakokeita",
+                "suoritus.osakokeet.suorituksenVastaanottaja: Suorituksen osakokeelta puuttuu suorituksen vastaanottaja",
+                "suoritus.osakokeet.suorituspaikkakunta: Suorituksen osakokeelta puuttuu suorituspaikkakunta",
+            )
+        }
+    }
+
     private fun putSuoritus(
         suoritus: Henkilosuoritus<*>,
         block: MockMvcResultMatchersDsl.() -> Unit,
