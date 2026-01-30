@@ -22,7 +22,6 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 object VktErinomaisenSuorituksetPage {
     fun render(
         title: String,
-        linkBuilder: WebMvcLinkBuilder,
         ilmoittautuneet: List<VktTableItem>,
         sortedBy: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,

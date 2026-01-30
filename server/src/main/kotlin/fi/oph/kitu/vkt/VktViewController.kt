@@ -72,10 +72,6 @@ class VktViewController(
                 pagination = pagination,
                 translations = translations,
                 searchQuery = search,
-                linkBuilder =
-                    linkTo(
-                        methodOn(VktViewController::class.java).erinomaisenTaitotasonIlmoittautuneetView(),
-                    ),
                 messages = getMessages(),
             ),
         )
@@ -112,10 +108,6 @@ class VktViewController(
                 pagination = pagination,
                 translations = translations,
                 searchQuery = search,
-                linkBuilder =
-                    linkTo(
-                        methodOn(VktViewController::class.java).erinomaisenTaitotasonArvioidutSuorituksetView(),
-                    ),
                 messages = getMessages(),
             ),
         )
