@@ -1,8 +1,10 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
 import fi.oph.kitu.TypedResult
+import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,8 +31,11 @@ class IlmoittautumisjarjestelmaServiceImpl(
                 .findSuorituksetWithUnsentArvioinninTila()
                 .filter { it.arviointitilanLahetysvirhe != "SUORITUSTA_EI_LOYDY" }
 
+        Span.current().setAttribute("unsentSuoritukset", suoritukset.map { it.id }.joinToString(", "))
+
         if (suoritukset.isNotEmpty()) {
             val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritukset))
+            Span.current().setAttribute("response", defaultObjectMapper.writeValueAsString(response))
             saveResponse(suoritukset, response)
         }
     }
@@ -72,6 +77,12 @@ class IlmoittautumisjarjestelmaServiceImpl(
                 suoritusRepository.setArvioinninTilanLahetysvirhe(suoritusId, virhe)
             }
         }
+
+        Span
+            .current()
+            .setAttribute("virheIds", virheIds.entries.joinToString(", ") { "${it.key}=${it.value}" })
+            .setAttribute("failedSuoritukset", failedSuoritukset.map { it.id }.joinToString(", "))
+            .setAttribute("okSuoritukset", okSuoritukset.map { it.id }.joinToString(", "))
     }, { exception ->
         suoritukset.forEach { suoritus ->
             suoritusRepository.setArvioinninTilanLahetysvirhe(
