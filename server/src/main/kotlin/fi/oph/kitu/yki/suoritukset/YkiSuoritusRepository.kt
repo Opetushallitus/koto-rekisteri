@@ -243,7 +243,7 @@ class YkiSuoritusRepository {
                 onConflict =
                     UpdateOnConflict(
                         Constraint("yki_suoritus_lisatieto_pkey"),
-                        listOf("arviointitila_lahetetty"),
+                        listOf("arviointitila_lahetetty", "arviointitilan_lahetysvirhe"),
                     ),
                 returning = null,
             )
