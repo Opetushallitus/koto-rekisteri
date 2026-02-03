@@ -1,7 +1,6 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Span
@@ -31,11 +30,8 @@ class IlmoittautumisjarjestelmaServiceImpl(
                 .findSuorituksetWithUnsentArvioinninTila()
                 .filter { it.arviointitilanLahetysvirhe != "SUORITUSTA_EI_LOYDY" }
 
-        Span.current().setAttribute("unsentSuoritukset", suoritukset.map { it.id }.joinToString(", "))
-
         if (suoritukset.isNotEmpty()) {
             val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritukset))
-            Span.current().setAttribute("response", defaultObjectMapper.writeValueAsString(response.getOrNull()))
             saveResponse(suoritukset, response)
         }
     }
@@ -63,14 +59,19 @@ class IlmoittautumisjarjestelmaServiceImpl(
         val virheIds =
             response.virheet
                 ?.let { virheet ->
-                    val tunnisteIds = suoritukset.associate { YkiSuorituksenTunniste.of(it) to it.solkiId }
-                    virheet.associate { tunnisteIds[it.suoritus] to it.virhe }
+                    val tunnisteToSolkiIdMap = suoritukset.associate { YkiSuorituksenTunniste.of(it) to it.solkiId }
+                    virheet
+                        .flatMap { virhe ->
+                            tunnisteToSolkiIdMap
+                                .filterKeys { tunniste -> virhe.suoritus == tunniste }
+                                .map { it.value to virhe.virhe }
+                        }.toMap()
                 }.orEmpty()
 
         val okSuoritukset = suoritukset.filterNot { virheIds.containsKey(it.solkiId) }
 
-        if (okSuoritukset.isNotEmpty()) {
-            suoritusRepository.setArvioinninTilaSent(okSuoritukset.map { it.solkiId })
+        okSuoritukset.forEach { suoritus ->
+            suoritusRepository.setArvioinninTilaSent(suoritus.solkiId)
         }
         virheIds.forEach { solkiId, virhe ->
             solkiId?.let {
@@ -80,8 +81,8 @@ class IlmoittautumisjarjestelmaServiceImpl(
 
         Span
             .current()
-            .setAttribute("virheIds", virheIds.entries.joinToString(", ") { "${it.key}=${it.value}" })
-            .setAttribute("okSuoritukset", okSuoritukset.map { it.solkiId }.joinToString(", "))
+            .setAttribute("suoritukset.success", okSuoritukset.map { it.solkiId }.joinToString(", "))
+            .setAttribute("suoritukset.fail", virheIds.entries.joinToString(", ") { "${it.key}=${it.value}" })
     }, { exception ->
         suoritukset.forEach { suoritus ->
             suoritusRepository.setArvioinninTilanLahetysvirhe(
