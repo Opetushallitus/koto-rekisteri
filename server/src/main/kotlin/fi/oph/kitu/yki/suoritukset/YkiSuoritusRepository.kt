@@ -232,25 +232,23 @@ class YkiSuoritusRepository {
             )
 
     @WithSpan
-    fun setArvioinninTilaSent(suoritusIds: List<Int>) =
-        suoritusIds.forEach { suoritusId ->
-            insertInto<Unit>(
-                table = "yki_suoritus_lisatieto",
-                values =
-                    mapOf(
-                        "solki_id" to suoritusId,
-                        "arviointitila_lahetetty" to Timestamp(Instant.now().toEpochMilli()),
-                        "arviointitilan_lahetysvirhe" to null,
-                    ),
-                onConflict =
-                    UpdateOnConflict(
-                        Constraint("yki_suoritus_lisatieto_pkey"),
-                        listOf("arviointitila_lahetetty", "arviointitilan_lahetysvirhe"),
-                    ),
-                returning = null,
-                fullTrace = true,
-            )
-        }
+    fun setArvioinninTilaSent(solkiId: Int) =
+        insertInto<Unit>(
+            table = "yki_suoritus_lisatieto",
+            values =
+                mapOf(
+                    "solki_id" to solkiId,
+                    "arviointitila_lahetetty" to Timestamp(Instant.now().toEpochMilli()),
+                    "arviointitilan_lahetysvirhe" to null,
+                ),
+            onConflict =
+                UpdateOnConflict(
+                    Constraint("yki_suoritus_lisatieto_pkey"),
+                    listOf("arviointitila_lahetetty", "arviointitilan_lahetysvirhe"),
+                ),
+            returning = null,
+            fullTrace = true,
+        )
 
     @WithSpan
     fun setArvioinninTilanLahetysvirhe(
@@ -388,8 +386,11 @@ class YkiSuoritusRepository {
             ${returning?.let { "RETURNING $it" }.orEmpty()}
             """.trimIndent()
 
-        Span.current().setAttribute("sql", sql)
-        Span.current().setAttribute("values", values.values.toTypedArray().joinToString(", "))
+        Span.current().setAttribute("query.sql", sql)
+        Span.current().setAttribute(
+            "query.values",
+            if (fullTrace) values.values.toTypedArray().joinToString(", ") else null,
+        )
 
         return if (returning == null) {
             jdbcTemplate.update(sql, *values.values.toTypedArray())

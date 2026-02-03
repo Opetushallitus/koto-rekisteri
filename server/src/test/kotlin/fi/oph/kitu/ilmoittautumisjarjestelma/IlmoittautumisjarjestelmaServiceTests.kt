@@ -241,5 +241,19 @@ class IlmoittautumisjarjestelmaServiceTests(
                 ),
         )
 
+    @Test
+    fun `YkiSuorituksenTunniste equality`() {
+        val tunniste1 = YkiSuorituksenTunniste.of(entity)
+        val tunniste2 = tunniste1.copy(osakokeet = tunniste1.osakokeet.reversed())
+
+        // Perus samanarvoisuuden testaus
+        assertEquals(tunniste1, tunniste2)
+        assertEquals(tunniste1.hashCode(), tunniste2.hashCode())
+
+        // Kun käytetään mapin avaimena
+        val map = mapOf(tunniste1 to "wahoo")
+        assertEquals(map[tunniste2], "wahoo")
+    }
+
     val entity = suoritus.toEntity<YkiSuoritusEntity>()
 }
