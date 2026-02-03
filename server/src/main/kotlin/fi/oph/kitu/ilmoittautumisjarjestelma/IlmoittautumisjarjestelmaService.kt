@@ -35,7 +35,7 @@ class IlmoittautumisjarjestelmaServiceImpl(
 
         if (suoritukset.isNotEmpty()) {
             val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritukset))
-            Span.current().setAttribute("response", defaultObjectMapper.writeValueAsString(response))
+            Span.current().setAttribute("response", defaultObjectMapper.writeValueAsString(response.getOrNull()))
             saveResponse(suoritukset, response)
         }
     }
@@ -67,22 +67,21 @@ class IlmoittautumisjarjestelmaServiceImpl(
                     virheet.associate { tunnisteIds[it.suoritus] to it.virhe }
                 }.orEmpty()
 
-        val (failedSuoritukset, okSuoritukset) = suoritukset.partition { virheIds.containsKey(it.solkiId) }
+        val okSuoritukset = suoritukset.filterNot { virheIds.containsKey(it.solkiId) }
 
         if (okSuoritukset.isNotEmpty()) {
             suoritusRepository.setArvioinninTilaSent(okSuoritukset.map { it.solkiId })
         }
-        virheIds.forEach { suoritusId, virhe ->
-            suoritusId?.let {
-                suoritusRepository.setArvioinninTilanLahetysvirhe(suoritusId, virhe)
+        virheIds.forEach { solkiId, virhe ->
+            solkiId?.let {
+                suoritusRepository.setArvioinninTilanLahetysvirhe(solkiId, virhe)
             }
         }
 
         Span
             .current()
             .setAttribute("virheIds", virheIds.entries.joinToString(", ") { "${it.key}=${it.value}" })
-            .setAttribute("failedSuoritukset", failedSuoritukset.map { it.id }.joinToString(", "))
-            .setAttribute("okSuoritukset", okSuoritukset.map { it.id }.joinToString(", "))
+            .setAttribute("okSuoritukset", okSuoritukset.map { it.solkiId }.joinToString(", "))
     }, { exception ->
         suoritukset.forEach { suoritus ->
             suoritusRepository.setArvioinninTilanLahetysvirhe(

@@ -12,6 +12,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectTarkistusarviointiAgg
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectYkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.whereSearchMatches
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.withCtes
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
@@ -230,6 +231,7 @@ class YkiSuoritusRepository {
                 YkiSuoritusEntity.fromRow,
             )
 
+    @WithSpan
     fun setArvioinninTilaSent(suoritusIds: List<Int>) =
         suoritusIds.forEach { suoritusId ->
             insertInto<Unit>(
@@ -246,25 +248,29 @@ class YkiSuoritusRepository {
                         listOf("arviointitila_lahetetty", "arviointitilan_lahetysvirhe"),
                     ),
                 returning = null,
+                fullTrace = true,
             )
         }
 
+    @WithSpan
     fun setArvioinninTilanLahetysvirhe(
-        suoritusId: Int,
+        solkiId: Int,
         message: String,
     ) = insertInto<Unit>(
         table = "yki_suoritus_lisatieto",
         values =
             mapOf(
-                "solki_id" to suoritusId,
+                "solki_id" to solkiId,
+                "arviointitila_lahetetty" to null,
                 "arviointitilan_lahetysvirhe" to message,
             ),
         onConflict =
             UpdateOnConflict(
                 Constraint("yki_suoritus_lisatieto_pkey"),
-                listOf("arviointitilan_lahetysvirhe"),
+                listOf("arviointitila_lahetetty", "arviointitilan_lahetysvirhe"),
             ),
         returning = null,
+        fullTrace = true,
     )
 
     fun deleteAll() {
@@ -361,11 +367,13 @@ class YkiSuoritusRepository {
         returning = null,
     )
 
+    @WithSpan
     private inline fun <reified T> insertInto(
         table: String,
         values: Map<String, Any?>,
         onConflict: ConflictHandler? = null,
         returning: String? = "id",
+        fullTrace: Boolean = false,
     ): T? {
         require(values.isNotEmpty()) { "values must not be empty" }
         if (onConflict is OnConflictDoNothing) {
@@ -379,6 +387,9 @@ class YkiSuoritusRepository {
             ${onConflict?.toString().orEmpty()}
             ${returning?.let { "RETURNING $it" }.orEmpty()}
             """.trimIndent()
+
+        Span.current().setAttribute("sql", sql)
+        Span.current().setAttribute("values", values.values.toTypedArray().joinToString(", "))
 
         return if (returning == null) {
             jdbcTemplate.update(sql, *values.values.toTypedArray())
