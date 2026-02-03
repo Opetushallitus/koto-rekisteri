@@ -44,6 +44,18 @@ data class YkiSuorituksenTunniste(
     val tutkintotaso: Tutkintotaso,
     val osakokeet: List<TutkinnonOsa>,
 ) {
+    override fun equals(other: Any?): Boolean =
+        other is YkiSuorituksenTunniste &&
+            other.oppijanumero == oppijanumero &&
+            other.tutkintopaiva == tutkintopaiva &&
+            other.tutkintokieli == tutkintokieli &&
+            other.tutkintotaso == tutkintotaso &&
+            other.osakokeet.containsAll(osakokeet) &&
+            osakokeet.containsAll(other.osakokeet)
+
+    override fun hashCode(): Int =
+        listOf(oppijanumero, tutkintopaiva, tutkintokieli, tutkintotaso, osakokeet.sorted()).hashCode()
+
     companion object {
         fun of(entity: YkiSuoritusEntity) =
             YkiSuorituksenTunniste(
