@@ -32,8 +32,6 @@ class VktValidation : Validation<VktHenkilosuoritus> {
             { validateSuorituspaikkakunta(it) },
             { validateSuorituksenVastaanottaja(it) },
             { validateOsasuoritustenArviointi(it) },
-            { validateOsasuoritustenVastaanottaja(it) },
-            { validateOsasuoritustenSuorituspaikkakunta(it) },
         )
 
     private fun validateSuorituspaikkakunta(s: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
@@ -55,30 +53,6 @@ class VktValidation : Validation<VktHenkilosuoritus> {
             s.suoritus.osat.any { it.arviointi == null }
         ) {
             Validation.fail(listOf("suoritus", "osakokeet", "arviointi"), "Suorituksella on arvioimattomia osakokeita")
-        } else {
-            Validation.ok(s)
-        }
-
-    private fun validateOsasuoritustenVastaanottaja(s: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
-        if (s.suoritus.taitotaso == Koodisto.VktTaitotaso.HyväJaTyydyttävä &&
-            s.suoritus.osat.any { it.suorituksenVastaanottaja == null }
-        ) {
-            Validation.fail(
-                listOf("suoritus", "osakokeet", "suorituksenVastaanottaja"),
-                "Suorituksen osakokeelta puuttuu suorituksen vastaanottaja",
-            )
-        } else {
-            Validation.ok(s)
-        }
-
-    private fun validateOsasuoritustenSuorituspaikkakunta(s: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
-        if (s.suoritus.taitotaso == Koodisto.VktTaitotaso.HyväJaTyydyttävä &&
-            s.suoritus.osat.any { it.suorituspaikkakunta == null }
-        ) {
-            Validation.fail(
-                listOf("suoritus", "osakokeet", "suorituspaikkakunta"),
-                "Suorituksen osakokeelta puuttuu suorituspaikkakunta",
-            )
         } else {
             Validation.ok(s)
         }

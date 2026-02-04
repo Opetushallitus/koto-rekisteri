@@ -256,8 +256,6 @@ class VktTiedonsiirtoTest {
         ) {
             isBadRequest(
                 "suoritus.osakokeet.arviointi: Suorituksella on arvioimattomia osakokeita",
-                "suoritus.osakokeet.suorituksenVastaanottaja: Suorituksen osakokeelta puuttuu suorituksen vastaanottaja",
-                "suoritus.osakokeet.suorituspaikkakunta: Suorituksen osakokeelta puuttuu suorituspaikkakunta",
             )
         }
     }
