@@ -60,8 +60,6 @@ export class LogGroupsStack extends Stack {
           FilterPattern.booleanValue("$.success", false),
           FilterPattern.exists("$.stack_trace"),
           FilterPattern.exists("$.error.type"),
-          FilterPattern.stringValue("$.level", "=", "WARN"),
-          FilterPattern.stringValue("$.log.level", "=", "WARN"),
           FilterPattern.stringValue("$.level", "=", "ERROR"),
           FilterPattern.stringValue("$.log.level", "=", "ERROR"),
         ),
@@ -75,6 +73,28 @@ export class LogGroupsStack extends Stack {
 
     errorsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
     errorsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
+
+    const warningsAlarm = this.serviceLogGroup
+      .addMetricFilter("Warnings", {
+        metricName: "LogWarnings",
+        metricNamespace: "Kitu",
+        filterPattern: FilterPattern.any(
+          FilterPattern.booleanValue("$.success", false),
+          FilterPattern.exists("$.stack_trace"),
+          FilterPattern.exists("$.error.type"),
+          FilterPattern.stringValue("$.level", "=", "WARN"),
+          FilterPattern.stringValue("$.log.level", "=", "WARN"),
+        ),
+      })
+      .metric({ statistic: Stats.SAMPLE_COUNT })
+      .createAlarm(this, "WarningsAlarm", {
+        threshold: 3,
+        evaluationPeriods: 1,
+        treatMissingData: TreatMissingData.NOT_BREACHING,
+      })
+
+    warningsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
+    warningsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
   }
 
   /** Enable Transaction Search.

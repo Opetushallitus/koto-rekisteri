@@ -9,7 +9,9 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "diff/dev": "TAG=\"$(git rev-parse main)\" npx cdk diff --exclusively \"Dev/**\""
+    "login": "aws sso login",
+    "diff/dev": "TAG=\"$(git rev-parse main)\" npx cdk diff --exclusively \"Dev/**\"",
+    "deploy/dev": "TAG=\"$(git rev-parse main)\" npx cdk deploy --exclusively \"Dev/**\""
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
