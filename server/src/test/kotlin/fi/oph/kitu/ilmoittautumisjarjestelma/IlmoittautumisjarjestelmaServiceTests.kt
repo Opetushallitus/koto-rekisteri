@@ -5,7 +5,6 @@ import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.defaultObjectMapper
-import fi.oph.kitu.dev.YkiController
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
@@ -17,7 +16,6 @@ import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.YkiApiController
-import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
@@ -34,7 +32,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.ResponseEntity
-import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -46,8 +43,6 @@ class IlmoittautumisjarjestelmaServiceTests(
     @param:Autowired val ykiView: YkiViewController,
     @param:Autowired val suoritukset: YkiSuoritusRepository,
     @param:Autowired val ilmoittautumisjarjestelmaClient: IlmoittautumisjarjestelmaClientMock,
-    @param:Autowired val ykiCsvImport: YkiService,
-    @param:Autowired val ykiDevController: YkiController,
 ) {
     @BeforeEach
     fun setup() {
@@ -86,27 +81,6 @@ class IlmoittautumisjarjestelmaServiceTests(
         assertNull(ilmoittautumisjarjestelmaClient.latestRequest())
         ykiApi.postHenkilosuoritus(suoritus)
         assertEquals(ilmoittautumisjarjestelmaClient.latestRequest(), YkiArvioinninTilaRequest.of(entity))
-    }
-
-    @Test
-    fun `Yki-suoritusten haku vanhan rajapinnan kautta triggeröi arviointitilan lähetyksen`() {
-        ykiDevController.setResponse(
-            endpoint = "/yki/import/suoritukset",
-            response =
-                ResponseEntity.ok(
-                    """
-                    "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
-                    "1.2.246.562.24.59267607404","010116A9518","M","Kivinen-Testi","Petro Testi","EST","Testikuja 10","40100","Testinsuu","testi.petro@testi.fi",183425,2024-10-30T13:55:09Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-10-30,6,6,,6,6,,,,0,0,,
-                    "1.2.246.562.24.74064782358","010100A9846","N","Vesala-Testi","Fanni Testi","EST","Testitie 23","40100","Testinsuu","testi.fanni@testi.fi",183426,2024-10-30T13:55:47Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-10-30,4,4,,4,4,,,,0,0,,
-                    """.trimIndent(),
-                ),
-        )
-
-        ykiCsvImport.importYkiSuoritukset(Instant.now())
-
-        val suoritukset = suoritukset.findAll()
-        assertEquals(3, suoritukset.size)
-        assertEquals(3, (ilmoittautumisjarjestelmaClient.latestRequest() as? YkiArvioinninTilaRequest)?.tilat?.size)
     }
 
     @Test

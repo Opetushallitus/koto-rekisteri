@@ -8,11 +8,9 @@ import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 @Service
 class YkiSuoritusErrorService(
@@ -35,18 +33,6 @@ class YkiSuoritusErrorService(
                     .also { span.setAttribute("errors.addedSize", it.count()) }
                     .let { it.count() > 0 }
             }
-
-    @WithSpan
-    fun findNextSearchRange(
-        suoritukset: List<YkiSuoritusCsv>,
-        errors: List<CsvExportError>,
-        from: Instant,
-    ): Instant =
-        if (errors.isEmpty()) {
-            suoritukset.maxOfOrNull { it.lastModified } ?: from
-        } else {
-            from
-        }
 
     @WithSpan
     fun getErrors(
