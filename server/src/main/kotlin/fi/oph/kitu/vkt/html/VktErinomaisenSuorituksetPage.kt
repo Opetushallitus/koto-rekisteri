@@ -37,7 +37,7 @@ object VktErinomaisenSuorituksetPage {
             h2 { +title }
             messages.forEach { viewMessage(it) }
             vktSearch(searchQuery)
-            article { +"Suorituksia yhteensä: ${pagination.numberOfItems}" }
+            article { +"Yhteensä: ${pagination.numberOfItems}" }
             vktIlmoittautuneetTable(ilmoittautuneet, sortedBy, sortDirection, pagination, translations, searchQuery)
         }
 }

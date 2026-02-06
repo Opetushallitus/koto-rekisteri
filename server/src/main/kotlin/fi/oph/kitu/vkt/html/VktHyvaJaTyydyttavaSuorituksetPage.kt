@@ -37,7 +37,7 @@ object VktHyvaJaTyydyttavaSuorituksetPage {
             h2 { +"Hyvän ja tyydyttävän taidon tutkinnon arvioidut suoritukset" }
             messages.forEach { viewMessage(it) }
             vktSearch(searchQuery)
-            article { +"Suorituksia yhteensä: ${pagination.numberOfItems}" }
+            article { +"Yhteensä: ${pagination.numberOfItems}" }
             vktHyvaJaTyydyttavaTable(suoritukset, sortedBy, sortDirection, pagination, translations, searchQuery)
         }
 }
