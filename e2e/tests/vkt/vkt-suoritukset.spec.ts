@@ -1,3 +1,4 @@
+import * as node_fs from "node:fs"
 import { beforeEach, describe, test } from "../../fixtures/baseFixture"
 import { expect } from "@playwright/test"
 import {
@@ -11,6 +12,8 @@ import {
 } from "../../util/expect"
 import { todayISODate } from "../../util/time"
 import { insert as insertKoskiError } from "../../fixtures/koskiError"
+
+const fs = node_fs.promises
 
 describe("Valtionkielitutkinnon suoritukset page", () => {
   beforeEach(async ({ db, vktSuoritus, config }) => {
@@ -380,5 +383,31 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
         "19.6.2010",
       )
     })
+  })
+})
+
+describe("Valtionkielitutkinnon suoritukset csv download", () => {
+  beforeEach(async ({ db, vktSuoritus, config }) => {
+    await db.withEmptyDatabase()
+  })
+
+  test("csv download", async ({ page, indexPage }) => {
+    await indexPage.login()
+    // Intercept the download
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      await indexPage
+        .getPageContent()
+        .getByRole("link", { name: "Lataa kaikki suoritukset (csv)" })
+        .click(),
+    ])
+
+    // Save the file to a temporary location
+    const path = await download.path()
+    expect(path).not.toBeNull()
+    const csvContent = await fs.readFile(path!, "utf8")
+    expect(csvContent).toContain(
+      "ilmoittautumisenId,suorittajanOid,sukunimi,etunimet,tutkintokieli,taitotaso,suorituspaikkakunta,suorituksenVastaanottaja,tutkintopaiva,puhuminen,puheenYmmartaminen,kirjoittaminen,tekstinYmmartaminen\n",
+    )
   })
 })

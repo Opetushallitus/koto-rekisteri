@@ -11,6 +11,7 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.jdbc.core.query
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
 
@@ -175,6 +176,49 @@ class CustomVktSuoritusRepository {
             """.trimIndent()
 
         return jdbcTemplate.query(query, Tutkintoryhma.fromRow)
+    }
+
+    @WithSpan
+    fun findAllForCsv(): Iterable<VktSuoritusCsv> {
+        val query =
+            """
+            WITH osakokeet AS (
+                SELECT
+                    vkt_suoritus.id as suoritus_id,
+                    vkt_osakoe.tutkintopaiva,
+                    count(*) filter (WHERE vkt_osakoe.arvosana is not null) > 0 AS arvioitu,
+                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'PuheenYmmärtäminen') AS puheen_ymmärtäminen,
+                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'Puhuminen') AS puhuminen,
+                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'TekstinYmmärtäminen') AS tekstin_ymmärtäminen,
+                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'Kirjoittaminen') AS kirjoittaminen
+                FROM vkt_suoritus
+                JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
+                GROUP BY vkt_suoritus.id, vkt_osakoe.tutkintopaiva
+            )
+            SELECT
+                vkt_suoritus.ilmoittautumisen_id,
+                vkt_suoritus.suorittajan_oid,
+                vkt_suoritus.etunimet,
+                vkt_suoritus.sukunimi,
+                vkt_suoritus.tutkintokieli,
+                vkt_suoritus.taitotaso,
+                vkt_suoritus.suorituspaikkakunta,
+                vkt_suoritus.suorituksen_vastaanottaja,
+                osakokeet.tutkintopaiva,
+                max(osakokeet.puheen_ymmärtäminen) AS puheen_ymmärtäminen,
+                max(osakokeet.puhuminen) AS puhuminen,
+                max(osakokeet.tekstin_ymmärtäminen) AS tekstin_ymmärtäminen,
+                max(osakokeet.kirjoittaminen) AS kirjoittaminen
+            FROM vkt_suoritus
+                JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
+                JOIN osakokeet ON osakokeet.suoritus_id = vkt_suoritus.id
+
+            WHERE vkt_osakoe.merkitty_poistettavaksi is null
+              AND osakokeet.arvioitu = true
+
+            GROUP BY vkt_suoritus.id, osakokeet.tutkintopaiva
+            """.trimIndent()
+        return jdbcTemplate.query(query, VktSuoritusCsv.fromRow)
     }
 
     @WithSpan

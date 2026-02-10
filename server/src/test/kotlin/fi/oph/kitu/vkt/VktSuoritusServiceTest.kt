@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
@@ -25,6 +26,7 @@ class VktSuoritusServiceTest(
     @param:Autowired private val auditLogger: AuditLogger,
     @param:Autowired private val vktValidation: VktValidation,
     @param:Autowired private val oppijanumeroService: OppijanumeroService,
+    @param:Autowired private val parser: CsvParser,
 ) {
     @BeforeEach
     fun nukeDb() {
@@ -55,6 +57,7 @@ class VktSuoritusServiceTest(
                 osakoeRepository = osakoeRepository,
                 auditLogger = auditLogger,
                 oppijanumeroService = oppijanumeroService,
+                parser = parser,
             )
         val tutkintoryhma =
             CustomVktSuoritusRepository.Tutkintoryhma(
@@ -98,6 +101,7 @@ class VktSuoritusServiceTest(
                 osakoeRepository = osakoeRepository,
                 auditLogger = auditLogger,
                 oppijanumeroService = oppijanumeroService,
+                parser = parser,
             )
         val tutkintoryhma =
             CustomVktSuoritusRepository.Tutkintoryhma(

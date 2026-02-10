@@ -2,6 +2,7 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.cache.InMemoryCache
+import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogOperation
@@ -12,6 +13,7 @@ import fi.oph.kitu.vkt.html.VktTableItem
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
@@ -25,6 +27,7 @@ class VktSuoritusService(
     private val osakoeRepository: VktOsakoeRepository,
     private val auditLogger: AuditLogger,
     private val oppijanumeroService: OppijanumeroService,
+    private val parser: CsvParser,
 ) {
     @Value("\${kitu.vkt.scheduling.cleanup.retentionTime}")
     lateinit var retentionTimeForDeletedSetting: String
@@ -115,6 +118,15 @@ class VktSuoritusService(
             }
 
         return if (suoritukset.isEmpty()) null else VktSuoritus.merge(suoritukset, suorituksenVastaanottajat)
+    }
+
+    @WithSpan("VktSuoritusService.generateSuorituksetCsvStream")
+    fun generateSuorituksetCsvStream(): ByteArrayOutputStream {
+        val newParser = parser.withUseHeader(true)
+        val suoritukset = customSuoritusRepository.findAllForCsv()
+        val outputStream = ByteArrayOutputStream()
+        newParser.streamDataAsCsv(outputStream, suoritukset)
+        return outputStream
     }
 
     @WithSpan("VktSuoritusService.setOsakoeArvosana")

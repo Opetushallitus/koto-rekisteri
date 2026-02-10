@@ -48,6 +48,7 @@ const apiRoutes = [
 
   // VktApiController
   "PUT /api/vkt/kios",
+  "GET /api/vkt/suoritus",
 ] satisfies Route[]
 
 const publicRoutes = [

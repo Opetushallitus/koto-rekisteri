@@ -1,6 +1,7 @@
 package fi.oph.kitu.html
 
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
+import fi.oph.kitu.vkt.VktApiController
 import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.yki.YkiViewController
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
@@ -40,6 +41,10 @@ object Navigation {
                     MenuItem.of(
                         "Hyvän ja tyydyttävän taidon suoritukset",
                         VktViewController::hyvanJaTyydyttavanTaitotasonSuorituksetView,
+                    ),
+                    MenuItem.of(
+                        "Lataa kaikki suoritukset (csv)",
+                        VktApiController::getSuorituksetCsv,
                     ),
                 ),
             ),
