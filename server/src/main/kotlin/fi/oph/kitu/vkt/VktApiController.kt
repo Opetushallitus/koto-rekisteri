@@ -11,12 +11,16 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.core.io.InputStreamResource
+import org.springframework.core.io.Resource
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.io.ByteArrayInputStream
 import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 @RestController
@@ -24,6 +28,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 @Tag(name = "Valtionhallinnon kielitutkinto")
 class VktApiController(
     val vktRepository: VktSuoritusRepository,
+    val service: VktSuoritusService,
     private val validation: ValidationService,
 ) {
     @PutMapping("/kios", produces = ["application/json"])
@@ -109,6 +114,22 @@ class VktApiController(
         vktRepository.save(enrichedData.toEntity())
         return TiedonsiirtoSuccess().toResponseEntity()
     }
+
+    @GetMapping("/suoritus", produces = ["text/csv"])
+    fun getSuorituksetCsv(): ResponseEntity<Resource> =
+        ResponseEntity
+            .ok()
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .header("Content-Disposition", "attachment; filename=vkt_suoritukset.csv")
+            .body(
+                InputStreamResource(
+                    ByteArrayInputStream(
+                        service
+                            .generateSuorituksetCsvStream()
+                            .toByteArray(),
+                    ),
+                ),
+            )
 
     @GetMapping("/kios/j_spring_cas_security_check")
     fun casDebugRoute(): ResponseEntity<String> = ResponseEntity.ok("Nice")

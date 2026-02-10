@@ -133,4 +133,47 @@ class VKTSuoritusRepositoryTest(
             }
         }
     }
+
+    @Test
+    fun `find suoritukset for csv`() {
+        val suoritus =
+            VktSuoritusEntity(
+                ilmoittautumisenId = "1",
+                suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                etunimet = "Testi",
+                sukunimi = "Testinen",
+                tutkintokieli = Koodisto.Tutkintokieli.FIN,
+                suorituspaikkakunta = "Helsinki",
+                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                suorituksenVastaanottaja = Oid.parse("1.2.246.562.24.91757873900").getOrNull(),
+                osakokeet =
+                    setOf(
+                        VktSuoritusEntity.VktOsakoe(
+                            tyyppi = Koodisto.VktOsakoe.Puhuminen,
+                            tutkintopaiva = LocalDate.of(2025, 1, 1),
+                            arviointipaiva = LocalDate.of(2025, 1, 2),
+                            arvosana = Koodisto.VktArvosana.Erinomainen,
+                            merkittyPoistettavaksi = null,
+                        ),
+                        VktSuoritusEntity.VktOsakoe(
+                            tyyppi = Koodisto.VktOsakoe.PuheenYmmärtäminen,
+                            tutkintopaiva = LocalDate.of(2025, 1, 1),
+                            arviointipaiva = null,
+                            arvosana = null,
+                            merkittyPoistettavaksi = null,
+                        ),
+                    ),
+                tutkinnot =
+                    setOf(
+                        VktSuoritusEntity.VktTutkinto(
+                            tyyppi = Koodisto.VktKielitaito.Suullinen,
+                            arviointipaiva = null,
+                            arvosana = null,
+                        ),
+                    ),
+            )
+        val suoritusId = repository.save(suoritus).id!!
+        val suoritukset = customRepository.findAllForCsv()
+        assertEquals(1, suoritukset.count())
+    }
 }
