@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper
 import java.time.LocalDate
 
 @JsonPropertyOrder(
+    "suoritusId",
     "ilmoittautumisenId",
     "suorittajanOid",
     "sukunimi",
@@ -24,6 +25,7 @@ import java.time.LocalDate
     "tekstinYmmartaminen",
 )
 data class VktSuoritusCsv(
+    val suoritusId: Int,
     val ilmoittautumisenId: String,
     val suorittajanOid: String,
     val etunimet: String,
@@ -44,6 +46,7 @@ data class VktSuoritusCsv(
         val fromRow =
             RowMapper { rs, _ ->
                 VktSuoritusCsv(
+                    suoritusId = rs.getInt("suoritus_id"),
                     ilmoittautumisenId = rs.getString("ilmoittautumisen_id"),
                     suorittajanOid = rs.getString("suorittajan_oid"),
                     etunimet = rs.getString("etunimet"),

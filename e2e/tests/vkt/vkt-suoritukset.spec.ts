@@ -407,7 +407,7 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     expect(path).not.toBeNull()
     const csvContent = await fs.readFile(path!, "utf8")
     expect(csvContent).toContain(
-      "ilmoittautumisenId,suorittajanOid,sukunimi,etunimet,tutkintokieli,taitotaso,suorituspaikkakunta,suorituksenVastaanottaja,tutkintopaiva,puhuminen,puheenYmmartaminen,kirjoittaminen,tekstinYmmartaminen\n",
+      "suoritusId,ilmoittautumisenId,suorittajanOid,sukunimi,etunimet,tutkintokieli,taitotaso,suorituspaikkakunta,suorituksenVastaanottaja,tutkintopaiva,puhuminen,puheenYmmartaminen,kirjoittaminen,tekstinYmmartaminen\n",
     )
   })
 })
