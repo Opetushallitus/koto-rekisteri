@@ -196,6 +196,7 @@ class CustomVktSuoritusRepository {
                 GROUP BY vkt_suoritus.id, vkt_osakoe.tutkintopaiva
             )
             SELECT
+                vkt_suoritus.id as suoritus_id,
                 vkt_suoritus.ilmoittautumisen_id,
                 vkt_suoritus.suorittajan_oid,
                 vkt_suoritus.etunimet,

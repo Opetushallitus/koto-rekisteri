@@ -123,7 +123,17 @@ class VktSuoritusService(
     @WithSpan("VktSuoritusService.generateSuorituksetCsvStream")
     fun generateSuorituksetCsvStream(): ByteArrayOutputStream {
         val newParser = parser.withUseHeader(true)
-        val suoritukset = customSuoritusRepository.findAllForCsv()
+        val suoritukset =
+            customSuoritusRepository
+                .findAllForCsv()
+                .also {
+                    auditLogger.logAllInternalOnly("VKT suoritus viewed", it) { suoritus ->
+                        arrayOf(
+                            "suoritus.id" to suoritus.suoritusId,
+                            "suoritus.oppijanumero" to suoritus.suorittajanOid,
+                        )
+                    }
+                }
         val outputStream = ByteArrayOutputStream()
         newParser.streamDataAsCsv(outputStream, suoritukset)
         return outputStream
