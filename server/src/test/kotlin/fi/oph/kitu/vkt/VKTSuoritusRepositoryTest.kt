@@ -6,6 +6,8 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.mock.VktSuoritusMockGenerator
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -136,6 +138,101 @@ class VKTSuoritusRepositoryTest(
 
     @Test
     fun `find suoritukset for csv`() {
+        val suoritukset =
+            listOf(
+                VktSuoritusEntity(
+                    ilmoittautumisenId = "1",
+                    suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                    etunimet = "Testi",
+                    sukunimi = "Testinen",
+                    tutkintokieli = Koodisto.Tutkintokieli.FIN,
+                    suorituspaikkakunta = "Helsinki",
+                    taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                    suorituksenVastaanottaja = Oid.parse("1.2.246.562.24.91757873900").getOrNull(),
+                    osakokeet =
+                        setOf(
+                            VktSuoritusEntity.VktOsakoe(
+                                tyyppi = Koodisto.VktOsakoe.Puhuminen,
+                                tutkintopaiva = LocalDate.of(2025, 1, 1),
+                                arviointipaiva = LocalDate.of(2025, 1, 2),
+                                arvosana = Koodisto.VktArvosana.Erinomainen,
+                                merkittyPoistettavaksi = null,
+                            ),
+                            VktSuoritusEntity.VktOsakoe(
+                                tyyppi = Koodisto.VktOsakoe.PuheenYmmärtäminen,
+                                tutkintopaiva = LocalDate.of(2025, 1, 1),
+                                arviointipaiva = null,
+                                arvosana = null,
+                                merkittyPoistettavaksi = null,
+                            ),
+                        ),
+                    tutkinnot = setOf(),
+                ),
+                VktSuoritusEntity(
+                    ilmoittautumisenId = "2",
+                    suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678912").getOrThrow(),
+                    etunimet = "Maija",
+                    sukunimi = "Mehiläinen",
+                    tutkintokieli = Koodisto.Tutkintokieli.FIN,
+                    suorituspaikkakunta = "Helsinki",
+                    taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                    suorituksenVastaanottaja = Oid.parse("1.2.246.562.24.91757873900").getOrNull(),
+                    osakokeet =
+                        setOf(
+                            VktSuoritusEntity.VktOsakoe(
+                                tyyppi = Koodisto.VktOsakoe.Puhuminen,
+                                tutkintopaiva = LocalDate.of(2025, 1, 1),
+                                arviointipaiva = LocalDate.of(2025, 1, 2),
+                                arvosana = Koodisto.VktArvosana.Erinomainen,
+                                merkittyPoistettavaksi = null,
+                            ),
+                            VktSuoritusEntity.VktOsakoe(
+                                tyyppi = Koodisto.VktOsakoe.PuheenYmmärtäminen,
+                                tutkintopaiva = LocalDate.of(2025, 1, 1),
+                                arviointipaiva = LocalDate.of(2025, 1, 2),
+                                arvosana = Koodisto.VktArvosana.Erinomainen,
+                                merkittyPoistettavaksi = null,
+                            ),
+                            VktSuoritusEntity.VktOsakoe(
+                                tyyppi = Koodisto.VktOsakoe.Kirjoittaminen,
+                                tutkintopaiva = LocalDate.of(2025, 1, 1),
+                                arviointipaiva = LocalDate.of(2025, 1, 2),
+                                arvosana = Koodisto.VktArvosana.Hylätty,
+                                merkittyPoistettavaksi = null,
+                            ),
+                            VktSuoritusEntity.VktOsakoe(
+                                tyyppi = Koodisto.VktOsakoe.TekstinYmmärtäminen,
+                                tutkintopaiva = LocalDate.of(2025, 1, 1),
+                                arviointipaiva = LocalDate.of(2025, 1, 2),
+                                arvosana = Koodisto.VktArvosana.Erinomainen,
+                                merkittyPoistettavaksi = null,
+                            ),
+                        ),
+                    tutkinnot = setOf(),
+                ),
+            )
+
+        repository.saveAll(suoritukset)
+        val suorituksetCsv = customRepository.findAllForCsv()
+        val suoritus1Csv = suorituksetCsv.first { it.suoritusId == 1 }
+        val suoritus2Csv = suorituksetCsv.first { it.suoritusId == 2 }
+        assertAll(
+            fun() = assertEquals(2, suorituksetCsv.count()),
+            fun() = assertEquals("1.2.246.562.24.12345678910", suoritus1Csv.suorittajanOid),
+            fun() = assertEquals("Erinomainen", suoritus1Csv.puhuminen),
+            fun() = assertNull(suoritus1Csv.puheenYmmartaminen),
+            fun() = assertNull(suoritus1Csv.kirjoittaminen),
+            fun() = assertNull(suoritus1Csv.tekstinYmmartaminen),
+            fun() = assertEquals("1.2.246.562.24.12345678912", suoritus2Csv.suorittajanOid),
+            fun() = assertEquals("Erinomainen", suoritus2Csv.puhuminen),
+            fun() = assertEquals("Erinomainen", suoritus2Csv.puheenYmmartaminen),
+            fun() = assertEquals("Hylätty", suoritus2Csv.kirjoittaminen),
+            fun() = assertEquals("Erinomainen", suoritus2Csv.tekstinYmmartaminen),
+        )
+    }
+
+    @Test
+    fun `find suoritukset for csv doesn't return suoritus with no arvosana`() {
         val suoritus =
             VktSuoritusEntity(
                 ilmoittautumisenId = "1",
@@ -151,8 +248,8 @@ class VKTSuoritusRepositoryTest(
                         VktSuoritusEntity.VktOsakoe(
                             tyyppi = Koodisto.VktOsakoe.Puhuminen,
                             tutkintopaiva = LocalDate.of(2025, 1, 1),
-                            arviointipaiva = LocalDate.of(2025, 1, 2),
-                            arvosana = Koodisto.VktArvosana.Erinomainen,
+                            arviointipaiva = null,
+                            arvosana = null,
                             merkittyPoistettavaksi = null,
                         ),
                         VktSuoritusEntity.VktOsakoe(
@@ -172,8 +269,8 @@ class VKTSuoritusRepositoryTest(
                         ),
                     ),
             )
-        val suoritusId = repository.save(suoritus).id!!
+        repository.save(suoritus)
         val suoritukset = customRepository.findAllForCsv()
-        assertEquals(1, suoritukset.count())
+        assertEquals(0, suoritukset.count())
     }
 }
