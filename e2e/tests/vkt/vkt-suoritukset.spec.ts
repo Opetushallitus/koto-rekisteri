@@ -387,11 +387,16 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 })
 
 describe("Valtionkielitutkinnon suoritukset csv download", () => {
-  beforeEach(async ({ db, vktSuoritus, config }) => {
+  beforeEach(async ({ db, oauth, vktSuoritus, config }) => {
     await db.withEmptyDatabase()
+    await vktSuoritus.createErinomainenIlmoittautuminen(config.baseUrl, oauth)
+    await vktSuoritus.createHyvaJaTyydyttavaSuoritus(config.baseUrl, oauth)
   })
 
-  test("csv download", async ({ page, indexPage }) => {
+  test("csv download only includes arvioitu suoritus", async ({
+    page,
+    indexPage,
+  }) => {
     await indexPage.login()
     // Intercept the download
     const [download] = await Promise.all([
@@ -406,8 +411,9 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     const path = await download.path()
     expect(path).not.toBeNull()
     const csvContent = await fs.readFile(path!, "utf8")
-    expect(csvContent).toContain(
-      "suoritusId,ilmoittautumisenId,suorittajanOid,sukunimi,etunimet,tutkintokieli,taitotaso,suorituspaikkakunta,suorituksenVastaanottaja,tutkintopaiva,puhuminen,puheenYmmartaminen,kirjoittaminen,tekstinYmmartaminen\n",
+    expect(csvContent).toEqual(
+      "suoritusId,ilmoittautumisenId,suorittajanOid,sukunimi,etunimet,tutkintokieli,taitotaso,suorituspaikkakunta,suorituksenVastaanottaja,tutkintopaiva,puhuminen,puheenYmmartaminen,kirjoittaminen,tekstinYmmartaminen\n" +
+        '2,KIOS:123,"1.2.246.562.10.14893989377",Öhman-Testi,"Ranja Testi",FIN,HyväJaTyydyttävä,050,"1.2.246.562.240.01987654321",2026-02-10,Tyydyttävä,Hyvä,Hylätty,Hyvä\n',
     )
   })
 })
