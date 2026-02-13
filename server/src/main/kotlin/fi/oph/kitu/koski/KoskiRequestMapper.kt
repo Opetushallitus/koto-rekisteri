@@ -37,6 +37,9 @@ class KoskiRequestMapper {
     @Value("\${kitu.oids.valtionhallinnonkielitutkinnot}")
     lateinit var vktOrganisaatioOid: String
 
+    @Value("\${kitu.oids.yleisetkielitutkinnot}")
+    lateinit var ykiOrganisaatioOid: String
+
     @WithSpan
     fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): KoskiRequest? =
         if (isKoskiSiirtoEstetty(ykiSuoritus)) {
@@ -84,7 +87,8 @@ class KoskiRequestMapper {
                                                         ykiSuoritus.tutkintokieli.name,
                                                     ),
                                             ),
-                                        toimipiste = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid),
+                                        toimipiste = Organisaatio(oid = Oid.parse(ykiOrganisaatioOid).getOrThrow()),
+                                        järjestäjä = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid),
                                         vahvistus =
                                             ykiSuoritus.arviointipaiva?.let {
                                                 KielitutkintoSuoritus.VahvistusImpl(
