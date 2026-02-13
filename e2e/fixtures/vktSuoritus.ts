@@ -81,7 +81,7 @@ export const createHyvaJaTyydyttavaSuoritus = async (
     suoritus: {
       taitotaso: "hyvajatyydyttava",
       kieli: "FI",
-      suorituksenVastaanottaja: "1.2.246.562.240.01987654321",
+      suorituksenVastaanottaja: "1.2.246.562.24.59267607404",
       suorituspaikkakunta: "050",
       lahdejarjestelmanId: {
         id: "123",

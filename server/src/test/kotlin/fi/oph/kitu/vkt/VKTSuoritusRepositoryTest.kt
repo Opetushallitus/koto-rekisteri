@@ -214,8 +214,8 @@ class VKTSuoritusRepositoryTest(
 
         repository.saveAll(suoritukset)
         val suorituksetCsv = customRepository.findAllForCsv()
-        val suoritus1Csv = suorituksetCsv.first { it.suoritusId == 1 }
-        val suoritus2Csv = suorituksetCsv.first { it.suoritusId == 2 }
+        val suoritus1Csv = suorituksetCsv.first { it.ilmoittautumisenId == "1" }
+        val suoritus2Csv = suorituksetCsv.first { it.ilmoittautumisenId == "2" }
         assertAll(
             fun() = assertEquals(2, suorituksetCsv.count()),
             fun() = assertEquals("1.2.246.562.24.12345678910", suoritus1Csv.suorittajanOid),
