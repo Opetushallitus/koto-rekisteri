@@ -56,6 +56,8 @@ data class KoskiRequest(
             val toimipiste: Organisaatio,
             val vahvistus: Vahvistus?,
             val osasuoritukset: List<Osasuoritus>,
+            // Seuraavat kentät ovat käytössä yki-suorituksilla:
+            val järjestäjä: Organisaatio? = null,
             val yleisarvosana: KoskiKoodiviite? = null,
         ) {
             data class KoulutusModuuli(
