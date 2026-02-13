@@ -412,8 +412,8 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     expect(path).not.toBeNull()
     const csvContent = await fs.readFile(path!, "utf8")
     expect(csvContent).toEqual(
-      "suoritusId,ilmoittautumisenId,suorittajanOid,sukunimi,etunimet,tutkintokieli,taitotaso,suorituspaikkakunta,suorituksenVastaanottaja,tutkintopaiva,puhuminen,puheenYmmartaminen,kirjoittaminen,tekstinYmmartaminen\n" +
-        '2,KIOS:123,"1.2.246.562.10.14893989377",Öhman-Testi,"Ranja Testi",FIN,HyväJaTyydyttävä,050,"1.2.246.562.240.01987654321",2026-02-10,Tyydyttävä,Hyvä,Hylätty,Hyvä\n',
+      'suoritusId,ilmoittautumisenId,suorittajanOid,sukunimi,etunimet,tutkintokieli,taitotaso,suorituspaikkakunta,"suorituksenVastaanottajanOid",suorituksenVastaanottaja,tutkintopaiva,puhuminen,puheenYmmartaminen,kirjoittaminen,tekstinYmmartaminen\n' +
+        '2,KIOS:123,"1.2.246.562.10.14893989377",Öhman-Testi,"Ranja Testi",FIN,HyväJaTyydyttävä,<kunta:050>,"1.2.246.562.24.59267607404","Petro Testi Kivinen-Testi",2026-02-10,Tyydyttävä,Hyvä,Hylätty,Hyvä\n',
     )
   })
 })

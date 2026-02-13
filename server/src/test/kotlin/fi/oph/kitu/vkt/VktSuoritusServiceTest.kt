@@ -2,6 +2,7 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
@@ -26,6 +27,7 @@ class VktSuoritusServiceTest(
     @param:Autowired private val auditLogger: AuditLogger,
     @param:Autowired private val vktValidation: VktValidation,
     @param:Autowired private val oppijanumeroService: OppijanumeroService,
+    @param:Autowired private val localizationService: LocalizationService,
     @param:Autowired private val parser: CsvParser,
 ) {
     @BeforeEach
@@ -57,6 +59,7 @@ class VktSuoritusServiceTest(
                 osakoeRepository = osakoeRepository,
                 auditLogger = auditLogger,
                 oppijanumeroService = oppijanumeroService,
+                localizationService = localizationService,
                 parser = parser,
             )
         val tutkintoryhma =
@@ -101,6 +104,7 @@ class VktSuoritusServiceTest(
                 osakoeRepository = osakoeRepository,
                 auditLogger = auditLogger,
                 oppijanumeroService = oppijanumeroService,
+                localizationService = localizationService,
                 parser = parser,
             )
         val tutkintoryhma =

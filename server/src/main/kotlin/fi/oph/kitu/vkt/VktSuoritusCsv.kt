@@ -3,8 +3,7 @@ package fi.oph.kitu.vkt
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.Oid
 import org.springframework.jdbc.core.RowMapper
 import java.time.LocalDate
 
@@ -17,6 +16,7 @@ import java.time.LocalDate
     "tutkintokieli",
     "taitotaso",
     "suorituspaikkakunta",
+    "suorituksenVastaanottajanOid",
     "suorituksenVastaanottaja",
     "tutkintopaiva",
     "puhuminen",
@@ -33,7 +33,8 @@ data class VktSuoritusCsv(
     val tutkintokieli: String,
     val taitotaso: String,
     val suorituspaikkakunta: String,
-    val suorituksenVastaanottaja: String,
+    val suorituksenVastaanottajanOid: Oid?,
+    val suorituksenVastaanottaja: String? = null,
     @param:JsonProperty("tutkintopaiva")
     @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val tutkintopaiva: LocalDate,
@@ -54,7 +55,7 @@ data class VktSuoritusCsv(
                     tutkintokieli = rs.getString("tutkintokieli"),
                     taitotaso = rs.getString("taitotaso"),
                     suorituspaikkakunta = rs.getString("suorituspaikkakunta"),
-                    suorituksenVastaanottaja = rs.getString("suorituksen_vastaanottaja"),
+                    suorituksenVastaanottajanOid = Oid.parse(rs.getString("suorituksen_vastaanottaja")).getOrNull(),
                     tutkintopaiva = rs.getDate("tutkintopaiva").toLocalDate(),
                     puhuminen = rs.getString("puhuminen"),
                     puheenYmmartaminen = rs.getString("puheen_ymmärtäminen"),
