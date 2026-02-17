@@ -61,6 +61,7 @@ object Koodisto {
     ) : Koodiviite {
         Lasna("lasna"),
         Paattynyt("paattynyt"),
+        Mitatoity("mitatoity"),
         ;
 
         override val koodistoUri: String = "koskiopiskeluoikeudentila"

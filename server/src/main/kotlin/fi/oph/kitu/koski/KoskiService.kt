@@ -83,6 +83,37 @@ class KoskiService(
                 }
             }
 
+    fun sendYkiMitatointiToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<Unit, KoskiException> =
+        tracer
+            .spanBuilder("KoskiService.sendYkiMitatointiToKoski")
+            .startSpan()
+            .use { span ->
+                if (ykiSuoritusEntity.koskiOpiskeluoikeus != null) {
+                    koskiRequestMapper
+                        .ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
+                        ?.mitatoi()
+                        ?.let { koskiRequest ->
+                            koskiRestClient
+                                .put()
+                                .uri("oppija")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .body(koskiRequest)
+                                .retrieve()
+                                .toEntity<KoskiResponse>()
+                        }
+
+                    val suoritus =
+                        ykiSuoritusEntity.copy(
+                            koskiOpiskeluoikeus = null,
+                            koskiSiirtoKasitelty = false,
+                        )
+                    ykiSuoritusRepository.save(suoritus, true)
+                }
+
+                TypedResult.Success(Unit)
+            }
+
     fun sendVktSuoritusToKoski(suoritus: VktHenkilosuoritus): TypedResult<Unit, KoskiException> =
         tracer
             .spanBuilder("KoskiService.sendVktSuoritusToKoski")
@@ -121,9 +152,16 @@ class KoskiService(
 
     @WithSpan
     fun sendYkiSuorituksetToKoski() {
-        val suoritukset = ykiSuoritusRepository.findSuorituksetWithNoKoskiopiskeluoikeus()
+        val suoritukset = ykiSuoritusRepository.findSuorituksetWithoutKoskiopiskeluoikeus()
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
         reportErrors(results.mapValues { YkiMappingId(it.solkiId) })
+    }
+
+    @WithSpan
+    fun mitatoiYkiSuorituksetInKoski() {
+        ykiSuoritusRepository
+            .findSuorituksetWithKoskiopiskeluoikeus()
+            .map { sendYkiMitatointiToKoski(it) }
     }
 
     @WithSpan

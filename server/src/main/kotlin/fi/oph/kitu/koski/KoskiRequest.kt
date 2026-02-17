@@ -10,6 +10,8 @@ data class KoskiRequest(
     val henkilö: Henkilo,
     val opiskeluoikeudet: List<Opiskeluoikeus>,
 ) {
+    fun mitatoi() = copy(opiskeluoikeudet = opiskeluoikeudet.map { it.mitatoi() })
+
     data class Henkilo(
         val oid: Oid,
     )
@@ -21,6 +23,8 @@ data class KoskiRequest(
         val suoritukset: List<KielitutkintoSuoritus>,
         val oid: Oid? = null,
     ) {
+        fun mitatoi(): Opiskeluoikeus = copy(tila = tila.mitatoi())
+
         data class LahdeJarjestelmanId(
             val id: String,
             val lähdejärjestelmä: Koodisto.LahdeJarjestelma = Koodisto.LahdeJarjestelma.Kielitutkintorekisteri,
@@ -29,6 +33,16 @@ data class KoskiRequest(
         data class Tila(
             val opiskeluoikeusjaksot: List<OpiskeluoikeusJakso>,
         ) {
+            fun mitatoi() =
+                copy(
+                    opiskeluoikeusjaksot =
+                        opiskeluoikeusjaksot +
+                            OpiskeluoikeusJakso(
+                                alku = LocalDate.now(),
+                                tila = Koodisto.OpiskeluoikeudenTila.Mitatoity,
+                            ),
+                )
+
             data class OpiskeluoikeusJakso(
                 @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
                 val alku: LocalDate,
