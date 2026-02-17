@@ -70,9 +70,15 @@ class YkiSuoritusRepository {
             YkiSuoritusEntity.fromRow,
         )
 
-    fun findSuorituksetWithNoKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> =
+    fun findSuorituksetWithoutKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> =
         jdbcNamedParameterTemplate.query(
             selectSuoritukset(viimeisin = true, "WHERE NOT koski_siirto_kasitelty"),
+            YkiSuoritusEntity.fromRow,
+        )
+
+    fun findSuorituksetWithKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> =
+        jdbcNamedParameterTemplate.query(
+            selectSuoritukset(viimeisin = true, "WHERE koski_opiskeluoikeus IS NOT NULL"),
             YkiSuoritusEntity.fromRow,
         )
 
