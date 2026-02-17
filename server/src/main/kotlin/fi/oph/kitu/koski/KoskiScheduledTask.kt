@@ -2,7 +2,6 @@ package fi.oph.kitu.koski
 
 import com.github.kagkarlsson.scheduler.task.Task
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import com.github.kagkarlsson.scheduler.task.schedule.FixedDelay
 import fi.oph.kitu.ConditionalOnNonEmptyProperty
 import fi.oph.kitu.ExtendedSchedules
 import fi.oph.kitu.observability.use
@@ -30,25 +29,6 @@ class KoskiYkiScheduledTask(
                     span.setAttribute("task.name", "KOSKI-send-YKI-suoritukset")
                     koskiService.sendYkiSuorituksetToKoski()
                 }
-            }
-}
-
-@Configuration
-class KoskiYkiMitatointiScheduledTask(
-    private val tracer: Tracer,
-) {
-    @Bean
-    fun sendYkiMitatoinnit(koskiService: KoskiService): Task<Void> =
-        Tasks
-            .recurring("KOSKI-send-YKI-mitatoinnit", FixedDelay.ofHours(12))
-            .execute { _, _ ->
-                tracer
-                    .spanBuilder("KoskiYkiMitatointiScheduledTask.sendYkiMitatoinnit.tasks.execute")
-                    .startSpan()
-                    .use { span ->
-                        span.setAttribute("task.name", "KOSKI-send-YKI-mitatoinnit")
-                        koskiService.mitatoiYkiSuorituksetInKoski()
-                    }
             }
 }
 

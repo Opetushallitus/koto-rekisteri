@@ -158,13 +158,6 @@ class KoskiService(
     }
 
     @WithSpan
-    fun mitatoiYkiSuorituksetInKoski() {
-        ykiSuoritusRepository
-            .findSuorituksetWithKoskiopiskeluoikeus()
-            .map { sendYkiMitatointiToKoski(it) }
-    }
-
-    @WithSpan
     fun sendVktSuorituksetToKoski() {
         val siirrettavat = customVktSuoritusRepository.findOpiskeluoikeudetForKoskiTransfer()
         val results =
