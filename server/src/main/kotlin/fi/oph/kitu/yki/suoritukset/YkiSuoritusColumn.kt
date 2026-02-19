@@ -170,6 +170,13 @@ enum class YkiSuoritusColumn(
         renderValue = { ykiArvosana(it.yleisarvosana, it.tutkintotaso) },
     ),
 
+    Todistuskieli(
+        entityName = "todistuskieli",
+        uiHeaderValue = "Todistuskieli",
+        urlParam = "todistuskieli",
+        renderValue = { +(it.todistuskieli?.name ?: "") },
+    ),
+
     ArviointitilaLahetetty(
         entityName = "arviointitila_lahetetty",
         uiHeaderValue = "Tila lähetetty",

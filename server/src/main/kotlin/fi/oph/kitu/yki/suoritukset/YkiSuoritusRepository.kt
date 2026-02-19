@@ -294,6 +294,7 @@ class YkiSuoritusRepository {
                 "tutkintopaiva" to suoritus.tutkintopaiva,
                 "tutkintokieli" to suoritus.tutkintokieli.toString(),
                 "tutkintotaso" to suoritus.tutkintotaso.toString(),
+                "todistuskieli" to suoritus.todistuskieli?.toString(),
                 "jarjestajan_tunnus_oid" to suoritus.jarjestajanTunnusOid.toString(),
                 "jarjestajan_nimi" to suoritus.jarjestajanNimi,
                 "hetu" to suoritus.hetu,

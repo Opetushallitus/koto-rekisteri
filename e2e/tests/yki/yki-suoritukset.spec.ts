@@ -243,6 +243,11 @@ describe('"YKI Suoritukset" -page', () => {
         tableColumnIndex: 21,
         order: ["Keskeytetty", "Ei voi arvioida", "Alle 5"],
       },
+      {
+        column: "Todistuskieli",
+        tableColumnIndex: 22,
+        order: ["SWE", "FIN", "ENG"],
+      },
     ] as const
 
     for (const testCase of sortTestCases) {

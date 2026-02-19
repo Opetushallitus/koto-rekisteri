@@ -19,6 +19,7 @@ typealias YkiHenkilosuoritus = Henkilosuoritus<YkiSuoritus>
 data class YkiSuoritus(
     val tutkintotaso: Tutkintotaso,
     val kieli: Tutkintokieli,
+    val todistuskieli: Todistuskieli?,
     val jarjestaja: YkiJarjestaja,
     val tutkintopaiva: LocalDate,
     val arviointipaiva: LocalDate?,
@@ -55,6 +56,7 @@ data class YkiSuoritus(
             tutkintopaiva = tutkintopaiva,
             tutkintokieli = kieli,
             tutkintotaso = tutkintotaso,
+            todistuskieli = todistuskieli,
             jarjestajanTunnusOid = jarjestaja.oid,
             jarjestajanNimi = jarjestaja.nimi,
             arviointipaiva = arviointipaiva,
