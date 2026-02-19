@@ -4,6 +4,7 @@ import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -54,6 +55,7 @@ fun generateRandomYkiSuoritusEntity(
                 .toTypedArray()
                 .random(),
         tutkintotaso = tutkintotaso,
+        todistuskieli = Todistuskieli.entries.random(),
         jarjestajanTunnusOid = generateRandomOrganizationOid(),
         jarjestajanNimi = "${randomPerson.postitoimipaikka}n yliopisto",
         arviointipaiva = arviointipaiva,

@@ -26,6 +26,7 @@ import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
+import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
@@ -235,6 +236,7 @@ class SchemaExamplesController {
                     YkiSuoritus(
                         tutkintotaso = Tutkintotaso.YT,
                         kieli = Tutkintokieli.FIN,
+                        todistuskieli = Todistuskieli.FIN,
                         jarjestaja =
                             YkiJarjestaja(
                                 oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),

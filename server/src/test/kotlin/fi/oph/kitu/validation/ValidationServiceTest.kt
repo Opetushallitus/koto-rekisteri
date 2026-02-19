@@ -10,6 +10,7 @@ import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
@@ -32,6 +33,7 @@ class ValidationServiceTest(
                 YkiSuoritus(
                     tutkintotaso = Tutkintotaso.KT,
                     kieli = Tutkintokieli.FIN,
+                    todistuskieli = Todistuskieli.FIN,
                     jarjestaja =
                         YkiJarjestaja(
                             oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),

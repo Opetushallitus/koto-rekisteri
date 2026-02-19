@@ -37,6 +37,7 @@ export interface YkiSuoritus {
   perustelu: string
   tarkistusarvioinninKasittelyPvm: string
   arviointitila: string
+  todistuskieli: string
 }
 
 type CreateYkiSuoritusArgs = Omit<
@@ -77,6 +78,7 @@ const createYkiSuoritus = (
     perustelu,
     tarkistusarvioinninKasittelyPvm,
     arviointitila,
+    todistuskieli,
   }: CreateYkiSuoritusArgs,
 ): YkiSuoritus => {
   const p = peopleFixture[person]
@@ -117,6 +119,7 @@ const createYkiSuoritus = (
     perustelu,
     tarkistusarvioinninKasittelyPvm,
     arviointitila,
+    todistuskieli,
   }
 }
 
@@ -145,6 +148,7 @@ export const fixtureData = {
     perustelu: null,
     tarkistusarvioinninKasittelyPvm: null,
     arviointitila: "ARVIOITU",
+    todistuskieli: "FIN",
   }),
   ranjaTarkistus: createYkiSuoritus("ranja", {
     kansalaisuus: "EST",
@@ -170,6 +174,7 @@ export const fixtureData = {
     perustelu: "Tarkistusarvioinnin testi",
     tarkistusarvioinninKasittelyPvm: "2024-10-21",
     arviointitila: "TARKISTUSARVIOITU",
+    todistuskieli: "FIN",
   }),
   petro: createYkiSuoritus("petro", {
     kansalaisuus: "EST",
@@ -195,6 +200,7 @@ export const fixtureData = {
     perustelu: null,
     tarkistusarvioinninKasittelyPvm: null,
     arviointitila: "ARVIOITU",
+    todistuskieli: "SWE",
   }),
   magdalena: createYkiSuoritus("magdalena", {
     kansalaisuus: "FIN",
@@ -220,6 +226,7 @@ export const fixtureData = {
     perustelu: null,
     tarkistusarvioinninKasittelyPvm: null,
     arviointitila: "ARVIOITU",
+    todistuskieli: "ENG",
   }),
   magdalenaTarkistettu: createYkiSuoritus("magdalena", {
     kansalaisuus: "FIN",
@@ -245,6 +252,7 @@ export const fixtureData = {
     perustelu: "Tarkistusarvioinnin testi",
     tarkistusarvioinninKasittelyPvm: "2025-10-22",
     arviointitila: "TARKISTUSARVIOITU",
+    todistuskieli: "ENG",
   }),
   einoTarkistettuJaHyvaksytty: createYkiSuoritus("eino", {
     kansalaisuus: "FIN",
@@ -270,6 +278,7 @@ export const fixtureData = {
     perustelu: "Tarkistusarvioinnin testi",
     tarkistusarvioinninKasittelyPvm: "2024-10-20",
     arviointitila: "TARKISTUSARVIOINTI_HYVAKSYTTY",
+    todistuskieli: "FIN",
   }),
 } as const
 
@@ -301,6 +310,7 @@ export const insert = async (
       tyyppi: "yleinenkielitutkinto",
       tutkintotaso: data.tutkintotaso,
       kieli: data.tutkintokieli.toLowerCase(),
+      todistuskieli: data.todistuskieli.toLowerCase(),
       jarjestaja: {
         oid: data.jarjestajanTunnusOid,
         nimi: data.jarjestajanNimi,

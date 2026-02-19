@@ -15,6 +15,7 @@ import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
+import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
@@ -79,6 +80,7 @@ class YkiApiControllerTest(
                     YkiSuoritus(
                         tutkintotaso = Tutkintotaso.YT,
                         kieli = Tutkintokieli.FIN,
+                        todistuskieli = Todistuskieli.FIN,
                         jarjestaja =
                             YkiJarjestaja(
                                 oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
@@ -158,6 +160,7 @@ class YkiApiControllerTest(
                     YkiSuoritus(
                         tutkintotaso = Tutkintotaso.YT,
                         kieli = Tutkintokieli.FIN,
+                        todistuskieli = Todistuskieli.FIN,
                         jarjestaja =
                             YkiJarjestaja(
                                 oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
@@ -237,6 +240,7 @@ class YkiApiControllerTest(
                     YkiSuoritus(
                         tutkintotaso = Tutkintotaso.YT,
                         kieli = Tutkintokieli.ENG11,
+                        todistuskieli = Todistuskieli.FIN,
                         jarjestaja =
                             YkiJarjestaja(
                                 oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
@@ -340,6 +344,30 @@ class YkiApiControllerTest(
             isBadRequest(
                 "suoritus.tarkistusarviointi.arvosanaMuuttui: Muuttuneet arvosanat sisälsivät osakokeita, jotka eivät olleet osa tarkistettavia osakokeita",
                 "suoritus.tarkistusarviointi.kasittelypaiva: Käsittelypäivä on ennen saapumispäivää",
+            )
+        }
+    }
+
+    @Test
+    fun `YKI-suorituksen tallennus ilman todistuskieltä onnistuu`() {
+        val json = ClassPathResource("./yki-suoritus-without-todistuskieli.json").file
+        val data = defaultObjectMapper.readValue(json, JsonNode::class.java).toString()
+
+        post("/yki/api/suoritus", data, { isOk() })
+    }
+
+    @Test
+    fun `Suoritus virheellisellä todistuskielellä palauttaa virheen`() {
+        val data =
+            defaultObjectMapper
+                .readValue(
+                    ClassPathResource("./yki-suoritus-invalid-todistuskieli.json").file,
+                    JsonNode::class.java,
+                ).toString()
+
+        post("/yki/api/suoritus", data) {
+            isBadRequest(
+                "JSON parse error: Cannot deserialize value of type `fi.oph.kitu.yki.suoritukset.Todistuskieli` from String \"asdasd\": not one of the values accepted for Enum class: [swe, fin, eng]",
             )
         }
     }

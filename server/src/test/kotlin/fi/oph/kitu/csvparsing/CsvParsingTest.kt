@@ -9,6 +9,7 @@ import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
+import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

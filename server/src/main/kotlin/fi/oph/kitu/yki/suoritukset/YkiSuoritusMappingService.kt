@@ -33,6 +33,7 @@ class YkiSuoritusMappingService {
         csv.tutkintopaiva,
         csv.tutkintokieli,
         csv.tutkintotaso,
+        todistuskieli = null,
         csv.jarjestajanOID,
         csv.jarjestajanNimi,
         csv.arviointipaiva,

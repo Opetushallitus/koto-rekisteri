@@ -39,6 +39,8 @@ data class YkiSuoritusEntity(
     val tutkintokieli: Tutkintokieli,
     @Enumerated(EnumType.STRING)
     val tutkintotaso: Tutkintotaso,
+    @Enumerated(EnumType.STRING)
+    val todistuskieli: Todistuskieli?,
     val jarjestajanTunnusOid: Oid,
     val jarjestajanNimi: String,
     val arviointipaiva: LocalDate?,
@@ -110,6 +112,7 @@ data class YkiSuoritusEntity(
                     rs.getObject("tutkintopaiva", LocalDate::class.java),
                     Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
                     Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
+                    rs.getString("todistuskieli")?.let { Todistuskieli.valueOf(it) },
                     Oid.parse(rs.getString("jarjestajan_tunnus_oid")).getOrThrow(),
                     rs.getString("jarjestajan_nimi"),
                     rs.getObject("arviointipaiva", LocalDate::class.java),
