@@ -39,7 +39,7 @@ class KielitestiApiController(
         ResponseEntity
             .ok()
             .contentType(MediaType.parseMediaType("text/csv"))
-            .header("Content-Disposition", "attachment; filename=koto-suoritukset-${LocalDate.now().isoDate()}.csv")
+            .header("Content-Disposition", "attachment; filename=koto-virheet-${LocalDate.now().isoDate()}.csv")
             .body(
                 InputStreamResource(
                     ByteArrayInputStream(
