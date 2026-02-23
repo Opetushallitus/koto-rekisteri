@@ -6,15 +6,20 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.databind.MapperFeature
 import fi.oph.kitu.Oid
 import fi.oph.kitu.csvparsing.Features
+import fi.oph.kitu.organisaatiot.Organisaatiot
 import java.time.Instant
 
 @JsonPropertyOrder(
+    "oppijanumero",
     "sukunimi",
     "etunimet",
+    "kutsumanimi",
     "sahkoposti",
+    "kurssiId",
     "kurssinNimi",
+    "organisaatioOid",
+    "organisaatio",
     "suoritusaika",
-    "oppijanumero",
     "luetunYmmartaminen",
     "kuullunYmmartaminen",
     "puhuminen",
@@ -24,8 +29,12 @@ import java.time.Instant
 data class KielitestiSuoritusCsv(
     val sukunimi: String,
     val etunimet: String,
+    val kutsumanimi: String,
     val sahkoposti: String,
     val kurssinNimi: String,
+    val kurssiId: Int,
+    val organisaatioOid: Oid?,
+    val organisaatio: String?,
     @param:JsonProperty("suoritusaika")
     @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssX", timezone = "UTC")
     val suoritusaika: Instant,
@@ -36,12 +45,19 @@ data class KielitestiSuoritusCsv(
     val kirjoittaminen: String?,
 ) {
     companion object {
-        fun of(s: KielitestiSuoritus): KielitestiSuoritusCsv =
+        fun of(
+            s: KielitestiSuoritus,
+            organisaatiot: Organisaatiot,
+        ): KielitestiSuoritusCsv =
             KielitestiSuoritusCsv(
                 sukunimi = s.sukunimi,
                 etunimet = s.etunimet,
+                kutsumanimi = s.kutsumanimi,
                 sahkoposti = s.email,
+                kurssiId = s.kurssiId,
                 kurssinNimi = s.kurssi,
+                organisaatioOid = s.oppilaitosOid,
+                organisaatio = organisaatiot.nimet[s.oppilaitosOid]?.toString(),
                 suoritusaika = s.suoritusaika,
                 oppijanumero = s.oppijanumero,
                 luetunYmmartaminen = s.luetunYmmartaminen,

@@ -78,6 +78,7 @@ export const fixtureData = {
 const insertQuery = (suoritus: KotoSuoritus) => SQL`
   INSERT INTO koto_suoritus (etunimet,
                              sukunimi,
+                             kutsumanimi,
                              oppijanumero,
                              oppilaitos_oid,
                              email,
@@ -91,6 +92,7 @@ const insertQuery = (suoritus: KotoSuoritus) => SQL`
                              kurssi)
   VALUES (${suoritus.etunimet},
           ${suoritus.sukunimi},
+          ${suoritus.kutsumanimi},
           ${suoritus.oppijanumero},
           ${suoritus.oppilaitosOid},
           ${suoritus.email},
