@@ -142,10 +142,12 @@ class KoealustaService(
                 val suoritukset = getSuoritukset(orderBy, orderByDirection)
                 span.setAttribute("dataCount", suoritukset.count())
 
+                val organisaatiot = organisaatioService.getOrganisaatiot()
+
                 val outputStream = ByteArrayOutputStream()
                 csvParser
                     .withUseHeader(true)
-                    .streamDataAsCsv(outputStream, suoritukset.map { KielitestiSuoritusCsv.of(it) })
+                    .streamDataAsCsv(outputStream, suoritukset.map { KielitestiSuoritusCsv.of(it, organisaatiot) })
 
                 return@use outputStream
             }
