@@ -12,7 +12,7 @@ enum class Arviointitila(
 
     TARKISTUSARVIOITAVA("Suoritus tarkistusarvioitavana"),
     TARKISTUSARVIOITU("Tarkistusarviointi tehty"),
-    TARKISTUSARVIOINTI_HYVAKSYTTY("Tarkitusarviointi hyväksytty"),
+    TARKISTUSARVIOINTI_HYVAKSYTTY("Tarkistusarviointi hyväksytty"),
     ;
 
     fun arvioitu() = listOf(ARVIOITU, TARKISTUSARVIOITAVA).contains(this) || tarkistusarvioitu()
