@@ -6,7 +6,6 @@ import fi.oph.kitu.mock.VktSuoritusMockGenerator
 import fi.oph.kitu.mock.generateRandomKielitestiSuoritus
 import fi.oph.kitu.mock.generateRandomYkiArvioijaEntity
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
-import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktValidation
@@ -14,8 +13,6 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorEntity
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -36,7 +33,6 @@ class CreateMockDataController(
     private val environment: Environment,
     private val applicationContext: WebApplicationContext,
     private val suoritusRepository: YkiSuoritusRepository,
-    private val suoritusErrorRepository: YkiSuoritusErrorRepository,
     private val arvioijaRepository: YkiArvioijaRepository,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val vktSuoritusRepository: VktSuoritusRepository,
@@ -65,21 +61,6 @@ class CreateMockDataController(
                 generateRandomYkiSuoritusEntity()
             },
         )
-
-    // Yki
-    @GetMapping(
-        "/mockdata/yki/suoritus/virheet",
-        "/mockdata/yki/suoritus/virheet/{count}",
-    )
-    fun createYkiSuoritusErrorsMockData(
-        @PathVariable count: Int?,
-    ): Iterable<YkiSuoritusErrorEntity> =
-        suoritusErrorRepository
-            .saveAllNewEntities(
-                List(count ?: 3) {
-                    generateRandomYkiSuoritusErrorEntity()
-                },
-            )
 
     @GetMapping(
         "/mockdata/yki/arvioija/",

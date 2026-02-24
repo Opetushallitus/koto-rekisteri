@@ -14,25 +14,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class YkiSuoritusErrorService(
-    private val mappingService: YkiSuoritusErrorMappingService,
     private val repository: YkiSuoritusErrorRepository,
     private val auditLogger: AuditLogger,
-    private val tracer: Tracer,
 ) {
     @WithSpan
     fun countErrors(): Long = repository.count()
-
-    fun handleErrors(errors: List<CsvExportError>): Boolean =
-        tracer
-            .spanBuilder("YkiSuoritusErrorService.handleErrors")
-            .startSpan()
-            .use { span ->
-                span.setSerializationErrorToAttributes(errors)
-                repository
-                    .replaceAll(mappingService.convertToEntityIterable(errors))
-                    .also { span.setAttribute("errors.addedSize", it.count()) }
-                    .let { it.count() > 0 }
-            }
 
     @WithSpan
     fun getErrors(
