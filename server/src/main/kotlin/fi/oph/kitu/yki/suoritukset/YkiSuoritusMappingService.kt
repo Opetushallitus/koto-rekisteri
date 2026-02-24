@@ -65,8 +65,8 @@ class YkiSuoritusMappingService {
     @WithSpan
     fun convertToResponseIterable(iterable: Iterable<YkiSuoritusEntity>) = iterable.map { convertToResponse(it) }
 
-    fun convertToResponse(entity: YkiSuoritusEntity): YkiSuoritusCsv =
-        YkiSuoritusCsv(
+    fun convertToResponse(entity: YkiSuoritusEntity): YkiSuoritusCsvResponse =
+        YkiSuoritusCsvResponse(
             suorittajanOID = entity.suorittajanOID,
             hetu = entity.hetu,
             sukupuoli = entity.sukupuoli,
@@ -77,13 +77,16 @@ class YkiSuoritusMappingService {
             postinumero = entity.postinumero,
             postitoimipaikka = entity.postitoimipaikka,
             email = entity.email,
-            suoritusID = entity.solkiId,
+            solkiTunniste = entity.solkiId,
             lastModified = entity.lastModified,
             tutkintopaiva = entity.tutkintopaiva,
             tutkintokieli = entity.tutkintokieli,
             tutkintotaso = entity.tutkintotaso,
+            todistuskieli = entity.todistuskieli,
             jarjestajanOID = entity.jarjestajanTunnusOid,
             jarjestajanNimi = entity.jarjestajanNimi,
+            arviointitila = entity.arviointitila,
+            tilaLahetetty = entity.arviointitilaLahetetty?.toInstant(),
             arviointipaiva = entity.arviointipaiva,
             tekstinYmmartaminen = entity.tekstinYmmartaminen,
             kirjoittaminen = entity.kirjoittaminen,
