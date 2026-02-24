@@ -1,6 +1,7 @@
 package fi.oph.kitu.mock
 
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsvResponse
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorEntity
 import java.time.Instant
@@ -29,7 +30,7 @@ fun generateRandomYkiSuoritusErrorEntity(): YkiSuoritusErrorEntity {
     )
 }
 
-fun YkiSuoritusCsv.toCsvString(): String =
+fun YkiSuoritusCsvResponse.toCsvString(): String =
     this.suorittajanOID.toString() +
         "," +
         this.hetu +
@@ -50,7 +51,7 @@ fun YkiSuoritusCsv.toCsvString(): String =
         "," +
         this.email +
         "," +
-        this.suoritusID +
+        this.solkiTunniste +
         "," +
         this.lastModified +
         "," +
