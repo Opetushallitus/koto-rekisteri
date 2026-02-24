@@ -10,59 +10,6 @@ import org.springframework.stereotype.Service
 @Service
 class YkiSuoritusMappingService {
     @WithSpan
-    fun convertToEntityIterable(iterable: Iterable<YkiSuoritusCsv>) = iterable.map { convertToEntity(it) }
-
-    private fun convertToEntity(
-        csv: YkiSuoritusCsv,
-        id: Int? = null,
-        koskiOpiskeluoikeus: String? = null,
-    ) = YkiSuoritusEntity(
-        id,
-        csv.suorittajanOID,
-        csv.hetu,
-        csv.sukupuoli ?: Sukupuoli.E,
-        csv.sukunimi,
-        csv.etunimet,
-        csv.kansalaisuus,
-        csv.katuosoite,
-        csv.postinumero,
-        csv.postitoimipaikka,
-        csv.email,
-        csv.suoritusID,
-        csv.lastModified,
-        csv.tutkintopaiva,
-        csv.tutkintokieli,
-        csv.tutkintotaso,
-        todistuskieli = null,
-        csv.jarjestajanOID,
-        csv.jarjestajanNimi,
-        csv.arviointipaiva,
-        csv.tekstinYmmartaminen,
-        csv.kirjoittaminen,
-        csv.rakenteetJaSanasto,
-        csv.puheenYmmartaminen,
-        csv.puhuminen,
-        csv.yleisarvosana,
-        csv.tarkistusarvioinninSaapumisPvm,
-        csv.tarkistusarvioinninAsiatunnus,
-        csv.tarkistusarvioidutOsakokeet?.toInt()?.toTutkinnonOsaSet(),
-        csv.arvosanaMuuttui?.toInt()?.toTutkinnonOsaSet(),
-        csv.perustelu,
-        csv.tarkistusarvioinninKasittelyPvm,
-        tarkistusarviointiHyvaksyttyPvm = null,
-        Oid.parse(koskiOpiskeluoikeus).getOrNull(),
-        false,
-        arviointitila =
-            if (csv.tarkistusarvioinninKasittelyPvm == null) {
-                Arviointitila.ARVIOITU
-            } else {
-                Arviointitila.TARKISTUSARVIOITU
-            },
-        arviointitilaLahetetty = null,
-        arviointitilanLahetysvirhe = null,
-    )
-
-    @WithSpan
     fun convertToResponseIterable(iterable: Iterable<YkiSuoritusEntity>) = iterable.map { convertToResponse(it) }
 
     fun convertToResponse(entity: YkiSuoritusEntity): YkiSuoritusCsvResponse =
