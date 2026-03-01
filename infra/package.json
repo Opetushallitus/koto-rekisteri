@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "24.10.13",
+    "@types/node": "24.10.14",
     "aws-cdk": "2.1107.0",
     "jest": "^30.0.0",
     "prettier": "^3.3.3",
