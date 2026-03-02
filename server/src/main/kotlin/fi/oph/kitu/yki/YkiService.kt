@@ -50,6 +50,21 @@ class YkiService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
+    fun debugImportSuoritukset(from: Instant): String =
+        tracer
+            .spanBuilder("YkiService.debugImportSuoritukset")
+            .startSpan()
+            .use { span ->
+                val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
+                val response =
+                    solkiRestClient
+                        .get()
+                        .uri(url)
+                        .retrieve()
+                        .toEntity<String>()
+                response.body ?: "No body"
+            }
+
     fun importYkiSuoritukset(from: Instant): Instant =
         tracer
             .spanBuilder("YkiService.importSuoritukset")
