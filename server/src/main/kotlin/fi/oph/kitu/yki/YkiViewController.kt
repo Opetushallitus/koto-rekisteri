@@ -263,15 +263,6 @@ class YkiViewController(
         )
     }
 
-    // Väliaikainen rajapinta yki-import-ongelman selvittelyyn
-    @GetMapping("/debug/import/{date}", produces = ["text/plain"])
-    fun debugYkiImport(
-        @PathVariable date: LocalDate,
-    ): ResponseEntity<String> =
-        ResponseEntity.ok(
-            ykiService.debugImportSuoritukset(date.toInstant()),
-        )
-
     companion object {
         const val YKI_SEARCH_KEY = "YkiSearch"
     }
