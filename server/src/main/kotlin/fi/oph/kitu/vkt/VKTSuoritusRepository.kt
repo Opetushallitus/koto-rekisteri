@@ -195,7 +195,7 @@ class CustomVktSuoritusRepository {
                 JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
                 GROUP BY vkt_suoritus.id, vkt_osakoe.tutkintopaiva
             )
-            SELECT
+            SELECT DISTINCT ON (vkt_suoritus.ilmoittautumisen_id)
                 vkt_suoritus.id as suoritus_id,
                 vkt_suoritus.ilmoittautumisen_id,
                 vkt_suoritus.suorittajan_oid,
@@ -218,6 +218,7 @@ class CustomVktSuoritusRepository {
               AND osakokeet.arvioitu = true
 
             GROUP BY vkt_suoritus.id, osakokeet.tutkintopaiva
+            ORDER BY vkt_suoritus.ilmoittautumisen_id, vkt_suoritus.created_at desc
             """.trimIndent()
         return jdbcTemplate.query(query, VktSuoritusCsv.fromRow)
     }
