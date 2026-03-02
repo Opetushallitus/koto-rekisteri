@@ -9,6 +9,7 @@ import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
+import fi.oph.kitu.mock.toInstant
 import fi.oph.kitu.rewriteAttribute
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
@@ -261,6 +262,15 @@ class YkiViewController(
             ).toString(),
         )
     }
+
+    // Väliaikainen rajapinta yki-import-ongelman selvittelyyn
+    @GetMapping("/debug/import/{date}", produces = ["text/plain"])
+    fun debugYkiImport(
+        @PathVariable date: LocalDate,
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(
+            ykiService.debugImportSuoritukset(date.toInstant()),
+        )
 
     companion object {
         const val YKI_SEARCH_KEY = "YkiSearch"
