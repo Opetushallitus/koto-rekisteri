@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.IgnoreForEquality
 import fi.oph.kitu.Oid
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
@@ -20,6 +21,7 @@ import java.time.LocalDate
 @Table(name = "yki_suoritus")
 data class YkiSuoritusEntity(
     @Id
+    @IgnoreForEquality
     val id: Int?,
     val suorittajanOID: Oid,
     val hetu: String?,
@@ -33,6 +35,7 @@ data class YkiSuoritusEntity(
     val postitoimipaikka: String,
     val email: String?,
     val solkiId: Int,
+    @IgnoreForEquality
     val lastModified: Instant,
     val tutkintopaiva: LocalDate,
     @Enumerated(EnumType.STRING)

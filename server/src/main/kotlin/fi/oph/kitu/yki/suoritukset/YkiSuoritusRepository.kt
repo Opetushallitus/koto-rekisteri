@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.equalsIgnoringAnnotated
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
@@ -176,36 +177,40 @@ class YkiSuoritusRepository {
         suoritus: YkiSuoritusEntity,
         updateOnConflict: Boolean,
     ): Int? =
-        insertSuoritus(suoritus, updateOnConflict)?.let { suoritusId ->
+        if (!exists(suoritus)) {
+            insertSuoritus(suoritus, updateOnConflict)?.let { suoritusId ->
 
-            val osakokeet = suoritus.osakokeet()
-            val osakoeIds =
-                osakokeet.associate {
-                    it.tyyppi to
-                        insertOsakoe(
-                            suoritusId,
-                            it.tyyppi,
-                            it.arviointipaiva,
-                            it.arvosana,
-                        )
-                }
-
-            if (suoritus.tarkistusarvioinninAsiatunnus != null && suoritus.tarkistusarvioinninSaapumisPvm != null) {
-                suoritus.tarkistusarvioidutOsakokeet?.let {
-                    val tarkistusarviointiId = insertTarkistusarviointi(suoritus)
-                    suoritus.tarkistusarvioidutOsakokeet.forEach { osakoe ->
-                        osakoeIds[osakoe]?.let { osakoeId ->
-                            insertOsakoeTarkistusarviointiJoin(
-                                osakoeId,
-                                tarkistusarviointiId,
-                                suoritus.arvosanaMuuttui?.contains(osakoe),
+                val osakokeet = suoritus.osakokeet()
+                val osakoeIds =
+                    osakokeet.associate {
+                        it.tyyppi to
+                            insertOsakoe(
+                                suoritusId,
+                                it.tyyppi,
+                                it.arviointipaiva,
+                                it.arvosana,
                             )
+                    }
+
+                if (suoritus.tarkistusarvioinninAsiatunnus != null && suoritus.tarkistusarvioinninSaapumisPvm != null) {
+                    suoritus.tarkistusarvioidutOsakokeet?.let {
+                        val tarkistusarviointiId = insertTarkistusarviointi(suoritus)
+                        suoritus.tarkistusarvioidutOsakokeet.forEach { osakoe ->
+                            osakoeIds[osakoe]?.let { osakoeId ->
+                                insertOsakoeTarkistusarviointiJoin(
+                                    osakoeId,
+                                    tarkistusarviointiId,
+                                    suoritus.arvosanaMuuttui?.contains(osakoe),
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            suoritusId
+                suoritusId
+            }
+        } else {
+            null
         }
 
     fun findAll(): List<YkiSuoritusEntity> =
@@ -407,6 +412,11 @@ class YkiSuoritusRepository {
                 .queryForList(sql, T::class.java, *values.values.toTypedArray())
                 .firstOrNull()
         }
+    }
+
+    fun exists(yki: YkiSuoritusEntity): Boolean {
+        val existing = findLatestBySolkiIds(listOf(yki.solkiId))
+        return existing.isNotEmpty() && existing.first().equalsIgnoringAnnotated(yki)
     }
 }
 
