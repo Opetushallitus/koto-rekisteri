@@ -188,4 +188,47 @@ class ValidationServiceTest(
             result,
         )
     }
+
+    @Test
+    fun `YKI-suoritusta ilman todistuskieltä ei voi siirtää tutkintotilaisuuksista huhtikuusta 2026 alkaen`() {
+        val suoritus =
+            validiYkiSuoritus.copy(
+                henkilo = validiYkiSuoritus.henkilo.copy(hetu = null),
+                suoritus =
+                    validiYkiSuoritus.suoritus.copy(
+                        tutkintopaiva = LocalDate.of(2026, 4, 1),
+                        arviointipaiva = LocalDate.of(2026, 4, 2),
+                        todistuskieli = null,
+                    ),
+            )
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            Validation.fail(
+                listOf("suoritus", "todistuskieli"),
+                "Todistuskieli on pakollinen 1.4.2026 alkaen",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `YKI-suorituksen ilman todistuskieltä voi siirtää jos tutkintopäivä on ennen huhtikuuta 2026`() {
+        val suoritus =
+            validiYkiSuoritus.copy(
+                henkilo = validiYkiSuoritus.henkilo.copy(hetu = null),
+                suoritus =
+                    validiYkiSuoritus.suoritus.copy(
+                        tutkintopaiva = LocalDate.of(2026, 3, 31),
+                        arviointipaiva = LocalDate.of(2026, 4, 1),
+                        todistuskieli = null,
+                    ),
+            )
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            Validation.ok(suoritus),
+            result,
+        )
+    }
 }
