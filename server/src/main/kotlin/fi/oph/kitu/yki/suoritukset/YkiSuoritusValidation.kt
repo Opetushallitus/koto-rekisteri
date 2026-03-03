@@ -17,6 +17,8 @@ class YkiSuoritusValidation(
     val organisaatiot: OrganisaatioService,
     @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
+    @param:Value("\${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
+    val todistuskielenSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
     override fun validationBeforeEnrichment(value: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
         Validation.fold(
@@ -26,7 +28,18 @@ class YkiSuoritusValidation(
             { validateArvointitila(it) },
             { validateTarkistusarviointi(it) },
             { validateKielikoodi(it) },
+            { validateTodistuskieli(it) },
         )
+
+    fun validateTodistuskieli(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
+        if (s.suoritus.tutkintopaiva.isBefore(todistuskielenSiirronRajapaiva) || s.suoritus.todistuskieli != null) {
+            Validation.ok(s)
+        } else {
+            Validation.fail(
+                listOf("suoritus", "todistuskieli"),
+                "Todistuskieli on pakollinen ${todistuskielenSiirronRajapaiva.finnishDate()} alkaen",
+            )
+        }
 
     fun validateHetu(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
         if (s.suoritus.tutkintopaiva.isBefore(hetunSiirronRajapaiva) || s.henkilo.hetu == null) {
