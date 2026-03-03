@@ -70,7 +70,7 @@ class YkiService(
             .spanBuilder("YkiService.importSuoritukset")
             .startSpan()
             .use { span ->
-
+                val startTime = Instant.now()
                 val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
 
                 val response =
@@ -86,7 +86,6 @@ class YkiService(
                         .splitIntoValuesAndErrors()
 
                 val hasErrors = suoritusErrorService.handleErrors(errors)
-                val nextSince = suoritusErrorService.findNextSearchRange(suoritukset, errors, from)
 
                 span.setAttribute("yki.suoritukset.receivedCount", suoritukset.size.toLong())
 
@@ -105,7 +104,7 @@ class YkiService(
                     throw Error.CsvConversionError("importYkiSuoritukset", errors)
                 }
 
-                return@use nextSince
+                return@use startTime.minusSeconds(60 * 5)
             }
 
     fun importYkiArvioijat() =

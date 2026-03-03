@@ -27,6 +27,8 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
+import org.apache.commons.lang3.Validate.matchesPattern
+import org.hamcrest.Matchers.matchesPattern
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -115,7 +117,6 @@ class YkiServiceTests(
         assertEquals(0, errors.count())
 
         val spans = inMemorySpanExporter.finishedSpanItems
-        assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.findNextSearchRange" })
         assertNotNull(spans.find { it.name == "YkiSuoritusRepository.saveAllNewEntities" })
         assertNotNull(spans.find { it.name == "YkiSuoritusErrorService.handleErrors" })
         assertNotNull(spans.find { it.name == "CsvParser.convertCsvToData" })
@@ -218,7 +219,7 @@ class YkiServiceTests(
 
         mockServer.reset()
         mockServer
-            .expect(requestTo("suoritukset?m=2024-11-14T10:36:31Z"))
+            .expect(requestTo(matchesPattern("suoritukset\\?m=.+")))
             .andRespond(
                 withSuccess(
                     """
@@ -421,13 +422,9 @@ class YkiServiceTests(
         // the same value will be used in the next import (even if the run is on a different day)
 
         // Now the date will be updated, because no error is thrown.
-        val sinceWithOk =
-            assertDoesNotThrow {
-                ykiService.importYkiSuoritukset(since)
-            }
-
-        // Verify datetime is correct
-        assertEquals(sinceWithOk, Instant.parse("2024-10-30T13:55:47Z"))
+        assertDoesNotThrow {
+            ykiService.importYkiSuoritukset(since)
+        }
 
         // Verify all data is now saved
         assertEquals(3, ykiSuoritusRepository.findAll().count())

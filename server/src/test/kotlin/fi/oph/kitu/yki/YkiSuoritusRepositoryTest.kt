@@ -43,7 +43,7 @@ class YkiSuoritusRepositoryTest(
         ykiSuoritusRepository.saveAllNewEntities(listOf(initialSuoritus)).toList()
         val updatedSuoritus =
             initialSuoritus.copy(
-                sukupuoli = Sukupuoli.E,
+                tutkintopaiva = initialSuoritus.tutkintopaiva.plusDays(1),
                 lastModified = Instant.parse("2025-01-02T13:53:56Z"),
             )
         val savedSuoritukset = ykiSuoritusRepository.saveAllNewEntities(listOf(initialSuoritus, updatedSuoritus))

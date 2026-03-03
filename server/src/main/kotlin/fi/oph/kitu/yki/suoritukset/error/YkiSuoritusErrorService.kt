@@ -37,18 +37,6 @@ class YkiSuoritusErrorService(
             }
 
     @WithSpan
-    fun findNextSearchRange(
-        suoritukset: List<YkiSuoritusCsv>,
-        errors: List<CsvExportError>,
-        from: Instant,
-    ): Instant =
-        if (errors.isEmpty()) {
-            suoritukset.maxOfOrNull { it.lastModified } ?: from
-        } else {
-            from
-        }
-
-    @WithSpan
     fun getErrors(
         orderBy: YkiSuoritusErrorColumn = YkiSuoritusErrorColumn.VirheenLuontiaika,
         orderByDirection: SortDirection = SortDirection.ASC,
