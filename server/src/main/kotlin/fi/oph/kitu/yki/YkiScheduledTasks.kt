@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProp
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.Instant
+import kotlin.time.Duration.Companion.days
 
 @Configuration
 @ConditionalOnBooleanProperty(name = ["kitu.yki.scheduling.enabled"])
@@ -19,6 +20,9 @@ class YkiScheduledTasks(
 ) {
     @Value("\${kitu.yki.scheduling.import.schedule}")
     lateinit var ykiImportSchedule: String
+
+    @Value("\${kitu.yki.scheduling.largeImport.schedule}")
+    lateinit var ykiMonthlyImportSchedule: String
 
     @Value("\${kitu.yki.scheduling.importArvioijat.schedule}")
     lateinit var ykiImportArvioijatSchedule: String
@@ -36,6 +40,22 @@ class YkiScheduledTasks(
                     .use { span ->
                         span.setAttribute("task.name", "YKI-import")
                         ykiService.importYkiSuoritukset(taskInstance.data)
+                    }
+            }
+
+    @WithSpan
+    @Bean
+    fun monthlyImport(ykiService: YkiService): Task<Void> =
+        Tasks
+            .recurring("YKI-large-import", ExtendedSchedules.parse(ykiMonthlyImportSchedule))
+            .executeStateful { _, _ ->
+                tracer
+                    .spanBuilder("YkiScheduledTasks.monthlyImport.tasks.executeStateful")
+                    .startSpan()
+                    .use { span ->
+                        span.setAttribute("task.name", "YKI-large-import")
+                        ykiService.importYkiSuoritukset(Instant.now().minusSeconds(365.days.inWholeSeconds))
+                        null
                     }
             }
 
