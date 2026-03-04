@@ -6,9 +6,12 @@ import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa.Companion.toTutkinnonOsaSet
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 @Service
-class YkiSuoritusMappingService {
+class YkiSuoritusMappingService(
+    val ykiSuoritusRepository: YkiSuoritusRepository?,
+) {
     @WithSpan
     fun convertToEntityIterable(iterable: Iterable<YkiSuoritusCsv>) = iterable.map { convertToEntity(it) }
 
@@ -53,10 +56,23 @@ class YkiSuoritusMappingService {
         Oid.parse(koskiOpiskeluoikeus).getOrNull(),
         false,
         arviointitila =
-            if (csv.tarkistusarvioinninKasittelyPvm == null) {
+            if (csv.arviointipaiva == null) {
+                Arviointitila.ARVIOITAVA
+            } else if (csv.tarkistusarvioinninAsiatunnus == null || csv.tarkistusarvioinninAsiatunnus.isEmpty()) {
                 Arviointitila.ARVIOITU
+            } else if (csv.tarkistusarvioinninKasittelyPvm == null) {
+                Arviointitila.TARKISTUSARVIOITAVA
             } else {
-                Arviointitila.TARKISTUSARVIOITU
+                if (csv.tarkistusarvioinninKasittelyPvm < LocalDate.of(2025, 11, 14) ||
+                    ykiSuoritusRepository?.tarkistusarvointiHyvaksytty(csv.suoritusID) == true
+                ) {
+                    // Vanhat tarkistusarvioinnit on hyväksytty prosessilla, joka oli käytössä ennen kuin
+                    // Kielitutkintorekisteriin rakennettiin sitä varten toiminnallisuus, joten ne hyväksytään
+                    // rekisteriin automaattisesti.
+                    Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY
+                } else {
+                    Arviointitila.TARKISTUSARVIOITU
+                }
             },
         arviointitilaLahetetty = null,
         arviointitilanLahetysvirhe = null,
