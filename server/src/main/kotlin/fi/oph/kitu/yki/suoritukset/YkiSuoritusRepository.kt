@@ -418,6 +418,19 @@ class YkiSuoritusRepository {
         val existing = findLatestBySolkiIds(listOf(yki.solkiId))
         return existing.isNotEmpty() && existing.first().equalsIgnoringAnnotated(yki)
     }
+
+    fun tarkistusarvointiHyvaksytty(solkiId: Int): Boolean =
+        jdbcTemplate.queryForObject(
+            """
+            SELECT EXISTS (
+                SELECT tarkistusarviointi_hyvaksytty_pvm IS NOT NULL
+                FROM yki_suoritus_lisatieto
+                WHERE solki_id = ?
+            )
+            """.trimIndent(),
+            Boolean::class.java,
+            solkiId,
+        ) ?: false
 }
 
 object YkiSuoritusSql {

@@ -6,6 +6,7 @@ import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
+import fi.oph.kitu.splitIntoValuesAndErrors
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
@@ -18,6 +19,7 @@ import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
 import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -95,7 +97,7 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
-                suoritusMapper = YkiSuoritusMappingService(),
+                suoritusMapper = YkiSuoritusMappingService(ykiSuoritusRepository),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
@@ -154,7 +156,7 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
-                suoritusMapper = YkiSuoritusMappingService(),
+                suoritusMapper = YkiSuoritusMappingService(ykiSuoritusRepository),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
@@ -199,7 +201,7 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
-                suoritusMapper = YkiSuoritusMappingService(),
+                suoritusMapper = YkiSuoritusMappingService(ykiSuoritusRepository),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
@@ -256,7 +258,7 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
-                suoritusMapper = YkiSuoritusMappingService(),
+                suoritusMapper = YkiSuoritusMappingService(ykiSuoritusRepository),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
@@ -319,7 +321,7 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
-                suoritusMapper = YkiSuoritusMappingService(),
+                suoritusMapper = YkiSuoritusMappingService(ykiSuoritusRepository),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
@@ -399,7 +401,7 @@ class YkiServiceTests(
             YkiService(
                 solkiRestClient = mockRestClientBuilder.build(),
                 suoritusRepository = ykiSuoritusRepository,
-                suoritusMapper = YkiSuoritusMappingService(),
+                suoritusMapper = YkiSuoritusMappingService(ykiSuoritusRepository),
                 arvioijaRepository = ykiArvioijaRepository,
                 arvioijaMapper = YkiArvioijaMappingService(),
                 suoritusErrorService = ykiSuoritusErrorService,
@@ -514,5 +516,33 @@ class YkiServiceTests(
 
         val suoritushistory = ykiSuoritusRepository.find(searchBy = oppijanumero, distinct = false)
         assertEquals(1, suoritushistory.count())
+    }
+
+    @Test
+    fun `Arvointitila is updated correctly also on csv update`() {
+        val expected =
+            mapOf(
+                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",,,,,,,,,,0,0,,"""
+                    to Arviointitila.ARVIOITAVA,
+                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,"""
+                    to Arviointitila.ARVIOITU,
+                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,OPH-67,0,0,,"""
+                    to Arviointitila.TARKISTUSARVIOITAVA,
+                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,OPH-67,0,0,,2025-01-01"""
+                    to Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
+                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,OPH-67,0,0,,2026-01-01"""
+                    to Arviointitila.TARKISTUSARVIOITU,
+            ).mapKeys { (csv, _) ->
+                parser
+                    .convertCsvToData<YkiSuoritusCsv>(csv)
+                    .splitIntoValuesAndErrors()
+                    .first
+            }
+
+        val mapper = YkiSuoritusMappingService(ykiSuoritusRepository)
+        expected.forEach { (csv, expectedTila) ->
+            val entity = mapper.convertToEntityIterable(csv).first()
+            assertEquals(expectedTila, entity.arviointitila)
+        }
     }
 }
