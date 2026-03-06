@@ -105,10 +105,10 @@ class KoealustaService(
             val savedSuoritukset =
                 suoritukset
                     .mapNotNull {
-                        try {
+                        if (!customKielitestiSuoritusRepository.exists(it)) {
                             kielitestiSuoritusRepository.save(it)
-                        } catch (error: DbActionExecutionException) {
-                            if (error.cause is DuplicateKeyException) null else throw error
+                        } else {
+                            null
                         }
                     }.also {
                         auditLogger.logAllInternalOnly("Kielitesti suoritus imported", it) { suoritus ->

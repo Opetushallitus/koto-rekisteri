@@ -1,11 +1,13 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.equalsIgnoringAnnotated
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import java.sql.Timestamp
 
 @Repository
 interface KielitestiSuoritusRepository :
@@ -27,7 +29,10 @@ class CustomKielitestiSuoritusRepository {
 
         val sql =
             """
-            SELECT * FROM koto_suoritus
+            SELECT * from (
+                SELECT DISTINCT ON (kurssi_id, oppijanumero, suoritusaika) * FROM koto_suoritus
+                ORDER BY kurssi_id, oppijanumero, suoritusaika, last_modified DESC
+                )
             $searchQuery
             ORDER BY ${column.entityName} $direction
             """.trimIndent()
@@ -58,4 +63,27 @@ class CustomKielitestiSuoritusRepository {
                     """.trimIndent()
                 }.joinToString(" OR ", "WHERE ")
         }
+
+    fun exists(suoritus: KielitestiSuoritus): Boolean {
+        val existing = findLatestSuoritusVersion(suoritus) ?: return false
+        return existing.equalsIgnoringAnnotated(suoritus)
+    }
+
+    private fun findLatestSuoritusVersion(suoritus: KielitestiSuoritus): KielitestiSuoritus? {
+        val sql =
+            """
+            SELECT DISTINCT ON (kurssi_id, oppijanumero, suoritusaika) * FROM koto_suoritus
+            WHERE kurssi_id = :kurssiId
+            AND oppijanumero = :oppijanumero
+            AND suoritusaika = :suoritusaika
+            ORDER BY kurssi_id, oppijanumero, suoritusaika, last_modified DESC
+            """.trimIndent()
+        val paramMap =
+            mapOf(
+                "kurssiId" to suoritus.kurssiId,
+                "oppijanumero" to suoritus.oppijanumero.toString(),
+                "suoritusaika" to Timestamp.from(suoritus.suoritusaika),
+            )
+        return jdbcNamedParameterTemplate.query(sql, paramMap, KielitestiSuoritus.fromRow).firstOrNull()
+    }
 }

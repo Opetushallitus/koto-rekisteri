@@ -1,5 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
+import fi.oph.kitu.IgnoreForEquality
 import fi.oph.kitu.Oid
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
@@ -9,6 +10,7 @@ import java.time.Instant
 @Table("koto_suoritus")
 data class KielitestiSuoritus(
     @Id
+    @IgnoreForEquality
     val id: Int? = null,
     val etunimet: String,
     val sukunimi: String,
@@ -24,6 +26,8 @@ data class KielitestiSuoritus(
     val kuullunYmmartaminen: String,
     val puhe: String,
     val kirjoittaminen: String?,
+    @IgnoreForEquality
+    val lastModified: Instant = Instant.now(),
 ) {
     companion object {
         val fromRow: RowMapper<KielitestiSuoritus> =
@@ -44,6 +48,7 @@ data class KielitestiSuoritus(
                     kuullunYmmartaminen = rs.getString("kuullun_ymmartaminen"),
                     puhe = rs.getString("puhe"),
                     kirjoittaminen = rs.getString("kirjoittaminen"),
+                    lastModified = rs.getTimestamp("last_modified").toInstant(),
                 )
             }
     }

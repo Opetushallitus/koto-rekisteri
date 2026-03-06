@@ -30,7 +30,7 @@ class KoealustaServiceTests(
               "userid": 1,
               "firstnames": "Ranja Testi",
               "lastname": "Öhman-Testi",
-              "preferredname": "Ranja", 
+              "preferredname": "Ranja",
               "SSN": "010180-9026",
               "email": "ranja.testi@oph.fi",
               "completions": [
@@ -971,5 +971,138 @@ class KoealustaServiceTests(
             fun () = assertEquals("Yli B1", suoritus.puhe),
             fun () = assertEquals("Yli B1", suoritus.kirjoittaminen),
         )
+    }
+
+    @Test
+    fun `duplicate suoritus is not saved`(
+        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        mockServer
+            .expect(
+                ExpectedCount.times(2),
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$validSuoritus]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        // System under test
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        koealustaService.importSuoritukset(Instant.EPOCH)
+        koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        mockServer.verify()
+
+        val suoritukset = kielitestiSuoritusRepository.findAll()
+        assertEquals(1, suoritukset.count())
+    }
+
+    @Test
+    fun `updated suoritus is saved`(
+        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        val updatedSuoritus =
+            """
+            {
+                  "userid": 1,
+                  "firstnames": "Ranja Testi",
+                  "lastname": "Öhman-Testi",
+                  "preferredname": "Ranja",
+                  "SSN": "010180-9026",
+                  "email": "ranja.testi@oph.fi",
+                  "completions": [
+                    {
+                      "courseid": 32,
+                      "coursename": "Integraatio testaus",
+                      "schoolOID": "1.2.246.562.10.1234567890",
+                      "results": [
+                        {
+                          "name": "luetun ymm\u00e4rt\u00e4minen",
+                          "quiz_grade": "B1"
+                        },
+                        {
+                          "name": "kuullun ymm\u00e4rt\u00e4minen",
+                          "quiz_grade": "B1"
+                        },
+                        {
+                          "name": "puhuminen",
+                          "quiz_grade": "A1"
+                        },
+                        {
+                          "name": "kirjoittaminen",
+                          "quiz_grade": "A1"
+                        }
+                      ],
+                      "timecompleted": 1728969131,
+                      "teacheremail": "opettaja@testi.oph.fi"
+                    }
+                  ]
+            }
+            """.trimIndent()
+        // Facade
+        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$validSuoritus]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        // System under test
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        val importFrom = koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        mockServer.verify()
+
+        mockServer.reset()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=${importFrom.epochSecond}",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$updatedSuoritus]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.importSuoritukset(importFrom)
+        mockServer.verify()
+        val suoritukset = kielitestiSuoritusRepository.findAll()
+        assertEquals(2, suoritukset.count())
     }
 }

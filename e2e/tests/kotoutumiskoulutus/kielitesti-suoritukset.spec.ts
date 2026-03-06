@@ -50,12 +50,12 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
   }) => {
     await kielitestiSuorituksetPage.open()
 
-    const anniina = kotoSuoritus.fixtureData.anniina
     const magdalena = kotoSuoritus.fixtureData.magdalena
+    const toni = kotoSuoritus.fixtureData.toni
 
     const firstSuoritus = kielitestiSuorituksetPage.getSuoritusRow().nth(0)
     await expect(firstSuoritus).toBeVisible()
-    await expect(firstSuoritus).toContainText(anniina.etunimet)
+    await expect(firstSuoritus).toContainText(toni.etunimet)
 
     const thirdSuoritus = kielitestiSuorituksetPage.getSuoritusRow().nth(2)
     await expect(thirdSuoritus).toBeVisible()
