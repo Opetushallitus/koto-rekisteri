@@ -15,6 +15,7 @@ export interface YkiSuoritus {
   katuosoite: string
   postinumero: string
   postitoimipaikka: string
+  maa: string | null
   email: string
   suoritusId: number
   lastModified: string
@@ -51,6 +52,7 @@ type CreateYkiSuoritusArgs = Omit<
   | "katuosoite"
   | "postinumero"
   | "postitoimipaikka"
+  | "maa"
 >
 
 const createYkiSuoritus = (
@@ -92,6 +94,7 @@ const createYkiSuoritus = (
     katuosoite: p.osoite.katuosoite,
     postinumero: p.osoite.postinumero,
     postitoimipaikka: p.osoite.postitoimipaikka,
+    maa: p.osoite.maa,
 
     kansalaisuus,
 
@@ -304,6 +307,7 @@ export const insert = async (
       katuosoite: data.katuosoite,
       postinumero: data.postinumero,
       postitoimipaikka: data.postitoimipaikka,
+      maa: data.maa,
       email: data.email,
     },
     suoritus: {

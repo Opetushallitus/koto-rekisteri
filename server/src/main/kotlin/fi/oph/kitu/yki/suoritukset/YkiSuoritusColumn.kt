@@ -62,7 +62,7 @@ enum class YkiSuoritusColumn(
         entityName = "katuosoite",
         uiHeaderValue = "Osoite",
         urlParam = "katuosoite",
-        renderValue = { +"${it.katuosoite}, ${it.postinumero} ${it.postitoimipaikka}" },
+        renderValue = { +osoite(it.katuosoite, it.postinumero, it.postitoimipaikka, it.maa) },
     ),
 
     Email(
@@ -183,6 +183,19 @@ enum class YkiSuoritusColumn(
         urlParam = "arviointitilalahetetty",
         renderValue = { +(it.arviointitilanLahetysvirhe ?: it.arviointitilaLahetetty?.toString() ?: "") },
     ),
+}
+
+fun osoite(
+    katuosoite: String,
+    postinumero: String,
+    postitoimipaikka: String,
+    maa: String?,
+) = if (maa ==
+    null
+) {
+    "$katuosoite, $postinumero $postitoimipaikka"
+} else {
+    "$katuosoite, $postinumero $postitoimipaikka, $maa"
 }
 
 fun FlowContent.ykiArvosana(

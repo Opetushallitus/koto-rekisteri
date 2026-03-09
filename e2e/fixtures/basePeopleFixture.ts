@@ -7,6 +7,7 @@ export type Adress = {
   katuosoite: string
   postinumero: string
   postitoimipaikka: string
+  maa: string | null
 }
 
 export type Person = {
@@ -55,6 +56,7 @@ export const peopleFixture = {
       katuosoite: "Testikuja 5",
       postinumero: "40100",
       postitoimipaikka: "Testilä",
+      maa: "FIN",
     },
   }),
   fanni: createPerson({
@@ -68,6 +70,7 @@ export const peopleFixture = {
       katuosoite: "Testikatu 1",
       postinumero: "40400",
       postitoimipaikka: "Testaamo",
+      maa: null,
     },
   }),
   eino: createPerson({
@@ -81,6 +84,7 @@ export const peopleFixture = {
       katuosoite: "Testinmutka 126",
       postinumero: "40300",
       postitoimipaikka: "Testilä",
+      maa: null,
     },
   }),
   petro: createPerson({
@@ -94,6 +98,7 @@ export const peopleFixture = {
       katuosoite: "Testikuja 10",
       postinumero: "40200",
       postitoimipaikka: "Testinsuu",
+      maa: null,
     },
   }),
   pernilla: createPerson({
@@ -107,6 +112,7 @@ export const peopleFixture = {
       katuosoite: "Testikuja 32",
       postitoimipaikka: "40500",
       postinumero: "Testilä",
+      maa: null,
     },
   }),
   kalervo: createPerson({
@@ -120,6 +126,7 @@ export const peopleFixture = {
       katuosoite: "Testi 1",
       postinumero: "40800",
       postitoimipaikka: "Testaamo",
+      maa: null,
     },
   }),
   toni: createPerson({
@@ -133,6 +140,7 @@ export const peopleFixture = {
       katuosoite: "Testi 2",
       postinumero: "40800",
       postitoimipaikka: "Testaamo",
+      maa: null,
     },
   }),
   amalia: createPerson({
@@ -146,6 +154,7 @@ export const peopleFixture = {
       katuosoite: "Testikuja 25",
       postinumero: "40300",
       postitoimipaikka: "Koestamo",
+      maa: null,
     },
   }),
   topi: createPerson({
@@ -159,6 +168,7 @@ export const peopleFixture = {
       katuosoite: "Testitie 12",
       postinumero: "40300",
       postitoimipaikka: "Koestamo",
+      maa: null,
     },
   }),
   tobias: createPerson({
@@ -172,6 +182,7 @@ export const peopleFixture = {
       katuosoite: "Testikuja 1",
       postinumero: "40300",
       postitoimipaikka: "Testaamo",
+      maa: null,
     },
   }),
   silja: createPerson({
@@ -185,6 +196,7 @@ export const peopleFixture = {
       katuosoite: "Testikuja 5",
       postinumero: "40100",
       postitoimipaikka: "Testilä",
+      maa: null,
     },
   }),
   anniina: createPerson({
@@ -197,6 +209,7 @@ export const peopleFixture = {
     osoite: {
       katuosoite: "Testintie 123",
       postinumero: "40700",
+      maa: null,
       postitoimipaikka: "Testijärvi",
     },
   }),
@@ -211,6 +224,7 @@ export const peopleFixture = {
       katuosoite: "Testikoto 10",
       postinumero: "40300",
       postitoimipaikka: "Koestamo",
+      maa: null,
     },
   }),
 } as const
