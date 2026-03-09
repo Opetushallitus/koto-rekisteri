@@ -553,4 +553,66 @@ class YkiServiceTests(
             assertEquals(expectedTila, entity.arviointitila)
         }
     }
+
+    @Test
+    fun `YKI anomaly check works`() {
+        // Arrange
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("suoritukset?m=1970-01-01T00:00:00Z"))
+            .andRespond(
+                withSuccess(
+                    """
+                    "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+                    "1.2.246.562.24.59267607404","010116A9518","M","Kivinen-Testi","Petro Testi","EST","Testikuja 10","40100","Testinsuu","testi.petro@testi.fi",183425,2024-10-30T13:55:09Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-10-30,6,6,,6,6,,,,0,0,,
+                    "1.2.246.562.24.74064782358","010100A9846","N","Vesala-Testi","Fanni Testi","EST","Testitie 23","40100","Testinsuu","testi.fanni@testi.fi",183426,2024-10-30T13:55:47Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-10-30,4,4,,4,4,,,,0,0,,
+                    """.trimIndent(),
+                    MediaType.TEXT_PLAIN,
+                ),
+            )
+
+        mockServer
+            .expect(requestTo("suoritukset?m=1970-01-01T00:00:00Z"))
+            .andRespond(
+                withSuccess(
+                    """
+                    "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Banjo Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,4,,,,0,0,,
+                    "1.2.246.562.24.59267607404","010116A9518","M","Kivinen-Testi","Petro Testi","EST","Testikuja 10","40100","Testinsuu","testi.petro@testi.fi",183425,2024-10-30T13:55:09Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-10-30,6,6,,6,6,,,,0,0,,
+                    "1.2.246.562.24.74064782358","010100A9846","N","Vesala-Testi","Fanni Testi","EST","Testitie 23","40100","Testinsuu","testi.fanni@testi.fi",183426,2024-10-30T13:55:47Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-10-30,4,4,,4,4,,,,0,0,,
+                    """.trimIndent(),
+                    MediaType.TEXT_PLAIN,
+                ),
+            )
+
+        // System under test
+        val ykiService =
+            YkiService(
+                solkiRestClient = mockRestClientBuilder.build(),
+                suoritusRepository = ykiSuoritusRepository,
+                suoritusMapper = YkiSuoritusMappingService(ykiSuoritusRepository),
+                arvioijaRepository = ykiArvioijaRepository,
+                arvioijaMapper = YkiArvioijaMappingService(),
+                suoritusErrorService = ykiSuoritusErrorService,
+                auditLogger = auditLogger,
+                parser = parser,
+                tracer = tracer,
+                arvioijaErrorService = ykiArvioijaErrorService,
+                ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
+                suoritusPoikkeamaRepository = suoritusPoikkeamaRepository,
+            )
+
+        // Act
+        ykiService.importYkiSuoritukset(Instant.EPOCH)
+        ykiService.importYkiSuoritukset(Instant.EPOCH, reportOnly = true)
+        val poikkeamat = suoritusPoikkeamaRepository.findAll().map { it.toString() }
+
+        // Assert
+        assertEquals(
+            listOf(
+                "183424.etunimet: Solki 'Ranja Testi', Kitu 'Banjo Testi'",
+                "183424.puhuminen: Solki '5', Kitu '4'",
+            ),
+            poikkeamat,
+        )
+    }
 }
