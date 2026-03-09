@@ -22,6 +22,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkastusarviointi
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
@@ -65,6 +66,7 @@ class YkiServiceTests(
     @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
     @param:Autowired private val postgres: PostgreSQLContainer<*>,
     @param:Autowired private val ilmoittautumisjarjestelmaService: IlmoittautumisjarjestelmaService,
+    @param:Autowired private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     @Autowired private val ykiService: YkiService,
 ) {
     @BeforeEach
@@ -106,6 +108,7 @@ class YkiServiceTests(
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
                 ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
+                suoritusPoikkeamaRepository = suoritusPoikkeamaRepository,
             )
 
         // Act
@@ -165,6 +168,7 @@ class YkiServiceTests(
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
                 ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
+                suoritusPoikkeamaRepository = suoritusPoikkeamaRepository,
             )
 
         // Act
@@ -210,6 +214,7 @@ class YkiServiceTests(
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
                 ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
+                suoritusPoikkeamaRepository = suoritusPoikkeamaRepository,
             )
 
         // Act
@@ -267,6 +272,7 @@ class YkiServiceTests(
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
                 ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
+                suoritusPoikkeamaRepository = suoritusPoikkeamaRepository,
             )
 
         assertDoesNotThrow {
@@ -330,6 +336,7 @@ class YkiServiceTests(
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
                 ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
+                suoritusPoikkeamaRepository = suoritusPoikkeamaRepository,
             )
 
         assertDoesNotThrow {
@@ -410,6 +417,7 @@ class YkiServiceTests(
                 tracer = tracer,
                 arvioijaErrorService = ykiArvioijaErrorService,
                 ilmoittautumisjarjestelma = ilmoittautumisjarjestelmaService,
+                suoritusPoikkeamaRepository = suoritusPoikkeamaRepository,
             )
 
         assertThrows<YkiService.Error.CsvConversionError> {

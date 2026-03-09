@@ -4,6 +4,8 @@ import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.findDifferentProperties
+import fi.oph.kitu.ignoreEmptyValues
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
@@ -19,6 +21,8 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import io.opentelemetry.api.trace.Tracer
@@ -44,6 +48,7 @@ class YkiService(
     private val arvioijaMapper: YkiArvioijaMappingService,
     private val arvioijaErrorService: YkiArvioijaErrorService,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
+    private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val auditLogger: AuditLogger,
     private val parser: CsvParser,
     private val tracer: Tracer,
@@ -65,7 +70,10 @@ class YkiService(
                 response.body ?: "No body"
             }
 
-    fun importYkiSuoritukset(from: Instant): Instant =
+    fun importYkiSuoritukset(
+        from: Instant,
+        reportOnly: Boolean = false,
+    ): Instant =
         tracer
             .spanBuilder("YkiService.importSuoritukset")
             .startSpan()
@@ -89,15 +97,44 @@ class YkiService(
 
                 span.setAttribute("yki.suoritukset.receivedCount", suoritukset.size.toLong())
 
-                val saved = suoritusRepository.saveAllNewEntities(suoritusMapper.convertToEntityIterable(suoritukset))
-                ilmoittautumisjarjestelma.sendAllUpdatedArvioinninTilat()
+                val entities = suoritusMapper.convertToEntityIterable(suoritukset)
 
-                span.setAttribute("importedSuorituksetSize", saved.count().toLong())
-                auditLogger.logAllInternalOnly("YKI suoritus imported", saved) { suoritus ->
-                    arrayOf(
-                        "principal" to "yki.importSuoritukset",
-                        "suoritus.id" to suoritus.solkiId,
-                    )
+                if (reportOnly) {
+                    suoritusPoikkeamaRepository.deleteAll()
+                    entities.forEach { entity ->
+                        suoritusRepository
+                            .findLatestBySolkiIds(listOf(entity.solkiId))
+                            .firstOrNull()
+                            ?.let { existing ->
+                                val diff =
+                                    entity
+                                        .findDifferentProperties(existing)
+                                        .ignoreEmptyValues()
+                                val time = Instant.now()
+                                diff.forEach { (key, value) ->
+                                    suoritusPoikkeamaRepository.save(
+                                        YkiSuoritusPoikkeama(
+                                            solkiId = entity.solkiId,
+                                            kentta = key,
+                                            arvoKitussa = value.first.toString(),
+                                            arvoSolkissa = value.second.toString(),
+                                            havaittu = time,
+                                        ),
+                                    )
+                                }
+                            }
+                    }
+                } else {
+                    val saved = suoritusRepository.saveAllNewEntities(entities)
+                    ilmoittautumisjarjestelma.sendAllUpdatedArvioinninTilat()
+
+                    span.setAttribute("importedSuorituksetSize", saved.count().toLong())
+                    auditLogger.logAllInternalOnly("YKI suoritus imported", saved) { suoritus ->
+                        arrayOf(
+                            "principal" to "yki.importSuoritukset",
+                            "suoritus.id" to suoritus.solkiId,
+                        )
+                    }
                 }
 
                 if (hasErrors) {
