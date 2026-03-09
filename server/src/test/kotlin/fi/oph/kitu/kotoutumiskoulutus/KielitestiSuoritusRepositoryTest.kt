@@ -68,21 +68,21 @@ class KielitestiSuoritusRepositoryTest(
     fun `Kielitesti suoritusten haku etunimellä`() {
         val result = customKielitestiSuoritusRepository.findSuoritukset("ranja")
         assertEquals(1, result.size)
-        assertTrue(suoritusRaija.equalsIgnoringAnnotated(result.first()))
+        assertTrue(suoritusRaija.equalsIgnoringAnnotated(result.first(), "KOTO"))
     }
 
     @Test
     fun `Kielitestisuoritusten haku etu- ja sukunimellä`() {
         val result = customKielitestiSuoritusRepository.findSuoritukset("ranja öhman")
         assertEquals(1, result.size)
-        assertTrue(suoritusRaija.equalsIgnoringAnnotated(result.first()))
+        assertTrue(suoritusRaija.equalsIgnoringAnnotated(result.first(), "KOTO"))
     }
 
     @Test
     fun `Kielitestisuorituksen haku oppijanumerolla`() {
         val result = customKielitestiSuoritusRepository.findSuoritukset("1.2.246.562.198.88975028874")
         assertEquals(1, result.size)
-        assertTrue(suoritusJennika.equalsIgnoringAnnotated(result.first()))
+        assertTrue(suoritusJennika.equalsIgnoringAnnotated(result.first(), "KOTO"))
     }
 
     @Test

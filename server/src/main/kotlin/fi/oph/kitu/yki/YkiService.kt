@@ -108,7 +108,7 @@ class YkiService(
                             ?.let { existing ->
                                 val diff =
                                     entity
-                                        .findDifferentProperties(existing)
+                                        .findDifferentProperties(existing, "SOLKI")
                                         .ignoreEmptyValues()
                                 val time = Instant.now()
                                 diff.forEach { (key, value) ->
