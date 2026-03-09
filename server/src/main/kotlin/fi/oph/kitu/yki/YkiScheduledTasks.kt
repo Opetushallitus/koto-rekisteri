@@ -45,16 +45,19 @@ class YkiScheduledTasks(
 
     @WithSpan
     @Bean
-    fun monthlyImport(ykiService: YkiService): Task<Void> =
+    fun monthlyCheck(ykiService: YkiService): Task<Void> =
         Tasks
-            .recurring("YKI-large-import", ExtendedSchedules.parse(ykiMonthlyImportSchedule))
+            .recurring("YKI-check-anomalies", ExtendedSchedules.parse(ykiMonthlyImportSchedule))
             .executeStateful { _, _ ->
                 tracer
-                    .spanBuilder("YkiScheduledTasks.monthlyImport.tasks.executeStateful")
+                    .spanBuilder("YkiScheduledTasks.monthlyCheck.tasks.executeStateful")
                     .startSpan()
                     .use { span ->
-                        span.setAttribute("task.name", "YKI-large-import")
-                        ykiService.importYkiSuoritukset(Instant.now().minusSeconds(365.days.inWholeSeconds))
+                        span.setAttribute("task.name", "YKI-check-anomalies")
+                        ykiService.importYkiSuoritukset(
+                            from = Instant.now().minusSeconds(365.days.inWholeSeconds),
+                            reportOnly = true,
+                        )
                         null
                     }
             }
