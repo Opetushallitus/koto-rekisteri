@@ -21,7 +21,8 @@ import java.time.LocalDate
 @Table(name = "yki_suoritus")
 data class YkiSuoritusEntity(
     @Id
-    @IgnoreForEquality
+    @IgnoreForEquality("SOLKI")
+    @IgnoreForEquality("DB")
     val id: Int?,
     val suorittajanOID: Oid,
     val hetu: String?,
@@ -35,7 +36,8 @@ data class YkiSuoritusEntity(
     val postitoimipaikka: String,
     val email: String?,
     val solkiId: Int,
-    @IgnoreForEquality
+    @IgnoreForEquality("SOLKI")
+    @IgnoreForEquality("DB")
     val lastModified: Instant,
     val tutkintopaiva: LocalDate,
     @Enumerated(EnumType.STRING)
@@ -60,11 +62,15 @@ data class YkiSuoritusEntity(
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
     val tarkistusarviointiHyvaksyttyPvm: LocalDate?,
+    @IgnoreForEquality("SOLKI")
     val koskiOpiskeluoikeus: Oid?,
+    @IgnoreForEquality("SOLKI")
     val koskiSiirtoKasitelty: Boolean?,
     @Enumerated(EnumType.STRING)
     val arviointitila: Arviointitila,
+    @IgnoreForEquality("SOLKI")
     val arviointitilaLahetetty: Timestamp?,
+    @IgnoreForEquality("SOLKI")
     val arviointitilanLahetysvirhe: String?,
 ) {
     fun arvosana(osakoe: TutkinnonOsa): Int? =

@@ -66,7 +66,7 @@ class CustomKielitestiSuoritusRepository {
 
     fun exists(suoritus: KielitestiSuoritus): Boolean {
         val existing = findLatestSuoritusVersion(suoritus) ?: return false
-        return existing.equalsIgnoringAnnotated(suoritus)
+        return existing.equalsIgnoringAnnotated(suoritus, "KOTO")
     }
 
     private fun findLatestSuoritusVersion(suoritus: KielitestiSuoritus): KielitestiSuoritus? {

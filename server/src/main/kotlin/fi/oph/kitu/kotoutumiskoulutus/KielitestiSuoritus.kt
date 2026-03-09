@@ -10,7 +10,7 @@ import java.time.Instant
 @Table("koto_suoritus")
 data class KielitestiSuoritus(
     @Id
-    @IgnoreForEquality
+    @IgnoreForEquality("KOTO")
     val id: Int? = null,
     val etunimet: String,
     val sukunimi: String,
@@ -26,7 +26,7 @@ data class KielitestiSuoritus(
     val kuullunYmmartaminen: String,
     val puhe: String,
     val kirjoittaminen: String?,
-    @IgnoreForEquality
+    @IgnoreForEquality("KOTO")
     val lastModified: Instant = Instant.now(),
 ) {
     companion object {

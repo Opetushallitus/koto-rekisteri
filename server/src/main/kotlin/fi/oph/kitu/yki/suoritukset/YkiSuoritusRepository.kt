@@ -416,7 +416,7 @@ class YkiSuoritusRepository {
 
     fun exists(yki: YkiSuoritusEntity): Boolean {
         val existing = findLatestBySolkiIds(listOf(yki.solkiId))
-        return existing.isNotEmpty() && existing.first().equalsIgnoringAnnotated(yki)
+        return existing.isNotEmpty() && existing.first().equalsIgnoringAnnotated(yki, "DB")
     }
 
     fun tarkistusarvointiHyvaksytty(solkiId: Int): Boolean =
