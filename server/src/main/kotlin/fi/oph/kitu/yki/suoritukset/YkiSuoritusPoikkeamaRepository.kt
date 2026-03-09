@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.suoritukset
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
@@ -29,6 +30,12 @@ class YkiSuoritusPoikkeamaRepository {
             poikkeama.arvoSolkissa,
             Timestamp.from(poikkeama.havaittu),
         )
+
+    fun findAll() =
+        jdbcTemplate.query(
+            "SELECT * FROM yki_suoritus_poikkeama ORDER BY solki_id, kentta",
+            YkiSuoritusPoikkeama.fromRow,
+        )
 }
 
 data class YkiSuoritusPoikkeama(
@@ -37,4 +44,19 @@ data class YkiSuoritusPoikkeama(
     val arvoKitussa: String,
     val arvoSolkissa: String,
     val havaittu: Instant,
-)
+) {
+    override fun toString(): String = "$solkiId.$kentta: Solki '$arvoSolkissa', Kitu '$arvoKitussa'"
+
+    companion object {
+        val fromRow: RowMapper<YkiSuoritusPoikkeama> =
+            RowMapper { rs, _ ->
+                YkiSuoritusPoikkeama(
+                    solkiId = rs.getInt("solki_id"),
+                    kentta = rs.getString("kentta"),
+                    arvoKitussa = rs.getString("arvo_kitussa"),
+                    arvoSolkissa = rs.getString("arvo_solkissa"),
+                    havaittu = rs.getTimestamp("havaittu").toInstant(),
+                )
+            }
+    }
+}
