@@ -34,6 +34,7 @@ data class YkiSuoritusEntity(
     val katuosoite: String,
     val postinumero: String,
     val postitoimipaikka: String,
+    val maa: String?, // ISO 3166-1 mukainen kolmikirjaiminen lyhenne
     val email: String?,
     val solkiId: Int,
     @IgnoreForEquality("SOLKI")
@@ -115,6 +116,7 @@ data class YkiSuoritusEntity(
                     rs.getString("katuosoite"),
                     rs.getString("postinumero"),
                     rs.getString("postitoimipaikka"),
+                    rs.getString("maa"),
                     rs.getString("email"),
                     rs.getInt("solki_id"),
                     rs.getTimestamp("last_modified").toInstant(),
