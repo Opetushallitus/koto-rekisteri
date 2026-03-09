@@ -23,6 +23,7 @@ import java.time.LocalDate
     "katuosoite",
     "postinumero",
     "postitoimipaikka",
+    "maa",
     "email",
     "solkiTunniste",
     "lastModified",
@@ -58,6 +59,7 @@ data class YkiSuoritusCsvResponse(
     val katuosoite: String,
     val postinumero: String,
     val postitoimipaikka: String,
+    val maa: String?,
     val email: String?,
     val solkiTunniste: Int,
     @param:JsonProperty("lastModified")

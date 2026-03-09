@@ -73,6 +73,7 @@ class YkiSuoritusRepositoryTest(
                 tarkistusarvioinninKasittelyPvm = null,
                 koskiOpiskeluoikeus = null,
                 arviointipaiva = null,
+                maa = null,
             )
         val savedSuoritukset = ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus)).toList()
         assertEquals(suoritus, savedSuoritukset[0].copy(id = null))

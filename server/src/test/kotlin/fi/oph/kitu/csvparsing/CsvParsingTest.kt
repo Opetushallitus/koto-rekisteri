@@ -232,6 +232,7 @@ class CsvParsingTest(
                     katuosoite = "Testikuja 5",
                     postinumero = "40100",
                     postitoimipaikka = "Testilä",
+                    maa = "FIN",
                     email = "testi@testi.fi",
                     solkiTunniste = 183424,
                     lastModified = Instant.parse("2024-10-30T13:53:56Z"),
@@ -262,8 +263,8 @@ class CsvParsingTest(
         parser.streamDataAsCsv(outputStream, writable)
         val expectedCsv =
             """
-            suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,solkiTunniste,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,todistuskieli,jarjestajanOID,jarjestajanNimi,arviointitila,tilaLahetetty,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,puheenYmmartaminen,puhuminen,rakenteetJaSanasto,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
-            "1.2.246.562.24.20281155246",010180-9026,N,Öhman-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-09-01,fin,YT,fin,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",ARVIOITU,2024-10-30T14:00:00Z,2024-11-14,5,4,1,2,3,3,2024-10-01,123123,3,2,"Tarkistusarvioinnin testi\nJossa rivinvaihto",2024-10-15
+            suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,maa,email,solkiTunniste,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,todistuskieli,jarjestajanOID,jarjestajanNimi,arviointitila,tilaLahetetty,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,puheenYmmartaminen,puhuminen,rakenteetJaSanasto,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
+            "1.2.246.562.24.20281155246",010180-9026,N,Öhman-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,FIN,testi@testi.fi,183424,2024-10-30T13:53:56Z,2024-09-01,fin,YT,fin,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",ARVIOITU,2024-10-30T14:00:00Z,2024-11-14,5,4,1,2,3,3,2024-10-01,123123,3,2,"Tarkistusarvioinnin testi\nJossa rivinvaihto",2024-10-15
 
             """.trimIndent()
         assertEquals(expectedCsv, outputStream.toString(Charsets.UTF_8))
@@ -286,6 +287,7 @@ class CsvParsingTest(
                     katuosoite = "Testikuja 5",
                     postinumero = "40100",
                     postitoimipaikka = "Testilä",
+                    maa = null,
                     email = null,
                     solkiTunniste = 183424,
                     lastModified = Instant.parse("2024-10-30T13:53:56Z"),
@@ -317,8 +319,8 @@ class CsvParsingTest(
 
         val expectedCsv =
             """
-            suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,solkiTunniste,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,todistuskieli,jarjestajanOID,jarjestajanNimi,arviointitila,tilaLahetetty,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,puheenYmmartaminen,puhuminen,rakenteetJaSanasto,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
-            "1.2.246.562.24.20281155246",010180-9026,N,Öhman-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,,183424,2024-10-30T13:53:56Z,2024-09-01,fin,YT,,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",ARVIOITAVA,,2024-11-14,,,,,,,,,,,,
+            suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,maa,email,solkiTunniste,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,todistuskieli,jarjestajanOID,jarjestajanNimi,arviointitila,tilaLahetetty,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,puheenYmmartaminen,puhuminen,rakenteetJaSanasto,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"
+            "1.2.246.562.24.20281155246",010180-9026,N,Öhman-Testi,"Ranja Testi",EST,"Testikuja 5",40100,Testilä,,,183424,2024-10-30T13:53:56Z,2024-09-01,fin,YT,,"1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",ARVIOITAVA,,2024-11-14,,,,,,,,,,,,
 
             """.trimIndent()
         assertEquals(expectedCsv, outputStream.toString(Charsets.UTF_8))
