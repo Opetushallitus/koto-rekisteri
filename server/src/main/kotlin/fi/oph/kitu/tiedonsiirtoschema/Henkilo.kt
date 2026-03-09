@@ -14,6 +14,7 @@ data class Henkilo(
     val katuosoite: String? = null,
     val postinumero: String? = null,
     val postitoimipaikka: String? = null,
+    val maa: String? = null,
     val email: String? = null,
 ) {
     fun kokoNimi(): String = "$sukunimi, $etunimet"

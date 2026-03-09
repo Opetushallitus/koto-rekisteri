@@ -230,6 +230,7 @@ class SchemaExamplesController {
                         katuosoite = "Testikuja 5",
                         postinumero = "40100",
                         postitoimipaikka = "Testilä",
+                        maa = "FIN",
                         email = "testi@testi.fi",
                     ),
                 suoritus =
