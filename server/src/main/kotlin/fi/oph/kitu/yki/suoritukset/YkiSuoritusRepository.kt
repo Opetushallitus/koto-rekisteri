@@ -311,7 +311,7 @@ class YkiSuoritusRepository {
                 "maa" to suoritus.maa,
                 "email" to suoritus.email,
                 "solki_id" to suoritus.solkiId.toString(),
-                "last_modified" to Timestamp(suoritus.lastModified.toEpochMilli()),
+                "last_modified" to Timestamp.from(suoritus.lastModified),
                 "koski_opiskeluoikeus" to suoritus.koskiOpiskeluoikeus?.toString(),
                 "koski_siirto_kasitelty" to (suoritus.koskiSiirtoKasitelty ?: false),
                 "arviointitila" to suoritus.arviointitila.toString(),
@@ -460,7 +460,8 @@ object YkiSuoritusSql {
         FROM yki_suoritus
         ORDER BY
             solki_id,
-            last_modified DESC
+            last_modified DESC,
+            yki_suoritus.id DESC
         """.trimIndent()
 
     fun selectArvosanat(ykiSuoritusTable: String = "yki_suoritus") =
