@@ -152,7 +152,7 @@ class KoskiService(
 
     @WithSpan
     fun sendYkiSuorituksetToKoski() {
-        val suoritukset = ykiSuoritusRepository.findSuorituksetWithoutKoskiopiskeluoikeus()
+        val suoritukset = ykiSuoritusRepository.findKoskeenLahettamattomatSuoritukset()
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
         reportErrors(results.mapValues { YkiMappingId(it.solkiId) })
     }
