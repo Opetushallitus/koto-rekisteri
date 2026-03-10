@@ -131,7 +131,7 @@ class YkiService(
                     span.setAttribute("importedSuorituksetSize", saved.count().toLong())
                     auditLogger.logAllInternalOnly("YKI suoritus imported", saved) { suoritus ->
                         arrayOf(
-                            "principal" to "yki.importSuoritukset",
+                            "principal.name" to "yki.importSuoritukset",
                             "suoritus.id" to suoritus.solkiId,
                         )
                     }
@@ -179,7 +179,7 @@ class YkiService(
 
                 auditLogger.logAllInternalOnly("YKI arvioija imported", arvioijat) { arvioija ->
                     arrayOf(
-                        "principal" to "yki.importArvioijat",
+                        "principal.name" to "yki.importArvioijat",
                         "peer.service" to PeerService.Solki.value,
                         "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
                     )

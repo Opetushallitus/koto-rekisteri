@@ -114,7 +114,7 @@ class KoealustaService(
                         auditLogger.logAllInternalOnly("Kielitesti suoritus imported", it) { suoritus ->
                             arrayOf(
                                 "suoritus.id" to suoritus.id,
-                                "principal" to "koealusta.import",
+                                "principal.name" to "koealusta.import",
                                 "peer.service" to PeerService.Koealusta.value,
                             )
                         }
