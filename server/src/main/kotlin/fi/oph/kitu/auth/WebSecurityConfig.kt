@@ -29,7 +29,15 @@ import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import kotlin.collections.contains
 
-fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations() {
+fun developmentProfileActive(environment: Environment): Boolean {
+    val enableDevApiOn = listOf("local", "test", "e2e")
+    val disableDevApiOn = listOf("qa", "prod")
+
+    return environment.activeProfiles.any { it in enableDevApiOn } &&
+        environment.activeProfiles.none { it in disableDevApiOn }
+}
+
+fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations(environment: Environment) {
     authorize(PUT, "/api/vkt/kios", hasAnyAuthority(*Authority.VKT_TALLENNUS.authStrings()))
     authorize(POST, "/yki/api/suoritus", hasAnyAuthority(*Authority.YKI_TALLENNUS.authStrings()))
     authorize(POST, "/yki/api/arvioija", hasAnyAuthority(*Authority.YKI_TALLENNUS.authStrings()))
@@ -60,7 +68,7 @@ class WebSecurityConfig {
     ): SecurityFilterChain {
         http {
             authorizeHttpRequests {
-                configureCommonAuthorizations()
+                configureCommonAuthorizations(environment)
                 authorize(anyRequest, denyAll)
             }
             csrf {
@@ -96,6 +104,7 @@ class WebSecurityConfig {
                 ignoringRequestMatchers(
                     "/api/**",
                     "/db-scheduler-api/**",
+                    "/dev/**",
                 )
                 if (environment.activeProfiles.contains("e2e")) {
                     disable()
@@ -105,15 +114,10 @@ class WebSecurityConfig {
                 logoutSuccessUrl = casConfig.getCasLogoutUrl()
             }
             authorizeHttpRequests {
-                configureCommonAuthorizations()
+                configureCommonAuthorizations(environment)
 
-                if ((
-                        environment.activeProfiles.contains("local") ||
-                            environment.activeProfiles.contains("test") ||
-                            environment.activeProfiles.contains("e2e")
-                    ) &&
-                    !environment.activeProfiles.any { it == "qa" || it.lowercase().contains("prod") }
-                ) {
+                if (developmentProfileActive(environment)) {
+                    println("Developer profile active, allowing access to /dev/**")
                     authorize("/dev/**", permitAll)
                 }
 
@@ -161,7 +165,7 @@ class WebSecurityConfig {
 
 @Configuration
 @ConditionalOnMissingBean(JwtDecoder::class)
-@Profile("test", "e2e")
+@Profile("test", "e2e", "local-opintopolku")
 class TestJwtConfig {
     @Bean
     fun jwtDecoder(): NimbusJwtDecoder {

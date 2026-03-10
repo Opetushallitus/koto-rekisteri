@@ -16,8 +16,3 @@ enum class Authority(
 
     fun scopeRole() = "SCOPE_ROLE_APP_KIELITUTKINTOREKISTERI_$key"
 }
-
-enum class AuthoritySource {
-    OTUVA,
-    INTERNAL,
-}
