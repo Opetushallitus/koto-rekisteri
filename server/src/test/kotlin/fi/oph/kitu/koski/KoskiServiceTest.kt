@@ -8,6 +8,7 @@ import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusService
 import fi.oph.kitu.yki.YkiService
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
@@ -62,37 +63,13 @@ class KoskiServiceTest(
     fun `test sending koski request`() {
         // Arrange
         val suoritus = generateRandomYkiSuoritusEntity()
-        val expectedResponse =
-            """
-            {
-              "henkilö": {
-                "oid": "${suoritus.suorittajanOID}"
-              },
-              "opiskeluoikeudet": [
-                {
-                  "oid": "1.2.246.562.15.50209741037",
-                  "versionumero": 1,
-                  "lähdejärjestelmänId": {
-                    "id": "${suoritus.solkiId}",
-                    "lähdejärjestelmä": {
-                      "koodiarvo": "kielitutkintorekisteri",
-                      "nimi": {
-                        "fi": "Kielitutkintorekisteri"
-                      },
-                      "koodistoUri": "lahdejarjestelma",
-                      "koodistoVersio": 1
-                    }
-                  }
-                }
-              ]
-            }
-            """.trimIndent()
+        val koskiResponse = successfulKoskiResponseFor(suoritus)
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("oppija"))
             .andRespond(
                 withSuccess(
-                    expectedResponse,
+                    koskiResponse,
                     MediaType.APPLICATION_JSON,
                 ),
             )
@@ -151,37 +128,13 @@ class KoskiServiceTest(
 
     @Test
     fun `test sending all yki suoritukset to KOSKI`() {
-        val expectedResponse =
-            """
-            {
-              "henkilö": {
-                "oid": "1.2.246.562.24.20281155246"
-              },
-              "opiskeluoikeudet": [
-                {
-                  "oid": "1.2.246.562.15.50209741037",
-                  "versionumero": 1,
-                  "lähdejärjestelmänId": {
-                    "id": "183424",
-                    "lähdejärjestelmä": {
-                      "koodiarvo": "kielitutkintorekisteri",
-                      "nimi": {
-                        "fi": "Kielitutkintorekisteri"
-                      },
-                      "koodistoUri": "lahdejarjestelma",
-                      "koodistoVersio": 1
-                    }
-                  }
-                }
-              ]
-            }
-            """.trimIndent()
+        val koskiResponse = successfulKoskiResponseFor("1.2.246.562.24.20281155246", 183424)
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(ExpectedCount.times(3), requestTo("oppija"))
             .andRespond(
                 withSuccess(
-                    expectedResponse,
+                    koskiResponse,
                     MediaType.APPLICATION_JSON,
                 ),
             )
@@ -215,31 +168,7 @@ class KoskiServiceTest(
 
     @Test
     fun `test failing to send one suoritus to KOSKI throws error and saves succesfull ones`() {
-        val expectedResponse =
-            """
-            {
-              "henkilö": {
-                "oid": "1.2.246.562.24.20281155246"
-              },
-              "opiskeluoikeudet": [
-                {
-                  "oid": "1.2.246.562.15.50209741037",
-                  "versionumero": 1,
-                  "lähdejärjestelmänId": {
-                    "id": "183424",
-                    "lähdejärjestelmä": {
-                      "koodiarvo": "kielitutkintorekisteri",
-                      "nimi": {
-                        "fi": "Kielitutkintorekisteri"
-                      },
-                      "koodistoUri": "lahdejarjestelma",
-                      "koodistoVersio": 1
-                    }
-                  }
-                }
-              ]
-            }
-            """.trimIndent()
+        val koskiResponse = successfulKoskiResponseFor("1.2.246.562.24.20281155246", 183424)
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
             .expect(requestTo("oppija"))
@@ -252,7 +181,7 @@ class KoskiServiceTest(
             .expect(ExpectedCount.times(2), requestTo("oppija"))
             .andRespond(
                 withSuccess(
-                    expectedResponse,
+                    koskiResponse,
                     MediaType.APPLICATION_JSON,
                 ),
             )
@@ -282,4 +211,87 @@ class KoskiServiceTest(
         assertEquals(3, updatedSuoritukset.size)
         assertEquals(2, updatedSuoritukset.filter { it.koskiOpiskeluoikeus != null }.size)
     }
+
+    @Test
+    fun `verify that the correct version of suoritus is processed at every step`() {
+        val viimeisinVersio = generateRandomYkiSuoritusEntity()
+        val toinenVersio = viimeisinVersio.copy(puhuminen = null)
+        val ekaVersio =
+            toinenVersio.copy(
+                lastModified = viimeisinVersio.lastModified.minusSeconds(1000),
+            )
+
+        ykiSuoritusRepository.save(ekaVersio, true)
+        ykiSuoritusRepository.save(toinenVersio, true)
+        ykiSuoritusRepository.save(viimeisinVersio, true)
+
+        val suoritusKoskeen =
+            ykiSuoritusRepository
+                .findKoskeenLahettamattomatSuoritukset()
+                .find { it.solkiId == ekaVersio.solkiId }!!
+
+        assertEquals(viimeisinVersio.puhuminen, suoritusKoskeen.puhuminen)
+
+        val koskiService = setupKoskiMock(successfulKoskiResponseFor(viimeisinVersio))
+
+        val lahetettyVersio = koskiService.sendYkiSuoritusToKoski(suoritusKoskeen).getOrThrow()
+        assertEquals(viimeisinVersio.puhuminen, lahetettyVersio.puhuminen)
+
+        val lahetetyt = ykiSuoritusRepository.findSuorituksetWithKoskiopiskeluoikeus()
+        assertEquals(lahetetyt.map { it.solkiId }, listOf(viimeisinVersio.solkiId))
+    }
+
+    private fun setupKoskiMock(response: String): KoskiService {
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("oppija"))
+            .andRespond(
+                withSuccess(
+                    response,
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        return KoskiService(
+            mockRestClientBuilder.build(),
+            koskiRequestMapper,
+            ykiSuoritusRepository,
+            tracer,
+            customVktSuoritusRepository,
+            vktSuoritusService,
+            koskiErrorService,
+        )
+    }
+
+    private fun successfulKoskiResponseFor(suoritus: YkiSuoritusEntity): String =
+        successfulKoskiResponseFor(suoritus.suorittajanOID.toString(), suoritus.solkiId)
+
+    private fun successfulKoskiResponseFor(
+        oppijanumero: String,
+        solkiId: Int,
+    ): String =
+        """
+        {
+          "henkilö": {
+            "oid": "$oppijanumero"
+          },
+          "opiskeluoikeudet": [
+            {
+              "oid": "1.2.246.562.15.50209741037",
+              "versionumero": 1,
+              "lähdejärjestelmänId": {
+                "id": "$solkiId",
+                "lähdejärjestelmä": {
+                  "koodiarvo": "kielitutkintorekisteri",
+                  "nimi": {
+                    "fi": "Kielitutkintorekisteri"
+                  },
+                  "koodistoUri": "lahdejarjestelma",
+                  "koodistoVersio": 1
+                }
+              }
+            }
+          ]
+        }
+        """.trimIndent()
 }
