@@ -71,7 +71,7 @@ class YkiSuoritusRepository {
             YkiSuoritusEntity.fromRow,
         )
 
-    fun findSuorituksetWithoutKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> =
+    fun findKoskeenLahettamattomatSuoritukset(): Iterable<YkiSuoritusEntity> =
         jdbcNamedParameterTemplate.query(
             selectSuoritukset(viimeisin = true, "WHERE NOT koski_siirto_kasitelty"),
             YkiSuoritusEntity.fromRow,
