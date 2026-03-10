@@ -308,6 +308,7 @@ class YkiSuoritusRepository {
                 "katuosoite" to suoritus.katuosoite,
                 "postinumero" to suoritus.postinumero,
                 "postitoimipaikka" to suoritus.postitoimipaikka,
+                "maa" to suoritus.maa,
                 "email" to suoritus.email,
                 "solki_id" to suoritus.solkiId.toString(),
                 "last_modified" to Timestamp.from(suoritus.lastModified),

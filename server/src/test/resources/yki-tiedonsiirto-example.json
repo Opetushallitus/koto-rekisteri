@@ -9,6 +9,7 @@
     "katuosoite": "Testikuja 5",
     "postinumero": "41000",
     "postitoimipaikka": "Testilä",
+    "maa": "FIN",
     "email": "testi@test.fi"
   },
   "suoritus": {

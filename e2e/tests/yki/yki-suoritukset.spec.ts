@@ -107,7 +107,7 @@ describe('"YKI Suoritukset" -page', () => {
 
     const csvContent = await fs.readFile(path!, "utf8")
     expect(csvContent).toContain(
-      'suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,email,solkiTunniste,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,todistuskieli,jarjestajanOID,jarjestajanNimi,arviointitila,tilaLahetetty,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,puheenYmmartaminen,puhuminen,rakenteetJaSanasto,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"\n',
+      'suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,maa,email,solkiTunniste,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,todistuskieli,jarjestajanOID,jarjestajanNimi,arviointitila,tilaLahetetty,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,puheenYmmartaminen,puhuminen,rakenteetJaSanasto,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"\n',
     ) // Validate headers
   })
 
@@ -151,7 +151,7 @@ describe('"YKI Suoritukset" -page', () => {
         column: "Osoite",
         tableColumnIndex: 6,
         order: [
-          "Testikuja 5, 40100 Testilä",
+          "Testikuja 5, 40100 Testilä, FIN",
           "Testikuja 10, 40200 Testinsuu",
           "Testikoto 10, 40300 Koestamo",
         ],

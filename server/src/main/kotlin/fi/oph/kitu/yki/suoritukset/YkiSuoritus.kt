@@ -50,6 +50,7 @@ data class YkiSuoritus(
             katuosoite = henkilo.katuosoite ?: throw IllegalArgumentException("Katuosoite puuttuu"),
             postinumero = henkilo.postinumero ?: throw IllegalArgumentException("Postinumero puuttuu"),
             postitoimipaikka = henkilo.postitoimipaikka ?: throw IllegalArgumentException("Postitoimipaikka puuttuu"),
+            maa = henkilo.maa,
             email = henkilo.email,
             solkiId = lahdejarjestelmanId.id.toInt(),
             lastModified = Instant.now(),

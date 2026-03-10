@@ -15,6 +15,7 @@ data class Person(
     val katuosoite: String,
     val postinumero: String,
     val postitoimipaikka: String,
+    val maa: String?,
     val email: String,
 )
 
@@ -50,6 +51,7 @@ fun generateRandomPerson(): Person {
         katuosoite = "${address.first} $katunumero",
         postinumero = address.third,
         postitoimipaikka = address.second,
+        maa = "FIN",
         email = "${etunimet.first}.$sukunimi.$randomId@mock.oph.fi",
     )
 }
