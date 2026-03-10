@@ -9,7 +9,7 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("test || e2e")
+@Profile("test || e2e || local-opintopolku")
 class MockOrganisaatioService(
     cache: PersistentCache,
 ) : OrganisaatioService(cache) {

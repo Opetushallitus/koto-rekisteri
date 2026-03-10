@@ -41,7 +41,7 @@ abstract class OrganisaatioService(
 }
 
 @Service
-@Profile("!test && !e2e")
+@Profile("!test && !e2e && !local-opintopolku")
 class OrganisaatioServiceImpl(
     val client: OrganisaatiopalveluClient,
     cache: PersistentCache,

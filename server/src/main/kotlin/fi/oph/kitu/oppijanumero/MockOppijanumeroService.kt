@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 import java.io.FileNotFoundException
 
 @Service
-@Profile("test | e2e")
+@Profile("test | e2e | local-opintopolku")
 class MockOppijanumeroService : OppijanumeroService {
     override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> {
         require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
