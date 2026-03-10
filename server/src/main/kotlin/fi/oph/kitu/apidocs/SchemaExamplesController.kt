@@ -224,7 +224,6 @@ class SchemaExamplesController {
                         oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                         etunimet = "Ranja Testi",
                         sukunimi = "Öhman-Testi",
-                        hetu = "010180-9026",
                         sukupuoli = Sukupuoli.N,
                         kansalaisuus = "EST",
                         katuosoite = "Testikuja 5",
@@ -243,8 +242,8 @@ class SchemaExamplesController {
                                 oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
                                 nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
                             ),
-                        tutkintopaiva = LocalDate.of(2024, 9, 1),
-                        arviointipaiva = LocalDate.of(2024, 12, 13),
+                        tutkintopaiva = LocalDate.of(2026, 2, 2),
+                        arviointipaiva = LocalDate.of(2026, 2, 3),
                         arviointitila = Arviointitila.ARVIOITU,
                         osat =
                             listOf(
@@ -264,19 +263,11 @@ class SchemaExamplesController {
                                     tyyppi = TutkinnonOsa.tekstinYmmartaminen,
                                     arvosana = 5,
                                 ),
-                                YkiOsa(
-                                    tyyppi = TutkinnonOsa.rakenteetJaSanasto,
-                                    arvosana = 5,
-                                ),
-                                YkiOsa(
-                                    tyyppi = TutkinnonOsa.yleisarvosana,
-                                    arvosana = 5,
-                                ),
                             ),
                         tarkistusarviointi =
                             YkiTarkastusarviointi(
-                                saapumispaiva = LocalDate.of(2024, 12, 14),
-                                kasittelypaiva = LocalDate.of(2024, 12, 14),
+                                saapumispaiva = LocalDate.of(2026, 2, 13),
+                                kasittelypaiva = LocalDate.of(2026, 2, 13),
                                 asiatunnus = "OPH-5000-1234",
                                 tarkistusarvioidutOsakokeet = listOf(TutkinnonOsa.puhuminen),
                                 arvosanaMuuttui = listOf(TutkinnonOsa.puhuminen),
