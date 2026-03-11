@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.equalsIgnoringAnnotated
 import fi.oph.kitu.i18n.finnishDate
@@ -48,6 +49,7 @@ class YkiSuoritusRepository {
         )
     }
 
+    @WithSpan
     fun find(
         searchBy: String = "",
         column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
@@ -71,18 +73,21 @@ class YkiSuoritusRepository {
             YkiSuoritusEntity.fromRow,
         )
 
+    @WithSpan
     fun findKoskeenLahettamattomatSuoritukset(): Iterable<YkiSuoritusEntity> =
         jdbcNamedParameterTemplate.query(
             selectSuoritukset(viimeisin = true, "WHERE NOT koski_siirto_kasitelty"),
             YkiSuoritusEntity.fromRow,
         )
 
+    @WithSpan
     fun findSuorituksetWithKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> =
         jdbcNamedParameterTemplate.query(
             selectSuoritukset(viimeisin = true, "WHERE koski_opiskeluoikeus IS NOT NULL"),
             YkiSuoritusEntity.fromRow,
         )
 
+    @WithSpan
     fun findTarkistusarvoidutSuoritukset(): Iterable<YkiSuoritusEntity> =
         jdbcTemplate
             .query(
@@ -96,6 +101,7 @@ class YkiSuoritusRepository {
             )
 
     @Transactional
+    @WithSpan
     fun hyvaksyTarkistusarvioinnit(
         suoritusIds: List<Int>,
         pvm: LocalDate,
@@ -141,6 +147,7 @@ class YkiSuoritusRepository {
         )
     }
 
+    @WithSpan
     fun countSuoritukset(
         searchBy: String = "",
         distinct: Boolean = true,
@@ -161,6 +168,7 @@ class YkiSuoritusRepository {
             ?: 0
     }
 
+    @WithSpan
     fun findLatestBySolkiIds(ids: List<Int>): List<YkiSuoritusEntity> =
         if (ids.isEmpty()) {
             emptyList()
@@ -173,6 +181,7 @@ class YkiSuoritusRepository {
         }
 
     @Transactional
+    @WithSpan
     fun save(
         suoritus: YkiSuoritusEntity,
         updateOnConflict: Boolean,
@@ -213,6 +222,7 @@ class YkiSuoritusRepository {
             null
         }
 
+    @WithSpan
     fun findAll(): List<YkiSuoritusEntity> =
         jdbcTemplate.query(
             buildSql(
@@ -415,11 +425,13 @@ class YkiSuoritusRepository {
         }
     }
 
+    @WithSpan
     fun exists(yki: YkiSuoritusEntity): Boolean {
         val existing = findLatestBySolkiIds(listOf(yki.solkiId))
         return existing.isNotEmpty() && existing.first().equalsIgnoringAnnotated(yki, "DB")
     }
 
+    @WithSpan
     fun tarkistusarvointiHyvaksytty(solkiId: Int): Boolean =
         jdbcTemplate.queryForObject(
             """
@@ -432,6 +444,15 @@ class YkiSuoritusRepository {
             Boolean::class.java,
             solkiId,
         ) ?: false
+
+    @WithSpan
+    fun getLatestByOpiskeluoikeusOid(opiskeluoikeus: Oid): YkiSuoritusEntity? =
+        jdbcNamedParameterTemplate
+            .query(
+                selectSuoritukset(viimeisin = true, "WHERE koski_opiskeluoikeus = :opiskeluoikeus"),
+                mapOf("opiskeluoikeus" to opiskeluoikeus.toString()),
+                YkiSuoritusEntity.fromRow,
+            ).firstOrNull()
 }
 
 object YkiSuoritusSql {
