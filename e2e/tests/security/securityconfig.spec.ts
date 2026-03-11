@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from "../../fixtures/baseFixture"
 import { APIRequestContext } from "@playwright/test"
 import { Config } from "../../config"
 
-type MockUser = "ROOT" | "KIOS" | "SOLKI" | "NO_ROLES"
+type MockUser = "ROOT" | "KIOS" | "SOLKI" | "KOSKI" | "NO_ROLES"
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE"
 type ContentType = "application/x-www-form-urlencoded" | "application/json"
 type Route = `${HttpMethod} /${string}`
@@ -49,6 +49,9 @@ const apiRoutes = [
   // VktApiController
   "PUT /api/vkt/kios",
   "GET /api/vkt/suoritus",
+
+  // YhteystiedotApiController
+  "GET /yhteystiedot/api/opiskeluoikeus/1.2.246.562.24.00000000001",
 ] satisfies Route[]
 
 const publicRoutes = [
@@ -103,6 +106,7 @@ describe("Käyttöoikeustestit", () => {
         "POST /yki/api/suoritus": 400,
         "POST /yki/api/arvioija": 400,
         "PUT /api/vkt/kios": 400,
+        "GET /yhteystiedot/api/opiskeluoikeus/1.2.246.562.24.00000000001": 404,
       })
     })
 
@@ -120,6 +124,13 @@ describe("Käyttöoikeustestit", () => {
         "POST /yki/api/arvioija": 400,
       })
     })
+
+    describe("KOSKI", () => {
+      defineCasTests("KOSKI", {
+        ...expectStatusCodeFor(publicRoutes, 200),
+        "GET /yhteystiedot/api/opiskeluoikeus/1.2.246.562.24.00000000001": 404,
+      })
+    })
   })
 
   describe("OAuth2", () => {
@@ -133,6 +144,7 @@ describe("Käyttöoikeustestit", () => {
         "POST /yki/api/suoritus": 400,
         "POST /yki/api/arvioija": 400,
         "PUT /api/vkt/kios": 400,
+        "GET /yhteystiedot/api/opiskeluoikeus/1.2.246.562.24.00000000001": 404,
       })
     })
     describe("KIOS / Ilmoittautumisjärjestelmä", () => {
@@ -147,6 +159,13 @@ describe("Käyttöoikeustestit", () => {
         ...expectStatusCodeFor(publicRoutes, 200),
         "POST /yki/api/suoritus": 400,
         "POST /yki/api/arvioija": 400,
+      })
+    })
+
+    describe("KOSKI", () => {
+      defineCasTests("KOSKI", {
+        ...expectStatusCodeFor(publicRoutes, 200),
+        "GET /yhteystiedot/api/opiskeluoikeus/1.2.246.562.24.00000000001": 404,
       })
     })
   })

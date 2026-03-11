@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
+import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.cas.web.CasAuthenticationFilter
@@ -27,7 +28,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
-import kotlin.collections.contains
 
 fun developmentProfileActive(environment: Environment): Boolean {
     val enableDevApiOn = listOf("local", "test", "e2e")
@@ -41,6 +41,7 @@ fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations(environment: Environm
     authorize(PUT, "/api/vkt/kios", hasAnyAuthority(*Authority.VKT_TALLENNUS.authStrings()))
     authorize(POST, "/yki/api/suoritus", hasAnyAuthority(*Authority.YKI_TALLENNUS.authStrings()))
     authorize(POST, "/yki/api/arvioija", hasAnyAuthority(*Authority.YKI_TALLENNUS.authStrings()))
+    authorize(GET, "/yhteystiedot/api/**", hasAnyAuthority(*Authority.TODISTUS_YHTEYSTIEDOT_LUKEMINEN.authStrings()))
 
     authorize("/actuator/health", permitAll)
     authorize("/api-docs", permitAll)
