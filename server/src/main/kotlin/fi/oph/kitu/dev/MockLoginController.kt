@@ -164,6 +164,7 @@ enum class MockUser(
                     Authority.VIRKAILIJA,
                     Authority.YKI_TALLENNUS,
                     Authority.VKT_TALLENNUS,
+                    Authority.TODISTUS_YHTEYSTIEDOT_LUKEMINEN,
                 ),
         ),
     ),
@@ -182,6 +183,15 @@ enum class MockUser(
             authorities =
                 listOf(
                     Authority.YKI_TALLENNUS,
+                ),
+        ),
+    ),
+    KOSKI(
+        MockLogin(
+            name = "kitu_mocklogin_koski",
+            authorities =
+                listOf(
+                    Authority.TODISTUS_YHTEYSTIEDOT_LUKEMINEN,
                 ),
         ),
     ),
