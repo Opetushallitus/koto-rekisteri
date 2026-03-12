@@ -1,0 +1,1 @@
+CREATE INDEX "yki_suoritus_koski_opiskeluoikeus_idx" ON "yki_suoritus"("koski_opiskeluoikeus");
