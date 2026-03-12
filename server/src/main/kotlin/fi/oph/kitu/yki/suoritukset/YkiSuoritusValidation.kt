@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.intersects
 import fi.oph.kitu.koodisto.Koodisto
@@ -15,6 +16,7 @@ import java.time.LocalDate
 @Service
 class YkiSuoritusValidation(
     val organisaatiot: OrganisaatioService,
+    val localizationService: LocalizationService,
     @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
     @param:Value("\${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
@@ -29,6 +31,7 @@ class YkiSuoritusValidation(
             { validateTarkistusarviointi(it) },
             { validateKielikoodi(it) },
             { validateTodistuskieli(it) },
+            { validateCountryCode(it) },
         )
 
     fun validateTodistuskieli(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
@@ -168,4 +171,20 @@ class YkiSuoritusValidation(
                 "Käytöstä poistuneita kielikoodeja (${Tutkintokieli.legacyEntries.joinToString(", ") }) ei voi käyttää",
             ),
         )
+
+    fun validateCountryCode(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> {
+        if (s.henkilo.maa == null) return Validation.ok(s)
+        val koodisto =
+            localizationService
+                .translationBuilder()
+                .koodistot("maatjavaltiot1")
+                .build()
+        val maatJaValtiot = koodisto.koodistot["maatjavaltiot1"] ?: return Validation.ok(s)
+        maatJaValtiot[s.henkilo.maa]
+            ?: return Validation.fail(
+                listOf("henkilo", "maa"),
+                "Virheellinen maakoodi",
+            )
+        return Validation.ok(s)
+    }
 }

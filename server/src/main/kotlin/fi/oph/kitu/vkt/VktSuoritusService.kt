@@ -7,7 +7,6 @@ import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.koodisto.KoodistoService
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.oppijanumero.OppijanumeroService
