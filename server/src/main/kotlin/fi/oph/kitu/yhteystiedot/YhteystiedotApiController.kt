@@ -28,7 +28,7 @@ class YhteystiedotApiController(
      * @return ResponseEntity, joka sisältää joko löydetyt yhteystiedot HTTP 200 -tilakoodin kanssa
      *         tai YhteystietoNotFound-virheilmoituksen HTTP 404 -tilakoodin kanssa, jos yhteystietoja ei löydy.
      */
-    @GetMapping("/opiskeluoikeus/{oid}", produces = ["application/yhteystiedot+json"])
+    @GetMapping("/opiskeluoikeus/{oid}", produces = ["application/yhteystiedot+json", "application/json"])
     @Operation(
         summary = "Palauttaa todistuksen postitusosoitteen sekä toivotun kielen todistukselle",
         description = """
@@ -118,6 +118,7 @@ class YhteystiedotApiJacksonConfig {
         val converter = MappingJackson2HttpMessageConverter(mapper)
         converter.supportedMediaTypes =
             listOf(
+                MediaType.APPLICATION_JSON,
                 MediaType("application", "yhteystiedot+json"),
             )
         return converter
