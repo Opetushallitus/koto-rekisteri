@@ -231,4 +231,55 @@ class ValidationServiceTest(
             result,
         )
     }
+
+    @Test
+    fun `YKI-suorituksen maan validointi epäonnistuu jos maakoodia ei löydy koodistosta`() {
+        val suoritus =
+            validiYkiSuoritus.copy(
+                henkilo =
+                    validiYkiSuoritus.henkilo.copy(
+                        hetu = null,
+                        maa = "INVALID",
+                    ),
+                suoritus =
+                    validiYkiSuoritus.suoritus.copy(
+                        tutkintopaiva = LocalDate.of(2026, 4, 1),
+                        arviointipaiva = LocalDate.of(2026, 4, 2),
+                        todistuskieli = Todistuskieli.FIN,
+                    ),
+            )
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            Validation.fail(
+                listOf("henkilo", "maa"),
+                "Virheellinen maakoodi",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `YKI-suorituksen maan validointi onnistuu jos maakoodi löytyy koodistosta`() {
+        val suoritus =
+            validiYkiSuoritus.copy(
+                henkilo =
+                    validiYkiSuoritus.henkilo.copy(
+                        hetu = null,
+                        maa = "FIN",
+                    ),
+                suoritus =
+                    validiYkiSuoritus.suoritus.copy(
+                        tutkintopaiva = LocalDate.of(2026, 4, 1),
+                        arviointipaiva = LocalDate.of(2026, 4, 2),
+                        todistuskieli = Todistuskieli.FIN,
+                    ),
+            )
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            Validation.ok(suoritus),
+            result,
+        )
+    }
 }

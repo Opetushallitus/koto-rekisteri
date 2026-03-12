@@ -5,20 +5,27 @@ import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import kotlin.time.Duration.Companion.hours
 
+interface KoodistoService {
+    fun getKoodiviitteet(koodistoUri: String): List<KoodistopalveluKoodiviite>?
+}
+
 @Service
-class KoodistoService(
+@Profile("!test && !e2e && !local-opintopolku")
+class KoodistoServiceImpl(
     @param:Qualifier("koodistopalveluRestClient")
     private val restClient: RestClient,
     private val tracer: Tracer,
-) {
+) : KoodistoService {
     @WithSpan("KoodistoService.getKoodiviitteet")
-    fun getKoodiviitteet(koodistoUri: String): List<KoodistopalveluKoodiviite>? = cachedKoodistot.get(koodistoUri)
+    override fun getKoodiviitteet(koodistoUri: String): List<KoodistopalveluKoodiviite>? =
+        cachedKoodistot.get(koodistoUri)
 
     private fun fetchKoodisto(koodistoUri: String): List<KoodistopalveluKoodiviite>? =
         tracer
