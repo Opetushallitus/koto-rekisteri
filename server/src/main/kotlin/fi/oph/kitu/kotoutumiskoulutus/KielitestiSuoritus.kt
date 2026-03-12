@@ -2,10 +2,14 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.IgnoreForEquality
 import fi.oph.kitu.Oid
+import fi.oph.kitu.SortDirection
+import fi.oph.kitu.organisaatiot.Organisaatiot
+import fi.oph.kitu.sortedWithDirectionBy
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.jdbc.core.RowMapper
 import java.time.Instant
+import kotlin.collections.get
 
 @Table("koto_suoritus")
 data class KielitestiSuoritus(
@@ -52,4 +56,11 @@ data class KielitestiSuoritus(
                 )
             }
     }
+}
+
+fun List<KielitestiSuoritus>.sortByOrgName(
+    sortDirection: SortDirection,
+    organisaatiot: Organisaatiot,
+) = this.sortedWithDirectionBy(sortDirection) { row ->
+    organisaatiot.nimet[row.oppilaitosOid]?.fi ?: row.oppilaitosOid.toString()
 }

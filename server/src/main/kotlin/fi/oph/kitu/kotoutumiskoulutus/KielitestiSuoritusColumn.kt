@@ -39,7 +39,7 @@ enum class KielitestiSuoritusColumn(
     ),
 
     Organisaatio(
-        entityName = "oppilaitosOid",
+        entityName = "oppilaitos_oid",
         uiHeaderValue = "Organisaatio",
         urlParam = "organisaatio",
         renderValue = { orgs ->

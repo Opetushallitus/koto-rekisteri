@@ -2,6 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.organisaatiot.OrganisaatioService
+import fi.oph.kitu.sortedWithDirectionBy
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,21 +19,31 @@ class KielitestiViewController(
         sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
         sortDirection: SortDirection = SortDirection.DESC,
         search: String? = null,
-    ): ResponseEntity<String> =
-        ResponseEntity.ok(
+    ): ResponseEntity<String> {
+        val organisaatiot = organisaatioService.getOrganisaatiot()
+        return ResponseEntity.ok(
             KielitestiSuorituksetPage.render(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
-                suoritukset = suoritusService.getSuoritukset(sortColumn, sortDirection, search),
+                suoritukset =
+                    suoritusService
+                        .getSuoritukset(sortColumn, sortDirection, search)
+                        .let {
+                            when (sortColumn) {
+                                KielitestiSuoritusColumn.Organisaatio -> it.sortByOrgName(sortDirection, organisaatiot)
+                                else -> it
+                            }
+                        },
                 errorsCount =
                     suoritusService
                         .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
                         .count()
                         .toLong(),
-                organisaationimet = organisaatioService.getOrganisaatiot(),
+                organisaationimet = organisaatiot,
                 search = search ?: "",
             ),
         )
+    }
 
     @GetMapping("/suoritukset/virheet")
     fun virheetView(
