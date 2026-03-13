@@ -202,7 +202,10 @@ export class LogGroupsStack extends Stack {
           FilterPattern.stringValue("$.status.code", "!=", "ERROR"),
         ),
       })
-      .metric({ statistic: Stats.SAMPLE_COUNT })
+      .metric({
+        statistic: Stats.SUM,
+        period: Duration.minutes(1),
+      })
       .createAlarm(this, "YkiSuoritusAlarm", {
         alarmDescription: "YKI-suorituksia vastaanotettu",
         threshold: 1,
