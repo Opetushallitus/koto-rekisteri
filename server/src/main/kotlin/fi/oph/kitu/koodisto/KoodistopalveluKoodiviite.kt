@@ -1,5 +1,6 @@
 package fi.oph.kitu.koodisto
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.oph.kitu.i18n.LocalizedString
 
 data class KoodistopalveluKoodiviite(
@@ -9,6 +10,7 @@ data class KoodistopalveluKoodiviite(
     val metadata: List<KoodistopalveluKoodiviiteMetadata>,
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class KoodistopalveluKoodiviiteMetadata(
     val nimi: String,
     val kieli: KoodistopalveluLanguage,
