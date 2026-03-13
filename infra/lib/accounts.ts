@@ -10,12 +10,17 @@ export interface EnvironmentConfig {
   databaseName: string
   productionQuality: boolean
   slackWorkspaceId: string
-  slackChannelName: string
-  slackChannelId: string
+  slackAlarmsChannel: SlackChannel
+  slackInfoChannel?: SlackChannel
   koski: {
     region: string
     account: string
   }
+}
+
+export type SlackChannel = {
+  name: string
+  id: string
 }
 
 // CIDR allocation strategy:
@@ -40,8 +45,10 @@ export const deploymentAccounts: {
     databaseName: "kios",
     productionQuality: false,
     slackWorkspaceId: "T02C6SZL7KP",
-    slackChannelName: "kielitutkintorekisteri-alerts-dev-test",
-    slackChannelId: "C08E14CRZ3J",
+    slackAlarmsChannel: {
+      name: "kielitutkintorekisteri-alerts-dev-test",
+      id: "C08E14CRZ3J",
+    },
     koski: {
       region: "eu-west-1",
       account: "500150530292",
@@ -59,8 +66,14 @@ export const deploymentAccounts: {
     databaseName: "kios",
     productionQuality: false,
     slackWorkspaceId: "T02C6SZL7KP",
-    slackChannelName: "kielitutkintorekisteri-alerts-dev-test",
-    slackChannelId: "C08E14CRZ3J",
+    slackAlarmsChannel: {
+      name: "kielitutkintorekisteri-alerts-dev-test",
+      id: "C08E14CRZ3J",
+    },
+    slackInfoChannel: {
+      name: "kielitutkintorekisteri-alerts-dev-test",
+      id: "C08E14CRZ3J",
+    },
     koski: {
       region: "eu-west-1",
       account: "692437769085",
@@ -78,8 +91,10 @@ export const deploymentAccounts: {
     databaseName: "kios",
     productionQuality: true,
     slackWorkspaceId: "T02C6SZL7KP",
-    slackChannelName: "kielitutkintorekisteri-alerts",
-    slackChannelId: "C07QPSYBY7L",
+    slackAlarmsChannel: {
+      name: "kielitutkintorekisteri-alerts",
+      id: "C07QPSYBY7L",
+    },
     koski: {
       region: "eu-west-1",
       account: "508832528142",
@@ -91,7 +106,9 @@ export const utilityAccount = {
   name: "util",
   account: "961341524988",
   region: "eu-west-1",
-  slackChannelName: "kielitutkintorekisteri-alerts",
-  slackChannelId: "C07QPSYBY7L",
+  slackChannel: {
+    name: "kielitutkintorekisteri-alerts",
+    id: "C07QPSYBY7L",
+  },
   slackWorkspaceId: "T02C6SZL7KP",
 }

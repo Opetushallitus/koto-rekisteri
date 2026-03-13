@@ -5,11 +5,11 @@ import { ContainerRepositoryStack } from "./container-repository-stack"
 import { GithubActionsStack } from "./github-actions-stack"
 import { AlarmsStack } from "./alarms-stack"
 import { SlackBotStack } from "./slack-bot-stack"
+import { SlackChannel } from "./accounts"
 
 interface UtilityStageProps extends StageProps {
   allowPullsFromAccounts: string[]
-  slackChannelName: string
-  slackChannelId: string
+  slackChannel: SlackChannel
   slackWorkspaceId: string
 }
 
@@ -29,8 +29,7 @@ export class UtilityStage extends Stage {
 
     new SlackBotStack(this, "SlackBot", {
       env: props.env,
-      slackChannelName: props.slackChannelName,
-      slackChannelId: props.slackChannelId,
+      slackChannel: props.slackChannel,
       slackWorkspaceId: props.slackWorkspaceId,
       alarmTopics: [alarmsStack.alarmSnsTopic],
     })
