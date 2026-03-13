@@ -22,7 +22,7 @@ jobs:
               run_id: "${{ github.event.workflow_run.id }}"
             })
             return run.data.jobs.filter(job => job.conclusion === "failure").map(job => job.html_url).join(", ")
-      - uses: slackapi/slack-github-action@v2
+      - uses: slackapi/slack-github-action@v3
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: webhook-trigger
