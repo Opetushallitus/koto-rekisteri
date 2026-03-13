@@ -3,12 +3,12 @@ import { aws_chatbot, StackProps } from "aws-cdk-lib"
 import { Construct } from "constructs"
 import { ITopic } from "aws-cdk-lib/aws-sns"
 import { LoggingLevel } from "aws-cdk-lib/aws-chatbot"
+import { SlackChannel } from "./accounts"
 
 export interface SlackBotProps extends StackProps {
   alarmTopics: ITopic[]
   slackWorkspaceId: string
-  slackChannelId: string
-  slackChannelName: string
+  slackChannel: SlackChannel
 }
 
 export class SlackBotStack extends cdk.Stack {
@@ -21,9 +21,9 @@ export class SlackBotStack extends cdk.Stack {
       this,
       "SlackBot",
       {
-        slackChannelId: props.slackChannelId,
+        slackChannelId: props.slackChannel.id,
         slackWorkspaceId: props.slackWorkspaceId,
-        slackChannelConfigurationName: props.slackChannelName,
+        slackChannelConfigurationName: props.slackChannel.name,
         notificationTopics: props.alarmTopics,
         loggingLevel: LoggingLevel.INFO,
       },

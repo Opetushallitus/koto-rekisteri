@@ -1,5 +1,9 @@
-import { aws_sns, Stack, StackProps } from "aws-cdk-lib"
-import { Stats, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
+import { aws_sns, Duration, Stack, StackProps } from "aws-cdk-lib"
+import {
+  ComparisonOperator,
+  Stats,
+  TreatMissingData,
+} from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { ServicePrincipal } from "aws-cdk-lib/aws-iam"
 import {
@@ -13,9 +17,12 @@ import {
 } from "aws-cdk-lib/aws-logs"
 import { CfnTransactionSearchConfig } from "aws-cdk-lib/aws-xray"
 import { Construct } from "constructs"
+import { SnsTopic } from "aws-cdk-lib/aws-events-targets"
+import { ITopic } from "aws-cdk-lib/aws-sns"
 
 export interface LogGroupsStackProps extends StackProps {
   alarmsSnsTopic: aws_sns.ITopic
+  infoSnsTopic: aws_sns.ITopic
 }
 
 export class LogGroupsStack extends Stack {
@@ -50,7 +57,7 @@ export class LogGroupsStack extends Stack {
       logGroupName: "KituServiceAudit",
     })
 
-    this.enableTransactionSearch()
+    this.enableTransactionSearch(props.infoSnsTopic)
 
     const errorsAlarm = this.serviceLogGroup
       .addMetricFilter("Errors", {
@@ -95,31 +102,6 @@ export class LogGroupsStack extends Stack {
 
     warningsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
     warningsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
-
-    const postYkiSuoritusAlarm = this.serviceLogGroup
-      .addMetricFilter("PostYkiSuoritus", {
-        metricName: "PostYkiSuoritus",
-        metricNamespace: "Kitu",
-        filterPattern: FilterPattern.any(
-          FilterPattern.stringValue(
-            "$.attributes.http.route",
-            "=",
-            "/kielitutkinnot/yki/api/suoritus",
-          ),
-          FilterPattern.stringValue("$.attributes.http.method", "=", "POST"),
-          FilterPattern.stringValue("$.status.code", "!=", "ERROR"),
-        ),
-      })
-      .metric({ statistic: Stats.SAMPLE_COUNT })
-      .createAlarm(this, "YkiSuoritusAlarm", {
-        alarmDescription: "YKI-suorituksia vastaanotettu",
-        threshold: 1,
-        evaluationPeriods: 1,
-        treatMissingData: TreatMissingData.NOT_BREACHING,
-      })
-
-    postYkiSuoritusAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
-    postYkiSuoritusAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
   }
 
   /** Enable Transaction Search.
@@ -129,7 +111,7 @@ export class LogGroupsStack extends Stack {
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Transaction-Search.html
    * @see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Transaction-Search-Cloudformation.html
    */
-  private enableTransactionSearch() {
+  private enableTransactionSearch(infoSnsTopic: ITopic) {
     // This enables Transaction Search. CDK doesn't have a L2 construct for TS yet.
     const transactionSearchConfig = new CfnTransactionSearchConfig(
       this,
@@ -205,5 +187,32 @@ export class LogGroupsStack extends Stack {
         .findChild("Policy")
         .node.findChild("ResourcePolicy") as CfnResourcePolicy,
     )
+
+    const postYkiSuoritusAlarm = transactionSearchSpans
+      .addMetricFilter("PostYkiSuoritus", {
+        metricName: "PostYkiSuoritus",
+        metricNamespace: "Kitu",
+        filterPattern: FilterPattern.all(
+          FilterPattern.stringValue(
+            "$.attributes.http.route",
+            "=",
+            "/kielitutkinnot/yki/api/suoritus",
+          ),
+          FilterPattern.stringValue("$.attributes.http.method", "=", "POST"),
+          FilterPattern.stringValue("$.status.code", "!=", "ERROR"),
+        ),
+      })
+      .metric({ statistic: Stats.SAMPLE_COUNT })
+      .createAlarm(this, "YkiSuoritusAlarm", {
+        alarmDescription: "YKI-suorituksia vastaanotettu",
+        threshold: 1,
+        evaluationPeriods: 1, // 5 minutes
+        comparisonOperator:
+          ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treatMissingData: TreatMissingData.NOT_BREACHING,
+      })
+
+    postYkiSuoritusAlarm.addAlarmAction(new SnsAction(infoSnsTopic))
+    postYkiSuoritusAlarm.addOkAction(new SnsAction(infoSnsTopic))
   }
 }

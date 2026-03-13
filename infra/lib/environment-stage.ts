@@ -42,11 +42,19 @@ export class EnvironmentStage extends Stage {
 
     new SlackBotStack(this, "SlackBot", {
       env,
-      slackChannelName: props.environmentConfig.slackChannelName,
-      slackChannelId: props.environmentConfig.slackChannelId,
+      slackChannel: props.environmentConfig.slackAlarmsChannel,
       slackWorkspaceId: props.environmentConfig.slackWorkspaceId,
       alarmTopics: [alarmsStack.alarmSnsTopic, usEastAlarmsStack.alarmSnsTopic],
     })
+
+    if (props.environmentConfig.slackInfoChannel) {
+      new SlackBotStack(this, "InfoSlackBot", {
+        env,
+        slackChannel: props.environmentConfig.slackInfoChannel,
+        slackWorkspaceId: props.environmentConfig.slackWorkspaceId,
+        alarmTopics: [alarmsStack.infoSnsTopic, usEastAlarmsStack.infoSnsTopic],
+      })
+    }
 
     new DnsStack(this, "Dns", {
       env,
@@ -56,6 +64,7 @@ export class EnvironmentStage extends Stage {
     const logGroupsStack = new LogGroupsStack(this, "LogGroups", {
       env,
       alarmsSnsTopic: alarmsStack.alarmSnsTopic,
+      infoSnsTopic: alarmsStack.infoSnsTopic,
     })
 
     const networkStack = new NetworkStack(this, "Network", {

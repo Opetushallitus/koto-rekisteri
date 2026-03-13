@@ -11,8 +11,7 @@ const app = new App()
 
 const utilityStage = new UtilityStage(app, "Util", {
   env: utilityAccount,
-  slackChannelName: utilityAccount.slackChannelName,
-  slackChannelId: utilityAccount.slackChannelId,
+  slackChannel: utilityAccount.slackChannel,
   slackWorkspaceId: utilityAccount.slackWorkspaceId,
   allowPullsFromAccounts: [
     deploymentAccounts.dev.account,
