@@ -95,6 +95,31 @@ export class LogGroupsStack extends Stack {
 
     warningsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
     warningsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
+
+    const postYkiSuoritusAlarm = this.serviceLogGroup
+      .addMetricFilter("PostYkiSuoritus", {
+        metricName: "PostYkiSuoritus",
+        metricNamespace: "Kitu",
+        filterPattern: FilterPattern.any(
+          FilterPattern.stringValue(
+            "$.attributes.http.route",
+            "=",
+            "/kielitutkinnot/yki/api/suoritus",
+          ),
+          FilterPattern.stringValue("$.attributes.http.method", "=", "POST"),
+          FilterPattern.stringValue("$.status.code", "!=", "ERROR"),
+        ),
+      })
+      .metric({ statistic: Stats.SAMPLE_COUNT })
+      .createAlarm(this, "YkiSuoritusAlarm", {
+        alarmDescription: "YKI-suorituksia vastaanotettu",
+        threshold: 1,
+        evaluationPeriods: 1,
+        treatMissingData: TreatMissingData.NOT_BREACHING,
+      })
+
+    postYkiSuoritusAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
+    postYkiSuoritusAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
   }
 
   /** Enable Transaction Search.
