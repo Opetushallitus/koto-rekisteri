@@ -36,6 +36,7 @@ data class KielitestiSuoritus(
     val puhe: Arvosana,
     @Enumerated(EnumType.STRING)
     val kirjoittaminen: Arvosana,
+    val testikieli: Testikieli?,
     @IgnoreForEquality("KOTO")
     val lastModified: Instant = Instant.now(),
 ) {
@@ -58,6 +59,7 @@ data class KielitestiSuoritus(
                     kuullunYmmartaminen = Arvosana.valueOf(rs.getString("kuullun_ymmartaminen")),
                     puhe = Arvosana.valueOf(rs.getString("puhe")),
                     kirjoittaminen = Arvosana.valueOf(rs.getString("kirjoittaminen")),
+                    testikieli = rs.getString("testikieli")?.let { Testikieli.valueOf(it) },
                     lastModified = rs.getTimestamp("last_modified").toInstant(),
                 )
             }

@@ -38,6 +38,7 @@ class KielitestiSuoritusRepositoryTest(
             kuullunYmmartaminen = Arvosana.B1,
             puhe = Arvosana.B1,
             kirjoittaminen = Arvosana.A2,
+            testikieli = Testikieli.FIN,
         )
 
     private val suoritusJennika =
@@ -56,6 +57,7 @@ class KielitestiSuoritusRepositoryTest(
             kuullunYmmartaminen = Arvosana.B1,
             puhe = Arvosana.B1,
             kirjoittaminen = Arvosana.A2,
+            testikieli = Testikieli.FIN,
         )
 
     @BeforeEach

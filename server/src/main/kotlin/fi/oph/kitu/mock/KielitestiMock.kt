@@ -2,6 +2,7 @@ package fi.oph.kitu.mock
 
 import fi.oph.kitu.kotoutumiskoulutus.Arvosana
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
+import fi.oph.kitu.kotoutumiskoulutus.Testikieli
 import java.time.LocalDate
 
 val kotoCourses =
@@ -37,6 +38,7 @@ fun generateRandomKielitestiSuoritus(): KielitestiSuoritus {
         kuullunYmmartaminen = Arvosana.fromString(cefrLanguageLevels.random()),
         puhe = Arvosana.fromString(cefrLanguageLevels.random()),
         kirjoittaminen = Arvosana.fromString(cefrLanguageLevels.random()),
+        testikieli = Testikieli.FIN,
         opettajanEmail = teacher.email,
     )
 }

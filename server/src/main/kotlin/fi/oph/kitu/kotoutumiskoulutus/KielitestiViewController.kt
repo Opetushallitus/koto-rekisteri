@@ -2,7 +2,6 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.organisaatiot.OrganisaatioService
-import fi.oph.kitu.sortedWithDirectionBy
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping

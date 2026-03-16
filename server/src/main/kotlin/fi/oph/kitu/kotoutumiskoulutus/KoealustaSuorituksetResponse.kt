@@ -18,6 +18,7 @@ data class KoealustaSuorituksetResponse(
         data class Completion(
             val courseid: Int,
             val coursename: String,
+            val lang: String?,
             val schoolOID: String?,
             val results: List<Result>,
             val timecompleted: Long,

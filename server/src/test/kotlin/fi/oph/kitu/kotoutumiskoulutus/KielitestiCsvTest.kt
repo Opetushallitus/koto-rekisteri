@@ -47,6 +47,7 @@ class KielitestiCsvTest(
                     kuullunYmmartaminen = Arvosana.A2,
                     puhe = Arvosana.A1,
                     kirjoittaminen = Arvosana.ALLEA1,
+                    testikieli = Testikieli.FIN,
                 ),
                 KielitestiSuoritus(
                     id = null,
@@ -64,6 +65,7 @@ class KielitestiCsvTest(
                     kuullunYmmartaminen = Arvosana.A2,
                     puhe = Arvosana.A1,
                     kirjoittaminen = Arvosana.ALLEA1,
+                    testikieli = Testikieli.SWE,
                 ),
             )
 
