@@ -210,6 +210,26 @@ class KoealustaMappingService(
     }
 
     private fun validate(
+        user: User,
+        lang: String?,
+    ): TypedResult<Testikieli?, Error.Validation> =
+        if (lang == null) {
+            Success(null)
+        } else {
+            try {
+                Success(Testikieli.fromString(lang))
+            } catch (_: IllegalArgumentException) {
+                Failure(
+                    Error.Validation.MalformedField(
+                        userId = user.userid,
+                        field = "lang",
+                        value = lang,
+                    ),
+                )
+            }
+        }
+
+    private fun validate(
         fieldName: String,
         userId: Int,
         oid: String,
@@ -257,6 +277,11 @@ class KoealustaMappingService(
                 .onFailure { errors.add(it) }
                 .getOrNull()
 
+        val testikieli =
+            validate(user, completion.lang)
+                .onFailure { errors.add(it) }
+                .getOrNull()
+
         if (errors.isNotEmpty()) {
             return Failure(
                 Error.SuoritusValidationFailure(
@@ -296,6 +321,7 @@ class KoealustaMappingService(
                 kuullunYmmartaminen = kuullunYmmartaminen,
                 puhe = puhe,
                 kirjoittaminen = kirjoittaminen,
+                testikieli = testikieli,
                 opettajanEmail = completion.teacheremail,
             ),
         )
@@ -433,7 +459,7 @@ class KoealustaMappingService(
             class MissingField(
                 val field: String,
                 userId: Int,
-            ) : Validation(userId, """Missing student "$field" for user "$userId"""")
+            ) : Validation(userId, """Missing "$field" for user "$userId"""")
 
             class MalformedField(
                 userId: Int,

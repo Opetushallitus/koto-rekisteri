@@ -13,8 +13,6 @@ import fi.oph.kitu.sortedWithDirectionBy
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.dao.DuplicateKeyException
-import org.springframework.data.relational.core.conversion.DbActionExecutionException
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
