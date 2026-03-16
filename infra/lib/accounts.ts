@@ -70,10 +70,6 @@ export const deploymentAccounts: {
       name: "kielitutkintorekisteri-alerts-dev-test",
       id: "C08E14CRZ3J",
     },
-    slackInfoChannel: {
-      name: "kielitutkintorekisteri-alerts-dev-test",
-      id: "C08E14CRZ3J",
-    },
     koski: {
       region: "eu-west-1",
       account: "692437769085",
