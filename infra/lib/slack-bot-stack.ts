@@ -19,7 +19,7 @@ export class SlackBotStack extends cdk.Stack {
 
     this.channelConfiguration = new aws_chatbot.SlackChannelConfiguration(
       this,
-      "SlackBot",
+      id,
       {
         slackChannelId: props.slackChannel.id,
         slackWorkspaceId: props.slackWorkspaceId,
