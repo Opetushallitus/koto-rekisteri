@@ -17,6 +17,7 @@ import java.time.Instant
     "sahkoposti",
     "kurssiId",
     "kurssinNimi",
+    "testikieli",
     "organisaatioOid",
     "organisaatio",
     "suoritusaika",
@@ -33,6 +34,7 @@ data class KielitestiSuoritusCsv(
     val sahkoposti: String,
     val kurssinNimi: String,
     val kurssiId: Int,
+    val testikieli: Testikieli?,
     val organisaatioOid: Oid?,
     val organisaatio: String?,
     @param:JsonProperty("suoritusaika")
@@ -56,6 +58,7 @@ data class KielitestiSuoritusCsv(
                 sahkoposti = s.email,
                 kurssiId = s.kurssiId,
                 kurssinNimi = s.kurssi,
+                testikieli = s.testikieli,
                 organisaatioOid = s.oppilaitosOid,
                 organisaatio = organisaatiot.nimet[s.oppilaitosOid]?.toString(),
                 suoritusaika = s.suoritusaika,

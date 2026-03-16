@@ -165,15 +165,15 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
 
     const csvContent = await fs.readFile(path!, "utf8")
     let headers =
-      "oppijanumero,sukunimi,etunimet,kutsumanimi,sahkoposti,kurssiId,kurssinNimi,organisaatioOid,organisaatio,suoritusaika,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen"
+      "oppijanumero,sukunimi,etunimet,kutsumanimi,sahkoposti,kurssiId,kurssinNimi,testikieli,organisaatioOid,organisaatio,suoritusaika,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen"
     let anniina =
-      '"1.2.246.562.24.24941612410",Torvinen-Testi,"Anniina Testi",Anniina,devnull-12@oph.fi,32,"Integraatio testaus",1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
+      '"1.2.246.562.24.24941612410",Torvinen-Testi,"Anniina Testi",Anniina,devnull-12@oph.fi,32,"Integraatio testaus",FIN,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
     let eino =
-      '"1.2.246.562.24.67409348034",Välimaa-Testi,"Eino Testi",Eino,devnull-10@oph.fi,32,"Integraatio testaus",1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
+      '"1.2.246.562.24.67409348034",Välimaa-Testi,"Eino Testi",Eino,devnull-10@oph.fi,32,"Integraatio testaus",FIN,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
     let magdalena =
-      '"1.2.246.562.24.33342764709",Sallinen-Testi,"Magdalena Testi",Magdalena,devnull-14@oph.fi,32,"Integraatio testaus",1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
+      '"1.2.246.562.24.33342764709",Sallinen-Testi,"Magdalena Testi",Magdalena,devnull-14@oph.fi,32,"Integraatio testaus",FIN,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
     let toni =
-      '"1.2.246.562.24.16014275446",Laasonen-Testi,"Toni Testi",Toni,devnull-6@oph.fi,32,"Integraatio testaus",1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
+      '"1.2.246.562.24.16014275446",Laasonen-Testi,"Toni Testi",Toni,devnull-6@oph.fi,32,"Integraatio testaus",FIN,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
 
     expect(csvContent).toContain(headers)
     expect(csvContent).toContain(anniina)
