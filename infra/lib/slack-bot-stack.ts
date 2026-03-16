@@ -23,7 +23,7 @@ export class SlackBotStack extends cdk.Stack {
       {
         slackChannelId: props.slackChannel.id,
         slackWorkspaceId: props.slackWorkspaceId,
-        slackChannelConfigurationName: `${id}-${props.slackChannel.name}`,
+        slackChannelConfigurationName: props.slackChannel.name,
         notificationTopics: props.alarmTopics,
         loggingLevel: LoggingLevel.INFO,
       },
