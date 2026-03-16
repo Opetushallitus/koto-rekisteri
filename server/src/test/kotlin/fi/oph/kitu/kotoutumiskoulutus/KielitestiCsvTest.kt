@@ -74,9 +74,9 @@ class KielitestiCsvTest(
         val actualCsv = koealustaService.generateSuorituksetCsvStream()
         val expectedCsv =
             """
-            oppijanumero,sukunimi,etunimet,kutsumanimi,sahkoposti,kurssiId,kurssinNimi,organisaatioOid,organisaatio,suoritusaika,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen
-            "1.2.246.562.10.1234567890",Ensiö,Eka,Eka,eka@fakeemail.net,52,Yksikkötesti,"1.2.246.562.10.77255241653",,2025-10-21T08:56:37Z,A1,A2,A1,"Alle A1"
-            1.2.246.562.10.303909808,Toisio,Toka,Toka,toka@fakeemail.net,52,Yksikkötesti,"1.2.246.562.10.77255241653",,2025-10-21T08:56:37Z,A1,A2,A1,"Alle A1"
+            oppijanumero,sukunimi,etunimet,kutsumanimi,sahkoposti,kurssiId,kurssinNimi,testikieli,organisaatioOid,organisaatio,suoritusaika,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen
+            "1.2.246.562.10.1234567890",Ensiö,Eka,Eka,eka@fakeemail.net,52,Yksikkötesti,FIN,"1.2.246.562.10.77255241653",,2025-10-21T08:56:37Z,A1,A2,A1,"Alle A1"
+            1.2.246.562.10.303909808,Toisio,Toka,Toka,toka@fakeemail.net,52,Yksikkötesti,SWE,"1.2.246.562.10.77255241653",,2025-10-21T08:56:37Z,A1,A2,A1,"Alle A1"
             
             """.trimIndent()
 
