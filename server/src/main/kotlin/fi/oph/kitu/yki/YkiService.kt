@@ -112,14 +112,17 @@ class YkiService(
                                         .ignoreEmptyValues()
                                 val time = Instant.now()
                                 diff.forEach { (key, value) ->
-                                    suoritusPoikkeamaRepository.save(
+                                    val poikkeama =
                                         YkiSuoritusPoikkeama(
                                             solkiId = entity.solkiId,
                                             kentta = key,
                                             arvoKitussa = value.first.toString(),
                                             arvoSolkissa = value.second.toString(),
                                             havaittu = time,
-                                        ),
+                                        )
+                                    suoritusPoikkeamaRepository.save(poikkeama)
+                                    logger.error(
+                                        "Havaittu poikkeama yki-suorituksen tiedoissa verratuuna Solkin tietoihin: $poikkeama",
                                     )
                                 }
                             }
