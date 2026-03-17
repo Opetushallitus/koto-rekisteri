@@ -7,8 +7,8 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.card
-import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
@@ -18,7 +18,6 @@ import fi.oph.kitu.vkt.VktViewController
 import kotlinx.html.*
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
-import org.springframework.hateoas.server.mvc.linkTo
 
 object VktHyvaJaTyydyttavaSuorituksetPage {
     fun render(

@@ -1,6 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import fi.oph.kitu.html.DisplayTableEnum
+import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import kotlinx.html.FlowContent
 

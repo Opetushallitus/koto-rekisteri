@@ -1,7 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.DisplayTableEnum
+import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.html.VktTableItem
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -11,7 +11,6 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.jdbc.core.query
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
 

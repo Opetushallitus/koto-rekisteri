@@ -2,8 +2,8 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
-import fi.oph.kitu.html.displayTableBody
-import fi.oph.kitu.html.displayTableHeader
+import fi.oph.kitu.html.table.displayTableBody
+import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import kotlinx.html.a
 import kotlinx.html.article

@@ -3,13 +3,13 @@ package fi.oph.kitu.yki.suoritukset
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
-import fi.oph.kitu.html.displayTableBody
-import fi.oph.kitu.html.displayTableHeader
 import fi.oph.kitu.html.errorsArticle
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.koskiErrorsArticle
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.html.table.displayTableBody
+import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
 import kotlinx.html.ButtonType
