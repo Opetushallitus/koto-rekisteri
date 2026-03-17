@@ -88,6 +88,11 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
         "devnull-10@oph.fi",
       ],
     },
+    {
+      column: "Testikieli",
+      tableColumnIndex: 4,
+      order: ["SWE", "FIN", "FIN", "FIN"],
+    },
   ] as const
   for (const testCase of sortTestCases) {
     const { column, tableColumnIndex, order } = testCase
@@ -167,7 +172,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     let headers =
       "oppijanumero,sukunimi,etunimet,kutsumanimi,sahkoposti,kurssiId,kurssinNimi,testikieli,organisaatioOid,organisaatio,suoritusaika,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen"
     let anniina =
-      '"1.2.246.562.24.24941612410",Torvinen-Testi,"Anniina Testi",Anniina,devnull-12@oph.fi,32,"Integraatio testaus",FIN,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
+      '"1.2.246.562.24.24941612410",Torvinen-Testi,"Anniina Testi",Anniina,devnull-12@oph.fi,32,"Integraatio testaus",SWE,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
     let eino =
       '"1.2.246.562.24.67409348034",Välimaa-Testi,"Eino Testi",Eino,devnull-10@oph.fi,32,"Integraatio testaus",FIN,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
     let magdalena =

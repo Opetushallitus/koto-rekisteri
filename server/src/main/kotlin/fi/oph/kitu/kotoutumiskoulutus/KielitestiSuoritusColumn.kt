@@ -38,6 +38,13 @@ enum class KielitestiSuoritusColumn(
         renderValue = { { +it.kurssi } },
     ),
 
+    Testikieli(
+        entityName = "testikieli",
+        uiHeaderValue = "Testikieli",
+        urlParam = "testikieli",
+        renderValue = { { +(it.testikieli?.toString() ?: "") } },
+    ),
+
     Organisaatio(
         entityName = "oppilaitos_oid",
         uiHeaderValue = "Organisaatio",
