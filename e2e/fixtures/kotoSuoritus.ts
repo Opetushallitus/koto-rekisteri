@@ -74,7 +74,7 @@ export const fixtureData = {
   topi: createSuoritus("topi", {}),
   tobias: createSuoritus("tobias", {}),
   silja: createSuoritus("silja", {}),
-  anniina: createSuoritus("anniina", {}),
+  anniina: createSuoritus("anniina", { testikieli: "SWE" }),
   magdalena: createSuoritus("magdalena", {}),
 } as const
 
