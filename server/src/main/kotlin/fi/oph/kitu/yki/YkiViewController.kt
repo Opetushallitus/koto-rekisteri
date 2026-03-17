@@ -4,7 +4,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessage
-import fi.oph.kitu.html.httpParams
+import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper

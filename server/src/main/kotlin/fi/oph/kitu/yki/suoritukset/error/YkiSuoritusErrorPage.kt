@@ -1,10 +1,8 @@
 package fi.oph.kitu.yki.suoritukset.error
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Page
-import fi.oph.kitu.html.displayTable
-import fi.oph.kitu.yki.YkiViewController
+import fi.oph.kitu.html.table.displayTable
 import kotlinx.html.h1
 import kotlinx.html.h2
 

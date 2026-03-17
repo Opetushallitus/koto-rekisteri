@@ -1,6 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.html.DisplayTableEnum
+import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.i18n.finnishDate
 import kotlinx.html.FlowContent
 import kotlinx.html.li

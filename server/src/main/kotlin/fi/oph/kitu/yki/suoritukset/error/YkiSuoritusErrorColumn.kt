@@ -1,6 +1,6 @@
 package fi.oph.kitu.yki.suoritukset.error
 
-import fi.oph.kitu.html.DisplayTableEnum
+import fi.oph.kitu.html.table.DisplayTableEnum
 import kotlinx.html.FlowContent
 
 enum class YkiSuoritusErrorColumn(

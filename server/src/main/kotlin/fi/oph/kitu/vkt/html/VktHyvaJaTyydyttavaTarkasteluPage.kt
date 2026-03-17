@@ -1,11 +1,11 @@
 package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.html.DisplayTableColumn
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.card
-import fi.oph.kitu.html.displayTable
+import fi.oph.kitu.html.table.DisplayTableColumn
+import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate

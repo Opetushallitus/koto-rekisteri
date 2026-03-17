@@ -1,6 +1,6 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.html.DisplayTableEnum
+import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.yki.Tutkintotaso
 import kotlinx.html.FlowContent

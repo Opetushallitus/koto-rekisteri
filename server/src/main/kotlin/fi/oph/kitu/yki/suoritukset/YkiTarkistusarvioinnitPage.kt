@@ -1,13 +1,13 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.html.CheckboxKey
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.card
-import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.horizontalGroup
 import fi.oph.kitu.html.input
+import fi.oph.kitu.html.table.CheckboxKey
+import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.yki.Arviointitila

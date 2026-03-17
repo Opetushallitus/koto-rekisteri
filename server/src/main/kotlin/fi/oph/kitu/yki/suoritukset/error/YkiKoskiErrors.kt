@@ -1,12 +1,12 @@
 package fi.oph.kitu.yki.suoritukset.error
 
-import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.html.card
-import fi.oph.kitu.html.displayTable
 import fi.oph.kitu.html.json
+import fi.oph.kitu.html.table.DisplayTableEnum
+import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
@@ -19,7 +19,6 @@ import kotlinx.html.details
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.summary
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
@@ -90,12 +89,10 @@ object YkiKoskiErrors {
                             Column.Request.withValue { error ->
                                 a(
                                     href =
-                                        WebMvcLinkBuilder
-                                            .linkTo(
-                                                WebMvcLinkBuilder
-                                                    .methodOn(YkiViewController::class.java)
-                                                    .koskiRequestJson(error.id.toInt()),
-                                            ).toString(),
+                                        linkTo(
+                                            methodOn(YkiViewController::class.java)
+                                                .koskiRequestJson(error.id.toInt()),
+                                        ).toString(),
                                 ) {
                                     +"Näytä JSON"
                                 }

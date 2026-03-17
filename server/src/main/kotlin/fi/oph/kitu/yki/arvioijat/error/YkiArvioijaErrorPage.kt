@@ -2,7 +2,7 @@ package fi.oph.kitu.yki.arvioijat.error
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
-import fi.oph.kitu.html.displayTable
+import fi.oph.kitu.html.table.displayTable
 import kotlinx.html.h1
 import kotlinx.html.h2
 

@@ -1,6 +1,10 @@
-package fi.oph.kitu.html
+package fi.oph.kitu.html.table
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.html.debugTrace
+import fi.oph.kitu.html.input
+import fi.oph.kitu.html.javascript
+import fi.oph.kitu.html.testId
 import fi.oph.kitu.reverse
 import fi.oph.kitu.toSymbol
 import kotlinx.html.FlowContent

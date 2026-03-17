@@ -1,7 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import fi.oph.kitu.html.DisplayTableEnum
 import fi.oph.kitu.html.json
+import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import fi.oph.kitu.toJsonNode
