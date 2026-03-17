@@ -8,6 +8,8 @@ import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.koskiErrorsArticle
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.html.table.ColumnTag
+import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTableBody
 import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.yki.YkiApiController
@@ -17,7 +19,6 @@ import kotlinx.html.InputType
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.button
-import kotlinx.html.details
 import kotlinx.html.fieldSet
 import kotlinx.html.footer
 import kotlinx.html.h1
@@ -26,15 +27,10 @@ import kotlinx.html.header
 import kotlinx.html.label
 import kotlinx.html.li
 import kotlinx.html.nav
-import kotlinx.html.summary
 import kotlinx.html.table
-import kotlinx.html.td
-import kotlinx.html.th
-import kotlinx.html.tr
 import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.security.web.csrf.CsrfToken
-import kotlin.enums.enumEntries
 
 object YkiSuorituksetPage {
     fun render(
@@ -114,7 +110,10 @@ object YkiSuorituksetPage {
                 }
 
                 table {
-                    val columns = enumEntries<YkiSuoritusColumn>().map { it.withValue(it.renderValue) }
+                    val columns =
+                        DisplayTableColumn.of<YkiSuoritusColumn, YkiSuoritusEntity>(
+                            setOf(ColumnTag.LIST_VIEW),
+                        )
 
                     displayTableHeader(
                         columns = columns,
@@ -136,50 +135,50 @@ object YkiSuorituksetPage {
                         columns = columns,
                         rowClasses = "suoritus",
                     ) { suoritus ->
-                        if (suoritus.tarkistusarvioinninSaapumisPvm != null) {
-                            tr {
-                                td {
-                                    attributes["colspan"] = "13"
-                                    details {
-                                        summary { +"Näytä tarkistusarvioinnin tiedot" }
-                                        table {
-                                            tr {
-                                                th { +"Saapumispäivä" }
-                                                th { +"Asiatunnus" }
-                                                th { +"Osakokeet" }
-                                                th { +"Arvosana muuttui?" }
-                                                th { +"Perustelu" }
-                                                th { +"Käsittelypäivä" }
-                                                th { +"Tutkintotoimikunnan hyväksyntä" }
-                                            }
-                                            tr {
-                                                td {
-                                                    +suoritus.tarkistusarvioinninSaapumisPvm.toString()
-                                                }
-                                                td { +suoritus.tarkistusarvioinninAsiatunnus.orEmpty() }
-                                                td {
-                                                    +suoritus.tarkistusarvioidutOsakokeet
-                                                        ?.joinToString(", ") { it.viewText }
-                                                        .orEmpty()
-                                                }
-                                                td {
-                                                    +suoritus.arvosanaMuuttui
-                                                        ?.joinToString(", ") { it.viewText }
-                                                        .orEmpty()
-                                                }
-                                                td { +suoritus.perustelu.orEmpty() }
-                                                td {
-                                                    +suoritus.tarkistusarvioinninKasittelyPvm?.toString().orEmpty()
-                                                }
-                                                td {
-                                                    +suoritus.tarkistusarviointiHyvaksyttyViewText().orEmpty()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+//                        if (suoritus.tarkistusarvioinninSaapumisPvm != null) {
+//                            tr {
+//                                td {
+//                                    attributes["colspan"] = "13"
+//                                    details {
+//                                        summary { +"Näytä tarkistusarvioinnin tiedot" }
+//                                        table {
+//                                            tr {
+//                                                th { +"Saapumispäivä" }
+//                                                th { +"Asiatunnus" }
+//                                                th { +"Osakokeet" }
+//                                                th { +"Arvosana muuttui?" }
+//                                                th { +"Perustelu" }
+//                                                th { +"Käsittelypäivä" }
+//                                                th { +"Tutkintotoimikunnan hyväksyntä" }
+//                                            }
+//                                            tr {
+//                                                td {
+//                                                    +suoritus.tarkistusarvioinninSaapumisPvm.toString()
+//                                                }
+//                                                td { +suoritus.tarkistusarvioinninAsiatunnus.orEmpty() }
+//                                                td {
+//                                                    +suoritus.tarkistusarvioidutOsakokeet
+//                                                        ?.joinToString(", ") { it.viewText }
+//                                                        .orEmpty()
+//                                                }
+//                                                td {
+//                                                    +suoritus.arvosanaMuuttui
+//                                                        ?.joinToString(", ") { it.viewText }
+//                                                        .orEmpty()
+//                                                }
+//                                                td { +suoritus.perustelu.orEmpty() }
+//                                                td {
+//                                                    +suoritus.tarkistusarvioinninKasittelyPvm?.toString().orEmpty()
+//                                                }
+//                                                td {
+//                                                    +suoritus.tarkistusarviointiHyvaksyttyViewText().orEmpty()
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
                     }
                 }
             }

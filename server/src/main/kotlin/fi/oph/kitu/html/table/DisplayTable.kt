@@ -29,21 +29,21 @@ data class DisplayTableColumn<T>(
     val width: String? = null,
     val testId: String? = null,
     val renderValue: FlowContent.(T) -> Unit,
-)
-
-interface DisplayTableEnum {
-    val name: String
-    val entityName: String?
-    val uiHeaderValue: String
-    val urlParam: String
-
-    fun <T> withValue(renderValue: FlowContent.(T) -> Unit) =
-        DisplayTableColumn(
-            label = uiHeaderValue,
-            sortKey = urlParam,
-            renderValue = renderValue,
-            testId = entityName,
-        )
+) {
+    companion object {
+        inline fun <reified C : Enum<C>, T> of(tags: Set<ColumnTag>): List<DisplayTableColumn<T>> =
+            RenderableDisplayTableEnum
+                .getByTags<C>(tags)
+                .map {
+                    @Suppress("UNCHECKED_CAST")
+                    DisplayTableColumn(
+                        label = it.uiHeaderValue,
+                        sortKey = it.urlParam,
+                        testId = it.name,
+                        renderValue = it.renderValue as FlowContent.(T) -> Unit,
+                    )
+                }
+    }
 }
 
 fun <T> TABLE.displayTableHeader(
