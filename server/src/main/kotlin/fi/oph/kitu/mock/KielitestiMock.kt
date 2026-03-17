@@ -1,5 +1,6 @@
 package fi.oph.kitu.mock
 
+import fi.oph.kitu.kotoutumiskoulutus.Arvosana
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
 import java.time.LocalDate
 
@@ -32,10 +33,10 @@ fun generateRandomKielitestiSuoritus(): KielitestiSuoritus {
         oppilaitosOid = generateRandomOrganizationOid(),
         kurssiId = (0..999999999).random(),
         kurssi = kotoCourses.random(),
-        luetunYmmartaminen = cefrLanguageLevels.random(),
-        kuullunYmmartaminen = cefrLanguageLevels.random(),
-        puhe = cefrLanguageLevels.random(),
-        kirjoittaminen = cefrLanguageLevels.random(),
+        luetunYmmartaminen = Arvosana.fromString(cefrLanguageLevels.random()),
+        kuullunYmmartaminen = Arvosana.fromString(cefrLanguageLevels.random()),
+        puhe = Arvosana.fromString(cefrLanguageLevels.random()),
+        kirjoittaminen = Arvosana.fromString(cefrLanguageLevels.random()),
         opettajanEmail = teacher.email,
     )
 }

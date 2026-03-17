@@ -60,10 +60,10 @@ data class KielitestiSuoritusCsv(
                 organisaatio = organisaatiot.nimet[s.oppilaitosOid]?.toString(),
                 suoritusaika = s.suoritusaika,
                 oppijanumero = s.oppijanumero,
-                luetunYmmartaminen = s.luetunYmmartaminen,
-                kuullunYmmartaminen = s.kuullunYmmartaminen,
-                puhuminen = s.puhe,
-                kirjoittaminen = s.kirjoittaminen,
+                luetunYmmartaminen = s.luetunYmmartaminen.toString(),
+                kuullunYmmartaminen = s.kuullunYmmartaminen.toString(),
+                puhuminen = s.puhe.toString(),
+                kirjoittaminen = s.kirjoittaminen.toString(),
             )
     }
 }

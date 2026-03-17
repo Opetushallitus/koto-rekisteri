@@ -34,10 +34,10 @@ class KielitestiSuoritusRepositoryTest(
             opettajanEmail = "ope@example.com",
             kurssiId = 32,
             kurssi = "Integraatio testaus",
-            luetunYmmartaminen = "A1",
-            kuullunYmmartaminen = "B2",
-            puhe = "B1",
-            kirjoittaminen = "A2",
+            luetunYmmartaminen = Arvosana.A1,
+            kuullunYmmartaminen = Arvosana.B1,
+            puhe = Arvosana.B1,
+            kirjoittaminen = Arvosana.A2,
         )
 
     private val suoritusJennika =
@@ -52,10 +52,10 @@ class KielitestiSuoritusRepositoryTest(
             opettajanEmail = "ope@example.com",
             kurssiId = 32,
             kurssi = "Integraatio testaus",
-            luetunYmmartaminen = "A1",
-            kuullunYmmartaminen = "B2",
-            puhe = "B1",
-            kirjoittaminen = "A2",
+            luetunYmmartaminen = Arvosana.A1,
+            kuullunYmmartaminen = Arvosana.B1,
+            puhe = Arvosana.B1,
+            kirjoittaminen = Arvosana.A2,
         )
 
     @BeforeEach
@@ -108,7 +108,7 @@ class KielitestiSuoritusRepositoryTest(
     fun `Päivitettyä suoritusta ei tulkita duplikaatiksi`() {
         val updatedSuoritus =
             suoritusRaija.copy(
-                kuullunYmmartaminen = "Yli B1",
+                kuullunYmmartaminen = Arvosana.YLIB1,
                 lastModified = Instant.now(),
             )
         val result = customKielitestiSuoritusRepository.exists(updatedSuoritus)
@@ -119,13 +119,13 @@ class KielitestiSuoritusRepositoryTest(
     fun `findSuoritukset palauttaa vain uusimmat versiot päivitetyistä suorituksista`() {
         val updatedSuoritusRaija =
             suoritusRaija.copy(
-                kuullunYmmartaminen = "Yli B1",
+                kuullunYmmartaminen = Arvosana.YLIB1,
                 lastModified = Instant.now(),
             )
         val updatedsuoritusJennika =
             suoritusJennika.copy(
-                kuullunYmmartaminen = "Yli B1",
-                puhe = "Yli B1",
+                kuullunYmmartaminen = Arvosana.YLIB1,
+                puhe = Arvosana.YLIB1,
                 lastModified = Instant.now(),
             )
         kielitestiSuoritusRepository.saveAll(listOf(updatedSuoritusRaija, updatedsuoritusJennika))
@@ -134,9 +134,9 @@ class KielitestiSuoritusRepositoryTest(
         val resultJennika = suoritukset.find { it.oppijanumero == updatedsuoritusJennika.oppijanumero }
         assertAll(
             fun () = assertEquals(2, suoritukset.size),
-            fun () = assertEquals("Yli B1", resultRaija?.kuullunYmmartaminen),
-            fun () = assertEquals("Yli B1", resultJennika?.kuullunYmmartaminen),
-            fun () = assertEquals("Yli B1", resultJennika?.puhe),
+            fun () = assertEquals(Arvosana.YLIB1, resultRaija?.kuullunYmmartaminen),
+            fun () = assertEquals(Arvosana.YLIB1, resultJennika?.kuullunYmmartaminen),
+            fun () = assertEquals(Arvosana.YLIB1, resultJennika?.puhe),
         )
     }
 }
