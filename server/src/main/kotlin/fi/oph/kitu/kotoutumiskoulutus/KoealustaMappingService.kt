@@ -180,13 +180,13 @@ class KoealustaMappingService(
         resultName: String,
         userId: Int,
         completion: Completion,
-    ): TypedResult<Completion.Result, Error.Validation> {
+    ): TypedResult<Arvosana, Error.Validation> {
         val result =
             completion
                 .results
                 .find { it.name == resultName }
 
-        return if (result?.quiz_grade.isNullOrEmpty()) {
+        return if (result?.quizGrade.isNullOrEmpty()) {
             Failure(
                 Error.Validation.MissingGrade(
                     userId,
@@ -195,7 +195,17 @@ class KoealustaMappingService(
                 ),
             )
         } else {
-            Success(result)
+            try {
+                Success(Arvosana.fromString(result.quizGrade))
+            } catch (_: IllegalArgumentException) {
+                Failure(
+                    Error.Validation.MalformedField(
+                        userId,
+                        resultName,
+                        result.quizGrade,
+                    ),
+                )
+            }
         }
     }
 
@@ -265,10 +275,10 @@ class KoealustaMappingService(
 
         if (user.preferredname == null || oppijanumero == null) return null
 
-        checkNotNull(luetunYmmartaminen?.quiz_grade)
-        checkNotNull(kuullunYmmartaminen?.quiz_grade)
-        checkNotNull(puhe?.quiz_grade)
-        checkNotNull(kirjoittaminen?.quiz_grade)
+        checkNotNull(luetunYmmartaminen)
+        checkNotNull(kuullunYmmartaminen)
+        checkNotNull(kirjoittaminen)
+        checkNotNull(puhe)
         checkNotNull(schoolOid)
 
         return Success(
@@ -282,10 +292,10 @@ class KoealustaMappingService(
                 oppilaitosOid = schoolOid,
                 kurssiId = completion.courseid,
                 kurssi = completion.coursename,
-                luetunYmmartaminen = luetunYmmartaminen.korjattuArvosana(),
-                kuullunYmmartaminen = kuullunYmmartaminen.korjattuArvosana(),
-                puhe = puhe.korjattuArvosana(),
-                kirjoittaminen = kirjoittaminen.korjattuArvosana(),
+                luetunYmmartaminen = luetunYmmartaminen,
+                kuullunYmmartaminen = kuullunYmmartaminen,
+                puhe = puhe,
+                kirjoittaminen = kirjoittaminen,
                 opettajanEmail = completion.teacheremail,
             ),
         )

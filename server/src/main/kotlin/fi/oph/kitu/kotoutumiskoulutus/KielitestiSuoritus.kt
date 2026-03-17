@@ -5,6 +5,8 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import fi.oph.kitu.sortedWithDirectionBy
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.jdbc.core.RowMapper
@@ -26,10 +28,14 @@ data class KielitestiSuoritus(
     val opettajanEmail: String?,
     val kurssiId: Int,
     val kurssi: String,
-    val luetunYmmartaminen: String,
-    val kuullunYmmartaminen: String,
-    val puhe: String,
-    val kirjoittaminen: String?,
+    @Enumerated(EnumType.STRING)
+    val luetunYmmartaminen: Arvosana,
+    @Enumerated(EnumType.STRING)
+    val kuullunYmmartaminen: Arvosana,
+    @Enumerated(EnumType.STRING)
+    val puhe: Arvosana,
+    @Enumerated(EnumType.STRING)
+    val kirjoittaminen: Arvosana,
     @IgnoreForEquality("KOTO")
     val lastModified: Instant = Instant.now(),
 ) {
@@ -48,10 +54,10 @@ data class KielitestiSuoritus(
                     opettajanEmail = rs.getString("opettajan_email"),
                     kurssiId = rs.getInt("kurssi_id"),
                     kurssi = rs.getString("kurssi"),
-                    luetunYmmartaminen = rs.getString("luetun_ymmartaminen"),
-                    kuullunYmmartaminen = rs.getString("kuullun_ymmartaminen"),
-                    puhe = rs.getString("puhe"),
-                    kirjoittaminen = rs.getString("kirjoittaminen"),
+                    luetunYmmartaminen = Arvosana.valueOf(rs.getString("luetun_ymmartaminen")),
+                    kuullunYmmartaminen = Arvosana.valueOf(rs.getString("kuullun_ymmartaminen")),
+                    puhe = Arvosana.valueOf(rs.getString("puhe")),
+                    kirjoittaminen = Arvosana.valueOf(rs.getString("kirjoittaminen")),
                     lastModified = rs.getTimestamp("last_modified").toInstant(),
                 )
             }

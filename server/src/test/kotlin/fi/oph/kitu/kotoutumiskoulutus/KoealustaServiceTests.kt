@@ -41,7 +41,7 @@ class KoealustaServiceTests(
                   "results": [
                     {
                       "name": "luetun ymm\u00e4rt\u00e4minen",
-                      "quiz_grade": "A1"
+                      "quiz_grade": "Alle A1"
                     },
                     {
                       "name": "kuullun ymm\u00e4rt\u00e4minen",
@@ -49,11 +49,11 @@ class KoealustaServiceTests(
                     },
                     {
                       "name": "puhuminen",
-                      "quiz_grade": "A1"
+                      "quiz_grade": "A2"
                     },
                     {
                       "name": "kirjoittaminen",
-                      "quiz_grade": "A1"
+                      "quiz_grade": "Yli B1"
                     }
                   ],
                   "timecompleted": 1728969131,
@@ -892,8 +892,8 @@ class KoealustaServiceTests(
     }
 
     @Test
-    fun `import with B2 arvosana fixes them to Yli B1`(
-        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+    fun `import with incorrect or missing arvosana fails`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
         // Facade
@@ -921,12 +921,8 @@ class KoealustaServiceTests(
                           "quiz_grade": "B2"
                         },
                         {
-                          "name": "puhuminen",
-                          "quiz_grade": "B2"
-                        },
-                        {
                           "name": "kirjoittaminen",
-                          "quiz_grade": "B2"
+                          "quiz_grade": null
                         }
                       ],
                       "timecompleted": 1728969131,
@@ -962,14 +958,34 @@ class KoealustaServiceTests(
         // Verification
         mockServer.verify()
 
-        val suoritus = kielitestiSuoritusRepository.findById(1).get()
+        val errors = kielitestiSuoritusErrorRepository.findAll().toList()
+        val luetunYmmartaminenError = errors.find { it.virheellinenKentta == "luetun ymmärtäminen" }
+        val kuullunYmmartaminenError = errors.find { it.virheellinenKentta == "kuullun ymmärtäminen" }
+        val puheError = errors.find { it.virheellinenKentta == "puhuminen" }
+        val kirjoittaminenError = errors.find { it.virheellinenKentta == "kirjoittaminen" }
 
         assertAll(
-            fun () = assertEquals(123, suoritus.kurssiId),
-            fun () = assertEquals("Yli B1", suoritus.luetunYmmartaminen),
-            fun () = assertEquals("Yli B1", suoritus.kuullunYmmartaminen),
-            fun () = assertEquals("Yli B1", suoritus.puhe),
-            fun () = assertEquals("Yli B1", suoritus.kirjoittaminen),
+            fun() = assertEquals(4, errors.size),
+            fun() =
+                assertEquals(
+                    "Malformed value \"B2\" in \"luetun ymmärtäminen\" for user \"1\"",
+                    luetunYmmartaminenError?.viesti,
+                ),
+            fun() =
+                assertEquals(
+                    "Malformed value \"B2\" in \"kuullun ymmärtäminen\" for user \"1\"",
+                    kuullunYmmartaminenError?.viesti,
+                ),
+            fun() =
+                assertEquals(
+                    "Unexpectedly missing quiz grade \"puhuminen\" on course \"Integraatio testaus\" for user \"1\"",
+                    puheError?.viesti,
+                ),
+            fun() =
+                assertEquals(
+                    "Unexpectedly missing quiz grade \"kirjoittaminen\" on course \"Integraatio testaus\" for user \"1\"",
+                    kirjoittaminenError?.viesti,
+                ),
         )
     }
 
