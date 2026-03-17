@@ -1,6 +1,9 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.html.table.DisplayTableEnum
+import fi.oph.kitu.html.table.ColumnTag
+import fi.oph.kitu.html.table.ColumnTags
+import fi.oph.kitu.html.table.RenderableDisplayTableEnum
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.yki.Tutkintotaso
 import kotlinx.html.FlowContent
@@ -14,8 +17,9 @@ enum class YkiSuoritusColumn(
     override val entityName: String,
     override val uiHeaderValue: String,
     override val urlParam: String,
-    val renderValue: FlowContent.(YkiSuoritusEntity) -> Unit,
-) : DisplayTableEnum {
+    override val renderValue: FlowContent.(YkiSuoritusEntity) -> Unit,
+) : RenderableDisplayTableEnum<YkiSuoritusEntity> {
+    @ColumnTags(ColumnTag.LIST_VIEW)
     SuorittajanOid(
         entityName = "suorittajan_oid",
         uiHeaderValue = "Oppijanumero",
@@ -23,6 +27,7 @@ enum class YkiSuoritusColumn(
         renderValue = { +it.suorittajanOID.toString() },
     ),
 
+    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.PERSONAL_DATA)
     Sukunimi(
         entityName = "sukunimi",
         uiHeaderValue = "Sukunimi",
@@ -30,6 +35,7 @@ enum class YkiSuoritusColumn(
         renderValue = { +it.sukunimi },
     ),
 
+    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.PERSONAL_DATA)
     Etunimet(
         entityName = "etunimet",
         uiHeaderValue = "Etunimi",
@@ -37,6 +43,7 @@ enum class YkiSuoritusColumn(
         renderValue = { +it.etunimet },
     ),
 
+    @ColumnTags(ColumnTag.PERSONAL_DATA)
     Sukupuoli(
         entityName = "sukupuoli",
         uiHeaderValue = "Sukupuoli",
@@ -44,6 +51,7 @@ enum class YkiSuoritusColumn(
         renderValue = { +it.sukupuoli.name },
     ),
 
+    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.PERSONAL_DATA)
     Hetu(
         entityName = "hetu",
         uiHeaderValue = "Henkilötunnus",
@@ -58,6 +66,7 @@ enum class YkiSuoritusColumn(
         renderValue = { +it.kansalaisuus },
     ),
 
+    @ColumnTags(ColumnTag.PERSONAL_DATA)
     Katuosoite(
         entityName = "katuosoite",
         uiHeaderValue = "Osoite",
@@ -65,6 +74,7 @@ enum class YkiSuoritusColumn(
         renderValue = { +osoite(it.katuosoite, it.postinumero, it.postitoimipaikka, it.maa) },
     ),
 
+    @ColumnTags(ColumnTag.PERSONAL_DATA)
     Email(
         entityName = "email",
         uiHeaderValue = "Sähköposti",
@@ -79,13 +89,15 @@ enum class YkiSuoritusColumn(
         renderValue = { +it.solkiId.toString() },
     ),
 
+    @ColumnTags(ColumnTag.LIST_VIEW)
     Tutkintopaiva(
         entityName = "tutkintopaiva",
         uiHeaderValue = "Tutkintopäivä",
         urlParam = "tutkintopaiva",
-        renderValue = { +it.tutkintopaiva.toString() },
+        renderValue = { +it.tutkintopaiva.finnishDate() },
     ),
 
+    @ColumnTags(ColumnTag.LIST_VIEW)
     Tutkintokieli(
         entityName = "tutkintokieli",
         uiHeaderValue = "Tutkintokieli",
@@ -125,7 +137,7 @@ enum class YkiSuoritusColumn(
         entityName = "arviointipaiva",
         uiHeaderValue = "Arviointipäivä",
         urlParam = "arviointipaiva",
-        renderValue = { +it.arviointipaiva.toString() },
+        renderValue = { +it.arviointipaiva?.finnishDate().orEmpty() },
     ),
 
     TekstinYmmartaminen(
