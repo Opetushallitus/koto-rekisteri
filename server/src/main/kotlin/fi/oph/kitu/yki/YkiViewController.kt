@@ -19,6 +19,7 @@ import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
@@ -26,12 +27,15 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import jakarta.servlet.http.HttpSession
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.ResponseEntity
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
+import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -52,82 +56,51 @@ class YkiViewController(
 ) {
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetGetView(
-        versionHistory: Boolean = false,
-        limit: Int = 100,
-        page: Int = 1,
-        sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
-        sortDirection: SortDirection = SortDirection.DESC,
-        recallSearch: Boolean = false,
+        @ModelAttribute params: YkiSuorituksetParams = YkiSuorituksetParams(),
         session: HttpSession? = null,
-    ): ResponseEntity<String> =
-        handleSuorituksetView(
-            if (recallSearch) session?.getAttribute(YKI_SEARCH_KEY) as? String ?: "" else "",
-            versionHistory,
-            limit,
-            page,
-            sortColumn,
-            sortDirection,
+    ): ResponseEntity<String> {
+        val search = if (params.recallSearch) session?.getAttribute(YKI_SEARCH_KEY) as? String ?: "" else ""
+        return handleSuorituksetView(
+            params.copy(search = search),
             KituRequest.currentCsrfToken(),
         )
+    }
 
     @PostMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetPostView(
-        @RequestParam("search") search: String,
-        versionHistory: Boolean = false,
-        limit: Int = 100,
-        page: Int = 1,
-        sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
-        sortDirection: SortDirection = SortDirection.DESC,
+        @ModelAttribute params: YkiSuorituksetParams,
         csrfToken: CsrfToken? = KituRequest.currentCsrfToken(),
         session: HttpSession,
     ): ResponseEntity<String> {
-        session.rewriteAttribute(YKI_SEARCH_KEY, search)
-        return handleSuorituksetView(search, versionHistory, limit, page, sortColumn, sortDirection, csrfToken)
+        session.rewriteAttribute(YKI_SEARCH_KEY, params.search ?: "")
+        return handleSuorituksetView(params, csrfToken)
     }
 
     fun handleSuorituksetView(
-        search: String,
-        versionHistory: Boolean,
-        limit: Int,
-        page: Int,
-        sortColumn: YkiSuoritusColumn,
-        sortDirection: SortDirection,
+        params: YkiSuorituksetParams,
         csrfToken: CsrfToken?,
     ): ResponseEntity<String> {
-        val totalSuoritukset = ykiService.countSuoritukset(search, versionHistory)
+        val totalSuoritukset = ykiService.countSuoritukset(params.toFilter(), params.versionHistory)
         return ResponseEntity.ok(
             YkiSuorituksetPage.render(
                 suoritukset =
                     ykiService.findSuorituksetPaged(
-                        search,
-                        sortColumn,
-                        sortDirection,
-                        versionHistory,
-                        limit,
-                        offset = limit * (page - 1),
+                        params.toFilter(),
+                        params.sortColumn,
+                        params.sortDirection,
+                        params.versionHistory,
+                        params.limit,
+                        offset = params.limit * (params.page - 1),
                     ),
                 totalSuoritukset = totalSuoritukset,
-                sortColumn = sortColumn,
-                sortDirection = sortDirection,
+                params,
                 pagination =
                     Pagination.valueOf(
-                        currentPageNumber = page,
+                        currentPageNumber = params.page,
                         numberOfRows = totalSuoritukset.toInt(),
-                        pageSize = limit,
-                        url = { currentPage ->
-                            httpParams(
-                                mapOf(
-                                    "recallSearch" to if (search.isNotEmpty()) "true" else null,
-                                    "includeVersionHistory" to versionHistory,
-                                    "page" to currentPage,
-                                    "sortColumn" to sortColumn.urlParam,
-                                    "sortDirection" to sortDirection.name,
-                                ),
-                            )
-                        },
+                        pageSize = params.limit,
+                        url = { currentPage -> httpParams(params.toMap().plus("page" to currentPage)) },
                     ),
-                search = search,
-                versionHistory = versionHistory,
                 errorsCount = suoritusErrorService.countErrors(),
                 koskiErrorsCount = koskiErrorService.countByEntity("yki", false).toLong(),
                 csrfToken = csrfToken,
@@ -276,3 +249,42 @@ class YkiViewController(
         const val YKI_SEARCH_KEY = "YkiSearch"
     }
 }
+
+data class YkiSuorituksetParams(
+    var versionHistory: Boolean = false,
+    var limit: Int = 100,
+    var page: Int = 1,
+    var sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
+    var sortDirection: SortDirection = SortDirection.DESC,
+    var search: String = "",
+    var recallSearch: Boolean = false,
+    @param:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    var tutkintoalku: LocalDate? = null,
+    @param:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    var tutkintoloppu: LocalDate? = null,
+    var tutkintokieli: Tutkintokieli? = null,
+    var henkilotiedot: Boolean = false,
+) {
+    fun toMap(): Map<String, String?> =
+        mapOf(
+            "recallSearch" to search.isNotEmpty().toTrueOrNull(),
+            "versionHistory" to versionHistory.toTrueOrNull(),
+            "page" to page.toString(),
+            "sortColumn" to sortColumn.urlParam,
+            "sortDirection" to sortDirection.name,
+            "tutkintoalku" to tutkintoalku?.toString(),
+            "tutkintoloppu" to tutkintoloppu?.toString(),
+            "tutkintokieli" to tutkintokieli?.toString(),
+            "henkilotiedot" to henkilotiedot.toTrueOrNull(),
+        )
+
+    fun toFilter() =
+        YkiSuoritusFilter(
+            search = search,
+            alkupaiva = tutkintoalku,
+            loppupaiva = tutkintoloppu,
+            tutkintokieli = tutkintokieli,
+        )
+}
+
+fun Boolean?.toTrueOrNull(): String? = if (this == true) "true" else null

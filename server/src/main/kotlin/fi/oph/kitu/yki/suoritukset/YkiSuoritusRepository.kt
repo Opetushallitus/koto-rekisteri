@@ -6,13 +6,13 @@ import fi.oph.kitu.equalsIgnoringAnnotated
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
+import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.buildSql
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.pagingQuery
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectArvosanat
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectSuoritukset
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectTarkistusarviointiAgg
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectYkiSuoritusEntity
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.whereSearchMatches
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.withCtes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -51,7 +51,7 @@ class YkiSuoritusRepository {
 
     @WithSpan
     fun find(
-        searchBy: String = "",
+        filter: YkiSuoritusFilter = YkiSuoritusFilter(),
         column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         direction: SortDirection = SortDirection.DESC,
         distinct: Boolean = true,
@@ -61,15 +61,15 @@ class YkiSuoritusRepository {
         jdbcNamedParameterTemplate.query(
             selectSuoritukset(
                 distinct,
-                whereSearchMatches("search_str"),
+                filter.whereSql(),
                 "ORDER BY ${column.entityName} $direction",
                 pagingQuery(limit, offset),
             ),
-            mapOf(
-                "search_str" to "%$searchBy%",
-                "limit" to limit,
-                "offset" to offset,
-            ),
+            filter.params() +
+                mapOf(
+                    "limit" to limit,
+                    "offset" to offset,
+                ),
             YkiSuoritusEntity.fromRow,
         )
 
@@ -149,16 +149,16 @@ class YkiSuoritusRepository {
 
     @WithSpan
     fun countSuoritukset(
-        searchBy: String = "",
+        filter: YkiSuoritusFilter = YkiSuoritusFilter(),
         distinct: Boolean = true,
     ): Long {
         val sql =
             buildSql(
-                withCtes("viimeisin_suoritus" to selectSuoritukset(viimeisin = distinct, whereSearchMatches())),
+                withCtes("viimeisin_suoritus" to selectSuoritukset(viimeisin = distinct, filter.whereSql())),
                 "SELECT COUNT(*) FROM viimeisin_suoritus",
             )
 
-        val params = mapOf("search_str" to "%$searchBy%")
+        val params = filter.params()
 
         return jdbcNamedParameterTemplate.queryForObject(
             sql,
@@ -556,17 +556,6 @@ object YkiSuoritusSql {
         offset: Int?,
     ): String = if (limit != null && offset != null) "LIMIT :limit OFFSET :offset" else ""
 
-    fun whereSearchMatches(paramName: String = "search_str"): String =
-        """
-        WHERE suorittajan_oid ILIKE :$paramName 
-            OR etunimet ILIKE :$paramName
-            OR sukunimi ILIKE :$paramName
-            OR email ILIKE :$paramName
-            OR hetu ILIKE :$paramName
-            OR jarjestajan_tunnus_oid ILIKE :$paramName 
-            OR jarjestajan_nimi ILIKE :$paramName
-        """.trimIndent()
-
     fun withCtes(vararg ctes: Pair<String, String>) =
         """
         WITH ${ctes.joinToString(",\n") { "${it.first} AS (${it.second})" }}
@@ -611,4 +600,30 @@ data class Columns(
     companion object {
         fun of(vararg names: String) = Columns(names.toList())
     }
+}
+
+data class YkiSuoritusFilter(
+    val search: String? = null,
+    val alkupaiva: LocalDate? = null,
+    val loppupaiva: LocalDate? = null,
+    val tutkintokieli: Tutkintokieli? = null,
+) {
+    val searchStrName = "search_str"
+
+    fun whereSql(): String = "WHERE ${searchQuery() ?: "TRUE"}"
+
+    private fun searchQuery(): String? =
+        search?.let {
+            """
+            suorittajan_oid ILIKE :$searchStrName 
+            OR etunimet ILIKE :$searchStrName
+            OR sukunimi ILIKE :$searchStrName
+            OR email ILIKE :$searchStrName
+            OR hetu ILIKE :$searchStrName
+            OR jarjestajan_tunnus_oid ILIKE :$searchStrName 
+            OR jarjestajan_nimi ILIKE :$searchStrName
+            """.trimIndent()
+        }
+
+    fun params() = mapOf(searchStrName to "%${search.orEmpty()}%")
 }

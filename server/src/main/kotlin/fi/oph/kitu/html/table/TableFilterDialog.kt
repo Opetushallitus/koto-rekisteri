@@ -10,13 +10,16 @@ import fi.oph.kitu.html.submitButton
 import kotlinx.html.*
 import java.time.LocalDate
 
-fun FlowContent.tableFilterDialog(block: FlowContent.() -> Unit) {
+fun FlowContent.tableFilterDialog(
+    action: String,
+    block: FlowContent.() -> Unit,
+) {
     val modalId = "table-filter-dialog"
     modalCommandButton(modalId, ModalCommand.OPEN) {
         +"Rajaa näytettävät tiedot"
     }
     modal(modalId, "Tiedon rajaus") {
-        form(action = ".", method = FormMethod.get) {
+        form(action = action, method = FormMethod.get) {
             block()
 
             footer {
@@ -28,30 +31,32 @@ fun FlowContent.tableFilterDialog(block: FlowContent.() -> Unit) {
     }
 }
 
+fun filterId(id: String) = "filter.$id"
+
 fun FlowContent.dateFilter(
-    filterId: String,
+    id: String,
     labelText: String,
     value: LocalDate?,
 ) {
     label {
         +labelText
-        input(type = InputType.date, name = filterId, value = value?.toString()) {}
+        input(type = InputType.date, name = filterId(id), value = value?.toString()) {}
     }
 }
 
 fun FlowContent.toggleFilter(
-    filterId: String,
+    id: String,
     labelText: String,
     value: Boolean,
 ) {
     label {
-        input(type = InputType.checkBox, name = filterId, checked = value)
+        input(type = InputType.checkBox, name = filterId(id), checked = value)
         +labelText
     }
 }
 
 inline fun <reified E : Enum<E>> FlowContent.enumFilter(
-    filterId: String,
+    id: String,
     labelText: String,
     value: E?,
 ) {
@@ -64,7 +69,7 @@ inline fun <reified E : Enum<E>> FlowContent.enumFilter(
         p { +labelText }
         options.forEach { option ->
             label {
-                input(type = InputType.radio, name = filterId, value = option.name) {
+                input(type = InputType.radio, name = filterId(id), value = option.name) {
                     if (option == value) {
                         attributes["checked"] = "checked"
                     }
@@ -76,7 +81,7 @@ inline fun <reified E : Enum<E>> FlowContent.enumFilter(
         label {
             +labelText
             select {
-                attributes["name"] = filterId
+                attributes["name"] = filterId(id)
                 options.forEach { option ->
                     option {
                         attributes["value"] = option.name

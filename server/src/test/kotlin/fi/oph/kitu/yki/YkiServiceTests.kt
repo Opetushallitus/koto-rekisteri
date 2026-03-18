@@ -21,6 +21,7 @@ import fi.oph.kitu.yki.suoritukset.YkiOsa
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -522,7 +523,7 @@ class YkiServiceTests(
         ykiSuoritusRepository.save(entity.copy(lastModified = Instant.now().minusSeconds(1000)), false)
         ykiSuoritusRepository.save(entity.copy(lastModified = Instant.now()), false)
 
-        val suoritushistory = ykiSuoritusRepository.find(searchBy = oppijanumero, distinct = false)
+        val suoritushistory = ykiSuoritusRepository.find(YkiSuoritusFilter(search = oppijanumero), distinct = false)
         assertEquals(1, suoritushistory.count())
     }
 

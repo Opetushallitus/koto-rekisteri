@@ -18,6 +18,7 @@ import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.YkiApiController
+import fi.oph.kitu.yki.YkiSuorituksetParams
 import fi.oph.kitu.yki.YkiViewController
 import kotlinx.html.ButtonType
 import kotlinx.html.InputType
@@ -42,11 +43,8 @@ object YkiSuorituksetPage {
     fun render(
         suoritukset: List<YkiSuoritusEntity>,
         totalSuoritukset: Long,
-        sortColumn: YkiSuoritusColumn,
-        sortDirection: SortDirection,
+        params: YkiSuorituksetParams,
         pagination: Pagination,
-        search: String,
-        versionHistory: Boolean,
         errorsCount: Long,
         koskiErrorsCount: Long,
         csrfToken: CsrfToken?,
@@ -76,7 +74,7 @@ object YkiSuorituksetPage {
                         id = "search",
                         type = InputType.text,
                         name = "search",
-                        value = search,
+                        value = params.search,
                         placeholder = "Oppijanumero, henkilötunnus tai hakusana",
                     ) {
                         button(type = ButtonType.submit) {
@@ -90,7 +88,7 @@ object YkiSuorituksetPage {
                             id = "versionHistory",
                             type = InputType.checkBox,
                             name = "versionHistory",
-                            checked = versionHistory,
+                            checked = params.versionHistory,
                         ) {
                             +"Näytä versiohistoria"
                         }
@@ -106,7 +104,14 @@ object YkiSuorituksetPage {
                                 +"Suorituksia yhteensä: $totalSuoritukset"
                             }
                             li {
-                                a(href = linkTo<YkiApiController> { getSuorituksetAsCsv(versionHistory) }.toString()) {
+                                a(
+                                    href =
+                                        linkTo<YkiApiController> {
+                                            getSuorituksetAsCsv(
+                                                params.versionHistory,
+                                            )
+                                        }.toString(),
+                                ) {
                                     attributes["download"] = ""
                                     +"Lataa tiedot CSV:nä"
                                 }
@@ -115,7 +120,7 @@ object YkiSuorituksetPage {
                     }
                 }
 
-                tableFilterDialog {
+                tableFilterDialog("suoritukset") {
                     fieldSet(classes = "grid") {
                         dateFilter("tutkintoalku", "Tutkintopäivä alkaen", LocalDate.now())
                         dateFilter("tutkintoloppu", "Tutkintopäivä päättyen", LocalDate.now())
@@ -136,14 +141,9 @@ object YkiSuorituksetPage {
 
                     displayTableHeader(
                         columns = columns,
-                        sortedBy = sortColumn,
-                        sortDirection = sortDirection,
-                        urlParams =
-                            mapOf(
-                                "recallSearch" to if (search.isNotEmpty()) "true" else null,
-                                "includeVersionHistory" to "$versionHistory",
-                                "page" to "${pagination.currentPageNumber}",
-                            ),
+                        sortedBy = params.sortColumn,
+                        sortDirection = params.sortDirection,
+                        urlParams = params.toMap().plus("page" to pagination.currentPageNumber.toString()),
                         preserveSortDirection = false,
                         selectableRows = false,
                         tableId = "suoritukset-table",

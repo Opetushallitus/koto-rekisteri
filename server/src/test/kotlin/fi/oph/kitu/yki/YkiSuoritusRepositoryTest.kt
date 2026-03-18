@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -137,11 +138,11 @@ class YkiSuoritusRepositoryTest(
         ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus, suoritus2))
 
         val searchStr = "ranja"
-        val suoritukset = ykiSuoritusRepository.find(searchStr)
+        val suoritukset = ykiSuoritusRepository.find(YkiSuoritusFilter(search = searchStr))
         assertEquals(1, suoritukset.count())
         assertEquals(suoritus, suoritukset.first().copy(id = null))
 
-        val anotherSuoritukset = ykiSuoritusRepository.find("testi")
+        val anotherSuoritukset = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "testi"))
         assertEquals(2, anotherSuoritukset.count())
     }
 
@@ -170,9 +171,13 @@ class YkiSuoritusRepositoryTest(
         assertEquals(2L, countDistinct, "Assert failed for count distinct suoritukset")
         val countAll = ykiSuoritusRepository.countSuoritukset(distinct = false)
         assertEquals(3L, countAll, "Assert failed for count all suoritukset")
-        val countRanjaDistinct = ykiSuoritusRepository.countSuoritukset("ranja")
+        val countRanjaDistinct = ykiSuoritusRepository.countSuoritukset(YkiSuoritusFilter(search = "ranja"))
         assertEquals(1L, countRanjaDistinct, "Assert failed for count distinct suoritukset with a search term")
-        val countRanjaAll = ykiSuoritusRepository.countSuoritukset("ranja", distinct = false)
+        val countRanjaAll =
+            ykiSuoritusRepository.countSuoritukset(
+                YkiSuoritusFilter(search = "ranja"),
+                distinct = false,
+            )
         assertEquals(2L, countRanjaAll, "Assert failed for count all suoritukset with a search term")
     }
 }
