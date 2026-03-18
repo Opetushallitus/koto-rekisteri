@@ -20,6 +20,7 @@ import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
@@ -30,11 +31,13 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import java.io.ByteArrayOutputStream
 import java.time.Instant
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -219,13 +222,13 @@ class YkiService(
 
     @WithSpan
     fun countSuoritukset(
-        searchBy: String = "",
+        filter: YkiSuoritusFilter = YkiSuoritusFilter(),
         versionHistory: Boolean = false,
-    ): Long = suoritusRepository.countSuoritukset(searchBy = searchBy, distinct = !versionHistory)
+    ): Long = suoritusRepository.countSuoritukset(filter = filter, distinct = !versionHistory)
 
     @WithSpan
     fun findSuorituksetPaged(
-        searchStr: String = "",
+        filter: YkiSuoritusFilter = YkiSuoritusFilter(),
         column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
         direction: SortDirection,
         versionHistory: Boolean = false,
@@ -234,7 +237,7 @@ class YkiService(
     ): List<YkiSuoritusEntity> =
         suoritusRepository
             .find(
-                searchBy = searchStr,
+                filter = filter,
                 column = column,
                 direction = direction,
                 distinct = !versionHistory,
