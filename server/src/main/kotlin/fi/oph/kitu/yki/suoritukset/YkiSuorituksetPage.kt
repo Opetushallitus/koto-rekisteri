@@ -10,8 +10,13 @@ import fi.oph.kitu.html.koskiErrorsArticle
 import fi.oph.kitu.html.pagination
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableColumn
+import fi.oph.kitu.html.table.dateFilter
 import fi.oph.kitu.html.table.displayTableBody
 import fi.oph.kitu.html.table.displayTableHeader
+import fi.oph.kitu.html.table.enumFilter
+import fi.oph.kitu.html.table.tableFilterDialog
+import fi.oph.kitu.html.table.toggleFilter
+import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
 import kotlinx.html.ButtonType
@@ -31,6 +36,7 @@ import kotlinx.html.table
 import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.security.web.csrf.CsrfToken
+import java.time.LocalDate
 
 object YkiSuorituksetPage {
     fun render(
@@ -106,6 +112,19 @@ object YkiSuorituksetPage {
                                 }
                             }
                         }
+                    }
+                }
+
+                tableFilterDialog {
+                    fieldSet(classes = "grid") {
+                        dateFilter("tutkintoalku", "Tutkintopäivä alkaen", LocalDate.now())
+                        dateFilter("tutkintoloppu", "Tutkintopäivä päättyen", LocalDate.now())
+                    }
+                    fieldSet {
+                        toggleFilter("henkilotiedot", "Henkilötiedot", false)
+                    }
+                    fieldSet {
+                        enumFilter<Tutkintokieli>("tutkintokieli", "Tutkintokieli", Tutkintokieli.FIN)
                     }
                 }
 

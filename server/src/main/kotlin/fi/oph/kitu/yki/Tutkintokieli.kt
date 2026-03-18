@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
+import fi.oph.kitu.html.table.HideInTableFilter
 import java.sql.ResultSet
 
 /** ISO 639-2 Alpha 3
@@ -23,8 +24,14 @@ enum class Tutkintokieli(
     SME("sme"),
     SPA("spa"),
     SWE("swe"),
+
+    @HideInTableFilter
     SWE10("swe10"),
+
+    @HideInTableFilter
     ENG11("eng11"),
+
+    @HideInTableFilter
     ENG12("eng12"),
     ;
 
