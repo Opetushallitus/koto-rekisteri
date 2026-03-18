@@ -31,8 +31,6 @@ fun FlowContent.tableFilterDialog(
     }
 }
 
-fun filterId(id: String) = "filter.$id"
-
 fun FlowContent.dateFilter(
     id: String,
     labelText: String,
@@ -40,7 +38,7 @@ fun FlowContent.dateFilter(
 ) {
     label {
         +labelText
-        input(type = InputType.date, name = filterId(id), value = value?.toString()) {}
+        input(type = InputType.date, name = id, value = value?.toString()) {}
     }
 }
 
@@ -50,7 +48,7 @@ fun FlowContent.toggleFilter(
     value: Boolean,
 ) {
     label {
-        input(type = InputType.checkBox, name = filterId(id), checked = value)
+        input(type = InputType.checkBox, name = id, checked = value)
         +labelText
     }
 }
@@ -61,34 +59,35 @@ inline fun <reified E : Enum<E>> FlowContent.enumFilter(
     value: E?,
 ) {
     val options =
-        enumValues<E>().filterNot {
-            E::class.java.getField(it.name).isAnnotationPresent(HideInTableFilter::class.java)
-        }
+        listOf(null) +
+            enumValues<E>().filterNot {
+                E::class.java.getField(it.name).isAnnotationPresent(HideInTableFilter::class.java)
+            }
 
     if (options.size <= 5) {
         p { +labelText }
         options.forEach { option ->
             label {
-                input(type = InputType.radio, name = filterId(id), value = option.name) {
+                input(type = InputType.radio, name = id, value = option?.name.orEmpty()) {
                     if (option == value) {
                         attributes["checked"] = "checked"
                     }
                 }
-                +option.name
+                +(option?.name ?: "Kaikki")
             }
         }
     } else {
         label {
             +labelText
             select {
-                attributes["name"] = filterId(id)
+                attributes["name"] = id
                 options.forEach { option ->
                     option {
-                        attributes["value"] = option.name
+                        attributes["value"] = option?.name.orEmpty()
                         if (option == value) {
                             attributes["selected"] = "selected"
                         }
-                        +option.name
+                        +(option?.name ?: "Kaikki")
                     }
                 }
             }

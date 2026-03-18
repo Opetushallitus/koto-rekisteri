@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.errorsArticle
@@ -14,13 +13,16 @@ import fi.oph.kitu.html.table.dateFilter
 import fi.oph.kitu.html.table.displayTableBody
 import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.html.table.enumFilter
+import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.yki.Tutkintokieli
+import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiSuorituksetParams
 import fi.oph.kitu.yki.YkiViewController
 import kotlinx.html.ButtonType
+import kotlinx.html.FlowContent
 import kotlinx.html.InputType
 import kotlinx.html.a
 import kotlinx.html.article
@@ -37,7 +39,6 @@ import kotlinx.html.table
 import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.security.web.csrf.CsrfToken
-import java.time.LocalDate
 
 object YkiSuorituksetPage {
     fun render(
@@ -100,44 +101,16 @@ object YkiSuorituksetPage {
                 header {
                     nav {
                         ul {
-                            li {
-                                +"Suorituksia yhteensä: $totalSuoritukset"
-                            }
-                            li {
-                                a(
-                                    href =
-                                        linkTo<YkiApiController> {
-                                            getSuorituksetAsCsv(
-                                                params.versionHistory,
-                                            )
-                                        }.toString(),
-                                ) {
-                                    attributes["download"] = ""
-                                    +"Lataa tiedot CSV:nä"
-                                }
-                            }
+                            li { +"Suorituksia yhteensä: $totalSuoritukset" }
+                            li { ykiSuoritusFilters(params) }
+                            li { csvDownloadButton(params) }
                         }
-                    }
-                }
-
-                tableFilterDialog("suoritukset") {
-                    fieldSet(classes = "grid") {
-                        dateFilter("tutkintoalku", "Tutkintopäivä alkaen", LocalDate.now())
-                        dateFilter("tutkintoloppu", "Tutkintopäivä päättyen", LocalDate.now())
-                    }
-                    fieldSet {
-                        toggleFilter("henkilotiedot", "Henkilötiedot", false)
-                    }
-                    fieldSet {
-                        enumFilter<Tutkintokieli>("tutkintokieli", "Tutkintokieli", Tutkintokieli.FIN)
                     }
                 }
 
                 table {
                     val columns =
-                        DisplayTableColumn.of<YkiSuoritusColumn, YkiSuoritusEntity>(
-                            setOf(ColumnTag.LIST_VIEW),
-                        )
+                        DisplayTableColumn.of<YkiSuoritusColumn, YkiSuoritusEntity>(setOf(ColumnTag.LIST_VIEW))
 
                     displayTableHeader(
                         columns = columns,
@@ -206,4 +179,34 @@ object YkiSuorituksetPage {
                 pagination(pagination)
             }
         }
+}
+
+fun FlowContent.csvDownloadButton(params: YkiSuorituksetParams) {
+    a(
+        href =
+            linkTo<YkiApiController> {
+                getSuorituksetAsCsv()
+            }.toString() + "?${httpParams(params.toMap())}",
+    ) {
+        attributes["download"] = ""
+        +"Lataa tiedot CSV:nä"
+    }
+}
+
+fun FlowContent.ykiSuoritusFilters(params: YkiSuorituksetParams) {
+    tableFilterDialog("suoritukset") {
+        fieldSet(classes = "grid") {
+            dateFilter("tutkintoalku", "Tutkintopäivä alkaen", params.tutkintoalku)
+            dateFilter("tutkintoloppu", "Tutkintopäivä päättyen", params.tutkintoloppu)
+        }
+        fieldSet {
+            enumFilter<Tutkintokieli>("tutkintokieli", "Tutkintokieli", params.tutkintokieli)
+        }
+        fieldSet {
+            enumFilter<Tutkintotaso>("tutkintotaso", "Tutkintotaso", params.tutkintotaso)
+        }
+        fieldSet {
+            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot CSV:llä", params.piilotaHenkilotiedot)
+        }
+    }
 }

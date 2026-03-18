@@ -24,6 +24,7 @@ import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -44,7 +45,7 @@ class YkiApiController(
 ) {
     @GetMapping("/suoritukset", "/suoritus", produces = ["text/csv"])
     fun getSuorituksetAsCsv(
-        @RequestParam("includeVersionHistory", required = false) includeVersionHistory: Boolean?,
+        @ModelAttribute params: YkiSuorituksetParams = YkiSuorituksetParams(),
     ): ResponseEntity<Resource> =
         ResponseEntity
             .ok()
@@ -55,7 +56,7 @@ class YkiApiController(
                     ByteArrayInputStream(
                         service
                             .generateSuorituksetCsvStream(
-                                includeVersionHistory == true,
+                                params.versionHistory,
                             ).toByteArray(),
                     ),
                 ),

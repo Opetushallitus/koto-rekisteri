@@ -105,6 +105,7 @@ enum class YkiSuoritusColumn(
         renderValue = { +it.tutkintokieli.name },
     ),
 
+    @ColumnTags(ColumnTag.LIST_VIEW)
     Tutkintotaso(
         entityName = "tutkintotaso",
         uiHeaderValue = "Tutkintotaso",

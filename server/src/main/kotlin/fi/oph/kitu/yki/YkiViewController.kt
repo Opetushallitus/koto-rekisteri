@@ -18,8 +18,6 @@ import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
@@ -27,13 +25,11 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import jakarta.servlet.http.HttpSession
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.ResponseEntity
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
-import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
@@ -248,43 +244,6 @@ class YkiViewController(
     companion object {
         const val YKI_SEARCH_KEY = "YkiSearch"
     }
-}
-
-data class YkiSuorituksetParams(
-    var versionHistory: Boolean = false,
-    var limit: Int = 100,
-    var page: Int = 1,
-    var sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
-    var sortDirection: SortDirection = SortDirection.DESC,
-    var search: String = "",
-    var recallSearch: Boolean = false,
-    @param:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    var tutkintoalku: LocalDate? = null,
-    @param:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    var tutkintoloppu: LocalDate? = null,
-    var tutkintokieli: Tutkintokieli? = null,
-    var henkilotiedot: Boolean = false,
-) {
-    fun toMap(): Map<String, String?> =
-        mapOf(
-            "recallSearch" to search.isNotEmpty().toTrueOrNull(),
-            "versionHistory" to versionHistory.toTrueOrNull(),
-            "page" to page.toString(),
-            "sortColumn" to sortColumn.urlParam,
-            "sortDirection" to sortDirection.name,
-            "tutkintoalku" to tutkintoalku?.toString(),
-            "tutkintoloppu" to tutkintoloppu?.toString(),
-            "tutkintokieli" to tutkintokieli?.toString(),
-            "henkilotiedot" to henkilotiedot.toTrueOrNull(),
-        )
-
-    fun toFilter() =
-        YkiSuoritusFilter(
-            search = search,
-            alkupaiva = tutkintoalku,
-            loppupaiva = tutkintoloppu,
-            tutkintokieli = tutkintokieli,
-        )
 }
 
 fun Boolean?.toTrueOrNull(): String? = if (this == true) "true" else null
