@@ -914,11 +914,11 @@ class KoealustaServiceTests(
                       "results": [
                         {
                           "name": "luetun ymm\u00e4rt\u00e4minen",
-                          "quiz_grade": "B2"
+                          "quiz_grade": "B3"
                         },
                         {
                           "name": "kuullun ymm\u00e4rt\u00e4minen",
-                          "quiz_grade": "B2"
+                          "quiz_grade": "B3"
                         },
                         {
                           "name": "kirjoittaminen",
@@ -968,12 +968,12 @@ class KoealustaServiceTests(
             fun() = assertEquals(4, errors.size),
             fun() =
                 assertEquals(
-                    "Malformed value \"B2\" in \"luetun ymmärtäminen\" for user \"1\"",
+                    "Malformed value \"B3\" in \"luetun ymmärtäminen\" for user \"1\"",
                     luetunYmmartaminenError?.viesti,
                 ),
             fun() =
                 assertEquals(
-                    "Malformed value \"B2\" in \"kuullun ymmärtäminen\" for user \"1\"",
+                    "Malformed value \"B3\" in \"kuullun ymmärtäminen\" for user \"1\"",
                     kuullunYmmartaminenError?.viesti,
                 ),
             fun() =
@@ -986,6 +986,91 @@ class KoealustaServiceTests(
                     "Unexpectedly missing quiz grade \"kirjoittaminen\" on course \"Integraatio testaus\" for user \"1\"",
                     kirjoittaminenError?.viesti,
                 ),
+        )
+    }
+
+    // Osasta koetilaisuuksista tulee virheellisesti arvosanoja B2, jotka pitää korjata arvosanaksi Yli B1
+    // Koealustalle on tehty korjaus 2.2.2026 jälkeen luoduille testeille, mutta virhe esiintyy uusissa suorituksissa, jos testi on luotu alustalle ennen 2.2 tehtyä muutosta
+    // TODO Tämän voi poistaa kun B2-arvosanat on korjattu koealustan tuotantoympäristössä
+    @Test
+    fun `import with B2 arvosana fixes them to Yli B1`(
+        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        // Facade
+        val suoritusJson =
+            """
+            {
+                  "userid": 1,
+                  "firstnames": "Ranja Testi",
+                  "lastname": "Öhman-Testi",
+                  "preferredname": "Ranja",
+                  "SSN": "010180-9026",
+                  "email": "ranja.testi@oph.fi",
+                  "completions": [
+                    {
+                      "courseid": 123,
+                      "coursename": "Integraatio testaus",
+                      "schoolOID": "1.2.246.562.10.1234567890",
+                      "results": [
+                        {
+                          "name": "luetun ymm\u00e4rt\u00e4minen",
+                          "quiz_grade": "B2"
+                        },
+                        {
+                          "name": "kuullun ymm\u00e4rt\u00e4minen",
+                          "quiz_grade": "B2"
+                        },
+                        {
+                          "name": "puhuminen",
+                          "quiz_grade": "B2"
+                        },
+                        {
+                          "name": "kirjoittaminen",
+                          "quiz_grade": "B2"
+                        }
+                      ],
+                      "timecompleted": 1728969131,
+                      "teacheremail": "opettaja@testi.oph.fi"
+                    }
+                  ]
+            }
+            """.trimIndent()
+        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$suoritusJson]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        // System under test
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        // Test
+        koealustaService.importSuoritukset(Instant.EPOCH)
+
+        // Verification
+        mockServer.verify()
+
+        val suoritus = kielitestiSuoritusRepository.findById(1).get()
+
+        assertAll(
+            fun () = assertEquals(123, suoritus.kurssiId),
+            fun () = assertEquals(Arvosana.YLIB1, suoritus.luetunYmmartaminen),
+            fun () = assertEquals(Arvosana.YLIB1, suoritus.kuullunYmmartaminen),
+            fun () = assertEquals(Arvosana.YLIB1, suoritus.puhe),
+            fun () = assertEquals(Arvosana.YLIB1, suoritus.kirjoittaminen),
         )
     }
 

@@ -195,6 +195,12 @@ class KoealustaMappingService(
                 ),
             )
         } else {
+            // Osasta koetilaisuuksista tulee virheellisesti arvosanoja B2, jotka pitää korjata arvosanaksi Yli B1
+            // Koealustalle on tehty korjaus 2.2.2026 jälkeen luoduille testeille, mutta virhe esiintyy uusissa suorituksissa, jos testi on luotu alustalle ennen 2.2 tehtyä muutosta
+            // TODO Tämän iffin voi poistaa kun B2-arvosanat on korjattu koealustan tuotantoympäristössä
+            if (result.quizGrade == "B2") {
+                return Success(Arvosana.YLIB1)
+            }
             try {
                 Success(Arvosana.fromString(result.quizGrade))
             } catch (_: IllegalArgumentException) {
