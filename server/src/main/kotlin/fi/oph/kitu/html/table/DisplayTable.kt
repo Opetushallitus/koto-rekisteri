@@ -34,15 +34,14 @@ data class DisplayTableColumn<T>(
     companion object {
         inline fun <reified C : Enum<C>, T> of(tags: Set<ColumnTag>): List<DisplayTableColumn<T>> =
             RenderableDisplayTableEnum
-                .getByTags<C>(tags)
+                .getByTags<C, T>(tags)
                 .map {
-                    @Suppress("UNCHECKED_CAST")
                     DisplayTableColumn(
                         label = it.uiHeaderValue,
                         sortKey = it.urlParam,
                         testId = it.name,
-                        getValue = it.getValue as (T) -> String,
-                        renderHtml = it.renderHtml as (FlowContent.(T) -> Unit)?,
+                        getValue = it.getValue,
+                        renderHtml = it.renderHtml,
                     )
                 }
     }
