@@ -35,10 +35,10 @@ interface RenderableDisplayTableEnum<T> : DisplayTableEnum {
     val renderHtml: ((parent: FlowContent, value: T) -> Unit)?
 
     companion object {
-        inline fun <reified C : Enum<C>> getByTags(
+        inline fun <reified C : Enum<C>, T> getByTags(
             require: Set<ColumnTag>,
             exclude: Set<ColumnTag> = emptySet(),
-        ): List<RenderableDisplayTableEnum<*>> =
+        ): List<RenderableDisplayTableEnum<T>> =
             enumValues<C>()
                 .filter {
                     C::class.java.getField(it.name).annotations.any { annotation ->
@@ -46,7 +46,7 @@ interface RenderableDisplayTableEnum<T> : DisplayTableEnum {
                             annotation.tag.intersect(require).isNotEmpty() &&
                             annotation.tag.intersect(exclude).isEmpty()
                     }
-                }.filterIsInstance<RenderableDisplayTableEnum<*>>()
+                }.filterIsInstance<RenderableDisplayTableEnum<T>>()
     }
 }
 
@@ -77,15 +77,16 @@ inline fun <reified T : Enum<T>> hasTag(
             annotation.tag.contains(tag)
     }
 
-object CsvRenderer {
+object DisplayTableCsvRenderer {
     inline fun <reified E : Enum<E>, T> renderCsv(
         data: List<T>,
         excludeTags: Set<ColumnTag> = emptySet(),
     ) {
-        val columns = RenderableDisplayTableEnum.getByTags<E>(setOf(ColumnTag.CSV_EXPORT), excludeTags)
+        val columns = RenderableDisplayTableEnum.getByTags<E, T>(setOf(ColumnTag.CSV_EXPORT), excludeTags)
 
         data.map { row ->
             columns.map { col ->
+                col.getValue(row)
             }
         }
     }
