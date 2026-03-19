@@ -12,11 +12,12 @@ import java.time.LocalDate
 
 fun FlowContent.tableFilterDialog(
     action: String,
+    buttonText: String? = null,
     block: FlowContent.() -> Unit,
 ) {
     val modalId = "table-filter-dialog"
     modalCommandButton(modalId, ModalCommand.OPEN) {
-        +"Rajaa näytettävät tiedot"
+        +(buttonText ?: "Rajaa näytettävät tiedot")
     }
     modal(modalId, "Tiedon rajaus") {
         form(action = action, method = FormMethod.get) {

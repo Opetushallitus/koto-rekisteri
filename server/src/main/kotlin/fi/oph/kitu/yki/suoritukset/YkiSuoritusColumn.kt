@@ -20,7 +20,7 @@ enum class YkiSuoritusColumn(
     override val getValue: (value: YkiSuoritusEntity) -> String,
     override val renderHtml: (FlowContent.(YkiSuoritusEntity) -> Unit)? = null,
 ) : RenderableDisplayTableEnum<YkiSuoritusEntity> {
-    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
+    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     SuorittajanOid(
         entityName = "suorittajan_oid",
         uiHeaderValue = "Oppijanumero",
@@ -167,15 +167,6 @@ enum class YkiSuoritusColumn(
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT)
-    RakenteetJaSanasto(
-        entityName = "rakenteet_ja_sanasto",
-        uiHeaderValue = "Rakenteet ja sanasto",
-        urlParam = "rakenteetjasanasto",
-        getValue = { ykiArvosanaText(it.rakenteetJaSanasto, it.tutkintotaso) },
-        renderHtml = { ykiArvosana(it.rakenteetJaSanasto, it.tutkintotaso) },
-    ),
-
-    @ColumnTags(ColumnTag.CSV_EXPORT)
     PuheenYmmartamainen(
         entityName = "puheen_ymmartaminen",
         uiHeaderValue = "Puheen ymmärtäminen",
@@ -193,7 +184,16 @@ enum class YkiSuoritusColumn(
         renderHtml = { ykiArvosana(it.puhuminen, it.tutkintotaso) },
     ),
 
-    @ColumnTags(ColumnTag.CSV_EXPORT)
+    @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.OBSOLETE)
+    RakenteetJaSanasto(
+        entityName = "rakenteet_ja_sanasto",
+        uiHeaderValue = "Rakenteet ja sanasto",
+        urlParam = "rakenteetjasanasto",
+        getValue = { ykiArvosanaText(it.rakenteetJaSanasto, it.tutkintotaso) },
+        renderHtml = { ykiArvosana(it.rakenteetJaSanasto, it.tutkintotaso) },
+    ),
+
+    @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.OBSOLETE)
     Yleisarvosana(
         entityName = "yleisarvosana",
         uiHeaderValue = "Yleisarvosana",
@@ -218,7 +218,7 @@ enum class YkiSuoritusColumn(
         getValue = { it.arviointitilanLahetysvirhe ?: it.arviointitilaLahetetty?.toString() ?: "" },
     ),
 
-    @ColumnTags(ColumnTag.CSV_EXPORT)
+    @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     OpiskeluoikeusOid(
         entityName = "opiskeluoikeus_oid",
         uiHeaderValue = "Opiskeluoikeus-OID",
