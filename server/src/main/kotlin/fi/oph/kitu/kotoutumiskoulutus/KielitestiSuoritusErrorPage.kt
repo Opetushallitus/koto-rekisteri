@@ -48,7 +48,7 @@ object KielitestiSuoritusErrorPage {
                 table(classes = "compact striped") {
                     val columns =
                         enumEntries<KielitestiSuoritusErrorColumn>().map {
-                            it.withValue(it.renderValue(organisaatioidenNimet))
+                            it.withValue(it.getValue(organisaatioidenNimet))
                         }
 
                     displayTableHeader(

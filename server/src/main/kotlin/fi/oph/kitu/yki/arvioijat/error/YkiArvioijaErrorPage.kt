@@ -19,7 +19,7 @@ object YkiArvioijaErrorPage {
             h2 { +"Arvioijien tuonnin virheet" }
             displayTable(
                 rows = virheet,
-                columns = enumValues<YkiArvioijaErrorColumn>().map { it.withValue(it.renderValue) },
+                columns = enumValues<YkiArvioijaErrorColumn>().map { it.withValue(it.getValue) },
                 sortedBy = sortColumn,
                 sortDirection = sortDirection,
                 rowClasses = "virheet",

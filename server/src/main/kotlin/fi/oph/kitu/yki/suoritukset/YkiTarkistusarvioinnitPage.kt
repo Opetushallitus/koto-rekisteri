@@ -82,7 +82,13 @@ object YkiTarkistusarvioinnitPage {
                 card(overflowAuto = true, compact = true) {
                     displayTable(
                         rows = suoritukset,
-                        columns = enumEntries<YkiTarkistusarviointiColumn>().map { it.withValue(it.renderValue) },
+                        columns =
+                            enumEntries<YkiTarkistusarviointiColumn>().map {
+                                it.withValue(
+                                    it.getValue,
+                                    it.renderHtml,
+                                )
+                            },
                         selectableRowName = {
                             CheckboxKey(name = "suoritukset", value = it.solkiId.toString())
                         },

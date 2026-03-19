@@ -9,6 +9,7 @@ import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusService
 import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter

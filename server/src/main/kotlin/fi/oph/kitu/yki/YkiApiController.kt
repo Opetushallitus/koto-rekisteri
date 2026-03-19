@@ -57,6 +57,7 @@ class YkiApiController(
                         service
                             .generateSuorituksetCsvStream(
                                 params.versionHistory,
+                                params.toFilter(),
                             ).toByteArray(),
                     ),
                 ),

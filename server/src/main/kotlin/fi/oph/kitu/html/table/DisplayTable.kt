@@ -28,7 +28,8 @@ data class DisplayTableColumn<T>(
     val sortKey: String? = null,
     val width: String? = null,
     val testId: String? = null,
-    val renderValue: FlowContent.(T) -> Unit,
+    val getValue: (T) -> String = { "Not implemented" },
+    val renderHtml: (FlowContent.(T) -> Unit)?,
 ) {
     companion object {
         inline fun <reified C : Enum<C>, T> of(tags: Set<ColumnTag>): List<DisplayTableColumn<T>> =
@@ -40,7 +41,8 @@ data class DisplayTableColumn<T>(
                         label = it.uiHeaderValue,
                         sortKey = it.urlParam,
                         testId = it.name,
-                        renderValue = it.renderValue as FlowContent.(T) -> Unit,
+                        getValue = it.getValue as (T) -> String,
+                        renderHtml = it.renderHtml as (FlowContent.(T) -> Unit)?,
                     )
                 }
     }
@@ -126,7 +128,7 @@ fun <T> TABLE.displayTableBody(
                 columns.forEach { column ->
                     td {
                         testId(column.testId)
-                        column.renderValue(this, row)
+                        column.renderHtml?.invoke(this, row) ?: +column.getValue(row)
                     }
                 }
             }

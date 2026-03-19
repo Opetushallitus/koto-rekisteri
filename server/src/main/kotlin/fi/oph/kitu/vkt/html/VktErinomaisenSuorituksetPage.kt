@@ -65,14 +65,14 @@ fun FlowContent.vktIlmoittautuneetTable(
         displayTable(
             ilmoittautuneet,
             listOf(
-                CustomVktSuoritusRepository.Column.Sukunimi.withValue {
+                CustomVktSuoritusRepository.Column.Sukunimi.withHtml {
                     a(href = getHref(it.oppijanumero, it.kieli, it.taso)) {
                         +(it.sukunimi)
                     }
                 },
-                CustomVktSuoritusRepository.Column.Etunimet.withValue { +(it.etunimet) },
-                CustomVktSuoritusRepository.Column.Kieli.withValue { +t.get(it.kieli) },
-                CustomVktSuoritusRepository.Column.Tutkintopaiva.withValue {
+                CustomVktSuoritusRepository.Column.Etunimet.withHtml { +(it.etunimet) },
+                CustomVktSuoritusRepository.Column.Kieli.withHtml { +t.get(it.kieli) },
+                CustomVktSuoritusRepository.Column.Tutkintopaiva.withHtml {
                     finnishDate(it.tutkintopaiva)
                 },
             ),

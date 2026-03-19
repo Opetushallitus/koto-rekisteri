@@ -89,7 +89,7 @@ object KielitestiSuorituksetPage {
                 table {
                     val columns =
                         enumEntries<KielitestiSuoritusColumn>().map {
-                            it.withValue(it.renderValue(organisaationimet))
+                            it.withValue(it.getValue(organisaationimet))
                         }
                     displayTableHeader(
                         columns = columns,

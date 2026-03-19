@@ -192,13 +192,16 @@ class YkiService(
                 }
             }
 
-    fun generateSuorituksetCsvStream(includeVersionHistory: Boolean): ByteArrayOutputStream =
+    fun generateSuorituksetCsvStream(
+        includeVersionHistory: Boolean,
+        filter: YkiSuoritusFilter,
+    ): ByteArrayOutputStream =
         tracer
             .spanBuilder("YkiService.generateSuorituksetCsvStream")
             .startSpan()
             .use { span ->
                 val newParser = parser.withUseHeader(true)
-                val suoritukset = allSuoritukset(includeVersionHistory)
+                val suoritukset = allSuoritukset(includeVersionHistory, filter)
                 span.setAttribute("dataCount", suoritukset.count())
                 val writableData = suoritusMapper.convertToResponseIterable(suoritukset)
                 val outputStream = ByteArrayOutputStream()
@@ -208,9 +211,12 @@ class YkiService(
             }
 
     @WithSpan
-    fun allSuoritukset(versionHistory: Boolean): List<YkiSuoritusEntity> =
+    fun allSuoritukset(
+        versionHistory: Boolean,
+        filter: YkiSuoritusFilter = YkiSuoritusFilter(),
+    ): List<YkiSuoritusEntity> =
         suoritusRepository
-            .find(distinct = !versionHistory)
+            .find(distinct = !versionHistory, filter = filter)
             .toList()
             .also {
                 auditLogger.logAllInternalOnly("Yki suoritus viewed", it) { suoritus ->
