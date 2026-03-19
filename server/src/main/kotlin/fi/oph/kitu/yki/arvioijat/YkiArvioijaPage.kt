@@ -36,7 +36,7 @@ object YkiArvioijaPage {
             article(classes = "overflow-auto") {
                 table(classes = "striped") {
                     displayTableHeader(
-                        columns = enumEntries<YkiArvioijaColumn>().map { it.withValue(it.renderValue) },
+                        columns = enumEntries<YkiArvioijaColumn>().map { it.withValue(it.getValue) },
                         sortedBy = sortColumn,
                         sortDirection = sortDirection,
                         preserveSortDirection = true,

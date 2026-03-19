@@ -1,60 +1,62 @@
 package fi.oph.kitu.yki.arvioijat.error
 
 import fi.oph.kitu.html.table.DisplayTableEnum
+import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import kotlinx.html.FlowContent
 
 enum class YkiArvioijaErrorColumn(
     override val entityName: String,
     override val uiHeaderValue: String,
     override val urlParam: String,
-    val renderValue: FlowContent.(YkiArvioijaErrorEntity) -> Unit,
-) : DisplayTableEnum {
+    override val getValue: (YkiArvioijaErrorEntity) -> String,
+    override val renderHtml: ((parent: FlowContent, value: YkiArvioijaErrorEntity) -> Unit)? = null,
+) : RenderableDisplayTableEnum<YkiArvioijaErrorEntity> {
     ArvioijanOid(
         entityName = "arvioijanOid",
         uiHeaderValue = "oppijanumero",
         urlParam = "arvioijanoid",
-        renderValue = { +(it.arvioijanOid ?: "arvo puuttuu") },
+        getValue = { it.arvioijanOid ?: "arvo puuttuu" },
     ),
     Hetu(
         entityName = "hetu",
         uiHeaderValue = "hetu",
         urlParam = "hetu",
-        renderValue = { +(it.hetu ?: "arvo puuttuu") },
+        getValue = { it.hetu ?: "arvo puuttuu" },
     ),
     Nimi(
         entityName = "nimi",
         uiHeaderValue = "nimi",
         urlParam = "nimi",
-        renderValue = { +(it.nimi ?: "arvo puuttuu") },
+        getValue = { it.nimi ?: "arvo puuttuu" },
     ),
     VirheellinenKentta(
         entityName = "virheellinenKentta",
         uiHeaderValue = "virheellinen kenttä",
         urlParam = "virheellinenkentta",
-        renderValue = { +(it.virheellinenKentta ?: "arvo puuttuu") },
+        getValue = { it.virheellinenKentta ?: "arvo puuttuu" },
     ),
     VirheellinenArvo(
         entityName = "virheellinenArvo",
         uiHeaderValue = "virheellinen arvo",
         urlParam = "virheellinenarvo",
-        renderValue = { +(it.virheellinenArvo ?: "arvo puuttuu") },
+        getValue = { it.virheellinenArvo ?: "arvo puuttuu" },
     ),
     VirheellinenRivi(
         entityName = "virheellinenRivi",
         uiHeaderValue = "virheellinen rivi",
         urlParam = "virheellinenrivi",
-        renderValue = { +it.virheellinenRivi },
+        getValue = { it.virheellinenRivi },
     ),
     VirheenRivinumero(
         entityName = "virheenRivinumero",
         uiHeaderValue = "virheen rivinumero",
         urlParam = "virheenrivinumero",
-        renderValue = { +it.virheenRivinumero.toString() },
+        getValue = { it.virheenRivinumero.toString() },
     ),
     VirheenLuontiaika(
         entityName = "virheenLuontiaika",
         uiHeaderValue = "virheen luontiaika",
         urlParam = "virheenluontiaika",
-        renderValue = { +it.virheenLuontiaika.toString() },
+        getValue = { it.virheenLuontiaika.toString() },
     ),
 }

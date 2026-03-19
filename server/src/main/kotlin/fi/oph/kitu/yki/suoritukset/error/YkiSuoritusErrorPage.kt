@@ -19,7 +19,7 @@ object YkiSuoritusErrorPage {
             h2 { +"Suoritusten tuonnin virheet" }
             displayTable(
                 rows = virheet,
-                columns = enumValues<YkiSuoritusErrorColumn>().map { it.withValue(it.renderValue) },
+                columns = enumValues<YkiSuoritusErrorColumn>().map { it.withValue(it.getValue) },
                 sortedBy = sortColumn,
                 sortDirection = sortDirection,
                 rowClasses = "virheet",

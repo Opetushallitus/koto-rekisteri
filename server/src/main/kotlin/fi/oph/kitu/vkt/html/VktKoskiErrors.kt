@@ -48,7 +48,7 @@ object VktKoskiErrors {
                     rows = errors,
                     columns =
                         listOf(
-                            Column.Tutkintoryhma.withValue {
+                            Column.Tutkintoryhma.withHtml {
                                 VktMappingId.parse(it.id)?.let {
                                     a(
                                         href =
@@ -70,10 +70,10 @@ object VktKoskiErrors {
                                     }
                                 } ?: +it.id
                             },
-                            Column.Aikaleima.withValue {
+                            Column.Aikaleima.withHtml {
                                 +it.timestamp.finnishDateTimeUTC()
                             },
-                            Column.Virhe.withValue {
+                            Column.Virhe.withHtml {
                                 val errorJson = it.errorJson()
                                 details {
                                     attributes["name"] = it.id
@@ -92,7 +92,7 @@ object VktKoskiErrors {
                                     }
                                 }
                             },
-                            Column.Request.withValue { error ->
+                            Column.Request.withHtml { error ->
                                 VktMappingId.parse(error.id)?.let { id ->
                                     a(
                                         href =
@@ -110,7 +110,7 @@ object VktKoskiErrors {
                                     }
                                 }
                             },
-                            Column.Hidden.withValue { error ->
+                            Column.Hidden.withHtml { error ->
                                 hideErrorUrl(error, !error.hidden)?.let { url ->
                                     a(href = url) { +if (error.hidden) "Palauta" else "Piilota" }
                                 }

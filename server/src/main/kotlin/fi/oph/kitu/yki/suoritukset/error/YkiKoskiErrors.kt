@@ -58,16 +58,16 @@ object YkiKoskiErrors {
                     rows = errors,
                     columns =
                         listOf(
-                            Column.Oppijanumero.withValue { error ->
+                            Column.Oppijanumero.withHtml { error ->
                                 +(errorIdToSuoritusMap[error.id]?.suorittajanOID?.toString() ?: "???")
                             },
-                            Column.SuorituksenTunniste.withValue { error ->
+                            Column.SuorituksenTunniste.withHtml { error ->
                                 +(errorIdToSuoritusMap[error.id]?.solkiId?.toString() ?: "#${error.id}")
                             },
-                            Column.Aikaleima.withValue {
+                            Column.Aikaleima.withHtml {
                                 +it.timestamp.finnishDateTimeUTC()
                             },
-                            Column.Virhe.withValue {
+                            Column.Virhe.withHtml {
                                 val errorJson = it.errorJson()
                                 details {
                                     attributes["name"] = it.id
@@ -86,7 +86,7 @@ object YkiKoskiErrors {
                                     }
                                 }
                             },
-                            Column.Request.withValue { error ->
+                            Column.Request.withHtml { error ->
                                 a(
                                     href =
                                         linkTo(
@@ -97,7 +97,7 @@ object YkiKoskiErrors {
                                     +"Näytä JSON"
                                 }
                             },
-                            Column.Hidden.withValue { error ->
+                            Column.Hidden.withHtml { error ->
                                 hideErrorUrl(error, !error.hidden)?.let { url ->
                                     a(href = url) { +if (error.hidden) "Palauta" else "Piilota" }
                                 }

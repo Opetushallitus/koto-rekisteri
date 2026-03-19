@@ -11,67 +11,69 @@ enum class YkiTarkistusarviointiColumn(
     override val entityName: String?,
     override val uiHeaderValue: String,
     override val urlParam: String,
-    val renderValue: FlowContent.(YkiSuoritusEntity) -> Unit,
+    val getValue: (YkiSuoritusEntity) -> String,
+    val renderHtml: (FlowContent.(YkiSuoritusEntity) -> Unit)? = null,
 ) : DisplayTableEnum {
     Sukunimi(
         entityName = "sukunimi",
         uiHeaderValue = "Sukunimi",
         urlParam = "sukunimi",
-        renderValue = { +it.sukunimi },
+        getValue = { it.sukunimi },
     ),
     Etunimet(
         entityName = "etunimet",
         uiHeaderValue = "Etunimet",
         urlParam = "etunimet",
-        renderValue = { +it.etunimet },
+        getValue = { it.etunimet },
     ),
     Kieli(
         entityName = "kieli",
         uiHeaderValue = "Kieli",
         urlParam = "kieli",
-        renderValue = { +it.tutkintokieli.name },
+        getValue = { it.tutkintokieli.name },
     ),
     Tutkintotaso(
         entityName = "tutkintotaso",
         uiHeaderValue = "Tutkintotaso",
         urlParam = "tutkintotaso",
-        renderValue = { +it.tutkintotaso.name },
+        getValue = { it.tutkintotaso.name },
     ),
     TutkintoPvm(
         entityName = "tutkintoPvm",
         uiHeaderValue = "Tutkintopäivä",
         urlParam = "tutkintoPvm",
-        renderValue = { +it.tutkintopaiva.finnishDate() },
+        getValue = { it.tutkintopaiva.finnishDate() },
     ),
     SaapumisPvm(
         entityName = "saapumispvm",
         uiHeaderValue = "Saapunut",
         urlParam = "saapumispvm",
-        renderValue = { +it.tarkistusarvioinninSaapumisPvm?.finnishDate().orEmpty() },
+        getValue = { it.tarkistusarvioinninSaapumisPvm?.finnishDate().orEmpty() },
     ),
     KasittelyPvm(
         entityName = "kasittelypvm",
         uiHeaderValue = "Käsitelty",
         urlParam = "kasittelypvm",
-        renderValue = { +it.tarkistusarvioinninKasittelyPvm?.finnishDate().orEmpty() },
+        getValue = { it.tarkistusarvioinninKasittelyPvm?.finnishDate().orEmpty() },
     ),
     HyvaksyntaPvm(
         entityName = "hyvaksyntapvm",
         uiHeaderValue = "Hyväksytty",
         urlParam = "hyvaksyntapvm",
-        renderValue = { +it.tarkistusarviointiHyvaksyttyViewText().orEmpty() },
+        getValue = { it.tarkistusarviointiHyvaksyttyViewText().orEmpty() },
     ),
     Asiatunnus(
         entityName = "asiatunnus",
         uiHeaderValue = "Asiatunnus",
         urlParam = "asiatunnus",
-        renderValue = { +it.tarkistusarvioinninAsiatunnus.orEmpty() },
+        getValue = { it.tarkistusarvioinninAsiatunnus.orEmpty() },
     ),
     Muutokset(
         entityName = "arviointi",
         uiHeaderValue = "Tarkistusarviointi",
         urlParam = "arviointi",
-        renderValue = {
+        getValue = { "Not implemented" },
+        renderHtml = {
             it.perustelu?.let { x -> p { +x } }
             ul {
                 it.tarkistusarvioidutOsakokeet.orEmpty().map { osakoe ->

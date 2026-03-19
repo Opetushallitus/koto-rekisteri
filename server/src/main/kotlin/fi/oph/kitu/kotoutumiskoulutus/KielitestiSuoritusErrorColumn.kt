@@ -15,37 +15,29 @@ enum class KielitestiSuoritusErrorColumn(
     override val entityName: String,
     override val uiHeaderValue: String,
     override val urlParam: String,
-    val renderValue: (Organisaatiot) -> FlowContent.(KielitestiSuoritusError) -> Unit,
+    val getValue: (Organisaatiot) -> (KielitestiSuoritusError) -> String,
+    val renderHtml: ((Organisaatiot) -> FlowContent.(KielitestiSuoritusError) -> Unit)? = null,
 ) : DisplayTableEnum {
     Henkilötunnus(
         entityName = "hetu",
         uiHeaderValue = "Henkilötunnus",
         urlParam = "henkilötunnus",
-        renderValue = {
-            {
-                if (!it.hetu.isNullOrEmpty()) {
-                    attributes["headers"] = "hetu"
-                    +it.hetu
-                }
-            }
-        },
+        getValue = { { it.hetu.orEmpty() } },
     ),
     Nimi(
         entityName = "nimi",
         uiHeaderValue = "Nimi",
         urlParam = "nimi",
-        renderValue = {
-            {
-                attributes["headers"] = "nimi"
-                +it.nimi
-            }
-        },
+        getValue = { { it.nimi } },
     ),
     SchoolOid(
         entityName = "schoolOid",
         uiHeaderValue = "Organisaatio",
         urlParam = "schooloid",
-        renderValue = { orgs ->
+        getValue = { orgs ->
+            { it.schoolOid?.let { oid -> orgs.nimet[oid]?.toString() }.orEmpty() }
+        },
+        renderHtml = { orgs ->
             {
                 it.schoolOid?.let { oid ->
                     orgs.nimet[oid]?.let { name ->
@@ -63,29 +55,20 @@ enum class KielitestiSuoritusErrorColumn(
         entityName = "teacherEmail",
         uiHeaderValue = "Opettajan sähköpostiosoite",
         urlParam = "teacheremail",
-        renderValue = {
-            {
-                attributes["headers"] = "teacherEmail"
-                +it.teacherEmail.orEmpty()
-            }
-        },
+        getValue = { { it.teacherEmail.orEmpty() } },
     ),
     VirheenLuontiaika(
         entityName = "virheenLuontiaika",
         uiHeaderValue = "Virheen luontiaika",
         urlParam = "virheenluontiaika",
-        renderValue = {
-            {
-                attributes["headers"] = "virheenLuontiaika"
-                +it.virheenLuontiaika.finnishDateTimeUTC()
-            }
-        },
+        getValue = { { it.virheenLuontiaika.finnishDateTimeUTC() } },
     ),
     Viesti(
         entityName = "viesti",
         uiHeaderValue = "Virheviesti",
         urlParam = "viesti",
-        renderValue = {
+        getValue = { { it.viesti } },
+        renderHtml = {
             {
                 attributes["headers"] = "viesti"
                 if (it.lisatietoja != null) {
@@ -103,33 +86,18 @@ enum class KielitestiSuoritusErrorColumn(
         entityName = "onrLisatietoja",
         uiHeaderValue = "Ratkaisuehdotus",
         urlParam = "onrLisatietoja",
-        renderValue = {
-            {
-                attributes["headers"] = "ratkaisuehdotus"
-                +it.onrLisatietoja.orEmpty()
-            }
-        },
+        getValue = { { it.onrLisatietoja.orEmpty() } },
     ),
     VirheellinenKentta(
         entityName = "virheellinenKentta",
         uiHeaderValue = "Virheellinen kenttä",
         urlParam = "virheellinenkentta",
-        renderValue = {
-            {
-                attributes["headers"] = "virheellinenKentta"
-                +it.virheellinenKentta.orEmpty()
-            }
-        },
+        getValue = { { it.virheellinenKentta.orEmpty() } },
     ),
     VirheellinenArvo(
         entityName = "virheellinenArvo",
         uiHeaderValue = "Virheellinen arvo",
         urlParam = "virheellinenarvo",
-        renderValue = {
-            {
-                attributes["headers"] = "virheellinenArvo"
-                +it.virheellinenArvo.orEmpty()
-            }
-        },
+        getValue = { { it.virheellinenArvo.orEmpty() } },
     ),
 }

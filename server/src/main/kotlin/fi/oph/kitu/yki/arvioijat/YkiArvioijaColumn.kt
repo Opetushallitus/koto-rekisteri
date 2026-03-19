@@ -1,122 +1,104 @@
 package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.html.table.DisplayTableEnum
+import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import kotlinx.html.FlowContent
 
 enum class YkiArvioijaColumn(
     override val entityName: String,
     override val uiHeaderValue: String,
     override val urlParam: String,
-    val renderValue: FlowContent.(YkiArvioijaEntity) -> Unit,
-) : DisplayTableEnum {
-    // id not added
-
+    override val getValue: (YkiArvioijaEntity) -> String,
+    override val renderHtml: (FlowContent.(YkiArvioijaEntity) -> Unit)? = null,
+) : RenderableDisplayTableEnum<YkiArvioijaEntity> {
     Oppijanumero(
         entityName = "arvioija_oid",
         uiHeaderValue = "Oppijanumero",
         urlParam = "oppijanumero",
-        renderValue = { +it.arvioijaOid.toString() },
+        getValue = { it.arvioijaOid.toString() },
     ),
 
     Hetu(
         entityName = "henkilotunnus",
         uiHeaderValue = "Henkilötunnus",
         urlParam = "hetu",
-        renderValue = { +it.henkilotunnus.orEmpty() },
+        getValue = { it.henkilotunnus.orEmpty() },
     ),
 
     Sukunimi(
         entityName = "sukunimi",
         uiHeaderValue = "Sukunimi",
         urlParam = "sukunimi",
-        renderValue = { +it.sukunimi },
+        getValue = { it.sukunimi },
     ),
 
     Etunimet(
         entityName = "etunimet",
         uiHeaderValue = "Etunimet",
         urlParam = "etunimet",
-        renderValue = { +it.etunimet },
+        getValue = { it.etunimet },
     ),
 
     Email(
         entityName = "sahkopostiosoite",
         uiHeaderValue = "Sähköposti",
         urlParam = "email",
-        renderValue = { +it.sahkopostiosoite.orEmpty() },
+        getValue = { it.sahkopostiosoite.orEmpty() },
     ),
 
     Katuosoite(
         entityName = "katuosoite",
         uiHeaderValue = "Osoite",
         urlParam = "katuosoite",
-        renderValue = { +"${it.katuosoite}, ${it.postinumero} ${it.postitoimipaikka}" },
+        getValue = { "${it.katuosoite}, ${it.postinumero} ${it.postitoimipaikka}" },
     ),
-
-    // Postinumero(
-    //     dbColumn = "postinumero",
-    //     uiHeaderValue = "Postinumero",
-    //     renderValue = { +it.postinumero },
-    // ),
-
-    // Postitoimipaikka(
-    //     dbColumn = "postitoimipaikka",
-    //     uiHeaderValue = "Postitoimipaikka",
-    //     renderValue = { +it.postitoimipaikka },
-    // ),
 
     Tila(
         entityName = "tila",
         uiHeaderValue = "Tila",
         urlParam = "tila",
-        renderValue = {},
+        getValue = { "" },
     ),
 
     Kieli(
         entityName = "kieli",
         uiHeaderValue = "Kieli",
         urlParam = "kieli",
-        renderValue = {},
+        getValue = { "" },
     ),
 
     Tasot(
         entityName = "tasot",
         uiHeaderValue = "Tasot",
         urlParam = "tasot",
-        renderValue = {},
+        getValue = { "" },
     ),
 
     KaudenAlkupaiva(
         entityName = "kauden_alkupaiva",
         uiHeaderValue = "Kauden alkupäivä",
         urlParam = "kaudenalkupaiva",
-        renderValue = {},
+        getValue = { "" },
     ),
 
     KaudenPaattymispaiva(
         entityName = "kauden_paattymispaiva",
         uiHeaderValue = "Kauden päättymispäivä",
         urlParam = "kaudenpaattymispaiva",
-        renderValue = {},
+        getValue = { "" },
     ),
 
     Jatkorekisterointi(
         entityName = "jatkorekisterointi",
         uiHeaderValue = "Jatkorekisteröinti",
         urlParam = "jatkorekisterointi",
-        renderValue = {},
+        getValue = { "" },
     ),
 
     Rekisteriintuontiaika(
         entityName = "rekisteriintuontiaika",
         uiHeaderValue = "Rekisteriintuontiaika",
         urlParam = "rekisteriintuontiaika",
-        renderValue = {},
+        getValue = { "" },
     ),
-
-    // EnsimmainenRekisterointipaiva(
-    //    dbColumn = "ensimmainenRekisterointipaiva",
-    //    uiHeaderValue = "Ensimmäinen Rekisteröintipäivä",
-    //    renderValue = {},
-    // ),
 }
