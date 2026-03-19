@@ -46,8 +46,15 @@ data class YkiSuorituksetParams(
             tutkintotaso = tutkintotaso,
         )
 
-    fun columnTags() =
-        setOfNotNull(
-            if (piilotaHenkilotiedot) null else ColumnTag.PERSONAL_DATA,
-        )
+    fun excludeTags(): Set<ColumnTag> = if (piilotaHenkilotiedot) setOf(ColumnTag.PERSONAL_DATA) else emptySet()
+
+    fun csvFileName() =
+        listOfNotNull(
+            "yki_suoritukset",
+            if (piilotaHenkilotiedot) null else "henkilotiedot",
+            tutkintokieli?.toString(),
+            tutkintotaso?.toString(),
+            tutkintoalku?.toString(),
+            tutkintoloppu?.toString(),
+        ).joinToString("_", postfix = ".csv")
 }

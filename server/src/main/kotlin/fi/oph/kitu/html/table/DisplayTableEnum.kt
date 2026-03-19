@@ -1,6 +1,9 @@
 package fi.oph.kitu.html.table
 
 import kotlinx.html.FlowContent
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
+import java.io.OutputStream
+import java.util.stream.Stream
 import kotlin.collections.filterIsInstance
 
 interface DisplayTableEnum {
@@ -30,8 +33,22 @@ interface DisplayTableEnum {
         )
 }
 
+/**
+ * Edustaa taulukon sarakkeita, jotka voi renderöidä HTML- tai CSV-muotoon.
+ * Tyyppi T on dataluokka, josta sarakkeiden datakenttien sisällöt luetaan.
+ *
+ * CSV-tulostukseen mukaan otettavat sarakkeet on annotoitava @ColumnTags(CSV_EXPORT)
+ * HTML-tulostukseen mukaan otettavat sarakkeet on annotoitava @ColumnTags(LIST_VIEW)
+ */
 interface RenderableDisplayTableEnum<T> : DisplayTableEnum {
+    /**
+     * Palauttaa arvon merkkijonona, jota käytetään CSV-taulussa sekä HTML-muodossa, jos renderHtml on null.
+     */
     val getValue: (value: T) -> String
+
+    /**
+     * Renderöi datan HTML-muodossa. Jos tämä on null, getValuen palauttama arvo tulostetaan.
+     */
     val renderHtml: ((parent: FlowContent, value: T) -> Unit)?
 
     companion object {
@@ -78,26 +95,33 @@ inline fun <reified T : Enum<T>> hasTag(
     }
 
 object DisplayTableCsvRenderer {
+    const val SEPARATOR = ","
+
     inline fun <reified E : Enum<E>, T> renderCsv(
+        output: OutputStream,
         data: List<T>,
         excludeTags: Set<ColumnTag> = emptySet(),
     ) {
         val columns = RenderableDisplayTableEnum.getByTags<E, T>(setOf(ColumnTag.CSV_EXPORT), excludeTags)
+        require(columns.isNotEmpty()) { "No columns with CSV_EXPORT tag found" }
 
-        data.map { row ->
-            columns.map { col ->
-                col.getValue(row)
-            }
+        val header = columns.joinToString(SEPARATOR) { col -> escape(col.uiHeaderValue) }
+        println(header)
+        output.write("$header\n".toByteArray())
+
+        data.forEach { row ->
+            val csvRow = columns.joinToString(SEPARATOR) { col -> escape(col.getValue(row)) }
+            println(csvRow)
+            output.write("$csvRow\n".toByteArray())
         }
+
+        output.flush()
     }
 
-    private fun renderValue(value: Any?): String {
-        if (value == null) return ""
+    fun escape(value: String): String {
+        val escapedValue = value.replace("\"", "\"\"")
 
-        val stringValue = value.toString()
-        val escapedValue = stringValue.replace("\"", "\"\"")
-
-        return if (escapedValue.contains(",") || escapedValue.contains("\"") || escapedValue.contains("\n")) {
+        return if (escapedValue.contains(SEPARATOR) || escapedValue.contains("\"") || escapedValue.contains("\n")) {
             "\"$escapedValue\""
         } else {
             escapedValue
