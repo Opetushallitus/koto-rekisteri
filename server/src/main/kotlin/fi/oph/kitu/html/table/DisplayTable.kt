@@ -32,9 +32,12 @@ data class DisplayTableColumn<T>(
     val renderHtml: (FlowContent.(T) -> Unit)?,
 ) {
     companion object {
-        inline fun <reified C : Enum<C>, T> of(tags: Set<ColumnTag>): List<DisplayTableColumn<T>> =
+        inline fun <reified C : Enum<C>, T> of(
+            includeTags: Set<ColumnTag>,
+            excludeTags: Set<ColumnTag> = emptySet(),
+        ): List<DisplayTableColumn<T>> =
             RenderableDisplayTableEnum
-                .getByTags<C, T>(tags)
+                .getByTags<C, T>(includeTags, excludeTags)
                 .map {
                     DisplayTableColumn(
                         label = it.uiHeaderValue,

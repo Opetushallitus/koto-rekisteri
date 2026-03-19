@@ -32,9 +32,9 @@ import kotlinx.html.footer
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.header
-import kotlinx.html.label
 import kotlinx.html.li
 import kotlinx.html.nav
+import kotlinx.html.section
 import kotlinx.html.table
 import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
@@ -44,7 +44,7 @@ object YkiSuorituksetPage {
     fun render(
         suoritukset: List<YkiSuoritusEntity>,
         totalSuoritukset: Long,
-        params: YkiSuorituksetParams,
+        filterParams: YkiSuorituksetParams,
         pagination: Pagination,
         errorsCount: Long,
         koskiErrorsCount: Long,
@@ -64,34 +64,20 @@ object YkiSuorituksetPage {
                 linkTo(YkiViewController::koskiVirheetView).toString(),
             )
 
-            formPost(
-                action = "",
-                csrfToken = csrfToken,
-                formClasses = "grid center-vertically",
-            ) {
-                fieldSet {
-                    attributes["role"] = "search"
-                    input(
-                        id = "search",
-                        type = InputType.text,
-                        name = "search",
-                        value = params.search,
-                        placeholder = "Oppijanumero, henkilötunnus tai hakusana",
-                    ) {
-                        button(type = ButtonType.submit) {
-                            +"Suodata"
-                        }
-                    }
-                }
-                fieldSet {
-                    label {
+            section(classes = "grid center-vertically") {
+                formPost(action = "", csrfToken = csrfToken) {
+                    fieldSet {
+                        attributes["role"] = "search"
                         input(
-                            id = "versionHistory",
-                            type = InputType.checkBox,
-                            name = "versionHistory",
-                            checked = params.versionHistory,
+                            id = "search",
+                            type = InputType.text,
+                            name = "search",
+                            value = filterParams.search,
+                            placeholder = "Oppijanumero, henkilötunnus tai hakusana",
                         ) {
-                            +"Näytä versiohistoria"
+                            button(type = ButtonType.submit) {
+                                +"Suodata"
+                            }
                         }
                     }
                 }
@@ -102,21 +88,25 @@ object YkiSuorituksetPage {
                     nav {
                         ul {
                             li { +"Suorituksia yhteensä: $totalSuoritukset" }
-                            li { ykiSuoritusFilters(params) }
-                            li { csvDownloadButton(params) }
+                            li { csvDownloadButton(filterParams) }
+                            li { ykiSuoritusFilterButton(filterParams) }
                         }
                     }
+                    ykiSuoritusFilterList(filterParams)
                 }
 
                 table {
                     val columns =
-                        DisplayTableColumn.of<YkiSuoritusColumn, YkiSuoritusEntity>(setOf(ColumnTag.LIST_VIEW))
+                        DisplayTableColumn.of<YkiSuoritusColumn, YkiSuoritusEntity>(
+                            setOf(ColumnTag.LIST_VIEW),
+                            filterParams.excludeTags(),
+                        )
 
                     displayTableHeader(
                         columns = columns,
-                        sortedBy = params.sortColumn,
-                        sortDirection = params.sortDirection,
-                        urlParams = params.toMap().plus("page" to pagination.currentPageNumber.toString()),
+                        sortedBy = filterParams.sortColumn,
+                        sortDirection = filterParams.sortDirection,
+                        urlParams = filterParams.toMap().plus("page" to pagination.currentPageNumber.toString()),
                         preserveSortDirection = false,
                         selectableRows = false,
                         tableId = "suoritukset-table",
@@ -193,7 +183,19 @@ fun FlowContent.csvDownloadButton(params: YkiSuorituksetParams) {
     }
 }
 
-fun FlowContent.ykiSuoritusFilters(params: YkiSuorituksetParams) {
+fun FlowContent.ykiSuoritusFilterList(params: YkiSuorituksetParams) {
+    params.filterDescriptions().let { filters ->
+        if (filters.isNotEmpty()) {
+            ul {
+                filters.forEach { filter ->
+                    li { +filter }
+                }
+            }
+        }
+    }
+}
+
+fun FlowContent.ykiSuoritusFilterButton(params: YkiSuorituksetParams) {
     tableFilterDialog("suoritukset") {
         fieldSet(classes = "grid") {
             dateFilter("tutkintoalku", "Tutkintopäivä alkaen", params.tutkintoalku)
@@ -206,7 +208,17 @@ fun FlowContent.ykiSuoritusFilters(params: YkiSuorituksetParams) {
             enumFilter<Tutkintotaso>("tutkintotaso", "Tutkintotaso", params.tutkintotaso)
         }
         fieldSet {
-            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot CSV:llä", params.piilotaHenkilotiedot)
+            toggleFilter("versionHistory", "Näytä versiohistoria", params.versionHistory)
+        }
+        fieldSet {
+            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", params.piilotaHenkilotiedot)
+        }
+        fieldSet {
+            toggleFilter(
+                "piilotaVanhentuneetTiedot",
+                "Piilota vanhentuneet tietokentät",
+                params.piilotaVanhentuneetTiedot,
+            )
         }
     }
 }

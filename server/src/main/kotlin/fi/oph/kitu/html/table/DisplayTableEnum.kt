@@ -71,6 +71,7 @@ enum class ColumnTag {
     LIST_VIEW,
     CSV_EXPORT,
     PERSONAL_DATA,
+    OBSOLETE,
 }
 
 annotation class ColumnTags(

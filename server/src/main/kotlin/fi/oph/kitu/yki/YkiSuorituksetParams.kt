@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.table.ColumnTag
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import org.springframework.format.annotation.DateTimeFormat
@@ -22,6 +23,7 @@ data class YkiSuorituksetParams(
     var tutkintokieli: Tutkintokieli? = null,
     var tutkintotaso: Tutkintotaso? = null,
     var piilotaHenkilotiedot: Boolean = false,
+    val piilotaVanhentuneetTiedot: Boolean = false,
 ) {
     fun toMap(): Map<String, String?> =
         mapOf(
@@ -35,6 +37,7 @@ data class YkiSuorituksetParams(
             "tutkintokieli" to tutkintokieli?.toString(),
             "tutkintotaso" to tutkintotaso?.toString(),
             "piilotaHenkilotiedot" to piilotaHenkilotiedot.toTrueOrNull(),
+            "piilotaVanhentuneetTiedot" to piilotaVanhentuneetTiedot.toTrueOrNull(),
         )
 
     fun toFilter() =
@@ -46,7 +49,11 @@ data class YkiSuorituksetParams(
             tutkintotaso = tutkintotaso,
         )
 
-    fun excludeTags(): Set<ColumnTag> = if (piilotaHenkilotiedot) setOf(ColumnTag.PERSONAL_DATA) else emptySet()
+    fun excludeTags(): Set<ColumnTag> =
+        setOfNotNull(
+            if (piilotaHenkilotiedot) ColumnTag.PERSONAL_DATA else null,
+            if (piilotaVanhentuneetTiedot) ColumnTag.OBSOLETE else null,
+        )
 
     fun csvFileName() =
         listOfNotNull(
@@ -57,4 +64,21 @@ data class YkiSuorituksetParams(
             tutkintoalku?.toString(),
             tutkintoloppu?.toString(),
         ).joinToString("_", postfix = ".csv")
+
+    fun filterDescriptions(): List<String> =
+        listOfNotNull(
+            if (tutkintoalku != null || tutkintoloppu != null) {
+                listOf(
+                    tutkintoalku?.finnishDate().orEmpty(),
+                    tutkintoloppu?.finnishDate().orEmpty(),
+                ).joinToString("-", prefix = "Aikarajaus: ")
+            } else {
+                null
+            },
+            tutkintokieli?.let { "Tutkintokieli: $it" },
+            tutkintotaso?.let { "Tutkintotaso: $it" },
+            if (piilotaHenkilotiedot) null else "Henkilötiedot piilotettu",
+            if (piilotaVanhentuneetTiedot) null else "Vanhentuneet tietokentät piilotettu",
+            if (versionHistory) "Näytä versiohistoria" else null,
+        )
 }
