@@ -214,7 +214,12 @@ class KoealustaMappingService(
         lang: String?,
     ): TypedResult<Testikieli?, Error.Validation> =
         if (lang == null) {
-            Success(null)
+            Failure(
+                Error.Validation.MissingField(
+                    "lang",
+                    user.userid,
+                ),
+            )
         } else {
             try {
                 Success(Testikieli.fromString(lang))
