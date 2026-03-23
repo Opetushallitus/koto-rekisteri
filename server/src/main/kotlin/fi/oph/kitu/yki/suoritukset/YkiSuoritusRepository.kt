@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
+import kotlin.collections.plus
 
 @Service
 class YkiSuoritusRepository {
@@ -49,6 +50,20 @@ class YkiSuoritusRepository {
             YkiSuoritusEntity.fromRow,
         )
     }
+
+    @WithSpan
+    fun findById(id: Int): YkiSuoritusEntity? =
+        jdbcNamedParameterTemplate
+            .query(
+                selectSuoritukset(
+                    false,
+                    "WHERE yki_suoritus.id = :id",
+                ),
+                mapOf(
+                    "id" to id,
+                ),
+                YkiSuoritusEntity.fromRow,
+            ).firstOrNull()
 
     @WithSpan
     fun find(

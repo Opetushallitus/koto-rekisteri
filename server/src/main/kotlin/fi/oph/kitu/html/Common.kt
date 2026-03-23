@@ -71,6 +71,16 @@ fun FlowContent.error(
     }
 }
 
+fun FlowContent.warning(
+    message: String,
+    block: () -> Unit = {},
+) {
+    article(classes = "warning-text") {
+        +message
+        block()
+    }
+}
+
 fun FlowContent.javascript(code: String) {
     debugTrace()
     script {
