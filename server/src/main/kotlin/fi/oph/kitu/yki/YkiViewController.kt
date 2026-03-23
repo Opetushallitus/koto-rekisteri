@@ -18,6 +18,7 @@ import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
@@ -25,6 +26,7 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import jakarta.servlet.http.HttpSession
+import org.apache.coyote.Response
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.ResponseEntity
@@ -50,6 +52,17 @@ class YkiViewController(
     private val koskiRequestMapper: KoskiRequestMapper,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
 ) {
+    @GetMapping("/suoritukset/{id}", produces = ["text/html"])
+    fun suoritusView(
+        @PathVariable id: Int,
+    ): ResponseEntity<String> {
+        val suoritus = ykiSuoritusRepository.findById(id)
+        return suoritus?.let {
+            val viimeisinSuoritus = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+            ResponseEntity.ok(YkiSuoritusPage.render(it, viimeisinSuoritus))
+        } ?: ResponseEntity.notFound().build()
+    }
+
     @GetMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetGetView(
         @ModelAttribute params: YkiSuorituksetParams = YkiSuorituksetParams(),

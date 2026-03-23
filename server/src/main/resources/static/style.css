@@ -126,6 +126,16 @@ article.error-text a {
   color: var(--oph-orange1);
 }
 
+article.warning-text {
+  color: var(--oph-blue1);
+  border: solid 2px var(--oph-blue2);
+  background: #e1ffff;
+}
+
+article.warning-text a {
+  color: var(--oph-blue2);
+}
+
 article.success-text {
   color: var(--oph-green1);
   border: 2px solid var(--oph-green2);

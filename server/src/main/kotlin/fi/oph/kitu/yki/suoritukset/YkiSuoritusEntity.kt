@@ -102,6 +102,8 @@ data class YkiSuoritusEntity(
             yleisarvosana?.let { Osakoe(TutkinnonOsa.YL, it, arviointipaiva) },
         )
 
+    fun kokoNimi() = "$sukunimi $etunimet"
+
     companion object {
         val fromRow: RowMapper<YkiSuoritusEntity> =
             RowMapper { rs, _ ->

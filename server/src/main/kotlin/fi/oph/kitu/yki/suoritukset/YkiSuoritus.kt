@@ -100,4 +100,18 @@ data class YkiTarkastusarviointi(
     val tarkistusarvioidutOsakokeet: List<TutkinnonOsa>?,
     val arvosanaMuuttui: List<TutkinnonOsa>?,
     val perustelu: String,
-)
+) {
+    companion object {
+        fun from(s: YkiSuoritusEntity): YkiTarkastusarviointi? =
+            s.tarkistusarvioinninSaapumisPvm?.let {
+                YkiTarkastusarviointi(
+                    it,
+                    s.tarkistusarvioinninKasittelyPvm,
+                    s.tarkistusarvioinninAsiatunnus.orEmpty(),
+                    s.tarkistusarvioidutOsakokeet?.toList(),
+                    s.arvosanaMuuttui?.toList(),
+                    s.perustelu.orEmpty(),
+                )
+            }
+    }
+}

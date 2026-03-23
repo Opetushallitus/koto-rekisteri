@@ -7,11 +7,11 @@ import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.tr
 
-fun FlowContent.infoTable(vararg rows: Pair<String, FlowContent.() -> Unit>) {
+fun FlowContent.infoTable(vararg rows: Pair<String, FlowContent.() -> Unit>?) {
     table(classes = "info-table compact striped") {
         debugTrace()
         tbody {
-            rows.forEach { (name, render) ->
+            rows.filterNotNull().forEach { (name, render) ->
                 tr {
                     th { +name }
                     td { render() }
