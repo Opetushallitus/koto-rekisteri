@@ -77,8 +77,8 @@ data class YkiSuorituksetParams(
             },
             tutkintokieli?.let { "Tutkintokieli: $it" },
             tutkintotaso?.let { "Tutkintotaso: $it" },
-            if (piilotaHenkilotiedot) null else "Henkilötiedot piilotettu",
-            if (piilotaVanhentuneetTiedot) null else "Vanhentuneet tietokentät piilotettu",
+            if (piilotaHenkilotiedot) "Henkilötiedot piilotettu" else null,
+            if (piilotaVanhentuneetTiedot) "Vanhentuneet tietokentät piilotettu" else null,
             if (versionHistory) "Näytä versiohistoria" else null,
         )
 }
