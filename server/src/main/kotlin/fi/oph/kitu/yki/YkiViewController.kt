@@ -56,7 +56,7 @@ class YkiViewController(
     fun suoritusView(
         @PathVariable id: Int,
     ): ResponseEntity<String> {
-        val suoritus = ykiSuoritusRepository.findById(id)
+        val suoritus = ykiService.findSuoritusById(id)
         return suoritus?.let {
             val viimeisinSuoritus = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
             ResponseEntity.ok(YkiSuoritusPage.render(it, viimeisinSuoritus))
