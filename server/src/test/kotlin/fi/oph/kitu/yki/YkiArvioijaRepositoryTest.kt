@@ -65,7 +65,10 @@ class YkiArvioijaRepositoryTest(
         val saved = arvioijaRepository.findById(savedId).getOrNull()
 
         assertEquals(
-            arvioija.copy(arviointioikeudet = listOf(sweArviointioikeus, engArviointioikeus)),
+            arvioija.copy(
+                arviointioikeudet = listOf(sweArviointioikeus, engArviointioikeus),
+                henkilotunnus = null,
+            ),
             saved?.copy(
                 id = null,
                 arviointioikeudet =
@@ -165,7 +168,9 @@ class YkiArvioijaRepositoryTest(
         val saved = arvioijaRepository.findById(savedIds.first()).getOrNull()
         assertEquals(1, savedIds.count())
         assertEquals(
-            updatedArvioija,
+            updatedArvioija.copy(
+                henkilotunnus = null,
+            ),
             saved?.copy(
                 id = null,
                 arviointioikeudet =

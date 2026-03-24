@@ -16,7 +16,7 @@ class YkiArvioijaMappingService {
     ) = YkiArvioijaEntity(
         id,
         arvioijaOid = response.arvioijanOppijanumero,
-        henkilotunnus = response.henkilotunnus,
+        henkilotunnus = null,
         sukunimi = response.sukunimi,
         etunimet = response.etunimet,
         sahkopostiosoite = response.sahkopostiosoite,

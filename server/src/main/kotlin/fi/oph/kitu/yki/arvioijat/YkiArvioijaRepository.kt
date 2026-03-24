@@ -46,17 +46,15 @@ class CustomYkiArvioijaRepositoryImpl(
                     """
                     INSERT INTO yki_arvioija (
                         arvioija_oid,
-                        henkilotunnus,
                         sukunimi,
                         etunimet,
                         sahkopostiosoite,
                         katuosoite,
                         postinumero,
                         postitoimipaikka
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT (arvioija_oid) DO UPDATE
                     SET
-                        henkilotunnus = EXCLUDED.henkilotunnus,
                         sukunimi = EXCLUDED.sukunimi,
                         etunimet = EXCLUDED.etunimet,
                         sahkopostiosoite = EXCLUDED.sahkopostiosoite,
@@ -67,7 +65,6 @@ class CustomYkiArvioijaRepositoryImpl(
                     """.trimIndent(),
                     YkiArvioijaEntity.fromRow,
                     arvioija.arvioijaOid.toString(),
-                    arvioija.henkilotunnus,
                     arvioija.sukunimi,
                     arvioija.etunimet,
                     arvioija.sahkopostiosoite,
