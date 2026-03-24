@@ -35,7 +35,7 @@ class KoskiService(
             .spanBuilder("KoskiService.sendYkiSuoritusToKoski")
             .startSpan()
             .use { span ->
-                val koskiRequest = koskiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
+                val koskiRequest = koskiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity).getOrNull()
 
                 if (koskiRequest == null) {
                     val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
@@ -91,6 +91,7 @@ class KoskiService(
                 if (ykiSuoritusEntity.koskiOpiskeluoikeus != null) {
                     koskiRequestMapper
                         .ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
+                        .getOrNull()
                         ?.mitatoi()
                         ?.let { koskiRequest ->
                             koskiRestClient
