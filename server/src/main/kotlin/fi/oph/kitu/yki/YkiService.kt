@@ -7,6 +7,8 @@ import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.findDifferentProperties
 import fi.oph.kitu.ignoreEmptyValues
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
+import fi.oph.kitu.logging.AuditLogEntry
+import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
@@ -57,6 +59,13 @@ class YkiService(
     private val tracer: Tracer,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
+
+    fun findSuoritusById(id: Int): YkiSuoritusEntity? =
+        suoritusRepository.findById(id).also { suoritus ->
+            suoritus?.suorittajanOID?.let { oid ->
+                auditLogger.log(AuditLogOperation.YkiSuoritusViewed, oid)
+            }
+        }
 
     fun debugImportSuoritukset(from: Instant): String =
         tracer
