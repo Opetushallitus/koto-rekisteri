@@ -62,7 +62,7 @@ enum class YkiSuoritusColumn(
         getValue = { it.etunimet },
     ),
 
-    @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
+    @ColumnTags(ColumnTag.CSV_EXPORT)
     Sukupuoli(
         entityName = "sukupuoli",
         uiHeaderValue = "Sukupuoli",

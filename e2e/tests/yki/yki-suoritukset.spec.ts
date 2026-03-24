@@ -1,8 +1,5 @@
-import * as node_fs from "node:fs"
 import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 import { enumerate } from "../../util/arrays"
-
-const fs = node_fs.promises
 
 describe('"YKI Suoritukset" -page', () => {
   beforeEach(async ({ db, oauth, basePage, ykiSuoritus, ykiSuoritusError }) => {
@@ -12,7 +9,6 @@ describe('"YKI Suoritukset" -page', () => {
     await ykiSuoritus.insert(oauth, "petro")
     await ykiSuoritus.insert(oauth, "magdalena")
     await ykiSuoritusError.insert(db, "missingOid")
-    //await ykiSuoritusError.insert(db, "invalidSex")
 
     await basePage.login()
   })
@@ -55,8 +51,10 @@ describe('"YKI Suoritukset" -page', () => {
   }) => {
     await indexPage.open()
     await ykiSuorituksetPage.openFromNavigation()
-    await ykiSuorituksetPage.setVersionHistoryTrue()
-    await ykiSuorituksetPage.filterSuoritukset()
+
+    let dialog = await ykiSuorituksetPage.openFilterDialog()
+    await dialog.setVersionHistory(true)
+    await dialog.submit()
 
     const suoritukset = ykiSuorituksetPage.getSuoritusRow()
 
@@ -81,8 +79,11 @@ describe('"YKI Suoritukset" -page', () => {
     await indexPage.open()
     await ykiSuorituksetPage.openFromNavigation()
     await ykiSuorituksetPage.setSearchTerm("ranja")
-    await ykiSuorituksetPage.setVersionHistoryTrue()
     await ykiSuorituksetPage.filterSuoritukset()
+
+    let dialog = await ykiSuorituksetPage.openFilterDialog()
+    await dialog.setVersionHistory(true)
+    await dialog.submit()
 
     const suoritukset = ykiSuorituksetPage.getSuoritusRow()
 
@@ -95,19 +96,71 @@ describe('"YKI Suoritukset" -page', () => {
   }) => {
     await ykiSuorituksetPage.open()
 
-    // Intercept the download
-    const [download] = await Promise.all([
-      page.waitForEvent("download"),
-      ykiSuorituksetPage.getCSVDownloadLink().click(),
-    ])
-
-    // Save the file to a temporary location
-    const path = await download.path()
-    expect(path).not.toBeNull()
-
-    const csvContent = await fs.readFile(path!, "utf8")
+    const csvContent = await ykiSuorituksetPage.downloadCSV()
     expect(csvContent).toContain(
-      'suorittajanOID,hetu,sukupuoli,sukunimi,etunimet,kansalaisuus,katuosoite,postinumero,postitoimipaikka,maa,email,solkiTunniste,lastModified,tutkintopaiva,tutkintokieli,tutkintotaso,todistuskieli,jarjestajanOID,jarjestajanNimi,arviointitila,tilaLahetetty,arviointipaiva,tekstinYmmartaminen,kirjoittaminen,puheenYmmartaminen,puhuminen,rakenteetJaSanasto,yleisarvosana,"tarkistusarvioinninSaapumisPvm","tarkistusarvioinninAsiatunnus","tarkistusarvioidutOsakokeet",arvosanaMuuttui,perustelu,"tarkistusarvioinninKasittelyPvm"\n',
+      [
+        "Oppijanumero",
+        "Sukunimi",
+        "Etunimi",
+        "Sukupuoli",
+        "Henkilötunnus",
+        "Kansalaisuus",
+        "Osoite",
+        "Sähköposti",
+        "Solki-tunniste",
+        "Tutkintopäivä",
+        "Tutkintokieli",
+        "Tutkintotaso",
+        "Järjestäjän OID",
+        "Järjestäjän nimi",
+        "Arviointitila",
+        "Arviointipäivä",
+        "Tekstin ymmärtäminen",
+        "Kirjoittaminen",
+        "Puheen ymmärtäminen",
+        "Puhuminen",
+        "Rakenteet ja sanasto",
+        "Yleisarvosana",
+        "Todistuskieli",
+        "Tila lähetetty",
+        "Opiskeluoikeus-OID",
+      ].join(","),
+    ) // Validate headers
+  })
+
+  test("should download yki suoritukset without henkilötiedot CSV and verify its content", async ({
+    page,
+    ykiSuorituksetPage,
+  }) => {
+    await ykiSuorituksetPage.open()
+
+    const dialog = await ykiSuorituksetPage.openFilterDialog()
+    await dialog.hideHenkilotiedot(true)
+    await dialog.submit()
+
+    const csvContent = await ykiSuorituksetPage.downloadCSV()
+
+    expect(csvContent).toContain(
+      [
+        "Sukupuoli",
+        "Kansalaisuus",
+        "Solki-tunniste",
+        "Tutkintopäivä",
+        "Tutkintokieli",
+        "Tutkintotaso",
+        "Järjestäjän OID",
+        "Järjestäjän nimi",
+        "Arviointitila",
+        "Arviointipäivä",
+        "Tekstin ymmärtäminen",
+        "Kirjoittaminen",
+        "Puheen ymmärtäminen",
+        "Puhuminen",
+        "Rakenteet ja sanasto",
+        "Yleisarvosana",
+        "Todistuskieli",
+        "Tila lähetetty",
+      ].join(","),
     ) // Validate headers
   })
 
@@ -115,7 +168,7 @@ describe('"YKI Suoritukset" -page', () => {
     const sortTestCases = [
       {
         column: "Oppijanumero",
-        tableColumnIndex: 0,
+        tableColumnIndex: 1,
         order: [
           "1.2.246.562.24.59267607404",
           "1.2.246.562.24.33342764709",
@@ -124,18 +177,13 @@ describe('"YKI Suoritukset" -page', () => {
       },
       {
         column: "Sukunimi",
-        tableColumnIndex: 1,
+        tableColumnIndex: 2,
         order: ["Öhman-Testi", "Sallinen-Testi", "Kivinen-Testi"],
       },
       {
         column: "Etunimi",
-        tableColumnIndex: 2,
-        order: ["Ranja Testi", "Petro Testi", "Magdalena Testi"],
-      },
-      {
-        column: "Sukupuoli",
         tableColumnIndex: 3,
-        order: ["N", "N", "M"],
+        order: ["Ranja Testi", "Petro Testi", "Magdalena Testi"],
       },
       {
         column: "Henkilötunnus",
@@ -143,110 +191,19 @@ describe('"YKI Suoritukset" -page', () => {
         order: ["010866-9260", "010180-9026", "010116A9518"],
       },
       {
-        column: "Kansalaisuus",
-        tableColumnIndex: 5,
-        order: ["FIN", "EST", "EST"],
-      },
-      {
-        column: "Osoite",
-        tableColumnIndex: 6,
-        order: [
-          "Testikuja 5, 40100 Testilä, FIN",
-          "Testikuja 10, 40200 Testinsuu",
-          "Testikoto 10, 40300 Koestamo",
-        ],
-      },
-      {
-        column: "Sähköposti",
-        tableColumnIndex: 7,
-        order: ["testi@testi.fi", "testi.petro@testi.fi", "devnull-14@oph.fi"],
-      },
-      {
-        column: "Solki-tunniste",
-        tableColumnIndex: 8,
-        order: ["183424", "172836", "123123"],
-      },
-      {
         column: "Tutkintopäivä",
-        tableColumnIndex: 9,
-        order: ["2024-08-25", "2024-09-01", "2025-01-12"],
+        tableColumnIndex: 5,
+        order: ["25.8.2024", "1.9.2024", "12.1.2025"],
       },
       {
         column: "Tutkintokieli",
-        tableColumnIndex: 10,
+        tableColumnIndex: 6,
         order: ["SWE", "FIN", "FIN"],
       },
       {
         column: "Tutkintotaso",
-        tableColumnIndex: 11,
+        tableColumnIndex: 7,
         order: ["YT", "YT", "PT"],
-      },
-      {
-        column: "Järjestäjän OID",
-        tableColumnIndex: 12,
-        order: [
-          "1.2.246.562.10.14893989377",
-          "1.2.246.562.10.14893989377",
-          "1.2.246.562.10.14893989377",
-        ],
-      },
-      {
-        column: "Järjestäjän nimi",
-        tableColumnIndex: 13,
-        order: [
-          "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-          "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-          "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-        ],
-      },
-      {
-        column: "Arviointitila",
-        tableColumnIndex: 14,
-        order: [
-          "Tarkistusarviointi tehty",
-          "Arviointi valmis",
-          "Arviointi valmis",
-        ],
-      },
-      {
-        column: "Arviointipäivä",
-        tableColumnIndex: 15,
-        order: ["2025-05-04", "2024-11-14", "2024-11-14"],
-      },
-      {
-        column: "Tekstin ymmärtäminen",
-        tableColumnIndex: 16,
-        order: ["6", "5", "Alle 5"],
-      },
-      {
-        column: "Kirjoittaminen",
-        tableColumnIndex: 17,
-        order: ["6", "5", "Alle 5"],
-      },
-      {
-        column: "Rakenteet ja sanasto",
-        tableColumnIndex: 18,
-        order: ["Ei voi arvioida", "8", "Alle 5"],
-      },
-      {
-        column: "Puheen ymmärtäminen",
-        tableColumnIndex: 19,
-        order: ["5", "Alle 5", "Alle 5"],
-      },
-      {
-        column: "Puhuminen",
-        tableColumnIndex: 20,
-        order: ["Vilppi", "Ei voi arvioida", "Alle 5"],
-      },
-      {
-        column: "Yleisarvosana",
-        tableColumnIndex: 21,
-        order: ["Keskeytetty", "Ei voi arvioida", "Alle 5"],
-      },
-      {
-        column: "Todistuskieli",
-        tableColumnIndex: 22,
-        order: ["SWE", "FIN", "ENG"],
       },
     ] as const
 

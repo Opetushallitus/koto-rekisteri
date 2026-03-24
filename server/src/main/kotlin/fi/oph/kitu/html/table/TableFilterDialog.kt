@@ -7,6 +7,7 @@ import fi.oph.kitu.html.input
 import fi.oph.kitu.html.modal
 import fi.oph.kitu.html.modalCommandButton
 import fi.oph.kitu.html.submitButton
+import fi.oph.kitu.html.testId
 import kotlinx.html.*
 import java.time.LocalDate
 

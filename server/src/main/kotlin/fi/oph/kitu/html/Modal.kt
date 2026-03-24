@@ -21,6 +21,7 @@ fun FlowContent.modal(
 ) {
     dialog {
         attributes["id"] = id
+        testId(id)
         article {
             header { +title }
             block()

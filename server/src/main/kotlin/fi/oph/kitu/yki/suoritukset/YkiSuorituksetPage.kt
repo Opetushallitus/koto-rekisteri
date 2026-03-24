@@ -197,6 +197,7 @@ fun FlowContent.ykiSuoritusFilterList(params: YkiSuorituksetParams) {
 
 fun FlowContent.ykiSuoritusFilterButton(params: YkiSuorituksetParams) {
     tableFilterDialog("suoritukset") {
+        input(type = InputType.hidden, name = "recallSearch", value = "true")
         fieldSet(classes = "grid") {
             dateFilter("tutkintoalku", "Tutkintopäivä alkaen", params.tutkintoalku)
             dateFilter("tutkintoloppu", "Tutkintopäivä päättyen", params.tutkintoloppu)
