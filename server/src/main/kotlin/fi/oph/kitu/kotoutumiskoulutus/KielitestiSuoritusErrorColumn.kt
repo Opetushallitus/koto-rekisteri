@@ -2,6 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.html.json
 import fi.oph.kitu.html.table.DisplayTableEnum
+import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import fi.oph.kitu.toJsonNode
@@ -44,7 +45,7 @@ enum class KielitestiSuoritusErrorColumn(
                         div { +name.toString() }
                     }
                     small {
-                        attributes["headers"] = "schoolOid"
+                        testId("schoolOid")
                         +it.schoolOid.toString()
                     }
                 }
@@ -70,7 +71,7 @@ enum class KielitestiSuoritusErrorColumn(
         getValue = { { it.viesti } },
         renderHtml = {
             {
-                attributes["headers"] = "viesti"
+                testId("viesti")
                 if (it.lisatietoja != null) {
                     details {
                         summary { +it.viesti }

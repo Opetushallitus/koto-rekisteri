@@ -70,21 +70,24 @@ describe('"Koto Suoritukset" -page', () => {
     )
     const virheellinenArvoCell = errors.getByText(virheFixture.virheellinenArvo)
 
-    await expect(hetuCell).toHaveAttribute("headers", "hetu")
-    await expect(nimiCell).toHaveAttribute("headers", "nimi")
-    await expect(schoolOidCell).toHaveAttribute("headers", "schoolOid")
-    await expect(teacherEmailCell).toHaveAttribute("headers", "teacherEmail")
+    await expect(hetuCell).toHaveAttribute("data-testid", "hetu")
+    await expect(nimiCell).toHaveAttribute("data-testid", "nimi")
+    await expect(schoolOidCell).toHaveAttribute("data-testid", "schoolOid")
+    await expect(teacherEmailCell).toHaveAttribute(
+      "data-testid",
+      "teacherEmail",
+    )
     await expect(virheenLuontiaikaCell).toHaveAttribute(
-      "headers",
+      "data-testid",
       "virheenLuontiaika",
     )
-    await expect(viestiCell).toHaveAttribute("headers", "viesti")
+    await expect(viestiCell).toHaveAttribute("data-testid", "viesti")
     await expect(virheellinenKenttaCell).toHaveAttribute(
-      "headers",
+      "data-testid",
       "virheellinenKentta",
     )
     await expect(virheellinenArvoCell).toHaveAttribute(
-      "headers",
+      "data-testid",
       "virheellinenArvo",
     )
   })
@@ -102,8 +105,8 @@ describe('"Koto Suoritukset" -page', () => {
       fixtureData.virheEino.onrLisatietoja,
     )
     await expect(ratkaisuehdotusCell).toHaveAttribute(
-      "headers",
-      "ratkaisuehdotus",
+      "data-testid",
+      "onrLisatietoja",
     )
   })
 
