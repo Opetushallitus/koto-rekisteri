@@ -1,7 +1,10 @@
 import BasePage from "../BasePage"
-import { Page } from "@playwright/test"
+import { Locator, Page } from "@playwright/test"
 import { expect } from "../../fixtures/baseFixture"
 import { Config } from "../../config"
+import * as node_fs from "node:fs"
+
+const fs = node_fs.promises
 
 export default class YkiSuorituksetPage extends BasePage {
   constructor(page: Page, config: Config) {
@@ -47,10 +50,13 @@ export default class YkiSuorituksetPage extends BasePage {
     })
   }
 
-  async setVersionHistoryTrue() {
+  async openFilterDialog() {
     await this.getContent()
-      .getByRole("checkbox", { name: "Näytä versiohistoria" })
-      .setChecked(true)
+      .getByRole("button", { name: "Rajaa näytettävät tiedot" })
+      .click()
+    return new YkiSuorituksetFilterDialog(
+      this.getContent().getByTestId("table-filter-dialog"),
+    )
   }
 
   async setSearchTerm(search: string) {
@@ -71,5 +77,42 @@ export default class YkiSuorituksetPage extends BasePage {
 
   getTableColumnHeaderLink(text: string) {
     return this.getSuorituksetTable().getByRole("link", { name: text })
+  }
+
+  async downloadCSV(): Promise<string> {
+    const [download] = await Promise.all([
+      this.page.waitForEvent("download"),
+      this.getCSVDownloadLink().click(),
+    ])
+
+    // Save the file to a temporary location
+    const path = await download.path()
+    expect(path).not.toBeNull()
+
+    return await fs.readFile(path!, "utf8")
+  }
+}
+
+export class YkiSuorituksetFilterDialog {
+  modal: Locator
+
+  constructor(modal: Locator) {
+    this.modal = modal
+  }
+
+  async setVersionHistory(state: boolean) {
+    await this.modal
+      .getByRole("checkbox", { name: "Näytä versiohistoria" })
+      .setChecked(state)
+  }
+
+  async hideHenkilotiedot(state: boolean) {
+    await this.modal
+      .getByRole("checkbox", { name: "Piilota henkilötiedot" })
+      .setChecked(state)
+  }
+
+  async submit() {
+    await this.modal.getByRole("button", { name: "Rajaa" }).click()
   }
 }
