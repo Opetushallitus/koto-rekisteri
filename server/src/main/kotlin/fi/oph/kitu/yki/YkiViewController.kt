@@ -6,6 +6,7 @@ import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessage
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
+import fi.oph.kitu.koski.KoskiErrorMappingId
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
@@ -24,6 +25,7 @@ import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import jakarta.servlet.http.HttpSession
 import org.apache.coyote.Response
@@ -59,7 +61,16 @@ class YkiViewController(
         val suoritus = ykiService.findSuoritusById(id)
         return suoritus?.let {
             val viimeisinSuoritus = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
-            ResponseEntity.ok(YkiSuoritusPage.render(it, viimeisinSuoritus))
+            val (koskiError, koskiSiirronEstonSyyt) =
+                if (suoritus.id == viimeisinSuoritus.id) {
+                    Pair(
+                        koskiErrorService.findById(YkiMappingId(suoritus.id)),
+                        koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus).errorOrNull(),
+                    )
+                } else {
+                    Pair(null, null)
+                }
+            ResponseEntity.ok(YkiSuoritusPage.render(it, viimeisinSuoritus, koskiError, koskiSiirronEstonSyyt))
         } ?: ResponseEntity.notFound().build()
     }
 

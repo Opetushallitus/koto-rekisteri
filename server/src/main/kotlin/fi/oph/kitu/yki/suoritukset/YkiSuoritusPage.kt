@@ -1,20 +1,17 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.infoTable
+import fi.oph.kitu.html.json
 import fi.oph.kitu.html.warning
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.yki.YkiViewController
-import kotlinx.html.FlowContent
-import kotlinx.html.a
-import kotlinx.html.h1
-import kotlinx.html.h2
-import kotlinx.html.h3
-import kotlinx.html.header
-import kotlinx.html.li
-import kotlinx.html.ul
+import kotlinx.html.*
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
@@ -22,6 +19,8 @@ object YkiSuoritusPage {
     fun render(
         suoritus: YkiSuoritusEntity,
         viimeisinSuoritus: YkiSuoritusEntity,
+        koskiError: KoskiErrorEntity?,
+        koskiSiirronEstonSyyt: List<String>?,
     ) = Page.renderHtml {
         h1 { +suoritus.kokoNimi() }
         h2 { +"Yleinen kielitutkinto" }
@@ -39,7 +38,7 @@ object YkiSuoritusPage {
         todistuksenPostitusosoite(suoritus)
         tutkintotiedot(suoritus)
         arviointi(suoritus)
-        integraatiot(suoritus)
+        integraatiot(suoritus, koskiError, koskiSiirronEstonSyyt)
     }
 
     fun FlowContent.henkilonTiedot(suoritus: YkiSuoritusEntity) {
@@ -144,7 +143,11 @@ object YkiSuoritusPage {
         }
     }
 
-    fun FlowContent.integraatiot(suoritus: YkiSuoritusEntity) {
+    fun FlowContent.integraatiot(
+        suoritus: YkiSuoritusEntity,
+        koskiError: KoskiErrorEntity?,
+        koskiSiirronEstonSyyt: List<String>?,
+    ) {
         h3 { +"Integraatiot" }
         infoTable(
             "Solki-tunniste" to { +"${suoritus.solkiId}" },
@@ -152,11 +155,16 @@ object YkiSuoritusPage {
                 +suoritus.lastModified.finnishDateTimeUTC()
             },
             "KOSKI" to {
-                if (suoritus.koskiSiirtoKasitelty == true) {
+                if (koskiSiirronEstonSyyt?.isNotEmpty() == true) {
+                    +("Siirtoa ei tehdä: ${koskiSiirronEstonSyyt.joinToString("; ")}")
+                } else if (suoritus.koskiSiirtoKasitelty == true) {
                     +"Siirretty KOSKI-tietovarantoon."
                 } else {
                     +"Odottaa siirtoa KOSKI-tietovarantoon."
                 }
+            },
+            koskiError?.errorJson()?.let {
+                "KOSKI-virheet" to { json(it) }
             },
             suoritus.koskiOpiskeluoikeus?.let {
                 "Opiskeluoikeus-OID" to {

@@ -41,73 +41,77 @@ class KoskiRequestMapper {
     lateinit var ykiOrganisaatioOid: String
 
     @WithSpan
-    fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): KoskiRequest? =
-        if (isKoskiSiirtoEstetty(ykiSuoritus)) {
-            null
+    fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): TypedResult<KoskiRequest, List<String>> {
+        val estonSyyt = koskiSiirronEstonSyyt(ykiSuoritus)
+        return if (estonSyyt.isNotEmpty()) {
+            TypedResult.Failure(estonSyyt)
         } else {
-            KoskiRequest(
-                henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID),
-                opiskeluoikeudet =
-                    listOf(
-                        Opiskeluoikeus(
-                            oid = ykiSuoritus.koskiOpiskeluoikeus,
-                            lähdejärjestelmänId =
-                                LahdeJarjestelmanId(
-                                    id = "yki.${ykiSuoritus.solkiId}",
-                                ),
-                            tila =
-                                Tila(
-                                    opiskeluoikeusjaksot =
-                                        listOfNotNull(
-                                            OpiskeluoikeusJakso(
-                                                alku = ykiSuoritus.tutkintopaiva,
-                                                tila = Koodisto.OpiskeluoikeudenTila.Lasna,
-                                            ),
-                                            ykiSuoritus.arviointipaiva?.let {
-                                                OpiskeluoikeusJakso(
-                                                    alku = ykiSuoritus.arviointipaiva,
-                                                    tila = Koodisto.OpiskeluoikeudenTila.Paattynyt,
-                                                )
-                                            },
-                                        ),
-                                ),
-                            suoritukset =
-                                listOf(
-                                    KielitutkintoSuoritus(
-                                        tyyppi = Koodisto.SuorituksenTyyppi.YleinenKielitutkinto,
-                                        koulutusmoduuli =
-                                            KoulutusModuuli(
-                                                tunniste =
-                                                    Koodisto.YkiTutkintotaso
-                                                        .valueOf(
-                                                            ykiSuoritus.tutkintotaso.name,
-                                                        ).toKoski(),
-                                                kieli =
-                                                    Koodisto.Tutkintokieli.valueOf(
-                                                        ykiSuoritus.tutkintokieli.name,
-                                                    ),
-                                            ),
-                                        toimipiste = Organisaatio(oid = Oid.parse(ykiOrganisaatioOid).getOrThrow()),
-                                        järjestäjä = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid),
-                                        vahvistus =
-                                            ykiSuoritus.arviointipaiva?.let {
-                                                KielitutkintoSuoritus.VahvistusImpl(
-                                                    päivä = ykiSuoritus.arviointipaiva,
-                                                    myöntäjäOrganisaatio =
-                                                        Organisaatio(ykiSuoritus.jarjestajanTunnusOid),
-                                                )
-                                            },
-                                        osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus),
-                                        yleisarvosana =
-                                            ykiSuoritus.yleisarvosana?.let {
-                                                YkiArvosana.of(it, ykiSuoritus.tutkintotaso).toKoski()
-                                            },
+            TypedResult.Success(
+                KoskiRequest(
+                    henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID),
+                    opiskeluoikeudet =
+                        listOf(
+                            Opiskeluoikeus(
+                                oid = ykiSuoritus.koskiOpiskeluoikeus,
+                                lähdejärjestelmänId =
+                                    LahdeJarjestelmanId(
+                                        id = "yki.${ykiSuoritus.solkiId}",
                                     ),
-                                ),
+                                tila =
+                                    Tila(
+                                        opiskeluoikeusjaksot =
+                                            listOfNotNull(
+                                                OpiskeluoikeusJakso(
+                                                    alku = ykiSuoritus.tutkintopaiva,
+                                                    tila = Koodisto.OpiskeluoikeudenTila.Lasna,
+                                                ),
+                                                ykiSuoritus.arviointipaiva?.let {
+                                                    OpiskeluoikeusJakso(
+                                                        alku = ykiSuoritus.arviointipaiva,
+                                                        tila = Koodisto.OpiskeluoikeudenTila.Paattynyt,
+                                                    )
+                                                },
+                                            ),
+                                    ),
+                                suoritukset =
+                                    listOf(
+                                        KielitutkintoSuoritus(
+                                            tyyppi = Koodisto.SuorituksenTyyppi.YleinenKielitutkinto,
+                                            koulutusmoduuli =
+                                                KoulutusModuuli(
+                                                    tunniste =
+                                                        Koodisto.YkiTutkintotaso
+                                                            .valueOf(
+                                                                ykiSuoritus.tutkintotaso.name,
+                                                            ).toKoski(),
+                                                    kieli =
+                                                        Koodisto.Tutkintokieli.valueOf(
+                                                            ykiSuoritus.tutkintokieli.name,
+                                                        ),
+                                                ),
+                                            toimipiste = Organisaatio(oid = Oid.parse(ykiOrganisaatioOid).getOrThrow()),
+                                            järjestäjä = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid),
+                                            vahvistus =
+                                                ykiSuoritus.arviointipaiva?.let {
+                                                    KielitutkintoSuoritus.VahvistusImpl(
+                                                        päivä = ykiSuoritus.arviointipaiva,
+                                                        myöntäjäOrganisaatio =
+                                                            Organisaatio(ykiSuoritus.jarjestajanTunnusOid),
+                                                    )
+                                                },
+                                            osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus),
+                                            yleisarvosana =
+                                                ykiSuoritus.yleisarvosana?.let {
+                                                    YkiArvosana.of(it, ykiSuoritus.tutkintotaso).toKoski()
+                                                },
+                                        ),
+                                    ),
+                            ),
                         ),
-                    ),
+                ),
             )
         }
+    }
 
     private fun convertYkiSuoritusToKoskiOsasuoritukset(suoritusEntity: YkiSuoritusEntity): List<Osasuoritus> =
         mapOf(
@@ -129,15 +133,27 @@ class KoskiRequestMapper {
             }
         }
 
-    private fun isKoskiSiirtoEstetty(suoritusEntity: YkiSuoritusEntity): Boolean =
-        !suoritusEntity.arviointitila.arvioitu() ||
-            listOf(
-                suoritusEntity.tekstinYmmartaminen,
-                suoritusEntity.kirjoittaminen,
-                suoritusEntity.puheenYmmartaminen,
-                suoritusEntity.puhuminen,
-                suoritusEntity.rakenteetJaSanasto,
-            ).any { it == 10 || it == 11 }
+    private fun koskiSiirronEstonSyyt(suoritusEntity: YkiSuoritusEntity): List<String> =
+        listOfNotNull(
+            if (!suoritusEntity.arviointitila.arvioitu()) {
+                "Suoritus ei ole arvioitu"
+            } else {
+                null
+            },
+            if (
+                listOf(
+                    suoritusEntity.tekstinYmmartaminen,
+                    suoritusEntity.kirjoittaminen,
+                    suoritusEntity.puheenYmmartaminen,
+                    suoritusEntity.puhuminen,
+                    suoritusEntity.rakenteetJaSanasto,
+                ).any { it == 10 || it == 11 }
+            ) {
+                "Suoritus sisältää arvosanan vilppi tai keskeytetty"
+            } else {
+                null
+            },
+        )
 
     private fun yleisenKielitutkinnonOsa(
         suorituksenNimi: Koodisto.YkiSuorituksenOsa,

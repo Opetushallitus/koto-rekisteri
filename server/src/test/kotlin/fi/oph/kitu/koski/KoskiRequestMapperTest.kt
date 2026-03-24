@@ -68,7 +68,7 @@ class KoskiRequestMapperTest(
                     ClassPathResource("./koski-request-example.json").file,
                     JsonNode::class.java,
                 ).toString()
-        val koskiRequestJson = objectMapper.writeValueAsString(koskiRequest)
+        val koskiRequestJson = objectMapper.writeValueAsString(koskiRequest.getOrThrow())
         assertEquals(expectedJson, koskiRequestJson)
     }
 
@@ -97,7 +97,7 @@ class KoskiRequestMapperTest(
                     ClassPathResource("./koski-request-with-yleisarvosana.json").file,
                     JsonNode::class.java,
                 ).toString()
-        val koskiRequestJson = objectMapper.writeValueAsString(koskiRequest)
+        val koskiRequestJson = objectMapper.writeValueAsString(koskiRequest.getOrThrow())
         assertEquals(expectedJson, koskiRequestJson)
     }
 
@@ -118,7 +118,7 @@ class KoskiRequestMapperTest(
             koskiRequestMapper
                 .ykiSuoritusToKoskiRequest(
                     suoritus,
-                )!!
+                ).getOrThrow()
                 .opiskeluoikeudet
                 .first()
                 .suoritukset
@@ -152,7 +152,7 @@ class KoskiRequestMapperTest(
             koskiRequestMapper
                 .ykiSuoritusToKoskiRequest(
                     suoritus,
-                )!!
+                ).getOrThrow()
                 .opiskeluoikeudet
                 .first()
                 .suoritukset
@@ -187,7 +187,7 @@ class KoskiRequestMapperTest(
             koskiRequestMapper
                 .ykiSuoritusToKoskiRequest(
                     suoritus,
-                )!!
+                ).getOrThrow()
                 .opiskeluoikeudet
                 .first()
                 .suoritukset
@@ -214,7 +214,7 @@ class KoskiRequestMapperTest(
                 tekstinYmmartaminen = 10,
             )
         val koskiSuoritus = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
-        assertEquals(null, koskiSuoritus)
+        assertEquals(TypedResult.Failure(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")), koskiSuoritus)
     }
 
     @Test
@@ -226,7 +226,7 @@ class KoskiRequestMapperTest(
                 tekstinYmmartaminen = 11,
             )
         val koskiSuoritus = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
-        assertEquals(null, koskiSuoritus)
+        assertEquals(TypedResult.Failure(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")), koskiSuoritus)
     }
 
     @Test
