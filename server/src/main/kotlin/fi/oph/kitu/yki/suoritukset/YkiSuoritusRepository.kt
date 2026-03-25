@@ -530,7 +530,7 @@ object YkiSuoritusSql {
         viimeisin: Boolean,
         vararg conditions: String?,
     ) = buildSql(
-        "${selectQuery(viimeisin)} FROM yki_suoritus",
+        selectRootSuoritukset(viimeisin),
         *conditions,
     )
 
