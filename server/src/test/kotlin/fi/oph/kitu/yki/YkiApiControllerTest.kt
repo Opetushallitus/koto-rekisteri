@@ -42,7 +42,6 @@ import kotlin.test.assertEquals
 @Import(DBContainerConfiguration::class)
 class YkiApiControllerTest(
     @param:Autowired val timeService: TestTimeService,
-    @param:Autowired val controller: YkiApiController,
 ) {
     @Autowired
     private lateinit var context: WebApplicationContext
@@ -369,6 +368,192 @@ class YkiApiControllerTest(
             isBadRequest(
                 "JSON parse error: Cannot deserialize value of type `fi.oph.kitu.yki.suoritukset.Todistuskieli` from String \"asdasd\": not one of the values accepted for Enum class: [swe, fin, eng]",
             )
+        }
+    }
+
+    @Test
+    fun `Suoritus jonka kaikilla osakokeilla on arvosana 12 (ei ilmoittautunut) aiheuttaa virheen`() {
+        val suoritus =
+            Henkilosuoritus(
+                henkilo =
+                    Henkilo(
+                        oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                        etunimet = "Ranja Testi",
+                        sukunimi = "Öhman-Testi",
+                        sukupuoli = Sukupuoli.N,
+                        kansalaisuus = "EST",
+                        katuosoite = "Testikuja 5",
+                        postinumero = "40100",
+                        postitoimipaikka = "Testilä",
+                        maa = "FIN",
+                        email = "testi@testi.fi",
+                    ),
+                suoritus =
+                    YkiSuoritus(
+                        tutkintotaso = Tutkintotaso.YT,
+                        kieli = Tutkintokieli.ENG,
+                        todistuskieli = Todistuskieli.FIN,
+                        jarjestaja =
+                            YkiJarjestaja(
+                                oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
+                                nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                            ),
+                        tutkintopaiva = LocalDate.of(2026, 9, 1),
+                        arviointipaiva = LocalDate.of(2026, 12, 13),
+                        arviointitila = Arviointitila.ARVIOITU,
+                        osat =
+                            listOf(
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puhuminen,
+                                    arvosana = 12,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puheenYmmartaminen,
+                                    arvosana = 12,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.kirjoittaminen,
+                                    arvosana = 12,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.tekstinYmmartaminen,
+                                    arvosana = 12,
+                                ),
+                            ),
+                        lahdejarjestelmanId =
+                            LahdejarjestelmanTunniste(
+                                id = "183424",
+                                lahde = Lahdejarjestelma.Solki,
+                            ),
+                    ),
+            )
+
+        postSuoritus(suoritus) {
+            isBadRequest("suoritus.osat: Suorituksella täytyy olla vähintään yksi osakoe, johon on ilmottauduttu")
+        }
+    }
+
+    @Test
+    fun `Ilmoittautumisen jossa on vain osa osakokeista tallentaminen onnistuu`() {
+        val suoritus =
+            Henkilosuoritus(
+                henkilo =
+                    Henkilo(
+                        oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                        etunimet = "Ranja Testi",
+                        sukunimi = "Öhman-Testi",
+                        sukupuoli = Sukupuoli.N,
+                        kansalaisuus = "EST",
+                        katuosoite = "Testikuja 5",
+                        postinumero = "40100",
+                        postitoimipaikka = "Testilä",
+                        maa = "FIN",
+                        email = "testi@testi.fi",
+                    ),
+                suoritus =
+                    YkiSuoritus(
+                        tutkintotaso = Tutkintotaso.YT,
+                        kieli = Tutkintokieli.ENG,
+                        todistuskieli = Todistuskieli.FIN,
+                        jarjestaja =
+                            YkiJarjestaja(
+                                oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
+                                nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                            ),
+                        tutkintopaiva = LocalDate.of(2026, 9, 1),
+                        arviointipaiva = null,
+                        arviointitila = Arviointitila.ARVIOITAVA,
+                        osat =
+                            listOf(
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puhuminen,
+                                    arvosana = null,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puheenYmmartaminen,
+                                    arvosana = null,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.kirjoittaminen,
+                                    arvosana = 12,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.tekstinYmmartaminen,
+                                    arvosana = 12,
+                                ),
+                            ),
+                        lahdejarjestelmanId =
+                            LahdejarjestelmanTunniste(
+                                id = "183424",
+                                lahde = Lahdejarjestelma.Solki,
+                            ),
+                    ),
+            )
+
+        postSuoritus(suoritus) {
+            isOk()
+        }
+    }
+
+    @Test
+    fun `Suoritus virheellisillä arvosanoilla aiheuttaa virheen`() {
+        val suoritus =
+            Henkilosuoritus(
+                henkilo =
+                    Henkilo(
+                        oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                        etunimet = "Ranja Testi",
+                        sukunimi = "Öhman-Testi",
+                        sukupuoli = Sukupuoli.N,
+                        kansalaisuus = "EST",
+                        katuosoite = "Testikuja 5",
+                        postinumero = "40100",
+                        postitoimipaikka = "Testilä",
+                        maa = "FIN",
+                        email = "testi@testi.fi",
+                    ),
+                suoritus =
+                    YkiSuoritus(
+                        tutkintotaso = Tutkintotaso.YT,
+                        kieli = Tutkintokieli.ENG,
+                        todistuskieli = Todistuskieli.FIN,
+                        jarjestaja =
+                            YkiJarjestaja(
+                                oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
+                                nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                            ),
+                        tutkintopaiva = LocalDate.of(2026, 9, 1),
+                        arviointipaiva = LocalDate.of(2026, 12, 13),
+                        arviointitila = Arviointitila.ARVIOITU,
+                        osat =
+                            listOf(
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puhuminen,
+                                    arvosana = 13,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.puheenYmmartaminen,
+                                    arvosana = 666,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.kirjoittaminen,
+                                    arvosana = 123,
+                                ),
+                                YkiOsa(
+                                    tyyppi = TutkinnonOsa.tekstinYmmartaminen,
+                                    arvosana = 12,
+                                ),
+                            ),
+                        lahdejarjestelmanId =
+                            LahdejarjestelmanTunniste(
+                                id = "183424",
+                                lahde = Lahdejarjestelma.Solki,
+                            ),
+                    ),
+            )
+
+        postSuoritus(suoritus) {
+            isBadRequest("suoritus.osat.arvosana: Suoritus sisältää virheellisiä arvosanoja: 13, 666, 123")
         }
     }
 
