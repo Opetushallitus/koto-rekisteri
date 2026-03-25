@@ -153,6 +153,51 @@ data class YkiSuoritusEntity(
                     rs.getString("arviointitilan_lahetysvirhe"),
                 )
             }
+
+        val fromRootRow: RowMapper<YkiSuoritusEntity> =
+            RowMapper { rs, _ ->
+                YkiSuoritusEntity(
+                    rs.getInt("id"),
+                    Oid.parse(rs.getString("suorittajan_oid")).getOrThrow(),
+                    rs.getString("hetu"),
+                    Sukupuoli.valueOf(rs.getString("sukupuoli")),
+                    rs.getString("sukunimi"),
+                    rs.getString("etunimet"),
+                    rs.getString("kansalaisuus"),
+                    rs.getString("katuosoite"),
+                    rs.getString("postinumero"),
+                    rs.getString("postitoimipaikka"),
+                    rs.getString("maa"),
+                    rs.getString("email"),
+                    rs.getInt("solki_id"),
+                    rs.getTimestamp("last_modified").toInstant(),
+                    rs.getObject("tutkintopaiva", LocalDate::class.java),
+                    Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
+                    Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
+                    rs.getString("todistuskieli")?.let { Todistuskieli.valueOf(it) },
+                    Oid.parse(rs.getString("jarjestajan_tunnus_oid")).getOrThrow(),
+                    rs.getString("jarjestajan_nimi"),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    Arviointitila.valueOf(rs.getString("arviointitila")),
+                    null,
+                    null,
+                )
+            }
     }
 }
 

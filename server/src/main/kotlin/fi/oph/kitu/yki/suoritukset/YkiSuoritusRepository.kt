@@ -11,9 +11,10 @@ import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.buildSql
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.pagingQuery
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectArvosanat
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectSuoritukset
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectFullYkiSuoritusEntity
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectSuorituksetFull
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectSuorituksetRoot
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectTarkistusarviointiAgg
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectYkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.withCtes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -46,7 +47,7 @@ class YkiSuoritusRepository {
         if (ids.isEmpty()) return emptyList()
         val suoritusIds = ids.joinToString(",", "(", ")")
         return jdbcTemplate.query(
-            selectSuoritukset(viimeisin = true, "WHERE yki_suoritus.id IN $suoritusIds"),
+            selectSuorituksetFull(viimeisin = true, "WHERE yki_suoritus.id IN $suoritusIds"),
             YkiSuoritusEntity.fromRow,
         )
     }
@@ -55,7 +56,7 @@ class YkiSuoritusRepository {
     fun findById(id: Int): YkiSuoritusEntity? =
         jdbcNamedParameterTemplate
             .query(
-                selectSuoritukset(
+                selectSuorituksetFull(
                     false,
                     "WHERE yki_suoritus.id = :id",
                 ),
@@ -75,7 +76,7 @@ class YkiSuoritusRepository {
         offset: Int? = null,
     ): Iterable<YkiSuoritusEntity> =
         jdbcNamedParameterTemplate.query(
-            selectSuoritukset(
+            selectSuorituksetFull(
                 distinct,
                 filter.whereSql(),
                 "ORDER BY ${column.entityName} $direction",
@@ -90,16 +91,47 @@ class YkiSuoritusRepository {
         )
 
     @WithSpan
+    fun findForListView(
+        filter: YkiSuoritusFilter = YkiSuoritusFilter(),
+        column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
+        direction: SortDirection = SortDirection.DESC,
+        distinct: Boolean = true,
+        limit: Int? = null,
+        offset: Int? = null,
+    ): Iterable<YkiSuoritusEntity> =
+        if (filter.requiresSubTables()) {
+            find(filter, column, direction, distinct, limit, offset)
+        } else {
+            jdbcNamedParameterTemplate.query(
+                buildSql(
+                    withCtes(
+                        "suoritus" to selectSuorituksetRoot(distinct),
+                    ),
+                    "SELECT * FROM suoritus",
+                    filter.whereSql(),
+                    "ORDER BY ${column.entityName} $direction",
+                    pagingQuery(limit, offset),
+                ),
+                filter.params() +
+                    mapOf(
+                        "limit" to limit,
+                        "offset" to offset,
+                    ),
+                YkiSuoritusEntity.fromRootRow,
+            )
+        }
+
+    @WithSpan
     fun findKoskeenLahettamattomatSuoritukset(): Iterable<YkiSuoritusEntity> =
         jdbcNamedParameterTemplate.query(
-            selectSuoritukset(viimeisin = true, "WHERE NOT koski_siirto_kasitelty"),
+            selectSuorituksetFull(viimeisin = true, "WHERE NOT koski_siirto_kasitelty"),
             YkiSuoritusEntity.fromRow,
         )
 
     @WithSpan
     fun findSuorituksetWithKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> =
         jdbcNamedParameterTemplate.query(
-            selectSuoritukset(viimeisin = true, "WHERE koski_opiskeluoikeus IS NOT NULL"),
+            selectSuorituksetFull(viimeisin = true, "WHERE koski_opiskeluoikeus IS NOT NULL"),
             YkiSuoritusEntity.fromRow,
         )
 
@@ -107,7 +139,7 @@ class YkiSuoritusRepository {
     fun findTarkistusarvoidutSuoritukset(): Iterable<YkiSuoritusEntity> =
         jdbcTemplate
             .query(
-                selectSuoritukset(viimeisin = true, "WHERE arviointitila = ? OR arviointitila = ?"),
+                selectSuorituksetFull(viimeisin = true, "WHERE arviointitila = ? OR arviointitila = ?"),
                 YkiSuoritusEntity.fromRow,
                 Arviointitila.TARKISTUSARVIOITU.name,
                 Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY.name,
@@ -170,7 +202,7 @@ class YkiSuoritusRepository {
     ): Long {
         val sql =
             buildSql(
-                withCtes("viimeisin_suoritus" to selectSuoritukset(viimeisin = distinct, filter.whereSql())),
+                withCtes("viimeisin_suoritus" to selectSuorituksetFull(viimeisin = distinct, filter.whereSql())),
                 "SELECT COUNT(*) FROM viimeisin_suoritus",
             )
 
@@ -190,7 +222,7 @@ class YkiSuoritusRepository {
             emptyList()
         } else {
             jdbcNamedParameterTemplate.query(
-                selectSuoritukset(viimeisin = true, "WHERE yki_suoritus.solki_id IN (:ids)"),
+                selectSuorituksetFull(viimeisin = true, "WHERE yki_suoritus.solki_id IN (:ids)"),
                 mapOf("ids" to ids),
                 YkiSuoritusEntity.fromRow,
             )
@@ -246,7 +278,7 @@ class YkiSuoritusRepository {
                     "arvosana" to selectArvosanat(),
                     "tarkistusarviointi_agg" to selectTarkistusarviointiAgg(),
                 ),
-                selectYkiSuoritusEntity(
+                selectFullYkiSuoritusEntity(
                     ykiSuoritusTable = "yki_suoritus",
                     arvosanaTable = "arvosana",
                     tarkistusarvointiAggregationTable = "tarkistusarviointi_agg",
@@ -259,7 +291,7 @@ class YkiSuoritusRepository {
         jdbcTemplate
             .query(
                 buildSql(
-                    selectSuoritukset(viimeisin = true),
+                    selectSuorituksetFull(viimeisin = true),
                     """
                     WHERE arviointitila_lahetetty IS NULL
                        OR arviointitila_lahetetty < last_modified
@@ -465,7 +497,7 @@ class YkiSuoritusRepository {
     fun getLatestByOpiskeluoikeusOid(opiskeluoikeus: Oid): YkiSuoritusEntity? =
         jdbcNamedParameterTemplate
             .query(
-                selectSuoritukset(viimeisin = true, "WHERE koski_opiskeluoikeus = :opiskeluoikeus"),
+                selectSuorituksetFull(viimeisin = true, "WHERE koski_opiskeluoikeus = :opiskeluoikeus"),
                 mapOf("opiskeluoikeus" to opiskeluoikeus.toString()),
                 YkiSuoritusEntity.fromRow,
             ).firstOrNull()
@@ -474,7 +506,7 @@ class YkiSuoritusRepository {
 object YkiSuoritusSql {
     fun buildSql(vararg parts: String?) = parts.filterNotNull().joinToString("\n").trimIndent()
 
-    fun selectSuoritukset(
+    fun selectSuorituksetFull(
         viimeisin: Boolean,
         vararg conditions: String?,
     ) = buildSql(
@@ -483,11 +515,22 @@ object YkiSuoritusSql {
             "arvosana" to selectArvosanat(),
             "tarkistusarviointi_agg" to selectTarkistusarviointiAgg(),
         ),
-        selectYkiSuoritusEntity(
+        selectFullYkiSuoritusEntity(
             ykiSuoritusTable = "suoritus",
             arvosanaTable = "arvosana",
             tarkistusarvointiAggregationTable = "tarkistusarviointi_agg",
         ),
+        *conditions,
+    )
+
+    /**
+     * Hakee suorituksista vain päätason tiedot (ei esim. sisältyviä osakokeita)
+     */
+    fun selectSuorituksetRoot(
+        viimeisin: Boolean,
+        vararg conditions: String?,
+    ) = buildSql(
+        "${selectQuery(viimeisin)} FROM yki_suoritus",
         *conditions,
     )
 
@@ -537,7 +580,7 @@ object YkiSuoritusSql {
             yki_osakoe_tarkistusarviointi.tarkistusarviointi_id
         """.trimIndent()
 
-    fun selectYkiSuoritusEntity(
+    fun selectFullYkiSuoritusEntity(
         ykiSuoritusTable: String,
         arvosanaTable: String,
         tarkistusarvointiAggregationTable: String,
@@ -651,6 +694,8 @@ data class YkiSuoritusFilter(
             tutkintokieliStrName to tutkintokieli?.name,
             tutkintotasoStrName to tutkintotaso?.name,
         )
+
+    fun requiresSubTables(): Boolean = tutkintokieli != null || tutkintotaso != null
 
     private fun searchQuery(): String? =
         search?.let {
