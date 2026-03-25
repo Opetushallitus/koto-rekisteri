@@ -32,6 +32,7 @@ class YkiSuoritusValidation(
             { validateKielikoodi(it) },
             { validateTodistuskieli(it) },
             { validateCountryCode(it) },
+            { validateArvosanat(it) },
         )
 
     fun validateTodistuskieli(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
@@ -186,5 +187,22 @@ class YkiSuoritusValidation(
                 "Virheellinen maakoodi",
             )
         return Validation.ok(s)
+    }
+
+    fun validateArvosanat(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> {
+        val osakokeet = s.suoritus.osat.mapNotNull { if (it.arvosana == 12) null else it }
+        if (osakokeet.isEmpty()) {
+            return Validation.fail(
+                path = listOf("suoritus", "osat"),
+                message = "Suorituksella täytyy olla vähintään yksi osakoe, johon on ilmottauduttu",
+            )
+        }
+        val validArvosanat = Koodisto.YkiArvosana.validIntegers
+        val invalidArvosanat = osakokeet.mapNotNull { if (it.arvosana in validArvosanat) null else it.arvosana }
+        if (invalidArvosanat.isEmpty()) return Validation.ok(s.copy(suoritus = s.suoritus.copy(osat = osakokeet)))
+        return Validation.fail(
+            listOf("suoritus", "osat", "arvosana"),
+            "Suoritus sisältää virheellisiä arvosanoja: ${invalidArvosanat.joinToString(", ")}",
+        )
     }
 }
