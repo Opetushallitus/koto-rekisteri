@@ -53,7 +53,7 @@ fun FlowContent.vktSuorituksenTiedot(
                 }
                 if (data.suoritus.koskiOpiskeluoikeusOid != null) {
                     +" Opiskeluoikeuden oid: "
-                    a(href = "/koski/oppija/${data.henkilo.oid}") {
+                    a(href = "/koski/oppija/${data.henkilo.oid}?opiskeluoikeudenTyyppi=kielitutkinto") {
                         +data.suoritus.koskiOpiskeluoikeusOid.toString()
                     }
                 }

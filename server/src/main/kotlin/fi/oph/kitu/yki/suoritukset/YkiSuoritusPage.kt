@@ -169,7 +169,7 @@ object YkiSuoritusPage {
             suoritus.koskiOpiskeluoikeus?.let {
                 "Opiskeluoikeus-OID" to {
                     +"Opiskeluoikeuden OID: "
-                    a(href = "/koski/oppija/$it") {
+                    a(href = "/koski/oppija/${suoritus.suorittajanOID}?opiskeluoikeudenTyyppi=kielitutkinto") {
                         +it.toString()
                     }
                 }
