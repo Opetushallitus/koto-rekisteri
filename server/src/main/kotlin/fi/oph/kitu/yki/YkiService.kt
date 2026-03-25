@@ -251,7 +251,7 @@ class YkiService(
         offset: Int,
     ): List<YkiSuoritusEntity> =
         suoritusRepository
-            .find(
+            .findForListView(
                 filter = filter,
                 column = column,
                 direction = direction,
