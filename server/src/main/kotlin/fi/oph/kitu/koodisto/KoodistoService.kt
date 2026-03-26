@@ -27,6 +27,8 @@ class KoodistoServiceImpl(
     override fun getKoodiviitteet(koodistoUri: String): List<KoodistopalveluKoodiviite>? =
         cachedKoodistot.get(koodistoUri)
 
+    @WithSpan
+    @RetryKoodistopalvelu
     private fun fetchKoodisto(koodistoUri: String): List<KoodistopalveluKoodiviite>? =
         tracer
             .spanBuilder("fetchKoodisto")
