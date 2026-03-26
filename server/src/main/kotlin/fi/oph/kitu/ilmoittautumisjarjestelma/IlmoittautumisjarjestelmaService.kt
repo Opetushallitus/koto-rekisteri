@@ -43,6 +43,7 @@ class IlmoittautumisjarjestelmaServiceImpl(
     }
 
     @WithSpan
+    @RetryIlmoittautumisjarjestelma
     private fun sendArvioinninTilat(
         request: YkiArvioinninTilaRequest,
     ): TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException> =
