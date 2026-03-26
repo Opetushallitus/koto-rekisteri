@@ -30,6 +30,8 @@ class KoskiService(
     private val vktSuoritusService: VktSuoritusService,
     private val koskiErrors: KoskiErrorService,
 ) {
+    @WithSpan
+    @RetryKoski
     fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<YkiSuoritusEntity, KoskiException> =
         tracer
             .spanBuilder("KoskiService.sendYkiSuoritusToKoski")
@@ -83,6 +85,8 @@ class KoskiService(
                 }
             }
 
+    @WithSpan
+    @RetryKoski
     fun sendYkiMitatointiToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<Unit, KoskiException> =
         tracer
             .spanBuilder("KoskiService.sendYkiMitatointiToKoski")
@@ -115,6 +119,8 @@ class KoskiService(
                 TypedResult.Success(Unit)
             }
 
+    @WithSpan
+    @RetryKoski
     fun sendVktSuoritusToKoski(suoritus: VktHenkilosuoritus): TypedResult<Unit, KoskiException> =
         tracer
             .spanBuilder("KoskiService.sendVktSuoritusToKoski")
