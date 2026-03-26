@@ -5,6 +5,7 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.cache.PersistentCache
 import fi.oph.kitu.i18n.LocalizedString
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,9 +47,13 @@ class OrganisaatioServiceImpl(
     val client: OrganisaatiopalveluClient,
     cache: PersistentCache,
 ) : OrganisaatioService(cache) {
+    @WithSpan
+    @RetryOrganisaatiopalvelu
     override fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException> =
         client.get("api/$oid", responseType = GetOrganisaatioResponse::class.java)
 
+    @WithSpan
+    @RetryOrganisaatiopalvelu
     override fun getOrganisaatiohierarkia(
         aktiiviset: Boolean,
         suunnitellut: Boolean,
