@@ -14,20 +14,15 @@ import java.time.LocalDateTime
 class PersistentCache(
     val jdbcTemplate: JdbcTemplate,
 ) {
-    val defaultTtlMinutes: Long = 60 * 12
-
     @WithSpan
     fun <T> getAsap(
         valueType: Class<T>,
         key: String? = null,
-        ttl: Long = defaultTtlMinutes,
+        ttl: Long = DEFAULT_TTL_MINUTES,
         fetchValue: () -> T?,
     ): T? {
         val storeKey = key ?: valueType.name
-        val item = findById(storeKey)
-        if (item == null) {
-            return save(storeKey, ttl, fetchValue)?.getValue(valueType)
-        }
+        val item = findById(storeKey) ?: return save(storeKey, ttl, fetchValue)?.getValue(valueType)
         if (item.expiresAt < LocalDateTime.now()) {
             saveAtBackground(storeKey, fetchValue, ttl)
         }
@@ -85,6 +80,10 @@ class PersistentCache(
                 item.updatedAt,
                 item.expiresAt,
             ).first()
+
+    companion object {
+        const val DEFAULT_TTL_MINUTES: Long = 60 * 12
+    }
 }
 
 data class CacheItem(

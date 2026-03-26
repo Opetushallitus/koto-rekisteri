@@ -9,6 +9,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Profile
@@ -24,9 +25,9 @@ data class Organisaatiot(
     }
 }
 
-abstract class OrganisaatioService(
-    val cache: PersistentCache,
-) {
+abstract class OrganisaatioService {
+    @Autowired lateinit var cache: PersistentCache
+
     abstract fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException>
 
     abstract fun getOrganisaatiohierarkia(
@@ -45,8 +46,7 @@ abstract class OrganisaatioService(
 @Profile("!test && !e2e && !local-opintopolku")
 class OrganisaatioServiceImpl(
     val client: OrganisaatiopalveluClient,
-    cache: PersistentCache,
-) : OrganisaatioService(cache) {
+) : OrganisaatioService() {
     @WithSpan
     @RetryOrganisaatiopalvelu
     override fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException> =
