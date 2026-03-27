@@ -21,7 +21,7 @@ class VktScheduledTasks(
     @Bean
     fun cleanup(vktService: VktSuoritusService): Task<Void> =
         Tasks
-            .recurring("VKT-cleanup", ExtendedSchedules.parse(vktCleanupSchedule))
+            .recurring("Poista merkityt VKT-suoritukset", ExtendedSchedules.parse(vktCleanupSchedule))
             .execute { _, _ ->
                 tracer
                     .spanBuilder("VktScheduledTasks.cleanup.tasks.executeStateful")
