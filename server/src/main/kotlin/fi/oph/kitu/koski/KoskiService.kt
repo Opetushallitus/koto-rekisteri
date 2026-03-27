@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.toEntity
+import java.time.LocalDateTime
 
 @Service
 class KoskiService(
@@ -56,7 +57,7 @@ class KoskiService(
                                 .toEntity<KoskiResponse>()
                         } catch (e: RestClientException) {
                             return TypedResult.Failure(
-                                KoskiException(YkiMappingId(ykiSuoritusEntity.solkiId), e.message),
+                                KoskiException.from(YkiMappingId(ykiSuoritusEntity.solkiId), e),
                             )
                         }
 
@@ -144,7 +145,7 @@ class KoskiService(
                             .retrieve()
                             .toEntity<KoskiResponse>()
                     } catch (e: RestClientException) {
-                        return TypedResult.Failure(KoskiException(VktMappingId(id), e.message))
+                        return TypedResult.Failure(KoskiException.from(VktMappingId(id), e))
                     }
 
                 val koskiOpiskeluoikeusOid =
@@ -158,14 +159,14 @@ class KoskiService(
             }
 
     @WithSpan
-    fun sendYkiSuorituksetToKoski() {
+    fun sendYkiSuorituksetToKoski(): KoskiTransferReport {
         val suoritukset = ykiSuoritusRepository.findKoskeenLahettamattomatSuoritukset()
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
-        reportErrors(results.mapValues { YkiMappingId(it.solkiId) })
+        return reportErrors(results.mapValues { YkiMappingId(it.solkiId) })
     }
 
     @WithSpan
-    fun sendVktSuorituksetToKoski() {
+    fun sendVktSuorituksetToKoski(): KoskiTransferReport {
         val siirrettavat = customVktSuoritusRepository.findOpiskeluoikeudetForKoskiTransfer()
         val results =
             siirrettavat.map { id ->
@@ -175,12 +176,33 @@ class KoskiService(
                     }
                 }
             }
-        reportErrors(results)
+        return reportErrors(results)
     }
 
-    private inline fun <reified T : KoskiErrorMappingId> reportErrors(results: List<TypedResult<T, KoskiException>?>) {
+    private inline fun <reified T : KoskiErrorMappingId> reportErrors(
+        results: List<TypedResult<T, KoskiException>?>,
+    ): KoskiTransferReport {
         val (success, failed) = results.filterNotNull().partitionBySuccess()
         success.forEach { id -> koskiErrors.reset(id) }
         failed.forEach { error -> koskiErrors.save(error.suoritusId, error.message ?: error.toString()) }
+        failed.find { it is KoskiTechnicalException }?.let { throw it }
+        return KoskiTransferReport(
+            success.size,
+            results.size,
+        )
     }
+}
+
+data class KoskiTransferReport(
+    val successfulTransfers: Int,
+    val totalCount: Int,
+    val timestamp: LocalDateTime = LocalDateTime.now(),
+) {
+    override fun toString(): String =
+        (
+            listOfNotNull(
+                "Viimeisin onnistunut eräajo: $timestamp",
+                "Siirretty $successfulTransfers / $totalCount",
+            )
+        ).joinToString("; ")
 }
