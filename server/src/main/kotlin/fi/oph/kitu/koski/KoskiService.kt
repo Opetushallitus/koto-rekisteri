@@ -182,14 +182,5 @@ class KoskiService(
         val (success, failed) = results.filterNotNull().partitionBySuccess()
         success.forEach { id -> koskiErrors.reset(id) }
         failed.forEach { error -> koskiErrors.save(error.suoritusId, error.message ?: error.toString()) }
-        if (failed.isNotEmpty()) throw Error.SendToKOSKIFailed(failed.map { it.suoritusId.mappedId() })
-    }
-
-    sealed class Error(
-        message: String,
-    ) : Throwable(message) {
-        class SendToKOSKIFailed(
-            ids: List<String?>,
-        ) : Error("Failed to send following suoritukset to KOSKI: ${ids.joinToString(",")}")
     }
 }
