@@ -9,7 +9,6 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Profile
@@ -25,19 +24,19 @@ data class Organisaatiot(
     }
 }
 
-abstract class OrganisaatioService {
-    @Autowired lateinit var cache: PersistentCache
+interface OrganisaatioService {
+    fun getOrganisaatioCache(): PersistentCache
 
-    abstract fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException>
+    fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException>
 
-    abstract fun getOrganisaatiohierarkia(
+    fun getOrganisaatiohierarkia(
         aktiiviset: Boolean = true,
         suunnitellut: Boolean = false,
         lakkautetut: Boolean = false,
     ): TypedResult<GetOrganisaatiohierarkiaResponse, OrganisaatiopalveluException>
 
     fun getOrganisaatiot(): Organisaatiot =
-        cache.getAsap(Organisaatiot::class.java, "OrganisaatioService.organisaatiot") {
+        getOrganisaatioCache().getAsap(Organisaatiot::class.java, "OrganisaatioService.organisaatiot") {
             getOrganisaatiohierarkia().map { it.getOrganisaatiot() }.getOrNull()
         } ?: Organisaatiot.EMPTY
 }
@@ -46,7 +45,10 @@ abstract class OrganisaatioService {
 @Profile("!test && !e2e && !local-opintopolku")
 class OrganisaatioServiceImpl(
     val client: OrganisaatiopalveluClient,
-) : OrganisaatioService() {
+    val cache: PersistentCache,
+) : OrganisaatioService {
+    override fun getOrganisaatioCache(): PersistentCache = cache
+
     @WithSpan
     @RetryOrganisaatiopalvelu
     override fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException> =

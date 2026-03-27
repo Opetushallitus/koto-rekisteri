@@ -10,7 +10,11 @@ import org.springframework.stereotype.Service
 
 @Service
 @Profile("test || e2e || local-opintopolku")
-class MockOrganisaatioService : OrganisaatioService() {
+class MockOrganisaatioService(
+    val cache: PersistentCache,
+) : OrganisaatioService {
+    override fun getOrganisaatioCache(): PersistentCache = cache
+
     override fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException> {
         val json = ClassPathResource("./opintopolku-mocks/organisaatio-service/api/GET-$oid.json").file
         return TypedResult.Success(defaultObjectMapper.readValue(json, GetOrganisaatioResponse::class.java))
