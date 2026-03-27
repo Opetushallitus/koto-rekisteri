@@ -21,8 +21,10 @@ class IlmoittautumisjarjestelmaScheduledTasks(
     @Bean
     fun retrySendingFailedArviointitilat(ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService): Task<Void> =
         Tasks
-            .recurring("Send arviointitilat", ExtendedSchedules.parse(retrySendingFailedArviointitilatSchedule))
-            .execute { _, _ ->
+            .recurring(
+                "Lähetä YKI-arviointitilat KIOS-palveluun",
+                ExtendedSchedules.parse(retrySendingFailedArviointitilatSchedule),
+            ).execute { _, _ ->
                 tracer
                     .spanBuilder(
                         "IlmoittautumisjarjestelmaScheduledTasks.sendAllUpdatedArvioinninTilat.tasks.executeStateful",

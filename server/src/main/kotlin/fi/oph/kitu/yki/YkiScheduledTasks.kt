@@ -31,8 +31,11 @@ class YkiScheduledTasks(
     @Bean
     fun dailyImport(ykiService: YkiService): Task<Instant?> =
         Tasks
-            .recurring("YKI-import", ExtendedSchedules.parse(ykiImportSchedule), Instant::class.java)
-            .initialData(Instant.EPOCH)
+            .recurring(
+                "Hae YKI-suoritukset CSV-rajapinnasta",
+                ExtendedSchedules.parse(ykiImportSchedule),
+                Instant::class.java,
+            ).initialData(Instant.EPOCH)
             .executeStateful { taskInstance, _ ->
                 tracer
                     .spanBuilder("YkiScheduledTasks.dailyImport.tasks.executeStateful")
@@ -47,7 +50,7 @@ class YkiScheduledTasks(
     @Bean
     fun monthlyCheck(ykiService: YkiService): Task<Void> =
         Tasks
-            .recurring("YKI-check-anomalies", ExtendedSchedules.parse(ykiMonthlyImportSchedule))
+            .recurring("Tarkista poikkeamat YKI-suorituksissa", ExtendedSchedules.parse(ykiMonthlyImportSchedule))
             .executeStateful { _, _ ->
                 tracer
                     .spanBuilder("YkiScheduledTasks.monthlyCheck.tasks.executeStateful")
@@ -66,7 +69,7 @@ class YkiScheduledTasks(
     @Bean
     fun arvioijatImport(ykiService: YkiService): Task<Void> =
         Tasks
-            .recurring("YKI-import-arvioijat", ExtendedSchedules.parse(ykiImportArvioijatSchedule))
+            .recurring("Hae YKI-arvioijat CSV-rajapinnasta", ExtendedSchedules.parse(ykiImportArvioijatSchedule))
             .execute { _, _ ->
                 tracer
                     .spanBuilder("YkiScheduledTasks.arvioijatImport.tasks.execute")

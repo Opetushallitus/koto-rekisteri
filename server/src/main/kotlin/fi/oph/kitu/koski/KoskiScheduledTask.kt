@@ -24,7 +24,7 @@ class KoskiYkiScheduledTask(
     fun sendYkiSuoritukset(koskiService: KoskiService): Task<String?> =
         Tasks
             .recurring(
-                "KOSKI-send-YKI-suoritukset",
+                "Lähetä YKI-suoritukset KOSKI-palveluun",
                 ExtendedSchedules.parse(ykiSchedule),
                 String::class.java,
             ).executeStateful { _, _ ->
@@ -51,7 +51,7 @@ class KoskiVktScheduledTask(
     fun sendVktSuoritukset(koskiService: KoskiService): Task<String?> =
         Tasks
             .recurring(
-                "KOSKI-send-VKT-suoritukset",
+                "Lähetä VKT-suoritukset KOSKI-palveluun",
                 ExtendedSchedules.parse(vktSchedule),
                 String::class.java,
             ).executeStateful { _, _ ->

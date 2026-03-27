@@ -24,7 +24,7 @@ class KoealustaScheduledTasks {
     ): Task<Instant> =
         Tasks
             .recurring(
-                "Koto-import",
+                "Hae kielitaidon testisuoritukset",
                 ExtendedSchedules.parse(koealustaImportSchedule),
                 Instant::class.java,
             ).initialData(Instant.EPOCH)
