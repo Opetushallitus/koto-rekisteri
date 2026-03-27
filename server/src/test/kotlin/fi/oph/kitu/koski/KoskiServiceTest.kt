@@ -206,7 +206,7 @@ class KoskiServiceTest(
             ),
         )
 
-        assertFailsWith<KoskiService.Error.SendToKOSKIFailed> { service.sendYkiSuorituksetToKoski() }
+        service.sendYkiSuorituksetToKoski()
 
         val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
         assertEquals(3, updatedSuoritukset.size)
