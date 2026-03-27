@@ -21,14 +21,20 @@ class KoskiYkiScheduledTask(
     lateinit var ykiSchedule: String
 
     @Bean
-    fun sendYkiSuoritukset(koskiService: KoskiService): Task<Void> =
+    fun sendYkiSuoritukset(koskiService: KoskiService): Task<String?> =
         Tasks
-            .recurring("KOSKI-send-YKI-suoritukset", ExtendedSchedules.parse(ykiSchedule))
-            .execute { _, _ ->
-                tracer.spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute").startSpan().use { span ->
-                    span.setAttribute("task.name", "KOSKI-send-YKI-suoritukset")
-                    koskiService.sendYkiSuorituksetToKoski()
-                }
+            .recurring(
+                "KOSKI-send-YKI-suoritukset",
+                ExtendedSchedules.parse(ykiSchedule),
+                String::class.java,
+            ).executeStateful { _, _ ->
+                tracer
+                    .spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute")
+                    .startSpan()
+                    .use { span ->
+                        span.setAttribute("task.name", "KOSKI-send-YKI-suoritukset")
+                        koskiService.sendYkiSuorituksetToKoski().toString()
+                    }
             }
 }
 
@@ -42,13 +48,19 @@ class KoskiVktScheduledTask(
     lateinit var vktSchedule: String
 
     @Bean
-    fun sendVktSuoritukset(koskiService: KoskiService): Task<Void> =
+    fun sendVktSuoritukset(koskiService: KoskiService): Task<String?> =
         Tasks
-            .recurring("KOSKI-send-VKT-suoritukset", ExtendedSchedules.parse(vktSchedule))
-            .execute { _, _ ->
-                tracer.spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute").startSpan().use { span ->
-                    span.setAttribute("task.name", "KOSKI-send-VKT-suoritukset")
-                    koskiService.sendVktSuorituksetToKoski()
-                }
+            .recurring(
+                "KOSKI-send-VKT-suoritukset",
+                ExtendedSchedules.parse(vktSchedule),
+                String::class.java,
+            ).executeStateful { _, _ ->
+                tracer
+                    .spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute")
+                    .startSpan()
+                    .use { span ->
+                        span.setAttribute("task.name", "KOSKI-send-VKT-suoritukset")
+                        koskiService.sendVktSuorituksetToKoski().toString()
+                    }
             }
 }
