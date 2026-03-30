@@ -48,6 +48,7 @@ class KielitestiCsvTest(
                     puhe = Arvosana.A1,
                     kirjoittaminen = Arvosana.ALLEA1,
                     testikieli = Testikieli.FIN,
+                    tehtavapaketti = "fi_suomi",
                 ),
                 KielitestiSuoritus(
                     id = null,
@@ -66,6 +67,7 @@ class KielitestiCsvTest(
                     puhe = Arvosana.A1,
                     kirjoittaminen = Arvosana.ALLEA1,
                     testikieli = Testikieli.SWE,
+                    tehtavapaketti = null,
                 ),
             )
 

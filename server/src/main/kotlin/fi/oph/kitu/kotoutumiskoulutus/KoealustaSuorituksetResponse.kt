@@ -23,6 +23,8 @@ data class KoealustaSuorituksetResponse(
             val results: List<Result>,
             val timecompleted: Long,
             val teacheremail: String?,
+            @param:JsonProperty("questionbank_release")
+            val questionbank: String?,
         ) {
             data class Result(
                 val name: String,

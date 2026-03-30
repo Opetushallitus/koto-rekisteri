@@ -39,6 +39,7 @@ data class KielitestiSuoritus(
     val testikieli: Testikieli?,
     @IgnoreForEquality("KOTO")
     val lastModified: Instant = Instant.now(),
+    val tehtavapaketti: String?,
 ) {
     companion object {
         val fromRow: RowMapper<KielitestiSuoritus> =
@@ -61,6 +62,7 @@ data class KielitestiSuoritus(
                     kirjoittaminen = Arvosana.valueOf(rs.getString("kirjoittaminen")),
                     testikieli = rs.getString("testikieli")?.let { Testikieli.valueOf(it) },
                     lastModified = rs.getTimestamp("last_modified").toInstant(),
+                    tehtavapaketti = rs.getString("tehtavapaketti"),
                 )
             }
     }

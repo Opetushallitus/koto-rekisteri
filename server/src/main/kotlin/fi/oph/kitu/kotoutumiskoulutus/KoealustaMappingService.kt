@@ -323,6 +323,7 @@ class KoealustaMappingService(
                 kirjoittaminen = kirjoittaminen,
                 testikieli = testikieli,
                 opettajanEmail = completion.teacheremail,
+                tehtavapaketti = completion.questionbank,
             ),
         )
     }

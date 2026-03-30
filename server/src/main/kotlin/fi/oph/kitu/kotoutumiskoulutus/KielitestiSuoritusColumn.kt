@@ -59,4 +59,11 @@ enum class KielitestiSuoritusColumn(
         urlParam = "suoritusaika",
         getValue = { { it.suoritusaika.toString() } },
     ),
+
+    Tehtavapaketti(
+        entityName = "tehtavapaketti",
+        uiHeaderValue = "Tehtäväpaketti",
+        urlParam = "tehtavapaketti",
+        getValue = { { it.tehtavapaketti.orEmpty() } },
+    ),
 }
