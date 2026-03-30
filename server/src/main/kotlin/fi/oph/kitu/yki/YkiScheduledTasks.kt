@@ -29,25 +29,6 @@ class YkiScheduledTasks(
 
     @WithSpan
     @Bean
-    fun dailyImport(ykiService: YkiService): Task<Instant?> =
-        Tasks
-            .recurring(
-                "Hae YKI-suoritukset CSV-rajapinnasta",
-                ExtendedSchedules.parse(ykiImportSchedule),
-                Instant::class.java,
-            ).initialData(Instant.EPOCH)
-            .executeStateful { taskInstance, _ ->
-                tracer
-                    .spanBuilder("YkiScheduledTasks.dailyImport.tasks.executeStateful")
-                    .startSpan()
-                    .use { span ->
-                        span.setAttribute("task.name", "YKI-import")
-                        ykiService.importYkiSuoritukset(taskInstance.data)
-                    }
-            }
-
-    @WithSpan
-    @Bean
     fun monthlyCheck(ykiService: YkiService): Task<Void> =
         Tasks
             .recurring("Tarkista poikkeamat YKI-suorituksissa", ExtendedSchedules.parse(ykiMonthlyImportSchedule))
@@ -57,26 +38,8 @@ class YkiScheduledTasks(
                     .startSpan()
                     .use { span ->
                         span.setAttribute("task.name", "YKI-check-anomalies")
-                        ykiService.importYkiSuoritukset(
-                            from = Instant.now().minusSeconds(365.days.inWholeSeconds),
-                            reportOnly = true,
-                        )
+                        ykiService.checkYkiAnomalies(Instant.now().minusSeconds(365.days.inWholeSeconds))
                         null
-                    }
-            }
-
-    @WithSpan
-    @Bean
-    fun arvioijatImport(ykiService: YkiService): Task<Void> =
-        Tasks
-            .recurring("Hae YKI-arvioijat CSV-rajapinnasta", ExtendedSchedules.parse(ykiImportArvioijatSchedule))
-            .execute { _, _ ->
-                tracer
-                    .spanBuilder("YkiScheduledTasks.arvioijatImport.tasks.execute")
-                    .startSpan()
-                    .use { span ->
-                        span.setAttribute("task.name", "YKI-import-arvioijat")
-                        ykiService.importYkiArvioijat()
                     }
             }
 }

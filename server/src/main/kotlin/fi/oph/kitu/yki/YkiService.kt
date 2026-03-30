@@ -1,19 +1,15 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.PeerService
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.findDifferentProperties
 import fi.oph.kitu.ignoreEmptyValues
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
-import fi.oph.kitu.logging.AuditLogEntry
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.splitIntoValuesAndErrors
-import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
@@ -33,13 +29,10 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
-import java.io.ByteArrayOutputStream
 import java.time.Instant
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -82,10 +75,7 @@ class YkiService(
                 response.body ?: "No body"
             }
 
-    fun importYkiSuoritukset(
-        from: Instant,
-        reportOnly: Boolean = false,
-    ): Instant =
+    fun checkYkiAnomalies(from: Instant): Instant =
         tracer
             .spanBuilder("YkiService.importSuoritukset")
             .startSpan()
@@ -111,45 +101,32 @@ class YkiService(
 
                 val entities = suoritusMapper.convertToEntityIterable(suoritukset)
 
-                if (reportOnly) {
-                    suoritusPoikkeamaRepository.deleteAll()
-                    entities.forEach { entity ->
-                        suoritusRepository
-                            .findLatestBySolkiIds(listOf(entity.solkiId))
-                            .firstOrNull()
-                            ?.let { existing ->
-                                val diff =
-                                    entity
-                                        .findDifferentProperties(existing, "SOLKI")
-                                        .ignoreEmptyValues()
-                                val time = Instant.now()
-                                diff.forEach { (key, value) ->
-                                    val poikkeama =
-                                        YkiSuoritusPoikkeama(
-                                            solkiId = entity.solkiId,
-                                            kentta = key,
-                                            arvoKitussa = value.first.toString(),
-                                            arvoSolkissa = value.second.toString(),
-                                            havaittu = time,
-                                        )
-                                    suoritusPoikkeamaRepository.save(poikkeama)
-                                    logger.error(
-                                        "Havaittu poikkeama yki-suorituksen tiedoissa verratuuna Solkin tietoihin: $poikkeama",
+                suoritusPoikkeamaRepository.deleteAll()
+                entities.forEach { entity ->
+                    suoritusRepository
+                        .findLatestBySolkiIds(listOf(entity.solkiId))
+                        .firstOrNull()
+                        ?.let { existing ->
+                            val diff =
+                                entity
+                                    .findDifferentProperties(existing, "SOLKI")
+                                    .ignoreEmptyValues()
+                            val time = Instant.now()
+                            diff.forEach { (key, value) ->
+                                val poikkeama =
+                                    YkiSuoritusPoikkeama(
+                                        solkiId = entity.solkiId,
+                                        kentta = key,
+                                        arvoKitussa = value.first.toString(),
+                                        arvoSolkissa = value.second.toString(),
+                                        havaittu = time,
                                     )
-                                }
+                                suoritusPoikkeamaRepository.save(poikkeama)
+                                logger.error(
+                                    "Havaittu poikkeama yki-suorituksen tiedoissa verratuuna Solkin tietoihin: $poikkeama",
+                                )
                             }
-                    }
-                } else {
-                    val saved = suoritusRepository.saveAllNewEntities(entities)
-                    ilmoittautumisjarjestelma.sendAllUpdatedArvioinninTilat()
-
-                    span.setAttribute("importedSuorituksetSize", saved.count().toLong())
-                    auditLogger.logAllInternalOnly("YKI suoritus imported", saved) { suoritus ->
-                        arrayOf(
-                            "principal.name" to "yki.importSuoritukset",
-                            "suoritus.id" to suoritus.solkiId,
-                        )
-                    }
+                        }
                 }
 
                 if (hasErrors) {
@@ -157,66 +134,6 @@ class YkiService(
                 }
 
                 return@use startTime.minusSeconds(60 * 5)
-            }
-
-    fun importYkiArvioijat() =
-        tracer
-            .spanBuilder("YkiService.importYkiArvioijat")
-            .startSpan()
-            .use { span ->
-                val response =
-                    solkiRestClient
-                        .get()
-                        .uri("arvioijat")
-                        .retrieve()
-                        .toEntity<String>()
-
-                val (arvioijat, errors) =
-                    parser
-                        .convertCsvToData<SolkiArvioijaResponse>(
-                            response.body ?: throw Error.EmptyArvioijatResponse(),
-                        ).splitIntoValuesAndErrors()
-
-                arvioijaErrorService.handleErrors(errors)
-
-                span.setAttribute("yki.arvioijat.receivedCount", arvioijat.size)
-
-                if (arvioijat.isEmpty()) {
-                    throw Error.EmptyArvioijat()
-                }
-
-                val importedArvioijat =
-                    arvioijaRepository.saveAllNewEntities(
-                        arvioijaMapper.convertToEntityIterable(arvioijat),
-                    )
-
-                span.setAttribute("yki.arvioijat.importedCount", importedArvioijat.count())
-
-                auditLogger.logAllInternalOnly("YKI arvioija imported", arvioijat) { arvioija ->
-                    arrayOf(
-                        "principal.name" to "yki.importArvioijat",
-                        "peer.service" to PeerService.Solki.value,
-                        "arvioija.oppijanumero" to arvioija.arvioijanOppijanumero,
-                    )
-                }
-            }
-
-    fun generateSuorituksetCsvStream(
-        includeVersionHistory: Boolean,
-        filter: YkiSuoritusFilter,
-    ): ByteArrayOutputStream =
-        tracer
-            .spanBuilder("YkiService.generateSuorituksetCsvStream")
-            .startSpan()
-            .use { span ->
-                val newParser = parser.withUseHeader(true)
-                val suoritukset = allSuoritukset(includeVersionHistory, filter)
-                span.setAttribute("dataCount", suoritukset.count())
-                val writableData = suoritusMapper.convertToResponseIterable(suoritukset)
-                val outputStream = ByteArrayOutputStream()
-                newParser.streamDataAsCsv(outputStream, writableData)
-
-                return@use outputStream
             }
 
     @WithSpan
