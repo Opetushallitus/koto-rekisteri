@@ -57,7 +57,8 @@ class KoealustaServiceTests(
                     }
                   ],
                   "timecompleted": 1728969131,
-                  "teacheremail": "opettaja@testi.oph.fi"
+                  "teacheremail": "opettaja@testi.oph.fi",
+                  "questionbank_release": "fi_suomi_testi"
                 }
               ]
         }
@@ -158,6 +159,7 @@ class KoealustaServiceTests(
             fun () = assertEquals(Oid.parse("1.2.246.562.10.1234567890").getOrThrow(), ranja.oppilaitosOid),
             fun () = assertEquals(Oid.parse("1.2.246.562.24.33342764709").getOrThrow(), ranja.oppijanumero),
             fun () = assertEquals(null, ranja.testikieli),
+            fun () = assertEquals("fi_tehtäväpaketti_suomi", ranja.tehtavapaketti),
         )
     }
 

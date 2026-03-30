@@ -18,6 +18,7 @@ export interface KotoSuoritus {
   kurssiId: number
   kurssi: string
   testikieli: string
+  tehtavapaketti: string | null
 }
 
 type CreateSuoritusArgs = Partial<
@@ -40,6 +41,7 @@ const createSuoritus = (
     kurssiId = 32,
     kurssi = "Integraatio testaus",
     testikieli = "FIN",
+    tehtavapaketti = "fi_suomi",
   }: CreateSuoritusArgs,
 ) => {
   const p = peopleFixture[person]
@@ -59,6 +61,7 @@ const createSuoritus = (
     kurssiId: kurssiId,
     kurssi: kurssi,
     testikieli: testikieli,
+    tehtavapaketti: tehtavapaketti,
   }
 }
 
@@ -93,7 +96,8 @@ const insertQuery = (suoritus: KotoSuoritus) => SQL`
                              opettajan_email,
                              kurssi_id,
                              kurssi,
-                             testikieli)
+                             testikieli,
+                             tehtavapaketti)
   VALUES (${suoritus.etunimet},
           ${suoritus.sukunimi},
           ${suoritus.kutsumanimi},
@@ -108,7 +112,8 @@ const insertQuery = (suoritus: KotoSuoritus) => SQL`
           ${suoritus.opettajanEmail},
           ${suoritus.kurssiId},
           ${suoritus.kurssi},
-          ${suoritus.testikieli})
+          ${suoritus.testikieli},
+          ${suoritus.tehtavapaketti})
 `
 
 export type KotoSuorittajaName = keyof typeof fixtureData
