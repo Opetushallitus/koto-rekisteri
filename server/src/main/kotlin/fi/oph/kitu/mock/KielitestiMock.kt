@@ -19,6 +19,13 @@ val kotoCourses =
         "suomen kieli työelämään",
     )
 
+val tehtavapaketit =
+    listOf(
+        "fi_suomi",
+        "sv_svenska",
+        null,
+    )
+
 fun generateRandomKielitestiSuoritus(): KielitestiSuoritus {
     val oppilas = generateRandomPerson()
     val teacher = generateRandomPerson()
@@ -40,5 +47,6 @@ fun generateRandomKielitestiSuoritus(): KielitestiSuoritus {
         kirjoittaminen = Arvosana.fromString(cefrLanguageLevels.random()),
         testikieli = Testikieli.FIN,
         opettajanEmail = teacher.email,
+        tehtavapaketti = tehtavapaketit.random(),
     )
 }
