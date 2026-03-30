@@ -62,15 +62,23 @@ class GlobalControllerExceptionHandler(
             is MockResourceNotFoundError,
             is OppijanumeroException.OppijaNotFoundException,
             is org.springframework.web.servlet.resource.NoResourceFoundException,
-            -> ErrorPage.notFound(traceId, traceUrl)
+            -> {
+                ErrorPage.notFound(traceId, traceUrl)
+            }
 
             is MethodArgumentTypeMismatchException,
-            -> ErrorPage.badRequest(traceId, traceUrl)
+            -> {
+                ErrorPage.badRequest(traceId, traceUrl)
+            }
 
             is AccessDeniedException,
-            -> ErrorPage.accessDenied(traceId, traceUrl)
+            -> {
+                ErrorPage.accessDenied(traceId, traceUrl)
+            }
 
-            else -> ErrorPage.error(error, traceId, traceUrl, isLocal)
+            else -> {
+                ErrorPage.error(error, traceId, traceUrl, isLocal)
+            }
         }
     }
 }
