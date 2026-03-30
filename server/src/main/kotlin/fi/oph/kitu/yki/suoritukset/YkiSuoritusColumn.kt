@@ -102,7 +102,7 @@ enum class YkiSuoritusColumn(
         getValue = { it.email.orEmpty() },
     ),
 
-    @ColumnTags(ColumnTag.CSV_EXPORT)
+    @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     SolkiId(
         entityName = "yki_suoritus.solki_id",
         uiHeaderValue = "Solki-tunniste",
