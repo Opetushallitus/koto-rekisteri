@@ -88,7 +88,7 @@ export class ServiceStack extends Stack {
       .httpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT)
       .createAlarm(this, "LoadBalancer5xxAlarm", {
         evaluationPeriods: 1,
-        threshold: 1,
+        threshold: 4,
         treatMissingData: TreatMissingData.NOT_BREACHING,
       })
     alarm5xx.addAlarmAction(snsAction)
