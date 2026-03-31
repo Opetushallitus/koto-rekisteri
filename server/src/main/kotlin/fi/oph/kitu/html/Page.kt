@@ -5,6 +5,7 @@ package fi.oph.kitu.html
 import fi.oph.kitu.ApplicationProperties
 import fi.oph.kitu.HomeController
 import fi.oph.kitu.KituApplicationProperties
+import fi.oph.kitu.html.Navigation.flatten
 import fi.oph.kitu.html.Navigation.mainNavigation
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
@@ -53,7 +54,7 @@ object Page {
                 main {
                     nav(classes = "container-fluid main") {
                         testId("page-main-nav-header")
-                        ul {
+                        ul(classes = "nav-title") {
                             li {
                                 ul(classes = "breadcrumbs") {
                                     testId("breadcrumbs")
@@ -65,9 +66,12 @@ object Page {
                                 }
                             }
                         }
-                        ul {
+                        ul(classes = "nav-menu") {
                             testId("main-nav")
-                            mainNavigation.forEach { group -> dropdown(group.name, group.children) }
+                            dropdown(
+                                "☰",
+                                mainNavigation.flatten(),
+                            )
                         }
                     }
 

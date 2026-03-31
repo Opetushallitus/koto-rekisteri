@@ -16,7 +16,7 @@ export default class YkiSuorituksetPage extends BasePage {
   }
 
   async openFromNavigation() {
-    await this.gotoFromMainNav("Yleinen kielitutkinto", "Suoritukset")
+    await this.gotoFromMainNav("Suoritukset")
   }
 
   async expectContentToBeVisible() {

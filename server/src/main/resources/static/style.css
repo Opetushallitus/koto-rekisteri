@@ -69,9 +69,16 @@ nav.main {
   margin-bottom: var(--pico-block-spacing-vertical);
 
   padding: var(--pico-block-spacing-vertical)
-    var(--pico-block-spacing-horizontal);
+    calc(3 * var(--pico-block-spacing-horizontal));
   background: var(--pico-card-background-color);
   box-shadow: var(--pico-card-box-shadow);
+
+  justify-content: normal;
+  gap: var(--pico-block-spacing-horizontal);
+}
+
+nav.main .nav-menu {
+  order: -1;
 }
 
 nav.main a {

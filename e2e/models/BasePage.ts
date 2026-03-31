@@ -21,20 +21,23 @@ export default class BasePage {
     return this.page.goto(fullUrl.toString(), params)
   }
 
-  protected async gotoFromMainNav(dropdownTitle: string, navLinkText: string) {
+  protected async gotoFromMainNav(navLinkText: string, nth: number = 0) {
     const navigation = this.getMainNavigationHeader().getByTestId("main-nav")
-    const dropdown = navigation
-      .getByRole("listitem")
-      .filter({ hasText: dropdownTitle })
+    const dropdown = navigation.getByRole("listitem").filter({ hasText: "☰" })
     await dropdown.click()
-    await dropdown.getByText(navLinkText).click()
+    await this.getMainNavigationHeader()
+      .getByTestId("dropdown-menu")
+      .getByRole("listitem")
+      .filter({ hasText: navLinkText })
+      .nth(nth)
+      .click()
   }
 
   async login(user?: string) {
     const response = await this.goto(
       user ? `dev/mocklogin/${user}` : "dev/mocklogin",
     )
-    expect(response.status()).toBe(200)
+    expect(response?.status()).toBe(200)
   }
 
   getPageContent() {
