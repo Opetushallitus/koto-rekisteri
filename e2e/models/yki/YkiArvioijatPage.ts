@@ -17,7 +17,7 @@ export default class YkiArvioijatPage extends BasePage {
   }
 
   async openFromNavigation() {
-    await this.gotoFromMainNav("Yleinen kielitutkinto", "Arvioijat")
+    await this.gotoFromMainNav("Arvioijat")
   }
 
   async expectContentToBeVisible() {

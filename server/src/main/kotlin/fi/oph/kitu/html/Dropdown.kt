@@ -4,6 +4,7 @@ import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.details
 import kotlinx.html.li
+import kotlinx.html.strong
 import kotlinx.html.summary
 import kotlinx.html.ul
 
@@ -15,11 +16,19 @@ fun FlowContent.dropdown(
         testId("main-nav")
         li {
             details(classes = "dropdown") {
-                summary { +title }
+                summary {
+                    +title
+                }
                 ul {
-                    attributes["dir"] = "rtl"
+                    testId("dropdown-menu")
                     items.forEach {
-                        li { a(href = it.ref) { +it.title } }
+                        li {
+                            if (it.ref == null) {
+                                strong { +it.title }
+                            } else {
+                                a(href = it.ref) { +it.title }
+                            }
+                        }
                     }
                 }
             }

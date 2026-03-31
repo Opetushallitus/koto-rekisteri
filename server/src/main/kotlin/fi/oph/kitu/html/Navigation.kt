@@ -68,7 +68,7 @@ object Navigation {
 
     data class MenuItem(
         val title: String,
-        val ref: String,
+        val ref: String?,
         val current: Boolean = false,
     ) {
         companion object {
@@ -98,4 +98,6 @@ object Navigation {
         } else {
             this
         }
+
+    fun List<MenuItemGroup>.flatten(): List<MenuItem> = this.flatMap { listOf(MenuItem(it.name, null)) + it.children }
 }

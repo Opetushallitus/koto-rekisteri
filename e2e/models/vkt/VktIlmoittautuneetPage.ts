@@ -20,10 +20,7 @@ export default class VktIlmoittautuneetPage extends BasePage {
   }
 
   async openFromNavigation() {
-    await this.gotoFromMainNav(
-      "Valtionhallinnon kielitutkinnot",
-      "Erinomaisen tason ilmoittautuneet",
-    )
+    await this.gotoFromMainNav("Erinomaisen tason ilmoittautuneet")
   }
 
   async followLinkOfRow(testId: string) {

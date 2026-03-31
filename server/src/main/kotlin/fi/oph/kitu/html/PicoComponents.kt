@@ -40,8 +40,9 @@ fun FlowContent.itemSelect(
         }
         items.forEach {
             option {
-                value = it.ref
+                value = it.ref.orEmpty()
                 selected = it.current
+                disabled = it.ref == null
                 +it.title
             }
         }
