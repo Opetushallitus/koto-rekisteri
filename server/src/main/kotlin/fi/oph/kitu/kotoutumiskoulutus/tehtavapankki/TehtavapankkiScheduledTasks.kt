@@ -24,7 +24,7 @@ class TehtavapankkiScheduledTasks(
     fun dailyImportKotoTehtavapankki(tehtavapankkiService: TehtavapankkiService): Task<Void> =
         Tasks
             .recurring(
-                "Koto-import-tehtavapankki",
+                "Kotoutumiskoulutuksen kielitaidon tehtäväpankin lataus",
                 ExtendedSchedules.parse(tehtavapankkiImportSchedule),
             ).execute { _, _ ->
                 tracer
