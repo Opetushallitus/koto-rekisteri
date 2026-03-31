@@ -48,6 +48,16 @@ object Navigation {
                     ),
                 ),
             ),
+            MenuItemGroup(
+                "admin",
+                "Ylläpito",
+                listOf(
+                    MenuItem(
+                        "Eräajojen hallinta",
+                        "/kielitutkinnot/db-scheduler",
+                    ),
+                ),
+            ),
         )
 
     data class MenuItemGroup(
