@@ -38,7 +38,7 @@ class VktSuoritusService(
 
     @WithSpan("VktSuoritusService.getSuorituksetAndPagination")
     fun getSuorituksetAndPagination(
-        taitotaso: Koodisto.VktTaitotaso,
+        taitotaso: Koodisto.VktTaitotaso?,
         arvioidut: Boolean?,
         sortColumn: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
@@ -51,7 +51,7 @@ class VktSuoritusService(
 
     @WithSpan("VktSuoritusService.getIlmoittautuneetForListView")
     fun getIlmoittautuneetForListView(
-        taitotaso: Koodisto.VktTaitotaso,
+        taitotaso: Koodisto.VktTaitotaso?,
         arvioidut: Boolean?,
         sortColumn: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
@@ -73,7 +73,7 @@ class VktSuoritusService(
         sortColumn: CustomVktSuoritusRepository.Column,
         sortDirection: SortDirection,
         currentPageNumber: Int,
-        taitotaso: Koodisto.VktTaitotaso,
+        taitotaso: Koodisto.VktTaitotaso?,
         arvioidut: Boolean?,
         searchQuery: String?,
     ): Pagination =
@@ -184,7 +184,7 @@ class VktSuoritusService(
     fun requestTransferToKoski(id: Tutkintoryhma) = customSuoritusRepository.requestTransferToKoski(id)
 
     private val listRowCounts =
-        InMemoryCache(ttl = 5.minutes) { params: Triple<Koodisto.VktTaitotaso, Boolean?, String?> ->
+        InMemoryCache(ttl = 5.minutes) { params: Triple<Koodisto.VktTaitotaso?, Boolean?, String?> ->
             customSuoritusRepository.numberOfRowsForListView(
                 taitotaso = params.first,
                 arvioidut = params.second,

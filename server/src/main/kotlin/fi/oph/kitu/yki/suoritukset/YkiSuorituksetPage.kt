@@ -116,52 +116,7 @@ object YkiSuorituksetPage {
                         rows = suoritukset,
                         columns = columns,
                         rowClasses = "suoritus",
-                    ) { suoritus ->
-//                        if (suoritus.tarkistusarvioinninSaapumisPvm != null) {
-//                            tr {
-//                                td {
-//                                    attributes["colspan"] = "13"
-//                                    details {
-//                                        summary { +"Näytä tarkistusarvioinnin tiedot" }
-//                                        table {
-//                                            tr {
-//                                                th { +"Saapumispäivä" }
-//                                                th { +"Asiatunnus" }
-//                                                th { +"Osakokeet" }
-//                                                th { +"Arvosana muuttui?" }
-//                                                th { +"Perustelu" }
-//                                                th { +"Käsittelypäivä" }
-//                                                th { +"Tutkintotoimikunnan hyväksyntä" }
-//                                            }
-//                                            tr {
-//                                                td {
-//                                                    +suoritus.tarkistusarvioinninSaapumisPvm.toString()
-//                                                }
-//                                                td { +suoritus.tarkistusarvioinninAsiatunnus.orEmpty() }
-//                                                td {
-//                                                    +suoritus.tarkistusarvioidutOsakokeet
-//                                                        ?.joinToString(", ") { it.viewText }
-//                                                        .orEmpty()
-//                                                }
-//                                                td {
-//                                                    +suoritus.arvosanaMuuttui
-//                                                        ?.joinToString(", ") { it.viewText }
-//                                                        .orEmpty()
-//                                                }
-//                                                td { +suoritus.perustelu.orEmpty() }
-//                                                td {
-//                                                    +suoritus.tarkistusarvioinninKasittelyPvm?.toString().orEmpty()
-//                                                }
-//                                                td {
-//                                                    +suoritus.tarkistusarviointiHyvaksyttyViewText().orEmpty()
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-                    }
+                    )
                 }
             }
 
