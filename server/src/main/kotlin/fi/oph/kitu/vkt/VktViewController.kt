@@ -15,6 +15,7 @@ import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
+import fi.oph.kitu.vkt.html.VktKaikkiSuorituksetPage
 import fi.oph.kitu.vkt.html.VktKoskiErrors
 import kotlinx.html.a
 import kotlinx.html.br
@@ -41,6 +42,42 @@ class VktViewController(
     private val koskiErrorService: KoskiErrorService,
     private val koskiRequestMapper: KoskiRequestMapper,
 ) {
+    @GetMapping("/", produces = ["text/html"])
+    fun kaikkiSuorituksetView(
+        page: Int = 1,
+        sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
+        sortDirection: SortDirection = SortDirection.ASC,
+        search: String? = null,
+    ): ResponseEntity<String> {
+        val (suoritukset, pagination) =
+            vktSuoritukset.getSuorituksetAndPagination(
+                taitotaso = null,
+                arvioidut = null,
+                sortColumn = sortColumn,
+                sortDirection = sortDirection,
+                pageNumber = page,
+                searchQuery = search,
+            )
+
+        val translations =
+            localizationService
+                .translationBuilder()
+                .koodistot("kieli", "vkttutkintotaso")
+                .build()
+
+        return ResponseEntity.ok(
+            VktKaikkiSuorituksetPage.render(
+                suoritukset,
+                sortedBy = sortColumn,
+                sortDirection = sortDirection,
+                pagination = pagination,
+                translations = translations,
+                searchQuery = search,
+                messages = getMessages(),
+            ),
+        )
+    }
+
     @GetMapping("/erinomainen/ilmoittautuneet", produces = ["text/html"])
     fun erinomaisenTaitotasonIlmoittautuneetView(
         page: Int = 1,

@@ -50,7 +50,7 @@ class CustomVktSuoritusRepository {
 
     @WithSpan
     fun findForListView(
-        taitotaso: Koodisto.VktTaitotaso,
+        taitotaso: Koodisto.VktTaitotaso?,
         arvioidut: Boolean? = null,
         column: Column,
         direction: SortDirection,
@@ -116,7 +116,7 @@ class CustomVktSuoritusRepository {
 
     @WithSpan
     fun numberOfRowsForListView(
-        taitotaso: Koodisto.VktTaitotaso,
+        taitotaso: Koodisto.VktTaitotaso?,
         arvioidut: Boolean?,
         searchQuery: String?,
     ): Int {
@@ -295,27 +295,30 @@ class CustomVktSuoritusRepository {
         }
 
     private fun listViewPrefilter(
-        taitotaso: Koodisto.VktTaitotaso,
+        taitotaso: Koodisto.VktTaitotaso?,
         search: SearchQueryParser,
     ): Pair<String, Map<String, Any>> {
         val sql =
             whereAll(
                 *
-                    arrayOf("taitotaso = :taitotaso") +
-                        (
-                            search.textTokens.map { token ->
-                                listOf(
-                                    "etunimet ILIKE",
-                                    "sukunimi ILIKE",
-                                    "suorittajan_oid LIKE",
-                                ).joinToString(" OR ") { "($it ${token.sql})" }
-                            }
-                        ),
+                    listOfNotNull(
+                        taitotaso?.let { "taitotaso = :taitotaso" },
+                    ).toTypedArray() + (
+                        search.textTokens.map { token ->
+                            listOf(
+                                "etunimet ILIKE",
+                                "sukunimi ILIKE",
+                                "suorittajan_oid LIKE",
+                            ).joinToString(" OR ") { "($it ${token.sql})" }
+                        }
+                    ),
             )
 
         return Pair(
             sql,
-            mapOf("taitotaso" to taitotaso.name) + search.sqlParams,
+            listOfNotNull(
+                taitotaso?.let { "taitotaso" to it.name },
+            ).toMap() + search.sqlParams,
         )
     }
 

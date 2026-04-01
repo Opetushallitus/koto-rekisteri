@@ -31,6 +31,10 @@ object Navigation {
                 "Valtionhallinnon kielitutkinto",
                 listOf(
                     MenuItem.of(
+                        "Kaikki suoritukset",
+                        VktViewController::kaikkiSuorituksetView,
+                    ),
+                    MenuItem.of(
                         "Erinomaisen taidon ilmoittautuneet",
                         VktViewController::erinomaisenTaitotasonIlmoittautuneetView,
                     ),
@@ -41,10 +45,6 @@ object Navigation {
                     MenuItem.of(
                         "Hyvän ja tyydyttävän taidon suoritukset",
                         VktViewController::hyvanJaTyydyttavanTaitotasonSuorituksetView,
-                    ),
-                    MenuItem.of(
-                        "Lataa kaikki suoritukset (csv)",
-                        VktApiController::getSuorituksetCsv,
                     ),
                 ),
             ),
