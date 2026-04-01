@@ -15,37 +15,33 @@ Eräajot voi käynnistää myös manuaalisesti ja niiden ajohistoriaa tarkastell
 
 ## Yleinen kielitutkinto
 
-### KOSKI-send-YKI-suoritukset
+### Lähetä YKI-suoritukset KOSKI-palveluun
 
 Lähettää KOSKI-järjestelmään ne yleisen kielitutkinnon suoritukset, joita ei ole aiemmin siirretty onnistuneesti.
 
-### Send arviointitilat
+### Lähetä YKI-arviointitilat KIOS-palveluun
 
 Lähettää ilmoittautumisjärjestelmään (KIOS) sellaiset yleisen kielitutkinnon arviointitilat, joita ei aiemmin ole
 saatu siirrettyä (esim. verkko- tai palvelinvian takia). Tavallisesti arviointitila lähetetään jo siinä yhteydessä
 kun Solki-järjestelmästä saadaan uutta dataa. Tämän ajon tarkoitus on varmistaa tiedon perille pääsy.
 
-### YKI-import
-
-**Poistumassa käytöstä.** Hakee yleisen kielitutkinnon suoritukset Solki-järjestelmästä ja tallentaa ne Kielitutkintorekisteriin.
-
-### YKI-import-arvioijat
-
-**Poistuu käytöstä.** Hakee yleisen kielitutkinnon arvioijat Solki-järjestelmästä ja tallentaa ne Kielitutkintorekisteriin.
-
 ## Valtionhallinnon kielitutkinnot
 
-### KOSKI-send-VKT-suoritukset
+### Lähetä VKT-suoritukset KOSKI-palveluun
 
 Lähettää KOSKI-järjestelmään ne valtionhallinnon kielitutkinnon suoritukset, joita ei ole aiemmin siirretty onnistuneesti.
 
-### VKT Cleanup
+### Poista merkityt VKT-suoritukset
 
 Poistaa erinomaisen taitotason vkt-suorituksien osakokeet, jotka on merkitty poistettavaksi ja joiden retentioaika on täyttynyt.
 Poistoaika vaihtelee ympäristöittäin.
 
 ## Kotoutumiskoulutus
 
-### Koto-import
+### Hae kotoutumiskoulutuksen kielitaidon päättötestit
 
 Hakee koto-koulutukset ja tallentaa ne Kielitutkintorekisteriin.
+
+### Kotoutumiskoulutuksen kielitaidon tehtäväpankin lataus
+
+Lataa tehtäväpankin varmuuskopion ja tallentaa S3-bucketiin.
