@@ -65,7 +65,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
   const sortTestCases = [
     {
       column: "Sukunimi",
-      tableColumnIndex: 0,
+      tableColumnIndex: 1,
       order: [
         "Välimaa-Testi",
         "Torvinen-Testi",
@@ -75,12 +75,12 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     },
     {
       column: "Etunimet",
-      tableColumnIndex: 1,
+      tableColumnIndex: 2,
       order: ["Toni Testi", "Magdalena Testi", "Eino Testi", "Anniina Testi"],
     },
     {
       column: "Sähköposti",
-      tableColumnIndex: 2,
+      tableColumnIndex: 3,
       order: [
         "devnull-6@oph.fi",
         "devnull-14@oph.fi",
@@ -90,7 +90,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     },
     {
       column: "Testikieli",
-      tableColumnIndex: 4,
+      tableColumnIndex: 5,
       order: ["SWE", "FIN", "FIN", "FIN"],
     },
   ] as const
@@ -145,8 +145,8 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     await kielitestiSuorituksetPage.search("devnull-1")
     const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
     await kielitestiSuorituksetPage.getTableColumnHeaderLink("Sukunimi").click()
-    const firstSuoritus = kielitestiSuorituksetPage.getSuoritusColumn(0, 0)
-    const lastSuoritus = kielitestiSuorituksetPage.getSuoritusColumn(2, 0)
+    const firstSuoritus = kielitestiSuorituksetPage.getSuoritusColumn(0, 1)
+    const lastSuoritus = kielitestiSuorituksetPage.getSuoritusColumn(2, 1)
     await expect(suoritukset).toHaveCount(3)
     await expect(firstSuoritus).toHaveText("Välimaa-Testi")
     await expect(lastSuoritus).toHaveText("Sallinen-Testi")
