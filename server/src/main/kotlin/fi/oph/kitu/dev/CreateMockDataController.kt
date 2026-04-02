@@ -1,7 +1,7 @@
 package fi.oph.kitu.dev
 
-import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
-import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritusRepository
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
 import fi.oph.kitu.mock.VktSuoritusMockGenerator
 import fi.oph.kitu.mock.generateRandomKielitestiSuoritus
 import fi.oph.kitu.mock.generateRandomYkiArvioijaEntity

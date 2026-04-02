@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

@@ -1,6 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.i18n.isoDate
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusService
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiErrorService
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
@@ -16,7 +18,8 @@ import java.time.LocalDate
 @RequestMapping("/koto-kielitesti/api")
 @Tag(name = "Kotoutumiskoulutuksen kielitesti, sisäiset rajapinnat")
 class KielitestiApiController(
-    private val service: KielitestiService,
+    private val suoritusService: KielitestiSuoritusService,
+    private val errorService: KielitestiErrorService,
 ) {
     @GetMapping("/suoritukset", produces = ["text/csv"])
     fun getSuorituksetAsCsv(): ResponseEntity<Resource> =
@@ -27,7 +30,7 @@ class KielitestiApiController(
             .body(
                 InputStreamResource(
                     ByteArrayInputStream(
-                        service
+                        suoritusService
                             .generateSuorituksetCsvStream()
                             .toByteArray(),
                     ),
@@ -43,7 +46,7 @@ class KielitestiApiController(
             .body(
                 InputStreamResource(
                     ByteArrayInputStream(
-                        service
+                        errorService
                             .generateErrorsCsvStream()
                             .toByteArray(),
                     ),

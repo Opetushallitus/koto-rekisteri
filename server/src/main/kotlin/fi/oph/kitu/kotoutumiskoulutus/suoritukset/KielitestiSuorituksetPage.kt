@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
@@ -6,6 +6,8 @@ import fi.oph.kitu.html.errorsArticle
 import fi.oph.kitu.html.table.displayTableBody
 import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.html.testId
+import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
+import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import kotlinx.html.ButtonType
 import kotlinx.html.FormMethod
@@ -13,7 +15,6 @@ import kotlinx.html.InputType
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.button
-import kotlinx.html.details
 import kotlinx.html.fieldSet
 import kotlinx.html.form
 import kotlinx.html.h1
@@ -23,13 +24,7 @@ import kotlinx.html.id
 import kotlinx.html.input
 import kotlinx.html.li
 import kotlinx.html.nav
-import kotlinx.html.summary
 import kotlinx.html.table
-import kotlinx.html.tbody
-import kotlinx.html.td
-import kotlinx.html.th
-import kotlinx.html.thead
-import kotlinx.html.tr
 import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
 import kotlin.enums.enumEntries

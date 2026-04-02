@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus.tehtavapankki
+package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.withJacksonStreamMaxStringLength
