@@ -5,6 +5,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.findAllSorted
 import fi.oph.kitu.jdbc.replaceAll
+import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
@@ -19,9 +20,10 @@ import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import java.io.ByteArrayOutputStream
 import java.time.Instant
+import kotlin.jvm.optionals.getOrNull
 
 @Service
-class KoealustaService(
+class KielitestiService(
     val restClientBuilder: RestClient.Builder,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
@@ -56,6 +58,13 @@ class KoealustaService(
                     )
                 }
             }
+
+    fun getSuoritusById(id: Int): KielitestiSuoritus? =
+        kielitestiSuoritusRepository.findById(id).getOrNull().also { suoritus ->
+            suoritus?.oppijanumero?.let { oid ->
+                auditLogger.log(AuditLogOperation.KielitestiSuoritusViewed, oid)
+            }
+        }
 
     @WithSpan
     fun getErrors(

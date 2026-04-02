@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Import(DBContainerConfiguration::class)
-class KoealustaServiceTests(
+class KielitestiServiceTests(
     @param:Autowired private val postgres: PostgreSQLContainer<*>,
 ) {
     val validSuoritus =
@@ -118,10 +118,10 @@ class KoealustaServiceTests(
     fun `import with no errors`(
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         mockServer
             .expect(
                 requestTo(
@@ -139,11 +139,11 @@ class KoealustaServiceTests(
             )
 
         // System under test
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -167,10 +167,10 @@ class KoealustaServiceTests(
     @Test
     fun `import with hetu name mismatch`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 requestTo(
@@ -224,11 +224,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -258,10 +258,10 @@ class KoealustaServiceTests(
     @Test
     fun `import with sukunimi and etunimi swapped adds correct name to onrLisatietoja`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 requestTo(
@@ -315,11 +315,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -368,10 +368,10 @@ class KoealustaServiceTests(
     @Test
     fun `import with typo in name adds info to onrLisatietoja`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 requestTo(
@@ -425,11 +425,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -481,10 +481,10 @@ class KoealustaServiceTests(
     @Test
     fun `import with suoritus validation error`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 requestTo(
@@ -534,11 +534,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -566,10 +566,10 @@ class KoealustaServiceTests(
     @Test
     fun `import with oppija validation error`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 requestTo(
@@ -623,11 +623,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -647,10 +647,10 @@ class KoealustaServiceTests(
     @Test
     fun `import with person information mismatch`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 requestTo(
@@ -667,11 +667,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -711,10 +711,10 @@ class KoealustaServiceTests(
     fun `import with valid and invalid suoritus should return original from-timestamp and save the suoritus and error`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 requestTo(
@@ -731,11 +731,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -759,10 +759,10 @@ class KoealustaServiceTests(
     fun `duplicate suoritus in subsequent imports are not saved`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 ExpectedCount.manyTimes(),
@@ -780,11 +780,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         val errors = kielitestiSuoritusErrorRepository.findAll()
         val suoritukset = kielitestiSuoritusRepository.findAll()
@@ -800,7 +800,7 @@ class KoealustaServiceTests(
             fun () = assertEquals(1, suoritukset.count(), "There should be one saved suoritus"),
         )
 
-        koealustaService.importSuoritukset(from = lastSeen)
+        kielitestiService.importSuoritukset(from = lastSeen)
         koealusta.verify()
 
         val suoritukset2 = kielitestiSuoritusRepository.findAll()
@@ -815,7 +815,7 @@ class KoealustaServiceTests(
     fun `import removes leading and trailing whitespace from names and ssn`(
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
         val validSuoritus =
@@ -858,7 +858,7 @@ class KoealustaServiceTests(
             }
             """.trimIndent()
 
-        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         mockServer
             .expect(
                 requestTo(
@@ -876,11 +876,11 @@ class KoealustaServiceTests(
             )
 
         // System under test
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -904,7 +904,7 @@ class KoealustaServiceTests(
     @Test
     fun `import with incorrect or missing arvosana fails`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
         val suoritusJson =
@@ -942,7 +942,7 @@ class KoealustaServiceTests(
                   ]
             }
             """.trimIndent()
-        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         mockServer
             .expect(
                 requestTo(
@@ -960,11 +960,11 @@ class KoealustaServiceTests(
             )
 
         // System under test
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        koealustaService.importSuoritukset(Instant.EPOCH)
+        kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -1003,10 +1003,10 @@ class KoealustaServiceTests(
     @Test
     fun `duplicate suoritus is not saved`(
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
-        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         mockServer
             .expect(
                 ExpectedCount.times(2),
@@ -1025,12 +1025,12 @@ class KoealustaServiceTests(
             )
 
         // System under test
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        koealustaService.importSuoritukset(Instant.EPOCH)
-        koealustaService.importSuoritukset(Instant.EPOCH)
+        kielitestiService.importSuoritukset(Instant.EPOCH)
+        kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -1042,7 +1042,7 @@ class KoealustaServiceTests(
     @Test
     fun `updated suoritus is saved`(
         @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         val updatedSuoritus =
             """
@@ -1084,7 +1084,7 @@ class KoealustaServiceTests(
             }
             """.trimIndent()
         // Facade
-        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         mockServer
             .expect(
                 requestTo(
@@ -1102,11 +1102,11 @@ class KoealustaServiceTests(
             )
 
         // System under test
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val importFrom = koealustaService.importSuoritukset(Instant.EPOCH)
+        val importFrom = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -1128,7 +1128,7 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.importSuoritukset(importFrom)
+        kielitestiService.importSuoritukset(importFrom)
         mockServer.verify()
         val suoritukset = kielitestiSuoritusRepository.findAll()
         assertEquals(2, suoritukset.count())
@@ -1137,7 +1137,7 @@ class KoealustaServiceTests(
     @Test
     fun `import with invalid language saves an error`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
 
@@ -1180,7 +1180,7 @@ class KoealustaServiceTests(
                   ]
             }
             """.trimIndent()
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 requestTo(
@@ -1197,11 +1197,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -1229,7 +1229,7 @@ class KoealustaServiceTests(
     @Test
     fun `import with no language saves an error`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired koealustaService: KoealustaService,
+        @Autowired kielitestiService: KielitestiService,
     ) {
         // Facade
 
@@ -1271,7 +1271,7 @@ class KoealustaServiceTests(
                   ]
             }
             """.trimIndent()
-        val koealusta = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        val koealusta = MockRestServiceServer.bindTo(kielitestiService.restClientBuilder).build()
         koealusta
             .expect(
                 requestTo(
@@ -1288,11 +1288,11 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.koealustaToken = "token"
-        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        kielitestiService.koealustaToken = "token"
+        kielitestiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = kielitestiService.importSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()

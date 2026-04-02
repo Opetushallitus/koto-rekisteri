@@ -16,7 +16,7 @@ import java.time.LocalDate
 @RequestMapping("/koto-kielitesti/api")
 @Tag(name = "Kotoutumiskoulutuksen kielitesti, sisäiset rajapinnat")
 class KielitestiApiController(
-    private val service: KoealustaService,
+    private val service: KielitestiService,
 ) {
     @GetMapping("/suoritukset", produces = ["text/csv"])
     fun getSuorituksetAsCsv(): ResponseEntity<Resource> =
