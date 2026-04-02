@@ -24,7 +24,7 @@ import java.time.LocalDate
     "kirjoittaminen",
     "tekstinYmmartaminen",
 )
-data class VktSuoritusCsv(
+data class VktSuoritusFlat(
     val suoritusId: Int,
     val ilmoittautumisenId: String,
     val suorittajanOid: String,
@@ -46,7 +46,7 @@ data class VktSuoritusCsv(
     companion object {
         val fromRow =
             RowMapper { rs, _ ->
-                VktSuoritusCsv(
+                VktSuoritusFlat(
                     suoritusId = rs.getInt("suoritus_id"),
                     ilmoittautumisenId = rs.getString("ilmoittautumisen_id"),
                     suorittajanOid = rs.getString("suorittajan_oid"),

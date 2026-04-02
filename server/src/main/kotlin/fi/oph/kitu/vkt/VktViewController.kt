@@ -26,6 +26,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -44,20 +45,10 @@ class VktViewController(
 ) {
     @GetMapping("/", produces = ["text/html"])
     fun kaikkiSuorituksetView(
-        page: Int = 1,
-        sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
-        sortDirection: SortDirection = SortDirection.ASC,
-        search: String? = null,
+        @ModelAttribute filter: VktSuoritusFilter = VktSuoritusFilter(),
+        @ModelAttribute order: VktSuoritusOrder = VktSuoritusOrder(),
     ): ResponseEntity<String> {
-        val (suoritukset, pagination) =
-            vktSuoritukset.getSuorituksetAndPagination(
-                taitotaso = null,
-                arvioidut = null,
-                sortColumn = sortColumn,
-                sortDirection = sortDirection,
-                pageNumber = page,
-                searchQuery = search,
-            )
+        val (suoritukset, pagination) = vktSuoritukset.getSuorituksetAndPagination(filter, order)
 
         val translations =
             localizationService
@@ -68,11 +59,10 @@ class VktViewController(
         return ResponseEntity.ok(
             VktKaikkiSuorituksetPage.render(
                 suoritukset,
-                sortedBy = sortColumn,
-                sortDirection = sortDirection,
-                pagination = pagination,
-                translations = translations,
-                searchQuery = search,
+                filter,
+                order,
+                pagination,
+                translations,
                 messages = getMessages(),
             ),
         )

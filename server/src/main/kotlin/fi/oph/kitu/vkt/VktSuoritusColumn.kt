@@ -4,16 +4,15 @@ import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.ColumnTags
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import fi.oph.kitu.i18n.finnishDate
-import fi.oph.kitu.vkt.html.VktTableItem
 import kotlinx.html.FlowContent
 
 enum class VktSuoritusColumn(
     override val entityName: String,
     override val uiHeaderValue: String,
     override val urlParam: String,
-    override val getValue: (value: VktTableItem) -> String,
-    override val renderHtml: (FlowContent.(VktTableItem) -> Unit)? = null,
-) : RenderableDisplayTableEnum<VktTableItem> {
+    override val getValue: (value: VktSuoritusFlat) -> String,
+    override val renderHtml: (FlowContent.(VktSuoritusFlat) -> Unit)? = null,
+) : RenderableDisplayTableEnum<VktSuoritusFlat> {
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Sukunimi(
         "sukunimi",
@@ -35,7 +34,7 @@ enum class VktSuoritusColumn(
         "tutkintotaso",
         "Tutkintotaso",
         "taitotaso",
-        { it.taso.koodiarvo },
+        { it.taitotaso },
     ),
 
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
@@ -43,7 +42,7 @@ enum class VktSuoritusColumn(
         "tutkintokieli",
         "Tutkintokieli",
         "tutkintokieli",
-        { it.kieli.koodiarvo },
+        { it.tutkintokieli },
     ),
 
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)

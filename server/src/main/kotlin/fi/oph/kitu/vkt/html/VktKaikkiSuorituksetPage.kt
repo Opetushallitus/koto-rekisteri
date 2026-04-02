@@ -2,14 +2,15 @@
 
 package fi.oph.kitu.vkt.html
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.*
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.i18n.Translations
-import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusColumn
+import fi.oph.kitu.vkt.VktSuoritusFilter
+import fi.oph.kitu.vkt.VktSuoritusFlat
+import fi.oph.kitu.vkt.VktSuoritusOrder
 import kotlinx.html.FlowContent
 import kotlinx.html.article
 import kotlinx.html.h1
@@ -17,12 +18,11 @@ import kotlinx.html.h2
 
 object VktKaikkiSuorituksetPage {
     fun render(
-        suoritukset: List<VktTableItem>,
-        sortedBy: CustomVktSuoritusRepository.Column,
-        sortDirection: SortDirection,
+        suoritukset: Iterable<VktSuoritusFlat>,
+        filter: VktSuoritusFilter,
+        order: VktSuoritusOrder,
         pagination: Pagination,
         translations: Translations,
-        searchQuery: String?,
         messages: List<ViewMessageData>,
     ): String =
         Page.renderHtml(
@@ -31,35 +31,34 @@ object VktKaikkiSuorituksetPage {
             h1 { +"Valtionhallinnon kielitutkinto" }
             h2 { +"Kaikki suoritukset" }
             messages.forEach { viewMessage(it) }
-            vktSearch(searchQuery)
+            vktSearch(filter.search)
             article { +"Yhteensä: ${pagination.numberOfItems}" }
-            vktKaikkiSuorituksetTable(suoritukset, sortedBy, sortDirection, pagination, translations, searchQuery)
+            vktKaikkiSuorituksetTable(suoritukset, filter, order, pagination, translations)
         }
 }
 
 fun FlowContent.vktKaikkiSuorituksetTable(
-    suoritukset: List<VktTableItem>,
-    sortedBy: CustomVktSuoritusRepository.Column,
-    sortDirection: SortDirection,
+    suoritukset: Iterable<VktSuoritusFlat>,
+    filter: VktSuoritusFilter,
+    order: VktSuoritusOrder,
     pagination: Pagination,
     t: Translations,
-    searchQuery: String?,
 ) {
     card(overflowAuto = true, compact = true) {
         val columns =
-            DisplayTableColumn.of<VktSuoritusColumn, VktTableItem>(
+            DisplayTableColumn.of<VktSuoritusColumn, VktSuoritusFlat>(
                 setOf(ColumnTag.LIST_VIEW),
                 emptySet(),
             )
 
         displayTable(
-            suoritukset,
+            suoritukset.toList(),
             columns,
-            sortedBy = sortedBy,
-            sortDirection = sortDirection,
+            sortedBy = order.column,
+            sortDirection = order.direction,
             testId = "ilmoittautuneet",
-            rowTestId = { "${it.oppijanumero}-${it.kieli.koodiarvo}" },
-            urlParams = mapOf("search" to searchQuery),
+            rowTestId = { "${it.suorittajanOid}-${it.tutkintokieli}" },
+            urlParams = mapOf("search" to filter.search),
         )
     }
 
