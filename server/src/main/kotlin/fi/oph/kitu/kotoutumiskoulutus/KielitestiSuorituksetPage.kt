@@ -88,8 +88,11 @@ object KielitestiSuorituksetPage {
 
                 table {
                     val columns =
-                        enumEntries<KielitestiSuoritusColumn>().map {
-                            it.withValue(it.getValue(organisaationimet))
+                        enumEntries<KielitestiSuoritusColumn>().map { column ->
+                            column.withHtml(
+                                column.renderHtml
+                                    ?: { +column.getValue(organisaationimet)(it) },
+                            )
                         }
                     displayTableHeader(
                         columns = columns,
@@ -105,38 +108,7 @@ object KielitestiSuorituksetPage {
                         columns = columns,
                         rowClasses = "suoritus",
                         rowTestId = { "suoritus-summary-row" },
-                    ) { suoritus ->
-                        tr {
-                            attributes["data-testid"] = "suoritus-details-row"
-
-                            td {
-                                attributes["colspan"] = "13"
-                                details {
-                                    summary { +"Näytä lisätiedot/tulokset" }
-                                    table {
-                                        thead {
-                                            tr {
-                                                th { +"Oppijanumero" }
-                                                th { +"Luetun ymmärtäminen" }
-                                                th { +"Kuullun ymmärtäminen" }
-                                                th { +"Puhe" }
-                                                th { +"Kirjoittaminen" }
-                                            }
-                                        }
-                                        tbody {
-                                            tr {
-                                                td { +suoritus.oppijanumero.toString() }
-                                                td { +suoritus.luetunYmmartaminen.toString() }
-                                                td { +suoritus.kuullunYmmartaminen.toString() }
-                                                td { +suoritus.puhe.toString() }
-                                                td { +suoritus.kirjoittaminen.toString() }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    )
                 }
             }
         }
