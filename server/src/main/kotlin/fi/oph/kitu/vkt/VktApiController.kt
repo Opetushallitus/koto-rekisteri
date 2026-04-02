@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt
 
+import fi.oph.kitu.html.table.DisplayTableCsvRenderer
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
@@ -16,10 +17,12 @@ import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 import java.io.ByteArrayInputStream
 import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
@@ -28,6 +31,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 @Tag(name = "Valtionhallinnon kielitutkinto")
 class VktApiController(
     val vktRepository: VktSuoritusRepository,
+    val customSuoritusRepository: CustomVktSuoritusRepository,
     val service: VktSuoritusService,
     private val validation: ValidationService,
 ) {
@@ -116,19 +120,22 @@ class VktApiController(
     }
 
     @GetMapping("/suoritus", produces = ["text/csv"])
-    fun getSuorituksetCsv(): ResponseEntity<Resource> =
+    fun getSuorituksetCsv(
+        @ModelAttribute order: VktSuoritusOrder = VktSuoritusOrder(),
+        @ModelAttribute filter: VktSuoritusFilter = VktSuoritusFilter(),
+    ): ResponseEntity<StreamingResponseBody> =
         ResponseEntity
             .ok()
             .contentType(MediaType.parseMediaType("text/csv"))
-            .header("Content-Disposition", "attachment; filename=vkt_suoritukset.csv")
+            .header("Content-Disposition", "attachment; filename=${filter.csvFileName()}")
             .body(
-                InputStreamResource(
-                    ByteArrayInputStream(
-                        service
-                            .generateSuorituksetCsvStream()
-                            .toByteArray(),
-                    ),
-                ),
+                StreamingResponseBody { output ->
+                    DisplayTableCsvRenderer.renderCsv<VktSuoritusColumn, _>(
+                        output = output,
+                        data = customSuoritusRepository.find(filter, order),
+                        excludeTags = emptySet(), // TODO
+                    )
+                },
             )
 
     @GetMapping("/kios/j_spring_cas_security_check")

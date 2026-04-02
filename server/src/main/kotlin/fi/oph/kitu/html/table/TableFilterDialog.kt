@@ -7,7 +7,7 @@ import fi.oph.kitu.html.input
 import fi.oph.kitu.html.modal
 import fi.oph.kitu.html.modalCommandButton
 import fi.oph.kitu.html.submitButton
-import fi.oph.kitu.html.testId
+import fi.oph.kitu.koodisto.Koodisto
 import kotlinx.html.*
 import java.time.LocalDate
 
@@ -75,7 +75,7 @@ inline fun <reified E : Enum<E>> FlowContent.enumFilter(
                         attributes["checked"] = "checked"
                     }
                 }
-                +(option?.name ?: "Kaikki")
+                +enumValueName(option)
             }
         }
     } else {
@@ -89,12 +89,19 @@ inline fun <reified E : Enum<E>> FlowContent.enumFilter(
                         if (option == value) {
                             attributes["selected"] = "selected"
                         }
-                        +(option?.name ?: "Kaikki")
+                        +enumValueName(option)
                     }
                 }
             }
         }
     }
 }
+
+inline fun <reified E : Enum<E>> enumValueName(value: E?): String =
+    when (value) {
+        is Koodisto.KoodiviiteNimella -> value.nimi.toString()
+        null -> "Kaikki"
+        else -> value.name
+    }
 
 annotation class HideInTableFilter
