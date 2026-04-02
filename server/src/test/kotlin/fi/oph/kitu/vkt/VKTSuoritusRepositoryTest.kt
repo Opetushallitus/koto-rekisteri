@@ -213,7 +213,7 @@ class VKTSuoritusRepositoryTest(
             )
 
         repository.saveAll(suoritukset)
-        val suorituksetCsv = customRepository.findAllForCsv()
+        val suorituksetCsv = getSuoritukset()
         val suoritus1Csv = suorituksetCsv.first { it.ilmoittautumisenId == "1" }
         val suoritus2Csv = suorituksetCsv.first { it.ilmoittautumisenId == "2" }
         assertAll(
@@ -270,7 +270,7 @@ class VKTSuoritusRepositoryTest(
                     ),
             )
         repository.save(suoritus)
-        val suoritukset = customRepository.findAllForCsv()
+        val suoritukset = getSuoritukset()
         assertEquals(0, suoritukset.count())
     }
 
@@ -307,7 +307,7 @@ class VKTSuoritusRepositoryTest(
             )
         repository.save(suoritus)
         repository.save(suoritus)
-        val suoritukset = customRepository.findAllForCsv()
+        val suoritukset = getSuoritukset()
         assertEquals(1, suoritukset.count())
     }
 
@@ -364,9 +364,18 @@ class VKTSuoritusRepositoryTest(
             )
         repository.save(suoritus)
         repository.save(updated)
-        val suoritukset = customRepository.findAllForCsv()
+        val suoritukset = getSuoritukset()
         assertEquals(1, suoritukset.count())
         assertEquals(Koodisto.VktArvosana.Erinomainen.name, suoritukset.first().puhuminen)
         assertEquals(Koodisto.VktArvosana.Erinomainen.name, suoritukset.first().puheenYmmartaminen)
     }
+
+    private fun getSuoritukset() =
+        customRepository.find(
+            VktSuoritusFilter(
+                merkittyPoistettavaksi = false,
+                arvioitu = true,
+            ),
+            VktSuoritusOrder(),
+        )
 }

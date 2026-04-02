@@ -178,7 +178,10 @@ class CustomVktSuoritusRepository {
     }
 
     @WithSpan
-    fun findAllForCsv(): Iterable<VktSuoritusCsv> {
+    fun find(
+        filter: VktSuoritusFilter,
+        order: VktSuoritusOrder,
+    ): Iterable<VktSuoritusFlat> {
         val query =
             """
             WITH osakokeet AS (
@@ -213,13 +216,13 @@ class CustomVktSuoritusRepository {
                 JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
                 JOIN osakokeet ON osakokeet.suoritus_id = vkt_suoritus.id
 
-            WHERE vkt_osakoe.merkitty_poistettavaksi is null
-              AND osakokeet.arvioitu = true
+            ${filter.whereSql().orEmpty()}
 
             GROUP BY vkt_suoritus.id, osakokeet.tutkintopaiva
-            ORDER BY vkt_suoritus.ilmoittautumisen_id, vkt_suoritus.created_at desc
+            ORDER BY vkt_suoritus.ilmoittautumisen_id, $order
+            ${order.pageSql().orEmpty()}
             """.trimIndent()
-        return jdbcTemplate.query(query, VktSuoritusCsv.fromRow)
+        return jdbcTemplate.query(query, VktSuoritusFlat.fromRow)
     }
 
     @WithSpan
@@ -439,5 +442,98 @@ class VktOsakoeRepository {
             """.trimIndent()
 
         jdbcTemplate.update(sql)
+    }
+}
+
+data class VktSuoritusFilter(
+    val search: String? = null,
+    val alkupaiva: LocalDate? = null,
+    val loppupaiva: LocalDate? = null,
+    val tutkintokieli: Koodisto.Tutkintokieli? = null,
+    val taitotaso: Koodisto.VktTaitotaso? = null,
+    val arvioitu: Boolean? = null,
+    val merkittyPoistettavaksi: Boolean? = null,
+) {
+    val searchStrName = "filter_search"
+    val alkupaivaStrName = "filter_alkupaiva"
+    val loppupaivaStrName = "filter_loppupaiva"
+    val tutkintokieliStrName = "filter_kieli"
+    val taitotasoStrName = "filter_taso"
+    val arvioituStrName = "filter_arvioitu"
+
+    fun whereSql(): String? {
+        val queries =
+            listOfNotNull(
+                searchQuery(),
+                alkupaivaQuery(),
+                loppupaivaQuery(),
+                tutkintokieliQuery(),
+                taitotasoQuery(),
+                arvioituQuery(),
+                merkittyPoistettavaksiQuery(),
+            )
+        return if (queries.isEmpty()) null else "WHERE ${queries.joinToString(" AND ") { "($it)" }}"
+    }
+
+    fun params() =
+        mapOf(
+            searchStrName to "%${search.orEmpty()}%",
+            alkupaivaStrName to alkupaiva,
+            loppupaivaStrName to loppupaiva,
+            tutkintokieliStrName to tutkintokieli?.name,
+            taitotasoStrName to taitotaso?.name,
+            arvioituStrName to arvioitu,
+        )
+
+    fun requiresSubTables(): Boolean = tutkintokieli != null || taitotaso != null
+
+    private fun searchQuery(): String? =
+        search?.let {
+            if (search.isNotEmpty()) { // TODO: Lisää loput hakukentät
+                """
+                vkt_suoritus.etunimet ILIKE :$searchStrName 
+                OR vkt_suoritus.sukunimi ILIKE :$searchStrName
+                """.trimIndent()
+            } else {
+                null
+            }
+        }
+
+    private fun alkupaivaQuery(): String? = alkupaiva?.let { "tutkintopaiva >= :$alkupaivaStrName" }
+
+    private fun loppupaivaQuery(): String? = loppupaiva?.let { "tutkintopaiva <= :$loppupaivaStrName" }
+
+    private fun tutkintokieliQuery(): String? = tutkintokieli?.let { "tutkintokieli = :$tutkintokieliStrName" }
+
+    private fun taitotasoQuery(): String? = taitotaso?.let { "tutkintotaso = :$taitotasoStrName" }
+
+    private fun arvioituQuery(): String? = arvioitu?.let { "osakokeet.arvioitu = :$arvioituStrName" }
+
+    private fun merkittyPoistettavaksiQuery(): String? =
+        merkittyPoistettavaksi?.let {
+            if (merkittyPoistettavaksi) {
+                "vkt_osakoe.merkitty_poistettavaksi is not null"
+            } else {
+                "vkt_osakoe.merkitty_poistettavaksi is null"
+            }
+        }
+}
+
+data class VktSuoritusOrder(
+    val column: VktSuoritusColumn = VktSuoritusColumn.Tutkintopaiva,
+    val direction: SortDirection = SortDirection.DESC,
+    val pageNumber: Int? = 0,
+) {
+    override fun toString(): String = "${column.entityName} $direction"
+
+    fun pageSql(pageSize: Int? = PAGE_SIZE): String? =
+        pageNumber?.let {
+            pageSize?.let {
+                "LIMIT $pageSize OFFSET ${pageSize * (pageNumber)}"
+            }
+        }
+
+    companion object {
+        val PAGE_SIZE = 25
     }
 }

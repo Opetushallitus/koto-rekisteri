@@ -49,6 +49,22 @@ class VktSuoritusService(
         getPagination(sortColumn, sortDirection, pageNumber, taitotaso, arvioidut, searchQuery),
     )
 
+    @WithSpan("VktSuoritusService.getSuorituksetAndPagination")
+    fun getSuorituksetAndPagination(
+        filter: VktSuoritusFilter,
+        order: VktSuoritusOrder,
+    ) = Pair(
+        customSuoritusRepository.find(filter, order),
+        getPagination(
+            CustomVktSuoritusRepository.Column.Tutkintopaiva, // TODO: Käytä order.column
+            order.direction,
+            order.pageNumber ?: 0,
+            filter.taitotaso,
+            filter.arvioitu,
+            filter.search,
+        ),
+    )
+
     @WithSpan("VktSuoritusService.getIlmoittautuneetForListView")
     fun getIlmoittautuneetForListView(
         taitotaso: Koodisto.VktTaitotaso?,
@@ -131,7 +147,14 @@ class VktSuoritusService(
                 .translationBuilder()
                 .koodistot("kunta")
                 .build()
-        val suoritukset = customSuoritusRepository.findAllForCsv()
+        val suoritukset =
+            customSuoritusRepository.find(
+                VktSuoritusFilter(
+                    merkittyPoistettavaksi = false,
+                    arvioitu = true,
+                ),
+                VktSuoritusOrder(), // TODO: Created at desc
+            )
 
         val suoritustenVastaanottajat: Map<Oid, String?> =
             suoritukset
