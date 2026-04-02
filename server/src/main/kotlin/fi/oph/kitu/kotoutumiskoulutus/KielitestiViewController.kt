@@ -7,14 +7,12 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
-import kotlin.jvm.optionals.getOrNull
 
 @Controller
 @RequestMapping("/koto-kielitesti", produces = ["text/html"])
 class KielitestiViewController(
-    private val suoritusService: KoealustaService,
+    private val suoritusService: KielitestiService,
     private val organisaatioService: OrganisaatioService,
-    private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
 ) {
     @GetMapping("/suoritukset")
     fun suorituksetView(
@@ -51,9 +49,9 @@ class KielitestiViewController(
     fun suoritusView(
         @PathVariable id: Int,
     ): ResponseEntity<String> {
-        val suoritus = kielitestiSuoritusRepository.findById(id)
+        val suoritus = suoritusService.getSuoritusById(id)
         val organisaatiot = organisaatioService.getOrganisaatiot()
-        return suoritus.getOrNull()?.let {
+        return suoritus?.let {
             ResponseEntity.ok(KielitestiSuoritusPage.render(it, organisaatiot))
         } ?: ResponseEntity.notFound().build()
     }

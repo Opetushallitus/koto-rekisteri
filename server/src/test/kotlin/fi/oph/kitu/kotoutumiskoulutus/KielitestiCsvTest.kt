@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 class KielitestiCsvTest(
     @param:Autowired val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     @param:Autowired val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-    @param:Autowired val koealustaService: KoealustaService,
+    @param:Autowired val kielitestiService: KielitestiService,
     @param:Autowired val csvParser: CsvParser,
     @param:Autowired val postgres: PostgreSQLContainer<*>,
 ) {
@@ -73,7 +73,7 @@ class KielitestiCsvTest(
 
         kielitestiSuoritusRepository.saveAll(suoritukset)
 
-        val actualCsv = koealustaService.generateSuorituksetCsvStream()
+        val actualCsv = kielitestiService.generateSuorituksetCsvStream()
         val expectedCsv =
             """
             oppijanumero,sukunimi,etunimet,kutsumanimi,sahkoposti,kurssiId,kurssinNimi,testikieli,organisaatioOid,organisaatio,suoritusaika,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen
@@ -130,7 +130,7 @@ class KielitestiCsvTest(
 
         kielitestiSuoritusErrorRepository.saveAll(suoritukset)
 
-        val actualCsv = koealustaService.generateErrorsCsvStream()
+        val actualCsv = kielitestiService.generateErrorsCsvStream()
         val expectedCsv =
             """
             virheenLuontiaika,suorittajanOid,hetu,nimi,etunimet,sukunimi,kutsumanimi,schoolOid,teacherEmail,viesti,lisatietoja,onrLisatietoja,virheellinenKentta,virheellinenArvo

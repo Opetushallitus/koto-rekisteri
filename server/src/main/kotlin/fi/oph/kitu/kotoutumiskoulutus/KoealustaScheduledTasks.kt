@@ -19,7 +19,7 @@ class KoealustaScheduledTasks {
 
     @Bean
     fun dailyImportKotoSuoritukset(
-        koealustaService: KoealustaService,
+        kielitestiService: KielitestiService,
         tracer: Tracer,
     ): Task<Instant> =
         Tasks
@@ -35,7 +35,7 @@ class KoealustaScheduledTasks {
                     .startSpan()
                     .use { span ->
                         span.setAttribute("task.name", "Koto-import-suoritukset")
-                        koealustaService.importSuoritukset(taskInstance.data)
+                        kielitestiService.importSuoritukset(taskInstance.data)
                     }
             }
 }
