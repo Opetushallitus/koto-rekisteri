@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus.tehtavapankki
+package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

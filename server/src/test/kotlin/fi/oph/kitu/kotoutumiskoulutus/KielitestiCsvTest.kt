@@ -2,7 +2,14 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
-import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Arvosana
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusService
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiErrorService
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusError
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorRepository
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -17,8 +24,8 @@ import kotlin.test.assertEquals
 class KielitestiCsvTest(
     @param:Autowired val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     @param:Autowired val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-    @param:Autowired val kielitestiService: KielitestiService,
-    @param:Autowired val csvParser: CsvParser,
+    @param:Autowired val kielitestiSuoritusService: KielitestiSuoritusService,
+    @param:Autowired val kielitestiErrorService: KielitestiErrorService,
     @param:Autowired val postgres: PostgreSQLContainer<*>,
 ) {
     @BeforeEach
@@ -73,7 +80,7 @@ class KielitestiCsvTest(
 
         kielitestiSuoritusRepository.saveAll(suoritukset)
 
-        val actualCsv = kielitestiService.generateSuorituksetCsvStream()
+        val actualCsv = kielitestiSuoritusService.generateSuorituksetCsvStream()
         val expectedCsv =
             """
             oppijanumero,sukunimi,etunimet,kutsumanimi,sahkoposti,kurssiId,kurssinNimi,testikieli,organisaatioOid,organisaatio,suoritusaika,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen
@@ -130,7 +137,7 @@ class KielitestiCsvTest(
 
         kielitestiSuoritusErrorRepository.saveAll(suoritukset)
 
-        val actualCsv = kielitestiService.generateErrorsCsvStream()
+        val actualCsv = kielitestiErrorService.generateErrorsCsvStream()
         val expectedCsv =
             """
             virheenLuontiaika,suorittajanOid,hetu,nimi,etunimet,sukunimi,kutsumanimi,schoolOid,teacherEmail,viesti,lisatietoja,onrLisatietoja,virheellinenKentta,virheellinenArvo

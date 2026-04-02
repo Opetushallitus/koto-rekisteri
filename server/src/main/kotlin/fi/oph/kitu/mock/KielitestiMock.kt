@@ -1,8 +1,8 @@
 package fi.oph.kitu.mock
 
-import fi.oph.kitu.kotoutumiskoulutus.Arvosana
-import fi.oph.kitu.kotoutumiskoulutus.KielitestiSuoritus
-import fi.oph.kitu.kotoutumiskoulutus.Testikieli
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Arvosana
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
 import java.time.LocalDate
 
 val kotoCourses =

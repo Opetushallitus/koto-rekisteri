@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -8,6 +8,7 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.csvparsing.Features
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import java.time.Instant
+import kotlin.collections.get
 
 @JsonPropertyOrder(
     "oppijanumero",

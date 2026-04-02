@@ -1,13 +1,13 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 import fi.oph.kitu.html.table.DisplayTableEnum
+import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
 import fi.oph.kitu.organisaatiot.Organisaatiot
-import fi.oph.kitu.yki.YkiViewController
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
+import kotlin.collections.get
 
 enum class KielitestiSuoritusColumn(
     override val entityName: String,

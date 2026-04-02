@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.kotoutumiskoulutus.suoritukset.error
 
 import fi.oph.kitu.html.json
 import fi.oph.kitu.html.table.DisplayTableEnum

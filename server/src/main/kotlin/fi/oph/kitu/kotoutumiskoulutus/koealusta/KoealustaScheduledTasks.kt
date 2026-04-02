@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
 import com.github.kagkarlsson.scheduler.task.Task
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
@@ -19,7 +19,7 @@ class KoealustaScheduledTasks {
 
     @Bean
     fun dailyImportKotoSuoritukset(
-        kielitestiService: KielitestiService,
+        koealustaService: KoealustaService,
         tracer: Tracer,
     ): Task<Instant> =
         Tasks
@@ -35,7 +35,7 @@ class KoealustaScheduledTasks {
                     .startSpan()
                     .use { span ->
                         span.setAttribute("task.name", "Koto-import-suoritukset")
-                        kielitestiService.importSuoritukset(taskInstance.data)
+                        koealustaService.importSuoritukset(taskInstance.data)
                     }
             }
 }

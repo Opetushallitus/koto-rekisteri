@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 enum class Testikieli {
     FIN,

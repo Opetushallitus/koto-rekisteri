@@ -1,4 +1,4 @@
-package fi.oph.kitu.kotoutumiskoulutus
+package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
@@ -9,6 +9,7 @@ import kotlinx.html.FlowContent
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.h3
+import kotlin.collections.get
 
 object KielitestiSuoritusPage {
     fun render(

@@ -1,6 +1,14 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetPage
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusColumn
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusPage
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusService
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiErrorService
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorColumn
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorPage
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.sortByOrgName
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -11,7 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 @Controller
 @RequestMapping("/koto-kielitesti", produces = ["text/html"])
 class KielitestiViewController(
-    private val suoritusService: KielitestiService,
+    private val suoritusService: KielitestiSuoritusService,
+    private val errorService: KielitestiErrorService,
     private val organisaatioService: OrganisaatioService,
 ) {
     @GetMapping("/suoritukset")
@@ -35,7 +44,7 @@ class KielitestiViewController(
                             }
                         },
                 errorsCount =
-                    suoritusService
+                    errorService
                         .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
                         .count()
                         .toLong(),
@@ -65,7 +74,7 @@ class KielitestiViewController(
             KielitestiSuoritusErrorPage.render(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
-                errors = suoritusService.getErrors(sortColumn, sortDirection),
+                errors = errorService.getErrors(sortColumn, sortDirection),
                 organisaatioidenNimet = organisaatioService.getOrganisaatiot(),
             ),
         )
