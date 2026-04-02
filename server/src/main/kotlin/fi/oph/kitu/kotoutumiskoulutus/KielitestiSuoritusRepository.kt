@@ -58,8 +58,11 @@ class CustomKielitestiSuoritusRepository {
                     OR sukunimi ILIKE :$key
                     OR email ILIKE :$key
                     OR kurssi ILIKE :$key
+                    OR kurssi_id::text ILIKE :$key
                     OR opettajan_email ILIKE :$key
                     OR oppilaitos_oid ILIKE :$key
+                    OR testikieli::text ILIKE :$key
+                    OR tehtavapaketti ILIKE :$key
                     """.trimIndent()
                 }.joinToString(" OR ", "WHERE ")
         }
