@@ -57,7 +57,7 @@ class VktSuoritusService(
         customSuoritusRepository.find(filter, order),
         getPagination(
             CustomVktSuoritusRepository.Column.Tutkintopaiva, // TODO: Käytä order.column
-            order.direction,
+            order.sortDirection,
             order.pageNumber ?: 0,
             filter.taitotaso,
             filter.arvioitu,

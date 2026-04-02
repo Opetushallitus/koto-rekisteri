@@ -45,8 +45,8 @@ class VktViewController(
 ) {
     @GetMapping("/", produces = ["text/html"])
     fun kaikkiSuorituksetView(
-        @ModelAttribute filter: VktSuoritusFilter = VktSuoritusFilter(),
         @ModelAttribute order: VktSuoritusOrder = VktSuoritusOrder(),
+        @ModelAttribute filter: VktSuoritusFilter = VktSuoritusFilter(),
     ): ResponseEntity<String> {
         val (suoritukset, pagination) = vktSuoritukset.getSuorituksetAndPagination(filter, order)
 

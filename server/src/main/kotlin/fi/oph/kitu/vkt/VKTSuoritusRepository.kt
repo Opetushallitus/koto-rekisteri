@@ -2,8 +2,10 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.table.DisplayTableEnum
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.html.VktTableItem
+import fi.oph.kitu.yki.toTrueOrNull
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
@@ -196,33 +198,39 @@ class CustomVktSuoritusRepository {
                 FROM vkt_suoritus
                 JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
                 GROUP BY vkt_suoritus.id, vkt_osakoe.tutkintopaiva
+            ),
+            result AS (
+                SELECT DISTINCT ON (vkt_suoritus.ilmoittautumisen_id)
+                    vkt_suoritus.id as suoritus_id,
+                    vkt_suoritus.ilmoittautumisen_id,
+                    vkt_suoritus.suorittajan_oid,
+                    vkt_suoritus.etunimet,
+                    vkt_suoritus.sukunimi,
+                    vkt_suoritus.tutkintokieli,
+                    vkt_suoritus.taitotaso,
+                    vkt_suoritus.suorituspaikkakunta,
+                    vkt_suoritus.suorituksen_vastaanottaja,
+                    osakokeet.tutkintopaiva,
+                    max(osakokeet.puheen_ymmärtäminen) AS puheen_ymmärtäminen,
+                    max(osakokeet.puhuminen) AS puhuminen,
+                    max(osakokeet.tekstin_ymmärtäminen) AS tekstin_ymmärtäminen,
+                    max(osakokeet.kirjoittaminen) AS kirjoittaminen
+                FROM vkt_suoritus
+                    JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
+                    JOIN osakokeet ON osakokeet.suoritus_id = vkt_suoritus.id
+            
+                ${filter.whereSql().orEmpty()}
+            
+                GROUP BY vkt_suoritus.id, osakokeet.tutkintopaiva
+                ORDER BY vkt_suoritus.ilmoittautumisen_id
             )
-            SELECT DISTINCT ON (vkt_suoritus.ilmoittautumisen_id)
-                vkt_suoritus.id as suoritus_id,
-                vkt_suoritus.ilmoittautumisen_id,
-                vkt_suoritus.suorittajan_oid,
-                vkt_suoritus.etunimet,
-                vkt_suoritus.sukunimi,
-                vkt_suoritus.tutkintokieli,
-                vkt_suoritus.taitotaso,
-                vkt_suoritus.suorituspaikkakunta,
-                vkt_suoritus.suorituksen_vastaanottaja,
-                osakokeet.tutkintopaiva,
-                max(osakokeet.puheen_ymmärtäminen) AS puheen_ymmärtäminen,
-                max(osakokeet.puhuminen) AS puhuminen,
-                max(osakokeet.tekstin_ymmärtäminen) AS tekstin_ymmärtäminen,
-                max(osakokeet.kirjoittaminen) AS kirjoittaminen
-            FROM vkt_suoritus
-                JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
-                JOIN osakokeet ON osakokeet.suoritus_id = vkt_suoritus.id
-
-            ${filter.whereSql().orEmpty()}
-
-            GROUP BY vkt_suoritus.id, osakokeet.tutkintopaiva
-            ORDER BY vkt_suoritus.ilmoittautumisen_id, $order
+            SELECT *
+            FROM result
+            ORDER BY $order
             ${order.pageSql().orEmpty()}
             """.trimIndent()
-        return jdbcTemplate.query(query, VktSuoritusFlat.fromRow)
+
+        return jdbcNamedParameterTemplate.query(query, filter.params(), VktSuoritusFlat.fromRow)
     }
 
     @WithSpan
@@ -461,6 +469,42 @@ data class VktSuoritusFilter(
     val taitotasoStrName = "filter_taso"
     val arvioituStrName = "filter_arvioitu"
 
+    fun toMap(): Map<String, String?> =
+        mapOf(
+            "search" to search,
+            "alkupaiva" to alkupaiva?.toString(),
+            "loppupaiva" to loppupaiva?.toString(),
+            "tutkintokieli" to tutkintokieli?.name,
+            "taitotaso" to taitotaso?.name,
+            "arvioitu" to arvioitu?.toTrueOrNull(),
+            "merkittyPoistettavaksi" to merkittyPoistettavaksi?.toTrueOrNull(),
+        )
+
+    fun filterDescriptions(): List<String> =
+        listOfNotNull(
+            if (alkupaiva != null || loppupaiva != null) {
+                listOf(
+                    alkupaiva?.finnishDate().orEmpty(),
+                    loppupaiva?.finnishDate().orEmpty(),
+                ).joinToString("-", prefix = "Aikarajaus: ")
+            } else {
+                null
+            },
+            tutkintokieli?.let { "Tutkintokieli: ${it.nimi}" },
+            taitotaso?.let { "Taitotaso: ${it.nimi}" },
+//            if (piilotaHenkilotiedot) "Henkilötiedot piilotettu" else null,
+        )
+
+    fun csvFileName() =
+        listOfNotNull(
+            "vkt_suoritukset",
+//            if (piilotaHenkilotiedot) null else "henkilotiedot",
+            tutkintokieli?.toString(),
+            taitotaso?.toString(),
+            alkupaiva?.toString(),
+            loppupaiva?.toString(),
+        ).joinToString("_", postfix = ".csv")
+
     fun whereSql(): String? {
         val queries =
             listOfNotNull(
@@ -485,8 +529,6 @@ data class VktSuoritusFilter(
             arvioituStrName to arvioitu,
         )
 
-    fun requiresSubTables(): Boolean = tutkintokieli != null || taitotaso != null
-
     private fun searchQuery(): String? =
         search?.let {
             if (search.isNotEmpty()) { // TODO: Lisää loput hakukentät
@@ -499,13 +541,13 @@ data class VktSuoritusFilter(
             }
         }
 
-    private fun alkupaivaQuery(): String? = alkupaiva?.let { "tutkintopaiva >= :$alkupaivaStrName" }
+    private fun alkupaivaQuery(): String? = alkupaiva?.let { "osakokeet.tutkintopaiva >= :$alkupaivaStrName" }
 
-    private fun loppupaivaQuery(): String? = loppupaiva?.let { "tutkintopaiva <= :$loppupaivaStrName" }
+    private fun loppupaivaQuery(): String? = loppupaiva?.let { "osakokeet.tutkintopaiva <= :$loppupaivaStrName" }
 
     private fun tutkintokieliQuery(): String? = tutkintokieli?.let { "tutkintokieli = :$tutkintokieliStrName" }
 
-    private fun taitotasoQuery(): String? = taitotaso?.let { "tutkintotaso = :$taitotasoStrName" }
+    private fun taitotasoQuery(): String? = taitotaso?.let { "taitotaso = :$taitotasoStrName" }
 
     private fun arvioituQuery(): String? = arvioitu?.let { "osakokeet.arvioitu = :$arvioituStrName" }
 
@@ -520,11 +562,11 @@ data class VktSuoritusFilter(
 }
 
 data class VktSuoritusOrder(
-    val column: VktSuoritusColumn = VktSuoritusColumn.Tutkintopaiva,
-    val direction: SortDirection = SortDirection.DESC,
+    val sortColumn: VktSuoritusColumn = VktSuoritusColumn.Tutkintopaiva,
+    val sortDirection: SortDirection = SortDirection.DESC,
     val pageNumber: Int? = 0,
 ) {
-    override fun toString(): String = "${column.entityName} $direction"
+    override fun toString(): String = "${sortColumn.entityName} $sortDirection"
 
     fun pageSql(pageSize: Int? = PAGE_SIZE): String? =
         pageNumber?.let {
@@ -534,6 +576,6 @@ data class VktSuoritusOrder(
         }
 
     companion object {
-        val PAGE_SIZE = 25
+        const val PAGE_SIZE = 100
     }
 }

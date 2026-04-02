@@ -459,3 +459,5 @@ object VktOsakoePartitioning {
         return if (next < b) getTimeSpans(next, b, i + 1) else i
     }
 }
+
+annotation class VktTutkintokieli

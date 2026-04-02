@@ -1,7 +1,10 @@
 package fi.oph.kitu.koodisto
 
 import com.fasterxml.jackson.annotation.JsonValue
+import fi.oph.kitu.html.table.HideInTableFilter
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.organisaatiot.KoodiviiteUri
+import fi.oph.kitu.vkt.VktTutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 
 object Koodisto {
@@ -11,6 +14,10 @@ object Koodisto {
         val koodistoUri: String
 
         fun toKoski(): KoskiKoodiviite = KoskiKoodiviite(koodiarvo, koodistoUri)
+    }
+
+    interface KoodiviiteNimella : Koodiviite {
+        val nimi: LocalizedString
     }
 
     interface ArvosanaKoodiviite : Koodiviite {
@@ -80,16 +87,25 @@ object Koodisto {
 
     enum class Tutkintokieli(
         override val koodiarvo: String,
-    ) : Koodiviite {
-        DEU("DE"),
-        ENG("EN"),
-        FIN("FI"),
-        FRA("FR"),
-        ITA("IT"),
-        RUS("RU"),
-        SME("SE"),
-        SPA("ES"),
-        SWE("SV"),
+        override val nimi: LocalizedString,
+    ) : KoodiviiteNimella {
+        @HideInTableFilter DEU("DE", LocalizedString("Saksa")),
+
+        @HideInTableFilter ENG("EN", LocalizedString("Englanti")),
+
+        FIN("FI", LocalizedString("Suomi")),
+
+        @HideInTableFilter FRA("FR", LocalizedString("Ranska")),
+
+        @HideInTableFilter ITA("IT", LocalizedString("Italia")),
+
+        @HideInTableFilter RUS("RU", LocalizedString("Venäjä")),
+
+        @HideInTableFilter SME("SE", LocalizedString("Pohjoissaame")),
+
+        @HideInTableFilter SPA("ES", LocalizedString("Espanja")),
+
+        SWE("SV", LocalizedString("Ruotsi")),
         ;
 
         override val koodistoUri: String = "kieli"
@@ -201,9 +217,10 @@ object Koodisto {
 
     enum class VktTaitotaso(
         override val koodiarvo: String,
-    ) : Koodiviite {
-        Erinomainen("erinomainen"),
-        HyväJaTyydyttävä("hyvajatyydyttava"),
+        override val nimi: LocalizedString,
+    ) : KoodiviiteNimella {
+        Erinomainen("erinomainen", LocalizedString("Erinomainen")),
+        HyväJaTyydyttävä("hyvajatyydyttava", LocalizedString("Hyvä ja tyydyttävä")),
         ;
 
         override val koodistoUri: String = "vkttutkintotaso"

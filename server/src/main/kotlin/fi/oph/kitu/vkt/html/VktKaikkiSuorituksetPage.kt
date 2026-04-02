@@ -5,16 +5,28 @@ package fi.oph.kitu.vkt.html
 import fi.oph.kitu.html.*
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableColumn
+import fi.oph.kitu.html.table.dateFilter
 import fi.oph.kitu.html.table.displayTable
+import fi.oph.kitu.html.table.enumFilter
+import fi.oph.kitu.html.table.httpParams
+import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.i18n.Translations
+import fi.oph.kitu.vkt.VktApiController
 import fi.oph.kitu.vkt.VktSuoritusColumn
 import fi.oph.kitu.vkt.VktSuoritusFilter
 import fi.oph.kitu.vkt.VktSuoritusFlat
 import fi.oph.kitu.vkt.VktSuoritusOrder
 import kotlinx.html.FlowContent
+import kotlinx.html.a
 import kotlinx.html.article
+import kotlinx.html.fieldSet
 import kotlinx.html.h1
 import kotlinx.html.h2
+import kotlinx.html.header
+import kotlinx.html.li
+import kotlinx.html.nav
+import kotlinx.html.ul
+import org.springframework.hateoas.server.mvc.linkTo
 
 object VktKaikkiSuorituksetPage {
     fun render(
@@ -32,7 +44,18 @@ object VktKaikkiSuorituksetPage {
             h2 { +"Kaikki suoritukset" }
             messages.forEach { viewMessage(it) }
             vktSearch(filter.search)
-            article { +"Yhteensä: ${pagination.numberOfItems}" }
+            article {
+                header {
+                    nav {
+                        ul {
+                            li { +"Yhteensä: ${pagination.numberOfItems}" }
+                            li { csvDownloadButton(filter) }
+                            li { vktSuoritusFilterButton(filter) }
+                        }
+                    }
+                }
+                vktSuoritusFilterList(filter)
+            }
             vktKaikkiSuorituksetTable(suoritukset, filter, order, pagination, translations)
         }
 }
@@ -54,13 +77,62 @@ fun FlowContent.vktKaikkiSuorituksetTable(
         displayTable(
             suoritukset.toList(),
             columns,
-            sortedBy = order.column,
-            sortDirection = order.direction,
+            sortedBy = order.sortColumn,
+            sortDirection = order.sortDirection,
             testId = "ilmoittautuneet",
             rowTestId = { "${it.suorittajanOid}-${it.tutkintokieli}" },
-            urlParams = mapOf("search" to filter.search),
+            urlParams = filter.toMap(),
         )
     }
 
     pagination(pagination)
+}
+
+fun FlowContent.vktSuoritusFilterButton(params: VktSuoritusFilter) {
+    tableFilterDialog("") {
+        fieldSet(classes = "grid") {
+            dateFilter("alkupaiva", "Alkaen", params.alkupaiva)
+            dateFilter("loppupaiva", "Päättyen", params.loppupaiva)
+        }
+        fieldSet {
+            enumFilter("tutkintokieli", "Tutkintokieli", params.tutkintokieli)
+        }
+        fieldSet {
+            enumFilter("taitotaso", "Taitotaso", params.taitotaso)
+        }
+//        fieldSet {
+//            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", params.piilotaHenkilotiedot)
+//        }
+//        fieldSet {
+//            toggleFilter(
+//                "piilotaVanhentuneetTiedot",
+//                "Piilota vanhentuneet tietokentät",
+//                params.piilotaVanhentuneetTiedot,
+//            )
+//        }
+    }
+}
+
+fun FlowContent.csvDownloadButton(params: VktSuoritusFilter) {
+    a(
+        href =
+            linkTo<VktApiController> {
+                getSuorituksetCsv()
+            }.toString() + "?${httpParams(params.toMap())}",
+    ) {
+        attributes["download"] = ""
+        +"Lataa tiedot CSV:nä"
+    }
+}
+
+fun FlowContent.vktSuoritusFilterList(params: VktSuoritusFilter) {
+    params.filterDescriptions().let { filters ->
+        if (filters.isNotEmpty()) {
+            ul {
+                filters.forEach { filter ->
+                    li { +filter }
+                }
+            }
+        }
+    }
 }

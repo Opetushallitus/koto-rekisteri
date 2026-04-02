@@ -100,14 +100,13 @@ object DisplayTableCsvRenderer {
 
     inline fun <reified E : Enum<E>, T> renderCsv(
         output: OutputStream,
-        data: List<T>,
+        data: Iterable<T>,
         excludeTags: Set<ColumnTag> = emptySet(),
     ) {
         val columns = RenderableDisplayTableEnum.getByTags<E, T>(setOf(ColumnTag.CSV_EXPORT), excludeTags)
         require(columns.isNotEmpty()) { "No columns with CSV_EXPORT tag found" }
 
         val header = columns.joinToString(SEPARATOR) { col -> escape(col.uiHeaderValue) }
-        println(header)
         output.write("$header\n".toByteArray())
 
         data.forEach { row ->
