@@ -12,6 +12,6 @@ ktlint = "1.8.0"
 go = "1.26.1"
 "npm:esbuild" = "0.27.4"
 "go:github.com/humanlogio/humanlog/cmd/humanlog" = "0.8.9"
-"ubi:karlderkaefer/cdk-notifier" = "2.14.14"
+"ubi:karlderkaefer/cdk-notifier" = "2.14.15"
 aws-cli = "2.34.21"
 "aqua:aws/session-manager-plugin" = { version = "1.2.707", os = ["macos"] }
