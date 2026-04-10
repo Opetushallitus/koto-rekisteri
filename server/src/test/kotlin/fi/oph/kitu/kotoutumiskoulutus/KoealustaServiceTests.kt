@@ -3,6 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.kotoutumiskoulutus.koealusta.KoealustaService
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.CustomKielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusService
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
@@ -121,7 +122,7 @@ class KoealustaServiceTests(
 
     @Test
     fun `import with no errors`(
-        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
@@ -158,8 +159,9 @@ class KoealustaServiceTests(
             fun () = assertEquals(Instant.parse("2024-10-15T05:12:11Z"), lastSeen),
         )
 
-        val ranja = kielitestiSuoritusRepository.findById(1).get()
+        val ranja = customKielitestiSuoritusRepository.findById(1)
 
+        checkNotNull(ranja)
         assertAll(
             fun () = assertEquals("Integraatio testaus", ranja.kurssi),
             fun () = assertEquals(Oid.parse("1.2.246.562.10.1234567890").getOrThrow(), ranja.oppilaitosOid),
@@ -716,7 +718,7 @@ class KoealustaServiceTests(
     @Test
     fun `import with valid and invalid suoritus should return original from-timestamp and save the suoritus and error`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
         // Facade
@@ -747,7 +749,7 @@ class KoealustaServiceTests(
         koealusta.verify()
 
         val errors = kielitestiSuoritusErrorRepository.findAll()
-        val suoritukset = kielitestiSuoritusRepository.findAll()
+        val suoritukset = customKielitestiSuoritusRepository.findAll()
 
         assertAll(
             fun() =
@@ -764,7 +766,7 @@ class KoealustaServiceTests(
     @Test
     fun `duplicate suoritus in subsequent imports are not saved`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
         // Facade
@@ -793,7 +795,7 @@ class KoealustaServiceTests(
         val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
 
         val errors = kielitestiSuoritusErrorRepository.findAll()
-        val suoritukset = kielitestiSuoritusRepository.findAll()
+        val suoritukset = customKielitestiSuoritusRepository.findAll()
 
         assertAll(
             fun() =
@@ -809,7 +811,7 @@ class KoealustaServiceTests(
         koealustaService.importSuoritukset(from = lastSeen)
         koealusta.verify()
 
-        val suoritukset2 = kielitestiSuoritusRepository.findAll()
+        val suoritukset2 = customKielitestiSuoritusRepository.findAll()
         val errors2 = kielitestiSuoritusErrorRepository.findAll()
         assertAll(
             fun() = assertEquals(1, suoritukset2.count()),
@@ -819,7 +821,7 @@ class KoealustaServiceTests(
 
     @Test
     fun `import removes leading and trailing whitespace from names and ssn`(
-        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
@@ -896,8 +898,9 @@ class KoealustaServiceTests(
             fun () = assertEquals(Instant.parse("2024-10-15T05:12:11Z"), lastSeen),
         )
 
-        val ranja = kielitestiSuoritusRepository.findById(1).get()
+        val ranja = customKielitestiSuoritusRepository.findById(1)
 
+        checkNotNull(ranja)
         assertAll(
             fun () = assertEquals("Ranja Testi", ranja.etunimet),
             fun () = assertEquals("Öhman-Testi", ranja.sukunimi),
@@ -1008,7 +1011,7 @@ class KoealustaServiceTests(
 
     @Test
     fun `duplicate suoritus is not saved`(
-        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
         // Facade
@@ -1041,13 +1044,13 @@ class KoealustaServiceTests(
         // Verification
         mockServer.verify()
 
-        val suoritukset = kielitestiSuoritusRepository.findAll()
+        val suoritukset = customKielitestiSuoritusRepository.findAll()
         assertEquals(1, suoritukset.count())
     }
 
     @Test
     fun `updated suoritus is saved`(
-        @Autowired kielitestiSuoritusRepository: KielitestiSuoritusRepository,
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
         val updatedSuoritus =
@@ -1136,7 +1139,7 @@ class KoealustaServiceTests(
 
         koealustaService.importSuoritukset(importFrom)
         mockServer.verify()
-        val suoritukset = kielitestiSuoritusRepository.findAll()
+        val suoritukset = customKielitestiSuoritusRepository.findAll()
         assertEquals(2, suoritukset.count())
     }
 

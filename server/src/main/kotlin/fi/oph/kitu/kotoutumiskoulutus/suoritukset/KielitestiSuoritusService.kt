@@ -9,11 +9,8 @@ import fi.oph.kitu.observability.use
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.sortedWithDirectionBy
 import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.instrumentation.annotations.SpanAttribute
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
-import java.io.ByteArrayOutputStream
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class KielitestiSuoritusService(
@@ -44,18 +41,18 @@ class KielitestiSuoritusService(
 
     @WithSpan
     fun getSuoritusById(id: Int): KielitestiSuoritus? =
-        kielitestiSuoritusRepository.findById(id).getOrNull().also { suoritus ->
+        customKielitestiSuoritusRepository.findById(id).also { suoritus ->
             suoritus?.oppijanumero?.let { oid ->
                 auditLogger.log(AuditLogOperation.KielitestiSuoritusViewed, oid)
             }
         }
 
-    fun generateSuorituksetCsvStream(
+    fun getSuorituksetForCsv(
         orderBy: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
         orderByDirection: SortDirection = SortDirection.DESC,
-    ): ByteArrayOutputStream =
+    ): List<KielitestiSuoritus> =
         tracer
-            .spanBuilder("KoealustaService.generateSuorituksetCsvStream")
+            .spanBuilder("KoealustaService.getSuorituksetForCsv")
             .startSpan()
             .use { span ->
                 val suoritukset = getSuoritukset(orderBy, orderByDirection)
@@ -63,12 +60,7 @@ class KielitestiSuoritusService(
 
                 val organisaatiot = organisaatioService.getOrganisaatiot()
 
-                val outputStream = ByteArrayOutputStream()
-                csvParser
-                    .withUseHeader(true)
-                    .streamDataAsCsv(outputStream, suoritukset.map { KielitestiSuoritusCsv.of(it, organisaatiot) })
-
-                return@use outputStream
+                return suoritukset.map { it.copy(oppilaitos = organisaatiot.nimet[it.oppilaitosOid]?.fi) }
             }
 
     fun List<KielitestiSuoritus>.sortByName(
@@ -76,7 +68,7 @@ class KielitestiSuoritusService(
         orderByDirection: SortDirection,
     ): List<KielitestiSuoritus> =
         when (orderBy) {
-            KielitestiSuoritusColumn.Organisaatio -> {
+            KielitestiSuoritusColumn.Oppilaitos -> {
                 val nimet = organisaatioService.getOrganisaatiot().nimet
                 this.sortedWithDirectionBy(orderByDirection) {
                     it.oppilaitosOid

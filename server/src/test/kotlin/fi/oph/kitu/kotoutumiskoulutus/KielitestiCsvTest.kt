@@ -24,7 +24,6 @@ import kotlin.test.assertEquals
 class KielitestiCsvTest(
     @param:Autowired val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     @param:Autowired val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-    @param:Autowired val kielitestiSuoritusService: KielitestiSuoritusService,
     @param:Autowired val kielitestiErrorService: KielitestiErrorService,
     @param:Autowired val postgres: PostgreSQLContainer<*>,
 ) {
@@ -32,64 +31,6 @@ class KielitestiCsvTest(
     fun setup() {
         kielitestiSuoritusRepository.deleteAll()
         kielitestiSuoritusErrorRepository.deleteAll()
-    }
-
-    @Test
-    fun `Kielitestin suoritukset kaantyvat csv-tiedostoksi oikein`() {
-        val suoritukset =
-            listOf(
-                KielitestiSuoritus(
-                    id = null,
-                    etunimet = "Eka",
-                    sukunimi = "Ensiö",
-                    kutsumanimi = "Eka",
-                    oppijanumero = Oid.parse("1.2.246.562.10.1234567890").getOrThrow(),
-                    email = "eka@fakeemail.net",
-                    suoritusaika = Instant.ofEpochSecond(1761036997),
-                    oppilaitosOid = Oid.parse("1.2.246.562.10.77255241653").getOrThrow(),
-                    opettajanEmail = "ope@fakeemail.net",
-                    kurssiId = 52,
-                    kurssi = "Yksikkötesti",
-                    luetunYmmartaminen = Arvosana.A1,
-                    kuullunYmmartaminen = Arvosana.A2,
-                    puhe = Arvosana.A1,
-                    kirjoittaminen = Arvosana.ALLEA1,
-                    testikieli = Testikieli.FIN,
-                    tehtavapaketti = "fi_suomi",
-                ),
-                KielitestiSuoritus(
-                    id = null,
-                    etunimet = "Toka",
-                    sukunimi = "Toisio",
-                    kutsumanimi = "Toka",
-                    oppijanumero = Oid.parse("1.2.246.562.10.303909808").getOrThrow(),
-                    email = "toka@fakeemail.net",
-                    suoritusaika = Instant.ofEpochSecond(1761036997),
-                    oppilaitosOid = Oid.parse("1.2.246.562.10.77255241653").getOrThrow(),
-                    opettajanEmail = "ope@fakeemail.net",
-                    kurssiId = 52,
-                    kurssi = "Yksikkötesti",
-                    luetunYmmartaminen = Arvosana.A1,
-                    kuullunYmmartaminen = Arvosana.A2,
-                    puhe = Arvosana.A1,
-                    kirjoittaminen = Arvosana.ALLEA1,
-                    testikieli = Testikieli.SWE,
-                    tehtavapaketti = null,
-                ),
-            )
-
-        kielitestiSuoritusRepository.saveAll(suoritukset)
-
-        val actualCsv = kielitestiSuoritusService.generateSuorituksetCsvStream()
-        val expectedCsv =
-            """
-            oppijanumero,sukunimi,etunimet,kutsumanimi,sahkoposti,kurssiId,kurssinNimi,testikieli,organisaatioOid,organisaatio,suoritusaika,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen
-            "1.2.246.562.10.1234567890",Ensiö,Eka,Eka,eka@fakeemail.net,52,Yksikkötesti,FIN,"1.2.246.562.10.77255241653",,2025-10-21T08:56:37Z,A1,A2,A1,"Alle A1"
-            1.2.246.562.10.303909808,Toisio,Toka,Toka,toka@fakeemail.net,52,Yksikkötesti,SWE,"1.2.246.562.10.77255241653",,2025-10-21T08:56:37Z,A1,A2,A1,"Alle A1"
-            
-            """.trimIndent()
-
-        assertEquals(expectedCsv, actualCsv.toString(Charsets.UTF_8))
     }
 
     @Test

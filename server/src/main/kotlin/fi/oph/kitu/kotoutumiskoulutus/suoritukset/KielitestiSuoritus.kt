@@ -8,6 +8,7 @@ import fi.oph.kitu.sortedWithDirectionBy
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.jdbc.core.RowMapper
 import java.time.Instant
@@ -25,6 +26,8 @@ data class KielitestiSuoritus(
     val email: String,
     val suoritusaika: Instant,
     val oppilaitosOid: Oid?,
+    @Transient
+    val oppilaitos: String? = null,
     val opettajanEmail: String?,
     val kurssiId: Int,
     val kurssi: String,

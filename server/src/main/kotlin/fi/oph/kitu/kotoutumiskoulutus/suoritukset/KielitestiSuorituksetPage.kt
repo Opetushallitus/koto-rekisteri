@@ -3,13 +3,15 @@ package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.errorsArticle
+import fi.oph.kitu.html.table.ColumnTag
+import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTableBody
 import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
-import fi.oph.kitu.organisaatiot.Organisaatiot
 import kotlinx.html.ButtonType
+import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
 import kotlinx.html.a
@@ -27,7 +29,6 @@ import kotlinx.html.nav
 import kotlinx.html.table
 import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
-import kotlin.enums.enumEntries
 
 object KielitestiSuorituksetPage {
     fun render(
@@ -35,7 +36,6 @@ object KielitestiSuorituksetPage {
         sortDirection: SortDirection,
         suoritukset: List<KielitestiSuoritus>,
         errorsCount: Long,
-        organisaationimet: Organisaatiot,
         search: String,
     ): String =
         Page.renderHtml(
@@ -83,12 +83,17 @@ object KielitestiSuorituksetPage {
 
                 table {
                     val columns =
-                        enumEntries<KielitestiSuoritusColumn>().map { column ->
-                            column.withHtml(
-                                column.renderHtml
-                                    ?: { +column.getValue(organisaationimet)(it) },
-                            )
-                        }
+                        DisplayTableColumn.of<KielitestiSuoritusColumn, KielitestiSuoritus>(
+                            setOf(ColumnTag.LIST_VIEW),
+                            setOf(),
+                        )
+//                    val columns =
+//                        enumEntries<KielitestiSuoritusColumn>().map { column ->
+//                            column.withHtml(
+//                                column.renderHtml
+//                                    ?: { +column.getValue(it) },
+//                            )
+//                        }
                     displayTableHeader(
                         columns = columns,
                         sortedBy = sortColumn,
@@ -108,3 +113,5 @@ object KielitestiSuorituksetPage {
             }
         }
 }
+
+fun FlowContent.kotoSuoritusFilterButton() {}
