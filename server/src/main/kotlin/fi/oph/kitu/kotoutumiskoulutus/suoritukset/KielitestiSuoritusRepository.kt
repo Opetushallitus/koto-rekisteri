@@ -19,6 +19,26 @@ class CustomKielitestiSuoritusRepository {
     @Autowired
     private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
 
+    // Spring's Transient-annotation doesn't play well with Kotlin data classes, so it seemed easier to add
+    // findById and findAll functions to the custom repository than to fight with the annotations
+    fun findById(id: Int): KielitestiSuoritus? {
+        val sql =
+            """
+            SELECT * FROM koto_suoritus WHERE id = :id
+            """.trimMargin()
+        return jdbcNamedParameterTemplate
+            .query(sql, mapOf("id" to id), KielitestiSuoritus.fromRow)
+            .firstOrNull()
+    }
+
+    fun findAll(): List<KielitestiSuoritus> {
+        val sql =
+            """
+            SELECT * FROM koto_suoritus
+            """.trimIndent()
+        return jdbcNamedParameterTemplate.query(sql, KielitestiSuoritus.fromRow)
+    }
+
     fun findSuoritukset(
         searchBy: String? = null,
         column: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,

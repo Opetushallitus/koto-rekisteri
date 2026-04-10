@@ -79,18 +79,8 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
       order: ["Toni Testi", "Magdalena Testi", "Eino Testi", "Anniina Testi"],
     },
     {
-      column: "Sähköposti",
-      tableColumnIndex: 3,
-      order: [
-        "devnull-6@oph.fi",
-        "devnull-14@oph.fi",
-        "devnull-12@oph.fi",
-        "devnull-10@oph.fi",
-      ],
-    },
-    {
       column: "Testikieli",
-      tableColumnIndex: 5,
+      tableColumnIndex: 4,
       order: ["SWE", "FIN", "FIN", "FIN"],
     },
   ] as const
@@ -170,15 +160,15 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
 
     const csvContent = await fs.readFile(path!, "utf8")
     let headers =
-      "oppijanumero,sukunimi,etunimet,kutsumanimi,sahkoposti,kurssiId,kurssinNimi,testikieli,organisaatioOid,organisaatio,suoritusaika,luetunYmmartaminen,kuullunYmmartaminen,puhuminen,kirjoittaminen"
+      "Oppijanumero,Sukunimi,Etunimet,Kutsumanimi,Sähköposti,Kurssin ID,Kurssin nimi,Testikieli,Oppilaitos OID,Oppilaitos,Opettajan sähköposti,Suoritusaika,Luetun ymmärtäminen,Kuullun ymmärtäminen,Puhe,Kirjoittaminen"
     let anniina =
-      '"1.2.246.562.24.24941612410",Torvinen-Testi,"Anniina Testi",Anniina,devnull-12@oph.fi,32,"Integraatio testaus",SWE,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
+      "1.2.246.562.24.24941612410,Torvinen-Testi,Anniina Testi,Anniina,devnull-12@oph.fi,32,Integraatio testaus,SWE,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
     let eino =
-      '"1.2.246.562.24.67409348034",Välimaa-Testi,"Eino Testi",Eino,devnull-10@oph.fi,32,"Integraatio testaus",FIN,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
+      "1.2.246.562.24.67409348034,Välimaa-Testi,Eino Testi,Eino,devnull-10@oph.fi,32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
     let magdalena =
-      '"1.2.246.562.24.33342764709",Sallinen-Testi,"Magdalena Testi",Magdalena,devnull-14@oph.fi,32,"Integraatio testaus",FIN,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
+      "1.2.246.562.24.33342764709,Sallinen-Testi,Magdalena Testi,Magdalena,devnull-14@oph.fi,32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
     let toni =
-      '"1.2.246.562.24.16014275446",Laasonen-Testi,"Toni Testi",Toni,devnull-6@oph.fi,32,"Integraatio testaus",FIN,1.2.3.4.5.6,,2024-11-22T10:49:49Z,A1,B1,"Alle A1",B1'
+      "1.2.246.562.24.16014275446,Laasonen-Testi,Toni Testi,Toni,devnull-6@oph.fi,32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
 
     expect(csvContent).toContain(headers)
     expect(csvContent).toContain(anniina)

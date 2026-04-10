@@ -37,9 +37,10 @@ class KielitestiViewController(
                 suoritukset =
                     suoritusService
                         .getSuoritukset(sortColumn, sortDirection, search)
+                        .map { it.copy(oppilaitos = organisaatiot.nimet[it.oppilaitosOid]?.fi) }
                         .let {
                             when (sortColumn) {
-                                KielitestiSuoritusColumn.Organisaatio -> it.sortByOrgName(sortDirection, organisaatiot)
+                                KielitestiSuoritusColumn.Oppilaitos -> it.sortByOrgName(sortDirection, organisaatiot)
                                 else -> it
                             }
                         },
@@ -48,7 +49,6 @@ class KielitestiViewController(
                         .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
                         .count()
                         .toLong(),
-                organisaationimet = organisaatiot,
                 search = search ?: "",
             ),
         )
