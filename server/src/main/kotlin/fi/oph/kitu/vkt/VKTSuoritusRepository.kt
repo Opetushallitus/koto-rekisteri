@@ -153,6 +153,36 @@ class CustomVktSuoritusRepository {
     }
 
     @WithSpan
+    fun numberOfRowsForListView(filter: VktSuoritusFilter): Int {
+        val query =
+            """
+            WITH osakokeet AS (
+                SELECT
+                    vkt_suoritus.id as suoritus_id,
+                    vkt_osakoe.tutkintopaiva,
+                    count(*) filter (WHERE vkt_osakoe.arvosana is not null) > 0 AS arvioitu
+                FROM vkt_suoritus
+                    JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
+                    GROUP BY vkt_suoritus.id, vkt_osakoe.tutkintopaiva
+            ),
+            result AS (
+                SELECT DISTINCT ON (vkt_suoritus.ilmoittautumisen_id) 1
+                FROM vkt_suoritus
+                    --JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
+                    JOIN osakokeet ON osakokeet.suoritus_id = vkt_suoritus.id
+            
+                ${filter.whereSql().orEmpty()}
+            
+                GROUP BY vkt_suoritus.id, osakokeet.tutkintopaiva
+                ORDER BY vkt_suoritus.ilmoittautumisen_id
+            )
+            SELECT COUNT(*) FROM result
+            """.trimIndent()
+
+        return jdbcNamedParameterTemplate.queryForObject(query, filter.params(), Int::class.java)!!
+    }
+
+    @WithSpan
     fun findOpiskeluoikeudetForKoskiTransfer(): Iterable<Tutkintoryhma> {
         val query =
             """

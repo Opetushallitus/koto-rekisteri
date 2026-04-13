@@ -12,6 +12,7 @@ import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import fi.oph.kitu.vkt.html.VktTableItem
+import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -46,7 +47,10 @@ class VktSuoritusService(
         searchQuery: String?,
     ) = Pair(
         getIlmoittautuneetForListView(taitotaso, arvioidut, sortColumn, sortDirection, pageNumber, searchQuery),
-        getPagination(sortColumn, sortDirection, pageNumber, taitotaso, arvioidut, searchQuery),
+        getPagination(
+            VktSuoritusFilter(), // TODO
+            VktSuoritusOrder(), // TODO
+        ),
     )
 
     @WithSpan("VktSuoritusService.getSuorituksetAndPagination")
@@ -55,14 +59,7 @@ class VktSuoritusService(
         order: VktSuoritusOrder,
     ) = Pair(
         customSuoritusRepository.find(filter, order),
-        getPagination(
-            CustomVktSuoritusRepository.Column.Tutkintopaiva, // TODO: Käytä order.column
-            order.sortDirection,
-            order.pageNumber ?: 0,
-            filter.taitotaso,
-            filter.arvioitu,
-            filter.search,
-        ),
+        getPagination(filter, order),
     )
 
     @WithSpan("VktSuoritusService.getIlmoittautuneetForListView")
@@ -86,18 +83,14 @@ class VktSuoritusService(
 
     @WithSpan("VktSuoritusService.getPagination")
     fun getPagination(
-        sortColumn: CustomVktSuoritusRepository.Column,
-        sortDirection: SortDirection,
-        currentPageNumber: Int,
-        taitotaso: Koodisto.VktTaitotaso?,
-        arvioidut: Boolean?,
-        searchQuery: String?,
+        filter: VktSuoritusFilter,
+        order: VktSuoritusOrder,
     ): Pagination =
         Pagination.valueOf(
-            currentPageNumber = currentPageNumber,
-            numberOfRows = listRowCounts.get(Triple(taitotaso, arvioidut, searchQuery))!!,
+            currentPageNumber = order.pageNumber ?: 0,
+            numberOfRows = listRowCounts.get(filter)!!,
             pageSize = PAGE_SIZE,
-            url = { "?page=$it&sortColumn=$sortColumn&sortDirection=$sortDirection" },
+            url = { "?TODO" },
         )
 
     @WithSpan("VktSuoritusService.getSuoritus")
@@ -207,12 +200,8 @@ class VktSuoritusService(
     fun requestTransferToKoski(id: Tutkintoryhma) = customSuoritusRepository.requestTransferToKoski(id)
 
     private val listRowCounts =
-        InMemoryCache(ttl = 5.minutes) { params: Triple<Koodisto.VktTaitotaso?, Boolean?, String?> ->
-            customSuoritusRepository.numberOfRowsForListView(
-                taitotaso = params.first,
-                arvioidut = params.second,
-                searchQuery = params.third,
-            )
+        InMemoryCache(ttl = 5.minutes) { filter: VktSuoritusFilter ->
+            customSuoritusRepository.numberOfRowsForListView(filter)
         }
 
     @WithSpan("VktSuoritusService.cleanup")
