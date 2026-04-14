@@ -64,3 +64,9 @@ fun FlowContent.hiddenValue(
         this.value = value
     }
 }
+
+fun FlowContent.hiddenValues(values: Map<String, String?>) {
+    values.forEach { (key, value) ->
+        value?.let { hiddenValue(key, value) }
+    }
+}

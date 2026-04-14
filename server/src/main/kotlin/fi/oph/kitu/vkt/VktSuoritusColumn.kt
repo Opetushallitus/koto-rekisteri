@@ -19,9 +19,9 @@ enum class VktSuoritusColumn(
 ) : RenderableDisplayTableEnum<VktSuoritusFlat> {
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.LIST_VIEW, ColumnTag.PERSONAL_DATA)
     SuoritusId(
-        "suoritusId",
-        "Tunniste",
-        "suoritusId",
+        "suoritus_id",
+        "",
+        "id",
         { it.suoritusId.toString() },
         {
             val url =
@@ -33,7 +33,7 @@ enum class VktSuoritusColumn(
                     ),
                 ).toString()
 
-            a(href = url) { +it.suoritusId.toString() }
+            a(href = url) { +"Näytä" }
         },
     ),
 
@@ -70,7 +70,7 @@ enum class VktSuoritusColumn(
     ),
 
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
-    Tutkintotaso(
+    Taitotaso(
         "taitotaso",
         "Taitotaso",
         "taitotaso",

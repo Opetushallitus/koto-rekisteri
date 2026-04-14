@@ -10,6 +10,8 @@ import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.table.enumFilter
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
+import fi.oph.kitu.html.table.toggleFilter
+import fi.oph.kitu.html.table.trueFalseOrAllFilter
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.vkt.VktApiController
 import fi.oph.kitu.vkt.VktSuoritusColumn
@@ -43,7 +45,7 @@ object VktKaikkiSuorituksetPage {
             h1 { +"Valtionhallinnon kielitutkinto" }
             h2 { +"Kaikki suoritukset" }
             messages.forEach { viewMessage(it) }
-            vktSearch(filter.search)
+            vktSearch(filter)
             article {
                 header {
                     nav {
@@ -71,7 +73,7 @@ fun FlowContent.vktKaikkiSuorituksetTable(
         val columns =
             DisplayTableColumn.of<VktSuoritusColumn, VktSuoritusFlat>(
                 setOf(ColumnTag.LIST_VIEW),
-                emptySet(),
+                filter.excludeTags(),
             )
 
         displayTable(
@@ -88,28 +90,37 @@ fun FlowContent.vktKaikkiSuorituksetTable(
     pagination(pagination)
 }
 
-fun FlowContent.vktSuoritusFilterButton(params: VktSuoritusFilter) {
+fun FlowContent.vktSuoritusFilterButton(filter: VktSuoritusFilter) {
     tableFilterDialog("") {
+        filter.search?.let { hiddenValue("search", filter.search) }
         fieldSet(classes = "grid") {
-            dateFilter("alkupaiva", "Alkaen", params.alkupaiva)
-            dateFilter("loppupaiva", "Päättyen", params.loppupaiva)
+            dateFilter("alkupaiva", "Alkaen", filter.alkupaiva)
+            dateFilter("loppupaiva", "Päättyen", filter.loppupaiva)
         }
         fieldSet {
-            enumFilter("tutkintokieli", "Tutkintokieli", params.tutkintokieli)
+            enumFilter("tutkintokieli", "Tutkintokieli", filter.tutkintokieli)
         }
         fieldSet {
-            enumFilter("taitotaso", "Taitotaso", params.taitotaso)
+            enumFilter("taitotaso", "Taitotaso", filter.taitotaso)
         }
-//        fieldSet {
-//            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", params.piilotaHenkilotiedot)
-//        }
-//        fieldSet {
-//            toggleFilter(
-//                "piilotaVanhentuneetTiedot",
-//                "Piilota vanhentuneet tietokentät",
-//                params.piilotaVanhentuneetTiedot,
-//            )
-//        }
+        fieldSet {
+            enumFilter(
+                "arvioitu",
+                "Erinomaisen tason suoritusten arvioinnin tila",
+                filter.arvioitu,
+            )
+        }
+        fieldSet {
+            trueFalseOrAllFilter(
+                "merkittyPoistettavaksi",
+                "Poistettavaksi merkitty erinomaisen tason suoritus",
+                filter.merkittyPoistettavaksi,
+                Triple("Näytä kaikki", "Näytä vain poistettavat suoritukset", "Piilota poistettavat suoritukset"),
+            )
+        }
+        fieldSet {
+            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", filter.piilotaHenkilotiedot)
+        }
     }
 }
 
@@ -118,7 +129,7 @@ fun FlowContent.csvDownloadButton(params: VktSuoritusFilter) {
         href =
             linkTo<VktApiController> {
                 getSuorituksetCsv()
-            }.toString() + "?${httpParams(params.toMap())}",
+            }.toString() + httpParams(params.toMap()),
     ) {
         attributes["download"] = ""
         +"Lataa tiedot CSV:nä"

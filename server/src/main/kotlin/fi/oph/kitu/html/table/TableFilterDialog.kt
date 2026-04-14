@@ -7,6 +7,7 @@ import fi.oph.kitu.html.input
 import fi.oph.kitu.html.modal
 import fi.oph.kitu.html.modalCommandButton
 import fi.oph.kitu.html.submitButton
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.koodisto.Koodisto
 import kotlinx.html.*
 import java.time.LocalDate
@@ -55,6 +56,32 @@ fun FlowContent.toggleFilter(
     }
 }
 
+fun FlowContent.trueFalseOrAllFilter(
+    id: String,
+    labelText: String,
+    value: Boolean?,
+    optionLabels: Triple<String, String, String> = Triple("Kaikki", "Kyllä", "Ei"),
+) {
+    val options =
+        mapOf(
+            optionLabels.first to (null to ""),
+            optionLabels.second to (true to "true"),
+            optionLabels.third to (false to "false"),
+        )
+
+    p { +labelText }
+    options.forEach { labelText, (optionValue, optionValueString) ->
+        label {
+            input(type = InputType.radio, name = id, value = optionValueString) {
+                if (optionValue == value) {
+                    attributes["checked"] = "checked"
+                }
+            }
+            +labelText
+        }
+    }
+}
+
 inline fun <reified E : Enum<E>> FlowContent.enumFilter(
     id: String,
     labelText: String,
@@ -100,8 +127,13 @@ inline fun <reified E : Enum<E>> FlowContent.enumFilter(
 inline fun <reified E : Enum<E>> enumValueName(value: E?): String =
     when (value) {
         is Koodisto.KoodiviiteNimella -> value.nimi.toString()
+        is Nimetty -> value.nimi.toString()
         null -> "Kaikki"
         else -> value.name
     }
+
+interface Nimetty {
+    val nimi: LocalizedString
+}
 
 annotation class HideInTableFilter

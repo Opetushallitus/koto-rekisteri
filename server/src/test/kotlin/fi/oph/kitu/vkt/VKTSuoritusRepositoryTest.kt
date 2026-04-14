@@ -374,7 +374,7 @@ class VKTSuoritusRepositoryTest(
         customRepository.find(
             VktSuoritusFilter(
                 merkittyPoistettavaksi = false,
-                arvioitu = true,
+                arvioitu = VktArvioinninTila.ArvioituOsittainTaiKokonaan,
             ),
             VktSuoritusOrder(),
         )

@@ -133,7 +133,7 @@ class VktApiController(
                     DisplayTableCsvRenderer.renderCsv<VktSuoritusColumn, _>(
                         output = output,
                         data = customSuoritusRepository.find(filter, order),
-                        excludeTags = emptySet(), // TODO
+                        excludeTags = filter.excludeTags(),
                     )
                 },
             )
