@@ -2,12 +2,11 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.table.ColumnTag
-import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.table.Nimetty
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.vkt.html.VktTableItem
+import fi.oph.kitu.vkt.VktSuoritusOrder.Companion.DEFAULT_PAGE_SIZE
 import fi.oph.kitu.yki.toTrueOrNull
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,7 +34,6 @@ class CustomVktSuoritusRepository {
     fun find(
         filter: VktSuoritusFilter,
         order: VktSuoritusOrder,
-        pageSize: Int? = null,
     ): Iterable<VktSuoritusFlat> {
         val query =
             """
@@ -81,7 +79,7 @@ class CustomVktSuoritusRepository {
             SELECT *
             FROM result
             ORDER BY $order
-            ${order.pageSql(pageSize).orEmpty()}
+            ${order.pageSql().orEmpty()}
             """.trimIndent()
 
         return jdbcNamedParameterTemplate.query(query, filter.params(), VktSuoritusFlat.fromRow)
@@ -403,6 +401,8 @@ data class VktSuoritusFilter(
             taitotaso?.toString(),
             alkupaiva?.toString(),
             loppupaiva?.toString(),
+            arvioitu?.name?.lowercase(),
+            merkittyPoistettavaksi?.let { "merkitty_poistettavaksi" },
         ).joinToString("_", postfix = ".csv")
 
     fun excludeTags(): Set<ColumnTag> =
@@ -436,10 +436,11 @@ data class VktSuoritusFilter(
 
     private fun searchQuery(): String? =
         search?.let {
-            if (search.isNotEmpty()) { // TODO: Lisää loput hakukentät
+            if (search.isNotEmpty()) {
                 """
                 vkt_suoritus.etunimet ILIKE :$searchStrName 
                 OR vkt_suoritus.sukunimi ILIKE :$searchStrName
+                OR vkt_suoritus.suorittajan_oid ILIKE :$searchStrName
                 """.trimIndent()
             } else {
                 null
@@ -491,21 +492,20 @@ data class VktSuoritusFilter(
 }
 
 data class VktSuoritusOrder(
-    val sortColumn: VktSuoritusColumn = VktSuoritusColumn.Tutkintopaiva,
-    val sortDirection: SortDirection = SortDirection.DESC,
+    val sortColumn: VktSuoritusColumn = VktSuoritusColumn.Sukunimi,
+    val sortDirection: SortDirection = SortDirection.ASC,
     val pageNumber: Int? = 0,
+    val pageSize: Int = DEFAULT_PAGE_SIZE,
 ) {
     override fun toString(): String = "${sortColumn.entityName} $sortDirection"
 
-    fun pageSql(pageSize: Int? = PAGE_SIZE): String? =
+    fun pageSql(): String? =
         pageNumber?.let {
-            pageSize?.let {
-                "LIMIT $pageSize OFFSET ${pageSize * (pageNumber)}"
-            }
+            "LIMIT $pageSize OFFSET ${pageSize * (pageNumber)}"
         }
 
     companion object {
-        const val PAGE_SIZE = 100
+        const val DEFAULT_PAGE_SIZE = 50
     }
 }
 

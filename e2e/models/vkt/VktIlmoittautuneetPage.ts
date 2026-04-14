@@ -10,7 +10,7 @@ export default class VktIlmoittautuneetPage extends BasePage {
 
   constructor(page: Page, config: Config) {
     super(page, config)
-    this.table = new DisplayTable(page.getByTestId("ilmoittautuneet"))
+    this.table = new DisplayTable(page.getByTestId("suoritukset"))
     this.searchField = page.getByTestId("search")
     this.searchButton = page.getByTestId("search-button")
   }

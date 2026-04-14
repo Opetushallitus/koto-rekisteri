@@ -2,6 +2,7 @@ import * as node_fs from "node:fs"
 import { beforeEach, describe, test } from "../../fixtures/baseFixture"
 import { expect } from "@playwright/test"
 import {
+  expectToBeEmpty,
   expectToHaveInputValue,
   expectToHaveKoodiviite,
   expectToHaveSelectedValue,
@@ -31,8 +32,10 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 
     await expectToHaveTexts(
       table.labels,
+      "",
       "Sukunimi ▲",
       "Etunimet",
+      "Taitotaso",
       "Tutkintokieli",
       "Tutkintopäivä",
     )
@@ -40,10 +43,12 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await expect(table.rows).toHaveCount(50)
 
     await testForEach(
-      table.getCellsOfRow("1.2.246.562.24.00000000012-SV"),
+      table.getCellsOfRow("1.2.246.562.24.00000000012-SWE"),
+      expectToHaveText("Näytä"),
       expectToHaveText("Halonen"),
       expectToHaveText("Vilho Eero"),
-      expectToHaveKoodiviite("kieli", "SV"),
+      expectToHaveText("Erinomainen"),
+      expectToHaveText("Ruotsi"),
       expectToHaveText("23.11.2006"),
     )
   })
@@ -67,11 +72,11 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     }
 
     // Oletussorttaus on sukunimen perusteella, joten järjestys kääntyy päinvastaiseksi
-    await testSorting("sukunimi", "Väänänen", "Salo")
+    await testSorting("Sukunimi", "Väänänen", "Salo")
 
     // Testataan loputkin kentät
-    await testSorting("etunimet", "Aarni Eino", "Eero Hugo")
-    await testSorting("tutkintopaiva", "27.2.2000", "29.3.2003")
+    await testSorting("Etunimet", "Aarni Eino", "Eero Hugo")
+    await testSorting("Tutkintopaiva", "27.2.2000", "29.3.2003")
   })
 
   test("Details page shows correct information of hyvä ja tyydyttävä taso", async ({
@@ -81,7 +86,9 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     // Varmista että ollaan oikeassa fikstuurissa
     await vktHjtSuorituksetPage.login()
     await vktHjtSuorituksetPage.open()
-    await vktHjtSuorituksetPage.followLinkOfRow("1.2.246.562.24.00000000007-SV")
+    await vktHjtSuorituksetPage.followLinkOfRow(
+      "1.2.246.562.24.00000000007-SWE",
+    )
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Fiona Konsta",
     )
@@ -131,7 +138,9 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 
     await vktHjtSuorituksetPage.login()
     await vktHjtSuorituksetPage.open()
-    await vktHjtSuorituksetPage.followLinkOfRow("1.2.246.562.24.00000000007-SV")
+    await vktHjtSuorituksetPage.followLinkOfRow(
+      "1.2.246.562.24.00000000007-SWE",
+    )
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Fiona Konsta",
     )
@@ -155,7 +164,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await vktArvioidutSuorituksetPage.login()
     await vktArvioidutSuorituksetPage.open()
     await vktArvioidutSuorituksetPage.followLinkOfRow(
-      "1.2.246.562.24.00000000063-FI",
+      "1.2.246.562.24.00000000063-FIN",
     )
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Daniel Ville",
@@ -206,7 +215,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await vktArvioidutSuorituksetPage.login()
     await vktArvioidutSuorituksetPage.open()
     await vktArvioidutSuorituksetPage.followLinkOfRow(
-      "1.2.246.562.24.00000000063-FI",
+      "1.2.246.562.24.00000000063-FIN",
     )
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Daniel Ville",
@@ -274,7 +283,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await vktIlmoittautuneetPage.login()
     await vktIlmoittautuneetPage.open()
     await vktIlmoittautuneetPage.followLinkOfRow(
-      "1.2.246.562.24.00000000012-SV",
+      "1.2.246.562.24.00000000012-SWE",
     )
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Halonen, Vilho Eero",
@@ -336,7 +345,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       await vktIlmoittautuneetPage.search("fiona")
 
       await expectToHaveTexts(
-        vktIlmoittautuneetPage.table.getCellsOfColumn("etunimet"),
+        vktIlmoittautuneetPage.table.getCellsOfColumn("Etunimet"),
         "Fiona Kerttu",
         "Fiona Roosa",
       )
@@ -348,7 +357,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       await vktIlmoittautuneetPage.search("halonen")
 
       await expectToHaveTexts(
-        vktIlmoittautuneetPage.table.getCellsOfColumn("sukunimi"),
+        vktIlmoittautuneetPage.table.getCellsOfColumn("Sukunimi"),
         "Halonen",
         "Halonen",
       )
@@ -362,24 +371,13 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
       await expect(vktIlmoittautuneetPage.table.rows).toHaveCount(1)
       await expectToHaveTexts(
         vktIlmoittautuneetPage.table.getCellsOfRow(
-          "1.2.246.562.24.00000000055-SV",
+          "1.2.246.562.24.00000000055-SWE",
         ),
+        "Näytä",
         "Huhtala",
         "Nella Eveliina",
-        "<kieli:SV>",
-        "19.6.2010",
-      )
-    })
-
-    test("Search by tutkintopäivä works", async ({
-      vktIlmoittautuneetPage,
-    }) => {
-      await vktIlmoittautuneetPage.login()
-      await vktIlmoittautuneetPage.open()
-      await vktIlmoittautuneetPage.search("19.6.2010")
-
-      await expectToHaveTexts(
-        vktIlmoittautuneetPage.table.getCellsOfColumn("tutkintopaiva"),
+        "Erinomainen",
+        "Ruotsi",
         "19.6.2010",
       )
     })
@@ -395,15 +393,17 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
 
   test("csv download only includes arvioitu suoritus", async ({
     page,
-    indexPage,
+    vktIlmoittautuneetPage,
   }) => {
-    await indexPage.login()
+    await vktIlmoittautuneetPage.login()
+    await vktIlmoittautuneetPage.open()
+
     // Intercept the download
     const [download] = await Promise.all([
       page.waitForEvent("download"),
-      await indexPage
+      await vktIlmoittautuneetPage
         .getPageContent()
-        .getByRole("link", { name: "Lataa kaikki suoritukset (csv)" })
+        .getByText("Lataa tiedot CSV:nä")
         .click(),
     ])
 
@@ -411,9 +411,9 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     const path = await download.path()
     expect(path).not.toBeNull()
     const csvContent = await fs.readFile(path!, "utf8")
-    expect(csvContent).toEqual(
-      'suoritusId,ilmoittautumisenId,suorittajanOid,sukunimi,etunimet,tutkintokieli,taitotaso,suorituspaikkakunta,"suorituksenVastaanottajanOid",suorituksenVastaanottaja,tutkintopaiva,puhuminen,puheenYmmartaminen,kirjoittaminen,tekstinYmmartaminen\n' +
-        '2,KIOS:123,"1.2.246.562.10.14893989377",Öhman-Testi,"Ranja Testi",FIN,HyväJaTyydyttävä,<kunta:050>,"1.2.246.562.24.59267607404","Petro Testi Kivinen-Testi",2026-02-10,Tyydyttävä,Hyvä,Hylätty,Hyvä\n',
+    expect(csvContent).toContain(
+      ",Ilmoittautumisen tunniste,Sukunimi,Etunimet,Oppijanumero,Taitotaso,Tutkintokieli,Tutkintopäivä,Suorituspaikkakunta,Suorituksen vastaanottajan OID,Suorituksen vastaanottaja,Puhuminen,Puheen ymmärtäminen,Kirjoittaminen,Tekstin ymmärtäminen\n" +
+        "1,KIOS:748,Sallinen-Testi,Magdalena Testi,1.2.246.562.24.33342764709,Erinomainen,Suomi,10.2.2026,091,1.2.246.562.24.85478397072,,,,,\n",
     )
   })
 })

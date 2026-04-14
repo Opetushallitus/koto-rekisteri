@@ -81,7 +81,7 @@ fun FlowContent.vktKaikkiSuorituksetTable(
             columns,
             sortedBy = order.sortColumn,
             sortDirection = order.sortDirection,
-            testId = "ilmoittautuneet",
+            testId = "suoritukset",
             rowTestId = { "${it.suorittajanOid}-${it.tutkintokieli}" },
             urlParams = filter.toMap(),
         )
