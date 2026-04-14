@@ -75,9 +75,7 @@ class IlmoittautumisjarjestelmaServiceImpl(
             suoritusRepository.setArvioinninTilaSent(suoritus.solkiId)
         }
         virheIds.forEach { solkiId, virhe ->
-            solkiId?.let {
-                suoritusRepository.setArvioinninTilanLahetysvirhe(solkiId, virhe)
-            }
+            suoritusRepository.setArvioinninTilanLahetysvirhe(solkiId, virhe)
         }
 
         Span

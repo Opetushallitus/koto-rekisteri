@@ -13,8 +13,8 @@ import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.html.KoskiTransferState
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
-import fi.oph.kitu.vkt.html.VktKaikkiSuorituksetPage
 import fi.oph.kitu.vkt.html.VktKoskiErrors
+import fi.oph.kitu.vkt.html.VktSuorituksetPage
 import kotlinx.html.a
 import kotlinx.html.br
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
@@ -42,7 +42,7 @@ class VktViewController(
     private val koskiRequestMapper: KoskiRequestMapper,
 ) {
     @GetMapping("/", produces = ["text/html"])
-    fun kaikkiSuorituksetView(
+    fun suorituksetView(
         @ModelAttribute order: VktSuoritusOrder = VktSuoritusOrder(),
         @ModelAttribute filter: VktSuoritusFilter = VktSuoritusFilter(),
     ): ResponseEntity<String> {
@@ -55,7 +55,7 @@ class VktViewController(
                 .build()
 
         return ResponseEntity.ok(
-            VktKaikkiSuorituksetPage.render(
+            VktSuorituksetPage.render(
                 suoritukset,
                 filter,
                 order,
@@ -79,7 +79,7 @@ class VktViewController(
         redirectToSuorituksetView(VktSuoritusFilter.HYVAN_JA_TYYDYTTAVAN_TASON_SUORITUKSET)
 
     private fun redirectToSuorituksetView(filter: VktSuoritusFilter): RedirectView {
-        val url = linkTo(methodOn(this::class.java).kaikkiSuorituksetView()).toString()
+        val url = linkTo(methodOn(this::class.java).suorituksetView()).toString()
         val params = httpParams(filter.toMap())
         return RedirectView(url + params)
     }

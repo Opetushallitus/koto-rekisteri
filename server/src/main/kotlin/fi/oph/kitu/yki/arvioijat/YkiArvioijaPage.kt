@@ -73,7 +73,7 @@ object YkiArvioijaPage {
                                         }
                                         td {
                                             attributes["rowspan"] = rowSpan
-                                            arvioija.katuosoite?.let { +it }
+                                            +arvioija.katuosoite
                                         }
                                     }
                                     td { +ao.tila.name }
