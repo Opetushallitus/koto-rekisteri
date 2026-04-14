@@ -117,7 +117,7 @@ class VKTSuoritusRepositoryTest(
                     assertEquals(
                         suoritukset.toList().size,
                         count,
-                        "taitotaso=$taitotaso, arvioidut=$arvioidut, searchQuery=$searchQuery --> findForListView().size [expected] vs. numberOfRowsForListView() [actual]",
+                        "taitotaso=$taitotaso, arvioidut=$arvioidut, searchQuery=$searchQuery --> find().size [expected] vs. numberOfRowsForListView() [actual]",
                     )
                 }
             }

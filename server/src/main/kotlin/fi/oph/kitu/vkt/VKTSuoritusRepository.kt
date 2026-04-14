@@ -31,6 +31,62 @@ class CustomVktSuoritusRepository {
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
 
+    @WithSpan
+    fun find(
+        filter: VktSuoritusFilter,
+        order: VktSuoritusOrder,
+        pageSize: Int? = null,
+    ): Iterable<VktSuoritusFlat> {
+        val query =
+            """
+            WITH osakokeet AS (
+                SELECT
+                    vkt_suoritus.id as suoritus_id,
+                    vkt_osakoe.tutkintopaiva,
+                    count(*) filter (WHERE vkt_osakoe.arvosana is not null) AS arviointeja,
+                    count(*) filter (WHERE vkt_osakoe.arvosana is null) AS puuttuvia_arviointeja,
+                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'PuheenYmmärtäminen') AS puheen_ymmärtäminen,
+                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'Puhuminen') AS puhuminen,
+                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'TekstinYmmärtäminen') AS tekstin_ymmärtäminen,
+                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'Kirjoittaminen') AS kirjoittaminen
+                FROM vkt_suoritus
+                JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
+                GROUP BY vkt_suoritus.id, vkt_osakoe.tutkintopaiva
+            ),
+            result AS (
+                SELECT DISTINCT ON (vkt_suoritus.ilmoittautumisen_id)
+                    vkt_suoritus.id as suoritus_id,
+                    vkt_suoritus.ilmoittautumisen_id,
+                    vkt_suoritus.suorittajan_oid,
+                    vkt_suoritus.etunimet,
+                    vkt_suoritus.sukunimi,
+                    vkt_suoritus.tutkintokieli,
+                    vkt_suoritus.taitotaso,
+                    vkt_suoritus.suorituspaikkakunta,
+                    vkt_suoritus.suorituksen_vastaanottaja,
+                    osakokeet.tutkintopaiva,
+                    max(osakokeet.puheen_ymmärtäminen) AS puheen_ymmärtäminen,
+                    max(osakokeet.puhuminen) AS puhuminen,
+                    max(osakokeet.tekstin_ymmärtäminen) AS tekstin_ymmärtäminen,
+                    max(osakokeet.kirjoittaminen) AS kirjoittaminen
+                FROM vkt_suoritus
+                    JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
+                    JOIN osakokeet ON osakokeet.suoritus_id = vkt_suoritus.id
+            
+                ${filter.whereSql().orEmpty()}
+            
+                GROUP BY vkt_suoritus.id, osakokeet.tutkintopaiva
+                ORDER BY vkt_suoritus.ilmoittautumisen_id, vkt_suoritus.created_at DESC
+            )
+            SELECT *
+            FROM result
+            ORDER BY $order
+            ${order.pageSql(pageSize).orEmpty()}
+            """.trimIndent()
+
+        return jdbcNamedParameterTemplate.query(query, filter.params(), VktSuoritusFlat.fromRow)
+    }
+
     fun getOppijanSuoritusIds(id: Tutkintoryhma): List<Int> {
         val query =
             """
