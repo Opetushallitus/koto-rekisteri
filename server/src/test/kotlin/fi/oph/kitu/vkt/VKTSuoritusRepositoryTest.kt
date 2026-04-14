@@ -109,9 +109,9 @@ class VKTSuoritusRepositoryTest(
             arvioidut.forEach { arvioidut ->
                 searchQuerys.forEach { searchQuery ->
                     val filter = VktSuoritusFilter(search = searchQuery, taitotaso = taitotaso, arvioitu = arvioidut)
-                    val order = VktSuoritusOrder(VktSuoritusColumn.Sukunimi, SortDirection.ASC)
+                    val order = VktSuoritusOrder(VktSuoritusColumn.Sukunimi, SortDirection.ASC, pageSize = 100000)
 
-                    val suoritukset = customRepository.find(filter, order, pageSize = 100000)
+                    val suoritukset = customRepository.find(filter, order)
                     val count = customRepository.numberOfRowsForListView(filter)
 
                     assertEquals(

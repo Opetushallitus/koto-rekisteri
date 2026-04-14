@@ -8,7 +8,7 @@ export default class VktArvioidutSuorituksetPage extends BasePage {
 
   constructor(page: Page, config: Config) {
     super(page, config)
-    this.table = new DisplayTable(page.getByTestId("ilmoittautuneet"))
+    this.table = new DisplayTable(page.getByTestId("suoritukset"))
   }
 
   async open() {

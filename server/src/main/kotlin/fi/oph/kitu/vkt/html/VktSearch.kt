@@ -28,7 +28,7 @@ fun FlowContent.vktSearch(filter: VktSuoritusFilter) {
                 type = InputType.search
                 name = "search"
                 value = filter.search.orEmpty()
-                placeholder = "Oppijanumero, nimi tai tutkintopäivä"
+                placeholder = "Oppijanumero tai nimi"
             }
             button {
                 testId("search-button")

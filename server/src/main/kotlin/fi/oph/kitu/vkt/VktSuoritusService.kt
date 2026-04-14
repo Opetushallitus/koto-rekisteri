@@ -1,7 +1,6 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.cache.InMemoryCache
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.html.Pagination
@@ -11,13 +10,11 @@ import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
-import fi.oph.kitu.vkt.html.VktTableItem
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
-import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -53,7 +50,7 @@ class VktSuoritusService(
         Pagination.valueOf(
             currentPageNumber = order.pageNumber ?: 0,
             numberOfRows = listRowCounts.get(filter)!!,
-            pageSize = VktSuoritusOrder.PAGE_SIZE,
+            pageSize = VktSuoritusOrder.DEFAULT_PAGE_SIZE,
         )
 
     @WithSpan("VktSuoritusService.getOppijanSuoritukset")
