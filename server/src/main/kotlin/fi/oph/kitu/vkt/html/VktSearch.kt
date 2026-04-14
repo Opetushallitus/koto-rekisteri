@@ -1,6 +1,8 @@
 package fi.oph.kitu.vkt.html
 
+import fi.oph.kitu.html.hiddenValues
 import fi.oph.kitu.html.testId
+import fi.oph.kitu.vkt.VktSuoritusFilter
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
@@ -11,8 +13,13 @@ import kotlinx.html.form
 import kotlinx.html.id
 import kotlinx.html.input
 
-fun FlowContent.vktSearch(query: String?) {
+fun FlowContent.vktSearch(searchQuery: String?) {
+    vktSearch(VktSuoritusFilter(searchQuery))
+}
+
+fun FlowContent.vktSearch(filter: VktSuoritusFilter) {
     form(action = "", method = FormMethod.get, classes = "grid center-vertically") {
+        hiddenValues(filter.toMap().filterKeys { it != "search" })
         fieldSet {
             attributes["role"] = "search"
             input {
@@ -20,7 +27,7 @@ fun FlowContent.vktSearch(query: String?) {
                 id = "search"
                 type = InputType.search
                 name = "search"
-                value = query.orEmpty()
+                value = filter.search.orEmpty()
                 placeholder = "Oppijanumero, nimi tai tutkintopäivä"
             }
             button {

@@ -12,7 +12,6 @@ import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import fi.oph.kitu.vkt.html.VktTableItem
-import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -48,8 +47,19 @@ class VktSuoritusService(
     ) = Pair(
         getIlmoittautuneetForListView(taitotaso, arvioidut, sortColumn, sortDirection, pageNumber, searchQuery),
         getPagination(
-            VktSuoritusFilter(), // TODO
-            VktSuoritusOrder(), // TODO
+            VktSuoritusFilter(
+                search = searchQuery,
+                taitotaso = taitotaso,
+                arvioitu =
+                    arvioidut?.let {
+                        if (it) VktArvioinninTila.ArvioituOsittainTaiKokonaan else VktArvioinninTila.ArviointejaPuuttuu
+                    },
+            ),
+            VktSuoritusOrder(
+                sortColumn = sortColumn.toVktSuoritusColumn(),
+                sortDirection = sortDirection,
+                pageNumber = pageNumber,
+            ),
         ),
     )
 
@@ -144,7 +154,7 @@ class VktSuoritusService(
             customSuoritusRepository.find(
                 VktSuoritusFilter(
                     merkittyPoistettavaksi = false,
-                    arvioitu = true,
+                    arvioitu = VktArvioinninTila.ArvioituOsittainTaiKokonaan,
                 ),
                 VktSuoritusOrder(), // TODO: Created at desc
             )

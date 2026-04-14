@@ -1,7 +1,10 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableEnum
+import fi.oph.kitu.html.table.Nimetty
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.vkt.html.VktTableItem
@@ -160,7 +163,8 @@ class CustomVktSuoritusRepository {
                 SELECT
                     vkt_suoritus.id as suoritus_id,
                     vkt_osakoe.tutkintopaiva,
-                    count(*) filter (WHERE vkt_osakoe.arvosana is not null) > 0 AS arvioitu
+                    count(*) filter (WHERE vkt_osakoe.arvosana is not null) AS arviointeja,
+                    count(*) filter (WHERE vkt_osakoe.arvosana is null) AS puuttuvia_arviointeja
                 FROM vkt_suoritus
                     JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
                     GROUP BY vkt_suoritus.id, vkt_osakoe.tutkintopaiva
@@ -168,7 +172,7 @@ class CustomVktSuoritusRepository {
             result AS (
                 SELECT DISTINCT ON (vkt_suoritus.ilmoittautumisen_id) 1
                 FROM vkt_suoritus
-                    --JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
+                    JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
                     JOIN osakokeet ON osakokeet.suoritus_id = vkt_suoritus.id
             
                 ${filter.whereSql().orEmpty()}
@@ -207,60 +211,6 @@ class CustomVktSuoritusRepository {
             """.trimIndent()
 
         return jdbcTemplate.query(query, Tutkintoryhma.fromRow)
-    }
-
-    @WithSpan
-    fun find(
-        filter: VktSuoritusFilter,
-        order: VktSuoritusOrder,
-    ): Iterable<VktSuoritusFlat> {
-        val query =
-            """
-            WITH osakokeet AS (
-                SELECT
-                    vkt_suoritus.id as suoritus_id,
-                    vkt_osakoe.tutkintopaiva,
-                    count(*) filter (WHERE vkt_osakoe.arvosana is not null) > 0 AS arvioitu,
-                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'PuheenYmmärtäminen') AS puheen_ymmärtäminen,
-                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'Puhuminen') AS puhuminen,
-                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'TekstinYmmärtäminen') AS tekstin_ymmärtäminen,
-                    max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'Kirjoittaminen') AS kirjoittaminen
-                FROM vkt_suoritus
-                JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
-                GROUP BY vkt_suoritus.id, vkt_osakoe.tutkintopaiva
-            ),
-            result AS (
-                SELECT DISTINCT ON (vkt_suoritus.ilmoittautumisen_id)
-                    vkt_suoritus.id as suoritus_id,
-                    vkt_suoritus.ilmoittautumisen_id,
-                    vkt_suoritus.suorittajan_oid,
-                    vkt_suoritus.etunimet,
-                    vkt_suoritus.sukunimi,
-                    vkt_suoritus.tutkintokieli,
-                    vkt_suoritus.taitotaso,
-                    vkt_suoritus.suorituspaikkakunta,
-                    vkt_suoritus.suorituksen_vastaanottaja,
-                    osakokeet.tutkintopaiva,
-                    max(osakokeet.puheen_ymmärtäminen) AS puheen_ymmärtäminen,
-                    max(osakokeet.puhuminen) AS puhuminen,
-                    max(osakokeet.tekstin_ymmärtäminen) AS tekstin_ymmärtäminen,
-                    max(osakokeet.kirjoittaminen) AS kirjoittaminen
-                FROM vkt_suoritus
-                    JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
-                    JOIN osakokeet ON osakokeet.suoritus_id = vkt_suoritus.id
-            
-                ${filter.whereSql().orEmpty()}
-            
-                GROUP BY vkt_suoritus.id, osakokeet.tutkintopaiva
-                ORDER BY vkt_suoritus.ilmoittautumisen_id
-            )
-            SELECT *
-            FROM result
-            ORDER BY $order
-            ${order.pageSql().orEmpty()}
-            """.trimIndent()
-
-        return jdbcNamedParameterTemplate.query(query, filter.params(), VktSuoritusFlat.fromRow)
     }
 
     @WithSpan
@@ -363,6 +313,7 @@ class CustomVktSuoritusRepository {
         )
     }
 
+    @Deprecated("Käytä VktSuoritusColumn")
     enum class Column(
         override val entityName: String?,
         override val uiHeaderValue: String,
@@ -373,6 +324,9 @@ class CustomVktSuoritusRepository {
         Kieli("tutkintokieli", "Tutkintokieli", "kieli"),
         Taitotaso("taitotaso", "Taitotaso", "taitotaso"),
         Tutkintopaiva("tutkintopaiva", "Tutkintopäivä", "tutkintopaiva"),
+        ;
+
+        fun toVktSuoritusColumn(): VktSuoritusColumn = VktSuoritusColumn.valueOf(name)
     }
 
     data class Tutkintoryhma(
@@ -489,8 +443,9 @@ data class VktSuoritusFilter(
     val loppupaiva: LocalDate? = null,
     val tutkintokieli: Koodisto.Tutkintokieli? = null,
     val taitotaso: Koodisto.VktTaitotaso? = null,
-    val arvioitu: Boolean? = null,
+    val arvioitu: VktArvioinninTila? = null,
     val merkittyPoistettavaksi: Boolean? = null,
+    val piilotaHenkilotiedot: Boolean = false,
 ) {
     val searchStrName = "filter_search"
     val alkupaivaStrName = "filter_alkupaiva"
@@ -506,9 +461,10 @@ data class VktSuoritusFilter(
             "loppupaiva" to loppupaiva?.toString(),
             "tutkintokieli" to tutkintokieli?.name,
             "taitotaso" to taitotaso?.name,
-            "arvioitu" to arvioitu?.toTrueOrNull(),
-            "merkittyPoistettavaksi" to merkittyPoistettavaksi?.toTrueOrNull(),
-        )
+            "arvioitu" to arvioitu?.name,
+            "merkittyPoistettavaksi" to merkittyPoistettavaksi?.toString(),
+            "piilotaHenkilotiedot" to piilotaHenkilotiedot.toTrueOrNull(),
+        ).filterValues { it != null }
 
     fun filterDescriptions(): List<String> =
         listOfNotNull(
@@ -522,18 +478,27 @@ data class VktSuoritusFilter(
             },
             tutkintokieli?.let { "Tutkintokieli: ${it.nimi}" },
             taitotaso?.let { "Taitotaso: ${it.nimi}" },
-//            if (piilotaHenkilotiedot) "Henkilötiedot piilotettu" else null,
+            arvioitu?.let { "Arvoinnin tila: ${it.nimi}" },
+            merkittyPoistettavaksi?.let {
+                if (it) "Vain poistettavat suoritukset" else "Vain suoritukset, joita ei ole merkitty poistettavaksi"
+            },
+            if (piilotaHenkilotiedot) "Henkilötiedot piilotettu" else null,
         )
 
     fun csvFileName() =
         listOfNotNull(
             "vkt_suoritukset",
-//            if (piilotaHenkilotiedot) null else "henkilotiedot",
+            if (piilotaHenkilotiedot) null else "henkilotiedot",
             tutkintokieli?.toString(),
             taitotaso?.toString(),
             alkupaiva?.toString(),
             loppupaiva?.toString(),
         ).joinToString("_", postfix = ".csv")
+
+    fun excludeTags(): Set<ColumnTag> =
+        setOfNotNull(
+            if (piilotaHenkilotiedot) ColumnTag.PERSONAL_DATA else null,
+        )
 
     fun whereSql(): String? {
         val queries =
@@ -579,7 +544,12 @@ data class VktSuoritusFilter(
 
     private fun taitotasoQuery(): String? = taitotaso?.let { "taitotaso = :$taitotasoStrName" }
 
-    private fun arvioituQuery(): String? = arvioitu?.let { "osakokeet.arvioitu = :$arvioituStrName" }
+    private fun arvioituQuery(): String? =
+        when (arvioitu) {
+            VktArvioinninTila.ArvioituOsittainTaiKokonaan -> "osakokeet.arviointeja > 0"
+            VktArvioinninTila.ArviointejaPuuttuu -> "osakokeet.puuttuvia_arviointeja > 0"
+            else -> null
+        }
 
     private fun merkittyPoistettavaksiQuery(): String? =
         merkittyPoistettavaksi?.let {
@@ -589,6 +559,25 @@ data class VktSuoritusFilter(
                 "vkt_osakoe.merkitty_poistettavaksi is null"
             }
         }
+
+    companion object {
+        val ERINOMAISEN_TASON_ILMOITTAUTUNEET =
+            VktSuoritusFilter(
+                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                arvioitu = VktArvioinninTila.ArviointejaPuuttuu,
+            )
+
+        val ERINOMAISEN_TASON_SUORITUKSET =
+            VktSuoritusFilter(
+                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                arvioitu = VktArvioinninTila.ArvioituOsittainTaiKokonaan,
+            )
+
+        val HYVAN_JA_TYYDYTTAVAN_TASON_SUORITUKSET =
+            VktSuoritusFilter(
+                taitotaso = Koodisto.VktTaitotaso.HyväJaTyydyttävä,
+            )
+    }
 }
 
 data class VktSuoritusOrder(
@@ -608,4 +597,11 @@ data class VktSuoritusOrder(
     companion object {
         const val PAGE_SIZE = 100
     }
+}
+
+enum class VktArvioinninTila(
+    override val nimi: LocalizedString,
+) : Nimetty {
+    ArvioituOsittainTaiKokonaan(LocalizedString("Arvioitu osittain tai kokonaan")),
+    ArviointejaPuuttuu(LocalizedString("Arviointeja puuttuu")),
 }

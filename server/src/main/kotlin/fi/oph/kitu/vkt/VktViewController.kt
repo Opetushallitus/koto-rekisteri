@@ -1,9 +1,9 @@
 package fi.oph.kitu.vkt
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.ViewMessage
 import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.ViewMessageType
+import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiErrorService
@@ -12,8 +12,6 @@ import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.html.KoskiTransferState
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
-import fi.oph.kitu.vkt.html.VktErinomaisenSuorituksetPage
-import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaSuorituksetPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
 import fi.oph.kitu.vkt.html.VktKaikkiSuorituksetPage
 import fi.oph.kitu.vkt.html.VktKoskiErrors
@@ -69,109 +67,21 @@ class VktViewController(
     }
 
     @GetMapping("/erinomainen/ilmoittautuneet", produces = ["text/html"])
-    fun erinomaisenTaitotasonIlmoittautuneetView(
-        page: Int = 1,
-        sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
-        sortDirection: SortDirection = SortDirection.ASC,
-        search: String? = null,
-    ): ResponseEntity<String> {
-        val (ilmoittautuneet, pagination) =
-            vktSuoritukset.getSuorituksetAndPagination(
-                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
-                arvioidut = false,
-                sortColumn = sortColumn,
-                sortDirection = sortDirection,
-                pageNumber = page,
-                searchQuery = search,
-            )
-        val translations =
-            localizationService
-                .translationBuilder()
-                .koodistot("kieli", "vkttutkintotaso")
-                .build()
-
-        return ResponseEntity.ok(
-            VktErinomaisenSuorituksetPage.render(
-                title = "Erinomaisen taidon tutkinnon ilmoittautuneet",
-                ilmoittautuneet = ilmoittautuneet,
-                sortedBy = sortColumn,
-                sortDirection = sortDirection,
-                pagination = pagination,
-                translations = translations,
-                searchQuery = search,
-                messages = getMessages(),
-            ),
-        )
-    }
+    fun erinomaisenTaitotasonIlmoittautuneetView(): RedirectView =
+        redirectToSuorituksetView(VktSuoritusFilter.ERINOMAISEN_TASON_ILMOITTAUTUNEET)
 
     @GetMapping("/erinomainen/arvioidut", produces = ["text/html"])
-    fun erinomaisenTaitotasonArvioidutSuorituksetView(
-        page: Int = 1,
-        sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
-        sortDirection: SortDirection = SortDirection.ASC,
-        search: String? = null,
-    ): ResponseEntity<String> {
-        val (suoritukset, pagination) =
-            vktSuoritukset.getSuorituksetAndPagination(
-                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
-                arvioidut = true,
-                sortColumn = sortColumn,
-                sortDirection = sortDirection,
-                pageNumber = page,
-                searchQuery = search,
-            )
-        val translations =
-            localizationService
-                .translationBuilder()
-                .koodistot("kieli", "vkttutkintotaso")
-                .build()
-
-        return ResponseEntity.ok(
-            VktErinomaisenSuorituksetPage.render(
-                title = "Erinomaisen taidon tutkinnon arvioidut suoritukset",
-                ilmoittautuneet = suoritukset,
-                sortedBy = sortColumn,
-                sortDirection = sortDirection,
-                pagination = pagination,
-                translations = translations,
-                searchQuery = search,
-                messages = getMessages(),
-            ),
-        )
-    }
+    fun erinomaisenTaitotasonArvioidutSuorituksetView(): RedirectView =
+        redirectToSuorituksetView(VktSuoritusFilter.ERINOMAISEN_TASON_SUORITUKSET)
 
     @GetMapping("/hyvajatyydyttava/suoritukset", produces = ["text/html"])
-    fun hyvanJaTyydyttavanTaitotasonSuorituksetView(
-        page: Int = 1,
-        sortColumn: CustomVktSuoritusRepository.Column = CustomVktSuoritusRepository.Column.Sukunimi,
-        sortDirection: SortDirection = SortDirection.ASC,
-        search: String? = null,
-    ): ResponseEntity<String> {
-        val (suoritukset, pagination) =
-            vktSuoritukset.getSuorituksetAndPagination(
-                taitotaso = Koodisto.VktTaitotaso.HyväJaTyydyttävä,
-                arvioidut = null,
-                sortColumn = sortColumn,
-                sortDirection = sortDirection,
-                pageNumber = page,
-                searchQuery = search,
-            )
-        val translations =
-            localizationService
-                .translationBuilder()
-                .koodistot("kieli", "vkttutkintotaso")
-                .build()
-        return ResponseEntity.ok(
-            VktHyvaJaTyydyttavaSuorituksetPage.render(
-                suoritukset = suoritukset,
-                sortedBy = sortColumn,
-                sortDirection = sortDirection,
-                pagination = pagination,
-                translations = translations,
-                searchQuery = search,
-                messages = getMessages(),
-            ),
-        )
+    fun hyvanJaTyydyttavanTaitotasonSuorituksetView(): RedirectView =
+        redirectToSuorituksetView(VktSuoritusFilter.HYVAN_JA_TYYDYTTAVAN_TASON_SUORITUKSET)
+
+    private fun redirectToSuorituksetView(filter: VktSuoritusFilter): RedirectView {
+        val url = linkTo(methodOn(this::class.java).kaikkiSuorituksetView()).toString()
+        val params = httpParams(filter.toMap())
+        return RedirectView(url + params)
     }
 
     @GetMapping("/suoritukset/{oppijanumero}/{kieli}/{taso}", produces = ["text/html"])
