@@ -30,7 +30,7 @@ import kotlinx.html.nav
 import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
 
-object VktKaikkiSuorituksetPage {
+object VktSuorituksetPage {
     fun render(
         suoritukset: Iterable<VktSuoritusFlat>,
         filter: VktSuoritusFilter,

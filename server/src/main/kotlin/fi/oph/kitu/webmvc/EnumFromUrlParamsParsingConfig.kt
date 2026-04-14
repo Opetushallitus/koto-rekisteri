@@ -22,7 +22,6 @@ class EnumFromUrlParamsParsingConfig : WebMvcConfigurer {
             addEnumFromUrlParamParser<YkiArvioijaErrorColumn>(YkiArvioijaErrorColumn::urlParam)
             addEnumFromUrlParamParser<KielitestiSuoritusColumn>(KielitestiSuoritusColumn::urlParam)
             addEnumFromUrlParamParser<KielitestiSuoritusErrorColumn>(KielitestiSuoritusErrorColumn::urlParam)
-            addEnumFromUrlParamParser<CustomVktSuoritusRepository.Column>(CustomVktSuoritusRepository.Column::urlParam)
             addEnumFromUrlParamParser<VktSuoritusColumn>(VktSuoritusColumn::urlParam)
         }
     }

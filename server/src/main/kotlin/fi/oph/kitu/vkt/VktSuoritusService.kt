@@ -38,58 +38,12 @@ class VktSuoritusService(
 
     @WithSpan("VktSuoritusService.getSuorituksetAndPagination")
     fun getSuorituksetAndPagination(
-        taitotaso: Koodisto.VktTaitotaso?,
-        arvioidut: Boolean?,
-        sortColumn: CustomVktSuoritusRepository.Column,
-        sortDirection: SortDirection,
-        pageNumber: Int,
-        searchQuery: String?,
-    ) = Pair(
-        getIlmoittautuneetForListView(taitotaso, arvioidut, sortColumn, sortDirection, pageNumber, searchQuery),
-        getPagination(
-            VktSuoritusFilter(
-                search = searchQuery,
-                taitotaso = taitotaso,
-                arvioitu =
-                    arvioidut?.let {
-                        if (it) VktArvioinninTila.ArvioituOsittainTaiKokonaan else VktArvioinninTila.ArviointejaPuuttuu
-                    },
-            ),
-            VktSuoritusOrder(
-                sortColumn = sortColumn.toVktSuoritusColumn(),
-                sortDirection = sortDirection,
-                pageNumber = pageNumber,
-            ),
-        ),
-    )
-
-    @WithSpan("VktSuoritusService.getSuorituksetAndPagination")
-    fun getSuorituksetAndPagination(
         filter: VktSuoritusFilter,
         order: VktSuoritusOrder,
     ) = Pair(
         customSuoritusRepository.find(filter, order),
         getPagination(filter, order),
     )
-
-    @WithSpan("VktSuoritusService.getIlmoittautuneetForListView")
-    fun getIlmoittautuneetForListView(
-        taitotaso: Koodisto.VktTaitotaso?,
-        arvioidut: Boolean?,
-        sortColumn: CustomVktSuoritusRepository.Column,
-        sortDirection: SortDirection,
-        pageNumber: Int,
-        searchQuery: String?,
-    ): List<VktTableItem> =
-        customSuoritusRepository.findForListView(
-            taitotaso = taitotaso,
-            arvioidut = arvioidut,
-            column = sortColumn,
-            direction = sortDirection,
-            limit = PAGE_SIZE,
-            offset = (pageNumber - 1) * PAGE_SIZE,
-            searchQuery = searchQuery,
-        )
 
     @WithSpan("VktSuoritusService.getPagination")
     fun getPagination(
@@ -99,15 +53,8 @@ class VktSuoritusService(
         Pagination.valueOf(
             currentPageNumber = order.pageNumber ?: 0,
             numberOfRows = listRowCounts.get(filter)!!,
-            pageSize = PAGE_SIZE,
-            url = { "?TODO" },
+            pageSize = VktSuoritusOrder.PAGE_SIZE,
         )
-
-    @WithSpan("VktSuoritusService.getSuoritus")
-    fun getSuoritus(id: Int): Optional<VktHenkilosuoritus> =
-        suoritusRepository
-            .findById(id)
-            .map { it.toHenkilosuoritus() }
 
     @WithSpan("VktSuoritusService.getOppijanSuoritukset")
     fun getOppijanSuoritukset(
@@ -218,9 +165,5 @@ class VktSuoritusService(
     fun cleanup() {
         osakoeRepository.cleanup()
         customSuoritusRepository.cleanup()
-    }
-
-    companion object {
-        const val PAGE_SIZE: Int = 50
     }
 }

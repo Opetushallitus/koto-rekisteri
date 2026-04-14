@@ -94,8 +94,8 @@ class VKTSuoritusRepositoryTest(
             )
         val arvioidut =
             listOf(
-                true,
-                false,
+                VktArvioinninTila.ArvioituOsittainTaiKokonaan,
+                VktArvioinninTila.ArviointejaPuuttuu,
                 null,
             )
         val searchQuerys =
@@ -108,26 +108,14 @@ class VKTSuoritusRepositoryTest(
         taitotasot.forEach { taitotaso ->
             arvioidut.forEach { arvioidut ->
                 searchQuerys.forEach { searchQuery ->
-                    val suoritukset =
-                        customRepository.findForListView(
-                            taitotaso = taitotaso,
-                            arvioidut = arvioidut,
-                            column = CustomVktSuoritusRepository.Column.Sukunimi,
-                            direction = SortDirection.ASC,
-                            limit = 10000,
-                            offset = 0,
-                            searchQuery = searchQuery,
-                        )
+                    val filter = VktSuoritusFilter(search = searchQuery, taitotaso = taitotaso, arvioitu = arvioidut)
+                    val order = VktSuoritusOrder(VktSuoritusColumn.Sukunimi, SortDirection.ASC)
 
-                    val count =
-                        customRepository.numberOfRowsForListView(
-                            taitotaso = taitotaso,
-                            arvioidut = arvioidut,
-                            searchQuery = searchQuery,
-                        )
+                    val suoritukset = customRepository.find(filter, order, pageSize = 100000)
+                    val count = customRepository.numberOfRowsForListView(filter)
 
                     assertEquals(
-                        suoritukset.size,
+                        suoritukset.toList().size,
                         count,
                         "taitotaso=$taitotaso, arvioidut=$arvioidut, searchQuery=$searchQuery --> findForListView().size [expected] vs. numberOfRowsForListView() [actual]",
                     )

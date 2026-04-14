@@ -92,7 +92,7 @@ class YkiViewController(
         csrfToken: CsrfToken? = KituRequest.currentCsrfToken(),
         session: HttpSession,
     ): ResponseEntity<String> {
-        session.rewriteAttribute(YKI_SEARCH_KEY, params.search ?: "")
+        session.rewriteAttribute(YKI_SEARCH_KEY, params.search)
         return handleSuorituksetView(params, csrfToken)
     }
 

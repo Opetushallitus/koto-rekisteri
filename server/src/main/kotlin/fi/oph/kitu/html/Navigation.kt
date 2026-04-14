@@ -1,7 +1,6 @@
 package fi.oph.kitu.html
 
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
-import fi.oph.kitu.vkt.VktApiController
 import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.yki.YkiViewController
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
@@ -32,7 +31,7 @@ object Navigation {
                 listOf(
                     MenuItem.of(
                         "Kaikki suoritukset",
-                        VktViewController::kaikkiSuorituksetView,
+                        VktViewController::suorituksetView,
                     ),
                     MenuItem.of(
                         "Erinomaisen taidon ilmoittautuneet",
