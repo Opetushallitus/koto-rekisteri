@@ -53,6 +53,7 @@ data class YkiSuorituksetParams(
         setOfNotNull(
             if (piilotaHenkilotiedot) ColumnTag.PERSONAL_DATA else null,
             if (piilotaVanhentuneetTiedot) ColumnTag.OBSOLETE else null,
+            if (versionHistory) null else ColumnTag.VERSION_HISTORY_ONLY,
         )
 
     fun csvFileName() =

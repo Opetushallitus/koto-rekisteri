@@ -107,7 +107,6 @@ describe('"YKI Suoritukset" -page', () => {
         "Kansalaisuus",
         "Osoite",
         "Sähköposti",
-        "Solki-tunniste",
         "Tutkintopäivä",
         "Tutkintokieli",
         "Tutkintotaso",

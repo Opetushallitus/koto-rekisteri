@@ -1,9 +1,7 @@
 package fi.oph.kitu.html.table
 
 import kotlinx.html.FlowContent
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 import java.io.OutputStream
-import java.util.stream.Stream
 import kotlin.collections.filterIsInstance
 
 interface DisplayTableEnum {
@@ -72,6 +70,7 @@ enum class ColumnTag {
     CSV_EXPORT,
     PERSONAL_DATA,
     OBSOLETE,
+    VERSION_HISTORY_ONLY,
 }
 
 annotation class ColumnTags(
