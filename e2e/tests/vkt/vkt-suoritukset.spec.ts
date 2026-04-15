@@ -2,7 +2,6 @@ import * as node_fs from "node:fs"
 import { beforeEach, describe, test } from "../../fixtures/baseFixture"
 import { expect } from "@playwright/test"
 import {
-  expectToBeEmpty,
   expectToHaveInputValue,
   expectToHaveKoodiviite,
   expectToHaveSelectedValue,
@@ -23,12 +22,12 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
   })
 
   test("Ilmoittauneet page shows a table with content", async ({
-    vktIlmoittautuneetPage,
+    vktSuorituksetPage,
   }) => {
-    await vktIlmoittautuneetPage.login()
-    await vktIlmoittautuneetPage.open()
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openErinomainenIlmoittautuneet()
 
-    const table = vktIlmoittautuneetPage.table
+    const table = vktSuorituksetPage.table
 
     await expectToHaveTexts(
       table.labels,
@@ -53,11 +52,11 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     )
   })
 
-  test("Sorting works", async ({ page, vktIlmoittautuneetPage }) => {
-    await vktIlmoittautuneetPage.login()
-    await vktIlmoittautuneetPage.open()
+  test("Sorting works", async ({ page, vktSuorituksetPage }) => {
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openErinomainenIlmoittautuneet()
 
-    const table = vktIlmoittautuneetPage.table
+    const table = vktSuorituksetPage.table
     const firstRow = table.rows.first()
     const lastRow = table.rows.last()
 
@@ -80,15 +79,13 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
   })
 
   test("Details page shows correct information of hyvä ja tyydyttävä taso", async ({
-    vktHjtSuorituksetPage,
+    vktSuorituksetPage,
     vktSuorituksenTiedotPage,
   }) => {
     // Varmista että ollaan oikeassa fikstuurissa
-    await vktHjtSuorituksetPage.login()
-    await vktHjtSuorituksetPage.open()
-    await vktHjtSuorituksetPage.followLinkOfRow(
-      "1.2.246.562.24.00000000007-SWE",
-    )
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openHyvaJaTyydyttavaSuoritukset()
+    await vktSuorituksetPage.followLinkOfRow("1.2.246.562.24.00000000007-SWE")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Fiona Konsta",
     )
@@ -131,16 +128,14 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 
   test("Details page shows koski error message for hyvä ja tyydyttävä taso", async ({
     db,
-    vktHjtSuorituksetPage,
+    vktSuorituksetPage,
     vktSuorituksenTiedotPage,
   }) => {
     await insertKoskiError(db, "fionaHT")
 
-    await vktHjtSuorituksetPage.login()
-    await vktHjtSuorituksetPage.open()
-    await vktHjtSuorituksetPage.followLinkOfRow(
-      "1.2.246.562.24.00000000007-SWE",
-    )
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openHyvaJaTyydyttavaSuoritukset()
+    await vktSuorituksetPage.followLinkOfRow("1.2.246.562.24.00000000007-SWE")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Fiona Konsta",
     )
@@ -157,15 +152,13 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
   })
 
   test("Details page shows correct information of erinomainen taso", async ({
-    vktArvioidutSuorituksetPage,
+    vktSuorituksetPage,
     vktSuorituksenTiedotPage,
   }) => {
     // Varmista että ollaan oikeassa fikstuurissa
-    await vktArvioidutSuorituksetPage.login()
-    await vktArvioidutSuorituksetPage.open()
-    await vktArvioidutSuorituksetPage.followLinkOfRow(
-      "1.2.246.562.24.00000000063-FIN",
-    )
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openErinomainenArvioidut()
+    await vktSuorituksetPage.followLinkOfRow("1.2.246.562.24.00000000063-FIN")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Daniel Ville",
     )
@@ -207,16 +200,14 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 
   test("Details page shows koski error message for erinomainen taso", async ({
     db,
-    vktArvioidutSuorituksetPage,
+    vktSuorituksetPage,
     vktSuorituksenTiedotPage,
   }) => {
     await insertKoskiError(db, "danielE")
 
-    await vktArvioidutSuorituksetPage.login()
-    await vktArvioidutSuorituksetPage.open()
-    await vktArvioidutSuorituksetPage.followLinkOfRow(
-      "1.2.246.562.24.00000000063-FIN",
-    )
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openErinomainenArvioidut()
+    await vktSuorituksetPage.followLinkOfRow("1.2.246.562.24.00000000063-FIN")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Eriksson, Daniel Ville",
     )
@@ -275,16 +266,13 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
   })
 
   test("Arvosana can be set", async ({
-    vktIlmoittautuneetPage,
+    vktSuorituksetPage,
     vktSuorituksenTiedotPage,
-    vktArvioidutSuorituksetPage,
   }) => {
     // Varmista että ollaan oikeassa fikstuurissa
-    await vktIlmoittautuneetPage.login()
-    await vktIlmoittautuneetPage.open()
-    await vktIlmoittautuneetPage.followLinkOfRow(
-      "1.2.246.562.24.00000000012-SWE",
-    )
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openErinomainenIlmoittautuneet()
+    await vktSuorituksetPage.followLinkOfRow("1.2.246.562.24.00000000012-SWE")
     await expect(vktSuorituksenTiedotPage.heading()).toHaveText(
       "Halonen, Vilho Eero",
     )
@@ -339,38 +327,38 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
   })
 
   describe("Search", () => {
-    test("Search by first name works", async ({ vktIlmoittautuneetPage }) => {
-      await vktIlmoittautuneetPage.login()
-      await vktIlmoittautuneetPage.open()
-      await vktIlmoittautuneetPage.search("fiona")
+    test("Search by first name works", async ({ vktSuorituksetPage }) => {
+      await vktSuorituksetPage.login()
+      await vktSuorituksetPage.openErinomainenIlmoittautuneet()
+      await vktSuorituksetPage.search("fiona")
 
       await expectToHaveTexts(
-        vktIlmoittautuneetPage.table.getCellsOfColumn("Etunimet"),
+        vktSuorituksetPage.table.getCellsOfColumn("Etunimet"),
         "Fiona Kerttu",
         "Fiona Roosa",
       )
     })
 
-    test("Search by surname works", async ({ vktIlmoittautuneetPage }) => {
-      await vktIlmoittautuneetPage.login()
-      await vktIlmoittautuneetPage.open()
-      await vktIlmoittautuneetPage.search("halonen")
+    test("Search by surname works", async ({ vktSuorituksetPage }) => {
+      await vktSuorituksetPage.login()
+      await vktSuorituksetPage.openErinomainenIlmoittautuneet()
+      await vktSuorituksetPage.search("halonen")
 
       await expectToHaveTexts(
-        vktIlmoittautuneetPage.table.getCellsOfColumn("Sukunimi"),
+        vktSuorituksetPage.table.getCellsOfColumn("Sukunimi"),
         "Halonen",
         "Halonen",
       )
     })
 
-    test("Search by oppijanumero works", async ({ vktIlmoittautuneetPage }) => {
-      await vktIlmoittautuneetPage.login()
-      await vktIlmoittautuneetPage.open()
-      await vktIlmoittautuneetPage.search("1.2.246.562.24.00000000055")
+    test("Search by oppijanumero works", async ({ vktSuorituksetPage }) => {
+      await vktSuorituksetPage.login()
+      await vktSuorituksetPage.openErinomainenIlmoittautuneet()
+      await vktSuorituksetPage.search("1.2.246.562.24.00000000055")
 
-      await expect(vktIlmoittautuneetPage.table.rows).toHaveCount(1)
+      await expect(vktSuorituksetPage.table.rows).toHaveCount(1)
       await expectToHaveTexts(
-        vktIlmoittautuneetPage.table.getCellsOfRow(
+        vktSuorituksetPage.table.getCellsOfRow(
           "1.2.246.562.24.00000000055-SWE",
         ),
         "Näytä",
@@ -393,15 +381,15 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
 
   test("csv download only includes arvioitu suoritus", async ({
     page,
-    vktIlmoittautuneetPage,
+    vktSuorituksetPage,
   }) => {
-    await vktIlmoittautuneetPage.login()
-    await vktIlmoittautuneetPage.open()
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openErinomainenIlmoittautuneet()
 
     // Intercept the download
     const [download] = await Promise.all([
       page.waitForEvent("download"),
-      await vktIlmoittautuneetPage
+      await vktSuorituksetPage
         .getPageContent()
         .getByText("Lataa tiedot CSV:nä")
         .click(),
