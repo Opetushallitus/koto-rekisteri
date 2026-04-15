@@ -584,7 +584,7 @@ describe("Valtionkielitutkinnon suoritukset csv download filtering", () => {
   }
 
   const csvRowCount = (csv: string) =>
-    csv.split("\n").filter((line) => line.length > 0).length
+    csv.split("\n").filter((line) => line.length > 0).length - 1
 
   async function testFilteredCsv(
     page: Page,
@@ -595,6 +595,7 @@ describe("Valtionkielitutkinnon suoritukset csv download filtering", () => {
     await vktSuorituksetPage.openKaikkiSuoritukset()
 
     const rowsBefore = csvRowCount(await downloadCsv(page, vktSuorituksetPage))
+    expect(rowsBefore).toEqual(await vktSuorituksetPage.getNumberOfRows())
 
     const dialog = await vktSuorituksetPage.openFilterDialog()
     await applyFilter(dialog)
@@ -602,6 +603,7 @@ describe("Valtionkielitutkinnon suoritukset csv download filtering", () => {
 
     const rowsAfter = csvRowCount(await downloadCsv(page, vktSuorituksetPage))
     expect(rowsAfter).toBeLessThan(rowsBefore)
+    expect(rowsAfter).toEqual(await vktSuorituksetPage.getNumberOfRows())
   }
 
   test("Date range filter reduces csv row count", async ({
