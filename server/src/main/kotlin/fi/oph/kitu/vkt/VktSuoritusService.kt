@@ -4,6 +4,7 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.cache.InMemoryCache
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogOperation
@@ -51,6 +52,7 @@ class VktSuoritusService(
             currentPageNumber = order.pageNumber ?: 0,
             numberOfRows = listRowCounts.get(filter)!!,
             pageSize = VktSuoritusOrder.DEFAULT_PAGE_SIZE,
+            url = { pageNumber -> httpParams(order.copy(pageNumber = pageNumber).toMap() + filter.toMap()) },
         )
 
     @WithSpan("VktSuoritusService.getOppijanSuoritukset")

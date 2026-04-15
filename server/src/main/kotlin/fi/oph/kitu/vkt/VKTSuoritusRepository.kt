@@ -504,6 +504,13 @@ data class VktSuoritusOrder(
             "LIMIT $pageSize OFFSET ${pageSize * (pageNumber)}"
         }
 
+    fun toMap() =
+        mapOf(
+            "sortColumn" to sortColumn.name,
+            "sortDirection" to sortDirection.name,
+            "pageNumber" to pageNumber.toString(),
+        )
+
     companion object {
         const val DEFAULT_PAGE_SIZE = 50
     }
