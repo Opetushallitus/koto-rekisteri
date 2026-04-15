@@ -114,11 +114,17 @@ fun <T> TABLE.displayTableBody(
     tbodyClasses: String? = null,
     rowClasses: String? = null,
     selectableRow: ((T) -> CheckboxKey?)? = null,
+    isFaded: ((T) -> Boolean)? = null,
     afterRow: TBODY.(T) -> Unit = {},
 ) {
     tbody(tbodyClasses) {
         rows.forEach { row ->
-            tr(classes = rowClasses) {
+            val classes =
+                listOfNotNull(
+                    rowClasses,
+                    "faded".takeIf { isFaded?.invoke(row) == true },
+                ).joinToString(" ").ifEmpty { null }
+            tr(classes = classes) {
                 testId(rowTestId?.let { it(row) })
                 selectableRow?.let {
                     td {
@@ -149,6 +155,7 @@ fun <T> FlowContent.displayTable(
     rowClasses: String? = null,
     urlParams: Map<String, String?> = emptyMap(),
     selectableRowName: ((T) -> CheckboxKey?)? = null,
+    isFaded: ((T) -> Boolean)? = null,
 ) {
     val tableId = "table-${UUID.randomUUID()}"
 
@@ -172,6 +179,7 @@ fun <T> FlowContent.displayTable(
             rowTestId = rowTestId,
             rowClasses = rowClasses,
             selectableRow = selectableRowName,
+            isFaded = isFaded,
         )
     }
 

@@ -284,3 +284,7 @@ td p {
 .invalid-value {
   color: var(--oph-orange3);
 }
+
+tr.faded td {
+  opacity: 0.4;
+}
