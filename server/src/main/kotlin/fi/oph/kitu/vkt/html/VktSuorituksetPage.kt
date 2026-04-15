@@ -27,6 +27,7 @@ import kotlinx.html.h2
 import kotlinx.html.header
 import kotlinx.html.li
 import kotlinx.html.nav
+import kotlinx.html.span
 import kotlinx.html.ul
 import org.springframework.hateoas.server.mvc.linkTo
 
@@ -50,7 +51,13 @@ object VktSuorituksetPage {
                 header {
                     nav {
                         ul {
-                            li { +"Yhteensä: ${pagination.numberOfItems}" }
+                            li {
+                                +"Yhteensä: "
+                                span {
+                                    testId("numberOfRows")
+                                    +pagination.numberOfItems.toString()
+                                }
+                            }
                             li { csvDownloadButton(filter) }
                             li { vktSuoritusFilterButton(filter) }
                         }

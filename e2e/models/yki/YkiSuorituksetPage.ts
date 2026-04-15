@@ -1,8 +1,9 @@
 import BasePage from "../BasePage"
-import { Locator, Page } from "@playwright/test"
+import { Page } from "@playwright/test"
 import { expect } from "../../fixtures/baseFixture"
 import { Config } from "../../config"
 import * as node_fs from "node:fs"
+import { YkiSuorituksetFilterDialog } from "./YkiSuorituksetFilterDialog"
 
 const fs = node_fs.promises
 
@@ -90,29 +91,5 @@ export default class YkiSuorituksetPage extends BasePage {
     expect(path).not.toBeNull()
 
     return await fs.readFile(path!, "utf8")
-  }
-}
-
-export class YkiSuorituksetFilterDialog {
-  modal: Locator
-
-  constructor(modal: Locator) {
-    this.modal = modal
-  }
-
-  async setVersionHistory(state: boolean) {
-    await this.modal
-      .getByRole("checkbox", { name: "Näytä versiohistoria" })
-      .setChecked(state)
-  }
-
-  async hideHenkilotiedot(state: boolean) {
-    await this.modal
-      .getByRole("checkbox", { name: "Piilota henkilötiedot" })
-      .setChecked(state)
-  }
-
-  async submit() {
-    await this.modal.getByRole("button", { name: "Rajaa" }).click()
   }
 }
