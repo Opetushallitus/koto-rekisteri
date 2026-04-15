@@ -132,7 +132,7 @@ class VktApiController(
                 StreamingResponseBody { output ->
                     DisplayTableCsvRenderer.renderCsv<VktSuoritusColumn, _>(
                         output = output,
-                        data = customSuoritusRepository.find(filter, order),
+                        data = customSuoritusRepository.find(filter, order.copy(pageSize = Int.MAX_VALUE)),
                         excludeTags = filter.excludeTags(),
                     )
                 },
