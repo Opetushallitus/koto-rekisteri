@@ -1,10 +1,15 @@
-import { Page } from "@playwright/test"
+import { Locator, Page } from "@playwright/test"
 import BasePage from "../BasePage"
 import { Config } from "../../config"
+import { VktSuorituksetFilterDialog } from "../vkt/VktSuorituksetFilterDialog"
+import { KielitutkintoSuorituksetFilterDialog } from "./KielitestiSuorituksetFilterDialog"
 
 export default class KielitestiSuorituksetPage extends BasePage {
+  searchField: Locator
+
   constructor(page: Page, config: Config) {
     super(page, config)
+    this.searchField = page.getByTestId("search")
   }
 
   async open() {
@@ -19,22 +24,13 @@ export default class KielitestiSuorituksetPage extends BasePage {
     return this.page.getByRole("heading", { name: name })
   }
 
-  getContent() {
-    return this.getPageContent()
-  }
-
   getSuorituksetTable() {
-    return this.getContent().getByRole("table")
+    return this.getPageContent().getByRole("table")
   }
 
   getSuoritusRow() {
     const suorituksetTable = this.getSuorituksetTable()
     return suorituksetTable.getByTestId("suoritus-summary-row")
-  }
-
-  getSuoritusDetailsRow() {
-    const suorituksetTable = this.getSuorituksetTable()
-    return suorituksetTable.getByTestId("suoritus-details-row")
   }
 
   getSuoritusColumn(rowIndex: number, columnIndex: number) {
@@ -47,7 +43,7 @@ export default class KielitestiSuorituksetPage extends BasePage {
   }
 
   getErrorLink() {
-    return this.getContent().locator(".error-text").getByRole("link")
+    return this.getPageContent().locator(".error-text").getByRole("link")
   }
 
   getCSVDownloadLink() {
@@ -56,9 +52,18 @@ export default class KielitestiSuorituksetPage extends BasePage {
     })
   }
 
+  async openFilterDialog() {
+    await this.getPageContent()
+      .getByRole("button", { name: "Rajaa näytettävät tiedot" })
+      .click()
+    return new KielitutkintoSuorituksetFilterDialog(
+      this.getPageContent().getByTestId("table-filter-dialog"),
+    )
+  }
+
   async search(query: string) {
-    await this.getContent().getByTestId("search").fill(query)
-    await this.getContent().getByTestId("search-button").click()
+    await this.getPageContent().getByTestId("search").fill(query)
+    await this.getPageContent().getByTestId("search-button").click()
     await this.page.waitForLoadState("networkidle")
   }
 }

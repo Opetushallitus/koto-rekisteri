@@ -3,13 +3,25 @@ package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.errorsArticle
+import fi.oph.kitu.html.hiddenValue
+import fi.oph.kitu.html.hiddenValues
+import fi.oph.kitu.html.input
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableColumn
+import fi.oph.kitu.html.table.dateFilter
 import fi.oph.kitu.html.table.displayTableBody
 import fi.oph.kitu.html.table.displayTableHeader
+import fi.oph.kitu.html.table.enumFilter
+import fi.oph.kitu.html.table.httpParams
+import fi.oph.kitu.html.table.tableFilterDialog
+import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
+import fi.oph.kitu.yki.Tutkintokieli
+import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.YkiApiController
+import fi.oph.kitu.yki.YkiSuorituksetParams
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
@@ -32,11 +44,9 @@ import org.springframework.hateoas.server.mvc.linkTo
 
 object KielitestiSuorituksetPage {
     fun render(
-        sortColumn: KielitestiSuoritusColumn,
-        sortDirection: SortDirection,
         suoritukset: List<KielitestiSuoritus>,
         errorsCount: Long,
-        search: String,
+        filterParams: KielitestiSuorituksetParams,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -46,6 +56,7 @@ object KielitestiSuorituksetPage {
             errorsArticle(errorsCount, linkTo(KielitestiViewController::virheetView).toString())
 
             form(action = "", method = FormMethod.get, classes = "grid center-vertically") {
+                hiddenValues(filterParams.toMap().filterKeys { it != "search" })
                 fieldSet {
                     attributes["role"] = "search"
                     input {
@@ -53,7 +64,7 @@ object KielitestiSuorituksetPage {
                         id = "search"
                         type = InputType.search
                         name = "search"
-                        value = search
+                        value = filterParams.search
                         placeholder = "Oppijanumero, nimi tai muu hakusana"
                     }
                     button {
@@ -71,37 +82,27 @@ object KielitestiSuorituksetPage {
                             li {
                                 +"Suorituksia yhteensä: ${suoritukset.size}"
                             }
-                            li {
-                                a(href = linkTo<KielitestiApiController> { getSuorituksetAsCsv() }.toString()) {
-                                    attributes["download"] = ""
-                                    +"Lataa tiedot CSV:nä"
-                                }
-                            }
+                            li { kielitestiCsvDownloadButton(filterParams) }
+                            li { kielitestiSuoritusFilterButton(filterParams) }
                         }
                     }
+                    kielitestiSuoritusFilterList(filterParams)
                 }
 
                 table {
                     val columns =
                         DisplayTableColumn.of<KielitestiSuoritusColumn, KielitestiSuoritus>(
                             setOf(ColumnTag.LIST_VIEW),
-                            setOf(),
+                            filterParams.excludeTags(),
                         )
-//                    val columns =
-//                        enumEntries<KielitestiSuoritusColumn>().map { column ->
-//                            column.withHtml(
-//                                column.renderHtml
-//                                    ?: { +column.getValue(it) },
-//                            )
-//                        }
                     displayTableHeader(
                         columns = columns,
-                        sortedBy = sortColumn,
-                        sortDirection = sortDirection,
+                        sortedBy = filterParams.sortColumn,
+                        sortDirection = filterParams.sortDirection,
                         preserveSortDirection = false,
                         selectableRows = false,
                         tableId = "kielitesti-suoritukset-table",
-                        urlParams = mapOf("search" to search),
+                        urlParams = mapOf("search" to filterParams.search),
                     )
                     displayTableBody(
                         rows = suoritukset,
@@ -114,4 +115,42 @@ object KielitestiSuorituksetPage {
         }
 }
 
-fun FlowContent.kotoSuoritusFilterButton() {}
+fun FlowContent.kielitestiSuoritusFilterButton(params: KielitestiSuorituksetParams) {
+    tableFilterDialog("suoritukset") {
+        hiddenValue("search", params.search)
+        fieldSet(classes = "grid") {
+            dateFilter("suoritusalku", "Suoritusaika alkaen", params.suoritusalku)
+            dateFilter("suoritusloppu", "Suoritusaika päättyen", params.suoritusloppu)
+        }
+        fieldSet {
+            enumFilter<Testikieli>("testikieli", "Testikieli", params.testikieli)
+        }
+        fieldSet {
+            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", params.piilotaHenkilotiedot)
+        }
+    }
+}
+
+fun FlowContent.kielitestiSuoritusFilterList(params: KielitestiSuorituksetParams) {
+    params.filterDescriptions().let { filters ->
+        if (filters.isNotEmpty()) {
+            ul {
+                filters.forEach { filter ->
+                    li { +filter }
+                }
+            }
+        }
+    }
+}
+
+fun FlowContent.kielitestiCsvDownloadButton(params: KielitestiSuorituksetParams) {
+    a(
+        href =
+            linkTo<KielitestiApiController> {
+                getSuorituksetAsCsv()
+            }.toString() + "?${httpParams(params.toMap())}",
+    ) {
+        attributes["download"] = ""
+        +"Lataa tiedot CSV:nä"
+    }
+}

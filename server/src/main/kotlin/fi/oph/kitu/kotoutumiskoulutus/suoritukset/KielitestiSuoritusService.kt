@@ -14,21 +14,19 @@ import org.springframework.stereotype.Service
 
 @Service
 class KielitestiSuoritusService(
-    private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
     private val auditLogger: AuditLogger,
-    private val csvParser: CsvParser,
     private val organisaatioService: OrganisaatioService,
     private val tracer: Tracer,
 ) {
     @WithSpan
     fun getSuoritukset(
+        filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter(),
         orderBy: KielitestiSuoritusColumn,
         orderByDirection: SortDirection,
-        search: String? = null,
     ): List<KielitestiSuoritus> =
         customKielitestiSuoritusRepository
-            .findSuoritukset(search, orderBy, orderByDirection)
+            .findSuoritukset(filter, orderBy, orderByDirection)
             .toList()
             .also {
                 auditLogger.logAllInternalOnly("Kielitesti suoritus viewed", it) { suoritus ->
@@ -48,6 +46,7 @@ class KielitestiSuoritusService(
         }
 
     fun getSuorituksetForCsv(
+        filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter(),
         orderBy: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
         orderByDirection: SortDirection = SortDirection.DESC,
     ): List<KielitestiSuoritus> =
@@ -55,7 +54,7 @@ class KielitestiSuoritusService(
             .spanBuilder("KoealustaService.getSuorituksetForCsv")
             .startSpan()
             .use { span ->
-                val suoritukset = getSuoritukset(orderBy, orderByDirection)
+                val suoritukset = getSuoritukset(filter, orderBy, orderByDirection)
                 span.setAttribute("dataCount", suoritukset.count())
 
                 val organisaatiot = organisaatioService.getOrganisaatiot()

@@ -28,6 +28,20 @@ type CreateSuoritusArgs = Partial<
   >
 >
 
+const suoritusRuotsi: CreateSuoritusArgs = {
+  oppilaitosOid: "1.2.3.4.5.7",
+  luetunYmmartaminen: "A1",
+  kuullunYmmartaminen: "B1",
+  puhe: "YLIB1",
+  kirjoittaminen: "A2",
+  opettajanEmail: "opettaja@testi.oph.fi",
+  suoritusaika: "2025-01-22 10:30:27",
+  kurssiId: 33,
+  kurssi: "Integrationstestning",
+  testikieli: "SWE",
+  tehtavapaketti: "sv_svenska",
+}
+
 const createSuoritus = (
   person: FixturePerson,
   {
@@ -72,13 +86,15 @@ export const fixtureData = {
   petro: createSuoritus("petro", {}),
   pernilla: createSuoritus("pernilla", {}),
   kalervo: createSuoritus("kalervo", {}),
-  toni: createSuoritus("toni", {}),
+  toni: createSuoritus("toni", {
+    suoritusaika: "2024-11-24 11:36:43",
+  }),
   amalia: createSuoritus("amalia", {}),
   topi: createSuoritus("topi", {}),
-  tobias: createSuoritus("tobias", {}),
-  silja: createSuoritus("silja", {}),
-  anniina: createSuoritus("anniina", { testikieli: "SWE" }),
-  magdalena: createSuoritus("magdalena", {}),
+  tobias: createSuoritus("tobias", suoritusRuotsi),
+  silja: createSuoritus("silja", suoritusRuotsi),
+  anniina: createSuoritus("anniina", suoritusRuotsi),
+  magdalena: createSuoritus("magdalena", suoritusRuotsi),
 } as const
 
 const insertQuery = (suoritus: KotoSuoritus) => SQL`

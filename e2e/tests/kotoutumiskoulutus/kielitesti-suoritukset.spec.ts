@@ -1,6 +1,7 @@
 import * as node_fs from "node:fs"
 import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 import { enumerate } from "../../util/arrays"
+import KielitestiSuorituksetPage from "../../models/kotoutumiskoulutus/KielitestiSuorituksetPage"
 
 const fs = node_fs.promises
 
@@ -26,7 +27,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
         "Kotoutumiskoulutuksen kielitaidon päättötesti",
       ),
     ).toBeVisible()
-    await expect(kielitestiSuorituksetPage.getContent()).toBeVisible()
+    await expect(kielitestiSuorituksetPage.getPageContent()).toBeVisible()
   })
 
   test("can be accessed from the index page", async ({
@@ -41,7 +42,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
         "Kotoutumiskoulutuksen kielitaidon päättötesti",
       ),
     ).toBeVisible()
-    await expect(kielitestiSuorituksetPage.getContent()).toBeVisible()
+    await expect(kielitestiSuorituksetPage.getPageContent()).toBeVisible()
   })
 
   test("registry data is visible", async ({
@@ -50,16 +51,16 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
   }) => {
     await kielitestiSuorituksetPage.open()
 
-    const magdalena = kotoSuoritus.fixtureData.magdalena
+    const anniina = kotoSuoritus.fixtureData.anniina
     const toni = kotoSuoritus.fixtureData.toni
 
     const firstSuoritus = kielitestiSuorituksetPage.getSuoritusRow().nth(0)
     await expect(firstSuoritus).toBeVisible()
-    await expect(firstSuoritus).toContainText(toni.etunimet)
+    await expect(firstSuoritus).toContainText(anniina.etunimet)
 
     const thirdSuoritus = kielitestiSuorituksetPage.getSuoritusRow().nth(2)
     await expect(thirdSuoritus).toBeVisible()
-    await expect(thirdSuoritus).toContainText(magdalena.etunimet)
+    await expect(thirdSuoritus).toContainText(toni.etunimet)
   })
 
   const sortTestCases = [
@@ -81,7 +82,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     {
       column: "Testikieli",
       tableColumnIndex: 4,
-      order: ["SWE", "FIN", "FIN", "FIN"],
+      order: ["SWE", "SWE", "FIN", "FIN"],
     },
   ] as const
   for (const testCase of sortTestCases) {
@@ -162,18 +163,167 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     let headers =
       "Oppijanumero,Sukunimi,Etunimet,Kutsumanimi,Sähköposti,Kurssin ID,Kurssin nimi,Testikieli,Oppilaitos OID,Oppilaitos,Opettajan sähköposti,Suoritusaika,Luetun ymmärtäminen,Kuullun ymmärtäminen,Puhe,Kirjoittaminen"
     let anniina =
-      "1.2.246.562.24.24941612410,Torvinen-Testi,Anniina Testi,Anniina,devnull-12@oph.fi,32,Integraatio testaus,SWE,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
+      "1.2.246.562.24.24941612410,Torvinen-Testi,Anniina Testi,Anniina,devnull-12@oph.fi,33,Integrationstestning,SWE,1.2.3.4.5.7,1.2.3.4.5.7,opettaja@testi.oph.fi,2025-01-22T10:30:27Z,A1,B1,Yli B1,A2\n"
     let eino =
       "1.2.246.562.24.67409348034,Välimaa-Testi,Eino Testi,Eino,devnull-10@oph.fi,32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
     let magdalena =
-      "1.2.246.562.24.33342764709,Sallinen-Testi,Magdalena Testi,Magdalena,devnull-14@oph.fi,32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
+      "1.2.246.562.24.33342764709,Sallinen-Testi,Magdalena Testi,Magdalena,devnull-14@oph.fi,33,Integrationstestning,SWE,1.2.3.4.5.7,1.2.3.4.5.7,opettaja@testi.oph.fi,2025-01-22T10:30:27Z,A1,B1,Yli B1,A2\n"
     let toni =
-      "1.2.246.562.24.16014275446,Laasonen-Testi,Toni Testi,Toni,devnull-6@oph.fi,32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
+      "1.2.246.562.24.16014275446,Laasonen-Testi,Toni Testi,Toni,devnull-6@oph.fi,32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-24T11:36:43Z,A1,B1,Alle A1,B1\n"
 
     expect(csvContent).toContain(headers)
     expect(csvContent).toContain(anniina)
     expect(csvContent).toContain(eino)
     expect(csvContent).toContain(magdalena)
     expect(csvContent).toContain(toni)
+  })
+
+  describe("Tietojen rajaaminen", async () => {
+    test("Suoritusten rajaaminen alkupäivän mukaan", async ({
+      kielitestiSuorituksetPage,
+    }) => {
+      await kielitestiSuorituksetPage.open()
+      const dialog = await kielitestiSuorituksetPage.openFilterDialog()
+      await dialog.setAlkupaiva("2025-01-01")
+      await dialog.submit()
+
+      const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
+      await expect(suoritukset).toHaveCount(2)
+    })
+
+    test("Suoritusten rajaaminen loppupäivän mukaan", async ({
+      kielitestiSuorituksetPage,
+    }) => {
+      await kielitestiSuorituksetPage.open()
+      const dialog = await kielitestiSuorituksetPage.openFilterDialog()
+      await dialog.setLoppupaiva("2024-11-24")
+      await dialog.submit()
+
+      const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
+      await expect(suoritukset).toHaveCount(2)
+    })
+
+    test("Suoritusten rajaaminen alku- ja loppupäivän mukaan", async ({
+      kielitestiSuorituksetPage,
+    }) => {
+      await kielitestiSuorituksetPage.open()
+      const dialog = await kielitestiSuorituksetPage.openFilterDialog()
+      await dialog.setAlkupaiva("2024-11-23")
+      await dialog.setLoppupaiva("2024-11-24")
+      await dialog.submit()
+
+      const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
+      await expect(suoritukset).toHaveCount(1)
+      const suoritus = kielitestiSuorituksetPage.getSuoritusRow().nth(0)
+      await expect(suoritus).toContainText("Laasonen-Testi")
+    })
+
+    test("Suoritusten rajaaminen testikielen mukaan", async ({
+      kielitestiSuorituksetPage,
+    }) => {
+      await kielitestiSuorituksetPage.open()
+      const dialog = await kielitestiSuorituksetPage.openFilterDialog()
+      await dialog.setTestikieli("SWE")
+      await dialog.submit()
+
+      const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
+      await expect(suoritukset).toHaveCount(2)
+    })
+
+    test("Henkilötietojen rajaaminen suorituksilta", async ({
+      kielitestiSuorituksetPage,
+    }) => {
+      await kielitestiSuorituksetPage.open()
+      const dialog = await kielitestiSuorituksetPage.openFilterDialog()
+      await dialog.hideHenkilotiedot(true)
+      await dialog.submit()
+
+      const headers = await kielitestiSuorituksetPage.page
+        .getByRole("columnheader")
+        .all()
+      headers.forEach((header) => {
+        expect(header).not.toHaveText("Sukunimi")
+        expect(header).not.toHaveText("Etunimet")
+      })
+    })
+
+    test("Henkilötietojen rajaaminen suorituksilta rajaa henkilötiedot pois csv:ltä", async ({
+      page,
+      kielitestiSuorituksetPage,
+    }) => {
+      await kielitestiSuorituksetPage.open()
+      const dialog = await kielitestiSuorituksetPage.openFilterDialog()
+      await dialog.hideHenkilotiedot(true)
+      await dialog.submit()
+
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        kielitestiSuorituksetPage.getCSVDownloadLink().click(),
+      ])
+      const path = await download.path()
+
+      const csvContent = await fs.readFile(path!, "utf8")
+      let headers =
+        "Kurssin ID,Kurssin nimi,Testikieli,Oppilaitos OID,Oppilaitos,Suoritusaika,Luetun ymmärtäminen,Kuullun ymmärtäminen,Puhe,Kirjoittaminen"
+      let anniina =
+        "\n33,Integrationstestning,SWE,1.2.3.4.5.7,1.2.3.4.5.7,2025-01-22T10:30:27Z,A1,B1,Yli B1,A2\n"
+      let eino =
+        "\n32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
+      let magdalena =
+        "\n33,Integrationstestning,SWE,1.2.3.4.5.7,1.2.3.4.5.7,2025-01-22T10:30:27Z,A1,B1,Yli B1,A2\n"
+      let toni =
+        "\n32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,2024-11-24T11:36:43Z,A1,B1,Alle A1,B1\n"
+
+      expect(csvContent).toContain(headers)
+      expect(csvContent).toContain(anniina)
+      expect(csvContent).toContain(eino)
+      expect(csvContent).toContain(magdalena)
+      expect(csvContent).toContain(toni)
+
+      expect(csvContent).not.toContain("Oppijanumero")
+      expect(csvContent).not.toContain("Sukunimi")
+      expect(csvContent).not.toContain("Etunimet")
+      expect(csvContent).not.toContain("Kutsumanimi")
+      expect(csvContent).not.toContain("Sähköposti")
+      expect(csvContent).not.toContain("Opettajan sähköposti")
+    })
+
+    test("Rajaukset säilyvät kun hakua käytetään", async ({
+      kielitestiSuorituksetPage,
+    }) => {
+      await kielitestiSuorituksetPage.open()
+
+      const dialog = await kielitestiSuorituksetPage.openFilterDialog()
+      await dialog.setTestikieli("FIN")
+      await dialog.hideHenkilotiedot(true)
+      await dialog.submit()
+
+      await kielitestiSuorituksetPage.search("laasonen")
+
+      await expect(
+        kielitestiSuorituksetPage.getPageContent().getByText("Testikieli: FIN"),
+      ).toBeVisible()
+      await expect(
+        kielitestiSuorituksetPage
+          .getPageContent()
+          .getByText("Henkilötiedot piilotettu"),
+      ).toBeVisible()
+    })
+
+    test("Hakutermi säilyy kun rajauksia lisätään", async ({
+      kielitestiSuorituksetPage,
+    }) => {
+      await kielitestiSuorituksetPage.open()
+
+      await kielitestiSuorituksetPage.search("laasonen")
+
+      const dialog = await kielitestiSuorituksetPage.openFilterDialog()
+      await dialog.setTestikieli("SWE")
+      await dialog.submit()
+
+      await expect(kielitestiSuorituksetPage.searchField).toHaveValue(
+        "laasonen",
+      )
+    })
   })
 })
