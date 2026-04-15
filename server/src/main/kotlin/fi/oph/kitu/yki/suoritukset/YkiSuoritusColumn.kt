@@ -4,6 +4,7 @@ import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.ColumnTags
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.YkiViewController
@@ -100,14 +101,6 @@ enum class YkiSuoritusColumn(
         uiHeaderValue = "Sähköposti",
         urlParam = "email",
         getValue = { it.email.orEmpty() },
-    ),
-
-    @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
-    SolkiId(
-        entityName = "yki_suoritus.solki_id",
-        uiHeaderValue = "Solki-tunniste",
-        urlParam = "solkiId",
-        getValue = { it.solkiId.toString() },
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.LIST_VIEW)
@@ -242,6 +235,23 @@ enum class YkiSuoritusColumn(
         uiHeaderValue = "Opiskeluoikeus-OID",
         urlParam = "opiskeluoikeus_oid",
         getValue = { it.koskiOpiskeluoikeus?.toString().orEmpty() },
+    ),
+
+    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA, ColumnTag.VERSION_HISTORY_ONLY)
+    SolkiId(
+        entityName = "yki_suoritus.solki_id",
+        uiHeaderValue = "Solki-tunniste",
+        urlParam = "solkiId",
+        getValue = { it.solkiId.toString() },
+    ),
+
+    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.VERSION_HISTORY_ONLY)
+    Version(
+        entityName = "last_modified",
+        uiHeaderValue = "Versio",
+        urlParam = "version",
+        getValue = { it.id?.toString().orEmpty() },
+        renderHtml = { +it.lastModified.finnishDateTimeUTC() },
     ),
 }
 
