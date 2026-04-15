@@ -53,6 +53,8 @@ object YkiSuorituksetPage {
         Page.renderHtml(
             wideContent = true,
         ) {
+            val latestVersions = if (filterParams.versionHistory) suoritukset.latestVersions().map { it.id } else null
+
             h1 { +"Yleinen kielitutkinto" }
             h2 { +"Suoritukset" }
             errorsArticle(
@@ -116,6 +118,7 @@ object YkiSuorituksetPage {
                         rows = suoritukset,
                         columns = columns,
                         rowClasses = "suoritus",
+                        isFaded = latestVersions?.let { { row -> !latestVersions.contains(row.id) } },
                     )
                 }
             }
