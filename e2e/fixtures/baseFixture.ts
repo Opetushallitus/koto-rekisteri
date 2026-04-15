@@ -13,10 +13,8 @@ import * as ykiArvioijaFixture from "./ykiArvioija"
 import BasePage from "../models/BasePage"
 import { Config, createConfig } from "../config"
 import KielitestiErrorPage from "../models/kotoutumiskoulutus/KielitestiErrorPage"
-import VktIlmoittautuneetPage from "../models/vkt/VktIlmoittautuneetPage"
+import VktSuorituksetPage from "../models/vkt/VktSuorituksetPage"
 import VktSuorituksenTiedotPage from "../models/vkt/VktSuorituksenTiedotPage"
-import VktHjtSuorituksetPage from "../models/vkt/VktHjtSuorituksetPage"
-import VktArvioidutSuorituksetPage from "../models/vkt/VktArvioidutSuorituksetPage"
 import YkiArvioijatPage from "../models/yki/YkiArvioijatPage"
 import YkiTarkistusarvioinnitPage from "../models/yki/YkiTarkistusarvioinnitPage"
 import { OauthRequestContext } from "./oauthRequestContext"
@@ -35,10 +33,8 @@ interface Fixtures {
   ykiSuoritusError: typeof ykiSuoritusErrorFixture
   ykiArvioija: typeof ykiArvioijaFixture
   kotoSuoritusError: typeof kotoSuoritusErrorFixture
-  vktIlmoittautuneetPage: VktIlmoittautuneetPage
+  vktSuorituksetPage: VktSuorituksetPage
   vktSuorituksenTiedotPage: VktSuorituksenTiedotPage
-  vktHjtSuorituksetPage: VktHjtSuorituksetPage
-  vktArvioidutSuorituksetPage: VktArvioidutSuorituksetPage
   vktSuoritus: typeof vktSuoritusFixture
   oauth: OauthRequestContext
 }
@@ -119,20 +115,14 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   kotoSuoritusError: async ({}, use) => {
     await use({ ...kotoSuoritusErrorFixture })
   },
-  vktIlmoittautuneetPage: async ({ page, config }, use) => {
-    await use(new VktIlmoittautuneetPage(page, config))
+  vktSuorituksetPage: async ({ page, config }, use) => {
+    await use(new VktSuorituksetPage(page, config))
   },
   vktSuorituksenTiedotPage: async ({ page, config }, use) => {
     await use(new VktSuorituksenTiedotPage(page, config))
   },
   vktSuoritus: async ({}, use) => {
     await use({ ...vktSuoritusFixture })
-  },
-  vktHjtSuorituksetPage: async ({ page, config }, use) => {
-    await use(new VktHjtSuorituksetPage(page, config))
-  },
-  vktArvioidutSuorituksetPage: async ({ page, config }, use) => {
-    await use(new VktArvioidutSuorituksetPage(page, config))
   },
   oauth: async ({ config, request }, use) => {
     await use(new OauthRequestContext(config, request))

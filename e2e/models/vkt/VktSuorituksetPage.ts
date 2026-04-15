@@ -3,7 +3,7 @@ import { Locator, Page } from "@playwright/test"
 import { Config } from "../../config"
 import DisplayTable from "../components/DisplayTable"
 
-export default class VktIlmoittautuneetPage extends BasePage {
+export default class VktSuorituksetPage extends BasePage {
   table: DisplayTable
   searchField: Locator
   searchButton: Locator
@@ -15,12 +15,20 @@ export default class VktIlmoittautuneetPage extends BasePage {
     this.searchButton = page.getByTestId("search-button")
   }
 
-  async open() {
+  async openKaikkiSuoritukset() {
+    await this.goto("vkt")
+  }
+
+  async openErinomainenIlmoittautuneet() {
     await this.goto("vkt/erinomainen/ilmoittautuneet")
   }
 
-  async openFromNavigation() {
-    await this.gotoFromMainNav("Erinomaisen tason ilmoittautuneet")
+  async openErinomainenArvioidut() {
+    await this.goto("vkt/erinomainen/arvioidut")
+  }
+
+  async openHyvaJaTyydyttavaSuoritukset() {
+    await this.goto("vkt/hyvajatyydyttava/suoritukset")
   }
 
   async followLinkOfRow(testId: string) {
