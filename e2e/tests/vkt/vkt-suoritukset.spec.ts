@@ -1,6 +1,6 @@
 import * as node_fs from "node:fs"
 import { beforeEach, describe, test } from "../../fixtures/baseFixture"
-import { expect } from "@playwright/test"
+import { expect, Page } from "@playwright/test"
 import {
   expectToHaveInputValue,
   expectToHaveKoodiviite,
@@ -12,6 +12,8 @@ import {
 } from "../../util/expect"
 import { todayISODate } from "../../util/time"
 import { insert as insertKoskiError } from "../../fixtures/koskiError"
+import { VktSuorituksetFilterDialog } from "../../models/vkt/VktSuorituksetFilterDialog"
+import VktSuorituksetPage from "../../models/vkt/VktSuorituksetPage"
 
 const fs = node_fs.promises
 
@@ -326,6 +328,159 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     })
   })
 
+  describe("Filter", () => {
+    async function testFiltering(
+      vktSuorituksetPage: VktSuorituksetPage,
+      f: (d: VktSuorituksetFilterDialog) => Promise<void>,
+    ) {
+      await vktSuorituksetPage.login()
+      await vktSuorituksetPage.openKaikkiSuoritukset()
+
+      const countBefore = await vktSuorituksetPage.getNumberOfRows()
+
+      const dialog = await vktSuorituksetPage.openFilterDialog()
+      await f(dialog)
+      await dialog.submit()
+
+      const countAfter = await vktSuorituksetPage.getNumberOfRows()
+      expect(countAfter).toBeLessThan(countBefore)
+    }
+
+    test("Date range filter reduces the number of results", async ({
+      vktSuorituksetPage,
+    }) => {
+      await testFiltering(vktSuorituksetPage, async (dialog) => {
+        await dialog.setAlkupaiva("2020-01-01")
+        await dialog.setLoppupaiva("2022-12-31")
+      })
+    })
+
+    test("Tutkintokieli filter reduces the number of results", async ({
+      vktSuorituksetPage,
+    }) => {
+      await testFiltering(vktSuorituksetPage, async (dialog) => {
+        await dialog.setTutkintokieli("FIN")
+      })
+    })
+
+    test("Taitotaso filter reduces the number of results", async ({
+      vktSuorituksetPage,
+    }) => {
+      await testFiltering(vktSuorituksetPage, async (dialog) => {
+        await dialog.setTaitotaso("Erinomainen")
+      })
+    })
+
+    test("Arvioitu filter reduces the number of results", async ({
+      vktSuorituksetPage,
+    }) => {
+      await testFiltering(vktSuorituksetPage, async (dialog) => {
+        await dialog.setArvioitu("ArvioituOsittainTaiKokonaan")
+      })
+    })
+
+    test("Merkitty poistettavaksi filter reduces the number of results", async ({
+      vktSuorituksetPage,
+    }) => {
+      await testFiltering(vktSuorituksetPage, async (dialog) => {
+        await dialog.setMerkittyPoistettavaksi(true)
+      })
+    })
+
+    test("Filter settings are preserved when user uses search", async ({
+      vktSuorituksetPage,
+    }) => {
+      await vktSuorituksetPage.login()
+      await vktSuorituksetPage.openKaikkiSuoritukset()
+
+      const dialog = await vktSuorituksetPage.openFilterDialog()
+      await dialog.setTutkintokieli("FIN")
+      await dialog.setTaitotaso("Erinomainen")
+      await dialog.submit()
+
+      await vktSuorituksetPage.search("eriksson")
+
+      await expect(
+        vktSuorituksetPage.getPageContent().getByText("Tutkintokieli: Suomi"),
+      ).toBeVisible()
+      await expect(
+        vktSuorituksetPage.getPageContent().getByText("Taitotaso: Erinomainen"),
+      ).toBeVisible()
+    })
+
+    test("Search query is preserved when user sets new filters", async ({
+      vktSuorituksetPage,
+    }) => {
+      await vktSuorituksetPage.login()
+      await vktSuorituksetPage.openKaikkiSuoritukset()
+
+      await vktSuorituksetPage.search("eriksson")
+
+      const dialog = await vktSuorituksetPage.openFilterDialog()
+      await dialog.setTaitotaso("Erinomainen")
+      await dialog.submit()
+
+      await expect(vktSuorituksetPage.searchField).toHaveValue("eriksson")
+    })
+
+    test("Filter settings are preserved when user changes the sorting order", async ({
+      vktSuorituksetPage,
+    }) => {
+      await vktSuorituksetPage.login()
+      await vktSuorituksetPage.openKaikkiSuoritukset()
+
+      const dialog = await vktSuorituksetPage.openFilterDialog()
+      await dialog.setTutkintokieli("FIN")
+      await dialog.setTaitotaso("Erinomainen")
+      await dialog.submit()
+
+      await vktSuorituksetPage.table.head
+        .getByTestId("Etunimet")
+        .getByRole("link")
+        .click()
+
+      await expect(
+        vktSuorituksetPage.getPageContent().getByText("Tutkintokieli: Suomi"),
+      ).toBeVisible()
+      await expect(
+        vktSuorituksetPage.getPageContent().getByText("Taitotaso: Erinomainen"),
+      ).toBeVisible()
+    })
+
+    test("Filter settings are preserved when user changes pagination page", async ({
+      vktSuorituksetPage,
+    }) => {
+      await vktSuorituksetPage.login()
+      await vktSuorituksetPage.openKaikkiSuoritukset()
+
+      const dialog = await vktSuorituksetPage.openFilterDialog()
+      await dialog.setTutkintokieli("FIN")
+      await dialog.submit()
+
+      await vktSuorituksetPage.pagination.goToNextPage()
+
+      await expect(
+        vktSuorituksetPage.getPageContent().getByText("Tutkintokieli: Suomi"),
+      ).toBeVisible()
+    })
+
+    test("Piilota henkilötiedot filter reduces the number of columns", async ({
+      vktSuorituksetPage,
+    }) => {
+      await vktSuorituksetPage.login()
+      await vktSuorituksetPage.openKaikkiSuoritukset()
+
+      const columnsBefore = await vktSuorituksetPage.table.labels.count()
+
+      const dialog = await vktSuorituksetPage.openFilterDialog()
+      await dialog.hideHenkilotiedot(true)
+      await dialog.submit()
+
+      const columnsAfter = await vktSuorituksetPage.table.labels.count()
+      expect(columnsAfter).toBeLessThan(columnsBefore)
+    })
+  })
+
   describe("Search", () => {
     test("Search by first name works", async ({ vktSuorituksetPage }) => {
       await vktSuorituksetPage.login()
@@ -403,5 +558,119 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
       ",Ilmoittautumisen tunniste,Sukunimi,Etunimet,Oppijanumero,Taitotaso,Tutkintokieli,Tutkintopäivä,Suorituspaikkakunta,Suorituksen vastaanottajan OID,Suorituksen vastaanottaja,Puhuminen,Puheen ymmärtäminen,Kirjoittaminen,Tekstin ymmärtäminen\n" +
         "1,KIOS:748,Sallinen-Testi,Magdalena Testi,1.2.246.562.24.33342764709,Erinomainen,Suomi,10.2.2026,091,1.2.246.562.24.85478397072,,,,,\n",
     )
+  })
+})
+
+describe("Valtionkielitutkinnon suoritukset csv download filtering", () => {
+  beforeEach(async ({ db, vktSuoritus, config }) => {
+    await db.withEmptyDatabase()
+    await vktSuoritus.create(config.baseUrl)
+  })
+
+  async function downloadCsv(
+    page: Page,
+    vktSuorituksetPage: VktSuorituksetPage,
+  ): Promise<string> {
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      vktSuorituksetPage
+        .getPageContent()
+        .getByText("Lataa tiedot CSV:nä")
+        .click(),
+    ])
+    const path = await download.path()
+    expect(path).not.toBeNull()
+    return fs.readFile(path!, "utf8")
+  }
+
+  const csvRowCount = (csv: string) =>
+    csv.split("\n").filter((line) => line.length > 0).length
+
+  async function testFilteredCsv(
+    page: Page,
+    vktSuorituksetPage: VktSuorituksetPage,
+    applyFilter: (dialog: VktSuorituksetFilterDialog) => Promise<void>,
+  ) {
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openKaikkiSuoritukset()
+
+    const rowsBefore = csvRowCount(await downloadCsv(page, vktSuorituksetPage))
+
+    const dialog = await vktSuorituksetPage.openFilterDialog()
+    await applyFilter(dialog)
+    await dialog.submit()
+
+    const rowsAfter = csvRowCount(await downloadCsv(page, vktSuorituksetPage))
+    expect(rowsAfter).toBeLessThan(rowsBefore)
+  }
+
+  test("Date range filter reduces csv row count", async ({
+    page,
+    vktSuorituksetPage,
+  }) => {
+    await testFilteredCsv(page, vktSuorituksetPage, async (dialog) => {
+      await dialog.setAlkupaiva("2020-01-01")
+      await dialog.setLoppupaiva("2022-12-31")
+    })
+  })
+
+  test("Tutkintokieli filter reduces csv row count", async ({
+    page,
+    vktSuorituksetPage,
+  }) => {
+    await testFilteredCsv(page, vktSuorituksetPage, (dialog) =>
+      dialog.setTutkintokieli("FIN"),
+    )
+  })
+
+  test("Taitotaso filter reduces csv row count", async ({
+    page,
+    vktSuorituksetPage,
+  }) => {
+    await testFilteredCsv(page, vktSuorituksetPage, (dialog) =>
+      dialog.setTaitotaso("Erinomainen"),
+    )
+  })
+
+  test("Arvioitu filter reduces csv row count", async ({
+    page,
+    vktSuorituksetPage,
+  }) => {
+    await testFilteredCsv(page, vktSuorituksetPage, (dialog) =>
+      dialog.setArvioitu("ArvioituOsittainTaiKokonaan"),
+    )
+  })
+
+  test("Merkitty poistettavaksi filter reduces csv row count", async ({
+    page,
+    vktSuorituksetPage,
+  }) => {
+    await testFilteredCsv(page, vktSuorituksetPage, (dialog) =>
+      dialog.setMerkittyPoistettavaksi(true),
+    )
+  })
+
+  test("Piilota henkilötiedot filter reduces csv column count", async ({
+    page,
+    vktSuorituksetPage,
+  }) => {
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openKaikkiSuoritukset()
+
+    const headerBefore = (await downloadCsv(page, vktSuorituksetPage)).split(
+      "\n",
+    )[0]
+    const columnsBefore = headerBefore.split(",").length
+
+    const dialog = await vktSuorituksetPage.openFilterDialog()
+    await dialog.hideHenkilotiedot(true)
+    await dialog.submit()
+
+    const headerAfter = (await downloadCsv(page, vktSuorituksetPage)).split(
+      "\n",
+    )[0]
+    const columnsAfter = headerAfter.split(",").length
+
+    expect(columnsAfter).toBeLessThan(columnsBefore)
   })
 })
