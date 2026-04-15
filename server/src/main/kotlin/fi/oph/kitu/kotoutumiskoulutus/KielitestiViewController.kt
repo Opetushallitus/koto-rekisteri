@@ -2,7 +2,9 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetPage
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetParams
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusColumn
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusFilter
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusPage
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusService
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiErrorService
@@ -13,6 +15,7 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 
@@ -25,31 +28,37 @@ class KielitestiViewController(
 ) {
     @GetMapping("/suoritukset")
     fun suorituksetView(
-        sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
-        sortDirection: SortDirection = SortDirection.DESC,
-        search: String? = null,
+        @ModelAttribute
+        params: KielitestiSuorituksetParams = KielitestiSuorituksetParams(),
     ): ResponseEntity<String> {
         val organisaatiot = organisaatioService.getOrganisaatiot()
+
         return ResponseEntity.ok(
             KielitestiSuorituksetPage.render(
-                sortColumn = sortColumn,
-                sortDirection = sortDirection,
                 suoritukset =
                     suoritusService
-                        .getSuoritukset(sortColumn, sortDirection, search)
+                        .getSuoritukset(params.toFilter(), params.sortColumn, params.sortDirection)
                         .map { it.copy(oppilaitos = organisaatiot.nimet[it.oppilaitosOid]?.fi) }
                         .let {
-                            when (sortColumn) {
-                                KielitestiSuoritusColumn.Oppilaitos -> it.sortByOrgName(sortDirection, organisaatiot)
-                                else -> it
+                            when (params.sortColumn) {
+                                KielitestiSuoritusColumn.Oppilaitos -> {
+                                    it.sortByOrgName(
+                                        params.sortDirection,
+                                        organisaatiot,
+                                    )
+                                }
+
+                                else -> {
+                                    it
+                                }
                             }
                         },
                 errorsCount =
                     errorService
-                        .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, sortDirection)
+                        .getErrors(KielitestiSuoritusErrorColumn.VirheenLuontiaika, params.sortDirection)
                         .count()
                         .toLong(),
-                search = search ?: "",
+                filterParams = params,
             ),
         )
     }

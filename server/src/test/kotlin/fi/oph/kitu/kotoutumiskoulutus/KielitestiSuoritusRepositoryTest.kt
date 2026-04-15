@@ -6,6 +6,7 @@ import fi.oph.kitu.equalsIgnoringAnnotated
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Arvosana
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.CustomKielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusFilter
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
 import org.junit.jupiter.api.BeforeEach
@@ -15,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.Instant
+import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -54,7 +56,7 @@ class KielitestiSuoritusRepositoryTest(
             kutsumanimi = "Jennika",
             oppijanumero = Oid.parse("1.2.246.562.198.88975028874").getOrThrow(),
             email = "jennika@example.com",
-            suoritusaika = Instant.parse("2025-05-27T10:44:19Z"),
+            suoritusaika = Instant.parse("2025-05-28T10:44:19Z"),
             oppilaitosOid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
             opettajanEmail = "ope@example.com",
             kurssiId = 32,
@@ -63,7 +65,7 @@ class KielitestiSuoritusRepositoryTest(
             kuullunYmmartaminen = Arvosana.B1,
             puhe = Arvosana.B1,
             kirjoittaminen = Arvosana.A2,
-            testikieli = Testikieli.FIN,
+            testikieli = Testikieli.SWE,
             tehtavapaketti = null,
         )
 
@@ -75,34 +77,39 @@ class KielitestiSuoritusRepositoryTest(
 
     @Test
     fun `Kielitesti suoritusten haku etunimellä`() {
-        val result = customKielitestiSuoritusRepository.findSuoritukset("ranja")
+        val filter = KielitestiSuoritusFilter(search = "ranja")
+        val result = customKielitestiSuoritusRepository.findSuoritukset(filter)
         assertEquals(1, result.size)
         assertTrue(suoritusRaija.equalsIgnoringAnnotated(result.first(), "KOTO"))
     }
 
     @Test
     fun `Kielitestisuoritusten haku etu- ja sukunimellä`() {
-        val result = customKielitestiSuoritusRepository.findSuoritukset("ranja öhman")
+        val filter = KielitestiSuoritusFilter(search = "ranja öhman")
+        val result = customKielitestiSuoritusRepository.findSuoritukset(filter)
         assertEquals(1, result.size)
         assertTrue(suoritusRaija.equalsIgnoringAnnotated(result.first(), "KOTO"))
     }
 
     @Test
     fun `Kielitestisuorituksen haku oppijanumerolla`() {
-        val result = customKielitestiSuoritusRepository.findSuoritukset("1.2.246.562.198.88975028874")
+        val filter = KielitestiSuoritusFilter(search = "1.2.246.562.198.88975028874")
+        val result = customKielitestiSuoritusRepository.findSuoritukset(filter)
         assertEquals(1, result.size)
         assertTrue(suoritusJennika.equalsIgnoringAnnotated(result.first(), "KOTO"))
     }
 
     @Test
     fun `Kielitestisuorituksen haku kurssin nimellä`() {
-        val result = customKielitestiSuoritusRepository.findSuoritukset("Integraatio testaus")
+        val filter = KielitestiSuoritusFilter(search = "Integraatio testaus")
+        val result = customKielitestiSuoritusRepository.findSuoritukset(filter)
         assertEquals(2, result.size)
     }
 
     @Test
     fun `Kielitestisuorituksen haku tyhjällä hakusanalla`() {
-        val result = customKielitestiSuoritusRepository.findSuoritukset(null)
+        val filter = KielitestiSuoritusFilter(search = "")
+        val result = customKielitestiSuoritusRepository.findSuoritukset(filter)
         assertEquals(2, result.size)
     }
 
@@ -146,6 +153,36 @@ class KielitestiSuoritusRepositoryTest(
             fun () = assertEquals(Arvosana.YLIB1, resultRaija?.kuullunYmmartaminen),
             fun () = assertEquals(Arvosana.YLIB1, resultJennika?.kuullunYmmartaminen),
             fun () = assertEquals(Arvosana.YLIB1, resultJennika?.puhe),
+        )
+    }
+
+    @Test
+    fun `suoritusten rajaus testikielen perusteella`() {
+        val filter = KielitestiSuoritusFilter(testikieli = Testikieli.SWE)
+        val suoritukset = customKielitestiSuoritusRepository.findSuoritukset(filter)
+        assertAll(
+            fun () = assertEquals(1, suoritukset.size),
+            fun () = assertTrue(suoritukset.first().equalsIgnoringAnnotated(suoritusJennika, "KOTO")),
+        )
+    }
+
+    @Test
+    fun `suoritusten rajaus suoritusaika alkaen perusteella`() {
+        val filter = KielitestiSuoritusFilter(suoritusalku = LocalDate.of(2025, 5, 28))
+        val suoritukset = customKielitestiSuoritusRepository.findSuoritukset(filter)
+        assertAll(
+            fun () = assertEquals(1, suoritukset.size),
+            fun () = assertTrue(suoritukset.first().equalsIgnoringAnnotated(suoritusJennika, "KOTO")),
+        )
+    }
+
+    @Test
+    fun `suoritusten rajaus suoritusaika päättyen perusteella`() {
+        val filter = KielitestiSuoritusFilter(suoritusloppu = LocalDate.of(2025, 5, 27))
+        val suoritukset = customKielitestiSuoritusRepository.findSuoritukset(filter)
+        assertAll(
+            fun () = assertEquals(1, suoritukset.size),
+            fun () = assertTrue(suoritukset.first().equalsIgnoringAnnotated(suoritusRaija, "KOTO")),
         )
     }
 }

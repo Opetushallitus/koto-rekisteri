@@ -40,8 +40,8 @@ class KielitestiApiController(
                 StreamingResponseBody { output ->
                     DisplayTableCsvRenderer.renderCsv<KielitestiSuoritusColumn, _>(
                         output = output,
-                        data = suoritusService.getSuorituksetForCsv(),
-                        excludeTags = setOf(),
+                        data = suoritusService.getSuorituksetForCsv(params.toFilter()),
+                        excludeTags = params.excludeTags(),
                     )
                 },
             )
