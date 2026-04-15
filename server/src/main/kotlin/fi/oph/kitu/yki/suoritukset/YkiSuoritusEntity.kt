@@ -206,3 +206,8 @@ data class Osakoe(
     val arvosana: Int?,
     val arviointipaiva: LocalDate?,
 )
+
+fun List<YkiSuoritusEntity>.latestVersions(): List<YkiSuoritusEntity> =
+    this
+        .groupBy { it.solkiId }
+        .map { (_, entities) -> entities.maxByOrNull { it.lastModified }!! }
