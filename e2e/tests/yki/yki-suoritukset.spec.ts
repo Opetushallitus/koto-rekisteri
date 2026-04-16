@@ -162,6 +162,40 @@ describe('"YKI Suoritukset" -page', () => {
     ) // Validate headers
   })
 
+  describe("Version history columns", () => {
+    test("Solki-tunniste and Versio columns are not shown by default", async ({
+      ykiSuorituksetPage,
+    }) => {
+      await ykiSuorituksetPage.open()
+
+      const table = ykiSuorituksetPage.getSuorituksetTable()
+      await expect(
+        table.getByRole("columnheader", { name: "Solki-tunniste" }),
+      ).toHaveCount(0)
+      await expect(
+        table.getByRole("columnheader", { name: "Versio" }),
+      ).toHaveCount(0)
+    })
+
+    test("Solki-tunniste and Versio columns are shown when versionHistory is enabled", async ({
+      ykiSuorituksetPage,
+    }) => {
+      await ykiSuorituksetPage.open()
+
+      const dialog = await ykiSuorituksetPage.openFilterDialog()
+      await dialog.setVersionHistory(true)
+      await dialog.submit()
+
+      const table = ykiSuorituksetPage.getSuorituksetTable()
+      await expect(
+        table.getByRole("columnheader", { name: "Solki-tunniste" }),
+      ).toBeVisible()
+      await expect(
+        table.getByRole("columnheader", { name: "Versio" }),
+      ).toBeVisible()
+    })
+  })
+
   describe("Sorting", () => {
     const sortTestCases = [
       {
@@ -230,5 +264,81 @@ describe('"YKI Suoritukset" -page', () => {
         }
       })
     }
+  })
+
+  describe("Sorting with version history", () => {
+    const solkiColumnIndex = 8
+
+    // With version history enabled, 4 rows are shown.
+    // Solki IDs: petro=123123, magdalena=172836, ranja=183424, ranjaTarkistus=183424
+    const solkiSortTestCase = {
+      column: "Solki-tunniste",
+      tableColumnIndex: solkiColumnIndex,
+      // First click inherits current direction (DESC)
+      order: ["183424", "183424", "172836", "123123"],
+    } as const
+
+    test(`registry data can be sorted by "Solki-tunniste"`, async ({
+      ykiSuorituksetPage: page,
+    }) => {
+      await page.open()
+
+      const dialog = await page.openFilterDialog()
+      await dialog.setVersionHistory(true)
+      await dialog.submit()
+
+      const { column, tableColumnIndex, order } = solkiSortTestCase
+      const reverseOrder = [...order].reverse()
+
+      const sortByLink = page.getTableColumnHeaderLink(column)
+      await sortByLink.click()
+
+      for (const [expected, row] of enumerate(order)) {
+        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+        await expect(actualValue).toHaveText(expected)
+      }
+
+      await sortByLink.click()
+
+      for (const [expected, row] of enumerate(reverseOrder)) {
+        const actualValue = page.getSuoritusColumn(row, tableColumnIndex)
+        await expect(actualValue).toHaveText(expected)
+      }
+    })
+
+    test(`registry data can be sorted by "Versio"`, async ({
+      ykiSuorituksetPage: page,
+    }) => {
+      await page.open()
+
+      const dialog = await page.openFilterDialog()
+      await dialog.setVersionHistory(true)
+      await dialog.submit()
+
+      // Verify Versio column is sortable by checking the sort link exists and
+      // that sorting changes the row order. Fixtures are inserted in order:
+      // ranja, ranjaTarkistus, petro, magdalena — so lastModified increases
+      // in that order. Verify via the Solki-tunniste column (index 8).
+      const sortByLink = page.getTableColumnHeaderLink("Versio")
+      await sortByLink.click()
+
+      // First click: DESC (newest first) — magdalena(172836), petro(123123), then ranja pair(183424)
+      await expect(page.getSuoritusColumn(0, solkiColumnIndex)).toHaveText(
+        "172836",
+      )
+      await expect(page.getSuoritusColumn(1, solkiColumnIndex)).toHaveText(
+        "123123",
+      )
+
+      await sortByLink.click()
+
+      // Second click: ASC (oldest first) — ranja pair(183424), then petro(123123), magdalena(172836)
+      await expect(page.getSuoritusColumn(2, solkiColumnIndex)).toHaveText(
+        "123123",
+      )
+      await expect(page.getSuoritusColumn(3, solkiColumnIndex)).toHaveText(
+        "172836",
+      )
+    })
   })
 })
