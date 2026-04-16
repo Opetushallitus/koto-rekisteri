@@ -39,6 +39,11 @@ interface OrganisaatioService {
         getOrganisaatioCache().getAsap(Organisaatiot::class.java, "OrganisaatioService.organisaatiot") {
             getOrganisaatiohierarkia().map { it.getOrganisaatiot() }.getOrNull()
         } ?: Organisaatiot.EMPTY
+
+    fun searchOrganisaatiot(query: String): Organisaatiot =
+        getOrganisaatiot().let {
+            Organisaatiot(it.nimet.filter { (_, nimi) -> nimi.contains(query, ignoreCase = true) }.toMap())
+        }
 }
 
 @Service
