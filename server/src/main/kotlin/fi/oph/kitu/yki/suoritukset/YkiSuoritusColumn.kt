@@ -239,7 +239,7 @@ enum class YkiSuoritusColumn(
 
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA, ColumnTag.VERSION_HISTORY_ONLY)
     SolkiId(
-        entityName = "yki_suoritus.solki_id",
+        entityName = "solki_id",
         uiHeaderValue = "Solki-tunniste",
         urlParam = "solkiId",
         getValue = { it.solkiId.toString() },
