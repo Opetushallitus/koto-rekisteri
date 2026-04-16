@@ -95,6 +95,9 @@ export const fixtureData = {
   silja: createSuoritus("silja", suoritusRuotsi),
   anniina: createSuoritus("anniina", suoritusRuotsi),
   magdalena: createSuoritus("magdalena", suoritusRuotsi),
+  fanniRessu: createSuoritus("fanni", {
+    oppilaitosOid: "1.2.246.562.10.65693669254",
+  }),
 } as const
 
 const insertQuery = (suoritus: KotoSuoritus) => SQL`

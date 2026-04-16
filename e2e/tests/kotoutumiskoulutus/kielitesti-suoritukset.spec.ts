@@ -1,8 +1,6 @@
 import * as node_fs from "node:fs"
 import { beforeEach, describe, expect, test } from "../../fixtures/baseFixture"
 import { enumerate } from "../../util/arrays"
-import KielitestiSuorituksetPage from "../../models/kotoutumiskoulutus/KielitestiSuorituksetPage"
-
 const fs = node_fs.promises
 
 describe("Kotoutumiskoulutuksen kielitesti -page", () => {
@@ -13,6 +11,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     await kotoSuoritus.insert(db, "eino")
     await kotoSuoritus.insert(db, "magdalena")
     await kotoSuoritus.insert(db, "toni")
+    await kotoSuoritus.insert(db, "fanniRessu")
 
     await basePage.login()
   })
@@ -69,6 +68,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
       tableColumnIndex: 1,
       order: [
         "Välimaa-Testi",
+        "Vesala-Testi",
         "Torvinen-Testi",
         "Sallinen-Testi",
         "Laasonen-Testi",
@@ -77,12 +77,18 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
     {
       column: "Etunimet",
       tableColumnIndex: 2,
-      order: ["Toni Testi", "Magdalena Testi", "Eino Testi", "Anniina Testi"],
+      order: [
+        "Toni Testi",
+        "Magdalena Testi",
+        "Fanni Testi",
+        "Eino Testi",
+        "Anniina Testi",
+      ],
     },
     {
       column: "Testikieli",
       tableColumnIndex: 4,
-      order: ["SWE", "SWE", "FIN", "FIN"],
+      order: ["SWE", "SWE", "FIN", "FIN", "FIN"],
     },
   ] as const
   for (const testCase of sortTestCases) {
@@ -125,6 +131,22 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
   }) => {
     await kielitestiSuorituksetPage.open()
     await kielitestiSuorituksetPage.search("1.2.246.562.24.33342764709")
+    const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
+    await expect(suoritukset).toHaveCount(1)
+  })
+
+  test("search by organisaatio name", async ({ kielitestiSuorituksetPage }) => {
+    await kielitestiSuorituksetPage.open()
+    await kielitestiSuorituksetPage.search("Ressun peruskoulu")
+    const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
+    await expect(suoritukset).toHaveCount(1)
+  })
+
+  test("search by partial organisaatio name", async ({
+    kielitestiSuorituksetPage,
+  }) => {
+    await kielitestiSuorituksetPage.open()
+    await kielitestiSuorituksetPage.search("Ressun")
     const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
     await expect(suoritukset).toHaveCount(1)
   })
@@ -200,7 +222,7 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
       await dialog.submit()
 
       const suoritukset = kielitestiSuorituksetPage.getSuoritusRow()
-      await expect(suoritukset).toHaveCount(2)
+      await expect(suoritukset).toHaveCount(3)
     })
 
     test("Suoritusten rajaaminen alku- ja loppupäivän mukaan", async ({
