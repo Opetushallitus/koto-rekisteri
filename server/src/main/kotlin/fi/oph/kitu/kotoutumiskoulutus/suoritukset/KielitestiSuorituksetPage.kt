@@ -102,7 +102,7 @@ object KielitestiSuorituksetPage {
                         preserveSortDirection = false,
                         selectableRows = false,
                         tableId = "kielitesti-suoritukset-table",
-                        urlParams = mapOf("search" to filterParams.search),
+                        urlParams = filterParams.toMap(),
                     )
                     displayTableBody(
                         rows = suoritukset,
