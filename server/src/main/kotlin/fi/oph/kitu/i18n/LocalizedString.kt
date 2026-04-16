@@ -19,4 +19,12 @@ data class LocalizedString(
             Language.SV -> sv
             Language.EN -> en
         }
+
+    fun contains(
+        other: CharSequence,
+        ignoreCase: Boolean = false,
+    ): Boolean =
+        (get(Language.FI)?.contains(other, ignoreCase) ?: false) ||
+            (get(Language.SV)?.contains(other, ignoreCase) ?: false) ||
+            (get(Language.EN)?.contains(other, ignoreCase) ?: false)
 }
