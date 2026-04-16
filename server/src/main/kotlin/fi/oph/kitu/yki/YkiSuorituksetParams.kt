@@ -5,6 +5,7 @@ import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusOrder
 import org.springframework.format.annotation.DateTimeFormat
 import java.time.LocalDate
 
@@ -47,6 +48,12 @@ data class YkiSuorituksetParams(
             loppupaiva = tutkintoloppu,
             tutkintokieli = tutkintokieli,
             tutkintotaso = tutkintotaso,
+        )
+
+    fun toOrder() =
+        YkiSuoritusOrder(
+            sortColumn = sortColumn,
+            sortDirection = sortDirection,
         )
 
     fun excludeTags(): Set<ColumnTag> =

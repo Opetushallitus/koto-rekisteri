@@ -106,8 +106,7 @@ class YkiViewController(
                 suoritukset =
                     ykiService.findSuorituksetPaged(
                         params.toFilter(),
-                        params.sortColumn,
-                        params.sortDirection,
+                        params.toOrder(),
                         params.versionHistory,
                         params.limit,
                         offset = params.limit * (params.page - 1),

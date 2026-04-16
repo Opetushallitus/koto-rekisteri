@@ -20,6 +20,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusOrder
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -161,8 +162,7 @@ class YkiService(
     @WithSpan
     fun findSuorituksetPaged(
         filter: YkiSuoritusFilter = YkiSuoritusFilter(),
-        column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
-        direction: SortDirection,
+        order: YkiSuoritusOrder = YkiSuoritusOrder(),
         versionHistory: Boolean = false,
         limit: Int,
         offset: Int,
@@ -170,8 +170,7 @@ class YkiService(
         suoritusRepository
             .findForListView(
                 filter = filter,
-                column = column,
-                direction = direction,
+                order = order,
                 distinct = !versionHistory,
                 limit = limit,
                 offset = offset,

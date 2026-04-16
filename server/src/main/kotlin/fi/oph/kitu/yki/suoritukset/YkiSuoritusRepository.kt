@@ -69,8 +69,7 @@ class YkiSuoritusRepository {
     @WithSpan
     fun find(
         filter: YkiSuoritusFilter = YkiSuoritusFilter(),
-        column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
-        direction: SortDirection = SortDirection.DESC,
+        order: YkiSuoritusOrder = YkiSuoritusOrder(),
         distinct: Boolean = true,
         limit: Int? = null,
         offset: Int? = null,
@@ -79,7 +78,7 @@ class YkiSuoritusRepository {
             selectSuorituksetFull(
                 distinct,
                 filter.whereSql(),
-                "ORDER BY ${column.entityName} $direction",
+                "ORDER BY $order",
                 pagingQuery(limit, offset),
             ),
             filter.params() +
@@ -93,14 +92,13 @@ class YkiSuoritusRepository {
     @WithSpan
     fun findForListView(
         filter: YkiSuoritusFilter = YkiSuoritusFilter(),
-        column: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
-        direction: SortDirection = SortDirection.DESC,
+        order: YkiSuoritusOrder = YkiSuoritusOrder(),
         distinct: Boolean = true,
         limit: Int? = null,
         offset: Int? = null,
     ): Iterable<YkiSuoritusEntity> =
         if (filter.requiresSubTables()) {
-            find(filter, column, direction, distinct, limit, offset)
+            find(filter, order, distinct, limit, offset)
         } else {
             jdbcNamedParameterTemplate.query(
                 buildSql(
@@ -109,7 +107,7 @@ class YkiSuoritusRepository {
                     ),
                     "SELECT * FROM suoritus",
                     filter.whereSql(),
-                    "ORDER BY ${column.entityName} $direction",
+                    "ORDER BY $order",
                     pagingQuery(limit, offset),
                 ),
                 filter.params() +
@@ -721,4 +719,18 @@ data class YkiSuoritusFilter(
     private fun tutkintokieliQuery(): String? = tutkintokieli?.let { "tutkintokieli = :$tutkintokieliStrName" }
 
     private fun tutkintotasoQuery(): String? = tutkintotaso?.let { "tutkintotaso = :$tutkintotasoStrName" }
+}
+
+data class YkiSuoritusOrder(
+    val sortColumn: YkiSuoritusColumn = YkiSuoritusColumn.Tutkintopaiva,
+    val sortDirection: SortDirection = SortDirection.DESC,
+) {
+    override fun toString() =
+        listOfNotNull(
+            "${sortColumn.entityName} $sortDirection",
+            when (sortColumn) {
+                YkiSuoritusColumn.SolkiId -> "last_modified DESC"
+                else -> null
+            },
+        ).joinToString(", ")
 }
