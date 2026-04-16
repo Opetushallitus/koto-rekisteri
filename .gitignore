@@ -48,3 +48,4 @@ cdk.out/
 /e2e/browserstate/
 /docs/output/
 /uml/
+/test-results/.last-run.json
