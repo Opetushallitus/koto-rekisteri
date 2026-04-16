@@ -1,6 +1,8 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.equalsIgnoringAnnotated
+import fi.oph.kitu.findDifferentProperties
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.Nimetty
 import fi.oph.kitu.i18n.LocalizedString
@@ -17,10 +19,14 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import kotlin.jvm.optionals.getOrNull
 
 interface VktSuoritusRepository :
     CrudRepository<VktSuoritusEntity, Int>,
-    PagingAndSortingRepository<VktSuoritusEntity, Int>
+    PagingAndSortingRepository<VktSuoritusEntity, Int> {
+    fun findByIlmoittautumisenId(id: String): List<VktSuoritusEntity>
+}
 
 @Repository
 class CustomVktSuoritusRepository {
@@ -29,6 +35,26 @@ class CustomVktSuoritusRepository {
 
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
+
+    @Autowired
+    private lateinit var vktSuoritusRepository: VktSuoritusRepository
+
+    @WithSpan
+    fun save(entity: VktSuoritusEntity): VktSuoritusEntity? =
+        if (!exists(entity)) {
+            vktSuoritusRepository.save(entity)
+        } else {
+            null
+        }
+
+    @WithSpan
+    fun exists(entity: VktSuoritusEntity): Boolean {
+        val storedEntity =
+            vktSuoritusRepository
+                .findByIlmoittautumisenId(entity.ilmoittautumisenId)
+                .maxByOrNull { it.createdAt ?: OffsetDateTime.MIN }
+        return storedEntity?.let { entity.equalsIgnoringAnnotated(it, "VKT") } ?: false
+    }
 
     @WithSpan
     fun find(
@@ -220,22 +246,6 @@ class CustomVktSuoritusRepository {
 
         jdbcTemplate.update(query)
     }
-
-    private fun whereAll(vararg conditions: String?): String {
-        val nonNullConditions = conditions.filterNotNull()
-        return if (nonNullConditions.isNotEmpty()) {
-            "WHERE ${nonNullConditions.joinToString(" AND ") { "($it)" }}"
-        } else {
-            ""
-        }
-    }
-
-    private fun tutkintopaivaCondition(tokens: List<SearchQueryParser.DateSearchToken>): String? =
-        if (tokens.isNotEmpty()) {
-            "tutkintopaiva = any(${tokens.sqlArray()})"
-        } else {
-            null
-        }
 
     data class Tutkintoryhma(
         val oppijanumero: String,

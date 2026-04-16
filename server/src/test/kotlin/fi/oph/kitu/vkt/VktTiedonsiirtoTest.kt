@@ -28,6 +28,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -39,11 +40,15 @@ class VktTiedonsiirtoTest {
     @Autowired
     private lateinit var context: WebApplicationContext
 
+    @Autowired
+    private lateinit var vktRepository: VktSuoritusRepository
+
     @Autowired private var postgres: PostgreSQLContainer<*>? = null
     private var mockMvc: MockMvc? = null
 
     @BeforeEach
     fun setup() {
+        vktRepository.deleteAll()
         mockMvc =
             MockMvcBuilders
                 .webAppContextSetup(context)
@@ -56,6 +61,17 @@ class VktTiedonsiirtoTest {
         putSuoritus(SchemaTests.vktHenkilosuoritus) {
             isOk()
         }
+    }
+
+    @Test
+    fun `saving same suoritus twice only adds one entity to the database`() {
+        putSuoritus(SchemaTests.vktHenkilosuoritus) {
+            isOk()
+        }
+        putSuoritus(SchemaTests.vktHenkilosuoritus) {
+            isOk()
+        }
+        assertEquals(1, vktRepository.count())
     }
 
     @Test
