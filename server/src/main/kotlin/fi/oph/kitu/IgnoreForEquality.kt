@@ -1,6 +1,7 @@
 package fi.oph.kitu
 
 import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
 
 /**
  * Skip this property when comparing two objects for equality using equalsIgnoringAnnotated.
@@ -23,7 +24,63 @@ inline fun <reified T : Any> T.equalsIgnoringAnnotated(
 ): Boolean {
     if (this === other) return true
     val props = getProperties<T>(context)
-    return props.all { prop -> prop.get(this) == prop.get(other) }
+    return props.all { prop -> propsEqual(prop.get(this), prop.get(other), context) }
+}
+
+fun propsEqual(
+    a: Any?,
+    b: Any?,
+    context: String,
+): Boolean {
+    if (a === b) return true
+    if (a == null || b == null) return a == b
+    if (a is Collection<*> && b is Collection<*>) {
+        return collectionsEqualIgnoringAnnotated(a, b, context)
+    }
+    return a == b
+}
+
+fun collectionsEqualIgnoringAnnotated(
+    a: Collection<*>,
+    b: Collection<*>,
+    context: String,
+): Boolean {
+    if (a.size != b.size) return false
+    val remaining = b.toMutableList()
+    return a.all { itemA ->
+        if (itemA == null) {
+            remaining.remove(null)
+        } else {
+            val matchIndex =
+                remaining.indexOfFirst { itemB ->
+                    itemB != null && equalsByProperties(itemA, itemB, context)
+                }
+            if (matchIndex >= 0) {
+                remaining.removeAt(matchIndex)
+                true
+            } else {
+                false
+            }
+        }
+    }
+}
+
+fun equalsByProperties(
+    a: Any,
+    b: Any,
+    context: String,
+): Boolean {
+    if (a === b) return true
+    if (a::class != b::class) return false
+    val props =
+        a::class
+            .memberProperties
+            .filter { prop -> prop.annotations.none { it is IgnoreForEquality && it.context == context } }
+    @Suppress("UNCHECKED_CAST")
+    return props.all { prop ->
+        val p = prop as KProperty1<Any, *>
+        propsEqual(p.get(a), p.get(b), context)
+    }
 }
 
 inline fun <reified T : Any> T.findDifferentProperties(
@@ -36,7 +93,7 @@ inline fun <reified T : Any> T.findDifferentProperties(
         .flatMap { prop ->
             val thisValue = prop.get(this)
             val thatValue = prop.get(other)
-            if (thisValue == thatValue) {
+            if (propsEqual(thisValue, thatValue, context)) {
                 emptyList()
             } else {
                 listOf(prop.name to (thisValue to thatValue))

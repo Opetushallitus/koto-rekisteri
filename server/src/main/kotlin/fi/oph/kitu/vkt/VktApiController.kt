@@ -115,7 +115,7 @@ class VktApiController(
         @RequestBody data: Henkilosuoritus<VktSuoritus>,
     ): ResponseEntity<*> {
         val enrichedData = validation.validateAndEnrich(data).getOrThrow()
-        vktRepository.save(enrichedData.toEntity())
+        customSuoritusRepository.save(enrichedData.toEntity())
         return TiedonsiirtoSuccess().toResponseEntity()
     }
 

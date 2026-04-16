@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt
 
+import fi.oph.kitu.IgnoreForEquality
 import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
@@ -15,6 +16,7 @@ import java.time.OffsetDateTime
 @Table(name = "vkt_suoritus")
 data class VktSuoritusEntity(
     @Id
+    @IgnoreForEquality("VKT")
     val id: Int? = null,
     val ilmoittautumisenId: String,
     val suorittajanOid: Oid,
@@ -28,6 +30,7 @@ data class VktSuoritusEntity(
     val osakokeet: Set<VktOsakoe>,
     @MappedCollection(idColumn = "suoritus_id")
     val tutkinnot: Set<VktTutkinto>,
+    @IgnoreForEquality("VKT")
     val createdAt: OffsetDateTime? = null,
     val koskiOpiskeluoikeus: Oid? = null,
     val koskiSiirtoKasitelty: Boolean = false,
@@ -35,6 +38,7 @@ data class VktSuoritusEntity(
     @Table(name = "vkt_osakoe")
     data class VktOsakoe(
         @Id
+        @IgnoreForEquality("VKT")
         val id: Int? = null,
         val tyyppi: Koodisto.VktOsakoe,
         val tutkintopaiva: LocalDate,
@@ -46,6 +50,7 @@ data class VktSuoritusEntity(
     @Table(name = "vkt_tutkinto")
     data class VktTutkinto(
         @Id
+        @IgnoreForEquality("VKT")
         val id: Int? = null,
         val tyyppi: Koodisto.VktKielitaito,
         val arviointipaiva: LocalDate?,
