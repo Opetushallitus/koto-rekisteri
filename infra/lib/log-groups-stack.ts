@@ -1,6 +1,7 @@
 import { aws_sns, Duration, Stack, StackProps } from "aws-cdk-lib"
 import {
   ComparisonOperator,
+  IAlarmAction,
   Stats,
   TreatMissingData,
 } from "aws-cdk-lib/aws-cloudwatch"
@@ -23,6 +24,7 @@ import { ITopic } from "aws-cdk-lib/aws-sns"
 export interface LogGroupsStackProps extends StackProps {
   alarmsSnsTopic: aws_sns.ITopic
   infoSnsTopic: aws_sns.ITopic
+  investigationAction: IAlarmAction
 }
 
 export class LogGroupsStack extends Stack {
@@ -79,6 +81,7 @@ export class LogGroupsStack extends Stack {
       })
 
     errorsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
+    errorsAlarm.addAlarmAction(props.investigationAction)
     errorsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
 
     const warningsAlarm = this.serviceLogGroup
@@ -98,6 +101,7 @@ export class LogGroupsStack extends Stack {
       })
 
     warningsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
+    warningsAlarm.addAlarmAction(props.investigationAction)
     warningsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
   }
 

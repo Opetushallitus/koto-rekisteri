@@ -11,7 +11,7 @@ import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager"
-import { TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
+import { IAlarmAction, TreatMissingData } from "aws-cdk-lib/aws-cloudwatch"
 import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
 import {
@@ -49,6 +49,7 @@ export interface ServiceStackProps extends StackProps {
   database: DatabaseCluster
   databaseName: string
   alarmSnsTopic: ITopic
+  investigationAction: IAlarmAction
   productionQuality: boolean
 }
 
@@ -92,6 +93,7 @@ export class ServiceStack extends Stack {
         treatMissingData: TreatMissingData.NOT_BREACHING,
       })
     alarm5xx.addAlarmAction(snsAction)
+    alarm5xx.addAlarmAction(props.investigationAction)
     alarm5xx.addOkAction(snsAction)
 
     const cluster = new Cluster(this, "Cluster", {
@@ -300,21 +302,23 @@ service:
       ManagedPolicy.fromAwsManagedPolicyName("AWSXrayWriteOnlyAccess"),
     )
 
-    this.service.service
+    const cpuAlarm = this.service.service
       .metricCpuUtilization()
       .createAlarm(this, "CpuUtilization", {
         threshold: 50,
         evaluationPeriods: 1,
       })
-      .addAlarmAction(snsAction)
+    cpuAlarm.addAlarmAction(snsAction)
+    cpuAlarm.addAlarmAction(props.investigationAction)
 
-    this.service.service
+    const memoryAlarm = this.service.service
       .metricMemoryUtilization()
       .createAlarm(this, "MemoryUtilization", {
         threshold: 50,
         evaluationPeriods: 1,
       })
-      .addAlarmAction(snsAction)
+    memoryAlarm.addAlarmAction(snsAction)
+    memoryAlarm.addAlarmAction(props.investigationAction)
 
     tehtavapankkiBucket.grantWrite(this.service.taskDefinition.taskRole)
   }
