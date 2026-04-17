@@ -13,7 +13,6 @@ import { Route53HealthChecksStack } from "./route53-health-checks-stack"
 import { ServiceStack } from "./service-stack"
 import { BackupsStack } from "./backups-stack"
 import { BackupResource } from "aws-cdk-lib/aws-backup"
-import { SlackBotStack } from "./slack-bot-stack"
 import { BastionStack } from "./bastion-stack"
 import { EcsRdsProxyStack } from "./ecs-rds-proxy-stack"
 import { KoskiAuditLogsIntegrationStack } from "./koski-audit-logs-integration-stack"
@@ -35,26 +34,16 @@ export class EnvironmentStage extends Stage {
 
     const alarmsStack = new AlarmsStack(this, "Alarms", {
       env,
+      slackWorkspaceId: environmentConfig.slackWorkspaceId,
+      slackAlarmsChannel: environmentConfig.slackAlarmsChannel,
+      slackInfoChannel: environmentConfig.slackInfoChannel,
     })
     const usEastAlarmsStack = new AlarmsStack(this, "AlarmsUsEast1", {
       env: { ...env, region: "us-east-1" },
+      slackWorkspaceId: environmentConfig.slackWorkspaceId,
+      slackAlarmsChannel: environmentConfig.slackAlarmsChannel,
+      slackInfoChannel: environmentConfig.slackInfoChannel,
     })
-
-    new SlackBotStack(this, "SlackBot", {
-      env,
-      slackChannel: props.environmentConfig.slackAlarmsChannel,
-      slackWorkspaceId: props.environmentConfig.slackWorkspaceId,
-      alarmTopics: [alarmsStack.alarmSnsTopic, usEastAlarmsStack.alarmSnsTopic],
-    })
-
-    if (props.environmentConfig.slackInfoChannel) {
-      new SlackBotStack(this, "InfoSlackBot", {
-        env,
-        slackChannel: props.environmentConfig.slackInfoChannel,
-        slackWorkspaceId: props.environmentConfig.slackWorkspaceId,
-        alarmTopics: [alarmsStack.infoSnsTopic, usEastAlarmsStack.infoSnsTopic],
-      })
-    }
 
     new DnsStack(this, "Dns", {
       env,

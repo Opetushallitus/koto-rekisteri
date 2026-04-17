@@ -1,5 +1,5 @@
 import * as cdk from "aws-cdk-lib"
-import { aws_sns, PhysicalName, StackProps } from "aws-cdk-lib"
+import { aws_chatbot, aws_sns, PhysicalName, StackProps } from "aws-cdk-lib"
 import { Construct } from "constructs"
 import {
   Effect,
@@ -15,8 +15,14 @@ import {
   IAlarm,
   IAlarmAction,
 } from "aws-cdk-lib/aws-cloudwatch"
+import { LoggingLevel } from "aws-cdk-lib/aws-chatbot"
+import { SlackChannel } from "./accounts"
 
-export interface AlarmsStackProps extends StackProps {}
+export interface AlarmsStackProps extends StackProps {
+  slackWorkspaceId: string
+  slackAlarmsChannel: SlackChannel
+  slackInfoChannel?: SlackChannel
+}
 
 export class AlarmsStack extends cdk.Stack {
   readonly alarmSnsTopic: aws_sns.Topic
@@ -30,7 +36,23 @@ export class AlarmsStack extends cdk.Stack {
     this.alarmSnsTopic = this.createSnsTopic("AlarmSnsTopic")
     this.infoSnsTopic = this.createSnsTopic("InfoSnsTopic")
 
-    this.investigationGroup = this.createInvestigationGroup()
+    const alarmsSlack = this.createSlackChannelConfiguration(
+      "SlackBot",
+      props.slackWorkspaceId,
+      props.slackAlarmsChannel,
+      [this.alarmSnsTopic],
+    )
+
+    if (props.slackInfoChannel) {
+      this.createSlackChannelConfiguration(
+        "InfoSlackBot",
+        props.slackWorkspaceId,
+        props.slackInfoChannel,
+        [this.infoSnsTopic],
+      )
+    }
+
+    this.investigationGroup = this.createInvestigationGroup(alarmsSlack)
     this.investigationAction = new InvestigationGroupAlarmAction(
       this.investigationGroup.attrArn,
     )
@@ -46,7 +68,24 @@ export class AlarmsStack extends cdk.Stack {
     return topic
   }
 
-  private createInvestigationGroup() {
+  private createSlackChannelConfiguration(
+    id: string,
+    slackWorkspaceId: string,
+    slackChannel: SlackChannel,
+    notificationTopics: aws_sns.ITopic[],
+  ) {
+    return new aws_chatbot.SlackChannelConfiguration(this, id, {
+      slackChannelId: slackChannel.id,
+      slackWorkspaceId,
+      slackChannelConfigurationName: slackChannel.name,
+      notificationTopics,
+      loggingLevel: LoggingLevel.INFO,
+    })
+  }
+
+  private createInvestigationGroup(
+    alarmsSlack: aws_chatbot.SlackChannelConfiguration,
+  ) {
     const role = new Role(this, "InvestigationGroupRole", {
       assumedBy: new ServicePrincipal("aiops.amazonaws.com"),
       managedPolicies: [
@@ -83,6 +122,12 @@ export class AlarmsStack extends cdk.Stack {
       roleArn: role.roleArn,
       retentionInDays: 90,
       investigationGroupPolicy: JSON.stringify(alarmsPolicy.toJSON()),
+      chatbotNotificationChannels: [
+        {
+          snsTopicArn: this.alarmSnsTopic.topicArn,
+          chatConfigurationArns: [alarmsSlack.slackChannelConfigurationArn],
+        },
+      ],
     })
   }
 }
