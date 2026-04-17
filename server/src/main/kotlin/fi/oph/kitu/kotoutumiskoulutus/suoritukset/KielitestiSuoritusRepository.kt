@@ -1,8 +1,10 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
+import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.equalsIgnoringAnnotated
 import fi.oph.kitu.mock.toInstant
+import fi.oph.kitu.organisaatiot.OrganisaatioService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
@@ -18,6 +20,9 @@ interface KielitestiSuoritusRepository :
 
 @Repository
 class CustomKielitestiSuoritusRepository {
+    @Autowired
+    private lateinit var organisaatioService: OrganisaatioService
+
     @Autowired
     private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
 
@@ -46,7 +51,13 @@ class CustomKielitestiSuoritusRepository {
         column: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
         direction: SortDirection = SortDirection.DESC,
     ): List<KielitestiSuoritus> {
-        val searchQuery = filter.whereSql()
+        val orgOids =
+            filter.search
+                ?.let { organisaatioService.searchOrganisaatiot(it) }
+                ?.nimet
+                ?.keys
+                ?.toList() ?: emptyList()
+        val searchQuery = filter.withOrgOids(orgOids).whereSql()
 
         val sql =
             """
@@ -57,7 +68,7 @@ class CustomKielitestiSuoritusRepository {
             ${searchQuery.orEmpty()}
             ORDER BY ${column.entityName} $direction
             """.trimIndent()
-        return jdbcNamedParameterTemplate.query(sql, filter.params(), KielitestiSuoritus.fromRow)
+        return jdbcNamedParameterTemplate.query(sql, filter.withOrgOids(orgOids).params(), KielitestiSuoritus.fromRow)
     }
 
     fun exists(suoritus: KielitestiSuoritus): Boolean {
@@ -89,15 +100,18 @@ data class KielitestiSuoritusFilter(
     val suoritusalku: LocalDate? = null,
     val suoritusloppu: LocalDate? = null,
     val testikieli: Testikieli? = null,
+    val orgOids: List<Oid> = emptyList(),
 ) {
     val alkupaivaStrName = "filter_alkupaiva"
     val loppupaivaStrName = "filter_loppupaiva"
     val testikieliStrName = "filter_kieli"
 
+    fun withOrgOids(oids: List<Oid>): KielitestiSuoritusFilter = copy(orgOids = oids)
+
     fun whereSql(): String? {
         val queries =
             listOfNotNull(
-                searchQuery(),
+                searchAndOrgQuery(),
                 testikieliQuery(),
                 alkupaivaQuery(),
                 loppupaivaQuery(),
@@ -120,6 +134,13 @@ data class KielitestiSuoritusFilter(
             ?.mapIndexed { index, term -> Pair("search_str_$index", "%$term%") }
             ?.toMap() ?: mapOf()
 
+    private fun searchAndOrgQuery(): String? {
+        val textSearch = searchQuery()
+        val orgSearch = orgOidsQuery()
+        val parts = listOfNotNull(textSearch, orgSearch)
+        return if (parts.isEmpty()) null else parts.joinToString(" OR ")
+    }
+
     private fun searchQuery(): String? =
         searchParams().let { params ->
             return if (params.isEmpty()) {
@@ -140,6 +161,11 @@ data class KielitestiSuoritusFilter(
                         """.trimIndent()
                     }.joinToString(" OR ")
             }
+        }
+
+    private fun orgOidsQuery(): String? =
+        orgOids.takeIf { it.isNotEmpty() && it.size < 10 }?.let {
+            "oppilaitos_oid IN (${it.joinToString(",") { oid -> "'$oid'" }})"
         }
 
     private fun testikieliQuery() = testikieli?.let { "testikieli = :$testikieliStrName" }
