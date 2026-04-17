@@ -77,7 +77,9 @@ export class AlarmsStack extends cdk.Stack {
     return new aws_chatbot.SlackChannelConfiguration(this, id, {
       slackChannelId: slackChannel.id,
       slackWorkspaceId,
-      slackChannelConfigurationName: slackChannel.name,
+      // Chatbot configuration names are account-globally unique, so two
+      // AlarmsStacks in the same env (primary + us-east-1) need distinct names.
+      slackChannelConfigurationName: `${slackChannel.name}-${this.region}`,
       notificationTopics,
       loggingLevel: LoggingLevel.INFO,
     })
