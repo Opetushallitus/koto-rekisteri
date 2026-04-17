@@ -32,17 +32,20 @@ export class EnvironmentStage extends Stage {
       env,
     })
 
-    const alarmsStack = new AlarmsStack(this, "Alarms", {
-      env,
-      slackWorkspaceId: environmentConfig.slackWorkspaceId,
-      slackAlarmsChannel: environmentConfig.slackAlarmsChannel,
-      slackInfoChannel: environmentConfig.slackInfoChannel,
-    })
+    // us-east-1 must be created first so the primary stack can subscribe its
+    // topics to the single shared Slack configuration.
     const usEastAlarmsStack = new AlarmsStack(this, "AlarmsUsEast1", {
       env: { ...env, region: "us-east-1" },
-      slackWorkspaceId: environmentConfig.slackWorkspaceId,
-      slackAlarmsChannel: environmentConfig.slackAlarmsChannel,
-      slackInfoChannel: environmentConfig.slackInfoChannel,
+    })
+    const alarmsStack = new AlarmsStack(this, "Alarms", {
+      env,
+      slack: {
+        workspaceId: environmentConfig.slackWorkspaceId,
+        alarmsChannel: environmentConfig.slackAlarmsChannel,
+        infoChannel: environmentConfig.slackInfoChannel,
+        additionalAlarmTopics: [usEastAlarmsStack.alarmSnsTopic],
+        additionalInfoTopics: [usEastAlarmsStack.infoSnsTopic],
+      },
     })
 
     new DnsStack(this, "Dns", {
