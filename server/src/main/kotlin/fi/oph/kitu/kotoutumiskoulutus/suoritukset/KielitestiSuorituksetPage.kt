@@ -65,7 +65,7 @@ object KielitestiSuorituksetPage {
                         type = InputType.search
                         name = "search"
                         value = filterParams.search
-                        placeholder = "Oppijanumero, nimi tai muu hakusana"
+                        placeholder = "Oppijanumero, nimi, oppilaitoksen nimi tai muu hakusana"
                     }
                     button {
                         testId("search-button")
