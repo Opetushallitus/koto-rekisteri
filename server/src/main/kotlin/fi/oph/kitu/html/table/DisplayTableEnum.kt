@@ -110,7 +110,6 @@ object DisplayTableCsvRenderer {
 
         data.forEach { row ->
             val csvRow = columns.joinToString(SEPARATOR) { col -> escape(col.getValue(row)) }
-            println(csvRow)
             output.write("$csvRow\n".toByteArray())
         }
 
