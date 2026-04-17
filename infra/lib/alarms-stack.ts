@@ -1,7 +1,14 @@
 import * as cdk from "aws-cdk-lib"
 import { aws_sns, PhysicalName, StackProps } from "aws-cdk-lib"
 import { Construct } from "constructs"
-import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam"
+import {
+  Effect,
+  ManagedPolicy,
+  PolicyDocument,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from "aws-cdk-lib/aws-iam"
 import { CfnInvestigationGroup } from "aws-cdk-lib/aws-aiops"
 import {
   AlarmActionConfig,
@@ -47,10 +54,35 @@ export class AlarmsStack extends cdk.Stack {
       ],
     })
 
+    // CloudWatch alarms can't start investigations unless the group's resource
+    // policy grants aiops.alarms.cloudwatch.amazonaws.com explicit access.
+    const alarmsPolicy = new PolicyDocument({
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [
+            new ServicePrincipal("aiops.alarms.cloudwatch.amazonaws.com"),
+          ],
+          actions: [
+            "aiops:CreateInvestigation",
+            "aiops:CreateInvestigationEvent",
+          ],
+          resources: ["*"],
+          conditions: {
+            StringEquals: { "aws:SourceAccount": this.account },
+            ArnLike: {
+              "aws:SourceArn": `arn:${this.partition}:cloudwatch:${this.region}:${this.account}:alarm:*`,
+            },
+          },
+        }),
+      ],
+    })
+
     return new CfnInvestigationGroup(this, "InvestigationGroup", {
       name: `kitu-${this.stackName}`,
       roleArn: role.roleArn,
       retentionInDays: 90,
+      investigationGroupPolicy: JSON.stringify(alarmsPolicy.toJSON()),
     })
   }
 }
