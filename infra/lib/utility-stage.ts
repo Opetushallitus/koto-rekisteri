@@ -4,7 +4,6 @@ import { Construct } from "constructs"
 import { ContainerRepositoryStack } from "./container-repository-stack"
 import { GithubActionsStack } from "./github-actions-stack"
 import { AlarmsStack } from "./alarms-stack"
-import { SlackBotStack } from "./slack-bot-stack"
 import { SlackChannel } from "./accounts"
 
 interface UtilityStageProps extends StageProps {
@@ -25,13 +24,8 @@ export class UtilityStage extends Stage {
 
     const alarmsStack = new AlarmsStack(this, "Alarms", {
       env: props.env,
-    })
-
-    new SlackBotStack(this, "SlackBot", {
-      env: props.env,
-      slackChannel: props.slackChannel,
       slackWorkspaceId: props.slackWorkspaceId,
-      alarmTopics: [alarmsStack.alarmSnsTopic],
+      slackAlarmsChannel: props.slackChannel,
     })
 
     this.imageBuildsStack = new ContainerRepositoryStack(this, "ImageBuilds", {
