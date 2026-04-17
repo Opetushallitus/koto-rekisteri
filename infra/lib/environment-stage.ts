@@ -65,6 +65,7 @@ export class EnvironmentStage extends Stage {
       env,
       alarmsSnsTopic: alarmsStack.alarmSnsTopic,
       infoSnsTopic: alarmsStack.infoSnsTopic,
+      investigationAction: alarmsStack.investigationAction,
     })
 
     const networkStack = new NetworkStack(this, "Network", {
@@ -112,6 +113,7 @@ export class EnvironmentStage extends Stage {
       databaseName: environmentConfig.databaseName,
       image: props.serviceImage,
       alarmSnsTopic: alarmsStack.alarmSnsTopic,
+      investigationAction: alarmsStack.investigationAction,
       productionQuality: environmentConfig.productionQuality,
     })
 
@@ -119,6 +121,7 @@ export class EnvironmentStage extends Stage {
       env: { ...env, region: "us-east-1" },
       domainName: environmentConfig.domainName,
       alarmsSnsTopic: usEastAlarmsStack.alarmSnsTopic,
+      investigationAction: usEastAlarmsStack.investigationAction,
     })
 
     new BackupsStack(this, "Backups", {
