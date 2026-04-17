@@ -1,6 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.SortDirection
+import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetPage
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetParams
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusColumn
@@ -32,12 +34,13 @@ class KielitestiViewController(
         params: KielitestiSuorituksetParams = KielitestiSuorituksetParams(),
     ): ResponseEntity<String> {
         val organisaatiot = organisaatioService.getOrganisaatiot()
+        val numberOfSuoritukset = 10 // TODO
 
         return ResponseEntity.ok(
             KielitestiSuorituksetPage.render(
                 suoritukset =
                     suoritusService
-                        .getSuoritukset(params.toFilter(), params.sortColumn, params.sortDirection)
+                        .getSuoritukset(params.toFilter(), params.toOrder())
                         .map { it.copy(oppilaitos = organisaatiot.nimet[it.oppilaitosOid]?.fi) }
                         .let {
                             when (params.sortColumn) {
@@ -59,6 +62,14 @@ class KielitestiViewController(
                         .count()
                         .toLong(),
                 filterParams = params,
+                numberOfSuoritukset = numberOfSuoritukset,
+                pagination =
+                    Pagination.valueOf(
+                        currentPageNumber = params.page,
+                        numberOfRows = numberOfSuoritukset,
+                        pageSize = params.limit,
+                        url = { currentPage -> httpParams(params.toMap().plus("page" to currentPage)) },
+                    ),
             ),
         )
     }
