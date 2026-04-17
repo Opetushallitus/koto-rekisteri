@@ -18,10 +18,19 @@ import {
 import { LoggingLevel } from "aws-cdk-lib/aws-chatbot"
 import { SlackChannel } from "./accounts"
 
+export interface AlarmsStackSlackProps {
+  workspaceId: string
+  alarmsChannel: SlackChannel
+  infoChannel?: SlackChannel
+  // Topics from other AlarmsStacks (e.g. the us-east-1 mirror) that should
+  // share this stack's Slack configuration. Needed because Chatbot only allows
+  // one SlackChannelConfiguration per Slack channel per account.
+  additionalAlarmTopics?: aws_sns.ITopic[]
+  additionalInfoTopics?: aws_sns.ITopic[]
+}
+
 export interface AlarmsStackProps extends StackProps {
-  slackWorkspaceId: string
-  slackAlarmsChannel: SlackChannel
-  slackInfoChannel?: SlackChannel
+  slack?: AlarmsStackSlackProps
 }
 
 export class AlarmsStack extends cdk.Stack {
@@ -36,19 +45,21 @@ export class AlarmsStack extends cdk.Stack {
     this.alarmSnsTopic = this.createSnsTopic("AlarmSnsTopic")
     this.infoSnsTopic = this.createSnsTopic("InfoSnsTopic")
 
-    const alarmsSlack = this.createSlackChannelConfiguration(
-      "SlackBot",
-      props.slackWorkspaceId,
-      props.slackAlarmsChannel,
-      [this.alarmSnsTopic],
-    )
+    const alarmsSlack = props.slack
+      ? this.createSlackChannelConfiguration(
+          "SlackBot",
+          props.slack.workspaceId,
+          props.slack.alarmsChannel,
+          [this.alarmSnsTopic, ...(props.slack.additionalAlarmTopics ?? [])],
+        )
+      : undefined
 
-    if (props.slackInfoChannel) {
+    if (props.slack?.infoChannel) {
       this.createSlackChannelConfiguration(
         "InfoSlackBot",
-        props.slackWorkspaceId,
-        props.slackInfoChannel,
-        [this.infoSnsTopic],
+        props.slack.workspaceId,
+        props.slack.infoChannel,
+        [this.infoSnsTopic, ...(props.slack.additionalInfoTopics ?? [])],
       )
     }
 
@@ -77,16 +88,14 @@ export class AlarmsStack extends cdk.Stack {
     return new aws_chatbot.SlackChannelConfiguration(this, id, {
       slackChannelId: slackChannel.id,
       slackWorkspaceId,
-      // Chatbot configuration names are account-globally unique, so two
-      // AlarmsStacks in the same env (primary + us-east-1) need distinct names.
-      slackChannelConfigurationName: `${slackChannel.name}-${this.region}`,
+      slackChannelConfigurationName: slackChannel.name,
       notificationTopics,
       loggingLevel: LoggingLevel.INFO,
     })
   }
 
   private createInvestigationGroup(
-    alarmsSlack: aws_chatbot.SlackChannelConfiguration,
+    alarmsSlack: aws_chatbot.SlackChannelConfiguration | undefined,
   ) {
     const role = new Role(this, "InvestigationGroupRole", {
       assumedBy: new ServicePrincipal("aiops.amazonaws.com"),
@@ -124,10 +133,15 @@ export class AlarmsStack extends cdk.Stack {
       roleArn: role.roleArn,
       retentionInDays: 90,
       investigationGroupPolicy: JSON.stringify(alarmsPolicy.toJSON()),
+      // When a Slack config exists, route investigation events through
+      // Chatbot for Q-curated formatting. Otherwise just publish to SNS and
+      // rely on whichever stack owns the Slack config to fan it out.
       chatbotNotificationChannels: [
         {
           snsTopicArn: this.alarmSnsTopic.topicArn,
-          chatConfigurationArns: [alarmsSlack.slackChannelConfigurationArn],
+          ...(alarmsSlack && {
+            chatConfigurationArns: [alarmsSlack.slackChannelConfigurationArn],
+          }),
         },
       ],
     })

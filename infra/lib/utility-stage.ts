@@ -24,8 +24,10 @@ export class UtilityStage extends Stage {
 
     const alarmsStack = new AlarmsStack(this, "Alarms", {
       env: props.env,
-      slackWorkspaceId: props.slackWorkspaceId,
-      slackAlarmsChannel: props.slackChannel,
+      slack: {
+        workspaceId: props.slackWorkspaceId,
+        alarmsChannel: props.slackChannel,
+      },
     })
 
     this.imageBuildsStack = new ContainerRepositoryStack(this, "ImageBuilds", {
