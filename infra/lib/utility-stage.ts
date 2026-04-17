@@ -24,14 +24,10 @@ export class UtilityStage extends Stage {
 
     const alarmsStack = new AlarmsStack(this, "Alarms", {
       env: props.env,
-      // TEMP: slack-konfiguraatio jätetty pois yhden deployn ajaksi, jotta
-      // CloudFormation luopuu orvoksi jääneestä Chatbot-resurssista
-      // (manuaalisesti poistettu). Palauta tämä blokki välittömästi sen
-      // jälkeen kun Util-Alarms on deployautunut puhtaasti.
-      // slack: {
-      //   workspaceId: props.slackWorkspaceId,
-      //   alarmsChannel: props.slackChannel,
-      // },
+      slack: {
+        workspaceId: props.slackWorkspaceId,
+        alarmsChannel: props.slackChannel,
+      },
     })
 
     this.imageBuildsStack = new ContainerRepositoryStack(this, "ImageBuilds", {
