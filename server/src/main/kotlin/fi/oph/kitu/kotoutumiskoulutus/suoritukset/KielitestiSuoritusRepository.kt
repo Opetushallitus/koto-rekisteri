@@ -3,7 +3,6 @@ package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.equalsIgnoringAnnotated
-import fi.oph.kitu.mock.toInstant
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
@@ -48,8 +47,7 @@ class CustomKielitestiSuoritusRepository {
 
     fun findSuoritukset(
         filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter(),
-        column: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
-        direction: SortDirection = SortDirection.DESC,
+        order: KielitestiSuoritusOrder = KielitestiSuoritusOrder(),
     ): List<KielitestiSuoritus> {
         val orgOids =
             filter.search
@@ -66,7 +64,8 @@ class CustomKielitestiSuoritusRepository {
                 ORDER BY kurssi_id, oppijanumero, suoritusaika, last_modified DESC
                 )
             ${searchQuery.orEmpty()}
-            ORDER BY ${column.entityName} $direction
+            ORDER BY $order
+            ${order.pageSql().orEmpty()}
             """.trimIndent()
         return jdbcNamedParameterTemplate.query(sql, filter.withOrgOids(orgOids).params(), KielitestiSuoritus.fromRow)
     }
@@ -173,4 +172,29 @@ data class KielitestiSuoritusFilter(
     private fun alkupaivaQuery() = suoritusalku?.let { "suoritusaika >= :$alkupaivaStrName" }
 
     private fun loppupaivaQuery() = suoritusloppu?.let { "suoritusaika <= :$loppupaivaStrName" }
+}
+
+data class KielitestiSuoritusOrder(
+    val sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
+    val sortDirection: SortDirection = SortDirection.DESC,
+    val pageNumber: Int? = 0,
+    val pageSize: Int = DEFAULT_PAGE_SIZE,
+) {
+    override fun toString(): String = "${sortColumn.entityName} $sortDirection"
+
+    fun pageSql(): String? =
+        pageNumber?.let {
+            "LIMIT $pageSize OFFSET ${pageSize * (pageNumber)}"
+        }
+
+    fun toMap() =
+        mapOf(
+            "sortColumn" to sortColumn.name,
+            "sortDirection" to sortDirection.name,
+            "pageNumber" to pageNumber.toString(),
+        )
+
+    companion object {
+        const val DEFAULT_PAGE_SIZE = 50
+    }
 }

@@ -22,11 +22,10 @@ class KielitestiSuoritusService(
     @WithSpan
     fun getSuoritukset(
         filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter(),
-        orderBy: KielitestiSuoritusColumn,
-        orderByDirection: SortDirection,
+        order: KielitestiSuoritusOrder = KielitestiSuoritusOrder(),
     ): List<KielitestiSuoritus> =
         customKielitestiSuoritusRepository
-            .findSuoritukset(filter, orderBy, orderByDirection)
+            .findSuoritukset(filter, order)
             .toList()
             .also {
                 auditLogger.logAllInternalOnly("Kielitesti suoritus viewed", it) { suoritus ->
@@ -47,14 +46,13 @@ class KielitestiSuoritusService(
 
     fun getSuorituksetForCsv(
         filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter(),
-        orderBy: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
-        orderByDirection: SortDirection = SortDirection.DESC,
+        order: KielitestiSuoritusOrder = KielitestiSuoritusOrder(),
     ): List<KielitestiSuoritus> =
         tracer
             .spanBuilder("KoealustaService.getSuorituksetForCsv")
             .startSpan()
             .use { span ->
-                val suoritukset = getSuoritukset(filter, orderBy, orderByDirection)
+                val suoritukset = getSuoritukset(filter, order)
                 span.setAttribute("dataCount", suoritukset.count())
 
                 val organisaatiot = organisaatioService.getOrganisaatiot()

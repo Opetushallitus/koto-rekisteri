@@ -8,7 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat
 import java.time.LocalDate
 
 data class KielitestiSuorituksetParams(
-    val limit: Int = 100,
+    val limit: Int = KielitestiSuoritusOrder.DEFAULT_PAGE_SIZE,
     val page: Int = 1,
     val sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
     val sortDirection: SortDirection = SortDirection.DESC,
@@ -26,6 +26,13 @@ data class KielitestiSuorituksetParams(
             suoritusalku = suoritusalku,
             suoritusloppu = suoritusloppu,
             testikieli = testikieli,
+        )
+
+    fun toOrder(): KielitestiSuoritusOrder =
+        KielitestiSuoritusOrder(
+            sortColumn = sortColumn,
+            sortDirection = sortDirection,
+            pageNumber = page - 1,
         )
 
     fun toMap(): Map<String, String?> =

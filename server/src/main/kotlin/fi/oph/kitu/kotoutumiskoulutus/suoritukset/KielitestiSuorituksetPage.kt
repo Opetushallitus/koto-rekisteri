@@ -2,10 +2,12 @@ package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.errorsArticle
 import fi.oph.kitu.html.hiddenValue
 import fi.oph.kitu.html.hiddenValues
 import fi.oph.kitu.html.input
+import fi.oph.kitu.html.pagination
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.dateFilter
@@ -47,6 +49,8 @@ object KielitestiSuorituksetPage {
         suoritukset: List<KielitestiSuoritus>,
         errorsCount: Long,
         filterParams: KielitestiSuorituksetParams,
+        numberOfSuoritukset: Int,
+        pagination: Pagination,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -80,7 +84,7 @@ object KielitestiSuorituksetPage {
                     nav {
                         ul {
                             li {
-                                +"Suorituksia yhteensä: ${suoritukset.size}"
+                                +"Suorituksia yhteensä: $numberOfSuoritukset"
                             }
                             li { kielitestiCsvDownloadButton(filterParams) }
                             li { kielitestiSuoritusFilterButton(filterParams) }
@@ -112,6 +116,7 @@ object KielitestiSuorituksetPage {
                     )
                 }
             }
+            pagination(pagination)
         }
 }
 
