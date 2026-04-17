@@ -39,13 +39,17 @@ export class EnvironmentStage extends Stage {
     })
     const alarmsStack = new AlarmsStack(this, "Alarms", {
       env,
-      slack: {
-        workspaceId: environmentConfig.slackWorkspaceId,
-        alarmsChannel: environmentConfig.slackAlarmsChannel,
-        infoChannel: environmentConfig.slackInfoChannel,
-        additionalAlarmTopics: [usEastAlarmsStack.alarmSnsTopic],
-        additionalInfoTopics: [usEastAlarmsStack.infoSnsTopic],
-      },
+      // TEMP: slack-konfiguraatio jätetty pois yhden deployn ajaksi, jotta
+      // CloudFormation luopuu orvoksi jääneestä Chatbot-resurssista
+      // (manuaalisesti poistettu). Palauta tämä blokki välittömästi sen
+      // jälkeen kun Alarms-pinot ovat deployautuneet puhtaasti.
+      // slack: {
+      //   workspaceId: environmentConfig.slackWorkspaceId,
+      //   alarmsChannel: environmentConfig.slackAlarmsChannel,
+      //   infoChannel: environmentConfig.slackInfoChannel,
+      //   additionalAlarmTopics: [usEastAlarmsStack.alarmSnsTopic],
+      //   additionalInfoTopics: [usEastAlarmsStack.infoSnsTopic],
+      // },
     })
 
     new DnsStack(this, "Dns", {
