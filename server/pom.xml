@@ -72,6 +72,19 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- OTel's OTLP sender pulls okhttp-jvm 5.x, which calls Okio.socket(Socket)
+                 (added in Okio 3.10). opentelemetry-aws-resources drags in okhttp 4.12
+                 which pins Okio 3.6 — force a newer Okio so OTLP span export works. -->
+            <dependency>
+                <groupId>com.squareup.okio</groupId>
+                <artifactId>okio</artifactId>
+                <version>3.16.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okio</groupId>
+                <artifactId>okio-jvm</artifactId>
+                <version>3.16.4</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
