@@ -1,15 +1,15 @@
 package fi.oph.kitu.csvparsing
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
 import fi.oph.kitu.Oid
+import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueSerializer
 
-class OidSerializer : JsonSerializer<Oid>() {
+class OidSerializer : ValueSerializer<Oid>() {
     override fun serialize(
         oid: Oid?,
         jsonGenerator: JsonGenerator?,
-        serializerProvider: SerializerProvider?,
+        serializationContext: SerializationContext,
     ) {
         jsonGenerator?.writeString(oid?.toString())
     }

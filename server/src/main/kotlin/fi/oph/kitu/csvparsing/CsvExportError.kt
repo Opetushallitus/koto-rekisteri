@@ -1,6 +1,6 @@
 package fi.oph.kitu.csvparsing
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import tools.jackson.databind.exc.InvalidFormatException
 
 class InvalidFormatCsvExportError(
     lineNumber: Int,
@@ -11,7 +11,7 @@ class InvalidFormatCsvExportError(
         context,
         exception,
     ) {
-    val fieldWithValidationError: String? = exception.path.firstOrNull()?.fieldName
+    val fieldWithValidationError: String? = exception.path.firstOrNull()?.propertyName
     val valueWithValidationError: String = exception.value.toString()
 
     init {

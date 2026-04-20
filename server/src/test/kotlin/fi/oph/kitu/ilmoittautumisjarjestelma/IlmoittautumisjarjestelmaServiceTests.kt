@@ -1,6 +1,5 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
-import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
@@ -34,6 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.ResponseEntity
+import tools.jackson.databind.JsonNode
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.Test

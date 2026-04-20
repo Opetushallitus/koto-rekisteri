@@ -2,12 +2,12 @@
 
 package fi.oph.kitu.html
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.NumericNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.TextNode
 import kotlinx.html.*
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ArrayNode
+import tools.jackson.databind.node.NumericNode
+import tools.jackson.databind.node.ObjectNode
+import tools.jackson.databind.node.StringNode
 
 fun FlowContent.json(node: JsonNode) {
     when (node) {
@@ -29,7 +29,7 @@ fun FlowContent.json(node: JsonNode) {
             }
         }
 
-        is TextNode -> {
+        is StringNode -> {
             +node.textValue()
         }
 

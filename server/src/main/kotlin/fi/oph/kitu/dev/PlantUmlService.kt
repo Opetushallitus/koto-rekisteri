@@ -142,7 +142,7 @@ interface PumlRow {
                 "org.springframework.*" to "Spring.",
                 "io.opentelemetry.*" to "OpenTelemetry.",
                 "com.github.kagkarlsson.scheduler.*" to "Scheduler.",
-                "com.fasterxml.jackson.*" to "Jackson.",
+                "tools.jackson.*" to "Jackson.",
                 "org.apereo.cas.*" to "CAS.",
                 "org.flyway.*" to "Flyway.",
                 "io.awspring.*" to "AWS.",
