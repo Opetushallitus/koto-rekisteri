@@ -1,6 +1,8 @@
 package fi.oph.kitu
 
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.web.client.RestClient
 import tools.jackson.core.StreamReadConstraints
@@ -31,6 +33,20 @@ fun <T : Any> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): R
             .headers(response.headers)
             .body(response.bodyTo(type))
     }
+
+// Spring 7's default StringHttpMessageConverter only advertises text/*, so reading an
+// application/json response into String (e.g. retrieveEntitySafely(String::class.java))
+// falls through to Jackson and fails. Prepend a lenient converter that also claims
+// application/json, before the Jackson converter takes over.
+fun RestClient.Builder.withLenientStringConverter(): RestClient.Builder {
+    val lenient =
+        StringHttpMessageConverter(Charsets.UTF_8).apply {
+            supportedMediaTypes = listOf(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)
+        }
+    return this.configureMessageConverters { cs ->
+        cs.registerDefaults().configureMessageConvertersList { list -> list.add(0, lenient) }
+    }
+}
 
 // 200 000 000 is 10x the default
 fun RestClient.Builder.withJacksonStreamMaxStringLength(maxStringLength: Int = 200_000_000): RestClient.Builder =

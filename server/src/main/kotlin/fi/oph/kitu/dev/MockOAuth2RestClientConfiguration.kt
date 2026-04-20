@@ -1,5 +1,6 @@
 package fi.oph.kitu.dev
 
+import fi.oph.kitu.withLenientStringConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -9,5 +10,5 @@ import org.springframework.web.client.RestClient
 @Configuration
 class MockOAuth2RestClientConfiguration {
     @Bean
-    fun oauth2RestClient() = RestClient.builder().build()
+    fun oauth2RestClient() = RestClient.builder().withLenientStringConverter().build()
 }

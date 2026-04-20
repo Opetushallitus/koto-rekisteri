@@ -8,10 +8,10 @@ import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorR
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
+import fi.oph.kitu.withLenientStringConverter
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
-import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
@@ -33,21 +33,11 @@ class KoealustaService(
     @Value("\${kitu.kotoutumiskoulutus.koealusta.baseurl}")
     lateinit var koealustaBaseUrl: String
 
-    // Koealusta replies with JSON but we pass the raw text to KoealustaMappingService.
-    // Spring 7's StringHttpMessageConverter only accepts text/* by default, so broaden it and
-    // place it ahead of the Jackson converter so it wins when reading into String.
     private val restClient by lazy {
-        val lenientStringConverter =
-            StringHttpMessageConverter(Charsets.UTF_8).apply {
-                supportedMediaTypes = listOf(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)
-            }
         restClientBuilder
             .baseUrl(koealustaBaseUrl)
-            .configureMessageConverters { cs ->
-                cs
-                    .registerDefaults()
-                    .configureMessageConvertersList { list -> list.add(0, lenientStringConverter) }
-            }.build()
+            .withLenientStringConverter()
+            .build()
     }
 
     fun importSuoritukset(from: Instant): Instant =
