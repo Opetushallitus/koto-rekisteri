@@ -31,7 +31,7 @@ class KielitestiApiController(
     @GetMapping("/suoritukset", produces = ["text/csv"])
     fun getSuorituksetAsCsv(
         @ModelAttribute params: KielitestiSuorituksetParams = KielitestiSuorituksetParams(),
-    ): ResponseEntity<StreamingResponseBody?> =
+    ): ResponseEntity<StreamingResponseBody> =
         ResponseEntity
             .ok()
             .contentType(MediaType.parseMediaType("text/csv"))

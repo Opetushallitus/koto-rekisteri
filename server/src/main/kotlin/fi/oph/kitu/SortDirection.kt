@@ -27,7 +27,7 @@ fun SortDirection.toSymbol(): String =
         SortDirection.DESC -> "▼"
     }
 
-fun <T, ID> PagingAndSortingRepository<T, ID>.findAllSorted(
+fun <T : Any, ID : Any> PagingAndSortingRepository<T, ID>.findAllSorted(
     entityName: String,
     orderByDirection: SortDirection,
 ) = this.findAll(orderByDirection.toSort(entityName))

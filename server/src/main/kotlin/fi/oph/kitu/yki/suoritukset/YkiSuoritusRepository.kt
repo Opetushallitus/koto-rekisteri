@@ -20,6 +20,7 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -435,7 +436,7 @@ class YkiSuoritusRepository {
     )
 
     @WithSpan
-    private inline fun <reified T> insertInto(
+    private inline fun <reified T : Any> insertInto(
         table: String,
         values: Map<String, Any?>,
         onConflict: ConflictHandler? = null,
@@ -466,8 +467,11 @@ class YkiSuoritusRepository {
             null
         } else {
             jdbcTemplate
-                .queryForList(sql, T::class.java, *values.values.toTypedArray())
-                .firstOrNull()
+                .query(
+                    sql,
+                    SingleColumnRowMapper(T::class.java),
+                    *values.values.toTypedArray(),
+                ).firstOrNull()
         }
     }
 
