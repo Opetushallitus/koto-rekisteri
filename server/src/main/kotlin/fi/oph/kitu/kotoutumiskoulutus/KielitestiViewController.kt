@@ -34,13 +34,14 @@ class KielitestiViewController(
         params: KielitestiSuorituksetParams = KielitestiSuorituksetParams(),
     ): ResponseEntity<String> {
         val organisaatiot = organisaatioService.getOrganisaatiot()
-        val numberOfSuoritukset = 10 // TODO
+        val filter = params.toFilter()
+        val suoritukset = suoritusService.getSuoritukset(filter, params.toOrder())
+        val numberOfSuoritukset = suoritusService.countSuoritukset(filter)
 
         return ResponseEntity.ok(
             KielitestiSuorituksetPage.render(
                 suoritukset =
-                    suoritusService
-                        .getSuoritukset(params.toFilter(), params.toOrder())
+                    suoritukset
                         .map { it.copy(oppilaitos = organisaatiot.nimet[it.oppilaitosOid]?.fi) }
                         .let {
                             when (params.sortColumn) {
