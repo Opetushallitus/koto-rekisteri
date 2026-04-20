@@ -7,6 +7,13 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
+    <!-- Tomcat logs HTTP request parsing errors (e.g. malicious traffic from
+         ThinkPHP-style scanners) at INFO with the IllegalArgumentException
+         attached. The structured log encoder then emits stack_trace and
+         error.type fields which match the CloudWatch ErrorsAlarm. Raise the
+         threshold to WARN so client-side junk traffic does not page us. -->
+    <logger name="org.apache.coyote.http11.Http11Processor" level="WARN"/>
+
     <springProfile name="!(untuva | qa | prod)">
         <appender name="AUDIT_LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>logs/audit.log</file>
