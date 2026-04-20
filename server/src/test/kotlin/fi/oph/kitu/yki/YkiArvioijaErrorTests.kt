@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.lang.RuntimeException
 import java.time.Instant
 import kotlin.test.assertEquals
@@ -27,7 +27,7 @@ class YkiArvioijaErrorTests(
     @param:Autowired private val repository: YkiArvioijaErrorRepository,
     @param:Autowired private val service: YkiArvioijaErrorService,
     @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
-    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer,
 ) {
     @BeforeEach
     fun nukeDb() {

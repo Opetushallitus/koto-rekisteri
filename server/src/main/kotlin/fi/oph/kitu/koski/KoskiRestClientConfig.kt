@@ -26,9 +26,10 @@ class KoskiRestClientConfig(
         return restClientBuilder
             .baseUrl(koskiBaseUrl)
             .defaultHeader("Authorization", "Basic $basicAuthToken")
-            .messageConverters { cs ->
-                cs.removeIf(JacksonJsonHttpMessageConverter::class.java::isInstance)
-                cs.add(JacksonJsonHttpMessageConverter(KoskiRequestMapper.getObjectMapper()))
+            .configureMessageConverters { cs ->
+                cs.registerDefaults().withJsonConverter(
+                    JacksonJsonHttpMessageConverter(KoskiRequestMapper.getObjectMapper()),
+                )
             }.build()
     }
 }

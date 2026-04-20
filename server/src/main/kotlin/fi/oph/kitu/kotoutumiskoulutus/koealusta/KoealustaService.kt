@@ -34,17 +34,19 @@ class KoealustaService(
     lateinit var koealustaBaseUrl: String
 
     // Koealusta replies with JSON but we pass the raw text to KoealustaMappingService.
-    // Spring 7's StringHttpMessageConverter only accepts text/* by default, so broaden it here.
+    // Spring 7's StringHttpMessageConverter only accepts text/* by default, so broaden it and
+    // place it ahead of the Jackson converter so it wins when reading into String.
     private val restClient by lazy {
+        val lenientStringConverter =
+            StringHttpMessageConverter(Charsets.UTF_8).apply {
+                supportedMediaTypes = listOf(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)
+            }
         restClientBuilder
             .baseUrl(koealustaBaseUrl)
-            .messageConverters { converters ->
-                converters.add(
-                    0,
-                    StringHttpMessageConverter(Charsets.UTF_8).apply {
-                        supportedMediaTypes = listOf(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)
-                    },
-                )
+            .configureMessageConverters { cs ->
+                cs
+                    .registerDefaults()
+                    .configureMessageConvertersList { list -> list.add(0, lenientStringConverter) }
             }.build()
     }
 

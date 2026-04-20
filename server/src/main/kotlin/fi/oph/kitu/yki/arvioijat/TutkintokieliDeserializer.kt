@@ -10,10 +10,10 @@ class TutkintokieliDeserializer : ValueDeserializer<Any>() {
         p: JsonParser,
         ctxt: DeserializationContext,
     ): Tutkintokieli =
-        when (p.text) {
+        when (p.string) {
             "10" -> Tutkintokieli.SWE10
             "11" -> Tutkintokieli.ENG11
             "12" -> Tutkintokieli.ENG12
-            else -> Tutkintokieli.valueOf(p.text.uppercase())
+            else -> Tutkintokieli.valueOf(p.string.uppercase())
         }
 }

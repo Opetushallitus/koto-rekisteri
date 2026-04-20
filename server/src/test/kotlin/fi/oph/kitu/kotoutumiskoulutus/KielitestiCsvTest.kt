@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,7 +25,7 @@ class KielitestiCsvTest(
     @param:Autowired val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     @param:Autowired val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
     @param:Autowired val kielitestiErrorService: KielitestiErrorService,
-    @param:Autowired val postgres: PostgreSQLContainer<*>,
+    @param:Autowired val postgres: PostgreSQLContainer,
 ) {
     @BeforeEach
     fun setup() {

@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvcResultMatchersDsl
 import org.springframework.test.web.servlet.put
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -43,7 +43,7 @@ class VktTiedonsiirtoTest {
     @Autowired
     private lateinit var vktRepository: VktSuoritusRepository
 
-    @Autowired private var postgres: PostgreSQLContainer<*>? = null
+    @Autowired private var postgres: PostgreSQLContainer? = null
     private var mockMvc: MockMvc? = null
 
     @BeforeEach

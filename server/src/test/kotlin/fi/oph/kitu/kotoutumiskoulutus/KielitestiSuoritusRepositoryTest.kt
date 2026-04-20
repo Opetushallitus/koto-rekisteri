@@ -14,7 +14,7 @@ import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.Test
@@ -25,7 +25,7 @@ import kotlin.test.assertTrue
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class KielitestiSuoritusRepositoryTest(
-    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer,
     @param:Autowired private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     @param:Autowired private val customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
 ) {
