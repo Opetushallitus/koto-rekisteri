@@ -1,9 +1,9 @@
 package fi.oph.kitu.koodisto
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.module.SimpleModule
+import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueSerializer
+import tools.jackson.databind.module.SimpleModule
 
 data class KoskiKoodiviite(
     val koodiarvo: String,
@@ -16,15 +16,15 @@ data class KoskiKoodiviite(
                 koodistoUri = viite.koodistoUri,
             )
 
-        class KoskiKoodiviiteSerializer : JsonSerializer<Koodisto.Koodiviite>() {
+        class KoskiKoodiviiteSerializer : ValueSerializer<Koodisto.Koodiviite>() {
             override fun serialize(
                 value: Koodisto.Koodiviite?,
                 gen: JsonGenerator?,
-                serializers: SerializerProvider?,
+                serializers: SerializationContext,
             ) {
                 gen?.writeStartObject()
-                gen?.writeStringField("koodiarvo", value?.koodiarvo)
-                gen?.writeStringField("koodistoUri", value?.koodistoUri)
+                gen?.writeStringProperty("koodiarvo", value?.koodiarvo)
+                gen?.writeStringProperty("koodistoUri", value?.koodistoUri)
                 gen?.writeEndObject()
             }
         }

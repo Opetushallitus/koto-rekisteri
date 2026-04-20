@@ -3,12 +3,12 @@ package fi.oph.kitu.yki.arvioijat
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import fi.oph.kitu.Oid
 import fi.oph.kitu.csvparsing.Features
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.annotation.JsonDeserialize
 import java.time.LocalDate
 
 @JsonPropertyOrder(

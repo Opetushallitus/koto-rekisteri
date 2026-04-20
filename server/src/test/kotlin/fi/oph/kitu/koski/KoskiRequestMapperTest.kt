@@ -1,6 +1,5 @@
 package fi.oph.kitu.koski
 
-import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
@@ -27,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
 import org.testcontainers.containers.PostgreSQLContainer
+import tools.jackson.databind.JsonNode
 import java.time.LocalDate
 import kotlin.random.Random
 import kotlin.test.assertEquals

@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki
 
-import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TestTimeService
@@ -34,6 +33,7 @@ import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.containers.PostgreSQLContainer
+import tools.jackson.databind.JsonNode
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
