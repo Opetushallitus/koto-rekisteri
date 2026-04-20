@@ -10,7 +10,7 @@ import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.assertContains
@@ -22,7 +22,7 @@ import kotlin.test.assertTrue
 @Import(DBContainerConfiguration::class)
 class YkiSuoritusRepositoryTest(
     @param:Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
-    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer,
 ) {
     @BeforeEach
     fun nukeDb() {

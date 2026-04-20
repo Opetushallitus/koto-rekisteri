@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
@@ -20,7 +20,7 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class YkiArvioijaRepositoryTest(
-    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer,
     @param:Autowired private val arvioijaRepository: YkiArvioijaRepository,
 ) {
     @BeforeEach

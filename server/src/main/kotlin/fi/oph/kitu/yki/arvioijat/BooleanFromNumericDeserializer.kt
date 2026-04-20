@@ -10,7 +10,7 @@ class BooleanFromNumericDeserializer : ValueDeserializer<Any>() {
         p: JsonParser,
         ctxt: DeserializationContext,
     ): Boolean =
-        when (p.text) {
+        when (p.string) {
             "0" -> false
 
             "1" -> true
@@ -18,7 +18,7 @@ class BooleanFromNumericDeserializer : ValueDeserializer<Any>() {
             else -> throw InvalidFormatException(
                 p,
                 "Expected '0' or '1' for Boolean field",
-                p.text,
+                p.string,
                 Boolean::class.java,
             )
         }

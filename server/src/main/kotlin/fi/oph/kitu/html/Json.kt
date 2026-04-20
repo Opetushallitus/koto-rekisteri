@@ -30,11 +30,11 @@ fun FlowContent.json(node: JsonNode) {
         }
 
         is StringNode -> {
-            +node.textValue()
+            +node.stringValue()
         }
 
         is NumericNode -> {
-            +node.asText()
+            +node.asString()
         }
 
         else -> {

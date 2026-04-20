@@ -9,5 +9,5 @@ class TutkintotasotFromStringDeserializer : ValueDeserializer<Any>() {
     override fun deserialize(
         p: JsonParser,
         ctxt: DeserializationContext,
-    ): Iterable<Tutkintotaso> = p.text.split("+").map { taso -> Tutkintotaso.valueOf(taso) }
+    ): Iterable<Tutkintotaso> = p.string.split("+").map { taso -> Tutkintotaso.valueOf(taso) }
 }

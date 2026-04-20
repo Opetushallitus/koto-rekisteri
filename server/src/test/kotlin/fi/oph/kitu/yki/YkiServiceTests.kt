@@ -44,7 +44,7 @@ import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -64,10 +64,10 @@ class YkiServiceTests(
     @param:Autowired private val mockRestClientBuilder: RestClient.Builder,
     @param:Autowired private val tracer: Tracer,
     @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
-    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer,
     @param:Autowired private val ilmoittautumisjarjestelmaService: IlmoittautumisjarjestelmaService,
     @param:Autowired private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
-    @Autowired private val ykiService: YkiService,
+    @param:Autowired private val ykiService: YkiService,
 ) {
     @BeforeEach
     fun nukeDb() {

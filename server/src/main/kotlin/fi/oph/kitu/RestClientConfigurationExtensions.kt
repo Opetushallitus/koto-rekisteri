@@ -36,18 +36,10 @@ fun <T : Any> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): R
 fun RestClient.Builder.withJacksonStreamMaxStringLength(maxStringLength: Int = 200_000_000): RestClient.Builder =
     this
         .clone()
-        .messageConverters { messageConverters ->
-            val newConverters =
-                messageConverters.map { converter ->
-                    if (converter is JacksonJsonHttpMessageConverter) {
-                        val newObjectMapper = createObjectMapperWithLargerBuffer(maxStringLength)
-                        JacksonJsonHttpMessageConverter(newObjectMapper)
-                    } else {
-                        converter
-                    }
-                }
-            messageConverters.clear()
-            newConverters.forEach { messageConverters.add(it) }
+        .configureMessageConverters { cs ->
+            cs.registerDefaults().withJsonConverter(
+                JacksonJsonHttpMessageConverter(createObjectMapperWithLargerBuffer(maxStringLength)),
+            )
         }
 
 private fun createObjectMapperWithLargerBuffer(maxStringLen: Int): JsonMapper =
