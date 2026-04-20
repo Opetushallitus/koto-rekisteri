@@ -1,7 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
@@ -35,6 +34,11 @@ class KielitestiSuoritusService(
                     )
                 }
             }
+
+    @WithSpan
+    fun countSuoritukset(filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter()): Int =
+        customKielitestiSuoritusRepository
+            .countSuoritukset(filter)
 
     @WithSpan
     fun getSuoritusById(id: Int): KielitestiSuoritus? =
