@@ -25,9 +25,9 @@ class CasConfig {
     @Bean
     fun serviceProperties() =
         ServiceProperties().apply {
-            service = "$appUrl/j_spring_cas_security_check"
-            isSendRenew = false
-            isAuthenticateAllArtifacts = true
+            setService("$appUrl/j_spring_cas_security_check")
+            setSendRenew(false)
+            setAuthenticateAllArtifacts(true)
         }
 
     @Bean
@@ -47,8 +47,8 @@ class CasConfig {
 
     @Bean
     fun casAuthenticationProvider(
-        serviceProperties: ServiceProperties?,
-        ticketValidator: TicketValidator?,
+        serviceProperties: ServiceProperties,
+        ticketValidator: TicketValidator,
     ): AuthenticationProvider =
         CasAuthenticationProvider().apply {
             setAuthenticationUserDetailsService(CasUserDetailsService())
@@ -64,7 +64,7 @@ class CasConfig {
     @Bean
     fun authenticationEntryPoint(serviceProperties: ServiceProperties): AuthenticationEntryPoint =
         CasAuthenticationEntryPoint().apply {
-            loginUrl = "https://$opintopolkuHostname/cas/login"
+            setLoginUrl("https://$opintopolkuHostname/cas/login")
             setServiceProperties(serviceProperties)
         }
 }

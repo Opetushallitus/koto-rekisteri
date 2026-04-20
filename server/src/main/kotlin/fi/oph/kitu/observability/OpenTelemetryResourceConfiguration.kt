@@ -9,41 +9,41 @@ import io.opentelemetry.instrumentation.resources.ManifestResourceProvider
 import io.opentelemetry.instrumentation.resources.OsResourceProvider
 import io.opentelemetry.instrumentation.resources.ProcessResourceProvider
 import io.opentelemetry.instrumentation.resources.ProcessRuntimeResourceProvider
-import io.opentelemetry.instrumentation.spring.autoconfigure.internal.resources.DistroVersionResourceProvider
-import io.opentelemetry.instrumentation.spring.autoconfigure.internal.resources.SpringResourceProvider
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties
 import io.opentelemetry.sdk.resources.Resource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.boot.info.BuildProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.util.Optional
 
 @Configuration
 class OpenTelemetryResourceConfiguration {
-    private val logger: Logger = LoggerFactory.getLogger(javaClass)
-
-    // Specify resource providers explicitly instead of depending on OpenTelemetry's or Spring Boot actuator's autoconfiguration. The latter only detects its own resource providers and I can't get the former to do anything (possibly because Spring overrides it).
     @Bean
-    fun resourceProviders(buildProperties: Optional<BuildProperties>): Set<ResourceProvider> =
-        setOf(
-            EcsResourceProvider(),
-            SpringResourceProvider(buildProperties),
-            DistroVersionResourceProvider(),
-            ProcessRuntimeResourceProvider(),
-            HostResourceProvider(),
-            HostIdResourceProvider(),
-            OsResourceProvider(),
-            ProcessResourceProvider(),
-            ContainerResourceProvider(),
-            ManifestResourceProvider(),
-        )
+    fun openTelemetryResource(): Resource {
+        val providers: List<ResourceProvider> =
+            listOf(
+                EcsResourceProvider(),
+                ProcessRuntimeResourceProvider(),
+                HostResourceProvider(),
+                HostIdResourceProvider(),
+                OsResourceProvider(),
+                ProcessResourceProvider(),
+                ContainerResourceProvider(),
+                ManifestResourceProvider(),
+            )
+        val emptyConfig = DefaultConfigProperties.createFromMap(emptyMap())
+        return providers.fold(Resource.getDefault()) { acc, provider ->
+            val shouldApply =
+                provider !is ConditionalResourceProvider || provider.shouldApply(emptyConfig, acc)
+            if (shouldApply) acc.merge(provider.createResource(emptyConfig)) else acc
+        }
+    }
 }
 
 @Configuration
 class OpenTelemetryListener(
-    resourceProviders: Set<ResourceProvider>,
     resource: Resource,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -51,9 +51,7 @@ class OpenTelemetryListener(
     init {
         logger
             .atInfo()
-            .add(
-                "providers" to resourceProviders,
-                "resource" to resource.attributes,
-            ).log("Initialized OpenTelemetry resource")
+            .add("resource" to resource.attributes)
+            .log("Initialized OpenTelemetry resource")
     }
 }

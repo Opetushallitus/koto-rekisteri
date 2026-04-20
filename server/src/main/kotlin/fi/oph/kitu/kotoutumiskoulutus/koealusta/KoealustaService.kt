@@ -11,6 +11,7 @@ import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
+import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
@@ -32,7 +33,20 @@ class KoealustaService(
     @Value("\${kitu.kotoutumiskoulutus.koealusta.baseurl}")
     lateinit var koealustaBaseUrl: String
 
-    private val restClient by lazy { restClientBuilder.baseUrl(koealustaBaseUrl).build() }
+    // Koealusta replies with JSON but we pass the raw text to KoealustaMappingService.
+    // Spring 7's StringHttpMessageConverter only accepts text/* by default, so broaden it here.
+    private val restClient by lazy {
+        restClientBuilder
+            .baseUrl(koealustaBaseUrl)
+            .messageConverters { converters ->
+                converters.add(
+                    0,
+                    StringHttpMessageConverter(Charsets.UTF_8).apply {
+                        supportedMediaTypes = listOf(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)
+                    },
+                )
+            }.build()
+    }
 
     fun importSuoritukset(from: Instant): Instant =
         tracer.spanBuilder("koealusta.import.suoritukset").startSpan().use { span ->
@@ -46,7 +60,7 @@ class KoealustaService(
                     .get()
                     .uri(
                         "/webservice/rest/server.php?wstoken={token}&wsfunction={function}&moodlewsrestformat=json&from={from}",
-                        mapOf<String?, Any>(
+                        mapOf<String, Any>(
                             "token" to koealustaToken,
                             "function" to remoteFunction,
                             "from" to from.epochSecond,

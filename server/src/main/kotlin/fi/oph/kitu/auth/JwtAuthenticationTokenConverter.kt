@@ -15,7 +15,7 @@ Copied from [this Otuva example](https://wiki.eduuni.fi/spaces/OPHPALV/pages/522
 class JwtAuthenticationTokenConverter : Converter<Jwt, AbstractAuthenticationToken> {
     private val authoritiesConverter = JwtGrantedAuthoritiesConverter()
 
-    override fun convert(source: Jwt): AbstractAuthenticationToken? {
+    override fun convert(source: Jwt): AbstractAuthenticationToken {
         val authorities = extractRoles(source)
         val convertedAuthorities = authoritiesConverter.convert(source) ?: emptyList()
         return JwtAuthenticationToken(source, authorities + convertedAuthorities)

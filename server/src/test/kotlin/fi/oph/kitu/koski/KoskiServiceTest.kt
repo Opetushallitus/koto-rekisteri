@@ -13,7 +13,6 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
-import junit.framework.TestCase.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,6 +29,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)

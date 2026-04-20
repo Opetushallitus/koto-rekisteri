@@ -130,7 +130,7 @@ class CustomVktSuoritusRepository {
 
         val params = id.toSqlParams()
 
-        return jdbcNamedParameterTemplate.queryForList(query, params, Int::class.java)
+        return jdbcNamedParameterTemplate.queryForList(query, params, Int::class.java).filterNotNull()
     }
 
     @WithSpan
