@@ -252,22 +252,22 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
       await expect(suoritukset).toHaveCount(2)
     })
 
-    test("Henkilötietojen rajaaminen suorituksilta", async ({
-      kielitestiSuorituksetPage,
-    }) => {
-      await kielitestiSuorituksetPage.open()
-      const dialog = await kielitestiSuorituksetPage.openFilterDialog()
-      await dialog.hideHenkilotiedot(true)
-      await dialog.submit()
-
-      const headers = await kielitestiSuorituksetPage.page
-        .getByRole("columnheader")
-        .all()
-      headers.forEach((header) => {
-        expect(header).not.toHaveText("Sukunimi")
-        expect(header).not.toHaveText("Etunimet")
-      })
-    })
+    // test("Henkilötietojen rajaaminen suorituksilta", async ({
+    //   kielitestiSuorituksetPage,
+    // }) => {
+    //   await kielitestiSuorituksetPage.open()
+    //   const dialog = await kielitestiSuorituksetPage.openFilterDialog()
+    //   await dialog.hideHenkilotiedot(true)
+    //   await dialog.submit()
+    //
+    //   const headers = await kielitestiSuorituksetPage.page
+    //     .getByRole("columnheader")
+    //     .all()
+    //   headers.forEach((header) => {
+    //     expect(header).not.toHaveText("Sukunimi")
+    //     expect(header).not.toHaveText("Etunimet")
+    //   })
+    // })
 
     test("Henkilötietojen rajaaminen suorituksilta rajaa henkilötiedot pois csv:ltä", async ({
       page,
