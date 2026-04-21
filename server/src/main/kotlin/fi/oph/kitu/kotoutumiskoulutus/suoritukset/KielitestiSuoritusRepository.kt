@@ -83,6 +83,7 @@ class CustomKielitestiSuoritusRepository {
             """
             SELECT count(*) from (
                 SELECT DISTINCT ON (kurssi_id, oppijanumero, suoritusaika) * FROM koto_suoritus
+                ORDER BY kurssi_id, oppijanumero, suoritusaika, last_modified DESC
                 )
             ${searchQuery.orEmpty()}
             """.trimIndent()
