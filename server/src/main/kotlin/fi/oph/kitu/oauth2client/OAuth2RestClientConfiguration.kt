@@ -1,5 +1,6 @@
 package fi.oph.kitu.oauth2client
 
+import fi.oph.kitu.withLenientStringConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -49,6 +50,7 @@ class OAuth2RestClientConfiguration {
         requestInterceptor.setClientRegistrationIdResolver { "kielitutkintorekisteri-client" }
 
         return builder
+            .withLenientStringConverter()
             .requestInterceptor(requestInterceptor)
             .defaultHeaders { headers ->
                 headers["Caller-Id"] = callerId

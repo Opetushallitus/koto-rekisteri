@@ -1,7 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
@@ -37,6 +36,11 @@ class KielitestiSuoritusService(
             }
 
     @WithSpan
+    fun countSuoritukset(filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter()): Int =
+        customKielitestiSuoritusRepository
+            .countSuoritukset(filter)
+
+    @WithSpan
     fun getSuoritusById(id: Int): KielitestiSuoritus? =
         customKielitestiSuoritusRepository.findById(id).also { suoritus ->
             suoritus?.oppijanumero?.let { oid ->
@@ -44,15 +48,12 @@ class KielitestiSuoritusService(
             }
         }
 
-    fun getSuorituksetForCsv(
-        filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter(),
-        order: KielitestiSuoritusOrder = KielitestiSuoritusOrder(),
-    ): List<KielitestiSuoritus> =
+    fun getSuorituksetForCsv(filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter()): List<KielitestiSuoritus> =
         tracer
             .spanBuilder("KoealustaService.getSuorituksetForCsv")
             .startSpan()
             .use { span ->
-                val suoritukset = getSuoritukset(filter, order)
+                val suoritukset = getSuoritukset(filter, KielitestiSuoritusOrder(pageSize = Int.MAX_VALUE))
                 span.setAttribute("dataCount", suoritukset.count())
 
                 val organisaatiot = organisaatioService.getOrganisaatiot()

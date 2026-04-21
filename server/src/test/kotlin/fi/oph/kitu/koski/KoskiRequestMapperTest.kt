@@ -1,6 +1,5 @@
 package fi.oph.kitu.koski
 
-import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
@@ -26,7 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
+import tools.jackson.databind.JsonNode
 import java.time.LocalDate
 import kotlin.random.Random
 import kotlin.test.assertEquals
@@ -34,7 +34,7 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
 class KoskiRequestMapperTest(
-    @param:Autowired private val postgres: PostgreSQLContainer<*>,
+    @param:Autowired private val postgres: PostgreSQLContainer,
 ) {
     @Autowired
     lateinit var koskiRequestMapper: KoskiRequestMapper

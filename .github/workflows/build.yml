@@ -235,7 +235,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Build component documentation
         run: |
           mkdir -p docs/uml
@@ -249,7 +249,7 @@ jobs:
         run: |
           sudo chmod -R 777 docs/output
           CI=true docs/build.sh
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: docs/output
       - uses: actions/deploy-pages@v4

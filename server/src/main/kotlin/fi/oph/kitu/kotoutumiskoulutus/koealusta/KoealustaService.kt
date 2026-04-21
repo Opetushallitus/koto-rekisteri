@@ -8,6 +8,7 @@ import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorR
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
+import fi.oph.kitu.withLenientStringConverter
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
@@ -32,7 +33,12 @@ class KoealustaService(
     @Value("\${kitu.kotoutumiskoulutus.koealusta.baseurl}")
     lateinit var koealustaBaseUrl: String
 
-    private val restClient by lazy { restClientBuilder.baseUrl(koealustaBaseUrl).build() }
+    private val restClient by lazy {
+        restClientBuilder
+            .baseUrl(koealustaBaseUrl)
+            .withLenientStringConverter()
+            .build()
+    }
 
     fun importSuoritukset(from: Instant): Instant =
         tracer.spanBuilder("koealusta.import.suoritukset").startSpan().use { span ->
@@ -46,7 +52,7 @@ class KoealustaService(
                     .get()
                     .uri(
                         "/webservice/rest/server.php?wstoken={token}&wsfunction={function}&moodlewsrestformat=json&from={from}",
-                        mapOf<String?, Any>(
+                        mapOf<String, Any>(
                             "token" to koealustaToken,
                             "function" to remoteFunction,
                             "from" to from.epochSecond,

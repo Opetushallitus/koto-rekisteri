@@ -1,13 +1,13 @@
 package fi.oph.kitu.yki.arvioijat
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
 import fi.oph.kitu.yki.Tutkintotaso
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.ValueDeserializer
 
-class TutkintotasotFromStringDeserializer : JsonDeserializer<Iterable<Tutkintotaso>>() {
+class TutkintotasotFromStringDeserializer : ValueDeserializer<Any>() {
     override fun deserialize(
-        p: JsonParser?,
-        ctxt: DeserializationContext?,
-    ): Iterable<Tutkintotaso> = p!!.text.split("+").map { taso -> Tutkintotaso.valueOf(taso) }
+        p: JsonParser,
+        ctxt: DeserializationContext,
+    ): Iterable<Tutkintotaso> = p.string.split("+").map { taso -> Tutkintotaso.valueOf(taso) }
 }

@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki
 
-import com.fasterxml.jackson.databind.JsonNode
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TestTimeService
@@ -33,7 +32,8 @@ import org.springframework.test.web.servlet.MockMvcResultMatchersDsl
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
+import tools.jackson.databind.JsonNode
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -46,7 +46,7 @@ class YkiApiControllerTest(
     @Autowired
     private lateinit var context: WebApplicationContext
 
-    @Autowired private var postgres: PostgreSQLContainer<*>? = null
+    @Autowired private var postgres: PostgreSQLContainer? = null
     private var mockMvc: MockMvc? = null
 
     @BeforeEach

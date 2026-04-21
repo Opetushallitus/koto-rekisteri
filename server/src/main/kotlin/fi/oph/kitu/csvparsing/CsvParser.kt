@@ -1,17 +1,16 @@
 package fi.oph.kitu.csvparsing
 
-import com.fasterxml.jackson.databind.MappingIterator
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.dataformat.csv.CsvGenerator
-import com.fasterxml.jackson.dataformat.csv.CsvMapper
-import com.fasterxml.jackson.dataformat.csv.CsvSchema
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.stereotype.Service
+import tools.jackson.databind.MappingIterator
+import tools.jackson.databind.exc.InvalidFormatException
+import tools.jackson.databind.module.SimpleModule
+import tools.jackson.dataformat.csv.CsvGenerator
+import tools.jackson.dataformat.csv.CsvMapper
+import tools.jackson.dataformat.csv.CsvSchema
 import java.io.ByteArrayOutputStream
 import kotlin.reflect.full.findAnnotation
 
@@ -67,22 +66,19 @@ class CsvParser(
         return this
     }
 
-    fun CsvMapper.withModules(): CsvMapper {
-        this.registerModule(JavaTimeModule())
-        val oidSerializerModule = SimpleModule()
-        oidSerializerModule.addSerializer(Oid::class.java, OidSerializer())
-        oidSerializerModule.addDeserializer(Oid::class.java, OidDeserializer())
-        this.registerModule(oidSerializerModule)
-
-        return this
-    }
+    // Jackson 3 auto-registers java.time support; only app-specific modules go here.
+    val oidModule: SimpleModule
+        get() =
+            SimpleModule()
+                .addSerializer(Oid::class.java, OidSerializer())
+                .addDeserializer(Oid::class.java, OidDeserializer())
 
     final inline fun <reified T> getCsvMapper() =
         CsvMapper
             .builder()
             .withFeatures<T>()
+            .addModule(oidModule)
             .build()
-            .withModules()
 
     final inline fun <reified T> streamDataAsCsv(
         outputStream: ByteArrayOutputStream,

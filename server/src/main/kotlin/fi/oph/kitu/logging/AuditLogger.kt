@@ -1,6 +1,5 @@
 package fi.oph.kitu.logging
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TimeService
 import fi.oph.kitu.auth.CasUserDetails
@@ -10,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import tools.jackson.databind.ObjectMapper
 import java.util.concurrent.atomic.AtomicInteger
 
 const val AUDIT_LOGGER_NAME = "auditLogger"

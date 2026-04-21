@@ -1,11 +1,13 @@
 package fi.oph.kitu
 
-import com.fasterxml.jackson.core.JsonFactory
-import com.fasterxml.jackson.core.StreamReadConstraints
-import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.http.converter.StringHttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.web.client.RestClient
+import tools.jackson.core.StreamReadConstraints
+import tools.jackson.core.json.JsonFactory
+import tools.jackson.databind.json.JsonMapper
 
 fun <T> RestClient.RequestBodySpec.nullableBody(body: T?): RestClient.RequestBodySpec =
     if (body == null) {
@@ -22,7 +24,9 @@ fun <T> RestClient.RequestBodySpec.nullableBody(body: T?): RestClient.RequestBod
  *  - response body is null (eg. HTTP 204 No Content)
  *  - Serialization issue converting into `T`.
  */
-fun <T> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): ResponseEntity<T>? =
+fun <T : Any> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): ResponseEntity<
+    T,
+>? =
     this.exchange { request, response ->
         ResponseEntity
             .status(response.statusCode)
@@ -30,32 +34,39 @@ fun <T> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): Respons
             .body(response.bodyTo(type))
     }
 
+// Spring 7's default StringHttpMessageConverter only advertises text/*, so reading an
+// application/json response into String (e.g. retrieveEntitySafely(String::class.java))
+// falls through to Jackson and fails. Prepend a lenient converter that also claims
+// application/json, before the Jackson converter takes over.
+fun RestClient.Builder.withLenientStringConverter(): RestClient.Builder {
+    val lenient =
+        StringHttpMessageConverter(Charsets.UTF_8).apply {
+            supportedMediaTypes = listOf(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)
+        }
+    return this.configureMessageConverters { cs ->
+        cs.registerDefaults().configureMessageConvertersList { list -> list.add(0, lenient) }
+    }
+}
+
 // 200 000 000 is 10x the default
 fun RestClient.Builder.withJacksonStreamMaxStringLength(maxStringLength: Int = 200_000_000): RestClient.Builder =
     this
         .clone()
-        .messageConverters { messageConverters ->
-            val newConverters =
-                messageConverters.map { converter ->
-                    if (converter is MappingJackson2HttpMessageConverter) {
-                        val newObjectMapper = createObjectMapperWithLargerBuffer(maxStringLength)
-                        MappingJackson2HttpMessageConverter(newObjectMapper)
-                    } else {
-                        converter
-                    }
-                }
-            messageConverters.clear()
-            newConverters.forEach { messageConverters.add(it) }
+        .configureMessageConverters { cs ->
+            cs.registerDefaults().withJsonConverter(
+                JacksonJsonHttpMessageConverter(createObjectMapperWithLargerBuffer(maxStringLength)),
+            )
         }
 
-private fun createObjectMapperWithLargerBuffer(maxStringLen: Int): ObjectMapper =
-    ObjectMapper(
-        JsonFactory
-            .builder()
-            .streamReadConstraints(
-                StreamReadConstraints
-                    .builder()
-                    .maxStringLength(maxStringLen)
-                    .build(),
-            ).build(),
-    )
+private fun createObjectMapperWithLargerBuffer(maxStringLen: Int): JsonMapper =
+    JsonMapper
+        .builder(
+            JsonFactory
+                .builder()
+                .streamReadConstraints(
+                    StreamReadConstraints
+                        .builder()
+                        .maxStringLength(maxStringLen)
+                        .build(),
+                ).build(),
+        ).build()

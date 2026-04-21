@@ -32,7 +32,9 @@ class EnumFromUrlParamsParsingConfig : WebMvcConfigurer {
         this.addConverter(String::class.java, E::class.java) { source ->
             enumValues<E>().find {
                 source.equals(urlParamFieldGetter(it), ignoreCase = true)
-            }
+            } ?: throw IllegalArgumentException(
+                "Invalid value '$source' for ${E::class.java.simpleName}",
+            )
         }
     }
 }

@@ -80,9 +80,13 @@ object Navigation {
                     ref = linkBuilder.toString(),
                 )
 
+            // Spring HATEOAS 3's linkTo DSL tracks the method invocation through the
+            // lambda's return value rather than a thread-local, so the signature must
+            // return Any — a `C.() -> Unit` lambda collapses to `Unit` and bypasses the
+            // proxy's LastInvocationAware tracking.
             inline fun <reified C> of(
                 title: String,
-                noinline func: C.() -> Unit,
+                noinline func: (C) -> Any,
             ): MenuItem =
                 MenuItem(
                     title = title,

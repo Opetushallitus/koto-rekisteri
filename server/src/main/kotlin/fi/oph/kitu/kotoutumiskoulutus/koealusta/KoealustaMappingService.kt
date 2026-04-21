@@ -1,8 +1,5 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.TypedResult.Failure
@@ -25,6 +22,8 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.time.Instant
 
 @Service
@@ -35,7 +34,7 @@ class KoealustaMappingService(
 ) {
     private inline fun <reified T> tryParseMoodleResponse(json: String): T {
         try {
-            return jacksonObjectMapper.enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION).readValue<T>(json)
+            return jacksonObjectMapper.readValue<T>(json)
         } catch (e: Throwable) {
             throw tryParseMoodleError(json, e)
         }

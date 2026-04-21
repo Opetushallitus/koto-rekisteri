@@ -70,6 +70,32 @@ class CustomKielitestiSuoritusRepository {
         return jdbcNamedParameterTemplate.query(sql, filter.withOrgOids(orgOids).params(), KielitestiSuoritus.fromRow)
     }
 
+    fun countSuoritukset(filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter()): Int {
+        val orgOids =
+            filter.search
+                ?.let { organisaatioService.searchOrganisaatiot(it) }
+                ?.nimet
+                ?.keys
+                ?.toList() ?: emptyList()
+        val searchQuery = filter.withOrgOids(orgOids).whereSql()
+
+        val sql =
+            """
+            SELECT count(*) from (
+                SELECT DISTINCT ON (kurssi_id, oppijanumero, suoritusaika) * FROM koto_suoritus
+                ORDER BY kurssi_id, oppijanumero, suoritusaika, last_modified DESC
+                )
+            ${searchQuery.orEmpty()}
+            """.trimIndent()
+
+        return jdbcNamedParameterTemplate.queryForObject(
+            sql,
+            filter.withOrgOids(orgOids).params(),
+            Int::class.java,
+        )
+            ?: 0
+    }
+
     fun exists(suoritus: KielitestiSuoritus): Boolean {
         val existing = findLatestSuoritusVersion(suoritus) ?: return false
         return existing.equalsIgnoringAnnotated(suoritus, "KOTO")

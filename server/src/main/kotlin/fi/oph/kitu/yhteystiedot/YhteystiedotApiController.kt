@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -113,9 +113,9 @@ data class YhteystietoNotFound(
 @Configuration
 class YhteystiedotApiJacksonConfig {
     @Bean
-    fun yhteystiedotJacksonConverter(): MappingJackson2HttpMessageConverter {
+    fun yhteystiedotJacksonConverter(): JacksonJsonHttpMessageConverter {
         val mapper = KoskiRequestMapper.getObjectMapper()
-        val converter = MappingJackson2HttpMessageConverter(mapper)
+        val converter = JacksonJsonHttpMessageConverter(mapper)
         converter.supportedMediaTypes =
             listOf(
                 MediaType.APPLICATION_JSON,

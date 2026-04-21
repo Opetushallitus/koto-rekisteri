@@ -83,7 +83,7 @@ class OrganisaatioServiceImpl(
 class OrganisaatioPalveluStartupTasks(
     val organisaatioService: OrganisaatioService,
 ) : ApplicationRunner {
-    override fun run(args: ApplicationArguments?) {
+    override fun run(args: ApplicationArguments) {
         CoroutineScope(Dispatchers.Default).launch {
             organisaatioService.getOrganisaatiot() // Lataa tuoreet nimet välimuistiin
         }
