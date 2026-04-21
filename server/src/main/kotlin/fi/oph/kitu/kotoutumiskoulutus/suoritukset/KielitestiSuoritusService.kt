@@ -48,15 +48,12 @@ class KielitestiSuoritusService(
             }
         }
 
-    fun getSuorituksetForCsv(
-        filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter(),
-        order: KielitestiSuoritusOrder = KielitestiSuoritusOrder(),
-    ): List<KielitestiSuoritus> =
+    fun getSuorituksetForCsv(filter: KielitestiSuoritusFilter = KielitestiSuoritusFilter()): List<KielitestiSuoritus> =
         tracer
             .spanBuilder("KoealustaService.getSuorituksetForCsv")
             .startSpan()
             .use { span ->
-                val suoritukset = getSuoritukset(filter, order)
+                val suoritukset = getSuoritukset(filter, KielitestiSuoritusOrder(pageSize = Int.MAX_VALUE))
                 span.setAttribute("dataCount", suoritukset.count())
 
                 val organisaatiot = organisaatioService.getOrganisaatiot()
