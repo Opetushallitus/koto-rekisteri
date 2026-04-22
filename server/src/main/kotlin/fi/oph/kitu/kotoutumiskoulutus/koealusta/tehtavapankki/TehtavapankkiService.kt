@@ -80,7 +80,7 @@ class TehtavapankkiService(
                         .get()
                         .uri(
                             "/webservice/rest/server.php?wstoken={token}&moodlewsrestformat=json&wsfunction={function}",
-                            mapOf<String?, Any>(
+                            mapOf<String, Any>(
                                 "token" to koealustaToken,
                                 "function" to "local_completion_export_export_question_bank",
                             ),
