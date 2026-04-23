@@ -1,9 +1,11 @@
 package fi.oph.kitu
 
+import io.opentelemetry.api.trace.Span
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestClient
 import tools.jackson.core.StreamReadConstraints
 import tools.jackson.core.json.JsonFactory
@@ -27,11 +29,22 @@ fun <T> RestClient.RequestBodySpec.nullableBody(body: T?): RestClient.RequestBod
 fun <T : Any> RestClient.RequestBodySpec.retrieveEntitySafely(type: Class<T>): ResponseEntity<
     T,
 >? =
-    this.exchange { request, response ->
-        ResponseEntity
-            .status(response.statusCode)
-            .headers(response.headers)
-            .body(response.bodyTo(type))
+    try {
+        this.exchange { request, response ->
+            ResponseEntity
+                .status(response.statusCode)
+                .headers(response.headers)
+                .body(response.bodyTo(type))
+        }
+    } catch (e: ResourceAccessException) {
+        // ResourceAccessException.toString() omits the wrapped IOException, so traces/logs can't
+        // distinguish a read timeout from a connection reset. Surface the cause as span attributes.
+        val cause = e.cause
+        Span.current().apply {
+            setAttribute("exception.cause.type", cause?.javaClass?.name.orEmpty())
+            setAttribute("exception.cause.message", cause?.message.orEmpty())
+        }
+        throw e
     }
 
 // Spring 7's default StringHttpMessageConverter only advertises text/*, so reading an
