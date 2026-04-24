@@ -126,7 +126,7 @@ class IlmoittautumisjarjestelmaServiceTests(
         ilmoittautumisjarjestelmaClient.response =
             TypedResult.Failure(
                 IlmoittautumisjarjestelmaException.UnexpectedError(
-                    request = YkiArvioinninTilaRequest.of(entity),
+                    request = YkiArvioinninTilaRequest.of(entity)!!,
                     response = ResponseEntity.notFound().build(),
                 ),
             )
@@ -221,6 +221,27 @@ class IlmoittautumisjarjestelmaServiceTests(
                     koskiSiirtoKasitelty = false,
                 ),
         )
+
+    @Test
+    fun `Vilppi-arvosanan sisältävää suoritusta ei lähetetä ilmoittautumisjärjestelmään`() {
+        val vilppiSuoritus =
+            suoritus.copy(
+                suoritus =
+                    suoritus.suoritus.copy(
+                        osat =
+                            listOf(
+                                YkiOsa(tyyppi = TutkinnonOsa.puheenYmmartaminen, arvosana = 3),
+                                YkiOsa(tyyppi = TutkinnonOsa.puhuminen, arvosana = 11),
+                                YkiOsa(tyyppi = TutkinnonOsa.kirjoittaminen, arvosana = 3),
+                                YkiOsa(tyyppi = TutkinnonOsa.tekstinYmmartaminen, arvosana = 3),
+                            ),
+                    ),
+            )
+
+        ykiApi.postHenkilosuoritus(vilppiSuoritus)
+
+        assertNull(ilmoittautumisjarjestelmaClient.latestRequest())
+    }
 
     @Test
     fun `YkiSuorituksenTunniste equality`() {

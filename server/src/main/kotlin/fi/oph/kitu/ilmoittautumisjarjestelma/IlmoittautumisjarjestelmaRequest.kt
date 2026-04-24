@@ -18,9 +18,19 @@ data class YkiArvioinninTilaRequest(
     }
 
     companion object {
-        fun of(entity: YkiSuoritusEntity) = YkiArvioinninTilaRequest(listOf(YkiArvioinninTila.of(entity)))
+        fun of(entity: YkiSuoritusEntity): YkiArvioinninTilaRequest? =
+            YkiArvioinninTila.of(entity)?.let {
+                YkiArvioinninTilaRequest(listOf(it))
+            }
 
-        fun of(entities: List<YkiSuoritusEntity>) = YkiArvioinninTilaRequest(entities.map { YkiArvioinninTila.of(it) })
+        fun of(entities: List<YkiSuoritusEntity>): YkiArvioinninTilaRequest? {
+            val tilat = entities.mapNotNull { YkiArvioinninTila.of(it) }
+            return if (tilat.isNotEmpty()) {
+                YkiArvioinninTilaRequest(tilat)
+            } else {
+                null
+            }
+        }
     }
 }
 
@@ -30,10 +40,14 @@ data class YkiArvioinninTila(
 ) {
     companion object {
         fun of(entity: YkiSuoritusEntity) =
-            YkiArvioinninTila(
-                suoritus = YkiSuorituksenTunniste.of(entity),
-                tila = entity.arviointitila,
-            )
+            if (entity.isVilppi()) {
+                null
+            } else {
+                YkiArvioinninTila(
+                    suoritus = YkiSuorituksenTunniste.of(entity),
+                    tila = entity.arviointitila,
+                )
+            }
     }
 }
 
