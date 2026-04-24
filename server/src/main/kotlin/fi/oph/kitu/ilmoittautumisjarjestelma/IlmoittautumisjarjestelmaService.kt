@@ -31,8 +31,10 @@ class IlmoittautumisjarjestelmaServiceImpl(
                 .filter { it.arviointitilanLahetysvirhe != "SUORITUSTA_EI_LOYDY" }
 
         suoritukset.chunked(BATCH_SIZE).forEach { batch ->
-            val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(batch))
-            saveResponse(batch, response)
+            YkiArvioinninTilaRequest.of(batch)?.let { request ->
+                val response = sendArvioinninTilat(request)
+                saveResponse(batch, response)
+            }
         }
     }
 
@@ -42,8 +44,10 @@ class IlmoittautumisjarjestelmaServiceImpl(
 
     @WithSpan
     override fun sendArvioinninTila(suoritus: YkiSuoritusEntity) {
-        val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritus))
-        saveResponse(listOf(suoritus), response)
+        YkiArvioinninTilaRequest.of(suoritus)?.let { request ->
+            val response = sendArvioinninTilat(request)
+            saveResponse(listOf(suoritus), response)
+        }
     }
 
     @WithSpan
