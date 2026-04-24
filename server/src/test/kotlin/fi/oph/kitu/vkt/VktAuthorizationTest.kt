@@ -70,6 +70,32 @@ class VktAuthorizationTest {
         assertEquals(HttpStatus.OK, response.statusCode)
     }
 
+    @Autowired
+    private lateinit var cookieSerializer: org.springframework.session.web.http.CookieSerializer
+
+    @Autowired
+    private lateinit var sessionRepositoryFilter: org.springframework.session.web.http.SessionRepositoryFilter<*>
+
+    @Test
+    fun `Spring Session is active and cookie name is SESSION`() {
+        // Regression guard: Spring Boot 4 requires spring-boot-starter-session-jdbc to auto-wire
+        // Spring Session. Without it the app silently falls back to Tomcat's JSESSIONID, which
+        // breaks clients (e.g. KIOS) that read the SESSION cookie.
+        val request =
+            org.springframework.mock.web
+                .MockHttpServletRequest()
+        val response =
+            org.springframework.mock.web
+                .MockHttpServletResponse()
+        cookieSerializer.writeCookieValue(
+            org.springframework.session.web.http.CookieSerializer
+                .CookieValue(request, response, "test-session-id"),
+        )
+        assertEquals("SESSION", response.cookies.single().name)
+        // Ensure the filter is also wired, not just the serializer.
+        requireNotNull(sessionRepositoryFilter)
+    }
+
     @Test
     fun `PUT api vkt kios is forbidden for user without VKT_TALLENNUS authority`() {
         val response =
