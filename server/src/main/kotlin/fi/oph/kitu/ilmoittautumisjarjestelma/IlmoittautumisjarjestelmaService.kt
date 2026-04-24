@@ -30,10 +30,14 @@ class IlmoittautumisjarjestelmaServiceImpl(
                 .findSuorituksetWithUnsentArvioinninTila()
                 .filter { it.arviointitilanLahetysvirhe != "SUORITUSTA_EI_LOYDY" }
 
-        if (suoritukset.isNotEmpty()) {
-            val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(suoritukset))
-            saveResponse(suoritukset, response)
+        suoritukset.chunked(BATCH_SIZE).forEach { batch ->
+            val response = sendArvioinninTilat(YkiArvioinninTilaRequest.of(batch))
+            saveResponse(batch, response)
         }
+    }
+
+    companion object {
+        private const val BATCH_SIZE = 10
     }
 
     @WithSpan
