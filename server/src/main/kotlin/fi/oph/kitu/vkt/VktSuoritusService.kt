@@ -2,7 +2,6 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.Oid
 import fi.oph.kitu.cache.InMemoryCache
-import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.i18n.LocalizationService
@@ -14,7 +13,6 @@ import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration
@@ -28,7 +26,6 @@ class VktSuoritusService(
     private val auditLogger: AuditLogger,
     private val oppijanumeroService: OppijanumeroService,
     private val localizationService: LocalizationService,
-    private val parser: CsvParser,
 ) {
     @Value("\${kitu.vkt.scheduling.cleanup.retentionTime}")
     lateinit var retentionTimeForDeletedSetting: String
@@ -88,48 +85,38 @@ class VktSuoritusService(
         return if (suoritukset.isEmpty()) null else VktSuoritus.merge(suoritukset, suorituksenVastaanottajat)
     }
 
-    @WithSpan("VktSuoritusService.generateSuorituksetCsvStream")
-    fun generateSuorituksetCsvStream(): ByteArrayOutputStream {
-        val newParser = parser.withUseHeader(true)
+    @WithSpan("VktSuoritusService.findEnrichedForCsv")
+    fun findEnrichedForCsv(
+        filter: VktSuoritusFilter,
+        order: VktSuoritusOrder,
+    ): List<VktSuoritusFlat> {
         val translations =
             localizationService
                 .translationBuilder()
                 .koodistot("kunta")
                 .build()
-        val suoritukset =
-            customSuoritusRepository.find(
-                VktSuoritusFilter(
-                    merkittyPoistettavaksi = false,
-                    arvioitu = VktArvioinninTila.ArvioituOsittainTaiKokonaan,
-                ),
-                VktSuoritusOrder(), // TODO: Created at desc
-            )
+        val suoritukset = customSuoritusRepository.find(filter, order).toList()
 
-        val suoritustenVastaanottajat: Map<Oid, String?> =
+        val vastaanottajat: Map<Oid, String?> =
             suoritukset
                 .mapNotNull { it.suorituksenVastaanottajanOid }
                 .toSet()
                 .associateWith { oppijanumeroService.getHenkilo(it).getOrNull()?.kokoNimi() }
 
-        val enrichedSuoritukset =
-            suoritukset
-                .map { suoritus ->
-                    suoritus.copy(
-                        suorituksenVastaanottaja = suoritustenVastaanottajat[suoritus.suorituksenVastaanottajanOid],
-                        suorituspaikkakunta = translations.getByKoodiviite("kunta", suoritus.suorituspaikkakunta),
+        return suoritukset
+            .map { suoritus ->
+                suoritus.copy(
+                    suorituksenVastaanottaja = vastaanottajat[suoritus.suorituksenVastaanottajanOid],
+                    suorituspaikkakunta = translations.getByKoodiviite("kunta", suoritus.suorituspaikkakunta),
+                )
+            }.also {
+                auditLogger.logAllInternalOnly("VKT suoritus viewed", it) { suoritus ->
+                    arrayOf(
+                        "suoritus.id" to suoritus.suoritusId,
+                        "suoritus.oppijanumero" to suoritus.suorittajanOid,
                     )
-                }.also {
-                    auditLogger.logAllInternalOnly("VKT suoritus viewed", it) { suoritus ->
-                        arrayOf(
-                            "suoritus.id" to suoritus.suoritusId,
-                            "suoritus.oppijanumero" to suoritus.suorittajanOid,
-                        )
-                    }
                 }
-
-        val outputStream = ByteArrayOutputStream()
-        newParser.streamDataAsCsv(outputStream, enrichedSuoritukset)
-        return outputStream
+            }
     }
 
     @WithSpan("VktSuoritusService.setOsakoeArvosana")
