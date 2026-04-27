@@ -8,7 +8,7 @@ WORKDIR /kitu/server
 
 RUN mvn package -DskipTests
 
-FROM amazoncorretto:25.0.2-al2023
+FROM amazoncorretto:25.0.3-al2023
 
 WORKDIR /kitu/server/target
 
