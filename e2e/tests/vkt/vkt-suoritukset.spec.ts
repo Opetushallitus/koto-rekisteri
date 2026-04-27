@@ -77,7 +77,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 
     // Testataan loputkin kentät
     await testSorting("Etunimet", "Aarni Eino", "Eero Hugo")
-    await testSorting("Tutkintopaiva", "27.2.2000", "29.3.2003")
+    await testSorting("Tutkintopaiva", "27.2.2000", "29.12.2002")
   })
 
   test("Details page shows correct information of hyvä ja tyydyttävä taso", async ({
@@ -521,7 +521,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
         "Nella Eveliina",
         "Erinomainen",
         "Ruotsi",
-        "19.6.2010",
+        "19.12.2009",
       )
     })
   })
