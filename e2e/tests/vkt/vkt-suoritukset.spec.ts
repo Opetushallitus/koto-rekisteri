@@ -534,6 +534,33 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     await vktSuoritus.createHyvaJaTyydyttavaSuoritus(config.baseUrl, oauth)
   })
 
+  async function downloadCsv(
+    page: Page,
+    vktSuorituksetPage: VktSuorituksetPage,
+  ): Promise<string> {
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      vktSuorituksetPage
+        .getPageContent()
+        .getByText("Lataa tiedot CSV:nä")
+        .click(),
+    ])
+    const path = await download.path()
+    expect(path).not.toBeNull()
+    return fs.readFile(path!, "utf8")
+  }
+
+  function parseCsv(csv: string): Record<string, string>[] {
+    const [headerLine, ...rest] = csv
+      .split("\n")
+      .filter((line) => line.length > 0)
+    const headers = headerLine.split(",")
+    return rest.map((line) => {
+      const cols = line.split(",")
+      return Object.fromEntries(headers.map((h, i) => [h, cols[i] ?? ""]))
+    })
+  }
+
   test("csv download only includes arvioitu suoritus", async ({
     page,
     vktSuorituksetPage,
@@ -541,23 +568,39 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     await vktSuorituksetPage.login()
     await vktSuorituksetPage.openErinomainenIlmoittautuneet()
 
-    // Intercept the download
-    const [download] = await Promise.all([
-      page.waitForEvent("download"),
-      await vktSuorituksetPage
-        .getPageContent()
-        .getByText("Lataa tiedot CSV:nä")
-        .click(),
-    ])
-
-    // Save the file to a temporary location
-    const path = await download.path()
-    expect(path).not.toBeNull()
-    const csvContent = await fs.readFile(path!, "utf8")
+    const csvContent = await downloadCsv(page, vktSuorituksetPage)
     expect(csvContent).toContain(
       ",Ilmoittautumisen tunniste,Sukunimi,Etunimet,Oppijanumero,Taitotaso,Tutkintokieli,Tutkintopäivä,Suorituspaikkakunta,Suorituksen vastaanottajan OID,Suorituksen vastaanottaja,Puhuminen,Puheen ymmärtäminen,Kirjoittaminen,Tekstin ymmärtäminen\n" +
         "1,KIOS:748,Sallinen-Testi,Magdalena Testi,1.2.246.562.24.33342764709,Erinomainen,Suomi,10.2.2026,091,1.2.246.562.24.85478397072,,,,,\n",
     )
+  })
+
+  test("csv download resolves Suorituksen vastaanottaja OID to a name", async ({
+    page,
+    vktSuorituksetPage,
+  }) => {
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openKaikkiSuoritukset()
+
+    const rows = parseCsv(await downloadCsv(page, vktSuorituksetPage))
+    const rowWithVastaanottaja = rows.find(
+      (r) => r["Suorituksen vastaanottajan OID"] !== "",
+    )
+    expect(rowWithVastaanottaja).toBeDefined()
+    expect(rowWithVastaanottaja!["Suorituksen vastaanottaja"]).not.toBe("")
+  })
+
+  test("csv download resolves Suorituspaikkakunta koodi to a name", async ({
+    page,
+    vktSuorituksetPage,
+  }) => {
+    await vktSuorituksetPage.login()
+    await vktSuorituksetPage.openKaikkiSuoritukset()
+
+    const rows = parseCsv(await downloadCsv(page, vktSuorituksetPage))
+    const rowWithPaikkakunta = rows.find((r) => r["Suorituspaikkakunta"] !== "")
+    expect(rowWithPaikkakunta).toBeDefined()
+    expect(rowWithPaikkakunta!["Suorituspaikkakunta"]).not.toMatch(/^\d+$/)
   })
 })
 
