@@ -358,6 +358,68 @@ class VKTSuoritusRepositoryTest(
         assertEquals(Koodisto.VktArvosana.Erinomainen.name, suoritukset.first().puheenYmmartaminen)
     }
 
+    @Test
+    fun `ArviointejaPuuttuu-suodatin ei palauta suoritusta jos uusin versio on arvioitu`() {
+        val suoritus =
+            VktSuoritusEntity(
+                ilmoittautumisenId = "1",
+                suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                etunimet = "Testi",
+                sukunimi = "Testinen",
+                tutkintokieli = Koodisto.Tutkintokieli.FIN,
+                suorituspaikkakunta = "Helsinki",
+                taitotaso = Koodisto.VktTaitotaso.Erinomainen,
+                suorituksenVastaanottaja = Oid.parse("1.2.246.562.24.91757873900").getOrNull(),
+                osakokeet =
+                    setOf(
+                        VktSuoritusEntity.VktOsakoe(
+                            tyyppi = Koodisto.VktOsakoe.Puhuminen,
+                            tutkintopaiva = LocalDate.of(2025, 1, 1),
+                            arviointipaiva = null,
+                            arvosana = null,
+                            merkittyPoistettavaksi = null,
+                        ),
+                        VktSuoritusEntity.VktOsakoe(
+                            tyyppi = Koodisto.VktOsakoe.PuheenYmmärtäminen,
+                            tutkintopaiva = LocalDate.of(2025, 1, 1),
+                            arviointipaiva = null,
+                            arvosana = null,
+                            merkittyPoistettavaksi = null,
+                        ),
+                    ),
+                tutkinnot = setOf(),
+            )
+        val updated =
+            suoritus.copy(
+                osakokeet =
+                    setOf(
+                        VktSuoritusEntity.VktOsakoe(
+                            tyyppi = Koodisto.VktOsakoe.Puhuminen,
+                            tutkintopaiva = LocalDate.of(2025, 1, 1),
+                            arviointipaiva = LocalDate.of(2025, 1, 2),
+                            arvosana = Koodisto.VktArvosana.Erinomainen,
+                            merkittyPoistettavaksi = null,
+                        ),
+                        VktSuoritusEntity.VktOsakoe(
+                            tyyppi = Koodisto.VktOsakoe.PuheenYmmärtäminen,
+                            tutkintopaiva = LocalDate.of(2025, 1, 1),
+                            arviointipaiva = LocalDate.of(2025, 1, 2),
+                            arvosana = Koodisto.VktArvosana.Erinomainen,
+                            merkittyPoistettavaksi = null,
+                        ),
+                    ),
+            )
+        repository.save(suoritus)
+        repository.save(updated)
+
+        val suoritukset =
+            customRepository.find(
+                VktSuoritusFilter(arvioitu = VktArvioinninTila.ArviointejaPuuttuu),
+                VktSuoritusOrder(),
+            )
+        assertEquals(0, suoritukset.count())
+    }
+
     private fun getSuoritukset() =
         customRepository.find(
             VktSuoritusFilter(

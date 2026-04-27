@@ -68,7 +68,6 @@ class CustomVktSuoritusRepository {
                     vkt_suoritus.id as suoritus_id,
                     vkt_osakoe.tutkintopaiva,
                     count(*) filter (WHERE vkt_osakoe.arvosana is not null) AS arviointeja,
-                    count(*) filter (WHERE vkt_osakoe.arvosana is null) AS puuttuvia_arviointeja,
                     max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'PuheenYmmärtäminen') AS puheen_ymmärtäminen,
                     max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'Puhuminen') AS puhuminen,
                     max(vkt_osakoe.arvosana) filter(WHERE vkt_osakoe.tyyppi = 'TekstinYmmärtäminen') AS tekstin_ymmärtäminen,
@@ -141,8 +140,7 @@ class CustomVktSuoritusRepository {
                 SELECT
                     vkt_suoritus.id as suoritus_id,
                     vkt_osakoe.tutkintopaiva,
-                    count(*) filter (WHERE vkt_osakoe.arvosana is not null) AS arviointeja,
-                    count(*) filter (WHERE vkt_osakoe.arvosana is null) AS puuttuvia_arviointeja
+                    count(*) filter (WHERE vkt_osakoe.arvosana is not null) AS arviointeja
                 FROM vkt_suoritus
                     JOIN vkt_osakoe ON vkt_osakoe.suoritus_id = vkt_suoritus.id
                     GROUP BY vkt_suoritus.id, vkt_osakoe.tutkintopaiva
@@ -467,9 +465,30 @@ data class VktSuoritusFilter(
 
     private fun arvioituQuery(): String? =
         when (arvioitu) {
-            VktArvioinninTila.ArvioituOsittainTaiKokonaan -> "osakokeet.arviointeja > 0"
-            VktArvioinninTila.ArviointejaPuuttuu -> "osakokeet.puuttuvia_arviointeja > 0"
-            else -> null
+            VktArvioinninTila.ArvioituOsittainTaiKokonaan -> {
+                "osakokeet.arviointeja > 0"
+            }
+
+            // Rajataan vain ilmoittautumisen uusimpaan versioon (latest-id alikysely): muuten
+            // vanha versio, jolta arvosanat puuttuivat, näkyisi vaikka päälle olisi tallennettu
+            // uusi täydellinen versio. Lisäksi edellytetään, että tällä joinilla osallistuva
+            // osakoerivi on null-arvosanainen — näin näytettävä tutkintopäivä on arvioimaton
+            // päivä, ei toinen jo arvioitu päivä samasta suorituksesta.
+            VktArvioinninTila.ArviointejaPuuttuu -> {
+                """
+                vkt_osakoe.arvosana IS NULL
+                AND vkt_suoritus.id = (
+                    SELECT id FROM vkt_suoritus latest
+                    WHERE latest.ilmoittautumisen_id = vkt_suoritus.ilmoittautumisen_id
+                    ORDER BY latest.created_at DESC
+                    LIMIT 1
+                )
+                """.trimIndent()
+            }
+
+            else -> {
+                null
+            }
         }
 
     private fun merkittyPoistettavaksiQuery(): String? =
