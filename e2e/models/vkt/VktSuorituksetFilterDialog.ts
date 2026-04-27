@@ -42,6 +42,7 @@ export class VktSuorituksetFilterDialog {
 
   async submit() {
     await this.modal.getByRole("button", { name: "Rajaa" }).click()
+    await this.modal.page().waitForLoadState("networkidle")
   }
 
   private async setEnum(name: string, value: string) {
