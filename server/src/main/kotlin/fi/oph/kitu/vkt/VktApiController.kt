@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.html.table.DisplayTableCsvRenderer
+import fi.oph.kitu.koodisto.KoodistoService
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
@@ -34,6 +35,7 @@ class VktApiController(
     val customSuoritusRepository: CustomVktSuoritusRepository,
     val service: VktSuoritusService,
     private val validation: ValidationService,
+    private val koodistoService: KoodistoService,
 ) {
     @PutMapping("/kios", produces = ["application/json"])
     @Operation(
@@ -123,8 +125,9 @@ class VktApiController(
     fun getSuorituksetCsv(
         @ModelAttribute order: VktSuoritusOrder = VktSuoritusOrder(),
         @ModelAttribute filter: VktSuoritusFilter = VktSuoritusFilter(),
-    ): ResponseEntity<StreamingResponseBody> =
-        ResponseEntity
+    ): ResponseEntity<StreamingResponseBody> {
+        val data = service.findEnrichedForCsv(filter, order.copy(pageSize = Int.MAX_VALUE))
+        return ResponseEntity
             .ok()
             .contentType(MediaType.parseMediaType("text/csv"))
             .header("Content-Disposition", "attachment; filename=${filter.csvFileName()}")
@@ -132,11 +135,12 @@ class VktApiController(
                 StreamingResponseBody { output ->
                     DisplayTableCsvRenderer.renderCsv<VktSuoritusColumn, _>(
                         output = output,
-                        data = customSuoritusRepository.find(filter, order.copy(pageSize = Int.MAX_VALUE)),
+                        data = data,
                         excludeTags = filter.excludeTags(),
                     )
                 },
             )
+    }
 
     @GetMapping("/kios/j_spring_cas_security_check")
     fun casDebugRoute(): ResponseEntity<String> = ResponseEntity.ok("Nice")

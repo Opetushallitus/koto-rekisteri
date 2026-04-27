@@ -568,11 +568,17 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     await vktSuorituksetPage.login()
     await vktSuorituksetPage.openErinomainenIlmoittautuneet()
 
-    const csvContent = await downloadCsv(page, vktSuorituksetPage)
-    expect(csvContent).toContain(
-      ",Ilmoittautumisen tunniste,Sukunimi,Etunimet,Oppijanumero,Taitotaso,Tutkintokieli,Tutkintopäivä,Suorituspaikkakunta,Suorituksen vastaanottajan OID,Suorituksen vastaanottaja,Puhuminen,Puheen ymmärtäminen,Kirjoittaminen,Tekstin ymmärtäminen\n" +
-        "1,KIOS:748,Sallinen-Testi,Magdalena Testi,1.2.246.562.24.33342764709,Erinomainen,Suomi,10.2.2026,091,1.2.246.562.24.85478397072,,,,,\n",
-    )
+    const rows = parseCsv(await downloadCsv(page, vktSuorituksetPage))
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({
+      "Ilmoittautumisen tunniste": "KIOS:748",
+      Sukunimi: "Sallinen-Testi",
+      Etunimet: "Magdalena Testi",
+      Oppijanumero: "1.2.246.562.24.33342764709",
+      Taitotaso: "Erinomainen",
+      Tutkintokieli: "Suomi",
+      Tutkintopäivä: "10.2.2026",
+    })
   })
 
   test("csv download resolves Suorituksen vastaanottaja OID to a name", async ({
@@ -583,11 +589,12 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     await vktSuorituksetPage.openKaikkiSuoritukset()
 
     const rows = parseCsv(await downloadCsv(page, vktSuorituksetPage))
-    const rowWithVastaanottaja = rows.find(
-      (r) => r["Suorituksen vastaanottajan OID"] !== "",
+    const row = rows.find(
+      (r) =>
+        r["Suorituksen vastaanottajan OID"] === "1.2.246.562.24.59267607404",
     )
-    expect(rowWithVastaanottaja).toBeDefined()
-    expect(rowWithVastaanottaja!["Suorituksen vastaanottaja"]).not.toBe("")
+    expect(row).toBeDefined()
+    expect(row!["Suorituksen vastaanottaja"]).toBe("Petro Testi Kivinen-Testi")
   })
 
   test("csv download resolves Suorituspaikkakunta koodi to a name", async ({
