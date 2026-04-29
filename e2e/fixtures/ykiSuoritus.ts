@@ -31,12 +31,12 @@ export interface YkiSuoritus {
   puheenYmmartaminen: number
   puhuminen: number
   yleisarvosana: number
-  tarkistusarvioinninSaapumisPvm: string
-  tarkistusarvioinninAsiatunnus: string
-  tarkistusarvioidutOsakokeet: string[]
-  arvosanaMuuttui: string[]
-  perustelu: string
-  tarkistusarvioinninKasittelyPvm: string
+  tarkistusarvioinninSaapumisPvm: string | null
+  tarkistusarvioinninAsiatunnus: string | null
+  tarkistusarvioidutOsakokeet: string[] | null
+  arvosanaMuuttui: string[] | null
+  perustelu: string | null
+  tarkistusarvioinninKasittelyPvm: string | null
   arviointitila: string
   todistuskieli: string
 }
@@ -245,7 +245,7 @@ export const fixtureData = {
     tekstinYmmartaminen: 2,
     kirjoittaminen: 0,
     rakenteetJaSanasto: 12,
-    puheenYmmartaminen: 10,
+    puheenYmmartaminen: 5,
     puhuminen: 2,
     yleisarvosana: 12,
     tarkistusarvioinninSaapumisPvm: "2025-10-01",
@@ -256,6 +256,32 @@ export const fixtureData = {
     tarkistusarvioinninKasittelyPvm: "2025-10-22",
     arviointitila: "TARKISTUSARVIOITU",
     todistuskieli: "ENG",
+  }),
+  tanjaKeskeytetty: createYkiSuoritus("tanja", {
+    kansalaisuus: "EST",
+    suoritusId: 200001,
+    lastModified: "2024-09-15T13:53:56Z",
+    tutkintopaiva: "2024-09-01",
+    tutkintokieli: "FIN",
+    tutkintotaso: "YT",
+    jarjestajanTunnusOid: "1.2.246.562.10.14893989377",
+    jarjestajanNimi:
+      "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+    arviointipaiva: "2024-11-14",
+    tekstinYmmartaminen: 2,
+    kirjoittaminen: 1,
+    rakenteetJaSanasto: 1,
+    puheenYmmartaminen: 3,
+    puhuminen: 10,
+    yleisarvosana: 2,
+    tarkistusarvioinninSaapumisPvm: null,
+    tarkistusarvioinninAsiatunnus: null,
+    tarkistusarvioidutOsakokeet: null,
+    arvosanaMuuttui: null,
+    perustelu: null,
+    tarkistusarvioinninKasittelyPvm: null,
+    arviointitila: "ARVIOITU",
+    todistuskieli: "FIN",
   }),
   einoTarkistettuJaHyvaksytty: createYkiSuoritus("eino", {
     kansalaisuus: "FIN",
@@ -272,7 +298,7 @@ export const fixtureData = {
     kirjoittaminen: 4,
     rakenteetJaSanasto: 12,
     puheenYmmartaminen: 0,
-    puhuminen: 10,
+    puhuminen: 5,
     yleisarvosana: 12,
     tarkistusarvioinninSaapumisPvm: "2024-10-01",
     tarkistusarvioinninAsiatunnus: "OPH-14893989377-1",

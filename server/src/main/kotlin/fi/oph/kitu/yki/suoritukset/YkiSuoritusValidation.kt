@@ -8,6 +8,7 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -34,6 +35,20 @@ class YkiSuoritusValidation(
             { validateCountryCode(it) },
             { validateArvosanat(it) },
         )
+
+    override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus {
+        val arvosanaKeskeytetty =
+            Koodisto.YkiArvosana.Keskeytetty.koodiarvo
+                .toInt()
+
+        val suoritus: YkiSuoritus = value.suoritus
+
+        return if (suoritus.osat.any { it.arvosana == arvosanaKeskeytetty }) {
+            value.copy(suoritus = suoritus.copy(arviointitila = Arviointitila.KESKEYTETTY))
+        } else {
+            value
+        }
+    }
 
     fun validateTodistuskieli(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
         if (s.suoritus.tutkintopaiva.isBefore(todistuskielenSiirronRajapaiva) || s.suoritus.todistuskieli != null) {
