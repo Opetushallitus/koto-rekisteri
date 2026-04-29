@@ -227,4 +227,18 @@ export const peopleFixture = {
       maa: null,
     },
   }),
+  tanja: createPerson({
+    hetu: "070870X5647",
+    sukupuoli: "N",
+    etunimet: "Tanja",
+    sukunimi: "Tamminen",
+    email: "devnull-15@oph.fi",
+    oppijanumero: "1.2.246.562.24.20281154321",
+    osoite: {
+      katuosoite: "Testikuja 5",
+      postinumero: "40100",
+      postitoimipaikka: "Testilä",
+      maa: "FIN",
+    },
+  }),
 } as const
