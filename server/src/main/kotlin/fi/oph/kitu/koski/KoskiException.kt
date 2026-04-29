@@ -12,10 +12,9 @@ open class KoskiException(
             e: RestClientException,
         ): KoskiException {
             val message = e.message ?: e.toString()
-            return if (message.startsWith("400")) {
-                KoskiValidationException(suoritusId, message)
-            } else {
-                KoskiTechnicalException(suoritusId, message)
+            return when (message.take(3)) {
+                "400", "409" -> KoskiValidationException(suoritusId, message)
+                else -> KoskiTechnicalException(suoritusId, message)
             }
         }
     }
