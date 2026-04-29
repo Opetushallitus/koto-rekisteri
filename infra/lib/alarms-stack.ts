@@ -85,13 +85,22 @@ export class AlarmsStack extends cdk.Stack {
     slackChannel: SlackChannel,
     notificationTopics: aws_sns.ITopic[],
   ) {
-    return new aws_chatbot.SlackChannelConfiguration(this, id, {
+    const config = new aws_chatbot.SlackChannelConfiguration(this, id, {
       slackChannelId: slackChannel.id,
       slackWorkspaceId,
       slackChannelConfigurationName: slackChannel.name,
       notificationTopics,
       loggingLevel: LoggingLevel.INFO,
     })
+
+    // Ilman näitä oikeuksia Q ei pysty hakemaan tutkimuksen tietoja, joten
+    // Slackiin ei tule tutkimusviestejä vaikka chatConfigurationArns olisi
+    // kytketty investigation groupin alle.
+    config.role?.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName("AIOpsAssistantPolicy"),
+    )
+
+    return config
   }
 
   private createInvestigationGroup(
