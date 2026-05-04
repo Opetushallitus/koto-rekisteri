@@ -16,6 +16,7 @@ import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions"
 import { IVpc, SecurityGroup } from "aws-cdk-lib/aws-ec2"
 import {
   Cluster,
+  ContainerDependencyCondition,
   ContainerImage,
   ContainerInsights,
   LogDriver,
@@ -265,19 +266,32 @@ service:
       },
     )
 
-    this.service.taskDefinition.addContainer("AwsOtelCollector", {
-      image: ContainerImage.fromRegistry(
-        // renovate: datasource=docker
-        "public.ecr.aws/aws-observability/aws-otel-collector:v0.45.1",
-      ),
-      secrets: {
-        // https://aws-otel.github.io/docs/setup/ecs/config-through-ssm
-        AOT_CONFIG_CONTENT: Secret.fromSsmParameter(otelCollectorConfig),
+    const otelCollectorContainer = this.service.taskDefinition.addContainer(
+      "AwsOtelCollector",
+      {
+        image: ContainerImage.fromRegistry(
+          // renovate: datasource=docker
+          "public.ecr.aws/aws-observability/aws-otel-collector:v0.45.1",
+        ),
+        secrets: {
+          // https://aws-otel.github.io/docs/setup/ecs/config-through-ssm
+          AOT_CONFIG_CONTENT: Secret.fromSsmParameter(otelCollectorConfig),
+        },
+        logging: LogDriver.awsLogs({
+          logGroup: props.logGroup,
+          streamPrefix: "AwsOtelCollector",
+        }),
       },
-      logging: LogDriver.awsLogs({
-        logGroup: props.logGroup,
-        streamPrefix: "AwsOtelCollector",
-      }),
+    )
+
+    // ECS pysäyttää konttiriippuvuudet käänteisessä järjestyksessä, joten kun
+    // app-kontti riippuu sidecarista, sidecar pysäytetään vasta app-kontin
+    // jälkeen. Näin Spring-shutdownin viimeinen Micrometer-OTLP-flush osuu
+    // vielä elossa olevaan localhost:4318:aan, eikä ECS-deploysta synny
+    // 'Connection refused' -varoituksia.
+    this.service.taskDefinition.defaultContainer!.addContainerDependencies({
+      container: otelCollectorContainer,
+      condition: ContainerDependencyCondition.START,
     })
 
     // EMF exporter-created log group.
