@@ -13,8 +13,6 @@ import { Route53HealthChecksStack } from "./route53-health-checks-stack"
 import { ServiceStack } from "./service-stack"
 import { BackupsStack } from "./backups-stack"
 import { BackupResource } from "aws-cdk-lib/aws-backup"
-import { BastionStack } from "./bastion-stack"
-import { EcsRdsProxyStack } from "./ecs-rds-proxy-stack"
 import { KoskiAuditLogsIntegrationStack } from "./koski-audit-logs-integration-stack"
 
 interface EnvironmentStageProps extends StageProps {
@@ -79,18 +77,6 @@ export class EnvironmentStage extends Stage {
     })
 
     connectionsStack.databaseSG = dbStack.cluster.connections.securityGroups[0]
-
-    new BastionStack(this, "Bastion", {
-      env,
-      vpc: networkStack.vpc,
-      cluster: dbStack.cluster,
-    })
-
-    new EcsRdsProxyStack(this, "EcsRdsProxy", {
-      env,
-      vpc: networkStack.vpc,
-      targetRdsCluster: dbStack.cluster,
-    })
 
     new ServiceStack(this, "Service", {
       env,
