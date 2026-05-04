@@ -32,8 +32,6 @@ infra/
     ├── network-stack.ts             # VPC + subnets
     ├── connections-stack.ts         # Security groups (two-phase: createRules() at end)
     ├── db-stack.ts                  # Aurora Postgres ServerlessV2
-    ├── bastion-stack.ts             # Always-on t4g.nano bastion (SSM Session Manager)
-    ├── ecs-rds-proxy-stack.ts       # On-demand Fargate task for DB tunneling
     ├── service-stack.ts             # ECS Fargate service + ALB + OTel sidecar
     ├── dns-stack.ts                 # Looks up pre-existing Route53 zone
     ├── route53-health-checks-stack.ts  # us-east-1 health check + alarm
@@ -83,19 +81,17 @@ order (because of dependencies):
    wiring avoids a circular dependency between stacks.
 7. **`Database`** — Aurora Postgres ServerlessV2. Always one writer; prod
    additionally gets a reader replica with auto-scaling, deletion protection,
-   and Performance Insights.
-8. **`Bastion`** — t4g.nano AL2023 instance reached via SSM Session Manager.
-   `cluster.connections.allowFrom(bastion, 5432)` lets devs port-forward to
-   Aurora through it.
-9. **`EcsRdsProxy`** — a Fargate task definition (no service) used as an
-   on-demand DB tunnel via `aws ecs run-task` + Session Manager. Cheaper than
-   the bastion for occasional use; bastion is kept around for always-on access.
-10. **`Service`** — the application Fargate service, see below.
-11. **`Route53HealthChecks`** (region: `us-east-1`) — HTTPS check against the
-    public domain; alarm wired to `usEastAlarmsStack.investigationAction`.
-12. **`Backups`** — AWS Backup plan that protects the Aurora cluster; backup-job
+   and Performance Insights. The cluster is in private subnets and only the
+   Service stack's task security group is granted ingress on `5432`. Direct
+   developer access from a laptop is intentionally not wired today; if you
+   need it, add a bastion or `aws ecs run-task`-based tunnel as a separate
+   stack.
+8. **`Service`** — the application Fargate service, see below.
+9. **`Route53HealthChecks`** (region: `us-east-1`) — HTTPS check against the
+   public domain; alarm wired to `usEastAlarmsStack.investigationAction`.
+10. **`Backups`** — AWS Backup plan that protects the Aurora cluster; backup-job
     state changes go to the alarm SNS topic.
-13. **`KoskiAuditLogsIntegration`** — a CloudWatch Logs subscription filter on
+11. **`KoskiAuditLogsIntegration`** — a CloudWatch Logs subscription filter on
     the audit log group → Lambda → SQS in the KOSKI account. The Lambda assumes
     a role (`kitu-sqs-sender`) that the KOSKI account creates with a matching
     trust policy.
