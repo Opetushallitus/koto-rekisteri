@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import software.amazon.awssdk.services.s3.model.Bucket
+import java.net.URL
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -92,11 +94,39 @@ class TehtavapankkiService(
     }
 
     @WithSpan
-    private fun useS3(f: S3Template.(bucketName: String) -> Unit) {
+    fun listTehtavapaketit(): List<TehtavapakettiObject> =
+        useS3 { bucket ->
+            listAllObjects(bucket).map {
+                TehtavapakettiObject(
+                    key = it.location.`object`,
+                    filename = it.filename,
+                    timestamp = Instant.ofEpochMilli(it.lastModified()),
+                )
+            }
+        }.orEmpty()
+
+    @WithSpan
+    fun getTemporaryDownloadUrl(key: String): URL? =
+        useS3 { bucket ->
+            if (objectExists(bucket, key)) {
+                createSignedGetURL(bucket, key, java.time.Duration.ofMinutes(10))
+            } else {
+                null
+            }
+        }
+
+    @WithSpan
+    private fun <T> useS3(f: S3Template.(bucketName: String) -> T): T? {
         val bucketName = bucket?.trim()
         Span.current().setAttribute("dryRun", bucketName.isNullOrBlank())
-        bucketName?.let {
+        return bucketName?.let {
             f(s3Template, bucketName)
         }
     }
 }
+
+data class TehtavapakettiObject(
+    val key: String,
+    val filename: String,
+    val timestamp: Instant,
+)

@@ -13,8 +13,14 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
+import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
+import java.net.URI
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -129,5 +135,69 @@ class TehtavapankkiServiceTest(
                 .readAllBytes()
                 .toString(Charsets.UTF_8)
         assertEquals("<questions><q id=\"a\"/></questions>", suomi2Content)
+    }
+
+    @Test
+    fun `listTehtavapaketit palauttaa bucketin objektit`() {
+        val startTime = Instant.now()
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("42-Suomi_alkeet/2026-01-01T00:00:00-0.xml") },
+            RequestBody.fromString("<questions/>"),
+        )
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("7-Suomi_2/2026-02-02T00:00:00-0.xml") },
+            RequestBody.fromString("<questions/>"),
+        )
+        val endTime = Instant.now()
+
+        val tehtavapaketit = tehtavapankkiService.listTehtavapaketit()
+
+        assertEquals(2, tehtavapaketit.size, "Molempien objektien pitäisi näkyä listauksessa")
+        assertEquals(
+            setOf(
+                "42-Suomi_alkeet/2026-01-01T00:00:00-0.xml",
+                "7-Suomi_2/2026-02-02T00:00:00-0.xml",
+            ),
+            tehtavapaketit.map { it.key }.toSet(),
+        )
+        tehtavapaketit.forEach { tp ->
+            assertTrue(
+                !tp.timestamp.isBefore(startTime.truncatedTo(ChronoUnit.SECONDS)) &&
+                    !tp.timestamp.isAfter(endTime.plusSeconds(1)),
+                "Aikaleiman ${tp.timestamp} pitäisi olla välillä $startTime..$endTime, avain: ${tp.key}",
+            )
+        }
+    }
+
+    @Test
+    fun `listTehtavapaketit palauttaa tyhjan listan kun bucketissa ei ole objekteja`() {
+        assertEquals(emptyList(), tehtavapankkiService.listTehtavapaketit())
+    }
+
+    @Test
+    fun `getTemporaryDownloadUrl palauttaa toimivan signed URL_n`() {
+        val key = "42-Suomi_alkeet/2026-01-01T00:00:00-0.xml"
+        val content = "<questions><q id=\"1\"/></questions>"
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(key) },
+            RequestBody.fromString(content),
+        )
+
+        val url = tehtavapankkiService.getTemporaryDownloadUrl(key)
+
+        assertNotNull(url, "Signed URL:n pitäisi palautua kun bucket on määritelty")
+        val downloaded =
+            URI
+                .create(url.toString())
+                .toURL()
+                .openStream()
+                .use { it.readBytes().toString(Charsets.UTF_8) }
+        assertEquals(content, downloaded)
+    }
+
+    @Test
+    fun `getTemporaryDownloadUrl palauttaa null, jos objektiavain on tuntematon`() {
+        val url = tehtavapankkiService.getTemporaryDownloadUrl("42-Suomi_alkeet/2026-01-01T00:00:00-0.xml")
+        assertNull(url, "Signed URL:n pitäisi olla null, kun objektia ei löydy")
     }
 }
