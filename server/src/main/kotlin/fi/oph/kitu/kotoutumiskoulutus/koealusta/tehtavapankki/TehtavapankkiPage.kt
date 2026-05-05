@@ -6,6 +6,8 @@ import fi.oph.kitu.i18n.finnishDateTimeUTC
 import kotlinx.html.a
 import kotlinx.html.h1
 import kotlinx.html.h2
+import kotlinx.html.h3
+import kotlinx.html.header
 import kotlinx.html.p
 import kotlinx.html.table
 import kotlinx.html.tbody
@@ -17,40 +19,52 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.log10
+import kotlin.math.pow
 
 object TehtavapankkiPage {
-    fun render(tehtavapaketit: List<TehtavapakettiObject>): String =
+    private fun formatBytes(bytes: Long): String {
+        if (bytes < 1024) return "$bytes B"
+        val units = arrayOf("B", "KB", "MB", "GB", "TB")
+        val digitGroups = (log10(bytes.toDouble()) / log10(1024.0)).toInt()
+        val value = bytes / 1024.0.pow(digitGroups.toDouble())
+        return "%.2f %s".format(value, units[digitGroups])
+    }
+
+    fun render(tehtavapaketit: Map<String, List<TehtavapakettiObject>>): String =
         Page.renderHtml {
             h1 { +"Kotoutumiskoulutuksen tehtäväpankki" }
-            h2 { +"Tehtäväpaketit" }
 
             if (tehtavapaketit.isEmpty()) {
                 p { +"Ei tehtäväpaketteja." }
             } else {
-                card(overflowAuto = true) {
-                    table(classes = "compact striped") {
-                        thead {
-                            tr {
-                                th { +"Avain" }
-                                th { +"Aikaleima" }
-                                th { +"Lataa" }
-                            }
-                        }
-                        tbody {
-                            tehtavapaketit.forEach { tp ->
+                tehtavapaketit.forEach { (group, tps) ->
+                    h2 { +group }
+                    card(overflowAuto = true, compact = true) {
+                        table(classes = "compact striped") {
+                            thead {
                                 tr {
-                                    td { +tp.key }
-                                    td { +tp.timestamp.finnishDateTimeUTC() }
-                                    td {
-                                        a(
-                                            href =
-                                                linkTo(
-                                                    methodOn(TehtavapankkiViewController::class.java)
-                                                        .downloadRedirect(tp.key),
-                                                ).toString(),
-                                        ) {
-                                            attributes["download"] = ""
-                                            +"Lataa"
+                                    th { +"Siirretty" }
+                                    th { +"Koko" }
+                                    th { +"Lataa" }
+                                }
+                            }
+                            tbody {
+                                tps.forEachIndexed { index, tp ->
+                                    tr(classes = if (index > 0) "faded" else null) {
+                                        td { +tp.timestamp.finnishDateTimeUTC() }
+                                        td { +formatBytes(tp.size) }
+                                        td {
+                                            a(
+                                                href =
+                                                    linkTo(
+                                                        methodOn(TehtavapankkiViewController::class.java)
+                                                            .downloadRedirect(tp.key),
+                                                    ).toString(),
+                                            ) {
+                                                attributes["download"] = ""
+                                                +"Lataa"
+                                            }
                                         }
                                     }
                                 }
