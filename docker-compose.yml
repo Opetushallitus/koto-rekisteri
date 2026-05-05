@@ -18,3 +18,15 @@ services:
     ports:
       - "16686:16686" # UI
       - "4318:4318" # OTLP HTTP
+
+  # Tarjoaa paikallisen S3-yhteensopivan endpointin sekä `local`-profiilin
+  # ajoille että e2e-testityöntekijöille. Init-skripti luo bucketit valmiiksi.
+  localstack:
+    image: localstack/localstack:4
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3
+      DEBUG: 0
+    volumes:
+      - ./scripts/localstack/init.sh:/etc/localstack/init/ready.d/init.sh
