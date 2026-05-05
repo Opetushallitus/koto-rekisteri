@@ -1,6 +1,7 @@
 package fi.oph.kitu.html
 
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
+import fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki.TehtavapankkiViewController
 import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.yki.YkiViewController
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
@@ -23,6 +24,7 @@ object Navigation {
                 "Kotoutumiskoulutuksen kielitaidon päättötesti",
                 listOf(
                     MenuItem.of("Suoritukset", KielitestiViewController::suorituksetView),
+                    MenuItem.of("Tehtäväpaketit", TehtavapankkiViewController::listView),
                 ),
             ),
             MenuItemGroup(
