@@ -21,10 +21,7 @@ class TehtavapankkiViewController(
 ) {
     @GetMapping("")
     fun listView(): ResponseEntity<String> {
-        val tehtavapaketit =
-            tehtavapankkiService
-                .listTehtavapaketit()
-                .sortedByDescending { it.timestamp }
+        val tehtavapaketit = tehtavapankkiService.listTehtavapaketit()
         return ResponseEntity.ok(TehtavapankkiPage.render(tehtavapaketit))
     }
 

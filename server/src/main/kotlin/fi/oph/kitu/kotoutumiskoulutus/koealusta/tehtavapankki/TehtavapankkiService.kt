@@ -1,6 +1,5 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
-import fi.oph.kitu.observability.use
 import fi.oph.kitu.withJacksonStreamMaxStringLength
 import io.awspring.cloud.s3.S3Template
 import io.opentelemetry.api.trace.Span
@@ -12,7 +11,6 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
-import software.amazon.awssdk.services.s3.model.Bucket
 import java.net.URL
 import java.time.Instant
 import java.time.LocalDateTime
@@ -94,12 +92,19 @@ class TehtavapankkiService(
     }
 
     @WithSpan
-    fun listTehtavapaketit(): List<TehtavapakettiObject> =
+    fun listTehtavapaketit(): Map<String, List<TehtavapakettiObject>> =
+        listAllTehtavapaketit()
+            .groupBy { it.filename.substringBefore("/") }
+            .mapValues { (_, v) -> v.sortedByDescending { it.timestamp } }
+
+    @WithSpan
+    fun listAllTehtavapaketit(): List<TehtavapakettiObject> =
         useS3 { bucket ->
             listAllObjects(bucket).map {
                 TehtavapakettiObject(
                     key = it.location.`object`,
                     filename = it.filename,
+                    size = it.contentLength(),
                     timestamp = Instant.ofEpochMilli(it.lastModified()),
                 )
             }
@@ -128,5 +133,6 @@ class TehtavapankkiService(
 data class TehtavapakettiObject(
     val key: String,
     val filename: String,
+    val size: Long,
     val timestamp: Instant,
 )

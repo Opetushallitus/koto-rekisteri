@@ -74,8 +74,8 @@ class TehtavapankkiViewControllerTest(
                 .andReturn()
                 .response.contentAsString
 
-        assertContains(response, "42-Suomi_alkeet/2026-01-01T00:00:00-0.xml")
-        assertContains(response, "7-Suomi_2/2026-02-02T00:00:00-0.xml")
+        assertContains(response, "42-Suomi_alkeet")
+        assertContains(response, "7-Suomi_2")
     }
 
     @Test
