@@ -3,13 +3,16 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.withJacksonStreamMaxStringLength
 import io.awspring.cloud.s3.S3Template
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
+import software.amazon.awssdk.services.s3.model.Bucket
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -43,8 +46,6 @@ class TehtavapankkiService(
             .build()
     }
 
-    fun dryRun(): Boolean = bucket?.trim().isNullOrEmpty()
-
     /**
      * 1. Replaces white spaces with underscore.
      * 2. Replaces any character that isn't a number, letter or underscore with nothing.
@@ -56,45 +57,46 @@ class TehtavapankkiService(
             .replace(Regex("\\W+"), "")
             .take(128)
 
-    fun uploadTehtavapankki(response: TehtavapankkiResponse) =
-        tracer
-            .spanBuilder("TehtavapankkiService.uploadTehtavapankki")
-            .startSpan()
-            .use { span ->
-                span.setAttribute("dryRun", dryRun())
+    @WithSpan
+    fun uploadTehtavapankki(response: TehtavapankkiResponse) {
+        val now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        response.questionbanks.forEachIndexed { index, (courseid, coursename, xml) ->
+            val sanitizedCoursename = sanitizeFilename(coursename)
+            val filename = "$courseid-$sanitizedCoursename/$now-$index.xml"
+            val stream = xml.byteInputStream(Charsets.UTF_8)
 
-                val now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-                response.questionbanks.forEachIndexed { index, (courseid, coursename, xml) ->
-                    val sanitizedCoursename = sanitizeFilename(coursename)
-                    val filename = "$courseid-$sanitizedCoursename/$now-$index.xml"
-                    val stream = xml.byteInputStream(Charsets.UTF_8)
-
-                    if (!dryRun()) {
-                        s3Template.upload(bucket!!, filename, stream)
-                    }
-                }
+            useS3 { bucketName ->
+                upload(bucketName, filename, stream)
             }
+        }
+    }
 
-    fun importTehtavapankki() =
-        tracer
-            .spanBuilder("TehtavapankkiService.importTehtavapankki")
-            .startSpan()
-            .use { span ->
-                span.setAttribute("function", "local_completion_export_export_question_bank")
+    @WithSpan
+    fun importTehtavapankki() {
+        Span.current().setAttribute("function", "local_completion_export_export_question_bank")
 
-                val response =
-                    restClient
-                        .get()
-                        .uri(
-                            "/webservice/rest/server.php?wstoken={token}&moodlewsrestformat=json&wsfunction={function}",
-                            mapOf<String, Any>(
-                                "token" to koealustaToken,
-                                "function" to "local_completion_export_export_question_bank",
-                            ),
-                        ).accept(MediaType.APPLICATION_JSON)
-                        .retrieve()
-                        .toEntity<TehtavapankkiResponse>()
+        val response =
+            restClient
+                .get()
+                .uri(
+                    "/webservice/rest/server.php?wstoken={token}&moodlewsrestformat=json&wsfunction={function}",
+                    mapOf<String, Any>(
+                        "token" to koealustaToken,
+                        "function" to "local_completion_export_export_question_bank",
+                    ),
+                ).accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .toEntity<TehtavapankkiResponse>()
 
-                uploadTehtavapankki(response.body!!)
-            }
+        uploadTehtavapankki(response.body!!)
+    }
+
+    @WithSpan
+    private fun useS3(f: S3Template.(bucketName: String) -> Unit) {
+        val bucketName = bucket?.trim()
+        Span.current().setAttribute("dryRun", bucketName.isNullOrBlank())
+        bucketName?.let {
+            f(s3Template, bucketName)
+        }
+    }
 }
