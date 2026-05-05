@@ -5,7 +5,7 @@ import fi.oph.kitu.withJacksonStreamMaxStringLength
 import io.awspring.cloud.s3.S3Template
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Profile
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
@@ -13,8 +13,15 @@ import org.springframework.web.client.toEntity
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+// Wired vain kun spring.cloud.aws.s3.enabled on tosi. Bean luodaan
+// myös testeissä ja e2e:ssä kun ne osoittavat LocalStackiin; ajastettu
+// import gateataan erikseen TehtavapankkiScheduledTasksissa.
 @Service
-@Profile("!ci & !e2e & !test")
+@ConditionalOnProperty(
+    name = ["spring.cloud.aws.s3.enabled"],
+    havingValue = "true",
+    matchIfMissing = true,
+)
 class TehtavapankkiService(
     private val restClientBuilder: RestClient.Builder,
     private val s3Template: S3Template,
