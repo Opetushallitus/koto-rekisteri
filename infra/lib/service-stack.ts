@@ -334,6 +334,6 @@ service:
     memoryAlarm.addAlarmAction(snsAction)
     memoryAlarm.addAlarmAction(props.investigationAction)
 
-    tehtavapankkiBucket.grantWrite(this.service.taskDefinition.taskRole)
+    tehtavapankkiBucket.grantReadWrite(this.service.taskDefinition.taskRole)
   }
 }

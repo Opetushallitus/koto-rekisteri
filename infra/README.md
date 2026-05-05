@@ -119,7 +119,9 @@ order (because of dependencies):
   timeout 5s.
 - Alarms attached: 5xx count ≥ 4 over the period; CPU > 50%; memory > 50%.
   All three trigger SNS + investigation.
-- An S3 bucket for `tehtavapankki` is created and granted to the task role.
+- An S3 bucket for `tehtavapankki` is created and the task role gets
+  read+write access to it (write for the Koealusta-import scheduled task,
+  read for the virkailija-facing listing page and signed download URLs).
 
 ## Monitoring, alarms, investigations, Slack
 
