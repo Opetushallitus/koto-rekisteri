@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter
     matchIfMissing = true,
 )
 class TehtavapankkiService(
-    private val restClientBuilder: RestClient.Builder,
+    val restClientBuilder: RestClient.Builder,
     private val s3Template: S3Template,
     private val tracer: Tracer,
 ) {
