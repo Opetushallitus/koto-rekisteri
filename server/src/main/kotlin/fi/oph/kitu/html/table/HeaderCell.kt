@@ -1,8 +1,8 @@
 package fi.oph.kitu.html.table
 
-import fi.oph.kitu.SortDirection
-import fi.oph.kitu.reverse
-import fi.oph.kitu.toSymbol
+import fi.oph.kitu.jdbc.SortDirection
+import fi.oph.kitu.jdbc.reverse
+import fi.oph.kitu.jdbc.toSymbol
 
 data class HeaderCell<TEnum>(
     val column: TEnum,

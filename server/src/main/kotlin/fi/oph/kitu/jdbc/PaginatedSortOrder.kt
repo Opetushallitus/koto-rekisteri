@@ -1,7 +1,7 @@
 package fi.oph.kitu.jdbc
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.table.DisplayTableEnum
+import fi.oph.kitu.jdbc.SortDirection
 
 const val PAGINATED_DEFAULT_PAGE_SIZE = 50
 

@@ -1,7 +1,7 @@
 package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.SortDirection
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import io.opentelemetry.instrumentation.annotations.WithSpan

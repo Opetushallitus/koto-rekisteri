@@ -1,9 +1,9 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset.error
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.table.displayTableBody
 import fi.oph.kitu.html.table.displayTableHeader
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import kotlinx.html.a

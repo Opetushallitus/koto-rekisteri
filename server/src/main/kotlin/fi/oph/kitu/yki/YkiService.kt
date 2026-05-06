@@ -1,9 +1,9 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.splitIntoValuesAndErrors

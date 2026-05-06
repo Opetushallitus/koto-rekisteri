@@ -2,7 +2,7 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
-import fi.oph.kitu.SortDirection
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.mock.VktSuoritusMockGenerator
 import org.junit.jupiter.api.BeforeEach

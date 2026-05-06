@@ -1,12 +1,12 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
-import fi.oph.kitu.SortDirection
+import fi.oph.kitu.jdbc.SortDirection
+import fi.oph.kitu.jdbc.sortedWithDirectionBy
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.organisaatiot.OrganisaatioService
-import fi.oph.kitu.sortedWithDirectionBy
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
