@@ -5,6 +5,7 @@ import fi.oph.kitu.TypedResult
 import fi.oph.kitu.mapValues
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.partitionBySuccess
+import fi.oph.kitu.retry.RetryOutboundIntegration
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktSuoritusService
@@ -32,7 +33,7 @@ class KoskiService(
     private val koskiErrors: KoskiErrorService,
 ) {
     @WithSpan
-    @RetryKoski
+    @RetryOutboundIntegration
     fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<YkiSuoritusEntity, KoskiException> =
         tracer
             .spanBuilder("KoskiService.sendYkiSuoritusToKoski")
@@ -87,7 +88,7 @@ class KoskiService(
             }
 
     @WithSpan
-    @RetryKoski
+    @RetryOutboundIntegration
     fun sendYkiMitatointiToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<Unit, KoskiException> =
         tracer
             .spanBuilder("KoskiService.sendYkiMitatointiToKoski")
@@ -121,7 +122,7 @@ class KoskiService(
             }
 
     @WithSpan
-    @RetryKoski
+    @RetryOutboundIntegration
     fun sendVktSuoritusToKoski(suoritus: VktHenkilosuoritus): TypedResult<Unit, KoskiException> =
         tracer
             .spanBuilder("KoskiService.sendVktSuoritusToKoski")
