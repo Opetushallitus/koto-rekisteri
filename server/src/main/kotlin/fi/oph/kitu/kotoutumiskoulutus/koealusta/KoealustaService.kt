@@ -1,6 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
-import fi.oph.kitu.PeerService
+import fi.oph.kitu.logging.PeerService
 import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.CustomKielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
