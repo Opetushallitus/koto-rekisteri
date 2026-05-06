@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
@@ -48,19 +49,9 @@ class KoskiService(
                     return TypedResult.Success(suoritus)
                 } else {
                     val koskiResponse =
-                        try {
-                            koskiRestClient
-                                .put()
-                                .uri("oppija")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON)
-                                .body(koskiRequest)
-                                .retrieve()
-                                .toEntity<KoskiResponse>()
-                        } catch (e: RestClientException) {
-                            return TypedResult.Failure(
-                                KoskiException.from(YkiMappingId(ykiSuoritusEntity.solkiId), e),
-                            )
+                        when (val result = putToKoski(YkiMappingId(ykiSuoritusEntity.solkiId), koskiRequest)) {
+                            is TypedResult.Success -> result.value
+                            is TypedResult.Failure -> return TypedResult.Failure(result.error)
                         }
 
                     val koskiOpiskeluoikeus =
@@ -137,17 +128,9 @@ class KoskiService(
                 }
 
                 val koskiResponse =
-                    try {
-                        koskiRestClient
-                            .put()
-                            .uri("oppija")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.APPLICATION_JSON)
-                            .body(koskiRequest.getOrThrow())
-                            .retrieve()
-                            .toEntity<KoskiResponse>()
-                    } catch (e: RestClientException) {
-                        return TypedResult.Failure(KoskiException.from(VktMappingId(id), e))
+                    when (val result = putToKoski(VktMappingId(id), koskiRequest.getOrThrow())) {
+                        is TypedResult.Success -> result.value
+                        is TypedResult.Failure -> return TypedResult.Failure(result.error)
                     }
 
                 val koskiOpiskeluoikeusOid =
@@ -180,6 +163,25 @@ class KoskiService(
             }
         return reportErrors(results)
     }
+
+    private fun putToKoski(
+        id: KoskiErrorMappingId,
+        koskiRequest: KoskiRequest,
+    ): TypedResult<ResponseEntity<KoskiResponse>, KoskiException> =
+        try {
+            TypedResult.Success(
+                koskiRestClient
+                    .put()
+                    .uri("oppija")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(koskiRequest)
+                    .retrieve()
+                    .toEntity<KoskiResponse>(),
+            )
+        } catch (e: RestClientException) {
+            TypedResult.Failure(KoskiException.from(id, e))
+        }
 
     private inline fun <reified T : KoskiErrorMappingId> reportErrors(
         results: List<TypedResult<T, KoskiException>?>,
