@@ -2,7 +2,7 @@ package fi.oph.kitu.csvparsing
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
-import fi.oph.kitu.TypedResult
+import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli

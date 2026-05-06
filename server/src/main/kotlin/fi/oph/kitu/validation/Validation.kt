@@ -1,6 +1,6 @@
 package fi.oph.kitu.validation
 
-typealias ValidationResult<T> = fi.oph.kitu.TypedResult<out T, Validation.ValidationException>
+typealias ValidationResult<T> = fi.oph.kitu.result.TypedResult<out T, Validation.ValidationException>
 
 interface Validation<T> {
     fun validateAndEnrich(value: T): ValidationResult<T> {
@@ -45,7 +45,7 @@ interface Validation<T> {
         }
 
         fun <T> ok(value: T): ValidationResult<T> =
-            fi.oph.kitu.TypedResult
+            fi.oph.kitu.result.TypedResult
                 .Success(value)
 
         fun <T> fail(
@@ -54,7 +54,7 @@ interface Validation<T> {
         ): ValidationResult<T> = fail(listOf(ValidationError(path, message)))
 
         fun <T> fail(reasons: List<ValidationError>): ValidationResult<T> =
-            fi.oph.kitu.TypedResult
+            fi.oph.kitu.result.TypedResult
                 .Failure(ValidationException(reasons))
 
         fun <T, A> assert(

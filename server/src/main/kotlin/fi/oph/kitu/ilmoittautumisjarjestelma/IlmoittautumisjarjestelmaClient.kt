@@ -1,7 +1,7 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
-import fi.oph.kitu.TypedResult
 import fi.oph.kitu.http.retrieveEntitySafely
+import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.util.defaultObjectMapper
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier

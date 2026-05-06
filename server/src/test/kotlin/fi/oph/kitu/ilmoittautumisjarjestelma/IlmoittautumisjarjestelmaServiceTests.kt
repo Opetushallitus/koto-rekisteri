@@ -2,8 +2,8 @@ package fi.oph.kitu.ilmoittautumisjarjestelma
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
-import fi.oph.kitu.TypedResult
 import fi.oph.kitu.dev.YkiController
+import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma

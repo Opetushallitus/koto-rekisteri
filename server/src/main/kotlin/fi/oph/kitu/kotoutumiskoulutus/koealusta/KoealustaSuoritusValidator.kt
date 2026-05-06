@@ -1,15 +1,15 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.TypedResult
-import fi.oph.kitu.TypedResult.Failure
-import fi.oph.kitu.TypedResult.Success
 import fi.oph.kitu.kotoutumiskoulutus.koealusta.KoealustaSuorituksetResponse.User
 import fi.oph.kitu.kotoutumiskoulutus.koealusta.KoealustaSuorituksetResponse.User.Completion
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Arvosana
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
 import fi.oph.kitu.oppijanumero.Oppija
+import fi.oph.kitu.result.TypedResult
+import fi.oph.kitu.result.TypedResult.Failure
+import fi.oph.kitu.result.TypedResult.Success
 import org.springframework.stereotype.Service
 import java.time.Instant
 

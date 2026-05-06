@@ -1,7 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.TypedResult
+import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.retry.RetryOutboundIntegration
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
