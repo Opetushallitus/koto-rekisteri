@@ -505,6 +505,15 @@ class YkiSuoritusRepository {
                 mapOf("opiskeluoikeus" to opiskeluoikeus.toString()),
                 YkiSuoritusEntity.fromRow,
             ).firstOrNull()
+
+    @WithSpan
+    fun getLatestByLahdejarjestelmanTunnus(tunnus: String): YkiSuoritusEntity? =
+        jdbcNamedParameterTemplate
+            .query(
+                selectSuorituksetFull(viimeisin = true, "WHERE lahdejarjestelmantunnus = :tunnus"),
+                mapOf("tunnus" to tunnus),
+                YkiSuoritusEntity.fromRow,
+            ).firstOrNull()
 }
 
 object YkiSuoritusSql {

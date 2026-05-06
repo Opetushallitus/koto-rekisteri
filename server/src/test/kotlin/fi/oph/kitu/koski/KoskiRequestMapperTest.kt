@@ -65,6 +65,7 @@ class KoskiRequestMapperTest(
                 puhuminen = 2,
                 rakenteetJaSanasto = null,
                 yleisarvosana = null,
+                lahdejarjestelmanTunnus = "yki.123456",
             )
         val koskiRequest = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
         val expectedJson =
@@ -94,6 +95,7 @@ class KoskiRequestMapperTest(
                 puhuminen = 2,
                 rakenteetJaSanasto = null,
                 yleisarvosana = 2,
+                lahdejarjestelmanTunnus = "yki.123456",
             )
         val koskiRequest = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
         val expectedJson =

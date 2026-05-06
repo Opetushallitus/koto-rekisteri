@@ -96,13 +96,98 @@ class YhteystiedotApiController(
             ),
         ],
     )
-    fun getYhteystiedot(
+    fun getYhteystiedotByOid(
         @PathVariable oid: Oid,
     ): ResponseEntity<*> =
         yhteystiedotService
             .getYhteystiedotByOpiskeluoikeusOid(oid)
             ?.let { ResponseEntity(it, HttpStatus.OK) }
             ?: ResponseEntity(YhteystietoNotFound(oid.toString()), HttpStatus.NOT_FOUND)
+
+    /**
+     * Palauttaa todistuksen postitusosoitteen sekä toivotun kielen todistukselle annettuun lähdejärjestelmän tunnukseen liittyen.
+     *
+     * @param tunnus Opiskeluoikeuteen liittyvä lähdejärjestelmän tunniste, jonka perusteella yhteystiedot haetaan.
+     * @return ResponseEntity, joka sisältää joko löydetyt yhteystiedot HTTP 200 -tilakoodin kanssa
+     *         tai YhteystietoNotFound-virheilmoituksen HTTP 404 -tilakoodin kanssa, jos yhteystietoja ei löydy.
+     */
+    @GetMapping(
+        "/opiskeluoikeus/lahdejarjestelman/{tunnus}",
+        produces = ["application/yhteystiedot+json", "application/json"],
+    )
+    @Operation(
+        summary = "Palauttaa todistuksen postitusosoitteen sekä toivotun kielen todistukselle",
+        description = """
+           Palauttaa tiedot opiskeluoikeus-OIDin perusteella. 
+           Palauttaa 404, jos yhteystietoja ei löydy.
+           Rajapinta vaatii käyttöoikeuden KIELITUTKINTOREKISTERI_TODISTUS_YHTEYSTIEDOT_LUKEMINEN.
+        """,
+        responses = [
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "Yhteystiedot löytyivät",
+                content = [
+                    io.swagger.v3.oas.annotations.media.Content(
+                        mediaType = "application/yhteystiedot+json",
+                        schema =
+                            io.swagger.v3.oas.annotations.media
+                                .Schema(implementation = Yhteystiedot::class),
+                        examples = [
+                            io.swagger.v3.oas.annotations.media.ExampleObject(
+                                value = """
+                        {
+                            "sukunimi": "Meikäläinen",
+                            "etunimet": "Matti Johannes",
+                            "katuosoite": "Esimerkkikatu 123",
+                            "postinumero": "00100",
+                            "postitoimipaikka": "Helsinki",
+                            "maa": {
+                                "koodiarvo": "FIN",
+                                "koodistoUri": "maatjavaltiot1"
+                            },
+                            "email": "matti.meikalainen@example.com",
+                            "todistuskieli": {
+                                "koodiarvo": "FI",
+                                "koodistoUri": "kieli"
+                            }
+                        }
+                    """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404",
+                description = "Yhteystietoja ei löytynyt annetulla opiskeluoikeus-OIDilla",
+                content = [
+                    io.swagger.v3.oas.annotations.media.Content(
+                        mediaType = "application/yhteystiedot+json",
+                        schema =
+                            io.swagger.v3.oas.annotations.media
+                                .Schema(implementation = YhteystietoNotFound::class),
+                        examples = [
+                            io.swagger.v3.oas.annotations.media.ExampleObject(
+                                value = """
+                        {
+                            "request": "1.2.246.562.15.00000000001",
+                            "error": "NOT_FOUND"
+                        }
+                    """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun getYhteystiedotByLahdenjarjestelmanTunnus(
+        @PathVariable tunnus: String,
+    ): ResponseEntity<*> =
+        yhteystiedotService
+            .getYhteystiedotByLahdejarjestelmanTunnus(tunnus)
+            ?.let { ResponseEntity(it, HttpStatus.OK) }
+            ?: ResponseEntity(YhteystietoNotFound(tunnus), HttpStatus.NOT_FOUND)
 }
 
 data class YhteystietoNotFound(
