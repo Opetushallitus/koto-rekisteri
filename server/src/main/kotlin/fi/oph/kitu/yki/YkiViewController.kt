@@ -98,7 +98,7 @@ class YkiViewController(
         return handleSuorituksetView(params, csrfToken)
     }
 
-    fun handleSuorituksetView(
+    private fun handleSuorituksetView(
         params: YkiSuorituksetParams,
         csrfToken: CsrfToken?,
     ): ResponseEntity<String> {

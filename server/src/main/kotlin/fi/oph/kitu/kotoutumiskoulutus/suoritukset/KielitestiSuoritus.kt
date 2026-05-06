@@ -5,8 +5,6 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import fi.oph.kitu.sortedWithDirectionBy
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
@@ -31,13 +29,9 @@ data class KielitestiSuoritus(
     val opettajanEmail: String?,
     val kurssiId: Int,
     val kurssi: String,
-    @Enumerated(EnumType.STRING)
     val luetunYmmartaminen: Arvosana,
-    @Enumerated(EnumType.STRING)
     val kuullunYmmartaminen: Arvosana,
-    @Enumerated(EnumType.STRING)
     val puhe: Arvosana,
-    @Enumerated(EnumType.STRING)
     val kirjoittaminen: Arvosana,
     val testikieli: Testikieli?,
     @IgnoreForEquality("KOTO")

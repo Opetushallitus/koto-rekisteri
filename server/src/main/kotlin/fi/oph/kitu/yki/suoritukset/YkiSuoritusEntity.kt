@@ -10,8 +10,6 @@ import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.jdbc.core.RowMapper
@@ -28,7 +26,6 @@ data class YkiSuoritusEntity(
     val id: Int?,
     val suorittajanOID: Oid,
     val hetu: String?,
-    @Enumerated(EnumType.STRING)
     val sukupuoli: Sukupuoli,
     val sukunimi: String,
     val etunimet: String,
@@ -43,11 +40,8 @@ data class YkiSuoritusEntity(
     @IgnoreForEquality("DB")
     val lastModified: Instant,
     val tutkintopaiva: LocalDate,
-    @Enumerated(EnumType.STRING)
     val tutkintokieli: Tutkintokieli,
-    @Enumerated(EnumType.STRING)
     val tutkintotaso: Tutkintotaso,
-    @Enumerated(EnumType.STRING)
     val todistuskieli: Todistuskieli?,
     val jarjestajanTunnusOid: Oid,
     val jarjestajanNimi: String,
@@ -69,7 +63,6 @@ data class YkiSuoritusEntity(
     val koskiOpiskeluoikeus: Oid?,
     @IgnoreForEquality("SOLKI")
     val koskiSiirtoKasitelty: Boolean?,
-    @Enumerated(EnumType.STRING)
     val arviointitila: Arviointitila,
     @IgnoreForEquality("SOLKI")
     val arviointitilaLahetetty: Timestamp?,
