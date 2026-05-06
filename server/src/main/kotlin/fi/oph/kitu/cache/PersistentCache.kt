@@ -1,6 +1,6 @@
 package fi.oph.kitu.cache
 
-import fi.oph.kitu.defaultObjectMapper
+import fi.oph.kitu.util.defaultObjectMapper
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope

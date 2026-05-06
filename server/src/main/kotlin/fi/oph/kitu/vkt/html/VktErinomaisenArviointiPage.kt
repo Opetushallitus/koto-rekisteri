@@ -1,7 +1,6 @@
 package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.growToSize
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Navigation.setCurrentItem
 import fi.oph.kitu.html.Page
@@ -21,6 +20,7 @@ import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
+import fi.oph.kitu.util.growToSize
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktOsakoe
 import kotlinx.html.FlowContent

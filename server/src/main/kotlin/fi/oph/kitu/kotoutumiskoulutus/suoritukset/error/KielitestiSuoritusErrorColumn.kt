@@ -5,7 +5,7 @@ import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.organisaatiot.Organisaatiot
-import fi.oph.kitu.toJsonNode
+import fi.oph.kitu.util.toJsonNode
 import kotlinx.html.FlowContent
 import kotlinx.html.details
 import kotlinx.html.div

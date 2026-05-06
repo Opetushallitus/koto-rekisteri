@@ -4,8 +4,8 @@ import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.Oid
 import fi.oph.kitu.auth.Authority
 import fi.oph.kitu.auth.CasUserDetails
-import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.schema.SchemaTests
+import fi.oph.kitu.util.defaultObjectMapper
 import jakarta.servlet.http.HttpSession
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired

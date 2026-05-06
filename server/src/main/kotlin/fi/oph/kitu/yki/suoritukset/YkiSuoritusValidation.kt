@@ -2,10 +2,10 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.i18n.finnishDate
-import fi.oph.kitu.intersects
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
+import fi.oph.kitu.util.intersects
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
 import fi.oph.kitu.yki.Arviointitila

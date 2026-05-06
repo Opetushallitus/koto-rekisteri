@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.util
 
 import tools.jackson.core.JacksonException
 import tools.jackson.databind.DeserializationFeature
