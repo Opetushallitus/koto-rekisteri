@@ -2,7 +2,7 @@ package fi.oph.kitu.koski
 
 import com.github.kagkarlsson.scheduler.task.Task
 import fi.oph.kitu.config.ConditionalOnNonEmptyProperty
-import fi.oph.kitu.observability.recurringStatefulTask
+import fi.oph.kitu.scheduling.recurringStatefulTask
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty

@@ -1,8 +1,8 @@
-package fi.oph.kitu.observability
+package fi.oph.kitu.scheduling
 
 import com.github.kagkarlsson.scheduler.task.Task
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.kitu.ExtendedSchedules
+import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 
 fun Tracer.recurringTask(
