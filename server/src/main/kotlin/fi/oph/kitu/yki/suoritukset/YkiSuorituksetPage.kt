@@ -2,7 +2,9 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.csvDownloadButton
 import fi.oph.kitu.html.errorsArticle
+import fi.oph.kitu.html.filterDescriptionList
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.koskiErrorsArticle
@@ -24,7 +26,6 @@ import fi.oph.kitu.yki.YkiViewController
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
-import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.button
 import kotlinx.html.fieldSet
@@ -90,11 +91,16 @@ object YkiSuorituksetPage {
                     nav {
                         ul {
                             li { +"Suorituksia yhteensä: $totalSuoritukset" }
-                            li { csvDownloadButton(filterParams) }
+                            li {
+                                csvDownloadButton(
+                                    linkTo<YkiApiController> { getSuorituksetAsCsv() }.toString() +
+                                        "?${httpParams(filterParams.toMap())}",
+                                )
+                            }
                             li { ykiSuoritusFilterButton(filterParams) }
                         }
                     }
-                    ykiSuoritusFilterList(filterParams)
+                    filterDescriptionList(filterParams.filterDescriptions())
                 }
 
                 table {
@@ -127,30 +133,6 @@ object YkiSuorituksetPage {
                 pagination(pagination)
             }
         }
-}
-
-fun FlowContent.csvDownloadButton(params: YkiSuorituksetParams) {
-    a(
-        href =
-            linkTo<YkiApiController> {
-                getSuorituksetAsCsv()
-            }.toString() + "?${httpParams(params.toMap())}",
-    ) {
-        attributes["download"] = ""
-        +"Lataa tiedot CSV:nä"
-    }
-}
-
-fun FlowContent.ykiSuoritusFilterList(params: YkiSuorituksetParams) {
-    params.filterDescriptions().let { filters ->
-        if (filters.isNotEmpty()) {
-            ul {
-                filters.forEach { filter ->
-                    li { +filter }
-                }
-            }
-        }
-    }
 }
 
 fun FlowContent.ykiSuoritusFilterButton(params: YkiSuorituksetParams) {

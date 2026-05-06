@@ -19,7 +19,6 @@ import fi.oph.kitu.vkt.VktSuoritusFilter
 import fi.oph.kitu.vkt.VktSuoritusFlat
 import fi.oph.kitu.vkt.VktSuoritusOrder
 import kotlinx.html.FlowContent
-import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.fieldSet
 import kotlinx.html.h1
@@ -58,12 +57,17 @@ object VktSuorituksetPage {
                                     +pagination.numberOfItems.toString()
                                 }
                             }
-                            li { csvDownloadButton(filter) }
+                            li {
+                                csvDownloadButton(
+                                    linkTo<VktApiController> { getSuorituksetCsv() }.toString() +
+                                        httpParams(filter.toMap()),
+                                )
+                            }
                             li { vktSuoritusFilterButton(filter) }
                         }
                     }
                 }
-                vktSuoritusFilterList(filter)
+                filterDescriptionList(filter.filterDescriptions())
             }
             vktKaikkiSuorituksetTable(suoritukset, filter, order, pagination, translations)
         }
@@ -127,30 +131,6 @@ fun FlowContent.vktSuoritusFilterButton(filter: VktSuoritusFilter) {
         }
         fieldSet {
             toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", filter.piilotaHenkilotiedot)
-        }
-    }
-}
-
-fun FlowContent.csvDownloadButton(params: VktSuoritusFilter) {
-    a(
-        href =
-            linkTo<VktApiController> {
-                getSuorituksetCsv()
-            }.toString() + httpParams(params.toMap()),
-    ) {
-        attributes["download"] = ""
-        +"Lataa tiedot CSV:nä"
-    }
-}
-
-fun FlowContent.vktSuoritusFilterList(params: VktSuoritusFilter) {
-    params.filterDescriptions().let { filters ->
-        if (filters.isNotEmpty()) {
-            ul {
-                filters.forEach { filter ->
-                    li { +filter }
-                }
-            }
         }
     }
 }
