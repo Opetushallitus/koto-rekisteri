@@ -5,8 +5,6 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
@@ -156,10 +154,8 @@ data class YkiArvioijaArviointioikeus(
     val katuosoite: String,
     val postinumero: String,
     val postitoimipaikka: String,
-    @Enumerated(EnumType.STRING)
     val kieli: Tutkintokieli,
     val tasot: Set<Tutkintotaso>,
-    @Enumerated(EnumType.STRING)
     val tila: YkiArvioijaTila,
     val kaudenAlkupaiva: LocalDate?,
     val kaudenPaattymispaiva: LocalDate?,

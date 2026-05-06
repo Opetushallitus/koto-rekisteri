@@ -1,8 +1,13 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package fi.oph.kitu.vkt.html
 
-import fi.oph.kitu.html.*
+import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.ViewMessageData
+import fi.oph.kitu.html.card
+import fi.oph.kitu.html.csvDownloadButton
+import fi.oph.kitu.html.filterDescriptionList
+import fi.oph.kitu.html.hiddenValue
+import fi.oph.kitu.html.pagination
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.dateFilter
@@ -12,6 +17,8 @@ import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.html.table.trueFalseOrAllFilter
+import fi.oph.kitu.html.testId
+import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.vkt.VktApiController
 import fi.oph.kitu.vkt.VktSuoritusColumn

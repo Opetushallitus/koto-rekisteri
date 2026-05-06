@@ -5,8 +5,6 @@ import fi.oph.kitu.getOid
 import fi.oph.kitu.jdbc.getTypedArray
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.MappedCollection
 import org.springframework.data.relational.core.mapping.Table
@@ -53,10 +51,8 @@ data class YkiArviointioikeusEntity(
     @Id
     val id: Number?,
     val arvioijaId: Number?,
-    @Enumerated(EnumType.STRING)
     val kieli: Tutkintokieli,
     val tasot: Set<Tutkintotaso>,
-    @Enumerated(EnumType.STRING)
     val tila: YkiArvioijaTila,
     val kaudenAlkupaiva: LocalDate?,
     val kaudenPaattymispaiva: LocalDate?,
