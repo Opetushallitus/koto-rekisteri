@@ -34,7 +34,8 @@ import kotlin.test.assertTrue
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
 class KoskiServiceTest(
-    @param:Autowired private val koskiRequestMapper: KoskiRequestMapper,
+    @param:Autowired private val koskiYkiRequestMapper: KoskiYkiRequestMapper,
+    @param:Autowired private val koskiVktRequestMapper: KoskiVktRequestMapper,
     @param:Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @param:Autowired private val mockRestClientBuilder: RestClient.Builder,
     @param:Autowired private val tracer: Tracer,
@@ -78,7 +79,8 @@ class KoskiServiceTest(
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
-                koskiRequestMapper,
+                koskiYkiRequestMapper,
+                koskiVktRequestMapper,
                 ykiSuoritusRepository,
                 tracer,
                 customVktSuoritusRepository,
@@ -92,7 +94,7 @@ class KoskiServiceTest(
         val spans = inMemorySpanExporter.finishedSpanItems
         assertNotNull(spans)
         assertNotNull(spans.find { it.name == "KoskiService.sendYkiSuoritusToKoski" })
-        assertNotNull(spans.find { it.name == "KoskiRequestMapper.ykiSuoritusToKoskiRequest" })
+        assertNotNull(spans.find { it.name == "KoskiYkiRequestMapper.ykiSuoritusToKoskiRequest" })
     }
 
     @Test
@@ -112,7 +114,8 @@ class KoskiServiceTest(
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
-                koskiRequestMapper,
+                koskiYkiRequestMapper,
+                koskiVktRequestMapper,
                 ykiSuoritusRepository,
                 tracer,
                 customVktSuoritusRepository,
@@ -143,7 +146,8 @@ class KoskiServiceTest(
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
-                koskiRequestMapper,
+                koskiYkiRequestMapper,
+                koskiVktRequestMapper,
                 ykiSuoritusRepository,
                 tracer,
                 customVktSuoritusRepository,
@@ -190,7 +194,8 @@ class KoskiServiceTest(
         val service =
             KoskiService(
                 mockRestClientBuilder.build(),
-                koskiRequestMapper,
+                koskiYkiRequestMapper,
+                koskiVktRequestMapper,
                 ykiSuoritusRepository,
                 tracer,
                 customVktSuoritusRepository,
@@ -255,7 +260,8 @@ class KoskiServiceTest(
 
         return KoskiService(
             mockRestClientBuilder.build(),
-            koskiRequestMapper,
+            koskiYkiRequestMapper,
+            koskiVktRequestMapper,
             ykiSuoritusRepository,
             tracer,
             customVktSuoritusRepository,

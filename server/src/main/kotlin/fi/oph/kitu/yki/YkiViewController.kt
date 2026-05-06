@@ -8,7 +8,7 @@ import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.koski.KoskiErrorMappingId
 import fi.oph.kitu.koski.KoskiErrorService
-import fi.oph.kitu.koski.KoskiRequestMapper
+import fi.oph.kitu.koski.KoskiYkiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.mock.toInstant
 import fi.oph.kitu.rewriteAttribute
@@ -28,7 +28,7 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import jakarta.servlet.http.HttpSession
-import org.apache.coyote.Response
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.ResponseEntity
@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.view.RedirectView
+import tools.jackson.databind.json.JsonMapper
 import java.time.LocalDate
 
 @Controller
@@ -51,7 +52,9 @@ class YkiViewController(
     private val arvioijaErrorService: YkiArvioijaErrorService,
     private val koskiErrorService: KoskiErrorService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
-    private val koskiRequestMapper: KoskiRequestMapper,
+    private val koskiYkiRequestMapper: KoskiYkiRequestMapper,
+    @param:Qualifier("koskiObjectMapper")
+    private val koskiObjectMapper: JsonMapper,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
 ) {
     @GetMapping("/suoritukset/{id}", produces = ["text/html"])
@@ -65,7 +68,7 @@ class YkiViewController(
                 if (suoritus.id == viimeisinSuoritus.id) {
                     Pair(
                         koskiErrorService.findById(YkiMappingId(suoritus.id)),
-                        koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus).errorOrNull(),
+                        koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus).errorOrNull(),
                     )
                 } else {
                     Pair(null, null)
@@ -206,9 +209,9 @@ class YkiViewController(
             .findLatestBySolkiIds(listOf(suoritusId))
             .firstOrNull()
             ?.let {
-                koskiRequestMapper.ykiSuoritusToKoskiRequest(it)
+                koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(it)
             }?.let {
-                ResponseEntity.ok(KoskiRequestMapper.getObjectMapper().writeValueAsString(it))
+                ResponseEntity.ok(koskiObjectMapper.writeValueAsString(it))
             } ?: ResponseEntity.notFound().build()
 
     @GetMapping("/tarkistusarvioinnit", produces = ["text/html"])

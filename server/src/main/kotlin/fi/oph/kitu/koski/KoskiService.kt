@@ -25,7 +25,8 @@ import java.time.LocalDateTime
 class KoskiService(
     @param:Qualifier("koskiRestClient")
     private val koskiRestClient: RestClient,
-    private val koskiRequestMapper: KoskiRequestMapper,
+    private val koskiYkiRequestMapper: KoskiYkiRequestMapper,
+    private val koskiVktRequestMapper: KoskiVktRequestMapper,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
     private val tracer: Tracer,
     private val customVktSuoritusRepository: CustomVktSuoritusRepository,
@@ -39,7 +40,7 @@ class KoskiService(
             .spanBuilder("KoskiService.sendYkiSuoritusToKoski")
             .startSpan()
             .use { span ->
-                val koskiRequest = koskiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity).getOrNull()
+                val koskiRequest = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity).getOrNull()
 
                 if (koskiRequest == null) {
                     val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
@@ -95,7 +96,7 @@ class KoskiService(
             .startSpan()
             .use { span ->
                 if (ykiSuoritusEntity.koskiOpiskeluoikeus != null) {
-                    koskiRequestMapper
+                    koskiYkiRequestMapper
                         .ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
                         .getOrNull()
                         ?.mitatoi()
@@ -129,7 +130,7 @@ class KoskiService(
             .startSpan()
             .use { span ->
                 val id = CustomVktSuoritusRepository.Tutkintoryhma.from(suoritus)
-                val koskiRequest = koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus)
+                val koskiRequest = koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus)
                 if (koskiRequest.isFailure) {
                     // Suoritus ei ole vielä valmis lähetettäväksi, mutta se ei ole tiedonsiirtovirhe.
                     return TypedResult.Success(Unit)

@@ -7,7 +7,7 @@ import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiErrorService
-import fi.oph.kitu.koski.KoskiRequestMapper
+import fi.oph.kitu.koski.KoskiVktRequestMapper
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.html.KoskiTransferState
@@ -17,6 +17,7 @@ import fi.oph.kitu.vkt.html.VktKoskiErrors
 import fi.oph.kitu.vkt.html.VktSuorituksetPage
 import kotlinx.html.a
 import kotlinx.html.br
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.servlet.view.RedirectView
+import tools.jackson.databind.json.JsonMapper
 
 @Controller
 @RequestMapping("/vkt")
@@ -39,7 +41,9 @@ class VktViewController(
     private val localizationService: LocalizationService,
     private val oppijanumeroService: OppijanumeroService,
     private val koskiErrorService: KoskiErrorService,
-    private val koskiRequestMapper: KoskiRequestMapper,
+    private val koskiVktRequestMapper: KoskiVktRequestMapper,
+    @param:Qualifier("koskiObjectMapper")
+    private val koskiObjectMapper: JsonMapper,
 ) {
     @GetMapping("/", produces = ["text/html"])
     fun suorituksetView(
@@ -206,8 +210,8 @@ class VktViewController(
     ): ResponseEntity<String> =
         vktSuoritukset
             .getOppijanSuoritukset(CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso))
-            ?.let { koskiRequestMapper.vktSuoritusToKoskiRequest(it).getOrNull() }
-            ?.let { ResponseEntity.ok(KoskiRequestMapper.getObjectMapper().writeValueAsString(it)) }
+            ?.let { koskiVktRequestMapper.vktSuoritusToKoskiRequest(it).getOrNull() }
+            ?.let { ResponseEntity.ok(koskiObjectMapper.writeValueAsString(it)) }
             ?: ResponseEntity.notFound().build()
 
     private fun getMessages(): List<ViewMessageData> =
@@ -237,7 +241,7 @@ class VktViewController(
                     listOf("Suoritus on merkitty käsitellyksi, mutta sille ei ole opiskeluoikeus-oidia.")
             }
         } else {
-            koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus).fold(
+            koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus).fold(
                 onSuccess = { KoskiTransferState.PENDING to emptyList() },
                 onFailure = { KoskiTransferState.NOT_READY to it },
             )
