@@ -1,9 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
 import com.github.kagkarlsson.scheduler.task.Task
-import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.kitu.ExtendedSchedules
-import fi.oph.kitu.observability.use
+import fi.oph.kitu.observability.recurringTask
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
@@ -22,17 +20,10 @@ class TehtavapankkiScheduledTasks(
 
     @Bean
     fun dailyImportKotoTehtavapankki(tehtavapankkiService: TehtavapankkiService): Task<Void> =
-        Tasks
-            .recurring(
-                "Kotoutumiskoulutuksen kielitaidon tehtäväpankin lataus",
-                ExtendedSchedules.parse(tehtavapankkiImportSchedule),
-            ).execute { _, _ ->
-                tracer
-                    .spanBuilder("TehtavapankkiScheduledTasks.dailyImportKotoTehtavapankki.tasks.execute")
-                    .startSpan()
-                    .use { span ->
-                        span.setAttribute("task.name", "Koto-import-tehtavapankki")
-                        tehtavapankkiService.importTehtavapankki()
-                    }
-            }
+        tracer.recurringTask(
+            "Kotoutumiskoulutuksen kielitaidon tehtäväpankin lataus",
+            tehtavapankkiImportSchedule!!,
+        ) {
+            tehtavapankkiService.importTehtavapankki()
+        }
 }

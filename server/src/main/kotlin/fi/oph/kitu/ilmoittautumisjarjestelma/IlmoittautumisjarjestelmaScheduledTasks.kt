@@ -1,9 +1,7 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
 import com.github.kagkarlsson.scheduler.task.Task
-import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.kitu.ExtendedSchedules
-import fi.oph.kitu.observability.use
+import fi.oph.kitu.observability.recurringTask
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
@@ -20,18 +18,10 @@ class IlmoittautumisjarjestelmaScheduledTasks(
     @WithSpan
     @Bean
     fun retrySendingFailedArviointitilat(ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService): Task<Void> =
-        Tasks
-            .recurring(
-                "Lähetä YKI-arviointitilat KIOS-palveluun",
-                ExtendedSchedules.parse(retrySendingFailedArviointitilatSchedule),
-            ).execute { _, _ ->
-                tracer
-                    .spanBuilder(
-                        "IlmoittautumisjarjestelmaScheduledTasks.sendAllUpdatedArvioinninTilat.tasks.executeStateful",
-                    ).startSpan()
-                    .use { span ->
-                        span.setAttribute("task.name", "sendAllUpdatedArvioinninTilat")
-                        ilmoittautumisjarjestelma.sendAllUpdatedArvioinninTilat()
-                    }
-            }
+        tracer.recurringTask(
+            "Lähetä YKI-arviointitilat KIOS-palveluun",
+            retrySendingFailedArviointitilatSchedule,
+        ) {
+            ilmoittautumisjarjestelma.sendAllUpdatedArvioinninTilat()
+        }
 }
