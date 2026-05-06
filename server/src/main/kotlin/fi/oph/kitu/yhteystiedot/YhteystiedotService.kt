@@ -12,6 +12,9 @@ class YhteystiedotService(
 ) {
     fun getYhteystiedotByOpiskeluoikeusOid(opiskeluoikeus: Oid): Yhteystiedot? =
         ykiSuoritukset.getLatestByOpiskeluoikeusOid(opiskeluoikeus)?.let { Yhteystiedot.from(it) }
+
+    fun getYhteystiedotByLahdejarjestelmanTunnus(tunnus: String): Yhteystiedot? =
+        ykiSuoritukset.getLatestByLahdejarjestelmanTunnus(tunnus)?.let { Yhteystiedot.from(it) }
 }
 
 data class Yhteystiedot(

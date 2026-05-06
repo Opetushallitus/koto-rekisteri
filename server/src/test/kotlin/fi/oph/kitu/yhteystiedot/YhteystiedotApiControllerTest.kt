@@ -103,4 +103,69 @@ class YhteystiedotApiControllerTest {
                 }
             }
     }
+
+    @Test
+    fun `Hakeminen olemassaolevalla lahdejarjestelman tunnuksella palauttaa yhteystiedot`() {
+        // Setup
+        val tunnus = "yki.123456"
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                lahdejarjestelmanTunnus = tunnus,
+                koskiSiirtoKasitelty = true,
+            )
+        ykiSuoritukset.save(suoritus, updateOnConflict = true)
+
+        // Act
+        mockMvc!!
+            .get("/yhteystiedot/api/opiskeluoikeus/lahdejarjestelman/$tunnus") {
+                accept = MediaType.APPLICATION_JSON
+            }.andExpect {
+                status { isOk() }
+                content {
+                    json(
+                        """
+                        {
+                            "sukunimi": "${suoritus.sukunimi}",
+                            "etunimet": "${suoritus.etunimet}",
+                            "katuosoite": "${suoritus.katuosoite}",
+                            "postinumero": "${suoritus.postinumero}",
+                            "postitoimipaikka": "${suoritus.postitoimipaikka}",
+                            "maa": {
+                                "koodiarvo": "${suoritus.maa}",
+                                "koodistoUri": "maatjavaltiot1"
+                            },
+                            "email": "${suoritus.email}",
+                            "todistuskieli": {
+                                "koodiarvo": "${suoritus.todistuskieli!!.kieliKoodistoarvo}",
+                                "koodistoUri": "kieli"
+                            }
+                        }
+                        """.trimIndent(),
+                    )
+                }
+            }
+    }
+
+    @Test
+    fun `Hakeminen tuntemattomalla lahdejarjestelman tunnuksella palauttaa 404`() {
+        val tunnus = "yki.tuntematon-tunnus"
+
+        // Act
+        mockMvc!!
+            .get("/yhteystiedot/api/opiskeluoikeus/lahdejarjestelman/$tunnus") {
+                accept = MediaType.APPLICATION_JSON
+            }.andExpect {
+                status { isNotFound() }
+                content {
+                    json(
+                        """
+                        {
+                            "request": "$tunnus",
+                            "error": "NOT_FOUND"
+                        }
+                        """.trimIndent(),
+                    )
+                }
+            }
+    }
 }
