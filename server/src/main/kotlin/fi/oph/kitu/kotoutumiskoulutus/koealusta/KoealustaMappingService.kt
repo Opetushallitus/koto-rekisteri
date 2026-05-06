@@ -1,73 +1,39 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.TypedResult
-import fi.oph.kitu.TypedResult.Failure
-import fi.oph.kitu.TypedResult.Success
-import fi.oph.kitu.defaultObjectMapper
-import fi.oph.kitu.kotoutumiskoulutus.koealusta.KoealustaSuorituksetResponse.User
-import fi.oph.kitu.kotoutumiskoulutus.koealusta.KoealustaSuorituksetResponse.User.Completion
-import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Arvosana
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
-import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusError
-import fi.oph.kitu.oppijanumero.Oppija
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.oppijanumero.OppijanumeroServiceError
 import fi.oph.kitu.oppijanumero.OppijanumeroTroubleshootingService
-import fi.oph.kitu.oppijanumero.OppijanumerorekisteriRequest
+import fi.oph.kitu.oppijanumero.OppijanumerorekisteriDebugInfo
 import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
+import fi.oph.kitu.oppijanumero.troubleshootOppijanumero
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.module.kotlin.readValue
 import java.time.Instant
 
 @Service
 class KoealustaMappingService(
-    private val jacksonObjectMapper: ObjectMapper,
+    private val parser: KoealustaResponseParser,
+    private val validator: KoealustaSuoritusValidator,
     private val oppijanumeroService: OppijanumeroService,
     private val oppijanumeroTroubleshootingService: OppijanumeroTroubleshootingService,
 ) {
-    private inline fun <reified T> tryParseMoodleResponse(json: String): T {
-        try {
-            return jacksonObjectMapper.readValue<T>(json)
-        } catch (e: Throwable) {
-            throw tryParseMoodleError(json, e)
-        }
-    }
-
-    private fun tryParseMoodleError(
-        json: String,
-        originalException: Throwable,
-    ): MoodleException {
-        try {
-            return MoodleException(jacksonObjectMapper.readValue<MoodleErrorMessage>(json))
-        } catch (e: Throwable) {
-            throw RuntimeException(
-                "Could not parse Moodle error message: ${e.message} while handling parsing error",
-                originalException,
-            )
-        }
-    }
-
     @WithSpan
-    fun responseStringToEntity(body: String) =
-        convertToEntity(tryParseMoodleResponse<KoealustaSuorituksetResponse>(body))
+    fun responseStringToEntity(body: String) = convertToEntity(parser.parse(body))
 
     fun convertToEntity(
         suorituksetResponse: KoealustaSuorituksetResponse,
     ): Pair<List<KielitestiSuoritus>, ValidationFailure?> {
-        val oppijanumeroExceptions = mutableListOf<Error>()
-        val validationErrors = mutableListOf<Error>()
+        val oppijanumeroExceptions = mutableListOf<KoealustaMappingError>()
+        val validationErrors = mutableListOf<KoealustaMappingError>()
 
         val suoritukset =
             suorituksetResponse.users.flatMap { user ->
                 val oppija =
-                    toOppija(user)
+                    validator
+                        .toOppija(user)
                         .onFailure(validationErrors::add)
                         .getOrNull()
 
@@ -76,16 +42,10 @@ class KoealustaMappingService(
                         ?.let(oppijanumeroService::getOppijanumero)
                         ?.mapFailure {
                             val response = if (it is OppijanumeroException.HasResponse) it.response else null
-                            val debugInfo =
-                                OppijanumerorekisteriDebugInfo
-                                    .from(
-                                        it.request,
-                                        response,
-                                    )
+                            val debugInfo = OppijanumerorekisteriDebugInfo.from(it.request, response)
+                            val onrInfo = oppijanumeroTroubleshootingService.troubleshootOppijanumero(oppija, response)
 
-                            val onrInfo = troubleshootOppijanumero(oppija, response)
-
-                            Error.OppijanumeroFailure(
+                            KoealustaMappingError.OppijanumeroFailure(
                                 it,
                                 "Oppijanumeron haku epäonnistui: ${debugInfo.message() ?: it.oppijanumeroServiceError?.error ?: it.message ?: "ei tarkempia tietoja"}",
                                 Oid.parse(user.completions.first().schoolOID).getOrNull(),
@@ -98,10 +58,10 @@ class KoealustaMappingService(
                         ?.getOrNull()
 
                 user.completions.mapNotNull { completion ->
-                    completionToEntity(user, oppijanumero, completion)
-                        ?.onFailure {
-                            validationErrors.add(it)
-                        }?.getOrNull()
+                    validator
+                        .completionToEntity(user, oppijanumero, completion)
+                        ?.onFailure { validationErrors.add(it) }
+                        ?.getOrNull()
                 }
             }
 
@@ -120,228 +80,13 @@ class KoealustaMappingService(
         return Pair(suoritukset, validationFailure)
     }
 
-    fun troubleshootOppijanumero(
-        oppija: Oppija,
-        response: ResponseEntity<String>?,
-    ): String =
-        if (response != null && (
-                response.statusCode == HttpStatus.BAD_REQUEST ||
-                    response.statusCode == HttpStatus.NOT_FOUND ||
-                    response.statusCode == HttpStatus.CONFLICT
-            )
-        ) {
-            val notFound =
-                """
-                Oppijanumerorekisteristä ei löytynyt oppijanumeroa, kun kaikkia etunimiä testattiin kutsumanimenä ja etu- ja sukunimi vaihdettiin päittäin.
-                Mahdollisesti henkilötunnuksessa tai jossain nimistä on kirjoitusvirhe, joku nimi puuttuu, tai nimet ovat väärässä järjestyksessä.
-                """.trimIndent()
-            oppijanumeroTroubleshootingService
-                .troubleshootOppijaNameCombinations(oppija)
-                ?.let { success ->
-                    "etunimet: ${success.etunimet}, kutsumanimi: ${success.kutsumanimi}, sukunimi: ${success.sukunimi}"
-                }
-                ?: notFound
-        } else {
-            "Oppijanumerorekisterin virhe ei viittaa virheellisiin oppijan nimitietoihin. Tarkista virheviesti."
-        }
+    fun convertErrors(errors: Iterable<KoealustaMappingError>): Iterable<KielitestiSuoritusError> =
+        errors.flatMap(::convertError)
 
-    fun toOppija(koealustaUser: User): TypedResult<Oppija, Error.OppijaValidationFailure> {
-        val errors = mutableListOf<Error.Validation>()
-        if (koealustaUser.SSN.isNullOrEmpty()) {
-            errors.add(Error.Validation.MissingField("SSN", koealustaUser.userid))
-        }
-        if (koealustaUser.preferredname.isNullOrEmpty()) {
-            errors.add(Error.Validation.MissingField("preferredname", koealustaUser.userid))
-        }
-
-        if (errors.isNotEmpty()) {
-            return Failure(
-                Error.OppijaValidationFailure(
-                    "Validation failure on converting user \"${koealustaUser.userid}\" to oppija",
-                    schoolOid = Oid.parse(koealustaUser.completions.first().schoolOID).getOrNull(),
-                    teacherEmail = koealustaUser.completions.first().teacheremail,
-                    koealustaUser,
-                    errors,
-                ),
-            )
-        }
-
-        checkNotNull(koealustaUser.SSN)
-        checkNotNull(koealustaUser.preferredname)
-
-        return Success(
-            Oppija(
-                etunimet = koealustaUser.firstnames.trim(),
-                hetu = koealustaUser.SSN.trim(),
-                kutsumanimi = koealustaUser.preferredname.trim(),
-                sukunimi = koealustaUser.lastname.trim(),
-            ),
-        )
-    }
-
-    private fun validate(
-        resultName: String,
-        userId: Int,
-        completion: Completion,
-    ): TypedResult<Arvosana, Error.Validation> {
-        val result =
-            completion
-                .results
-                .find { it.name == resultName }
-
-        return if (result?.quizGrade.isNullOrEmpty()) {
-            Failure(
-                Error.Validation.MissingGrade(
-                    userId,
-                    completion.coursename,
-                    resultName,
-                ),
-            )
-        } else {
-            try {
-                Success(Arvosana.Companion.fromString(result.quizGrade))
-            } catch (_: IllegalArgumentException) {
-                Failure(
-                    Error.Validation.MalformedField(
-                        userId,
-                        resultName,
-                        result.quizGrade,
-                    ),
-                )
-            }
-        }
-    }
-
-    private fun validate(
-        user: User,
-        lang: String?,
-    ): TypedResult<Testikieli?, Error.Validation> =
-        if (lang == null) {
-            Failure(
-                Error.Validation.MissingField(
-                    "lang",
-                    user.userid,
-                ),
-            )
-        } else {
-            try {
-                Success(Testikieli.Companion.fromString(lang))
-            } catch (_: IllegalArgumentException) {
-                Failure(
-                    Error.Validation.MalformedField(
-                        userId = user.userid,
-                        field = "lang",
-                        value = lang,
-                    ),
-                )
-            }
-        }
-
-    private fun validate(
-        fieldName: String,
-        userId: Int,
-        oid: String,
-    ): TypedResult<Oid, Error.Validation> =
-        Oid
-            .parseTyped(oid)
-            .mapFailure { Error.Validation.MalformedField(userId, fieldName, oid) }
-
-    private fun validateNonEmpty(
-        fieldName: String,
-        userId: Int,
-        value: String?,
-    ): TypedResult<String, Error.Validation> =
-        if (value.isNullOrEmpty()) {
-            Failure(Error.Validation.MissingField(fieldName, userId))
-        } else {
-            Success(value)
-        }
-
-    fun completionToEntity(
-        user: User,
-        oppijanumero: Oid?,
-        completion: Completion,
-    ): TypedResult<KielitestiSuoritus, Error.SuoritusValidationFailure>? {
-        val errors = mutableListOf<Error.Validation>()
-        val luetunYmmartaminen =
-            validate("luetun ymm\u00e4rt\u00e4minen", user.userid, completion)
-                .onFailure { errors.add(it) }
-                .getOrNull()
-        val kuullunYmmartaminen =
-            validate("kuullun ymm\u00e4rt\u00e4minen", user.userid, completion)
-                .onFailure { errors.add(it) }
-                .getOrNull()
-        val puhe =
-            validate("puhuminen", user.userid, completion)
-                .onFailure { errors.add(it) }
-                .getOrNull()
-        val kirjoittaminen =
-            validate("kirjoittaminen", user.userid, completion)
-                .onFailure { errors.add(it) }
-                .getOrNull()
-
-        val schoolOid =
-            validate("schoolOID", user.userid, completion.schoolOID.orEmpty())
-                .onFailure { errors.add(it) }
-                .getOrNull()
-
-        val testikieli =
-            validate(user, completion.lang)
-                .onFailure { errors.add(it) }
-                .getOrNull()
-
-        if (errors.isNotEmpty()) {
-            return Failure(
-                Error.SuoritusValidationFailure(
-                    message =
-                        """
-                        Validation failure on course completion on "${completion.coursename}" for user "${user.userid}"
-                        """.trimIndent(),
-                    schoolOid = Oid.parse(completion.schoolOID).getOrNull(),
-                    teacherEmail = completion.teacheremail,
-                    koealustaUser = user,
-                    validationErrors = errors,
-                    oppijanumero = oppijanumero,
-                ),
-            )
-        }
-
-        if (user.preferredname == null || oppijanumero == null) return null
-
-        checkNotNull(luetunYmmartaminen)
-        checkNotNull(kuullunYmmartaminen)
-        checkNotNull(kirjoittaminen)
-        checkNotNull(puhe)
-        checkNotNull(schoolOid)
-
-        return Success(
-            KielitestiSuoritus(
-                etunimet = user.firstnames.trim(),
-                sukunimi = user.lastname.trim(),
-                kutsumanimi = user.preferredname.trim(),
-                email = user.email,
-                oppijanumero = oppijanumero,
-                suoritusaika = Instant.ofEpochSecond(completion.timecompleted),
-                oppilaitosOid = schoolOid,
-                kurssiId = completion.courseid,
-                kurssi = completion.coursename,
-                luetunYmmartaminen = luetunYmmartaminen,
-                kuullunYmmartaminen = kuullunYmmartaminen,
-                puhe = puhe,
-                kirjoittaminen = kirjoittaminen,
-                testikieli = testikieli,
-                opettajanEmail = completion.teacheremail,
-                tehtavapaketti = completion.questionbank,
-            ),
-        )
-    }
-
-    fun convertErrors(errors: Iterable<Error>): Iterable<KielitestiSuoritusError> = errors.flatMap(::convertError)
-
-    fun convertError(error: Error): List<KielitestiSuoritusError> {
+    fun convertError(error: KoealustaMappingError): List<KielitestiSuoritusError> {
         val now = Instant.now()
         return when (error) {
-            is Error.ValidationFailure -> {
+            is KoealustaMappingError.ValidationFailure -> {
                 error.validationErrors.map { validationError ->
                     val (field, value) = parseValidationError(validationError)
                     KielitestiSuoritusError(
@@ -364,7 +109,7 @@ class KoealustaMappingService(
                 }
             }
 
-            is Error.OppijanumeroFailure -> {
+            is KoealustaMappingError.OppijanumeroFailure -> {
                 listOf(
                     KielitestiSuoritusError(
                         id = null,
@@ -389,155 +134,36 @@ class KoealustaMappingService(
         }
     }
 
+    private fun parseValidationError(validationError: KoealustaMappingError.Validation): FieldInfo =
+        when (validationError) {
+            is KoealustaMappingError.Validation.MalformedField -> {
+                FieldInfo(
+                    validationError.field,
+                    validationError.value,
+                )
+            }
+
+            is KoealustaMappingError.Validation.MissingField -> {
+                FieldInfo(validationError.field, null)
+            }
+
+            is KoealustaMappingError.Validation.MissingGrade -> {
+                FieldInfo(validationError.resultName, null)
+            }
+        }
+
     data class FieldInfo(
         val fieldName: String,
         val fieldValue: String?,
     )
 
-    fun parseValidationError(validationError: Error.Validation): FieldInfo =
-        when (validationError) {
-            is Error.Validation.MalformedField -> FieldInfo(validationError.field, validationError.value)
-            is Error.Validation.MissingField -> FieldInfo(validationError.field, null)
-            is Error.Validation.MissingGrade -> FieldInfo(validationError.resultName, null)
-        }
-
     class ValidationFailure(
         message: String,
-        val oppijanumeroExceptions: List<Error>,
-        val validationErrors: List<Error>,
+        val oppijanumeroExceptions: List<KoealustaMappingError>,
+        val validationErrors: List<KoealustaMappingError>,
     ) : Exception(message) {
         fun isEmpty(): Boolean = oppijanumeroExceptions.isEmpty() && validationErrors.isEmpty()
 
         fun isNotEmpty(): Boolean = !isEmpty()
-    }
-
-    sealed class Error(
-        message: String,
-        val schoolOid: Oid?,
-        val teacherEmail: String?,
-    ) : Exception(message) {
-        class OppijanumeroFailure(
-            val oppijanumeroException: OppijanumeroException,
-            override val message: String,
-            schoolOid: Oid?,
-            moodleId: String?,
-            teacherEmail: String?,
-            val debugInfo: String?,
-            val onrInfo: String? = null,
-        ) : Error(message, schoolOid, teacherEmail)
-
-        abstract class ValidationFailure(
-            message: String,
-            schoolOid: Oid?,
-            teacherEmail: String?,
-            val koealustaUser: User,
-            val validationErrors: List<Validation>,
-            val oppijanumero: Oid? = null,
-        ) : Error(message, schoolOid, teacherEmail)
-
-        class OppijaValidationFailure(
-            message: String,
-            schoolOid: Oid?,
-            teacherEmail: String?,
-            koealustaUser: User,
-            validationErrors: List<Validation>,
-        ) : ValidationFailure(message, schoolOid, teacherEmail, koealustaUser, validationErrors)
-
-        class SuoritusValidationFailure(
-            message: String,
-            schoolOid: Oid?,
-            teacherEmail: String?,
-            koealustaUser: User,
-            validationErrors: List<Validation>,
-            oppijanumero: Oid?,
-        ) : ValidationFailure(message, schoolOid, teacherEmail, koealustaUser, validationErrors, oppijanumero)
-
-        sealed class Validation(
-            val userId: Int,
-            val message: String,
-        ) {
-            class MissingGrade(
-                userId: Int,
-                courseName: String,
-                val resultName: String,
-            ) : Validation(
-                    userId,
-                    """Unexpectedly missing quiz grade "$resultName" on course "$courseName" for user "$userId"""",
-                )
-
-            class MissingField(
-                val field: String,
-                userId: Int,
-            ) : Validation(userId, """Missing "$field" for user "$userId"""")
-
-            class MalformedField(
-                userId: Int,
-                val field: String,
-                val value: String,
-            ) : Validation(userId, """Malformed value "$value" in "$field" for user "$userId"""")
-        }
-    }
-}
-
-interface DebugInfo {
-    val source: String
-}
-
-data class OppijanumerorekisteriDebugInfo(
-    val request: OppijanumerorekisteriRequest,
-    val detectedTypicalErrors: List<String>,
-    val error: OppijanumeroServiceError?,
-    val rawResponse: String?,
-) : DebugInfo {
-    override val source = "oppijanumerorekisteri"
-
-    override fun toString(): String = defaultObjectMapper.writeValueAsString(this)
-
-    fun message(): String? =
-        when (detectedTypicalErrors.size) {
-            0 -> null
-            1 -> detectedTypicalErrors[0]
-            2 -> "${detectedTypicalErrors[0]} ja 1 muu virhe"
-            else -> "${detectedTypicalErrors[0]} ja ${detectedTypicalErrors.size - 1} muuta virhettä"
-        }
-
-    companion object {
-        fun from(
-            request: OppijanumerorekisteriRequest,
-            response: ResponseEntity<String>?,
-        ): OppijanumerorekisteriDebugInfo {
-            val error =
-                try {
-                    response?.body?.let { defaultObjectMapper.readValue<OppijanumeroServiceError>(it) }
-                } catch (_: Exception) {
-                    null
-                }
-
-            val validationErrors: List<String> =
-                error?.message?.let { msg ->
-                    mapOf(
-                        "Nick name must be one of the first names" to "Kutsumanimen on oltava yksi etunimistä",
-                        "Invalid pattern. Must contain an alphabetic character" to
-                            "Kutsumanimessä ei saa olla erikoismerkkejä, mukaanlukien välilyönti",
-                    ).mapNotNull { if (msg.contains(it.key)) it.value else null }
-                } ?: emptyList()
-
-            val statusCodeMessages: List<String> =
-                listOfNotNull(
-                    when (response?.statusCode?.value()) {
-                        401 -> "Kielitutkintorekisterin järjestelmätunnuksen käyttöoikeudet eivät ole riittävät"
-                        404 -> "Henkilöä ei löydy Oppijanumerorekisteristä"
-                        409 -> "Kirjoitusvirhe henkilötunnuksessa tai nimessä"
-                        else -> null
-                    },
-                )
-
-            return OppijanumerorekisteriDebugInfo(
-                request = request,
-                detectedTypicalErrors = validationErrors + statusCodeMessages,
-                error = error,
-                rawResponse = if (error == null) response?.body else null,
-            )
-        }
     }
 }
