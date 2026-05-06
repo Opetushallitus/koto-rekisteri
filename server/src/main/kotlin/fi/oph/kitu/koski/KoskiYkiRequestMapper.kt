@@ -39,7 +39,7 @@ class KoskiYkiRequestMapper {
                                 oid = ykiSuoritus.koskiOpiskeluoikeus,
                                 lähdejärjestelmänId =
                                     LahdeJarjestelmanId(
-                                        id = "yki.${ykiSuoritus.solkiId}",
+                                        id = ykiSuoritus.lahdejarjestelmanTunnus,
                                     ),
                                 tila =
                                     Tila(
