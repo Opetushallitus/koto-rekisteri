@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.config
 
 import org.springframework.context.annotation.Condition
 import org.springframework.context.annotation.ConditionContext
