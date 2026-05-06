@@ -1,6 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
-import fi.oph.kitu.withJacksonStreamMaxStringLength
+import fi.oph.kitu.http.withJacksonStreamMaxStringLength
 import io.awspring.cloud.s3.S3Template
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer

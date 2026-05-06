@@ -1,5 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
+import fi.oph.kitu.http.withLenientStringConverter
 import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.CustomKielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
@@ -7,7 +8,6 @@ import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorR
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.PeerService
 import fi.oph.kitu.observability.setAttribute
-import fi.oph.kitu.withLenientStringConverter
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value

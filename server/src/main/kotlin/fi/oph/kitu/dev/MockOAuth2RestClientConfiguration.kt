@@ -1,6 +1,6 @@
 package fi.oph.kitu.dev
 
-import fi.oph.kitu.withLenientStringConverter
+import fi.oph.kitu.http.withLenientStringConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile

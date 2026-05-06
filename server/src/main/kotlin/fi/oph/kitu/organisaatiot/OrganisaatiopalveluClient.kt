@@ -1,8 +1,8 @@
 package fi.oph.kitu.organisaatiot
 
 import fi.oph.kitu.TypedResult
-import fi.oph.kitu.nullableBody
-import fi.oph.kitu.retrieveEntitySafely
+import fi.oph.kitu.http.nullableBody
+import fi.oph.kitu.http.retrieveEntitySafely
 import fi.oph.kitu.util.defaultObjectMapper
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
