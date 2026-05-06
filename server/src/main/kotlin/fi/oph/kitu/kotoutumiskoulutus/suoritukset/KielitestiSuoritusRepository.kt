@@ -3,6 +3,11 @@ package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.equalsIgnoringAnnotated
+import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
+import fi.oph.kitu.jdbc.PaginatedSortOrder
+import fi.oph.kitu.jdbc.SqlFilterBuilder
+import fi.oph.kitu.jdbc.orderSql
+import fi.oph.kitu.jdbc.pageSql
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
@@ -127,100 +132,63 @@ data class KielitestiSuoritusFilter(
     val testikieli: Testikieli? = null,
     val orgOids: List<Oid> = emptyList(),
 ) {
-    val alkupaivaStrName = "filter_alkupaiva"
-    val loppupaivaStrName = "filter_loppupaiva"
-    val testikieliStrName = "filter_kieli"
-
     fun withOrgOids(oids: List<Oid>): KielitestiSuoritusFilter = copy(orgOids = oids)
 
-    fun whereSql(): String? {
-        val queries =
-            listOfNotNull(
-                searchAndOrgQuery(),
-                testikieliQuery(),
-                alkupaivaQuery(),
-                loppupaivaQuery(),
+    fun whereSql(): String? = toSql().whereClauseOrNull()
+
+    fun params(): Map<String, Any?> = toSql().params()
+
+    private fun toSql() =
+        SqlFilterBuilder().apply {
+            add(searchAndOrgQuery(), searchParams())
+            add(testikieli?.let { "testikieli = :filter_kieli" }, "filter_kieli" to testikieli?.name)
+            add(suoritusalku?.let { "suoritusaika >= :filter_alkupaiva" }, "filter_alkupaiva" to suoritusalku)
+            add(
+                suoritusloppu?.let { "suoritusaika <= :filter_loppupaiva" },
+                "filter_loppupaiva" to suoritusloppu?.plusDays(1),
             )
+        }
 
-        return if (queries.isEmpty()) null else "WHERE ${queries.joinToString(" AND ") { "($it)" }}"
-    }
-
-    fun params() =
-        mapOf(
-            testikieliStrName to testikieli?.name,
-            alkupaivaStrName to suoritusalku,
-            loppupaivaStrName to suoritusloppu?.plusDays(1),
-        ) + searchParams()
-
-    private fun searchParams() =
+    private fun searchParams(): Map<String, String> =
         search
             ?.trim()
             ?.split(" ")
-            ?.mapIndexed { index, term -> Pair("search_str_$index", "%$term%") }
-            ?.toMap() ?: mapOf()
+            ?.mapIndexed { index, term -> "search_str_$index" to "%$term%" }
+            ?.toMap() ?: emptyMap()
 
-    private fun searchAndOrgQuery(): String? {
-        val textSearch = searchQuery()
-        val orgSearch = orgOidsQuery()
-        val parts = listOfNotNull(textSearch, orgSearch)
-        return if (parts.isEmpty()) null else parts.joinToString(" OR ")
-    }
+    private fun searchAndOrgQuery(): String? =
+        listOfNotNull(searchQuery(), orgOidsQuery())
+            .takeIf { it.isNotEmpty() }
+            ?.joinToString(" OR ")
 
     private fun searchQuery(): String? =
-        searchParams().let { params ->
-            return if (params.isEmpty()) {
-                null
-            } else {
-                searchParams()
-                    .map { (key, _) ->
-                        """
-                        oppijanumero ILIKE :$key
-                        OR etunimet ILIKE :$key
-                        OR sukunimi ILIKE :$key
-                        OR email ILIKE :$key
-                        OR kurssi ILIKE :$key
-                        OR kurssi_id::text ILIKE :$key
-                        OR opettajan_email ILIKE :$key
-                        OR oppilaitos_oid ILIKE :$key
-                        OR tehtavapaketti ILIKE :$key
-                        """.trimIndent()
-                    }.joinToString(" OR ")
-            }
-        }
+        searchParams()
+            .takeIf { it.isNotEmpty() }
+            ?.map { (key, _) ->
+                """
+                oppijanumero ILIKE :$key
+                OR etunimet ILIKE :$key
+                OR sukunimi ILIKE :$key
+                OR email ILIKE :$key
+                OR kurssi ILIKE :$key
+                OR kurssi_id::text ILIKE :$key
+                OR opettajan_email ILIKE :$key
+                OR oppilaitos_oid ILIKE :$key
+                OR tehtavapaketti ILIKE :$key
+                """.trimIndent()
+            }?.joinToString(" OR ")
 
     private fun orgOidsQuery(): String? =
         orgOids.takeIf { it.isNotEmpty() && it.size < 10 }?.let {
             "oppilaitos_oid IN (${it.joinToString(",") { oid -> "'$oid'" }})"
         }
-
-    private fun testikieliQuery() = testikieli?.let { "testikieli = :$testikieliStrName" }
-
-    private fun alkupaivaQuery() = suoritusalku?.let { "suoritusaika >= :$alkupaivaStrName" }
-
-    private fun loppupaivaQuery() = suoritusloppu?.let { "suoritusaika <= :$loppupaivaStrName" }
 }
 
 data class KielitestiSuoritusOrder(
-    val sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
-    val sortDirection: SortDirection = SortDirection.DESC,
-    val pageNumber: Int? = 0,
-    val pageSize: Int = DEFAULT_PAGE_SIZE,
-) {
-    override fun toString(): String = "${sortColumn.entityName} $sortDirection"
-
-    fun pageSql(): String? =
-        pageNumber?.let {
-            "LIMIT $pageSize OFFSET ${pageSize * (pageNumber)}"
-        }
-
-    fun toMap() =
-        mapOf(
-            "sortColumn" to sortColumn.name,
-            "sortDirection" to sortDirection.name,
-            "pageNumber" to pageNumber.toString(),
-        )
-
-    companion object {
-        const val DEFAULT_PAGE_SIZE = 50
-    }
+    override val sortColumn: KielitestiSuoritusColumn = KielitestiSuoritusColumn.Suoritusaika,
+    override val sortDirection: SortDirection = SortDirection.DESC,
+    override val pageNumber: Int? = 0,
+    override val pageSize: Int = PAGINATED_DEFAULT_PAGE_SIZE,
+) : PaginatedSortOrder<KielitestiSuoritusColumn> {
+    override fun toString(): String = orderSql()
 }

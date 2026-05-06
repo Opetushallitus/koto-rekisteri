@@ -5,6 +5,8 @@ import fi.oph.kitu.cache.InMemoryCache
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.i18n.LocalizationService
+import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
+import fi.oph.kitu.jdbc.toMap
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
@@ -48,7 +50,7 @@ class VktSuoritusService(
         Pagination.valueOf(
             currentPageNumber = order.pageNumber ?: 0,
             numberOfRows = listRowCounts.get(filter)!!,
-            pageSize = VktSuoritusOrder.DEFAULT_PAGE_SIZE,
+            pageSize = PAGINATED_DEFAULT_PAGE_SIZE,
             url = { pageNumber -> httpParams(order.copy(pageNumber = pageNumber).toMap() + filter.toMap()) },
         )
 

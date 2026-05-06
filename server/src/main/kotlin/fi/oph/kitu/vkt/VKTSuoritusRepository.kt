@@ -7,8 +7,12 @@ import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.Nimetty
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
+import fi.oph.kitu.jdbc.PaginatedSortOrder
+import fi.oph.kitu.jdbc.SqlFilterBuilder
+import fi.oph.kitu.jdbc.orderSql
+import fi.oph.kitu.jdbc.pageSql
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.vkt.VktSuoritusOrder.Companion.DEFAULT_PAGE_SIZE
 import fi.oph.kitu.yki.toTrueOrNull
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired
@@ -363,13 +367,6 @@ data class VktSuoritusFilter(
     val merkittyPoistettavaksi: Boolean? = null,
     val piilotaHenkilotiedot: Boolean = false,
 ) {
-    val searchStrName = "filter_search"
-    val alkupaivaStrName = "filter_alkupaiva"
-    val loppupaivaStrName = "filter_loppupaiva"
-    val tutkintokieliStrName = "filter_kieli"
-    val taitotasoStrName = "filter_taso"
-    val arvioituStrName = "filter_arvioitu"
-
     fun toMap(): Map<String, String?> =
         mapOf(
             "search" to search,
@@ -418,50 +415,29 @@ data class VktSuoritusFilter(
             if (piilotaHenkilotiedot) ColumnTag.PERSONAL_DATA else null,
         )
 
-    fun whereSql(): String? {
-        val queries =
-            listOfNotNull(
-                searchQuery(),
-                alkupaivaQuery(),
-                loppupaivaQuery(),
-                tutkintokieliQuery(),
-                taitotasoQuery(),
-                arvioituQuery(),
-                merkittyPoistettavaksiQuery(),
-            )
-        return if (queries.isEmpty()) null else "WHERE ${queries.joinToString(" AND ") { "($it)" }}"
-    }
+    fun whereSql(): String? = toSql().whereClauseOrNull()
 
-    fun params() =
-        mapOf(
-            searchStrName to "%${search.orEmpty()}%",
-            alkupaivaStrName to alkupaiva,
-            loppupaivaStrName to loppupaiva,
-            tutkintokieliStrName to tutkintokieli?.name,
-            taitotasoStrName to taitotaso?.name,
-            arvioituStrName to arvioitu,
-        )
+    fun params(): Map<String, Any?> = toSql().params()
 
-    private fun searchQuery(): String? =
-        search?.let {
-            if (search.isNotEmpty()) {
-                """
-                vkt_suoritus.etunimet ILIKE :$searchStrName 
-                OR vkt_suoritus.sukunimi ILIKE :$searchStrName
-                OR vkt_suoritus.suorittajan_oid ILIKE :$searchStrName
-                """.trimIndent()
-            } else {
-                null
-            }
+    private fun toSql() =
+        SqlFilterBuilder().apply {
+            add(searchQuery(), "filter_search" to "%${search.orEmpty()}%")
+            add(alkupaiva?.let { "osakokeet.tutkintopaiva >= :filter_alkupaiva" }, "filter_alkupaiva" to alkupaiva)
+            add(loppupaiva?.let { "osakokeet.tutkintopaiva <= :filter_loppupaiva" }, "filter_loppupaiva" to loppupaiva)
+            add(tutkintokieli?.let { "tutkintokieli = :filter_kieli" }, "filter_kieli" to tutkintokieli?.name)
+            add(taitotaso?.let { "taitotaso = :filter_taso" }, "filter_taso" to taitotaso?.name)
+            add(arvioituQuery())
+            add(merkittyPoistettavaksiQuery())
         }
 
-    private fun alkupaivaQuery(): String? = alkupaiva?.let { "osakokeet.tutkintopaiva >= :$alkupaivaStrName" }
-
-    private fun loppupaivaQuery(): String? = loppupaiva?.let { "osakokeet.tutkintopaiva <= :$loppupaivaStrName" }
-
-    private fun tutkintokieliQuery(): String? = tutkintokieli?.let { "tutkintokieli = :$tutkintokieliStrName" }
-
-    private fun taitotasoQuery(): String? = taitotaso?.let { "taitotaso = :$taitotasoStrName" }
+    private fun searchQuery(): String? =
+        search?.takeIf { it.isNotEmpty() }?.let {
+            """
+            vkt_suoritus.etunimet ILIKE :filter_search
+            OR vkt_suoritus.sukunimi ILIKE :filter_search
+            OR vkt_suoritus.suorittajan_oid ILIKE :filter_search
+            """.trimIndent()
+        }
 
     private fun arvioituQuery(): String? =
         when (arvioitu) {
@@ -521,28 +497,12 @@ data class VktSuoritusFilter(
 }
 
 data class VktSuoritusOrder(
-    val sortColumn: VktSuoritusColumn = VktSuoritusColumn.Sukunimi,
-    val sortDirection: SortDirection = SortDirection.ASC,
-    val pageNumber: Int? = 0,
-    val pageSize: Int = DEFAULT_PAGE_SIZE,
-) {
-    override fun toString(): String = "${sortColumn.entityName} $sortDirection"
-
-    fun pageSql(): String? =
-        pageNumber?.let {
-            "LIMIT $pageSize OFFSET ${pageSize * (pageNumber)}"
-        }
-
-    fun toMap() =
-        mapOf(
-            "sortColumn" to sortColumn.name,
-            "sortDirection" to sortDirection.name,
-            "pageNumber" to pageNumber.toString(),
-        )
-
-    companion object {
-        const val DEFAULT_PAGE_SIZE = 50
-    }
+    override val sortColumn: VktSuoritusColumn = VktSuoritusColumn.Sukunimi,
+    override val sortDirection: SortDirection = SortDirection.ASC,
+    override val pageNumber: Int? = 0,
+    override val pageSize: Int = PAGINATED_DEFAULT_PAGE_SIZE,
+) : PaginatedSortOrder<VktSuoritusColumn> {
+    override fun toString(): String = orderSql()
 }
 
 enum class VktArvioinninTila(

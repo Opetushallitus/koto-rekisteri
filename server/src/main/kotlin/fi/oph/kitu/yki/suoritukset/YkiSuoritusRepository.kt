@@ -4,6 +4,7 @@ import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.equalsIgnoringAnnotated
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.jdbc.SqlFilterBuilder
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
@@ -670,59 +671,33 @@ data class YkiSuoritusFilter(
     val tutkintokieli: Tutkintokieli? = null,
     val tutkintotaso: Tutkintotaso? = null,
 ) {
-    val searchStrName = "filter_search"
-    val alkupaivaStrName = "filter_alkupaiva"
-    val loppupaivaStrName = "filter_loppupaiva"
-    val tutkintokieliStrName = "filter_kieli"
-    val tutkintotasoStrName = "filter_taso"
+    fun whereSql(): String? = toSql().whereClauseOrNull()
 
-    fun whereSql(): String? {
-        val queries =
-            listOfNotNull(
-                searchQuery(),
-                alkupaivaQuery(),
-                loppupaivaQuery(),
-                tutkintokieliQuery(),
-                tutkintotasoQuery(),
-            )
-        return if (queries.isEmpty()) null else "WHERE ${queries.joinToString(" AND ") { "($it)" }}"
-    }
-
-    fun params() =
-        mapOf(
-            searchStrName to "%${search.orEmpty()}%",
-            alkupaivaStrName to alkupaiva,
-            loppupaivaStrName to loppupaiva,
-            tutkintokieliStrName to tutkintokieli?.name,
-            tutkintotasoStrName to tutkintotaso?.name,
-        )
+    fun params(): Map<String, Any?> = toSql().params()
 
     fun requiresSubTables(): Boolean = tutkintokieli != null || tutkintotaso != null
 
-    private fun searchQuery(): String? =
-        search?.let {
-            if (search.isNotEmpty()) {
-                """
-                suorittajan_oid ILIKE :$searchStrName 
-                OR etunimet ILIKE :$searchStrName
-                OR sukunimi ILIKE :$searchStrName
-                OR email ILIKE :$searchStrName
-                OR hetu ILIKE :$searchStrName
-                OR jarjestajan_tunnus_oid ILIKE :$searchStrName 
-                OR jarjestajan_nimi ILIKE :$searchStrName
-                """.trimIndent()
-            } else {
-                null
-            }
+    private fun toSql() =
+        SqlFilterBuilder().apply {
+            add(searchQuery(), "filter_search" to "%${search.orEmpty()}%")
+            add(alkupaiva?.let { "tutkintopaiva >= :filter_alkupaiva" }, "filter_alkupaiva" to alkupaiva)
+            add(loppupaiva?.let { "tutkintopaiva <= :filter_loppupaiva" }, "filter_loppupaiva" to loppupaiva)
+            add(tutkintokieli?.let { "tutkintokieli = :filter_kieli" }, "filter_kieli" to tutkintokieli?.name)
+            add(tutkintotaso?.let { "tutkintotaso = :filter_taso" }, "filter_taso" to tutkintotaso?.name)
         }
 
-    private fun alkupaivaQuery(): String? = alkupaiva?.let { "tutkintopaiva >= :$alkupaivaStrName" }
-
-    private fun loppupaivaQuery(): String? = loppupaiva?.let { "tutkintopaiva <= :$loppupaivaStrName" }
-
-    private fun tutkintokieliQuery(): String? = tutkintokieli?.let { "tutkintokieli = :$tutkintokieliStrName" }
-
-    private fun tutkintotasoQuery(): String? = tutkintotaso?.let { "tutkintotaso = :$tutkintotasoStrName" }
+    private fun searchQuery(): String? =
+        search?.takeIf { it.isNotEmpty() }?.let {
+            """
+            suorittajan_oid ILIKE :filter_search
+            OR etunimet ILIKE :filter_search
+            OR sukunimi ILIKE :filter_search
+            OR email ILIKE :filter_search
+            OR hetu ILIKE :filter_search
+            OR jarjestajan_tunnus_oid ILIKE :filter_search
+            OR jarjestajan_nimi ILIKE :filter_search
+            """.trimIndent()
+        }
 }
 
 data class YkiSuoritusOrder(
