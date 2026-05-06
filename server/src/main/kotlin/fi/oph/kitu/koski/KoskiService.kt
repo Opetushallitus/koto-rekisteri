@@ -1,9 +1,9 @@
 package fi.oph.kitu.koski
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.TypedResult
-import fi.oph.kitu.mapValues
-import fi.oph.kitu.partitionBySuccess
+import fi.oph.kitu.result.TypedResult
+import fi.oph.kitu.result.mapValues
+import fi.oph.kitu.result.partitionBySuccess
 import fi.oph.kitu.retry.RetryOutboundIntegration
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktHenkilosuoritus

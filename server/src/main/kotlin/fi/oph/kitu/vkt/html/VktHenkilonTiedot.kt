@@ -1,6 +1,5 @@
 package fi.oph.kitu.vkt.html
 
-import fi.oph.kitu.TypedResult
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.error
@@ -8,6 +7,7 @@ import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
+import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import kotlinx.html.FlowContent
 

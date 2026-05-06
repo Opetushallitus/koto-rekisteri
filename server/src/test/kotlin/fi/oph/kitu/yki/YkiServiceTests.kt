@@ -6,7 +6,7 @@ import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
-import fi.oph.kitu.splitIntoValuesAndErrors
+import fi.oph.kitu.result.splitIntoValuesAndErrors
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma

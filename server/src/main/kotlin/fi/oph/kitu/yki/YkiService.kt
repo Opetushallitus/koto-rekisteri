@@ -6,7 +6,7 @@ import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.splitIntoValuesAndErrors
+import fi.oph.kitu.result.splitIntoValuesAndErrors
 import fi.oph.kitu.util.findDifferentProperties
 import fi.oph.kitu.util.ignoreEmptyValues
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus
