@@ -1,24 +1,19 @@
 package fi.oph.kitu.vkt.html
 
 import fi.oph.kitu.html.Page
-import fi.oph.kitu.html.ViewMessageData
-import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.html.card
-import fi.oph.kitu.html.json
+import fi.oph.kitu.html.errorMessageDetails
+import fi.oph.kitu.html.hiddenErrorsBanner
 import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.table.displayTable
-import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.vkt.VktViewController
 import kotlinx.html.a
-import kotlinx.html.article
-import kotlinx.html.details
 import kotlinx.html.h1
 import kotlinx.html.h2
-import kotlinx.html.summary
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
@@ -32,16 +27,7 @@ object VktKoskiErrors {
             h1 { +"Valtionhallinnon kielitutkinto" }
             h2 { +"KOSKI-tiedonsiirtovirheet" }
 
-            hiddenCount?.let { count ->
-                if (count > 0) {
-                    viewMessage(
-                        ViewMessageData.html(type = ViewMessageType.INFO) {
-                            +"Yhteensä $count virhettä on piilotettu. "
-                            a(href = "?hidden=true") { +"Näytä piilotetut virheet" }
-                        },
-                    )
-                }
-            } ?: article { a(href = "?hidden=false") { +"Palaa virhesivulle" } }
+            hiddenErrorsBanner(hiddenCount)
 
             card(overflowAuto = true, compact = true) {
                 displayTable(
@@ -73,25 +59,7 @@ object VktKoskiErrors {
                             Column.Aikaleima.withHtml {
                                 +it.timestamp.finnishDateTimeUTC()
                             },
-                            Column.Virhe.withHtml {
-                                val errorJson = it.errorJson()
-                                details {
-                                    attributes["name"] = it.id
-                                    summary {
-                                        val msg = it.message.split(":").first()
-                                        if (msg.length > 60) {
-                                            +(msg.take(60) + "...")
-                                        } else {
-                                            +msg
-                                        }
-                                    }
-                                    if (errorJson != null) {
-                                        json(errorJson)
-                                    } else {
-                                        +it.message
-                                    }
-                                }
-                            },
+                            Column.Virhe.withHtml { errorMessageDetails(it) },
                             Column.Request.withHtml { error ->
                                 VktMappingId.parse(error.id)?.let { id ->
                                     a(
