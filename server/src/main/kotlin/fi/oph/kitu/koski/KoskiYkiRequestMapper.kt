@@ -1,6 +1,5 @@
 package fi.oph.kitu.koski
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koodisto.Koodisto.YkiArvosana
 import fi.oph.kitu.koski.KoskiRequest.Henkilo
@@ -11,6 +10,7 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.KielitutkintoSuoritus.Organ
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity

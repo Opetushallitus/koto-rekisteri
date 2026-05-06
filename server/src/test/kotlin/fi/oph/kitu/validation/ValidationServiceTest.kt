@@ -1,7 +1,7 @@
 package fi.oph.kitu.validation
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma

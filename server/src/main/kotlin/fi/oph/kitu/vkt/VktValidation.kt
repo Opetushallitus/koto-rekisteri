@@ -1,7 +1,7 @@
 package fi.oph.kitu.vkt
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
 import org.springframework.beans.factory.annotation.Value

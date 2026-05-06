@@ -3,8 +3,8 @@ package fi.oph.kitu.vkt
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
-import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedonsiirtoschema.Arviointi
 import fi.oph.kitu.tiedonsiirtoschema.Arvioitava
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo

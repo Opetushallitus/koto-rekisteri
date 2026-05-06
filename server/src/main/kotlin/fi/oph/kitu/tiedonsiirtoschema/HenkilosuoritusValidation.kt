@@ -1,6 +1,6 @@
 package fi.oph.kitu.tiedonsiirtoschema
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroValidation
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult

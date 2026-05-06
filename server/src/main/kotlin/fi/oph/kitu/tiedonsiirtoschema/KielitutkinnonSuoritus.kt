@@ -2,8 +2,8 @@ package fi.oph.kitu.tiedonsiirtoschema
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import io.swagger.v3.oas.annotations.media.Schema

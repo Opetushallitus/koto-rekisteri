@@ -2,10 +2,10 @@ package fi.oph.kitu.logging
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.Oid
 import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.auth.CasUserDetails
 import fi.oph.kitu.mock.generateRandomOppijaOid
+import fi.oph.kitu.oid.Oid
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

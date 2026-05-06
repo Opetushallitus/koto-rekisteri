@@ -1,7 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.kotoutumiskoulutus.koealusta.KoealustaSuorituksetResponse.User
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 
 sealed class KoealustaMappingError(

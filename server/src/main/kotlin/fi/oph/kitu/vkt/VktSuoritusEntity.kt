@@ -1,7 +1,7 @@
 package fi.oph.kitu.vkt
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste

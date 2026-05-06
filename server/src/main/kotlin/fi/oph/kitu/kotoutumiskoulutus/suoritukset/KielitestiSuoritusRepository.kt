@@ -1,12 +1,12 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
 import fi.oph.kitu.jdbc.PaginatedSortOrder
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.SqlFilterBuilder
 import fi.oph.kitu.jdbc.orderSql
 import fi.oph.kitu.jdbc.pageSql
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.util.equalsIgnoringAnnotated
 import org.springframework.beans.factory.annotation.Autowired

@@ -1,7 +1,7 @@
 package fi.oph.kitu.yhteystiedot
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.KoskiKoodiviite
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.springframework.stereotype.Service

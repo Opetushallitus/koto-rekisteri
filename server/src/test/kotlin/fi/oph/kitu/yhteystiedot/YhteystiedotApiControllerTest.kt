@@ -1,8 +1,8 @@
 package fi.oph.kitu.yhteystiedot
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.Oid
 import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired

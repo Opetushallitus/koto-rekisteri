@@ -1,9 +1,9 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.IgnoreForEquality
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli

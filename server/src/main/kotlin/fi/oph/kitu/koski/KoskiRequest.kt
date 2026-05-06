@@ -1,9 +1,9 @@
 package fi.oph.kitu.koski
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import fi.oph.kitu.Oid
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koodisto.KoskiKoodiviite
+import fi.oph.kitu.oid.Oid
 import java.time.LocalDate
 
 data class KoskiRequest(

@@ -1,7 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.Oid
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Arvosana
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
@@ -10,6 +9,7 @@ import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiErrorService
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusError
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorRepository
+import fi.oph.kitu.oid.Oid
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

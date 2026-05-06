@@ -1,8 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusError
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.oppijanumero.OppijanumeroTroubleshootingService

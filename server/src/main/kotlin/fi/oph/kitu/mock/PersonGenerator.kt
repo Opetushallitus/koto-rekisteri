@@ -1,6 +1,6 @@
 package fi.oph.kitu.mock
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.Sukupuoli
 import kotlin.random.Random
 

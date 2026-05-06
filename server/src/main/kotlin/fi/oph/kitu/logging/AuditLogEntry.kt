@@ -1,6 +1,6 @@
 package fi.oph.kitu.logging
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import java.time.Instant
 
 // https://github.com/Opetushallitus/oma-opintopolku-loki/blob/master/parser/README.md#format-of-the-expected-log-message

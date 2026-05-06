@@ -1,6 +1,6 @@
 package fi.oph.kitu.yki.arvioijat
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.time.LocalDate
