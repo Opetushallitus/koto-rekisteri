@@ -1,7 +1,14 @@
-import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs"
+import {
+  BatchResultErrorEntry,
+  SendMessageBatchCommand,
+  SendMessageBatchRequestEntry,
+  SQSClient,
+} from "@aws-sdk/client-sqs"
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers"
 import { CloudWatchLogsEvent } from "aws-lambda"
 import { getAuditLogEntry, parse } from "./parser"
+
+const SQS_BATCH_SIZE = 10
 
 export const handler = async (event: CloudWatchLogsEvent) => {
   const QueueUrl = process.env.KOSKI_SQS_QUEUE_URL
@@ -15,7 +22,11 @@ export const handler = async (event: CloudWatchLogsEvent) => {
   }
 
   const data = parse(event)
-  const auditLogEntry = getAuditLogEntry(data)
+  const auditLogEntries = getAuditLogEntry(data)
+
+  if (auditLogEntries.length === 0) {
+    return { statusCode: 200, message: "no audit log entries to send" }
+  }
 
   const sqs = new SQSClient({
     credentials: fromTemporaryCredentials({
@@ -23,27 +34,48 @@ export const handler = async (event: CloudWatchLogsEvent) => {
     }),
   })
 
-  // TODO: Send all, and maybe you should use batch send instead?
-  const MessageBody = JSON.stringify(auditLogEntry[0])
-  const command = new SendMessageCommand({
-    QueueUrl,
-    MessageBody,
-  })
+  const entries: SendMessageBatchRequestEntry[] = auditLogEntries.map(
+    (entry, index) => ({
+      Id: String(index),
+      MessageBody: JSON.stringify(entry),
+    }),
+  )
 
-  try {
-    const data = await sqs.send(command)
-    console.log("data sent to sqs", data)
-    return {
-      statusCode: 200,
-      message: "ok",
-      data,
+  const failed: BatchResultErrorEntry[] = []
+  for (let i = 0; i < entries.length; i += SQS_BATCH_SIZE) {
+    const Entries = entries.slice(i, i + SQS_BATCH_SIZE)
+    try {
+      const result = await sqs.send(
+        new SendMessageBatchCommand({ QueueUrl, Entries }),
+      )
+      if (result.Failed?.length) {
+        failed.push(...result.Failed)
+      }
+    } catch (error) {
+      console.log("failed to send batch to sqs", error)
+      return {
+        statusCode: 500,
+        message: "unknown error",
+        error,
+      }
     }
-  } catch (error) {
-    console.log("failed to send to sqs", error)
+  }
+
+  if (failed.length) {
+    // Return non-2xx so the CloudWatch Logs subscription retries the whole event.
+    // Audit logs tolerate duplicates better than data loss.
+    console.log("partial failure sending audit logs to sqs", failed)
     return {
       statusCode: 500,
-      message: "unknown error",
-      error,
+      message: "partial failure",
+      failed,
     }
+  }
+
+  console.log(`sent ${auditLogEntries.length} audit log entries to sqs`)
+  return {
+    statusCode: 200,
+    message: "ok",
+    sent: auditLogEntries.length,
   }
 }
