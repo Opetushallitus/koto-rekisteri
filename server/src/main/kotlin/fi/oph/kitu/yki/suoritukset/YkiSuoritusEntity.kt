@@ -15,6 +15,7 @@ import jakarta.persistence.Enumerated
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.jdbc.core.RowMapper
+import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
@@ -124,97 +125,100 @@ data class YkiSuoritusEntity(
     companion object {
         val fromRow: RowMapper<YkiSuoritusEntity> =
             RowMapper { rs, _ ->
-                YkiSuoritusEntity(
-                    rs.getInt("id"),
-                    Oid.parse(rs.getString("suorittajan_oid")).getOrThrow(),
-                    rs.getString("hetu"),
-                    Sukupuoli.valueOf(rs.getString("sukupuoli")),
-                    rs.getString("sukunimi"),
-                    rs.getString("etunimet"),
-                    rs.getString("kansalaisuus"),
-                    rs.getString("katuosoite"),
-                    rs.getString("postinumero"),
-                    rs.getString("postitoimipaikka"),
-                    rs.getString("maa"),
-                    rs.getString("email"),
-                    rs.getInt("solki_id"),
-                    rs.getTimestamp("last_modified").toInstant(),
-                    rs.getObject("tutkintopaiva", LocalDate::class.java),
-                    Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
-                    Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
-                    rs.getString("todistuskieli")?.let { Todistuskieli.valueOf(it) },
-                    Oid.parse(rs.getString("jarjestajan_tunnus_oid")).getOrThrow(),
-                    rs.getString("jarjestajan_nimi"),
-                    rs.getObject("arviointipaiva", LocalDate::class.java),
-                    rs.getObject("tekstin_ymmartaminen", Int::class.javaObjectType),
-                    rs.getObject("kirjoittaminen", Int::class.javaObjectType),
-                    rs.getObject("rakenteet_ja_sanasto", Int::class.javaObjectType),
-                    rs.getObject("puheen_ymmartaminen", Int::class.javaObjectType),
-                    rs.getObject("puhuminen", Int::class.javaObjectType),
-                    rs.getObject("yleisarvosana", Int::class.javaObjectType),
-                    rs.getObject("tarkistusarvioinnin_saapumis_pvm", LocalDate::class.java),
-                    rs.getString("tarkistusarvioinnin_asiatunnus"),
-                    rs
-                        .getTypedArrayOrNull(
-                            "tarkistusarvioidut_osakokeet",
-                        ) { taso -> TutkinnonOsa.valueOf(taso) }
-                        ?.toSet(),
-                    rs.getTypedArrayOrNull("arvosana_muuttui") { taso -> TutkinnonOsa.valueOf(taso) }?.toSet(),
-                    rs.getString("perustelu"),
-                    rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
-                    rs.getObject("tarkistusarviointi_hyvaksytty_pvm", LocalDate::class.java),
-                    Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),
-                    rs.getBoolean("koski_siirto_kasitelty"),
-                    Arviointitila.valueOf(rs.getString("arviointitila")),
-                    rs.getTimestamp("arviointitila_lahetetty"),
-                    rs.getString("arviointitilan_lahetysvirhe"),
+                buildEntity(
+                    rs = rs,
+                    arviointipaiva = rs.getObject("arviointipaiva", LocalDate::class.java),
+                    tekstinYmmartaminen = rs.getObject("tekstin_ymmartaminen", Int::class.javaObjectType),
+                    kirjoittaminen = rs.getObject("kirjoittaminen", Int::class.javaObjectType),
+                    rakenteetJaSanasto = rs.getObject("rakenteet_ja_sanasto", Int::class.javaObjectType),
+                    puheenYmmartaminen = rs.getObject("puheen_ymmartaminen", Int::class.javaObjectType),
+                    puhuminen = rs.getObject("puhuminen", Int::class.javaObjectType),
+                    yleisarvosana = rs.getObject("yleisarvosana", Int::class.javaObjectType),
+                    tarkistusarvioinninSaapumisPvm =
+                        rs.getObject("tarkistusarvioinnin_saapumis_pvm", LocalDate::class.java),
+                    tarkistusarvioinninAsiatunnus = rs.getString("tarkistusarvioinnin_asiatunnus"),
+                    tarkistusarvioidutOsakokeet =
+                        rs
+                            .getTypedArrayOrNull("tarkistusarvioidut_osakokeet") { TutkinnonOsa.valueOf(it) }
+                            ?.toSet(),
+                    arvosanaMuuttui =
+                        rs.getTypedArrayOrNull("arvosana_muuttui") { TutkinnonOsa.valueOf(it) }?.toSet(),
+                    perustelu = rs.getString("perustelu"),
+                    tarkistusarvioinninKasittelyPvm =
+                        rs.getObject("tarkistusarvioinnin_kasittely_pvm", LocalDate::class.java),
+                    tarkistusarviointiHyvaksyttyPvm =
+                        rs.getObject("tarkistusarviointi_hyvaksytty_pvm", LocalDate::class.java),
+                    koskiOpiskeluoikeus = Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull(),
+                    koskiSiirtoKasitelty = rs.getBoolean("koski_siirto_kasitelty"),
+                    arviointitilaLahetetty = rs.getTimestamp("arviointitila_lahetetty"),
+                    arviointitilanLahetysvirhe = rs.getString("arviointitilan_lahetysvirhe"),
                 )
             }
 
-        val fromRootRow: RowMapper<YkiSuoritusEntity> =
-            RowMapper { rs, _ ->
-                YkiSuoritusEntity(
-                    rs.getInt("id"),
-                    Oid.parse(rs.getString("suorittajan_oid")).getOrThrow(),
-                    rs.getString("hetu"),
-                    Sukupuoli.valueOf(rs.getString("sukupuoli")),
-                    rs.getString("sukunimi"),
-                    rs.getString("etunimet"),
-                    rs.getString("kansalaisuus"),
-                    rs.getString("katuosoite"),
-                    rs.getString("postinumero"),
-                    rs.getString("postitoimipaikka"),
-                    rs.getString("maa"),
-                    rs.getString("email"),
-                    rs.getInt("solki_id"),
-                    rs.getTimestamp("last_modified").toInstant(),
-                    rs.getObject("tutkintopaiva", LocalDate::class.java),
-                    Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
-                    Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
-                    rs.getString("todistuskieli")?.let { Todistuskieli.valueOf(it) },
-                    Oid.parse(rs.getString("jarjestajan_tunnus_oid")).getOrThrow(),
-                    rs.getString("jarjestajan_nimi"),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    Arviointitila.valueOf(rs.getString("arviointitila")),
-                    null,
-                    null,
-                )
-            }
+        val fromRootRow: RowMapper<YkiSuoritusEntity> = RowMapper { rs, _ -> buildEntity(rs) }
+
+        private fun buildEntity(
+            rs: ResultSet,
+            arviointipaiva: LocalDate? = null,
+            tekstinYmmartaminen: Int? = null,
+            kirjoittaminen: Int? = null,
+            rakenteetJaSanasto: Int? = null,
+            puheenYmmartaminen: Int? = null,
+            puhuminen: Int? = null,
+            yleisarvosana: Int? = null,
+            tarkistusarvioinninSaapumisPvm: LocalDate? = null,
+            tarkistusarvioinninAsiatunnus: String? = null,
+            tarkistusarvioidutOsakokeet: Set<TutkinnonOsa>? = null,
+            arvosanaMuuttui: Set<TutkinnonOsa>? = null,
+            perustelu: String? = null,
+            tarkistusarvioinninKasittelyPvm: LocalDate? = null,
+            tarkistusarviointiHyvaksyttyPvm: LocalDate? = null,
+            koskiOpiskeluoikeus: Oid? = null,
+            koskiSiirtoKasitelty: Boolean? = null,
+            arviointitilaLahetetty: Timestamp? = null,
+            arviointitilanLahetysvirhe: String? = null,
+        ): YkiSuoritusEntity =
+            YkiSuoritusEntity(
+                id = rs.getInt("id"),
+                suorittajanOID = Oid.parse(rs.getString("suorittajan_oid")).getOrThrow(),
+                hetu = rs.getString("hetu"),
+                sukupuoli = Sukupuoli.valueOf(rs.getString("sukupuoli")),
+                sukunimi = rs.getString("sukunimi"),
+                etunimet = rs.getString("etunimet"),
+                kansalaisuus = rs.getString("kansalaisuus"),
+                katuosoite = rs.getString("katuosoite"),
+                postinumero = rs.getString("postinumero"),
+                postitoimipaikka = rs.getString("postitoimipaikka"),
+                maa = rs.getString("maa"),
+                email = rs.getString("email"),
+                solkiId = rs.getInt("solki_id"),
+                lastModified = rs.getTimestamp("last_modified").toInstant(),
+                tutkintopaiva = rs.getObject("tutkintopaiva", LocalDate::class.java),
+                tutkintokieli = Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
+                tutkintotaso = Tutkintotaso.valueOf(rs.getString("tutkintotaso")),
+                todistuskieli = rs.getString("todistuskieli")?.let { Todistuskieli.valueOf(it) },
+                jarjestajanTunnusOid = Oid.parse(rs.getString("jarjestajan_tunnus_oid")).getOrThrow(),
+                jarjestajanNimi = rs.getString("jarjestajan_nimi"),
+                arviointipaiva = arviointipaiva,
+                tekstinYmmartaminen = tekstinYmmartaminen,
+                kirjoittaminen = kirjoittaminen,
+                rakenteetJaSanasto = rakenteetJaSanasto,
+                puheenYmmartaminen = puheenYmmartaminen,
+                puhuminen = puhuminen,
+                yleisarvosana = yleisarvosana,
+                tarkistusarvioinninSaapumisPvm = tarkistusarvioinninSaapumisPvm,
+                tarkistusarvioinninAsiatunnus = tarkistusarvioinninAsiatunnus,
+                tarkistusarvioidutOsakokeet = tarkistusarvioidutOsakokeet,
+                arvosanaMuuttui = arvosanaMuuttui,
+                perustelu = perustelu,
+                tarkistusarvioinninKasittelyPvm = tarkistusarvioinninKasittelyPvm,
+                tarkistusarviointiHyvaksyttyPvm = tarkistusarviointiHyvaksyttyPvm,
+                koskiOpiskeluoikeus = koskiOpiskeluoikeus,
+                koskiSiirtoKasitelty = koskiSiirtoKasitelty,
+                arviointitila = Arviointitila.valueOf(rs.getString("arviointitila")),
+                arviointitilaLahetetty = arviointitilaLahetetty,
+                arviointitilanLahetysvirhe = arviointitilanLahetysvirhe,
+            )
     }
 }
 
