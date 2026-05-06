@@ -8,7 +8,6 @@ import fi.oph.kitu.ignoreEmptyValues
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.observability.use
 import fi.oph.kitu.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
@@ -25,7 +24,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
-import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -50,7 +49,6 @@ class YkiService(
     private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val auditLogger: AuditLogger,
     private val parser: CsvParser,
-    private val tracer: Tracer,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -61,81 +59,75 @@ class YkiService(
             }
         }
 
-    fun debugImportSuoritukset(from: Instant): String =
-        tracer
-            .spanBuilder("YkiService.debugImportSuoritukset")
-            .startSpan()
-            .use { span ->
-                val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
-                val response =
-                    solkiRestClient
-                        .get()
-                        .uri(url)
-                        .retrieve()
-                        .toEntity<String>()
-                response.body ?: "No body"
-            }
+    @WithSpan
+    fun debugImportSuoritukset(from: Instant): String {
+        val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
+        val response =
+            solkiRestClient
+                .get()
+                .uri(url)
+                .retrieve()
+                .toEntity<String>()
+        return response.body ?: "No body"
+    }
 
-    fun checkYkiAnomalies(from: Instant): Instant =
-        tracer
-            .spanBuilder("YkiService.importSuoritukset")
-            .startSpan()
-            .use { span ->
-                val startTime = Instant.now()
-                val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
+    @WithSpan
+    fun checkYkiAnomalies(from: Instant): Instant {
+        val startTime = Instant.now()
+        val url = "suoritukset?m=${DateTimeFormatter.ISO_INSTANT.format(from)}"
 
-                val response =
-                    solkiRestClient
-                        .get()
-                        .uri(url)
-                        .retrieve()
-                        .toEntity<String>()
+        val response =
+            solkiRestClient
+                .get()
+                .uri(url)
+                .retrieve()
+                .toEntity<String>()
 
-                val (suoritukset, errors) =
-                    parser
-                        .convertCsvToData<YkiSuoritusCsv>(response.body.orEmpty())
-                        .splitIntoValuesAndErrors()
+        val (suoritukset, errors) =
+            parser
+                .convertCsvToData<YkiSuoritusCsv>(response.body.orEmpty())
+                .splitIntoValuesAndErrors()
 
-                val hasErrors = suoritusErrorService.handleErrors(errors)
+        val hasErrors = suoritusErrorService.handleErrors(errors)
 
-                span.setAttribute("yki.suoritukset.receivedCount", suoritukset.size.toLong())
+        Span.current().setAttribute("yki.suoritukset.receivedCount", suoritukset.size.toLong())
 
-                val entities = suoritusMapper.convertToEntityIterable(suoritukset)
+        val entities = suoritusMapper.convertToEntityIterable(suoritukset)
 
-                suoritusPoikkeamaRepository.deleteAll()
-                entities.forEach { entity ->
-                    suoritusRepository
-                        .findLatestBySolkiIds(listOf(entity.solkiId))
-                        .firstOrNull()
-                        ?.let { existing ->
-                            val diff =
-                                entity
-                                    .findDifferentProperties(existing, "SOLKI")
-                                    .ignoreEmptyValues()
-                            val time = Instant.now()
-                            diff.forEach { (key, value) ->
-                                val poikkeama =
-                                    YkiSuoritusPoikkeama(
-                                        solkiId = entity.solkiId,
-                                        kentta = key,
-                                        arvoKitussa = value.first.toString(),
-                                        arvoSolkissa = value.second.toString(),
-                                        havaittu = time,
-                                    )
-                                suoritusPoikkeamaRepository.save(poikkeama)
-                                logger.error(
-                                    "Havaittu poikkeama yki-suorituksen tiedoissa verratuuna Solkin tietoihin: $poikkeama",
-                                )
-                            }
-                        }
+        suoritusPoikkeamaRepository.deleteAll()
+        entities.forEach { entity ->
+            suoritusRepository
+                .findLatestBySolkiIds(listOf(entity.solkiId))
+                .firstOrNull()
+                ?.let { existing ->
+                    val diff =
+                        entity
+                            .findDifferentProperties(existing, "SOLKI")
+                            .ignoreEmptyValues()
+                    val time = Instant.now()
+                    diff.forEach { (key, value) ->
+                        val poikkeama =
+                            YkiSuoritusPoikkeama(
+                                solkiId = entity.solkiId,
+                                kentta = key,
+                                arvoKitussa = value.first.toString(),
+                                arvoSolkissa = value.second.toString(),
+                                havaittu = time,
+                            )
+                        suoritusPoikkeamaRepository.save(poikkeama)
+                        logger.error(
+                            "Havaittu poikkeama yki-suorituksen tiedoissa verratuuna Solkin tietoihin: $poikkeama",
+                        )
+                    }
                 }
+        }
 
-                if (hasErrors) {
-                    throw Error.CsvConversionError("importYkiSuoritukset", errors)
-                }
+        if (hasErrors) {
+            throw Error.CsvConversionError("importYkiSuoritukset", errors)
+        }
 
-                return@use startTime.minusSeconds(60 * 5)
-            }
+        return startTime.minusSeconds(60 * 5)
+    }
 
     @WithSpan
     fun allSuoritukset(
