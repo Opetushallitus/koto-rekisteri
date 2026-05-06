@@ -1,6 +1,7 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
 import fi.oph.kitu.TypedResult
+import fi.oph.kitu.retry.RetryOutboundIntegration
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Span
@@ -51,7 +52,7 @@ class IlmoittautumisjarjestelmaServiceImpl(
     }
 
     @WithSpan
-    @RetryIlmoittautumisjarjestelma
+    @RetryOutboundIntegration
     private fun sendArvioinninTilat(
         request: YkiArvioinninTilaRequest,
     ): TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException> =

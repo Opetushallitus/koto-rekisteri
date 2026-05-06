@@ -3,10 +3,10 @@ package fi.oph.kitu.oppijanumero
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.observability.use
+import fi.oph.kitu.retry.RetryOutboundIntegration
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.context.annotation.Profile
-import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 
 interface OppijanumeroService {
@@ -22,7 +22,7 @@ class OppijanumeroServiceImpl(
     val client: OppijanumerorekisteriClient,
 ) : OppijanumeroService {
     @WithSpan
-    @RetryOppijanumerorekisteri
+    @RetryOutboundIntegration
     override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> =
         tracer
             .spanBuilder("OppijanumeroService.getOppijanumero")
@@ -64,7 +64,7 @@ class OppijanumeroServiceImpl(
             }
 
     @WithSpan
-    @RetryOppijanumerorekisteri
+    @RetryOutboundIntegration
     override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
         client.onrGet("henkilo/$oid", OppijanumerorekisteriHenkilo::class.java)
 }

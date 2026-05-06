@@ -1,4 +1,4 @@
-package fi.oph.kitu.koski
+package fi.oph.kitu.retry
 
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
@@ -20,4 +20,4 @@ import org.springframework.web.client.ResourceAccessException
             maxDelay = 5000,
         ),
 )
-annotation class RetryKoski
+annotation class RetryOutboundIntegration
