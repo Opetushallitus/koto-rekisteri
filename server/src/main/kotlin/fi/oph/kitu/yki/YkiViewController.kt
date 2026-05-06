@@ -12,7 +12,7 @@ import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiYkiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.mock.toInstant
-import fi.oph.kitu.rewriteAttribute
+import fi.oph.kitu.web.rewriteAttribute
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
