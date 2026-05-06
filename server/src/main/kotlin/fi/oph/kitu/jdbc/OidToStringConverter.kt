@@ -1,6 +1,6 @@
 package fi.oph.kitu.jdbc
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.convert.WritingConverter
 

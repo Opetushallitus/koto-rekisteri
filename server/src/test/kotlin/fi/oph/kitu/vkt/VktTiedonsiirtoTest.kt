@@ -1,12 +1,12 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.Oid
 import fi.oph.kitu.isBadRequest
 import fi.oph.kitu.isOk
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiVktRequestMapper
 import fi.oph.kitu.koski.VktKielitaito
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.schema.SchemaTests
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus

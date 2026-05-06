@@ -1,8 +1,8 @@
 package fi.oph.kitu.yki.arvioijat
 
-import fi.oph.kitu.Oid
-import fi.oph.kitu.getOid
 import fi.oph.kitu.jdbc.getTypedArray
+import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oid.getOid
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import org.springframework.data.annotation.Id

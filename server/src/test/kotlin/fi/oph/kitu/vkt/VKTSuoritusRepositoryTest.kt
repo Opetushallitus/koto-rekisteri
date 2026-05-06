@@ -1,10 +1,10 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.Oid
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.mock.VktSuoritusMockGenerator
+import fi.oph.kitu.oid.Oid
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertNull

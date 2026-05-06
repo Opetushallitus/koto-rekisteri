@@ -1,6 +1,6 @@
 package fi.oph.kitu.yhteystiedot
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Qualifier

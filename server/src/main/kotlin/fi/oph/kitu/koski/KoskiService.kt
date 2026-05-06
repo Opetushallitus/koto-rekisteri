@@ -1,6 +1,6 @@
 package fi.oph.kitu.koski
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.result.mapValues
 import fi.oph.kitu.result.partitionBySuccess

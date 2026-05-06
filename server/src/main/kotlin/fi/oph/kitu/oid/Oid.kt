@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.oid
 
 import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.result.TypedResult.Failure

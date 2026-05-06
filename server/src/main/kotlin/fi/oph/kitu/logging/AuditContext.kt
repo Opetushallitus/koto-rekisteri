@@ -1,7 +1,7 @@
 package fi.oph.kitu.logging
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.auth.CasUserDetails
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.result.TypedResult
 import org.springframework.core.io.ClassPathResource
 import org.springframework.security.core.context.SecurityContextHolder

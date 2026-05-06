@@ -1,6 +1,6 @@
 package fi.oph.kitu.organisaatiot
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 
 interface OrganisaatiopalveluRequest
 

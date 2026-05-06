@@ -3,8 +3,8 @@ package fi.oph.kitu.yki.suoritukset
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import fi.oph.kitu.Oid
 import fi.oph.kitu.csvparsing.Features
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso

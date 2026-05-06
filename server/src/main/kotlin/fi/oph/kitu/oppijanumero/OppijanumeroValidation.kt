@@ -1,6 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.validation.Validation
 import fi.oph.kitu.validation.ValidationResult
 import org.springframework.stereotype.Service

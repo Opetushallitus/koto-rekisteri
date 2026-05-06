@@ -1,6 +1,5 @@
 package fi.oph.kitu.vkt
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.cache.InMemoryCache
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.table.httpParams
@@ -10,6 +9,7 @@ import fi.oph.kitu.jdbc.toMap
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import io.opentelemetry.instrumentation.annotations.WithSpan

@@ -1,7 +1,7 @@
 package fi.oph.kitu.auth
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import fi.oph.kitu.Oid
+import fi.oph.kitu.oid.Oid
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
 import org.springframework.security.cas.authentication.CasAssertionAuthenticationToken

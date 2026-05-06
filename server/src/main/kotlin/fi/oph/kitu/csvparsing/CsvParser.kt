@@ -1,7 +1,7 @@
 package fi.oph.kitu.csvparsing
 
-import fi.oph.kitu.Oid
 import fi.oph.kitu.observability.use
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.result.TypedResult
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.stereotype.Service

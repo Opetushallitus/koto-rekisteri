@@ -1,10 +1,10 @@
 package fi.oph.kitu.dev
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret
-import fi.oph.kitu.Oid
 import fi.oph.kitu.auth.Authority
 import fi.oph.kitu.auth.CasUserDetails
 import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
+import fi.oph.kitu.oid.Oid
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
