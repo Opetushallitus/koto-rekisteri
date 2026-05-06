@@ -373,6 +373,7 @@ class YkiSuoritusRepository {
                 "koski_opiskeluoikeus" to suoritus.koskiOpiskeluoikeus?.toString(),
                 "koski_siirto_kasitelty" to (suoritus.koskiSiirtoKasitelty ?: false),
                 "arviointitila" to suoritus.arviointitila.toString(),
+                "lahdejarjestelmantunnus" to suoritus.lahdejarjestelmanTunnus,
             )
         return insertInto(
             table = "yki_suoritus",

@@ -68,6 +68,7 @@ data class YkiSuoritusEntity(
     val arviointitilaLahetetty: Timestamp?,
     @IgnoreForEquality("SOLKI")
     val arviointitilanLahetysvirhe: String?,
+    val lahdejarjestelmanTunnus: String = "yki.$solkiId",
 ) {
     fun arvosana(osakoe: TutkinnonOsa): Int? =
         when (osakoe) {
@@ -211,6 +212,7 @@ data class YkiSuoritusEntity(
                 arviointitila = Arviointitila.valueOf(rs.getString("arviointitila")),
                 arviointitilaLahetetty = arviointitilaLahetetty,
                 arviointitilanLahetysvirhe = arviointitilanLahetysvirhe,
+                lahdejarjestelmanTunnus = rs.getString("lahdejarjestelmantunnus"),
             )
     }
 }
