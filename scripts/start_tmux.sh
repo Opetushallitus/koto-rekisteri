@@ -15,8 +15,7 @@ set -e
 if [ "$HAS_SESSION" -eq "0" ]; then
   info "Attaching to existing tmux session..."
   tmux attach -t $SESS_NAME
-  # TODO: Instead of return, kill the old session.
-  return
+  exit 0
 fi
 
 # If there is no session...
