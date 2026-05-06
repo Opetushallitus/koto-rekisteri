@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.http
 
 import io.opentelemetry.api.trace.Span
 import org.springframework.http.MediaType
