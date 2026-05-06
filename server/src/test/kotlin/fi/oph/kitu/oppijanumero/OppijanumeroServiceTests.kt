@@ -2,7 +2,6 @@ package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.assertFailureIsThrowable
 import fi.oph.kitu.defaultObjectMapper
-import fi.oph.kitu.logging.MockTracer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
@@ -36,10 +35,8 @@ class OppijanumeroServiceTests {
                     ),
             )
         val oppijanumeroRestClient = restClientBuilder.build()
-        val tracer = MockTracer()
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                tracer,
                 OppijanumerorekisteriClient(
                     oppijanumeroRestClient,
                     "http://localhost:8080/oppijanumerorekisteri-service",
@@ -81,10 +78,8 @@ class OppijanumeroServiceTests {
                     ),
             )
         val oppijanumeroRestClient = restClientBuilder.build()
-        val tracer = MockTracer()
         val oppijanumeroService =
             OppijanumeroServiceImpl(
-                tracer,
                 OppijanumerorekisteriClient(
                     oppijanumeroRestClient,
                     "http://localhost:8080/oppijanumerorekisteri-service",

@@ -3,7 +3,6 @@ package fi.oph.kitu.koski
 import fi.oph.kitu.Oid
 import fi.oph.kitu.TypedResult
 import fi.oph.kitu.mapValues
-import fi.oph.kitu.observability.use
 import fi.oph.kitu.partitionBySuccess
 import fi.oph.kitu.retry.RetryOutboundIntegration
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
@@ -11,7 +10,6 @@ import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktSuoritusService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
-import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
@@ -29,119 +27,103 @@ class KoskiService(
     private val koskiYkiRequestMapper: KoskiYkiRequestMapper,
     private val koskiVktRequestMapper: KoskiVktRequestMapper,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
-    private val tracer: Tracer,
     private val customVktSuoritusRepository: CustomVktSuoritusRepository,
     private val vktSuoritusService: VktSuoritusService,
     private val koskiErrors: KoskiErrorService,
 ) {
     @WithSpan
     @RetryOutboundIntegration
-    fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<YkiSuoritusEntity, KoskiException> =
-        tracer
-            .spanBuilder("KoskiService.sendYkiSuoritusToKoski")
-            .startSpan()
-            .use { span ->
-                val koskiRequest = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity).getOrNull()
+    fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<YkiSuoritusEntity, KoskiException> {
+        val koskiRequest = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity).getOrNull()
 
-                if (koskiRequest == null) {
-                    val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
-                    ykiSuoritusRepository.save(suoritus, true)
-                    return TypedResult.Success(suoritus)
-                } else {
-                    val koskiResponse =
-                        when (val result = putToKoski(YkiMappingId(ykiSuoritusEntity.solkiId), koskiRequest)) {
-                            is TypedResult.Success -> result.value
-                            is TypedResult.Failure -> return TypedResult.Failure(result.error)
-                        }
+        if (koskiRequest == null) {
+            val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
+            ykiSuoritusRepository.save(suoritus, true)
+            return TypedResult.Success(suoritus)
+        }
 
-                    val koskiOpiskeluoikeus =
-                        koskiResponse.body
-                            ?.opiskeluoikeudet
-                            ?.first()
-                            ?.oid
-
-                    if (koskiOpiskeluoikeus == null) {
-                        return TypedResult.Failure(
-                            KoskiException(
-                                YkiMappingId(ykiSuoritusEntity.solkiId),
-                                "KOSKI opiskeluoikeus OID missing from response",
-                            ),
-                        )
-                    }
-
-                    val suoritus =
-                        ykiSuoritusEntity.copy(
-                            koskiOpiskeluoikeus = Oid.parse(koskiOpiskeluoikeus).getOrThrow(),
-                            koskiSiirtoKasitelty = true,
-                        )
-                    ykiSuoritusRepository.save(suoritus, true)
-                    return TypedResult.Success(suoritus)
-                }
+        val koskiResponse =
+            when (val result = putToKoski(YkiMappingId(ykiSuoritusEntity.solkiId), koskiRequest)) {
+                is TypedResult.Success -> result.value
+                is TypedResult.Failure -> return TypedResult.Failure(result.error)
             }
+
+        val koskiOpiskeluoikeus =
+            koskiResponse.body
+                ?.opiskeluoikeudet
+                ?.first()
+                ?.oid
+                ?: return TypedResult.Failure(
+                    KoskiException(
+                        YkiMappingId(ykiSuoritusEntity.solkiId),
+                        "KOSKI opiskeluoikeus OID missing from response",
+                    ),
+                )
+
+        val suoritus =
+            ykiSuoritusEntity.copy(
+                koskiOpiskeluoikeus = Oid.parse(koskiOpiskeluoikeus).getOrThrow(),
+                koskiSiirtoKasitelty = true,
+            )
+        ykiSuoritusRepository.save(suoritus, true)
+        return TypedResult.Success(suoritus)
+    }
 
     @WithSpan
     @RetryOutboundIntegration
-    fun sendYkiMitatointiToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<Unit, KoskiException> =
-        tracer
-            .spanBuilder("KoskiService.sendYkiMitatointiToKoski")
-            .startSpan()
-            .use { span ->
-                if (ykiSuoritusEntity.koskiOpiskeluoikeus != null) {
-                    koskiYkiRequestMapper
-                        .ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
-                        .getOrNull()
-                        ?.mitatoi()
-                        ?.let { koskiRequest ->
-                            koskiRestClient
-                                .put()
-                                .uri("oppija")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON)
-                                .body(koskiRequest)
-                                .retrieve()
-                                .toEntity<KoskiResponse>()
-                        }
-
-                    val suoritus =
-                        ykiSuoritusEntity.copy(
-                            koskiOpiskeluoikeus = null,
-                            koskiSiirtoKasitelty = false,
-                        )
-                    ykiSuoritusRepository.save(suoritus, true)
+    fun sendYkiMitatointiToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<Unit, KoskiException> {
+        if (ykiSuoritusEntity.koskiOpiskeluoikeus != null) {
+            koskiYkiRequestMapper
+                .ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
+                .getOrNull()
+                ?.mitatoi()
+                ?.let { koskiRequest ->
+                    koskiRestClient
+                        .put()
+                        .uri("oppija")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .body(koskiRequest)
+                        .retrieve()
+                        .toEntity<KoskiResponse>()
                 }
 
-                TypedResult.Success(Unit)
-            }
+            val suoritus =
+                ykiSuoritusEntity.copy(
+                    koskiOpiskeluoikeus = null,
+                    koskiSiirtoKasitelty = false,
+                )
+            ykiSuoritusRepository.save(suoritus, true)
+        }
+
+        return TypedResult.Success(Unit)
+    }
 
     @WithSpan
     @RetryOutboundIntegration
-    fun sendVktSuoritusToKoski(suoritus: VktHenkilosuoritus): TypedResult<Unit, KoskiException> =
-        tracer
-            .spanBuilder("KoskiService.sendVktSuoritusToKoski")
-            .startSpan()
-            .use { span ->
-                val id = CustomVktSuoritusRepository.Tutkintoryhma.from(suoritus)
-                val koskiRequest = koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus)
-                if (koskiRequest.isFailure) {
-                    // Suoritus ei ole vielä valmis lähetettäväksi, mutta se ei ole tiedonsiirtovirhe.
-                    return TypedResult.Success(Unit)
-                }
+    fun sendVktSuoritusToKoski(suoritus: VktHenkilosuoritus): TypedResult<Unit, KoskiException> {
+        val id = CustomVktSuoritusRepository.Tutkintoryhma.from(suoritus)
+        val koskiRequest = koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus)
+        if (koskiRequest.isFailure) {
+            // Suoritus ei ole vielä valmis lähetettäväksi, mutta se ei ole tiedonsiirtovirhe.
+            return TypedResult.Success(Unit)
+        }
 
-                val koskiResponse =
-                    when (val result = putToKoski(VktMappingId(id), koskiRequest.getOrThrow())) {
-                        is TypedResult.Success -> result.value
-                        is TypedResult.Failure -> return TypedResult.Failure(result.error)
-                    }
-
-                val koskiOpiskeluoikeusOid =
-                    koskiResponse.body
-                        ?.opiskeluoikeudet
-                        ?.firstOrNull()
-                        ?.oid
-
-                vktSuoritusService.markKoskiTransferProcessed(id, koskiOpiskeluoikeusOid)
-                return TypedResult.Success(Unit)
+        val koskiResponse =
+            when (val result = putToKoski(VktMappingId(id), koskiRequest.getOrThrow())) {
+                is TypedResult.Success -> result.value
+                is TypedResult.Failure -> return TypedResult.Failure(result.error)
             }
+
+        val koskiOpiskeluoikeusOid =
+            koskiResponse.body
+                ?.opiskeluoikeudet
+                ?.firstOrNull()
+                ?.oid
+
+        vktSuoritusService.markKoskiTransferProcessed(id, koskiOpiskeluoikeusOid)
+        return TypedResult.Success(Unit)
+    }
 
     @WithSpan
     fun sendYkiSuorituksetToKoski(): KoskiTransferReport {

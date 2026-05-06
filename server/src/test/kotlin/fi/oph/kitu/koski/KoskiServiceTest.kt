@@ -82,7 +82,6 @@ class KoskiServiceTest(
                 koskiYkiRequestMapper,
                 koskiVktRequestMapper,
                 ykiSuoritusRepository,
-                tracer,
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
@@ -91,9 +90,11 @@ class KoskiServiceTest(
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus).getOrThrow()
         assertEquals("1.2.246.562.15.50209741037", updatedSuoritus.koskiOpiskeluoikeus.toString())
 
+        // KoskiService.sendYkiSuoritusToKoski span ei tallennu, koska tämä testi instantioi
+        // KoskiServicen käsin ohittaen Springin AOP-proxyn, jonka @WithSpan tarvitsisi.
+        // KoskiYkiRequestMapper sen sijaan tulee Springin DI:n kautta, joten @WithSpan toimii sille.
         val spans = inMemorySpanExporter.finishedSpanItems
         assertNotNull(spans)
-        assertNotNull(spans.find { it.name == "KoskiService.sendYkiSuoritusToKoski" })
         assertNotNull(spans.find { it.name == "KoskiYkiRequestMapper.ykiSuoritusToKoskiRequest" })
     }
 
@@ -117,7 +118,6 @@ class KoskiServiceTest(
                 koskiYkiRequestMapper,
                 koskiVktRequestMapper,
                 ykiSuoritusRepository,
-                tracer,
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
@@ -149,7 +149,6 @@ class KoskiServiceTest(
                 koskiYkiRequestMapper,
                 koskiVktRequestMapper,
                 ykiSuoritusRepository,
-                tracer,
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
@@ -197,7 +196,6 @@ class KoskiServiceTest(
                 koskiYkiRequestMapper,
                 koskiVktRequestMapper,
                 ykiSuoritusRepository,
-                tracer,
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
@@ -263,7 +261,6 @@ class KoskiServiceTest(
             koskiYkiRequestMapper,
             koskiVktRequestMapper,
             ykiSuoritusRepository,
-            tracer,
             customVktSuoritusRepository,
             vktSuoritusService,
             koskiErrorService,
