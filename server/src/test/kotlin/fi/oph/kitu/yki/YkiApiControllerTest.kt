@@ -309,7 +309,7 @@ class YkiApiControllerTest(
 
         post("/yki/api/suoritus", data) {
             isBadRequest(
-                "JSON parse error: Cannot construct instance of `fi.oph.kitu.Oid`, problem: Improperly formatted Object Identifier String - 123",
+                "JSON parse error: Cannot construct instance of `fi.oph.kitu.oid.Oid`, problem: Improperly formatted Object Identifier String - 123",
             )
         }
     }

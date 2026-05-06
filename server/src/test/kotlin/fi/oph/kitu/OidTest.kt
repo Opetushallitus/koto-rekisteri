@@ -1,5 +1,7 @@
 package fi.oph.kitu
 
+import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.util.defaultObjectMapper
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

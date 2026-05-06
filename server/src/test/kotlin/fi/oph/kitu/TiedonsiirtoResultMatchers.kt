@@ -2,6 +2,7 @@ package fi.oph.kitu
 
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
+import fi.oph.kitu.util.defaultObjectMapper
 import org.springframework.test.web.servlet.MockMvcResultMatchersDsl
 
 fun MockMvcResultMatchersDsl.verboseContentJson(expectedObject: Any) {
