@@ -3,7 +3,9 @@ package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.csvDownloadButton
 import fi.oph.kitu.html.errorsArticle
+import fi.oph.kitu.html.filterDescriptionList
 import fi.oph.kitu.html.hiddenValue
 import fi.oph.kitu.html.hiddenValues
 import fi.oph.kitu.html.input
@@ -20,15 +22,10 @@ import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
-import fi.oph.kitu.yki.Tutkintokieli
-import fi.oph.kitu.yki.Tutkintotaso
-import fi.oph.kitu.yki.YkiApiController
-import fi.oph.kitu.yki.YkiSuorituksetParams
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
-import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.button
 import kotlinx.html.fieldSet
@@ -86,11 +83,16 @@ object KielitestiSuorituksetPage {
                             li {
                                 +"Suorituksia yhteensä: $numberOfSuoritukset"
                             }
-                            li { kielitestiCsvDownloadButton(filterParams) }
+                            li {
+                                csvDownloadButton(
+                                    linkTo<KielitestiApiController> { getSuorituksetAsCsv() }.toString() +
+                                        "?${httpParams(filterParams.toMap())}",
+                                )
+                            }
                             li { kielitestiSuoritusFilterButton(filterParams) }
                         }
                     }
-                    kielitestiSuoritusFilterList(filterParams)
+                    filterDescriptionList(filterParams.filterDescriptions())
                 }
 
                 table {
@@ -133,29 +135,5 @@ fun FlowContent.kielitestiSuoritusFilterButton(params: KielitestiSuorituksetPara
         fieldSet {
             toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", params.piilotaHenkilotiedot)
         }
-    }
-}
-
-fun FlowContent.kielitestiSuoritusFilterList(params: KielitestiSuorituksetParams) {
-    params.filterDescriptions().let { filters ->
-        if (filters.isNotEmpty()) {
-            ul {
-                filters.forEach { filter ->
-                    li { +filter }
-                }
-            }
-        }
-    }
-}
-
-fun FlowContent.kielitestiCsvDownloadButton(params: KielitestiSuorituksetParams) {
-    a(
-        href =
-            linkTo<KielitestiApiController> {
-                getSuorituksetAsCsv()
-            }.toString() + "?${httpParams(params.toMap())}",
-    ) {
-        attributes["download"] = ""
-        +"Lataa tiedot CSV:nä"
     }
 }
