@@ -1,15 +1,12 @@
 package fi.oph.kitu.yki.arvioijat.error
 
+import fi.oph.kitu.jdbc.Column
+import fi.oph.kitu.jdbc.batchInsertReturning
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
-import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.PreparedStatementCreatorFactory
-import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.sql.Timestamp
 
 @Repository
@@ -24,83 +21,25 @@ interface CustomYkiArvioijaErrorRepository {
 
 @Repository
 class CustomYkiArvioijaErrorRepositoryImpl(
-    val jdbcTemplate: JdbcTemplate,
+    private val jdbcTemplate: JdbcTemplate,
 ) : CustomYkiArvioijaErrorRepository {
     @WithSpan
-    override fun saveAllNewEntities(errors: Iterable<YkiArvioijaErrorEntity>): Iterable<YkiArvioijaErrorEntity> {
-        val sql =
-            """
-            INSERT INTO yki_arvioija_error (
-                arvioijan_oid, 
-                hetu, 
-                nimi, 
-                virheellinen_kentta, 
-                virheellinen_arvo, 
-                virheellinen_rivi, 
-                virheen_rivinumero, 
-                virheen_luontiaika
-            ) VALUES (?,?,?,?,?,?,?,?) 
-            ON CONFLICT ON CONSTRAINT unique_arvioija_error_virheellinen_rivi_is_unique DO NOTHING;
-            """.trimIndent()
-
-        val pscf = PreparedStatementCreatorFactory(sql)
-        pscf.setGeneratedKeysColumnNames("id")
-        val preparedStatementCreator = pscf.newPreparedStatementCreator(sql, null)
-
-        val batchPreparedStatementSetter =
-            object : BatchPreparedStatementSetter {
-                override fun setValues(
-                    ps: PreparedStatement,
-                    i: Int,
-                ) {
-                    val error = errors.elementAt(i)
-                    ps.setString(1, error.arvioijanOid)
-                    ps.setString(2, error.hetu)
-                    ps.setString(3, error.nimi)
-                    ps.setString(4, error.virheellinenKentta)
-                    ps.setString(5, error.virheellinenArvo)
-                    ps.setString(6, error.virheellinenRivi)
-                    ps.setInt(7, error.virheenRivinumero)
-                    ps.setTimestamp(8, Timestamp(error.virheenLuontiaika.toEpochMilli()))
-                }
-
-                override fun getBatchSize() = errors.count()
-            }
-
-        val keyHolder = GeneratedKeyHolder()
-
-        jdbcTemplate.batchUpdate(preparedStatementCreator, batchPreparedStatementSetter, keyHolder)
-
-        val savedErrors = keyHolder.keyList.map { it["id"] as Int }
-
-        return if (savedErrors.isEmpty()) listOf() else findErrorsByIdList(savedErrors)
-    }
-
-    private fun findErrorsByIdList(ids: List<Int>): Iterable<YkiArvioijaErrorEntity> {
-        val errorIds = ids.joinToString(",")
-        val findSavedQuerySql =
-            """
-            SELECT *
-            FROM yki_arvioija_error
-            WHERE id IN ($errorIds)
-            """.trimIndent()
-
-        return jdbcTemplate
-            .query(findSavedQuerySql) { rs, _ ->
-                YkiArvioijaErrorEntity.Companion.fromResultSet(rs)
-            }
-    }
+    override fun saveAllNewEntities(errors: Iterable<YkiArvioijaErrorEntity>): Iterable<YkiArvioijaErrorEntity> =
+        jdbcTemplate.batchInsertReturning(
+            tableName = "yki_arvioija_error",
+            conflictConstraint = "unique_arvioija_error_virheellinen_rivi_is_unique",
+            columns =
+                listOf(
+                    Column("arvioijan_oid") { it.arvioijanOid },
+                    Column("hetu") { it.hetu },
+                    Column("nimi") { it.nimi },
+                    Column("virheellinen_kentta") { it.virheellinenKentta },
+                    Column("virheellinen_arvo") { it.virheellinenArvo },
+                    Column("virheellinen_rivi") { it.virheellinenRivi },
+                    Column("virheen_rivinumero") { it.virheenRivinumero },
+                    Column("virheen_luontiaika") { Timestamp.from(it.virheenLuontiaika) },
+                ),
+            entities = errors,
+            rowMapper = YkiArvioijaErrorEntity::fromResultSet,
+        )
 }
-
-fun YkiArvioijaErrorEntity.Companion.fromResultSet(rs: ResultSet): YkiArvioijaErrorEntity =
-    YkiArvioijaErrorEntity(
-        rs.getLong("id"),
-        rs.getString("arvioijan_oid"),
-        rs.getString("hetu"),
-        rs.getString("nimi"),
-        rs.getString("virheellinen_kentta"),
-        rs.getString("virheellinen_arvo"),
-        rs.getString("virheellinen_rivi"),
-        rs.getInt("virheen_rivinumero"),
-        rs.getTimestamp("virheen_luontiaika").toInstant(),
-    )

@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.suoritukset.error
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
+import java.sql.ResultSet
 import java.time.Instant
 
 /**
@@ -25,3 +26,17 @@ data class YkiSuoritusErrorEntity(
 ) {
     companion object
 }
+
+fun YkiSuoritusErrorEntity.Companion.fromResultSet(rs: ResultSet): YkiSuoritusErrorEntity =
+    YkiSuoritusErrorEntity(
+        rs.getLong("id"),
+        rs.getString("suorittajan_oid"),
+        rs.getString("hetu"),
+        rs.getString("nimi"),
+        rs.getTimestamp("last_modified")?.toInstant(),
+        rs.getString("virheellinen_kentta"),
+        rs.getString("virheellinen_arvo"),
+        rs.getString("virheellinen_rivi"),
+        rs.getInt("virheen_rivinumero"),
+        rs.getTimestamp("virheen_luontiaika").toInstant(),
+    )

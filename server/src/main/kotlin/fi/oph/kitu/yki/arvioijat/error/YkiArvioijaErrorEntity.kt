@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.arvioijat.error
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
+import java.sql.ResultSet
 import java.time.Instant
 
 /**
@@ -24,3 +25,16 @@ data class YkiArvioijaErrorEntity(
 ) {
     companion object
 }
+
+fun YkiArvioijaErrorEntity.Companion.fromResultSet(rs: ResultSet): YkiArvioijaErrorEntity =
+    YkiArvioijaErrorEntity(
+        rs.getLong("id"),
+        rs.getString("arvioijan_oid"),
+        rs.getString("hetu"),
+        rs.getString("nimi"),
+        rs.getString("virheellinen_kentta"),
+        rs.getString("virheellinen_arvo"),
+        rs.getString("virheellinen_rivi"),
+        rs.getInt("virheen_rivinumero"),
+        rs.getTimestamp("virheen_luontiaika").toInstant(),
+    )
