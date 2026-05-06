@@ -1,9 +1,9 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.yki.toTrueOrNull
 import org.springframework.format.annotation.DateTimeFormat
 import java.time.LocalDate

@@ -1,9 +1,9 @@
 package fi.oph.kitu.yki.arvioijat.error
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.setSerializationErrorToAttributes
-import fi.oph.kitu.findAllSorted
+import fi.oph.kitu.jdbc.SortDirection
+import fi.oph.kitu.jdbc.findAllSorted
 import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute

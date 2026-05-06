@@ -1,12 +1,12 @@
 package fi.oph.kitu.yki.arvioijat
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.errorsArticle
 import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.yki.YkiViewController
 import kotlinx.html.article
 import kotlinx.html.h1

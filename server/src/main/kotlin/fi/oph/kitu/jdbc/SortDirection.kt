@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.jdbc
 
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.PagingAndSortingRepository

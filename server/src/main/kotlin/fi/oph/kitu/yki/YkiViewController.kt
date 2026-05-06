@@ -1,12 +1,12 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessage
 import fi.oph.kitu.html.errorTablePage
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.koski.KoskiErrorMappingId
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiYkiRequestMapper

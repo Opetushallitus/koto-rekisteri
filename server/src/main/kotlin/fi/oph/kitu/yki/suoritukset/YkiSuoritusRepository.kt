@@ -1,8 +1,8 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.SqlFilterBuilder
 import fi.oph.kitu.util.equalsIgnoringAnnotated
 import fi.oph.kitu.yki.Arviointitila

@@ -1,12 +1,12 @@
 package fi.oph.kitu.vkt
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.Nimetty
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
 import fi.oph.kitu.jdbc.PaginatedSortOrder
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.SqlFilterBuilder
 import fi.oph.kitu.jdbc.orderSql
 import fi.oph.kitu.jdbc.pageSql

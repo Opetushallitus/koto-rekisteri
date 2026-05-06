@@ -1,8 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.table.httpParams
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetPage
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetParams
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusColumn

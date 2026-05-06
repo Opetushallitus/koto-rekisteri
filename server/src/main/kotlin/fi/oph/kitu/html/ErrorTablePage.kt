@@ -1,8 +1,8 @@
 package fi.oph.kitu.html
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import fi.oph.kitu.html.table.displayTable
+import fi.oph.kitu.jdbc.SortDirection
 import kotlinx.html.h1
 import kotlinx.html.h2
 

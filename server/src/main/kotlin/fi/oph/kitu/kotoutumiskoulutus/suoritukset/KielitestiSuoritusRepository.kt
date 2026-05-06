@@ -1,9 +1,9 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
 import fi.oph.kitu.jdbc.PaginatedSortOrder
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.SqlFilterBuilder
 import fi.oph.kitu.jdbc.orderSql
 import fi.oph.kitu.jdbc.pageSql

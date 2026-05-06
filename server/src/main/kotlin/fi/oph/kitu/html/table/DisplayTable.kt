@@ -1,12 +1,12 @@
 package fi.oph.kitu.html.table
 
-import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.debugTrace
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.javascript
 import fi.oph.kitu.html.testId
-import fi.oph.kitu.reverse
-import fi.oph.kitu.toSymbol
+import fi.oph.kitu.jdbc.SortDirection
+import fi.oph.kitu.jdbc.reverse
+import fi.oph.kitu.jdbc.toSymbol
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
 import kotlinx.html.TABLE
