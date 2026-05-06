@@ -4,6 +4,7 @@ import fi.oph.kitu.SortDirection
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessage
+import fi.oph.kitu.html.errorTablePage
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.koski.KoskiErrorMappingId
@@ -16,7 +17,6 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
-import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPage
@@ -24,7 +24,6 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorPage
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import jakarta.servlet.http.HttpSession
@@ -136,10 +135,12 @@ class YkiViewController(
         sortDirection: SortDirection = SortDirection.ASC,
     ): ResponseEntity<String> =
         ResponseEntity.ok(
-            YkiSuoritusErrorPage.render(
+            errorTablePage(
+                title = "Yleinen kielitutkinto",
+                subtitle = "Suoritusten tuonnin virheet",
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
-                virheet = suoritusErrorService.getErrors(sortColumn, sortDirection),
+                rows = suoritusErrorService.getErrors(sortColumn, sortDirection),
             ),
         )
 
@@ -163,10 +164,12 @@ class YkiViewController(
         sortDirection: SortDirection = SortDirection.ASC,
     ): ResponseEntity<String> =
         ResponseEntity.ok(
-            YkiArvioijaErrorPage.render(
+            errorTablePage(
+                title = "Yleinen kielitutkinto",
+                subtitle = "Arvioijien tuonnin virheet",
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
-                arvioijaErrorService.getErrors(sortColumn, sortDirection),
+                rows = arvioijaErrorService.getErrors(sortColumn, sortDirection),
             ),
         )
 
