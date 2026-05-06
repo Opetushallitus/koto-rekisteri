@@ -1,10 +1,8 @@
 package fi.oph.kitu.koski
 
 import com.github.kagkarlsson.scheduler.task.Task
-import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import fi.oph.kitu.ConditionalOnNonEmptyProperty
-import fi.oph.kitu.ExtendedSchedules
-import fi.oph.kitu.observability.use
+import fi.oph.kitu.observability.recurringStatefulTask
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
@@ -21,21 +19,10 @@ class KoskiYkiScheduledTask(
     lateinit var ykiSchedule: String
 
     @Bean
-    fun sendYkiSuoritukset(koskiService: KoskiService): Task<String?> =
-        Tasks
-            .recurring(
-                "Lähetä YKI-suoritukset KOSKI-palveluun",
-                ExtendedSchedules.parse(ykiSchedule),
-                String::class.java,
-            ).executeStateful { _, _ ->
-                tracer
-                    .spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute")
-                    .startSpan()
-                    .use { span ->
-                        span.setAttribute("task.name", "KOSKI-send-YKI-suoritukset")
-                        koskiService.sendYkiSuorituksetToKoski().toString()
-                    }
-            }
+    fun sendYkiSuoritukset(koskiService: KoskiService): Task<String> =
+        tracer.recurringStatefulTask("Lähetä YKI-suoritukset KOSKI-palveluun", ykiSchedule, "") { _ ->
+            koskiService.sendYkiSuorituksetToKoski().toString()
+        }
 }
 
 @Configuration
@@ -48,19 +35,8 @@ class KoskiVktScheduledTask(
     lateinit var vktSchedule: String
 
     @Bean
-    fun sendVktSuoritukset(koskiService: KoskiService): Task<String?> =
-        Tasks
-            .recurring(
-                "Lähetä VKT-suoritukset KOSKI-palveluun",
-                ExtendedSchedules.parse(vktSchedule),
-                String::class.java,
-            ).executeStateful { _, _ ->
-                tracer
-                    .spanBuilder("KoskiScheduledTask.sendSuoritukset.tasks.execute")
-                    .startSpan()
-                    .use { span ->
-                        span.setAttribute("task.name", "KOSKI-send-VKT-suoritukset")
-                        koskiService.sendVktSuorituksetToKoski().toString()
-                    }
-            }
+    fun sendVktSuoritukset(koskiService: KoskiService): Task<String> =
+        tracer.recurringStatefulTask("Lähetä VKT-suoritukset KOSKI-palveluun", vktSchedule, "") { _ ->
+            koskiService.sendVktSuorituksetToKoski().toString()
+        }
 }

@@ -1,9 +1,7 @@
 package fi.oph.kitu.yki
 
 import com.github.kagkarlsson.scheduler.task.Task
-import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.kitu.ExtendedSchedules
-import fi.oph.kitu.observability.use
+import fi.oph.kitu.observability.recurringStatefulTask
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
@@ -30,16 +28,7 @@ class YkiScheduledTasks(
     @WithSpan
     @Bean
     fun monthlyCheck(ykiService: YkiService): Task<Void> =
-        Tasks
-            .recurring("Tarkista poikkeamat YKI-suorituksissa", ExtendedSchedules.parse(ykiMonthlyImportSchedule))
-            .executeStateful { _, _ ->
-                tracer
-                    .spanBuilder("YkiScheduledTasks.monthlyCheck.tasks.executeStateful")
-                    .startSpan()
-                    .use { span ->
-                        span.setAttribute("task.name", "YKI-check-anomalies")
-                        ykiService.checkYkiAnomalies(Instant.now().minusSeconds(365.days.inWholeSeconds))
-                        null
-                    }
-            }
+        tracer.recurringStatefulTask("Tarkista poikkeamat YKI-suorituksissa", ykiMonthlyImportSchedule) {
+            ykiService.checkYkiAnomalies(Instant.now().minusSeconds(365.days.inWholeSeconds))
+        }
 }

@@ -1,9 +1,7 @@
 package fi.oph.kitu.vkt
 
 import com.github.kagkarlsson.scheduler.task.Task
-import com.github.kagkarlsson.scheduler.task.helper.Tasks
-import fi.oph.kitu.ExtendedSchedules
-import fi.oph.kitu.observability.use
+import fi.oph.kitu.observability.recurringTask
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
@@ -20,15 +18,7 @@ class VktScheduledTasks(
     @WithSpan
     @Bean
     fun cleanup(vktService: VktSuoritusService): Task<Void> =
-        Tasks
-            .recurring("Poista merkityt VKT-suoritukset", ExtendedSchedules.parse(vktCleanupSchedule))
-            .execute { _, _ ->
-                tracer
-                    .spanBuilder("VktScheduledTasks.cleanup.tasks.executeStateful")
-                    .startSpan()
-                    .use { span ->
-                        span.setAttribute("task.name", "VKT-cleanup")
-                        vktService.cleanup()
-                    }
-            }
+        tracer.recurringTask("Poista merkityt VKT-suoritukset", vktCleanupSchedule) {
+            vktService.cleanup()
+        }
 }
