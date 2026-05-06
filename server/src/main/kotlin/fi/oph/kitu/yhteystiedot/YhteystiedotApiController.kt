@@ -1,9 +1,9 @@
 package fi.oph.kitu.yhteystiedot
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.koski.KoskiRequestMapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import tools.jackson.databind.json.JsonMapper
 
 @RestController
 @RequestMapping("/yhteystiedot/api")
@@ -113,9 +114,10 @@ data class YhteystietoNotFound(
 @Configuration
 class YhteystiedotApiJacksonConfig {
     @Bean
-    fun yhteystiedotJacksonConverter(): JacksonJsonHttpMessageConverter {
-        val mapper = KoskiRequestMapper.getObjectMapper()
-        val converter = JacksonJsonHttpMessageConverter(mapper)
+    fun yhteystiedotJacksonConverter(
+        @Qualifier("koskiObjectMapper") koskiObjectMapper: JsonMapper,
+    ): JacksonJsonHttpMessageConverter {
+        val converter = JacksonJsonHttpMessageConverter(koskiObjectMapper)
         converter.supportedMediaTypes =
             listOf(
                 MediaType.APPLICATION_JSON,

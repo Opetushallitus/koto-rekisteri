@@ -6,7 +6,7 @@ import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.isBadRequest
 import fi.oph.kitu.isOk
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.koski.KoskiRequestMapper
+import fi.oph.kitu.koski.KoskiVktRequestMapper
 import fi.oph.kitu.koski.VktKielitaito
 import fi.oph.kitu.schema.SchemaTests
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
@@ -35,7 +35,7 @@ import kotlin.test.assertTrue
 @Import(DBContainerConfiguration::class)
 class VktTiedonsiirtoTest {
     @Autowired
-    private lateinit var koskiRequestMapper: KoskiRequestMapper
+    private lateinit var koskiVktRequestMapper: KoskiVktRequestMapper
 
     @Autowired
     private lateinit var context: WebApplicationContext
@@ -172,7 +172,7 @@ class VktTiedonsiirtoTest {
                     ),
             )
 
-        val koskiRequest = koskiRequestMapper.vktSuoritusToKoskiRequest(suoritus).getOrThrow()
+        val koskiRequest = koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus).getOrThrow()
         val pts =
             koskiRequest.opiskeluoikeudet
                 .first()

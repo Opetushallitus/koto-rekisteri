@@ -22,11 +22,13 @@ import fi.oph.kitu.yki.Tutkintotaso
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
 import org.testcontainers.postgresql.PostgreSQLContainer
 import tools.jackson.databind.JsonNode
+import tools.jackson.databind.json.JsonMapper
 import java.time.LocalDate
 import kotlin.random.Random
 import kotlin.test.assertEquals
@@ -35,10 +37,13 @@ import kotlin.test.assertEquals
 @Import(DBContainerConfiguration::class)
 class KoskiRequestMapperTest(
     @param:Autowired private val postgres: PostgreSQLContainer,
+    @param:Qualifier("koskiObjectMapper") private val objectMapper: JsonMapper,
 ) {
     @Autowired
-    lateinit var koskiRequestMapper: KoskiRequestMapper
-    private val objectMapper = KoskiRequestMapper.getObjectMapper()
+    lateinit var koskiYkiRequestMapper: KoskiYkiRequestMapper
+
+    @Autowired
+    lateinit var koskiVktRequestMapper: KoskiVktRequestMapper
 
     private val oid: Oid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow()
     private val jarjestajanOrganisaatio = Oid.parse("1.2.246.562.10.12345678910").getOrThrow()
@@ -61,7 +66,7 @@ class KoskiRequestMapperTest(
                 rakenteetJaSanasto = null,
                 yleisarvosana = null,
             )
-        val koskiRequest = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
+        val koskiRequest = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
         val expectedJson =
             objectMapper
                 .readValue(
@@ -90,7 +95,7 @@ class KoskiRequestMapperTest(
                 rakenteetJaSanasto = null,
                 yleisarvosana = 2,
             )
-        val koskiRequest = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
+        val koskiRequest = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
         val expectedJson =
             objectMapper
                 .readValue(
@@ -115,7 +120,7 @@ class KoskiRequestMapperTest(
                 yleisarvosana = 1,
             )
         val koskiSuoritus =
-            koskiRequestMapper
+            koskiYkiRequestMapper
                 .ykiSuoritusToKoskiRequest(
                     suoritus,
                 ).getOrThrow()
@@ -149,7 +154,7 @@ class KoskiRequestMapperTest(
                 yleisarvosana = 0,
             )
         val koskiSuoritus =
-            koskiRequestMapper
+            koskiYkiRequestMapper
                 .ykiSuoritusToKoskiRequest(
                     suoritus,
                 ).getOrThrow()
@@ -184,7 +189,7 @@ class KoskiRequestMapperTest(
                 yleisarvosana = 0,
             )
         val koskiSuoritus =
-            koskiRequestMapper
+            koskiYkiRequestMapper
                 .ykiSuoritusToKoskiRequest(
                     suoritus,
                 ).getOrThrow()
@@ -213,7 +218,7 @@ class KoskiRequestMapperTest(
                 tutkintotaso = Tutkintotaso.YT,
                 tekstinYmmartaminen = 10,
             )
-        val koskiSuoritus = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
+        val koskiSuoritus = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
         assertEquals(TypedResult.Failure(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")), koskiSuoritus)
     }
 
@@ -225,7 +230,7 @@ class KoskiRequestMapperTest(
                 tutkintotaso = Tutkintotaso.YT,
                 tekstinYmmartaminen = 11,
             )
-        val koskiSuoritus = koskiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
+        val koskiSuoritus = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
         assertEquals(TypedResult.Failure(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")), koskiSuoritus)
     }
 
@@ -269,7 +274,7 @@ class KoskiRequestMapperTest(
                 suoritus = suoritus,
             )
 
-        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
+        val koskiSuoritus = koskiVktRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
 
         assertNotNull(koskiSuoritus)
 
@@ -329,7 +334,7 @@ class KoskiRequestMapperTest(
                 suoritus = suoritus,
             )
 
-        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
+        val koskiSuoritus = koskiVktRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
 
         assertNotNull(koskiSuoritus)
 
@@ -380,7 +385,7 @@ class KoskiRequestMapperTest(
                 suoritus = suoritus,
             )
 
-        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
+        val koskiSuoritus = koskiVktRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
 
         assertEquals(TypedResult.Failure(listOf("Ei valmiita tutkintoja")), koskiSuoritus)
     }
@@ -441,7 +446,7 @@ class KoskiRequestMapperTest(
                 suoritus = suoritus,
             )
 
-        val koskiSuoritus = koskiRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
+        val koskiSuoritus = koskiVktRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus).getOrThrow()
 
         assertEquals(
             listOf("kirjallinen"),
