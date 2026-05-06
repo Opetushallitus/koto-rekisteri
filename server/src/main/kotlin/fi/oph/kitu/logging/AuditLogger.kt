@@ -1,8 +1,8 @@
 package fi.oph.kitu.logging
 
 import fi.oph.kitu.Oid
-import fi.oph.kitu.TimeService
 import fi.oph.kitu.auth.CasUserDetails
+import fi.oph.kitu.util.TimeService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value

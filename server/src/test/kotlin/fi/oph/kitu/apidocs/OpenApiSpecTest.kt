@@ -1,7 +1,7 @@
 package fi.oph.kitu.apidocs
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.defaultObjectMapper
+import fi.oph.kitu.util.defaultObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort

@@ -1,6 +1,6 @@
 package fi.oph.kitu.oppijanumero
 
-import fi.oph.kitu.defaultObjectMapper
+import fi.oph.kitu.util.defaultObjectMapper
 import org.springframework.http.ResponseEntity
 import tools.jackson.module.kotlin.readValue
 

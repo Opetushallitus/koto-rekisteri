@@ -1,10 +1,10 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
-import fi.oph.kitu.IgnoreForEquality
 import fi.oph.kitu.Oid
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import fi.oph.kitu.sortedWithDirectionBy
+import fi.oph.kitu.util.IgnoreForEquality
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table

@@ -1,6 +1,6 @@
-package fi.oph.kitu
+package fi.oph.kitu.util
 
-import fi.oph.kitu.TimeService.Companion.clock
+import fi.oph.kitu.util.TimeService.Companion.clock
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.Clock

@@ -1,8 +1,6 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.SortDirection
-import fi.oph.kitu.equalsIgnoringAnnotated
-import fi.oph.kitu.findDifferentProperties
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.Nimetty
 import fi.oph.kitu.i18n.LocalizedString
@@ -13,6 +11,8 @@ import fi.oph.kitu.jdbc.SqlFilterBuilder
 import fi.oph.kitu.jdbc.orderSql
 import fi.oph.kitu.jdbc.pageSql
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.util.equalsIgnoringAnnotated
+import fi.oph.kitu.util.findDifferentProperties
 import fi.oph.kitu.yki.toTrueOrNull
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Autowired

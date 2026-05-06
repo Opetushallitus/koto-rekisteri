@@ -1,6 +1,6 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
-import fi.oph.kitu.defaultObjectMapper
+import fi.oph.kitu.util.defaultObjectMapper
 import org.springframework.http.ResponseEntity
 
 sealed class IlmoittautumisjarjestelmaException(

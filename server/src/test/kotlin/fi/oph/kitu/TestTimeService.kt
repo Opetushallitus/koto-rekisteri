@@ -1,7 +1,7 @@
 package fi.oph.kitu
 
-import fi.oph.kitu.TimeService.Companion.clock
-import fi.oph.kitu.TimeService.Companion.zoneId
+import fi.oph.kitu.util.TimeService.Companion.clock
+import fi.oph.kitu.util.TimeService.Companion.zoneId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.Clock

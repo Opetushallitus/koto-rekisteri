@@ -3,9 +3,9 @@ package fi.oph.kitu.vkt
 import com.nimbusds.jose.jwk.source.ImmutableSecret
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.auth.Authority
-import fi.oph.kitu.defaultObjectMapper
 import fi.oph.kitu.dev.MockLoginController
 import fi.oph.kitu.schema.SchemaTests
+import fi.oph.kitu.util.defaultObjectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

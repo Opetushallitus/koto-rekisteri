@@ -3,12 +3,12 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.SortDirection
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
-import fi.oph.kitu.findDifferentProperties
-import fi.oph.kitu.ignoreEmptyValues
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.splitIntoValuesAndErrors
+import fi.oph.kitu.util.findDifferentProperties
+import fi.oph.kitu.util.ignoreEmptyValues
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService

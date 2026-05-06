@@ -1,7 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.assertFailureIsThrowable
-import fi.oph.kitu.defaultObjectMapper
+import fi.oph.kitu.util.defaultObjectMapper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus

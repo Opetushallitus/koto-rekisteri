@@ -1,7 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
-import fi.oph.kitu.removeAtIndex
-import fi.oph.kitu.splitAt
+import fi.oph.kitu.util.removeAtIndex
+import fi.oph.kitu.util.splitAt
 
 object OppijaPermutations {
     fun getPermutations(oppija: Oppija): List<Oppija> =

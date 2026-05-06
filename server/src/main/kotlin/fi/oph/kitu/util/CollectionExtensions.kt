@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.util
 
 inline fun <reified T> List<T>.growToSize(
     expectedSize: Int,

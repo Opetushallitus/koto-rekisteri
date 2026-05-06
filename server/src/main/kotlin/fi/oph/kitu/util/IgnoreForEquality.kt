@@ -1,4 +1,4 @@
-package fi.oph.kitu
+package fi.oph.kitu.util
 
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
