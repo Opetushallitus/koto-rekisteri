@@ -28,6 +28,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler
 
 fun developmentProfileActive(environment: Environment): Boolean {
     val enableDevApiOn = listOf("local", "test", "e2e")
@@ -102,6 +104,14 @@ class WebSecurityConfig {
     ): SecurityFilterChain {
         http {
             csrf {
+                if (!environment.activeProfiles.contains("prod")) {
+                    // Swagger UI:n "Try it out" tarvitsee CSRF-tokenin pääsyn JS:stä, jotta se voi
+                    // lukea tokenin XSRF-TOKEN-evästeestä ja lähettää X-XSRF-TOKEN-headerissa.
+                    // Tuotannossa Swagger UI on pois käytöstä (ks. application-prod.properties),
+                    // joten siellä pidetään oletus-HttpOnly-evästeet.
+                    csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse()
+                    csrfTokenRequestHandler = CsrfTokenRequestAttributeHandler()
+                }
                 ignoringRequestMatchers(
                     "/api/**",
                     "/db-scheduler-api/**",
