@@ -1,7 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach

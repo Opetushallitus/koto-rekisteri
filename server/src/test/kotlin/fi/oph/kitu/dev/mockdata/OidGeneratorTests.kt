@@ -1,4 +1,4 @@
-package fi.oph.kitu.mock
+package fi.oph.kitu.dev.mockdata
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull

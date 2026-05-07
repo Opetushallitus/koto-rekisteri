@@ -1,4 +1,4 @@
-package fi.oph.kitu.mock
+package fi.oph.kitu.dev.mockdata
 
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Arvosana
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus

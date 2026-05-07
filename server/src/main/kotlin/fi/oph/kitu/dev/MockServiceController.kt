@@ -1,6 +1,6 @@
 package fi.oph.kitu.dev
 
-import fi.oph.kitu.mock.generateRandomSsnBirthdayAndSex
+import fi.oph.kitu.dev.mockdata.generateRandomSsnBirthdayAndSex
 import fi.oph.kitu.yki.Sukupuoli
 import kotlinx.html.emptyMap
 import org.springframework.context.annotation.Profile

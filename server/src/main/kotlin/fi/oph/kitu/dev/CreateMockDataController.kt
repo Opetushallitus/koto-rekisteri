@@ -1,12 +1,12 @@
 package fi.oph.kitu.dev
 
+import fi.oph.kitu.dev.mockdata.VktSuoritusMockGenerator
+import fi.oph.kitu.dev.mockdata.generateRandomKielitestiSuoritus
+import fi.oph.kitu.dev.mockdata.generateRandomYkiArvioijaEntity
+import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
-import fi.oph.kitu.mock.VktSuoritusMockGenerator
-import fi.oph.kitu.mock.generateRandomKielitestiSuoritus
-import fi.oph.kitu.mock.generateRandomYkiArvioijaEntity
-import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
-import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktValidation
