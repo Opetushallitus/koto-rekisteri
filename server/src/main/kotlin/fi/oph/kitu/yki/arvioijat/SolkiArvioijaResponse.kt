@@ -3,7 +3,7 @@ package fi.oph.kitu.yki.arvioijat
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import fi.oph.kitu.csvparsing.Features
+import fi.oph.kitu.csvparsing.MapperFeatures
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -28,7 +28,7 @@ import java.time.LocalDate
     "kieli",
     "tasot",
 )
-@Features(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+@MapperFeatures(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
 class SolkiArvioijaResponse(
     @param:JsonProperty("arvioijanOppijanumero")
     val arvioijanOppijanumero: Oid,
