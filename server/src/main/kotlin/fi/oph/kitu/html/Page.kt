@@ -5,7 +5,7 @@ package fi.oph.kitu.html
 import fi.oph.kitu.config.ApplicationProperties
 import fi.oph.kitu.html.Navigation.flatten
 import fi.oph.kitu.html.Navigation.mainNavigation
-import fi.oph.kitu.web.HomeController
+import fi.oph.kitu.webmvc.HomeController
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 import org.springframework.hateoas.server.mvc.linkTo

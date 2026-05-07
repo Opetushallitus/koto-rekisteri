@@ -1,7 +1,7 @@
 package fi.oph.kitu.organisaatiot
 
-import fi.oph.kitu.http.nullableBody
-import fi.oph.kitu.http.retrieveEntitySafely
+import fi.oph.kitu.restclient.nullableBody
+import fi.oph.kitu.restclient.retrieveEntitySafely
 import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.util.defaultObjectMapper
 import io.opentelemetry.instrumentation.annotations.WithSpan
