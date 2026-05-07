@@ -36,12 +36,12 @@ data class AuditContext(
 
         fun get(): TypedResult<AuditContext, IllegalStateException> {
             val userDetails: CasUserDetails =
-                SecurityContextHolder.getContext().authentication?.principal as CasUserDetails?
+                SecurityContextHolder.getContext().authentication?.principal as? CasUserDetails?
                     ?: return TypedResult.Failure(
                         IllegalStateException("User details not available via SecurityContextHolder"),
                     )
             val servletRequestAttributes =
-                RequestContextHolder.getRequestAttributes() as ServletRequestAttributes?
+                RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes?
                     ?: return TypedResult.Failure(
                         IllegalStateException("HTTP request not available via RequestContextHolder"),
                     )
@@ -59,6 +59,4 @@ data class AuditContext(
             return TypedResult.Success(AuditContext(userOid, userAgent, ip, session, opetushallitusOrganisaatioOid))
         }
     }
-
-    // fun user(): User = User(userOid.unwrap(), ip, session, userAgent)
 }
