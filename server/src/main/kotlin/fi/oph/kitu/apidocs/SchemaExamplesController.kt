@@ -72,11 +72,7 @@ class SchemaExamplesController {
                                     tutkintopaiva = LocalDate.now(),
                                 ),
                             ),
-                        lahdejarjestelmanId =
-                            LahdejarjestelmanTunniste(
-                                id = "748",
-                                lahde = Lahdejarjestelma.KIOS,
-                            ),
+                        lahdejarjestelmanId = LahdejarjestelmanTunniste.randomFrom(Lahdejarjestelma.KIOS),
                     ),
             ),
         )
@@ -133,11 +129,7 @@ class SchemaExamplesController {
                                         ),
                                 ),
                             ),
-                        lahdejarjestelmanId =
-                            LahdejarjestelmanTunniste(
-                                id = "748",
-                                lahde = Lahdejarjestelma.KIOS,
-                            ),
+                        lahdejarjestelmanId = LahdejarjestelmanTunniste.randomFrom(Lahdejarjestelma.KIOS),
                     ),
             ),
         )
@@ -275,11 +267,7 @@ class SchemaExamplesController {
                                 perustelu =
                                     "Suorituksesta jäänyt viimeinen tehtävä arvioimatta. Arvioinnin jälkeen puhumisen taitotasoa 6.",
                             ),
-                        lahdejarjestelmanId =
-                            LahdejarjestelmanTunniste(
-                                id = "183424",
-                                lahde = Lahdejarjestelma.Solki,
-                            ),
+                        lahdejarjestelmanId = LahdejarjestelmanTunniste.randomFrom(Lahdejarjestelma.Solki),
                     ),
             ),
         )
