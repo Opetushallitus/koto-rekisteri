@@ -1,7 +1,7 @@
 package fi.oph.kitu.auditlogs
 
-import fi.oph.kitu.auth.CasUserDetails
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.util.TimeService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier

@@ -1,10 +1,10 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.auth.Authority
-import fi.oph.kitu.auth.CasUserDetails
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.schema.SchemaTests
+import fi.oph.kitu.security.Authority
+import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.util.defaultObjectMapper
 import jakarta.servlet.http.HttpSession
 import org.junit.jupiter.api.BeforeEach

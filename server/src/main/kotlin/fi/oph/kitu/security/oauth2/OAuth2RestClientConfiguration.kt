@@ -1,4 +1,4 @@
-package fi.oph.kitu.oauth2client
+package fi.oph.kitu.security.oauth2
 
 import fi.oph.kitu.restclient.withLenientStringConverter
 import org.springframework.beans.factory.annotation.Value

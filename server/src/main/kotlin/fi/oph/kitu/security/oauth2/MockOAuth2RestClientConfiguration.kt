@@ -1,4 +1,4 @@
-package fi.oph.kitu.dev
+package fi.oph.kitu.security.oauth2
 
 import fi.oph.kitu.restclient.withLenientStringConverter
 import org.springframework.context.annotation.Bean

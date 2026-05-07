@@ -59,7 +59,7 @@ class OpenApiSecurityConfig : GlobalOpenApiCustomizer {
         )
 
         // Oletus: OAuth2-autentikaatiota tukevat endpointit on merkitty "oauth2"-tagilla. Näin meidän ei tarvitse kovakoodata listaa kyseisistä endpointeista tänne piiloon. Toisaalta nyt pitää muistaa lisätä kyseinen tag jokaiselle OAuth2-endpointille.
-        // Huom: Tämä ainoastaan lisää Swaggeriin tuen OAuth2-autentikaatiolle. Springin varsinainen autentikaatio-konfiguraatio on konfiguroitu metodissa [fi.oph.kitu.auth.WebSecurityConfig.oauth2SecurityFilterChain].
+        // Huom: Tämä ainoastaan lisää Swaggeriin tuen OAuth2-autentikaatiolle. Springin varsinainen autentikaatio-konfiguraatio on konfiguroitu metodissa [fi.oph.kitu.security.WebSecurityConfig.oauth2SecurityFilterChain].
         openApi.paths.values
             .flatMap { endpoint ->
                 listOf(
