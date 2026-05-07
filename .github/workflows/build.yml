@@ -23,6 +23,7 @@ jobs:
     outputs:
       mise: ${{ steps.filter.outputs.mise }}
       infra: ${{ steps.filter.outputs.infra }}
+      image: ${{ steps.filter.outputs.image }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v4
@@ -34,6 +35,9 @@ jobs:
               - '.mise.*.toml'
             infra:
               - 'infra/**'
+            image:
+              - 'Dockerfile'
+              - '.dockerignore'
 
   update_tools_cache:
     name: Update tools cache if changed
@@ -168,9 +172,15 @@ jobs:
     name: Build image
     runs-on: ubuntu-24.04
     needs:
+      - list_changes
       - server_tests
       - frontend_tests
       - lint
+    # Always build on main (the deploy needs the image pushed to ECR).
+    # On PRs, only run when Dockerfile/.dockerignore changed — the app code is
+    # already verified by server_tests/frontend_tests, so a green check from
+    # this job on every PR is mostly wasted CI time.
+    if: github.ref_name == 'main' || needs.list_changes.outputs.image == 'true'
     permissions:
       id-token: write
       contents: read
