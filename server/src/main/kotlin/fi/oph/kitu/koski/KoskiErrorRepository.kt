@@ -1,7 +1,7 @@
 package fi.oph.kitu.koski
 
+import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.util.toJsonNode
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import org.springframework.data.annotation.Id

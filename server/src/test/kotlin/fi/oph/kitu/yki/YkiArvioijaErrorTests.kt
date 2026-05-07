@@ -1,10 +1,10 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.SimpleCsvExportError
 import fi.oph.kitu.dev.mockdata.generateRandomYkiArvioijaErrorEntity
-import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorRepository
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import io.opentelemetry.api.common.AttributeKey

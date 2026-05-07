@@ -1,4 +1,4 @@
-package fi.oph.kitu.logging
+package fi.oph.kitu.auditlogs
 
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEvent

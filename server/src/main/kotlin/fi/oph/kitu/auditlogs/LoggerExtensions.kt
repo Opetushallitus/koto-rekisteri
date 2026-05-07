@@ -1,4 +1,4 @@
-package fi.oph.kitu.logging
+package fi.oph.kitu.auditlogs
 
 import io.opentelemetry.semconv.HttpAttributes
 import io.opentelemetry.semconv.UrlAttributes

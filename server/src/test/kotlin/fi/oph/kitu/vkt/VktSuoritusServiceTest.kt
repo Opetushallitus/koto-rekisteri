@@ -1,11 +1,11 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.auditlogs.AuditLogger
+import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
 import fi.oph.kitu.dev.mockdata.VktSuoritusMockGenerator
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertNotNull

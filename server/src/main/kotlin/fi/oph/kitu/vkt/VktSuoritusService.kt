@@ -1,13 +1,13 @@
 package fi.oph.kitu.vkt
 
+import fi.oph.kitu.auditlogs.AuditLogOperation
+import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
 import fi.oph.kitu.jdbc.toMap
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.logging.AuditLogOperation
-import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.cache.InMemoryCache

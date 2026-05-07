@@ -1,4 +1,4 @@
-package fi.oph.kitu.logging
+package fi.oph.kitu.auditlogs
 
 import fi.oph.kitu.auth.CasUserDetails
 import fi.oph.kitu.oid.Oid

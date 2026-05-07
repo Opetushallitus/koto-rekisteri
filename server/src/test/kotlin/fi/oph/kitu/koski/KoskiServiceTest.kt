@@ -1,8 +1,8 @@
 package fi.oph.kitu.koski
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
-import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusRepository

@@ -1,4 +1,4 @@
-package fi.oph.kitu.logging
+package fi.oph.kitu.auditlogs
 
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
