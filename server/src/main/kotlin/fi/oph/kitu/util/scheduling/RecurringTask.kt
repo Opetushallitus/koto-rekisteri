@@ -1,4 +1,4 @@
-package fi.oph.kitu.scheduling
+package fi.oph.kitu.util.scheduling
 
 import com.github.kagkarlsson.scheduler.task.Task
 import com.github.kagkarlsson.scheduler.task.helper.Tasks

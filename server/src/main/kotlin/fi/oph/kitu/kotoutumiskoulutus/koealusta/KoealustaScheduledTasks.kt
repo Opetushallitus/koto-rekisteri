@@ -1,7 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
 import com.github.kagkarlsson.scheduler.task.Task
-import fi.oph.kitu.scheduling.recurringStatefulTask
+import fi.oph.kitu.util.scheduling.recurringStatefulTask
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
