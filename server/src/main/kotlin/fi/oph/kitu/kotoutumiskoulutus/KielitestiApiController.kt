@@ -1,13 +1,11 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
-import fi.oph.kitu.html.table.DisplayTableCsvRenderer
 import fi.oph.kitu.i18n.isoDate
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetParams
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusColumn
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusService
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiErrorService
-import fi.oph.kitu.yki.YkiSuorituksetParams
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
+import fi.oph.kitu.webmvc.csvAttachmentResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
@@ -32,19 +30,11 @@ class KielitestiApiController(
     fun getSuorituksetAsCsv(
         @ModelAttribute params: KielitestiSuorituksetParams = KielitestiSuorituksetParams(),
     ): ResponseEntity<StreamingResponseBody> =
-        ResponseEntity
-            .ok()
-            .contentType(MediaType.parseMediaType("text/csv"))
-            .header("Content-Disposition", "attachment; filename=koto-suoritukset-${LocalDate.now().isoDate()}.csv")
-            .body(
-                StreamingResponseBody { output ->
-                    DisplayTableCsvRenderer.renderCsv<KielitestiSuoritusColumn, _>(
-                        output = output,
-                        data = suoritusService.getSuorituksetForCsv(params.toFilter()),
-                        excludeTags = params.excludeTags(),
-                    )
-                },
-            )
+        csvAttachmentResponse<KielitestiSuoritusColumn, _>(
+            filename = "koto-suoritukset-${LocalDate.now().isoDate()}.csv",
+            data = suoritusService.getSuorituksetForCsv(params.toFilter()),
+            excludeTags = params.excludeTags(),
+        )
 
     @GetMapping("/suoritukset/virheet", produces = ["text/csv"])
     fun getErrorsAsCsv(): ResponseEntity<Resource> =
