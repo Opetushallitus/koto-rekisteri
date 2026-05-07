@@ -1,4 +1,4 @@
-package fi.oph.kitu.web
+package fi.oph.kitu.webmvc
 
 import jakarta.servlet.http.HttpSession
 import org.springframework.dao.DuplicateKeyException

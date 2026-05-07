@@ -1,4 +1,4 @@
-package fi.oph.kitu.web
+package fi.oph.kitu.webmvc
 
 import fi.oph.kitu.html.Navigation.mainNavigation
 import fi.oph.kitu.html.Page

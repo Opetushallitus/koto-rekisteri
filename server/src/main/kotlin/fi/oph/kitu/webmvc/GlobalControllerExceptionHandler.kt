@@ -1,4 +1,4 @@
-package fi.oph.kitu.web
+package fi.oph.kitu.webmvc
 
 import fi.oph.kitu.dev.MockResourceNotFoundError
 import fi.oph.kitu.html.ErrorPage

@@ -1,6 +1,6 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
-import fi.oph.kitu.http.retrieveEntitySafely
+import fi.oph.kitu.restclient.retrieveEntitySafely
 import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.util.defaultObjectMapper
 import io.opentelemetry.instrumentation.annotations.WithSpan
