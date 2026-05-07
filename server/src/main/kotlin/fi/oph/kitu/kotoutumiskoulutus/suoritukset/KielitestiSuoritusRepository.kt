@@ -9,7 +9,6 @@ import fi.oph.kitu.jdbc.pageSql
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.util.equalsIgnoringAnnotated
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -23,13 +22,10 @@ interface KielitestiSuoritusRepository :
     PagingAndSortingRepository<KielitestiSuoritus, Int>
 
 @Repository
-class CustomKielitestiSuoritusRepository {
-    @Autowired
-    private lateinit var organisaatioService: OrganisaatioService
-
-    @Autowired
-    private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
-
+class CustomKielitestiSuoritusRepository(
+    private val organisaatioService: OrganisaatioService,
+    private val jdbcNamedParameterTemplate: NamedParameterJdbcTemplate,
+) {
     // Spring's Transient-annotation doesn't play well with Kotlin data classes, so it seemed easier to add
     // findById and findAll functions to the custom repository than to fight with the annotations
     fun findById(id: Int): KielitestiSuoritus? {

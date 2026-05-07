@@ -15,7 +15,6 @@ import fi.oph.kitu.util.equalsIgnoringAnnotated
 import fi.oph.kitu.util.findDifferentProperties
 import fi.oph.kitu.yki.toTrueOrNull
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.JdbcTemplate
@@ -33,16 +32,11 @@ interface VktSuoritusRepository :
 }
 
 @Repository
-class CustomVktSuoritusRepository {
-    @Autowired
-    private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
-
-    @Autowired
-    private lateinit var jdbcTemplate: JdbcTemplate
-
-    @Autowired
-    private lateinit var vktSuoritusRepository: VktSuoritusRepository
-
+class CustomVktSuoritusRepository(
+    private val jdbcNamedParameterTemplate: NamedParameterJdbcTemplate,
+    private val jdbcTemplate: JdbcTemplate,
+    private val vktSuoritusRepository: VktSuoritusRepository,
+) {
     @WithSpan
     fun save(entity: VktSuoritusEntity): VktSuoritusEntity? =
         if (!exists(entity)) {
@@ -282,13 +276,10 @@ class CustomVktSuoritusRepository {
 }
 
 @Repository
-class VktOsakoeRepository {
-    @Autowired
-    private lateinit var jdbcTemplate: JdbcTemplate
-
-    @Autowired
-    private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
-
+class VktOsakoeRepository(
+    private val jdbcTemplate: JdbcTemplate,
+    private val jdbcNamedParameterTemplate: NamedParameterJdbcTemplate,
+) {
     @WithSpan
     fun updateArvosana(
         id: Int,
