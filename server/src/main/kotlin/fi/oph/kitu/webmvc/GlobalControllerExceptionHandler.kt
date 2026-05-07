@@ -1,5 +1,6 @@
 package fi.oph.kitu.webmvc
 
+import fi.oph.kitu.config.isLocal
 import fi.oph.kitu.dev.MockResourceNotFoundError
 import fi.oph.kitu.html.ErrorPage
 import fi.oph.kitu.oppijanumero.OppijanumeroException
@@ -49,7 +50,6 @@ class GlobalControllerExceptionHandler(
     @ExceptionHandler(produces = ["text/html"])
     fun handleServerException(error: Throwable): ResponseEntity<String> {
         val traceId = Span.current().spanContext?.traceId
-        val isLocal = environment.activeProfiles.contains("local")
         val traceUrl =
             if (traceId !== null && traceUiUrl.isNotEmpty()) {
                 traceUiUrl.replace("{traceId}", traceId)
@@ -77,7 +77,7 @@ class GlobalControllerExceptionHandler(
             }
 
             else -> {
-                ErrorPage.error(error, traceId, traceUrl, isLocal)
+                ErrorPage.error(error, traceId, traceUrl, environment.isLocal())
             }
         }
     }

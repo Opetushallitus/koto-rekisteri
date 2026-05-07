@@ -1,5 +1,7 @@
 package fi.oph.kitu.dev
 
+import fi.oph.kitu.config.isProduction
+import fi.oph.kitu.config.isQA
 import fi.oph.kitu.dev.mockdata.VktSuoritusMockGenerator
 import fi.oph.kitu.dev.mockdata.generateRandomKielitestiSuoritus
 import fi.oph.kitu.dev.mockdata.generateRandomYkiArvioijaEntity
@@ -46,7 +48,7 @@ class CreateMockDataController(
 
     @PostConstruct
     fun init() {
-        if (environment.activeProfiles.any { it == "qa" || it.lowercase().contains("prod") }) {
+        if (environment.isProduction() || environment.isQA()) {
             logger.error("Fatal error: CreateMockDataController loaded in a prod-like environment")
             exitProcess(SpringApplication.exit(applicationContext))
         }
