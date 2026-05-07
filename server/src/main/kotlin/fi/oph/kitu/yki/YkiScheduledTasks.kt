@@ -1,7 +1,7 @@
 package fi.oph.kitu.yki
 
 import com.github.kagkarlsson.scheduler.task.Task
-import fi.oph.kitu.scheduling.recurringStatefulTask
+import fi.oph.kitu.util.scheduling.recurringStatefulTask
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
