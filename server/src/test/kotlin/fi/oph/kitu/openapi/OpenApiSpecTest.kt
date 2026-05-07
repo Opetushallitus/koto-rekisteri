@@ -1,4 +1,4 @@
-package fi.oph.kitu.apidocs
+package fi.oph.kitu.openapi
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.util.defaultObjectMapper
