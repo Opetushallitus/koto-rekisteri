@@ -19,7 +19,6 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectTarkistusarviointiAgg
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.withCtes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -31,13 +30,10 @@ import java.time.LocalDate
 import kotlin.collections.plus
 
 @Service
-class YkiSuoritusRepository {
-    @Autowired
-    private lateinit var jdbcTemplate: JdbcTemplate
-
-    @Autowired
-    private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
-
+class YkiSuoritusRepository(
+    private val jdbcTemplate: JdbcTemplate,
+    private val jdbcNamedParameterTemplate: NamedParameterJdbcTemplate,
+) {
     @WithSpan
     @Transactional
     fun saveAllNewEntities(suoritukset: Iterable<YkiSuoritusEntity>): Iterable<YkiSuoritusEntity> {

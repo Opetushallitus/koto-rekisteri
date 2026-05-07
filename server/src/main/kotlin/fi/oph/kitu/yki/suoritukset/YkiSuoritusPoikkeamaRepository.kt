@@ -1,21 +1,15 @@
 package fi.oph.kitu.yki.suoritukset
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
 import java.time.Instant
 
 @Service
-class YkiSuoritusPoikkeamaRepository {
-    @Autowired
-    private lateinit var jdbcTemplate: JdbcTemplate
-
-    @Autowired
-    private lateinit var jdbcNamedParameterTemplate: NamedParameterJdbcTemplate
-
+class YkiSuoritusPoikkeamaRepository(
+    private val jdbcTemplate: JdbcTemplate,
+) {
     fun deleteAll() = jdbcTemplate.execute("TRUNCATE TABLE yki_suoritus_poikkeama")
 
     fun save(poikkeama: YkiSuoritusPoikkeama) =
