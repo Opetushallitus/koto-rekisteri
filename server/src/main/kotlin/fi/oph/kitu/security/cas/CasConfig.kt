@@ -1,4 +1,4 @@
-package fi.oph.kitu.auth
+package fi.oph.kitu.security.cas
 
 import org.apereo.cas.client.validation.Cas30ServiceTicketValidator
 import org.apereo.cas.client.validation.TicketValidator

@@ -1,7 +1,9 @@
-package fi.oph.kitu.auth
+package fi.oph.kitu.security
 
 import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
 import fi.oph.kitu.dev.MockUser
+import fi.oph.kitu.security.cas.CasConfig
+import fi.oph.kitu.security.oauth2.JwtAuthenticationTokenConverter
 import jakarta.servlet.http.HttpServletRequest
 import org.apereo.cas.client.session.SingleSignOutFilter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty

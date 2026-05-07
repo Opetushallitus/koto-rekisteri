@@ -1,4 +1,4 @@
-package fi.oph.kitu.auth
+package fi.oph.kitu.security
 
 enum class Authority(
     val key: String,

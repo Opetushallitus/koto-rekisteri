@@ -1,4 +1,4 @@
-package fi.oph.kitu.auth
+package fi.oph.kitu.security.cas
 
 import org.springframework.security.cas.authentication.CasAuthenticationToken
 import org.springframework.security.cas.authentication.StatelessTicketCache

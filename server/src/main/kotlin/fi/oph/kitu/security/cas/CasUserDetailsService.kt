@@ -1,4 +1,4 @@
-package fi.oph.kitu.auth
+package fi.oph.kitu.security.cas
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.oph.kitu.oid.Oid
