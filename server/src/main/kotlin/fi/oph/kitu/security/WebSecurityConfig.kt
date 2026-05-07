@@ -1,5 +1,9 @@
 package fi.oph.kitu.security
 
+import fi.oph.kitu.config.AppProfile
+import fi.oph.kitu.config.hasNoneOfProfiles
+import fi.oph.kitu.config.hasOneOfProfiles
+import fi.oph.kitu.config.isE2ETest
 import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
 import fi.oph.kitu.dev.MockUser
 import fi.oph.kitu.security.cas.CasConfig
@@ -32,11 +36,10 @@ import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 
 fun developmentProfileActive(environment: Environment): Boolean {
-    val enableDevApiOn = listOf("local", "test", "e2e")
-    val disableDevApiOn = listOf("qa", "prod")
+    val enableDevApiOn = listOf(AppProfile.Local, AppProfile.Test, AppProfile.E2ETest)
+    val disableDevApiOn = listOf(AppProfile.QA, AppProfile.Prod)
 
-    return environment.activeProfiles.any { it in enableDevApiOn } &&
-        environment.activeProfiles.none { it in disableDevApiOn }
+    return environment.hasOneOfProfiles(enableDevApiOn) && environment.hasNoneOfProfiles(disableDevApiOn)
 }
 
 fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations(environment: Environment) {
@@ -116,7 +119,7 @@ class WebSecurityConfig {
                     "/db-scheduler-api/**",
                     "/dev/**",
                 )
-                if (environment.activeProfiles.contains("e2e")) {
+                if (environment.isE2ETest()) {
                     disable()
                 }
             }

@@ -1,5 +1,7 @@
 package fi.oph.kitu.dev
 
+import fi.oph.kitu.config.isProduction
+import fi.oph.kitu.config.isQA
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -26,7 +28,7 @@ class YkiController(
 
     @PostConstruct
     fun init() {
-        if (environment.activeProfiles.any { it == "qa" || it.lowercase().contains("prod") }) {
+        if (environment.isProduction() || environment.isQA()) {
             logger.error("Fatal error: MockLoginController loaded in a prod-like environment")
             exitProcess(SpringApplication.exit(applicationContext))
         }

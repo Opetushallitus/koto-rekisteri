@@ -1,6 +1,8 @@
 package fi.oph.kitu.dev
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret
+import fi.oph.kitu.config.isProduction
+import fi.oph.kitu.config.isQA
 import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
@@ -52,7 +54,7 @@ class MockLoginController(
 
     @PostConstruct
     fun init() {
-        if (environment.activeProfiles.any { it == "qa" || it.lowercase().contains("prod") }) {
+        if (environment.isProduction() || environment.isQA()) {
             logger.error("Fatal error: MockLoginController loaded in a prod-like environment")
             exitProcess(SpringApplication.exit(applicationContext))
         }

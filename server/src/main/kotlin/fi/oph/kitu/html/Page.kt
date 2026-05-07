@@ -3,6 +3,7 @@
 package fi.oph.kitu.html
 
 import fi.oph.kitu.config.ApplicationProperties
+import fi.oph.kitu.config.isDeployedToOpintopolku
 import fi.oph.kitu.html.Navigation.flatten
 import fi.oph.kitu.html.Navigation.mainNavigation
 import fi.oph.kitu.webmvc.HomeController
@@ -12,14 +13,7 @@ import org.springframework.hateoas.server.mvc.linkTo
 
 object Page {
     fun HEAD.loadRaamit() {
-        val isDeployEnvironment =
-            ApplicationProperties.environment.activeProfiles.any {
-                it.lowercase().contains("untuva") ||
-                    it.lowercase().contains("qa") ||
-                    it.lowercase().contains("prod")
-            }
-
-        if (isDeployEnvironment) {
+        if (ApplicationProperties.environment.isDeployedToOpintopolku()) {
             script(
                 type = "text/javascript",
                 src = "https://${ApplicationProperties.kitu.opintopolkuHostname}/virkailija-raamit/apply-raamit.js",
