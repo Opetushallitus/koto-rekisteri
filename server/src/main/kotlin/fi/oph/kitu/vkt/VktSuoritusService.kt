@@ -84,7 +84,7 @@ class VktSuoritusService(
                 mapOf()
             }
 
-        return if (suoritukset.isEmpty()) null else VktSuoritus.merge(suoritukset, suorituksenVastaanottajat)
+        return if (suoritukset.isEmpty()) null else mergeVktHenkilosuoritukset(suoritukset, suorituksenVastaanottajat)
     }
 
     @WithSpan("VktSuoritusService.findEnrichedForCsv")

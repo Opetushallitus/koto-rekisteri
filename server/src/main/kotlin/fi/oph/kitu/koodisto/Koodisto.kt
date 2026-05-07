@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 import fi.oph.kitu.html.table.HideInTableFilter
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.organisaatiot.KoodiviiteUri
-import fi.oph.kitu.vkt.VktTutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 
 object Koodisto {

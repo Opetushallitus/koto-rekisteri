@@ -144,7 +144,7 @@ class VktSuoritusServiceTest(
         val uusinnanTutkintopaiva = ekaTutkintopaiva.plusDays(30)
 
         val suoritusyhdistelma =
-            VktSuoritus.merge(
+            mergeVktHenkilosuoritukset(
                 listOf(
                     buildSuoritus(ekaTutkintopaiva, Koodisto.VktArvosana.Hyvä),
                     buildSuoritus(uusinnanTutkintopaiva, Koodisto.VktArvosana.Tyydyttävä),
