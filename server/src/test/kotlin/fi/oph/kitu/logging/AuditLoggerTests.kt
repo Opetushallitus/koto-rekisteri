@@ -4,7 +4,7 @@ import ch.qos.logback.core.read.ListAppender
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.auth.CasUserDetails
-import fi.oph.kitu.mock.generateRandomOppijaOid
+import fi.oph.kitu.dev.mockdata.generateRandomOppijaOid
 import fi.oph.kitu.oid.Oid
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach

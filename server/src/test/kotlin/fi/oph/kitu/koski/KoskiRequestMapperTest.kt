@@ -1,11 +1,11 @@
 package fi.oph.kitu.koski
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.dev.mockdata.VktSuoritusMockGenerator
+import fi.oph.kitu.dev.mockdata.generateRandomOppijaOid
+import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.dev.mockdata.getRandomLocalDate
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.mock.VktSuoritusMockGenerator
-import fi.oph.kitu.mock.generateRandomOppijaOid
-import fi.oph.kitu.mock.generateRandomYkiSuoritusEntity
-import fi.oph.kitu.mock.getRandomLocalDate
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo

@@ -3,8 +3,8 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.SimpleCsvExportError
+import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
-import fi.oph.kitu.mock.generateRandomYkiSuoritusErrorEntity
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import io.opentelemetry.api.common.AttributeKey

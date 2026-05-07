@@ -1,4 +1,4 @@
-package fi.oph.kitu.mock
+package fi.oph.kitu.dev.mockdata
 
 import fi.oph.kitu.yki.Sukupuoli
 import java.time.LocalDate

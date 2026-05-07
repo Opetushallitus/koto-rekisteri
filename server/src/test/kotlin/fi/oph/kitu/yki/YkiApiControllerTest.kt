@@ -2,9 +2,9 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TestTimeService
+import fi.oph.kitu.dev.mockdata.toInstant
 import fi.oph.kitu.isBadRequest
 import fi.oph.kitu.isOk
-import fi.oph.kitu.mock.toInstant
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
