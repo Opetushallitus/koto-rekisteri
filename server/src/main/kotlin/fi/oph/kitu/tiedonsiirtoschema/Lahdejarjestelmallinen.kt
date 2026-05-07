@@ -1,5 +1,7 @@
 package fi.oph.kitu.tiedonsiirtoschema
 
+import kotlin.random.Random
+
 interface Lahdejarjestelmallinen {
     val lahdejarjestelmanId: LahdejarjestelmanTunniste
 }
@@ -19,6 +21,8 @@ data class LahdejarjestelmanTunniste(
                 LahdejarjestelmanTunniste(s, Lahdejarjestelma.Unknown)
             }
         }
+
+        fun randomFrom(from: Lahdejarjestelma) = LahdejarjestelmanTunniste(Random.nextInt(1000000).toString(), from)
     }
 }
 
