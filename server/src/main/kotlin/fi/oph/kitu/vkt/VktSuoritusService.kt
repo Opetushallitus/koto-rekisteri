@@ -1,6 +1,5 @@
 package fi.oph.kitu.vkt
 
-import fi.oph.kitu.cache.InMemoryCache
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.i18n.LocalizationService
@@ -11,6 +10,7 @@ import fi.oph.kitu.logging.AuditLogOperation
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.util.cache.InMemoryCache
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value

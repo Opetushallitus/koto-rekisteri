@@ -4,7 +4,7 @@ import fi.oph.kitu.observability.use
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oid.OidDeserializer
 import fi.oph.kitu.oid.OidSerializer
-import fi.oph.kitu.result.TypedResult
+import fi.oph.kitu.util.result.TypedResult
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.stereotype.Service
 import tools.jackson.databind.MappingIterator

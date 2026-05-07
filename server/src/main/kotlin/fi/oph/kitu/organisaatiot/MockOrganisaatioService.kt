@@ -1,9 +1,9 @@
 package fi.oph.kitu.organisaatiot
 
-import fi.oph.kitu.cache.PersistentCache
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.result.TypedResult
+import fi.oph.kitu.util.cache.PersistentCache
 import fi.oph.kitu.util.defaultObjectMapper
+import fi.oph.kitu.util.result.TypedResult
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service

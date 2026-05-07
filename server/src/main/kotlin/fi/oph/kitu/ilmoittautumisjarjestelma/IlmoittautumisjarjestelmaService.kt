@@ -1,7 +1,7 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
-import fi.oph.kitu.result.TypedResult
-import fi.oph.kitu.retry.RetryOutboundIntegration
+import fi.oph.kitu.util.result.TypedResult
+import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Span

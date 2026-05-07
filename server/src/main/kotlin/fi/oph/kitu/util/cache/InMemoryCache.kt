@@ -1,4 +1,4 @@
-package fi.oph.kitu.cache
+package fi.oph.kitu.util.cache
 
 import java.time.LocalDateTime
 import kotlin.time.Duration

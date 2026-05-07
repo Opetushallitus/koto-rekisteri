@@ -19,8 +19,8 @@ import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
-import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.util.growToSize
+import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktOsakoe
 import kotlinx.html.FlowContent

@@ -1,8 +1,8 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.result.TypedResult
-import fi.oph.kitu.retry.RetryOutboundIntegration
+import fi.oph.kitu.util.result.TypedResult
+import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.context.annotation.Profile

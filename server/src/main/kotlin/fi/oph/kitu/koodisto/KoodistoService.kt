@@ -1,8 +1,8 @@
 package fi.oph.kitu.koodisto
 
-import fi.oph.kitu.cache.InMemoryCache
 import fi.oph.kitu.observability.use
-import fi.oph.kitu.retry.RetryOutboundIntegration
+import fi.oph.kitu.util.cache.InMemoryCache
+import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier

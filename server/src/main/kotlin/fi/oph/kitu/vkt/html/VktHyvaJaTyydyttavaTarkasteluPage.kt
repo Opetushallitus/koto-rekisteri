@@ -10,7 +10,7 @@ import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
-import fi.oph.kitu.result.TypedResult
+import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktOsakoe
 import kotlinx.html.FlowContent

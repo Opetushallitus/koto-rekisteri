@@ -1,7 +1,7 @@
 package fi.oph.kitu
 
-import fi.oph.kitu.result.TypedResult.Failure
-import fi.oph.kitu.result.TypedResult.Success
+import fi.oph.kitu.util.result.TypedResult.Failure
+import fi.oph.kitu.util.result.TypedResult.Success
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow

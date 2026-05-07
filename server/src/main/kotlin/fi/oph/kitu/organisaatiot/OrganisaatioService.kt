@@ -1,11 +1,11 @@
 package fi.oph.kitu.organisaatiot
 
 import com.fasterxml.jackson.annotation.JsonValue
-import fi.oph.kitu.cache.PersistentCache
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.result.TypedResult
-import fi.oph.kitu.retry.RetryOutboundIntegration
+import fi.oph.kitu.util.cache.PersistentCache
+import fi.oph.kitu.util.result.TypedResult
+import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
