@@ -2,13 +2,14 @@ package fi.oph.kitu.csvparsing
 
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oid.OidDeserializer
+import fi.oph.kitu.oid.OidSerializer
 import fi.oph.kitu.result.TypedResult
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.stereotype.Service
 import tools.jackson.databind.MappingIterator
 import tools.jackson.databind.exc.InvalidFormatException
 import tools.jackson.databind.module.SimpleModule
-import tools.jackson.dataformat.csv.CsvGenerator
 import tools.jackson.dataformat.csv.CsvMapper
 import tools.jackson.dataformat.csv.CsvSchema
 import java.io.ByteArrayOutputStream
@@ -56,7 +57,7 @@ class CsvParser(
             }
 
     final inline fun <reified T> CsvMapper.Builder.withFeatures(): CsvMapper.Builder {
-        val mapperFeatures = T::class.findAnnotation<Features>()?.features
+        val mapperFeatures = T::class.findAnnotation<MapperFeatures>()?.features
         if (mapperFeatures != null) {
             for (feature in mapperFeatures) {
                 this.enable(feature)

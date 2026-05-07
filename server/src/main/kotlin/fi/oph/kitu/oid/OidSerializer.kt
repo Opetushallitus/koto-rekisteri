@@ -1,6 +1,5 @@
-package fi.oph.kitu.csvparsing
+package fi.oph.kitu.oid
 
-import fi.oph.kitu.oid.Oid
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.ValueSerializer

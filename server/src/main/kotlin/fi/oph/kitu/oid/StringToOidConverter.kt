@@ -1,6 +1,5 @@
 package fi.oph.kitu.oid
 
-import fi.oph.kitu.oid.Oid
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.converter.Converter

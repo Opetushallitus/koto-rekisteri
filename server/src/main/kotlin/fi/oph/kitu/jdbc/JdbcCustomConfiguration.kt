@@ -1,5 +1,7 @@
 package fi.oph.kitu.jdbc
 
+import fi.oph.kitu.oid.OidToStringConverter
+import fi.oph.kitu.oid.StringToOidConverter
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration
 
