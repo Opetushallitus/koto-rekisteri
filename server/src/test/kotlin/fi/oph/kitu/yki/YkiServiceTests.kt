@@ -1,10 +1,10 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.auditlogs.AuditLogger
+import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
-import fi.oph.kitu.logging.AuditLogger
-import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus

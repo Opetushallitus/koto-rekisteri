@@ -1,11 +1,11 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.auditlogs.AuditLogOperation
+import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.jdbc.SortDirection
-import fi.oph.kitu.logging.AuditLogOperation
-import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.util.findDifferentProperties
 import fi.oph.kitu.util.ignoreEmptyValues
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors

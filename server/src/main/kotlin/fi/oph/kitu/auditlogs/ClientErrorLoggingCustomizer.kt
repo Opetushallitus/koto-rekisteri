@@ -1,4 +1,4 @@
-package fi.oph.kitu.logging
+package fi.oph.kitu.auditlogs
 
 import org.apache.catalina.connector.Request
 import org.apache.catalina.connector.Response

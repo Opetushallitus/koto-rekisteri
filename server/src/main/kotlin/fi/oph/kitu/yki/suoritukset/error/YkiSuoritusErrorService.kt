@@ -1,11 +1,11 @@
 package fi.oph.kitu.yki.suoritukset.error
 
+import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.setSerializationErrorToAttributes
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.findAllSorted
 import fi.oph.kitu.jdbc.replaceAll
-import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv

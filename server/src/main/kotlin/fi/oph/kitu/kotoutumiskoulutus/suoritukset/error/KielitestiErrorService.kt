@@ -1,9 +1,9 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset.error
 
+import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.findAllSorted
-import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
