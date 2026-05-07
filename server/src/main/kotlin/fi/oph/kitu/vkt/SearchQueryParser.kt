@@ -1,6 +1,5 @@
 package fi.oph.kitu.vkt
 
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException

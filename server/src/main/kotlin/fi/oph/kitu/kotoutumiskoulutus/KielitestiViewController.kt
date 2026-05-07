@@ -6,7 +6,6 @@ import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetPage
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetParams
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusColumn
-import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusFilter
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusPage
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusService
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiErrorService

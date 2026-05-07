@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki.arvioijat.error
 
-import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import kotlinx.html.FlowContent
 

@@ -9,7 +9,6 @@ import kotlinx.html.FlowContent
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.h3
-import kotlin.collections.get
 
 object KielitestiSuoritusPage {
     fun render(

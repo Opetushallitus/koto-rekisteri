@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki.arvioijat
 
-import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import kotlinx.html.FlowContent
 

@@ -6,8 +6,6 @@ import fi.oph.kitu.i18n.finnishDateTimeUTC
 import kotlinx.html.a
 import kotlinx.html.h1
 import kotlinx.html.h2
-import kotlinx.html.h3
-import kotlinx.html.header
 import kotlinx.html.p
 import kotlinx.html.table
 import kotlinx.html.tbody
@@ -17,8 +15,6 @@ import kotlinx.html.thead
 import kotlinx.html.tr
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import kotlin.math.log10
 import kotlin.math.pow
 

@@ -2,7 +2,6 @@ package fi.oph.kitu.webmvc
 
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusColumn
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorColumn
-import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn

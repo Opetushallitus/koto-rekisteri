@@ -19,7 +19,6 @@ import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.html.testId
-import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
 import kotlinx.html.ButtonType

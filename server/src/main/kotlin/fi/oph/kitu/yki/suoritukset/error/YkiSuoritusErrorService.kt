@@ -8,11 +8,9 @@ import fi.oph.kitu.jdbc.findAllSorted
 import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.observability.setAttribute
 import fi.oph.kitu.observability.use
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 @Service
 class YkiSuoritusErrorService(

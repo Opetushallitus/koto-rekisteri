@@ -10,7 +10,6 @@ import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.jdbc.core.RowMapper
 import java.time.Instant
-import kotlin.collections.get
 
 @Table("koto_suoritus")
 data class KielitestiSuoritus(

@@ -21,7 +21,6 @@ import kotlinx.html.thead
 import kotlinx.html.tr
 import org.apereo.cas.client.util.CommonUtils.urlEncode
 import java.util.UUID
-import kotlin.collections.plus
 
 data class DisplayTableColumn<T>(
     val label: String,
