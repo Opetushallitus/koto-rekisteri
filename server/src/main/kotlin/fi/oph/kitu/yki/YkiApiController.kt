@@ -1,11 +1,11 @@
 package fi.oph.kitu.yki
 
-import fi.oph.kitu.html.table.DisplayTableCsvRenderer
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
 import fi.oph.kitu.util.validation.ValidationService
+import fi.oph.kitu.webmvc.csvAttachmentResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritus
@@ -21,10 +21,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.core.io.InputStreamResource
-import org.springframework.core.io.Resource
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
@@ -34,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
-import java.io.ByteArrayInputStream
 import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 @RestController
@@ -51,19 +46,11 @@ class YkiApiController(
     fun getSuorituksetAsCsv(
         @ModelAttribute params: YkiSuorituksetParams = YkiSuorituksetParams(),
     ): ResponseEntity<StreamingResponseBody> =
-        ResponseEntity
-            .ok()
-            .contentType(MediaType.parseMediaType("text/csv"))
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=${params.csvFileName()}")
-            .body(
-                StreamingResponseBody { output ->
-                    DisplayTableCsvRenderer.renderCsv<YkiSuoritusColumn, _>(
-                        output = output,
-                        data = service.allSuoritukset(params.versionHistory, params.toFilter()),
-                        excludeTags = params.excludeTags(),
-                    )
-                },
-            )
+        csvAttachmentResponse<YkiSuoritusColumn, _>(
+            filename = params.csvFileName(),
+            data = service.allSuoritukset(params.versionHistory, params.toFilter()),
+            excludeTags = params.excludeTags(),
+        )
 
     @PostMapping("/suoritus")
     @Tag(name = "oauth2")
