@@ -8,7 +8,6 @@ import fi.oph.kitu.html.errorTablePage
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.jdbc.SortDirection
-import fi.oph.kitu.koski.KoskiErrorMappingId
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiYkiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
@@ -24,7 +23,6 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import jakarta.servlet.http.HttpSession
 import org.springframework.beans.factory.annotation.Qualifier

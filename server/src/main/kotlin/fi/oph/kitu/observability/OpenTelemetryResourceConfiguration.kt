@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties
 import io.opentelemetry.sdk.resources.Resource
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
