@@ -1,4 +1,4 @@
-package fi.oph.kitu.apidocs
+package fi.oph.kitu.openapi
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info
