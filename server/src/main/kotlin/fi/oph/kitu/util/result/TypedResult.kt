@@ -1,4 +1,4 @@
-package fi.oph.kitu.result
+package fi.oph.kitu.util.result
 
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode

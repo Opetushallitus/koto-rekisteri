@@ -6,11 +6,11 @@ import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.logging.AuditLogger
 import fi.oph.kitu.logging.OpenTelemetryTestConfig
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.result.splitIntoValuesAndErrors
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila

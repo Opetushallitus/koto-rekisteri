@@ -1,4 +1,4 @@
-package fi.oph.kitu.cache
+package fi.oph.kitu.util.cache
 
 import fi.oph.kitu.util.defaultObjectMapper
 import io.opentelemetry.instrumentation.annotations.WithSpan

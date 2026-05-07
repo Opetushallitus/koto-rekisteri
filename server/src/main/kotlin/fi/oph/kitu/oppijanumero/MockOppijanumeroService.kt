@@ -1,8 +1,8 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.util.defaultObjectMapper
+import fi.oph.kitu.util.result.TypedResult
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.ResponseEntity

@@ -1,4 +1,4 @@
-package fi.oph.kitu.validation
+package fi.oph.kitu.util.validation
 
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.HenkilosuoritusValidation

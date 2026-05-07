@@ -1,6 +1,6 @@
 package fi.oph.kitu.observability
 
-import fi.oph.kitu.result.setAttributesForTypedResult
+import fi.oph.kitu.util.result.setAttributesForTypedResult
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.context.Scope
 

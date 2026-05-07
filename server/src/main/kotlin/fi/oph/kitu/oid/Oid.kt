@@ -1,8 +1,8 @@
 package fi.oph.kitu.oid
 
-import fi.oph.kitu.result.TypedResult
-import fi.oph.kitu.result.TypedResult.Failure
-import fi.oph.kitu.result.TypedResult.Success
+import fi.oph.kitu.util.result.TypedResult
+import fi.oph.kitu.util.result.TypedResult.Failure
+import fi.oph.kitu.util.result.TypedResult.Success
 import io.swagger.v3.oas.annotations.media.Schema
 import org.ietf.jgss.GSSException
 import tools.jackson.databind.annotation.JsonSerialize

@@ -1,6 +1,6 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
-import fi.oph.kitu.result.TypedResult
+import fi.oph.kitu.util.result.TypedResult
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 

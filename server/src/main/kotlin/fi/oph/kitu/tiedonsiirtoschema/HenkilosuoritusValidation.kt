@@ -2,8 +2,8 @@ package fi.oph.kitu.tiedonsiirtoschema
 
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroValidation
-import fi.oph.kitu.validation.Validation
-import fi.oph.kitu.validation.ValidationResult
+import fi.oph.kitu.util.validation.Validation
+import fi.oph.kitu.util.validation.ValidationResult
 import org.springframework.stereotype.Service
 
 @Service

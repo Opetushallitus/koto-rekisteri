@@ -3,8 +3,8 @@ package fi.oph.kitu.yki.arvioijat
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroValidation
 import fi.oph.kitu.util.TimeService
-import fi.oph.kitu.validation.Validation
-import fi.oph.kitu.validation.ValidationResult
+import fi.oph.kitu.util.validation.Validation
+import fi.oph.kitu.util.validation.ValidationResult
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate

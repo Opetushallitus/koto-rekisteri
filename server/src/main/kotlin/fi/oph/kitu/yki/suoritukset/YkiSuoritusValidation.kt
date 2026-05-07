@@ -6,8 +6,8 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.util.intersects
-import fi.oph.kitu.validation.Validation
-import fi.oph.kitu.validation.ValidationResult
+import fi.oph.kitu.util.validation.Validation
+import fi.oph.kitu.util.validation.ValidationResult
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
 import org.springframework.beans.factory.annotation.Value

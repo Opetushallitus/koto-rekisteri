@@ -3,12 +3,12 @@ package fi.oph.kitu.ilmoittautumisjarjestelma
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.dev.YkiController
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.result.TypedResult
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.util.defaultObjectMapper
+import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.util.toJsonNode
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli

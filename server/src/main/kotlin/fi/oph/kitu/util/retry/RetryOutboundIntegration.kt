@@ -1,4 +1,4 @@
-package fi.oph.kitu.retry
+package fi.oph.kitu.util.retry
 
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable

@@ -1,10 +1,10 @@
 package fi.oph.kitu.koski
 
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.result.TypedResult
-import fi.oph.kitu.result.mapValues
-import fi.oph.kitu.result.partitionBySuccess
-import fi.oph.kitu.retry.RetryOutboundIntegration
+import fi.oph.kitu.util.result.TypedResult
+import fi.oph.kitu.util.result.mapValues
+import fi.oph.kitu.util.result.partitionBySuccess
+import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktSuoritusService

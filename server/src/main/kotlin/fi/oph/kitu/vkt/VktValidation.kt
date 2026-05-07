@@ -2,8 +2,8 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.validation.Validation
-import fi.oph.kitu.validation.ValidationResult
+import fi.oph.kitu.util.validation.Validation
+import fi.oph.kitu.util.validation.ValidationResult
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
