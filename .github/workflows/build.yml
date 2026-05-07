@@ -52,6 +52,7 @@ jobs:
   submit_dependencies:
     name: Submit dependencies
     runs-on: ubuntu-24.04
+    if: github.ref_name == 'main'
     permissions:
       contents: write
     needs: update_tools_cache
@@ -63,11 +64,42 @@ jobs:
           experimental: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update dependency graph
+      # GitHub's dependency-graph API returns sporadic HTTP 500s. Retry up to 3
+      # times with backoff, then degrade to a warning so a transient outage
+      # doesn't fail the workflow run (and trigger a Slack false alarm).
+      - name: Update dependency graph (attempt 1/3)
+        id: submit1
         uses: advanced-security/maven-dependency-submission-action@v5.0.0
+        continue-on-error: true
         with:
           directory: server
           ignore-maven-wrapper: "true"
+      - name: Back off before retry
+        if: steps.submit1.outcome == 'failure'
+        run: sleep 30
+      - name: Update dependency graph (attempt 2/3)
+        id: submit2
+        if: steps.submit1.outcome == 'failure'
+        uses: advanced-security/maven-dependency-submission-action@v5.0.0
+        continue-on-error: true
+        with:
+          directory: server
+          ignore-maven-wrapper: "true"
+      - name: Back off before final retry
+        if: steps.submit2.outcome == 'failure'
+        run: sleep 60
+      - name: Update dependency graph (attempt 3/3)
+        id: submit3
+        if: steps.submit2.outcome == 'failure'
+        uses: advanced-security/maven-dependency-submission-action@v5.0.0
+        continue-on-error: true
+        with:
+          directory: server
+          ignore-maven-wrapper: "true"
+      - name: Warn if all attempts failed
+        if: steps.submit3.outcome == 'failure'
+        run: |
+          echo "::warning::Dependency snapshot submission failed after 3 attempts — likely a transient GitHub API issue. Continuing without failing the build."
 
   server_tests:
     name: Server tests
