@@ -19,7 +19,10 @@ class TehtavapankkiScheduledTasks(
     var tehtavapankkiImportSchedule: String? = null
 
     @Bean
-    fun importKotoTehtavapankki(tehtavapankkiService: TehtavapankkiService): Task<Void> =
+    fun importKotoTehtavapankki(
+        tehtavapankkiService: TehtavapankkiService,
+        ingestService: TehtavapankkiIngestService,
+    ): Task<Void> =
         tracer.recurringTask(
             "Kotoutumiskoulutuksen kielitaidon tehtäväpankin lataus",
             tehtavapankkiImportSchedule!!,
@@ -29,13 +32,16 @@ class TehtavapankkiScheduledTasks(
             // ennallaan: poistetaan kunkin kurssin sisällä saman sisältöiset
             // objektit jotta bucket ei kasva turhaan.
             tehtavapankkiService.removeDuplicates()
-            // Pura uusimman XML:n upotetut <file>-blobit erillisiksi S3-objekteiksi
-            // (mp3-/png-assetit), jotta UI ja muut integraatiot voivat linkata niihin
-            // suoraan ilman XML:n parsintaa.
+            // Käydään kunkin kurssin uusimmat XML:t läpi: puretaan upotetut
+            // <file>-blobit erillisiksi S3-objekteiksi (mp3-/png-assetit) ja
+            // tallennetaan parsittu sisältö yleiseen tehtäväpankki-skeemaan.
             tehtavapankkiService
                 .listTehtavapaketit()
                 .values
                 .mapNotNull { it.firstOrNull() }
-                .forEach { tehtavapankkiService.extractAndUploadAssets(it.key) }
+                .forEach {
+                    tehtavapankkiService.extractAndUploadAssets(it.key)
+                    ingestService.ingestFromS3(it.key)
+                }
         }
 }
