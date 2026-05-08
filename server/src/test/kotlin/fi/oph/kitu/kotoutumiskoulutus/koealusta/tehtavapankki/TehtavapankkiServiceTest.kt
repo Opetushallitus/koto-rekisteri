@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.client.MockRestServiceServer
@@ -19,6 +20,7 @@ import software.amazon.awssdk.services.s3.S3Client
 import java.net.URI
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.Base64
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
@@ -297,6 +299,102 @@ class TehtavapankkiServiceTest(
         assertNotNull(result)
         assertEquals(0, result.scanned)
         assertEquals(emptyList(), result.deleted)
+    }
+
+    @Test
+    fun `extractAndUploadAssets purkaa upotetut tiedostot omiksi S3-objekteiksi`() {
+        val xmlBytes =
+            ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml")
+                .inputStream
+                .use { it.readBytes() }
+        val xmlKey = "42-Suomi/2026-01-01.xml"
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(xmlKey) },
+            RequestBody.fromBytes(xmlBytes),
+        )
+
+        // Lasketaan odotettu sisältö parsimalla XML samalla parserilla.
+        val parsedFiles =
+            TehtavapankkiXmlParser()
+                .parse(xmlBytes.inputStream())
+                .let { (it as TypedResult.Success).value }
+                .questions
+                .filterIsInstance<DescriptionQuestion>()
+                .flatMap { it.questiontext?.embeddedFiles.orEmpty() } +
+                TehtavapankkiXmlParser()
+                    .parse(xmlBytes.inputStream())
+                    .let { (it as TypedResult.Success).value }
+                    .questions
+                    .filterIsInstance<MultichoiceQuestion>()
+                    .flatMap { it.questiontext?.embeddedFiles.orEmpty() }
+        val expectedByName = parsedFiles.associate { it.name to Base64.getMimeDecoder().decode(it.content) }
+        assertTrue(expectedByName.keys.any { it.endsWith(".png") })
+        assertTrue(expectedByName.keys.any { it.endsWith(".mp3") })
+
+        val result = tehtavapankkiService.extractAndUploadAssets(xmlKey)
+
+        assertIs<TypedResult.Success<AssetExtractResult, TehtavapankkiParseError>>(result)
+        assertEquals(emptyList(), result.value.failed)
+        assertEquals(expectedByName.size, result.value.uploadedAssets.size)
+
+        val expectedKeys = expectedByName.keys.map { "42-Suomi/2026-01-01 assets/$it" }.toSet()
+        assertEquals(expectedKeys, result.value.uploadedAssets.toSet())
+
+        // Verify a couple of the assets actually contain the decoded bytes.
+        expectedByName.forEach { (name, expectedBytes) ->
+            val downloaded =
+                s3Client
+                    .getObject { it.bucket(TEST_BUCKET).key("42-Suomi/2026-01-01 assets/$name") }
+                    .readAllBytes()
+            assertEquals(
+                expectedBytes.size,
+                downloaded.size,
+                "Asset $name byte length mismatch",
+            )
+            assertTrue(expectedBytes.contentEquals(downloaded), "Asset $name content mismatch")
+        }
+    }
+
+    @Test
+    fun `extractAndUploadAssets palauttaa NotFound-virheen tuntemattomalle xml-avaimelle`() {
+        val result = tehtavapankkiService.extractAndUploadAssets("ei-olemassa.xml")
+
+        assertIs<TypedResult.Failure<AssetExtractResult, TehtavapankkiParseError>>(result)
+        assertEquals(TehtavapankkiParseError.NotFound, result.error)
+    }
+
+    @Test
+    fun `extractAndUploadAssets ylikirjoittaa olemassaolevan asset-objektin`() {
+        val xmlBytes =
+            ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml")
+                .inputStream
+                .use { it.readBytes() }
+        val xmlKey = "42-Suomi/2026-01-01.xml"
+        val pngAssetKey = "42-Suomi/2026-01-01 assets/image.png"
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(xmlKey) },
+            RequestBody.fromBytes(xmlBytes),
+        )
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(pngAssetKey) },
+            RequestBody.fromString("vanhaa-roskaa"),
+        )
+
+        val result = tehtavapankkiService.extractAndUploadAssets(xmlKey)
+
+        assertIs<TypedResult.Success<AssetExtractResult, TehtavapankkiParseError>>(result)
+        val downloaded =
+            s3Client
+                .getObject { it.bucket(TEST_BUCKET).key(pngAssetKey) }
+                .readAllBytes()
+        assertTrue(
+            downloaded.size > 1000,
+            "Asset olisi pitänyt ylikirjoittaa oikealla png-sisällöllä, oli ${downloaded.size} tavua",
+        )
+        assertTrue(
+            !"vanhaa-roskaa".toByteArray().contentEquals(downloaded),
+            "Roskasisällön ei pitäisi enää olla S3:ssa",
+        )
     }
 
     @Test

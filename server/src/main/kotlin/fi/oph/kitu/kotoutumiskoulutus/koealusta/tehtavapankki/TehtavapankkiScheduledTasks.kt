@@ -29,5 +29,13 @@ class TehtavapankkiScheduledTasks(
             // ennallaan: poistetaan kunkin kurssin sisällä saman sisältöiset
             // objektit jotta bucket ei kasva turhaan.
             tehtavapankkiService.removeDuplicates()
+            // Pura uusimman XML:n upotetut <file>-blobit erillisiksi S3-objekteiksi
+            // (mp3-/png-assetit), jotta UI ja muut integraatiot voivat linkata niihin
+            // suoraan ilman XML:n parsintaa.
+            tehtavapankkiService
+                .listTehtavapaketit()
+                .values
+                .mapNotNull { it.firstOrNull() }
+                .forEach { tehtavapankkiService.extractAndUploadAssets(it.key) }
         }
 }
