@@ -67,12 +67,13 @@ class TehtavapankkiService(
 
     @WithSpan
     fun listTehtavapaketit(): Map<String, List<TehtavapakettiObject>> =
-        listAllTehtavapaketit()
+        listAllObjects()
+            .filter { it.filename.lowercase().endsWith(".xml") }
             .groupBy { it.filename.substringBefore("/") }
             .mapValues { (_, v) -> v.sortedByDescending { it.timestamp } }
 
     @WithSpan
-    fun listAllTehtavapaketit(): List<TehtavapakettiObject> =
+    fun listAllObjects(): List<TehtavapakettiObject> =
         useS3 { bucket ->
             listAllObjects(bucket).map {
                 TehtavapakettiObject(
