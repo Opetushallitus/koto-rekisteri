@@ -27,7 +27,10 @@ object TehtavapankkiPage {
         return "%.2f %s".format(value, units[digitGroups])
     }
 
-    fun render(tehtavapaketit: Map<String, List<TehtavapakettiObject>>): String =
+    fun render(
+        tehtavapaketit: Map<String, List<TehtavapakettiObject>>,
+        pakettiIdsByS3Avain: Map<String, Int> = emptyMap(),
+    ): String =
         Page.renderHtml {
             h1 { +"Kotoutumiskoulutuksen tehtäväpankki" }
 
@@ -42,7 +45,8 @@ object TehtavapankkiPage {
                                 tr {
                                     th { +"Siirretty" }
                                     th { +"Koko" }
-                                    th { +"Lataa" }
+                                    th { +"XML" }
+                                    th { +"Sisältö" }
                                 }
                             }
                             tbody {
@@ -60,6 +64,17 @@ object TehtavapankkiPage {
                                             ) {
                                                 attributes["download"] = ""
                                                 +"Lataa"
+                                            }
+                                        }
+                                        td {
+                                            pakettiIdsByS3Avain[tp.key]?.let { pakettiId ->
+                                                a(
+                                                    href =
+                                                        linkTo(
+                                                            methodOn(TehtavapankkiViewController::class.java)
+                                                                .pakettiView(pakettiId),
+                                                        ).toString(),
+                                                ) { +"Näytä sisältö" }
                                             }
                                         }
                                     }
