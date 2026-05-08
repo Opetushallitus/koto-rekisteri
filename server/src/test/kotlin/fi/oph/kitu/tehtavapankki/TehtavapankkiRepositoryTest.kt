@@ -281,6 +281,21 @@ class TehtavapankkiRepositoryTest(
     }
 
     @Test
+    fun `findIdsByS3Avain palauttaa loytyneet avaimet ja jattaa tuntemattomat pois`() {
+        val pakettiIdA = seedPaketti(lahdeId = "1", versioHash = "h1", s3Avain = "1-foo/a.xml")
+        val pakettiIdB = seedPaketti(lahdeId = "2", versioHash = "h2", s3Avain = "2-bar/b.xml")
+
+        val map =
+            repo.findIdsByS3Avain(
+                listOf("1-foo/a.xml", "2-bar/b.xml", "ei-loydy/c.xml"),
+            )
+
+        assertEquals(setOf("1-foo/a.xml", "2-bar/b.xml"), map.keys)
+        assertEquals(pakettiIdA, map["1-foo/a.xml"])
+        assertEquals(pakettiIdB, map["2-bar/b.xml"])
+    }
+
+    @Test
     fun `tyyppi on TEXT-kentta ilman enum-rajoitusta - vapaa lahdetyyppi tallentuu sellaisenaan`() {
         val pakettiId = seedPaketti()
         val ryhmaId = seedRyhma(pakettiId)

@@ -1,11 +1,14 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
+import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 
@@ -18,11 +21,40 @@ import org.springframework.web.bind.annotation.RequestParam
 )
 class TehtavapankkiViewController(
     private val tehtavapankkiService: TehtavapankkiService,
+    private val tehtavapankkiRepository: TehtavapankkiRepository,
 ) {
     @GetMapping("")
     fun listView(): ResponseEntity<String> {
         val tehtavapaketit = tehtavapankkiService.listTehtavapaketit()
-        return ResponseEntity.ok(TehtavapankkiPage.render(tehtavapaketit))
+        val pakettiIdsByS3Avain =
+            tehtavapankkiRepository.findIdsByS3Avain(
+                tehtavapaketit.values.flatten().map { it.key },
+            )
+        return ResponseEntity.ok(TehtavapankkiPage.render(tehtavapaketit, pakettiIdsByS3Avain))
+    }
+
+    @WithSpan
+    @GetMapping("/paketti/{id}")
+    fun pakettiView(
+        @PathVariable id: Int,
+    ): ResponseEntity<String> {
+        Span.current().setAttribute("paketti.id", id.toLong())
+        val paketti = tehtavapankkiRepository.findPakettiById(id) ?: return ResponseEntity.notFound().build()
+        val ryhmat = tehtavapankkiRepository.findRyhmatByPakettiId(id)
+        val tehtavat = tehtavapankkiRepository.findTehtavatByPakettiId(id)
+        val tehtavaIds = tehtavat.mapNotNull { it.id }
+        val vastauksetByTehtava = tehtavapankkiRepository.findVastauksetByTehtavaIds(tehtavaIds)
+        val tiedostotByTehtava = tehtavapankkiRepository.findTiedostotByTehtavaIds(tehtavaIds)
+        val tehtavatByRyhma = tehtavat.groupBy { it.ryhmaId }
+        return ResponseEntity.ok(
+            TehtavapakettiPage.render(
+                paketti = paketti,
+                ryhmat = ryhmat,
+                tehtavatByRyhma = tehtavatByRyhma,
+                vastauksetByTehtava = vastauksetByTehtava,
+                tiedostotByTehtava = tiedostotByTehtava,
+            ),
+        )
     }
 
     @WithSpan

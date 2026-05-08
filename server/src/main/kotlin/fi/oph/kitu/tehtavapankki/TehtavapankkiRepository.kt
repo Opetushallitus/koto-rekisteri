@@ -224,6 +224,21 @@ class TehtavapankkiRepository(
             "DELETE FROM tehtavapaketti WHERE id = :id",
             mapOf("id" to id),
         )
+
+    /**
+     * Karttaa S3-avaimet niihin tehtäväpaketteihin, jotka on jo tallennettu
+     * tietokantaan. Annetuista avaimista palautuvat vain ne, joille löytyy rivi.
+     */
+    @WithSpan
+    fun findIdsByS3Avain(s3Avaimet: Collection<String>): Map<String, Int> {
+        if (s3Avaimet.isEmpty()) return emptyMap()
+        return jdbc
+            .query(
+                "SELECT s3_avain, id FROM tehtavapaketti WHERE s3_avain IN (:keys)",
+                mapOf("keys" to s3Avaimet),
+            ) { rs, _ -> rs.getString("s3_avain") to rs.getInt("id") }
+            .toMap()
+    }
 }
 
 private fun JsonNode.serialize(): String = defaultObjectMapper.writeValueAsString(this)

@@ -6,11 +6,15 @@ import fi.oph.kitu.LocalStackContainerConfiguration.Companion.TEST_BUCKET
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
+import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
+import fi.oph.kitu.util.result.TypedResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.core.io.ClassPathResource
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -29,6 +33,7 @@ import org.springframework.web.context.WebApplicationContext
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import kotlin.test.assertContains
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 
 @SpringBootTest
@@ -37,6 +42,9 @@ import kotlin.test.assertNotNull
 class TehtavapankkiViewControllerTest(
     @param:Autowired private val context: WebApplicationContext,
     @param:Autowired private val s3Client: S3Client,
+    @param:Autowired private val ingestService: TehtavapankkiIngestService,
+    @param:Autowired private val repository: TehtavapankkiRepository,
+    @param:Autowired private val jdbc: JdbcTemplate,
 ) {
     private lateinit var mockMvc: MockMvc
 
@@ -48,6 +56,7 @@ class TehtavapankkiViewControllerTest(
             .forEach { obj ->
                 s3Client.deleteObject { it.bucket(TEST_BUCKET).key(obj.key()) }
             }
+        jdbc.execute("DELETE FROM tehtavapaketti")
 
         mockMvc =
             MockMvcBuilders
@@ -116,6 +125,81 @@ class TehtavapankkiViewControllerTest(
         mockMvc
             .perform(get("/koto-tehtavapankki/lataa").param("key", "ei-olemassa.xml").session(virkailijaSession()))
             .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `pakettiView nayttaa paketin sisallon ja kirjoittaa PLUGINFILE-viittaukset uudelleen`() {
+        val pakettiId = ingestFixture()
+
+        val response =
+            mockMvc
+                .perform(get("/koto-tehtavapankki/paketti/$pakettiId").session(virkailijaSession()))
+                .andExpect(status().isOk)
+                .andReturn()
+                .response.contentAsString
+
+        // Header
+        assertContains(response, "Suomi alkeet")
+        assertContains(response, "moodle.koealusta")
+        // Both ryhmät from the fixture
+        assertContains(response, "Esimerkki nimi")
+        assertContains(response, "Esimerkkikysymys.")
+        // At least one tehtävä body content survived (placeholder text from fixture redaction)
+        assertContains(response, "Vaihtoehto A")
+        // Type badges
+        assertContains(response, "multichoice")
+        assertContains(response, "cloudpoodll")
+        // Asset filename appears as a download link
+        assertContains(response, "image.png")
+        assertContains(response, "A2 Tietokonetuki äänitiedosto.mp3")
+        // @@PLUGINFILE@@ references rewritten to /lataa endpoints
+        assertFalse(
+            response.contains("@@PLUGINFILE@@"),
+            "Sivulla ei pitäisi olla raakoja @@PLUGINFILE@@-viittauksia, oli: ${response.lines().filter {
+                it.contains(
+                    "@@PLUGINFILE@@",
+                )
+            }}",
+        )
+        assertContains(response, "/koto-tehtavapankki/lataa")
+    }
+
+    @Test
+    fun `pakettiView palauttaa 404 kun id ta ei loydy`() {
+        mockMvc
+            .perform(get("/koto-tehtavapankki/paketti/9999").session(virkailijaSession()))
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `listView nayttaa Nayta sisalto -linkin paketeille jotka on tallessa tietokannassa`() {
+        val pakettiId = ingestFixture()
+        val xmlKey = repository.findPakettiById(pakettiId)!!.s3Avain!!
+
+        val response =
+            mockMvc
+                .perform(get("/koto-tehtavapankki").session(virkailijaSession()))
+                .andExpect(status().isOk)
+                .andReturn()
+                .response.contentAsString
+
+        assertContains(response, xmlKey.substringBefore("/"))
+        assertContains(response, "Näytä sisältö")
+        assertContains(response, "/koto-tehtavapankki/paketti/$pakettiId")
+    }
+
+    private fun ingestFixture(): Int {
+        val xmlBytes =
+            ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml")
+                .inputStream
+                .use { it.readBytes() }
+        val xmlKey = "42-Suomi_alkeet/2026-01-01.xml"
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(xmlKey) },
+            RequestBody.fromBytes(xmlBytes),
+        )
+        val result = ingestService.ingestFromS3(xmlKey)
+        return (result as TypedResult.Success).value.id!!
     }
 
     private fun virkailijaSession(): MockHttpSession {
