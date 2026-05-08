@@ -13,11 +13,15 @@ import kotlinx.html.FlowContent
 import kotlinx.html.SECTION
 import kotlinx.html.a
 import kotlinx.html.article
+import kotlinx.html.audio
 import kotlinx.html.code
 import kotlinx.html.div
+import kotlinx.html.figcaption
+import kotlinx.html.figure
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.h3
+import kotlinx.html.img
 import kotlinx.html.li
 import kotlinx.html.p
 import kotlinx.html.pre
@@ -137,14 +141,47 @@ object TehtavapakettiPage {
                 }
             }
             if (tiedostot.isNotEmpty()) {
-                strong { +"Liitetiedostot:" }
-                ul {
-                    tiedostot.forEach { tiedosto ->
-                        li {
-                            a(href = downloadUrl(tiedosto.s3Avain)) {
-                                attributes["download"] = ""
-                                +tiedosto.tiedostonimi
-                            }
+                renderTiedostot(tiedostot)
+            }
+        }
+    }
+
+    private fun FlowContent.renderTiedostot(tiedostot: List<TehtavaTiedostoEntity>) {
+        val grouped = tiedostot.groupBy { it.mediaKind() }
+        grouped[MediaKind.IMAGE]?.forEach { tiedosto ->
+            figure {
+                img(src = downloadUrl(tiedosto.s3Avain), alt = tiedosto.tiedostonimi)
+                figcaption {
+                    a(href = downloadUrl(tiedosto.s3Avain)) {
+                        attributes["download"] = ""
+                        +tiedosto.tiedostonimi
+                    }
+                }
+            }
+        }
+        grouped[MediaKind.AUDIO]?.forEach { tiedosto ->
+            figure {
+                audio {
+                    controls = true
+                    src = downloadUrl(tiedosto.s3Avain)
+                }
+                figcaption {
+                    a(href = downloadUrl(tiedosto.s3Avain)) {
+                        attributes["download"] = ""
+                        +tiedosto.tiedostonimi
+                    }
+                }
+            }
+        }
+        val muut = grouped[MediaKind.OTHER].orEmpty()
+        if (muut.isNotEmpty()) {
+            strong { +"Liitetiedostot:" }
+            ul {
+                muut.forEach { tiedosto ->
+                    li {
+                        a(href = downloadUrl(tiedosto.s3Avain)) {
+                            attributes["download"] = ""
+                            +tiedosto.tiedostonimi
                         }
                     }
                 }
@@ -182,6 +219,20 @@ object TehtavapakettiPage {
         } else {
             +text
         }
+    }
+}
+
+private enum class MediaKind { IMAGE, AUDIO, OTHER }
+
+private val imageExtensions = setOf("jpg", "jpeg", "png", "gif", "webp", "svg", "bmp", "avif")
+private val audioExtensions = setOf("mp3", "wav", "ogg", "oga", "m4a", "aac", "flac", "weba")
+
+private fun TehtavaTiedostoEntity.mediaKind(): MediaKind {
+    val ext = tiedostonimi.substringAfterLast('.', "").lowercase()
+    return when (ext) {
+        in imageExtensions -> MediaKind.IMAGE
+        in audioExtensions -> MediaKind.AUDIO
+        else -> MediaKind.OTHER
     }
 }
 
