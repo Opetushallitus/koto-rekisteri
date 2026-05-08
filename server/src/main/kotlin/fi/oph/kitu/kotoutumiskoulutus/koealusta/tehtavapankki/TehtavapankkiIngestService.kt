@@ -5,6 +5,7 @@ import fi.oph.kitu.tehtavapankki.TehtavaTiedostoEntity
 import fi.oph.kitu.tehtavapankki.TehtavaVastausEntity
 import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
+import fi.oph.kitu.tehtavapankki.TehtavaryhmaEntity
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.util.result.TypedResult
 import io.opentelemetry.api.trace.Span
@@ -78,37 +79,60 @@ class TehtavapankkiIngestService(
                 ),
             )
 
-        // Walk in source order, tracking the most-recent <category> as the path.
-        val mappingItems =
-            quiz.questions.fold(MappingState()) { state, q ->
-                when (q) {
-                    is CategoryQuestion -> {
-                        state.copy(currentKategoria = q.category?.text)
-                    }
-
-                    else -> {
-                        state.copy(
-                            tehtavat =
-                                state.tehtavat +
-                                    PendingTehtava(
-                                        question = q,
-                                        kategoria = state.currentKategoria,
-                                        jarjestys = state.tehtavat.size + 1,
-                                    ),
+        // Pass A: collect groups in source order. <question type="category">
+        // marks the start of a group. Questions appearing before any category
+        // get a synthetic default group prepended on demand.
+        val pendingRyhmat = mutableListOf<TehtavaryhmaEntity>()
+        val pendingTehtavat = mutableListOf<PendingTehtava>()
+        var currentRyhmaIdx: Int? = null
+        for (q in quiz.questions) {
+            when (q) {
+                is CategoryQuestion -> {
+                    pendingRyhmat +=
+                        TehtavaryhmaEntity(
+                            pakettiId = pakettiId,
+                            nimi = q.category?.text?.takeIf { it.isNotBlank() } ?: "(nimetön)",
+                            jarjestys = pendingRyhmat.size + 1,
+                            metadata = q.toRyhmaMetadata(),
                         )
+                    currentRyhmaIdx = pendingRyhmat.lastIndex
+                }
+
+                else -> {
+                    if (currentRyhmaIdx == null) {
+                        pendingRyhmat +=
+                            TehtavaryhmaEntity(
+                                pakettiId = pakettiId,
+                                nimi = "(jaottelematta)",
+                                jarjestys = pendingRyhmat.size + 1,
+                            )
+                        currentRyhmaIdx = pendingRyhmat.lastIndex
                     }
+                    pendingTehtavat +=
+                        PendingTehtava(
+                            question = q,
+                            ryhmaIdx = currentRyhmaIdx,
+                            jarjestys = pendingTehtavat.size + 1,
+                        )
                 }
             }
+        }
+
+        val ryhmaIds = repository.insertRyhmat(pendingRyhmat)
 
         val tehtavat =
-            mappingItems.tehtavat.map { pending ->
-                pending.question.toTehtavaEntity(pakettiId, pending.kategoria, pending.jarjestys)
+            pendingTehtavat.map { pending ->
+                pending.question.toTehtavaEntity(
+                    pakettiId = pakettiId,
+                    ryhmaId = ryhmaIds[pending.ryhmaIdx],
+                    jarjestys = pending.jarjestys,
+                )
             }
         val tehtavaIds = repository.insertTehtavat(tehtavat)
 
         val vastaukset =
             buildList {
-                mappingItems.tehtavat.forEachIndexed { idx, pending ->
+                pendingTehtavat.forEachIndexed { idx, pending ->
                     addAll(pending.question.toVastausEntities(tehtavaIds[idx]))
                 }
             }
@@ -117,7 +141,7 @@ class TehtavapankkiIngestService(
         val assetPrefix = "${xmlKey.removeSuffix(".xml")} assets/"
         val tiedostot =
             buildList {
-                mappingItems.tehtavat.forEachIndexed { idx, pending ->
+                pendingTehtavat.forEachIndexed { idx, pending ->
                     pending.question.embeddedFiles().forEach { file ->
                         if (file.name.isBlank()) return@forEach
                         add(
@@ -133,6 +157,7 @@ class TehtavapankkiIngestService(
         repository.insertTiedostot(tiedostot)
 
         Span.current().setAttribute("paketti.id", pakettiId.toLong())
+        Span.current().setAttribute("ryhmat.count", pendingRyhmat.size.toLong())
         Span.current().setAttribute("tehtavat.count", tehtavat.size.toLong())
         Span.current().setAttribute("vastaukset.count", vastaukset.size.toLong())
         Span.current().setAttribute("tiedostot.count", tiedostot.size.toLong())
@@ -145,14 +170,9 @@ class TehtavapankkiIngestService(
     }
 }
 
-private data class MappingState(
-    val currentKategoria: String? = null,
-    val tehtavat: List<PendingTehtava> = emptyList(),
-)
-
 private data class PendingTehtava(
     val question: Question,
-    val kategoria: String?,
+    val ryhmaIdx: Int,
     val jarjestys: Int,
 )
 
@@ -206,7 +226,7 @@ private fun Question.embeddedFiles(): List<EmbeddedFile> =
 
 private fun Question.toTehtavaEntity(
     pakettiId: Int,
-    kategoria: String?,
+    ryhmaId: Int,
     jarjestys: Int,
 ): TehtavaEntity {
     val (name, qtext, lahdeId) =
@@ -237,15 +257,21 @@ private fun Question.toTehtavaEntity(
         }
     return TehtavaEntity(
         pakettiId = pakettiId,
+        ryhmaId = ryhmaId,
         tyyppi = type,
         lahdeId = lahdeId?.takeIf { it.isNotBlank() },
-        kategoria = kategoria,
         nimi = name?.text,
         teksti = qtext?.text,
         tekstinFormaatti = qtext?.format,
         jarjestys = jarjestys,
         metadata = toMetadata(),
     )
+}
+
+private fun CategoryQuestion.toRyhmaMetadata(): JsonNode {
+    val node = defaultObjectMapper.createObjectNode()
+    node.putFormatted("info", info)
+    return node
 }
 
 private fun Question.toMetadata(): JsonNode {

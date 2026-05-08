@@ -34,6 +34,36 @@ class TehtavapankkiRepository(
 
     @WithSpan
     @Transactional
+    fun insertRyhmat(ryhmat: List<TehtavaryhmaEntity>): List<Int> {
+        if (ryhmat.isEmpty()) return emptyList()
+        return ryhmat.map { ryhma ->
+            jdbc
+                .query(
+                    """
+                    INSERT INTO tehtavaryhma (paketti_id, nimi, jarjestys, metadata)
+                    VALUES (:paketti_id, :nimi, :jarjestys, :metadata::jsonb)
+                    RETURNING id
+                    """.trimIndent(),
+                    MapSqlParameterSource()
+                        .addValue("paketti_id", ryhma.pakettiId)
+                        .addValue("nimi", ryhma.nimi)
+                        .addValue("jarjestys", ryhma.jarjestys)
+                        .addValue("metadata", ryhma.metadata.serialize()),
+                    SingleColumnRowMapper(Int::class.java),
+                ).first()!!
+        }
+    }
+
+    @WithSpan
+    fun findRyhmatByPakettiId(pakettiId: Int): List<TehtavaryhmaEntity> =
+        jdbc.query(
+            "SELECT * FROM tehtavaryhma WHERE paketti_id = :paketti_id ORDER BY jarjestys",
+            mapOf("paketti_id" to pakettiId),
+            TehtavaryhmaEntity.fromRow,
+        )
+
+    @WithSpan
+    @Transactional
     fun insertTehtavat(tehtavat: List<TehtavaEntity>): List<Int> {
         if (tehtavat.isEmpty()) return emptyList()
         return tehtavat.map { tehtava ->
@@ -41,20 +71,20 @@ class TehtavapankkiRepository(
                 .query(
                     """
                     INSERT INTO tehtava (
-                        paketti_id, tyyppi, lahde_id, kategoria, nimi, teksti, tekstin_formaatti,
+                        paketti_id, ryhma_id, tyyppi, lahde_id, nimi, teksti, tekstin_formaatti,
                         jarjestys, metadata
                     )
                     VALUES (
-                        :paketti_id, :tyyppi, :lahde_id, :kategoria, :nimi, :teksti, :tekstin_formaatti,
+                        :paketti_id, :ryhma_id, :tyyppi, :lahde_id, :nimi, :teksti, :tekstin_formaatti,
                         :jarjestys, :metadata::jsonb
                     )
                     RETURNING id
                     """.trimIndent(),
                     MapSqlParameterSource()
                         .addValue("paketti_id", tehtava.pakettiId)
+                        .addValue("ryhma_id", tehtava.ryhmaId)
                         .addValue("tyyppi", tehtava.tyyppi)
                         .addValue("lahde_id", tehtava.lahdeId)
-                        .addValue("kategoria", tehtava.kategoria)
                         .addValue("nimi", tehtava.nimi)
                         .addValue("teksti", tehtava.teksti)
                         .addValue("tekstin_formaatti", tehtava.tekstinFormaatti)
