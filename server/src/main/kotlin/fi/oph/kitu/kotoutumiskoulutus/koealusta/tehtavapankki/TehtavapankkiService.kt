@@ -12,6 +12,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
+import software.amazon.awssdk.services.s3.S3Client
 import java.net.URL
 import java.time.Instant
 import java.time.LocalDateTime
@@ -29,6 +30,7 @@ import java.time.format.DateTimeFormatter
 class TehtavapankkiService(
     val restClientBuilder: RestClient.Builder,
     private val s3Template: S3Template,
+    private val s3Client: S3Client,
     private val tracer: Tracer,
     private val parser: TehtavapankkiXmlParser,
 ) {
@@ -122,6 +124,46 @@ class TehtavapankkiService(
             }
         }
 
+    /**
+     * Poistaa kustakin "kansiosta" (avaimen `/`-prefiksi) duplikaatti-objektit:
+     * objektit, joilla on sama koko ja ETag (eli sama sisältö). Vanhin pidetään,
+     * loput poistetaan. Eri kansioiden välillä ei verrata.
+     */
+    @WithSpan
+    fun removeDuplicates(): CleanupResult? =
+        useS3 { bucket ->
+            val objects =
+                s3Client
+                    .listObjectsV2Paginator { it.bucket(bucket) }
+                    .contents()
+                    .toList()
+
+            val toDelete =
+                objects
+                    .filter { it.key().contains("/") }
+                    .groupBy { it.key().substringBefore("/") }
+                    .flatMap { (_, folderObjects) ->
+                        folderObjects
+                            .groupBy { it.size() to it.eTag().normalizeETag() }
+                            .filter { (_, dupes) -> dupes.size > 1 }
+                            .flatMap { (_, dupes) ->
+                                dupes.sortedBy { it.lastModified() }.drop(1)
+                            }
+                    }
+
+            toDelete.forEach { obj ->
+                s3Client.deleteObject { it.bucket(bucket).key(obj.key()) }
+            }
+
+            Span.current().setAttribute("scanned", objects.size.toLong())
+            Span.current().setAttribute("deleted", toDelete.size.toLong())
+
+            CleanupResult(
+                scanned = objects.size,
+                deleted = toDelete.map { it.key() },
+            )
+        }
+
     @WithSpan
     fun fetchAndParseFromS3(key: String): TypedResult<TehtavapankkiQuiz, TehtavapankkiParseError> {
         Span.current().setAttribute("s3.key", key)
@@ -154,3 +196,11 @@ data class TehtavapakettiObject(
     val size: Long,
     val timestamp: Instant,
 )
+
+data class CleanupResult(
+    val scanned: Int,
+    val deleted: List<String>,
+)
+
+// AWS palauttaa ETagin lainausmerkeissä; karsitaan ne ennen vertailua.
+private fun String.normalizeETag(): String = this.trim('"')
