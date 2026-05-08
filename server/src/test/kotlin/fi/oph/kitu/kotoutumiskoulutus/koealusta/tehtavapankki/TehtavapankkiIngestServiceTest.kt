@@ -81,9 +81,12 @@ class TehtavapankkiIngestServiceTest(
         assertEquals((1..11).toList(), tehtavat.map { it.jarjestys })
 
         // Fixturilla on 2 <category>-elementtiä alussa → 2 ryhmää, source-järjestyksessä.
-        val ryhmat = repository.findRyhmatByPakettiId(paketti.id!!)
+        val ryhmat = repository.findRyhmatByPakettiId(paketti.id)
         assertEquals(2, ryhmat.size)
-        assertEquals(listOf("Esimerkki nimi", "Esimerkkikysymys."), ryhmat.map { it.nimi })
+        assertEquals(
+            listOf("\$course\$/top", "\$course\$/top/Suomen kieli A2 - esimerkkitehtävät"),
+            ryhmat.map { it.nimi },
+        )
         assertEquals(listOf(1, 2), ryhmat.map { it.jarjestys })
 
         // Kaikki tehtävät kuuluvat toiseen ryhmään, koska molemmat kategoriat
