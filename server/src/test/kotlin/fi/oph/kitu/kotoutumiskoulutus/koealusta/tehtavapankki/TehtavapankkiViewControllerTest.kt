@@ -146,9 +146,9 @@ class TehtavapankkiViewControllerTest(
         assertContains(response, "Suomen kieli A2 - esimerkkitehtävät")
         // At least one tehtävä body content survived
         assertContains(response, "Mikä on Suomen pääkaupunki?")
-        // Type badges
-        assertContains(response, "multichoice")
-        assertContains(response, "cloudpoodll")
+        // Tehtävätyypit suomennettuina
+        assertContains(response, "Monivalinta")
+        assertContains(response, "Ääninauhoitus")
         // Asset filename appears as a download link
         assertContains(response, "image.png")
         assertContains(response, "A2 Tietokonetuki äänitiedosto.mp3")
