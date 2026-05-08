@@ -236,4 +236,86 @@ class TehtavapankkiServiceTest(
         assertIs<TypedResult.Failure<TehtavapankkiQuiz, TehtavapankkiParseError>>(result)
         assertEquals(TehtavapankkiParseError.NotFound, result.error)
     }
+
+    @Test
+    fun `removeDuplicates poistaa kustakin kansiosta saman sisallon duplikaatit ja jattaa vanhimman`() {
+        val sameContent = "<quiz><q id=\"1\"/></quiz>"
+        val otherContent = "<quiz><q id=\"2\"/></quiz>"
+
+        // 42-Suomi_alkeet/: 3 duplikaattia + 1 erilainen → poistettava 2
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("42-Suomi_alkeet/2026-01-01T00-00-00-0.xml") },
+            RequestBody.fromString(sameContent),
+        )
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("42-Suomi_alkeet/2026-02-01T00-00-00-0.xml") },
+            RequestBody.fromString(sameContent),
+        )
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("42-Suomi_alkeet/2026-03-01T00-00-00-0.xml") },
+            RequestBody.fromString(sameContent),
+        )
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("42-Suomi_alkeet/2026-04-01T00-00-00-0.xml") },
+            RequestBody.fromString(otherContent),
+        )
+
+        // 7-Suomi_2/: 2 saman sisältöistä → poistettava 1
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("7-Suomi_2/2026-01-01T00-00-00-0.xml") },
+            RequestBody.fromString(sameContent),
+        )
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("7-Suomi_2/2026-02-01T00-00-00-0.xml") },
+            RequestBody.fromString(sameContent),
+        )
+
+        val result = tehtavapankkiService.removeDuplicates()
+
+        assertNotNull(result)
+        assertEquals(6, result.scanned)
+        assertEquals(3, result.deleted.size)
+
+        val remaining =
+            s3Client
+                .listObjectsV2 { it.bucket(TEST_BUCKET) }
+                .contents()
+                .map { it.key() }
+        assertEquals(3, remaining.size)
+        // 42-Suomi_alkeet/: yksi sameContent + yksi otherContent
+        val alkeetKeys = remaining.filter { it.startsWith("42-Suomi_alkeet/") }
+        assertEquals(2, alkeetKeys.size)
+        assertTrue(alkeetKeys.any { it.endsWith("2026-04-01T00-00-00-0.xml") })
+        // 7-Suomi_2/: tasan yksi tiedosto
+        assertEquals(1, remaining.count { it.startsWith("7-Suomi_2/") })
+    }
+
+    @Test
+    fun `removeDuplicates ei poista mitaan kun bucket on tyhja`() {
+        val result = tehtavapankkiService.removeDuplicates()
+
+        assertNotNull(result)
+        assertEquals(0, result.scanned)
+        assertEquals(emptyList(), result.deleted)
+    }
+
+    @Test
+    fun `removeDuplicates ei vertaa eri kansioiden valilla`() {
+        val sameContent = "<quiz><q id=\"1\"/></quiz>"
+
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("42-Suomi_alkeet/2026-01-01T00-00-00-0.xml") },
+            RequestBody.fromString(sameContent),
+        )
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("7-Suomi_2/2026-01-01T00-00-00-0.xml") },
+            RequestBody.fromString(sameContent),
+        )
+
+        val result = tehtavapankkiService.removeDuplicates()
+
+        assertNotNull(result)
+        assertEquals(2, result.scanned)
+        assertEquals(emptyList(), result.deleted, "Eri kansioiden samansisältöisiä ei pitäisi poistaa")
+    }
 }

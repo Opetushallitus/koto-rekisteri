@@ -19,11 +19,15 @@ class TehtavapankkiScheduledTasks(
     var tehtavapankkiImportSchedule: String? = null
 
     @Bean
-    fun dailyImportKotoTehtavapankki(tehtavapankkiService: TehtavapankkiService): Task<Void> =
+    fun importKotoTehtavapankki(tehtavapankkiService: TehtavapankkiService): Task<Void> =
         tracer.recurringTask(
             "Kotoutumiskoulutuksen kielitaidon tehtäväpankin lataus",
             tehtavapankkiImportSchedule!!,
         ) {
             tehtavapankkiService.importTehtavapankki()
+            // Tuoreelle siirrolle ei tule uutta avainta jos sisältö on
+            // ennallaan: poistetaan kunkin kurssin sisällä saman sisältöiset
+            // objektit jotta bucket ei kasva turhaan.
+            tehtavapankkiService.removeDuplicates()
         }
 }
