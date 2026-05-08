@@ -155,7 +155,7 @@ class TehtavapankkiServiceTest(
         )
         val endTime = Instant.now()
 
-        val tehtavapaketit = tehtavapankkiService.listAllTehtavapaketit()
+        val tehtavapaketit = tehtavapankkiService.listAllObjects()
 
         assertEquals(2, tehtavapaketit.size, "Molempien objektien pitäisi näkyä listauksessa")
         assertEquals(
@@ -176,7 +176,7 @@ class TehtavapankkiServiceTest(
 
     @Test
     fun `listTehtavapaketit palauttaa tyhjan listan kun bucketissa ei ole objekteja`() {
-        assertEquals(emptyList(), tehtavapankkiService.listAllTehtavapaketit())
+        assertEquals(emptyList(), tehtavapankkiService.listAllObjects())
     }
 
     @Test
