@@ -296,6 +296,10 @@ tr.faded td {
   gap: 1ex;
 }
 
+.tehtava-teksti {
+  margin-bottom: var(--pico-block-spacing-vertical);
+}
+
 .tehtava-otsikko small {
   color: var(--oph-grey600);
   font-weight: normal;

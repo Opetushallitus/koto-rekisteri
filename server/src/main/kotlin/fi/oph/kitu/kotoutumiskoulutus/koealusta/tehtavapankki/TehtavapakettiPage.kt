@@ -120,7 +120,7 @@ object TehtavapakettiPage {
         article {
             h3("tehtava-otsikko") {
                 strong { +"${tehtava.jarjestys}. ${tehtava.nimi ?: "(nimetön)"}" }
-                small { +tehtava.tyyppi }
+                small { +moodleTehtavatyyppiNimi(tehtava.tyyppi) }
             }
             if (!tehtava.teksti.isNullOrBlank()) {
                 renderRichText(tehtava.teksti, tehtava.tekstinFormaatti, assetPrefix)
@@ -217,11 +217,11 @@ object TehtavapakettiPage {
             // Lähde on Moodlen virkailijakohtainen export, ei loppukäyttäjäsyöte.
             // S3-asset-viittaukset (@@PLUGINFILE@@/...) kirjoitetaan oikeiksi
             // download-linkeiksi, jotta upotetut <audio>/<img>-elementit toimivat.
-            div {
+            div("tehtava-teksti") {
                 unsafe { +rewriteMoodleAssetUrls(text, assetPrefix) }
             }
         } else {
-            pre { +text }
+            pre("tehtava-teksti") { +text }
         }
     }
 
@@ -293,3 +293,46 @@ private fun decodePluginFileName(raw: String): String =
     } catch (_: IllegalArgumentException) {
         raw
     }
+
+// Moodlen tehtävätyyppien suomennokset. Kattaa Moodle 4.x:n vakio-tyypit ja
+// yleiset kontribuutio-tyypit (mm. Koealustan käyttämä cloudpoodll).
+// Tuntemattomalle tyypille palautetaan tyypin tekninen tunniste sellaisenaan.
+private val moodleTehtavatyyppiNimet =
+    mapOf(
+        // Vakio-tyypit
+        "multichoice" to "Monivalinta",
+        "truefalse" to "Tosi/epätosi",
+        "shortanswer" to "Lyhyt vastaus",
+        "numerical" to "Numeerinen vastaus",
+        "essay" to "Esseetehtävä",
+        "match" to "Yhdistämistehtävä",
+        "multianswer" to "Sulautetut vastaukset (Cloze)",
+        "calculated" to "Laskutehtävä",
+        "calculatedmulti" to "Monivalinta-laskutehtävä",
+        "calculatedsimple" to "Yksinkertainen laskutehtävä",
+        "description" to "Ohjeteksti",
+        "ddwtos" to "Vedä ja pudota tekstiin",
+        "ddmarker" to "Vedä ja pudota merkit",
+        "ddimageortext" to "Vedä ja pudota kuvaan",
+        "gapselect" to "Valitse puuttuvat sanat",
+        "random" to "Satunnaistehtävä",
+        "randomsamatch" to "Satunnainen lyhyt yhdistäminen",
+        "missingtype" to "Puuttuva tyyppi",
+        // Yleiset kontribuutio-tyypit
+        "cloudpoodll" to "Ääninauhoitus",
+        "recordrtc" to "Ääni- tai videonauhoitus",
+        "pmatch" to "Hahmonsovitus",
+        "pmatchjme" to "Kemiallisen kaavan sovitus",
+        "coderunner" to "Ohjelmointitehtävä",
+        "stack" to "Matemaattinen tehtävä (STACK)",
+        "ordering" to "Järjestämistehtävä",
+        "combined" to "Yhdistelmätehtävä",
+        "formulas" to "Kaavatehtävä",
+        "gapfill" to "Aukkotehtävä",
+        "regexp" to "Säännöllinen lauseke",
+        "speakautograde" to "Automaattisesti arvioitu puhetehtävä",
+        "crossword" to "Ristikkotehtävä",
+        "drawing" to "Piirtotehtävä",
+    )
+
+internal fun moodleTehtavatyyppiNimi(tyyppi: String): String = moodleTehtavatyyppiNimet[tyyppi.lowercase()] ?: tyyppi
