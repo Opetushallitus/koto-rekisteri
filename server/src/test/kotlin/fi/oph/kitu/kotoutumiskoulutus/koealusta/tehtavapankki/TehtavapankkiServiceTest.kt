@@ -3,6 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration.Companion.TEST_BUCKET
+import fi.oph.kitu.util.result.TypedResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,6 +20,7 @@ import java.net.URI
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -199,5 +201,39 @@ class TehtavapankkiServiceTest(
     fun `getTemporaryDownloadUrl palauttaa null, jos objektiavain on tuntematon`() {
         val url = tehtavapankkiService.getTemporaryDownloadUrl("42-Suomi_alkeet/2026-01-01T00:00:00-0.xml")
         assertNull(url, "Signed URL:n pitäisi olla null, kun objektia ei löydy")
+    }
+
+    @Test
+    fun `fetchAndParseFromS3 lataa ja parsii bucketissa olevan xml-tiedoston`() {
+        val key = "42-Suomi_alkeet/2026-01-01T00:00:00-0.xml"
+        val xml =
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <quiz>
+              <question type="category">
+                <category><text>${'$'}course${'$'}/top/A1</text></category>
+                <info format="html"><text/></info>
+                <idnumber/>
+              </question>
+            </quiz>
+            """.trimIndent()
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(key) },
+            RequestBody.fromString(xml),
+        )
+
+        val result = tehtavapankkiService.fetchAndParseFromS3(key)
+
+        assertIs<TypedResult.Success<TehtavapankkiQuiz, TehtavapankkiParseError>>(result)
+        assertEquals(1, result.value.questions.size)
+        assertIs<CategoryQuestion>(result.value.questions.single())
+    }
+
+    @Test
+    fun `fetchAndParseFromS3 palauttaa NotFound-virheen tuntemattomalle avaimelle`() {
+        val result = tehtavapankkiService.fetchAndParseFromS3("ei-olemassa.xml")
+
+        assertIs<TypedResult.Failure<TehtavapankkiQuiz, TehtavapankkiParseError>>(result)
+        assertEquals(TehtavapankkiParseError.NotFound, result.error)
     }
 }
