@@ -1,6 +1,5 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
-import fi.oph.kitu.restclient.withJacksonStreamMaxStringLength
 import fi.oph.kitu.util.result.TypedResult
 import io.awspring.cloud.s3.S3Template
 import io.opentelemetry.api.trace.Span
@@ -8,10 +7,7 @@ import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
-import org.springframework.web.client.RestClient
-import org.springframework.web.client.toEntity
 import software.amazon.awssdk.services.s3.S3Client
 import java.io.ByteArrayInputStream
 import java.net.URL
@@ -30,27 +26,14 @@ import java.util.Base64
     matchIfMissing = true,
 )
 class TehtavapankkiService(
-    val restClientBuilder: RestClient.Builder,
+    private val client: TehtavapankkiClient,
     private val s3Template: S3Template,
     private val s3Client: S3Client,
     private val tracer: Tracer,
     private val parser: TehtavapankkiXmlParser,
 ) {
-    @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
-    lateinit var koealustaToken: String
-
-    @Value("\${kitu.kotoutumiskoulutus.koealusta.baseurl}")
-    lateinit var koealustaBaseUrl: String
-
     @Value("\${kitu.kotoutumiskoulutus.tehtavapankki.bucket:#{null}}")
     var bucket: String? = null
-
-    private val restClient by lazy {
-        restClientBuilder
-            .baseUrl(koealustaBaseUrl)
-            .withJacksonStreamMaxStringLength(200_000_000)
-            .build()
-    }
 
     /**
      * 1. Replaces white spaces with underscore.
@@ -79,22 +62,7 @@ class TehtavapankkiService(
 
     @WithSpan
     fun importTehtavapankki() {
-        Span.current().setAttribute("function", "local_completion_export_export_question_bank")
-
-        val response =
-            restClient
-                .get()
-                .uri(
-                    "/webservice/rest/server.php?wstoken={token}&moodlewsrestformat=json&wsfunction={function}",
-                    mapOf<String, Any>(
-                        "token" to koealustaToken,
-                        "function" to "local_completion_export_export_question_bank",
-                    ),
-                ).accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .toEntity<TehtavapankkiResponse>()
-
-        uploadTehtavapankki(response.body!!)
+        uploadTehtavapankki(client.importQuestionBanks())
     }
 
     @WithSpan

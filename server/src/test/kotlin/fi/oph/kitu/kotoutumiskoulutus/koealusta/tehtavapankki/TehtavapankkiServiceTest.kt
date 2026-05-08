@@ -32,6 +32,7 @@ import kotlin.test.assertTrue
 @TestPropertySource(properties = ["spring.cloud.aws.s3.enabled=true"])
 class TehtavapankkiServiceTest(
     @param:Autowired private val tehtavapankkiService: TehtavapankkiService,
+    @param:Autowired private val tehtavapankkiClient: TehtavapankkiClientImpl,
     @param:Autowired private val s3Client: S3Client,
 ) {
     @BeforeEach
@@ -79,7 +80,7 @@ class TehtavapankkiServiceTest(
 
     @Test
     fun `importTehtavapankki hakee koealustasta ja kirjoittaa S3-buckettiin`() {
-        val mockServer = MockRestServiceServer.bindTo(tehtavapankkiService.restClientBuilder).build()
+        val mockServer = MockRestServiceServer.bindTo(tehtavapankkiClient.restClientBuilder).build()
         mockServer
             .expect(
                 requestTo(
@@ -109,8 +110,8 @@ class TehtavapankkiServiceTest(
                 ),
             )
 
-        tehtavapankkiService.koealustaToken = "testitoken"
-        tehtavapankkiService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        tehtavapankkiClient.koealustaToken = "testitoken"
+        tehtavapankkiClient.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         tehtavapankkiService.importTehtavapankki()
 
