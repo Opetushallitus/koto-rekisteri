@@ -13,10 +13,12 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import software.amazon.awssdk.services.s3.S3Client
+import java.io.ByteArrayInputStream
 import java.net.URL
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Base64
 
 // Wired vain kun spring.cloud.aws.s3.enabled on tosi. Bean luodaan
 // myös testeissä ja e2e:ssä kun ne osoittavat LocalStackiin; ajastettu
@@ -164,6 +166,51 @@ class TehtavapankkiService(
             )
         }
 
+    /**
+     * Lukee XML:n S3:sta, parsii sen ja kirjoittaa sisällä olevat upotetut
+     * <file>-blobit erillisinä S3-objekteina. Avain muodostetaan XML:n sijainnista:
+     * `{tehtäväpankki-kansio}/{xml-tiedoston basename} assets/{tiedoston nimi}`.
+     * Esim. `42-Suomi/2026-01-01.xml` → `42-Suomi/2026-01-01 assets/audio.mp3`.
+     *
+     * Olemassaolevat assetit ylikirjoitetaan, jotta XML ja sen assetit pysyvät
+     * synkassa. Yksittäisen tiedoston dekoodausvirhe ei keskeytä koko ajoa
+     * vaan kirjataan tulokseen `failed`-listaan.
+     */
+    @WithSpan
+    fun extractAndUploadAssets(xmlKey: String): TypedResult<AssetExtractResult, TehtavapankkiParseError> {
+        Span.current().setAttribute("xml.key", xmlKey)
+        val parsed = fetchAndParseFromS3(xmlKey)
+        val quiz =
+            when (parsed) {
+                is TypedResult.Success -> parsed.value
+                is TypedResult.Failure -> return TypedResult.Failure(parsed.error)
+            }
+
+        val prefix = "${xmlKey.removeSuffix(".xml")} assets/"
+        val uploaded = mutableListOf<String>()
+        val failed = mutableListOf<FailedAsset>()
+        val decoder = Base64.getMimeDecoder()
+
+        quiz.allEmbeddedFiles().forEach { file ->
+            if (file.name.isBlank()) return@forEach
+            val key = "$prefix${file.name}"
+            val bytes =
+                try {
+                    decoder.decode(file.content)
+                } catch (e: IllegalArgumentException) {
+                    failed += FailedAsset(file.name, e.message ?: "base64 decode failed")
+                    return@forEach
+                }
+            useS3 { bucket -> upload(bucket, key, ByteArrayInputStream(bytes)) }
+            uploaded += key
+        }
+
+        Span.current().setAttribute("assets.uploaded", uploaded.size.toLong())
+        Span.current().setAttribute("assets.failed", failed.size.toLong())
+
+        return TypedResult.Success(AssetExtractResult(xmlKey, uploaded, failed))
+    }
+
     @WithSpan
     fun fetchAndParseFromS3(key: String): TypedResult<TehtavapankkiQuiz, TehtavapankkiParseError> {
         Span.current().setAttribute("s3.key", key)
@@ -202,5 +249,28 @@ data class CleanupResult(
     val deleted: List<String>,
 )
 
+data class AssetExtractResult(
+    val xmlKey: String,
+    val uploadedAssets: List<String>,
+    val failed: List<FailedAsset>,
+)
+
+data class FailedAsset(
+    val filename: String,
+    val reason: String,
+)
+
 // AWS palauttaa ETagin lainausmerkeissä; karsitaan ne ennen vertailua.
 private fun String.normalizeETag(): String = this.trim('"')
+
+private fun TehtavapankkiQuiz.allEmbeddedFiles(): List<EmbeddedFile> =
+    questions.flatMap { question ->
+        when (question) {
+            is DescriptionQuestion -> question.questiontext?.embeddedFiles.orEmpty()
+            is MultichoiceQuestion -> question.questiontext?.embeddedFiles.orEmpty()
+            is ShortanswerQuestion -> question.questiontext?.embeddedFiles.orEmpty()
+            is EssayQuestion -> question.questiontext?.embeddedFiles.orEmpty()
+            is CloudpoodllQuestion -> question.questiontext?.embeddedFiles.orEmpty()
+            is CategoryQuestion, is UnknownQuestion -> emptyList()
+        }
+    }
