@@ -118,32 +118,51 @@ object TehtavapakettiPage {
         assetPrefix: String?,
     ) {
         article {
-            h3 {
-                small { +"${tehtava.tyyppi} · " }
+            h3("tehtava-otsikko") {
                 strong { +"${tehtava.jarjestys}. ${tehtava.nimi ?: "(nimetön)"}" }
+                small { +tehtava.tyyppi }
             }
             if (!tehtava.teksti.isNullOrBlank()) {
                 renderRichText(tehtava.teksti, tehtava.tekstinFormaatti, assetPrefix)
             }
             if (vastaukset.isNotEmpty()) {
-                strong { +"Vastausvaihtoehdot:" }
-                ul {
+                p("vaihtoehdot-otsikko") { strong { +"Vastausvaihtoehdot" } }
+                ul("vaihtoehdot") {
                     vastaukset.forEach { vastaus ->
                         li {
                             val fraction = vastaus.metadata.get("fraction")?.asString()
                             if (fraction != null) {
-                                code { +fraction }
-                                +" "
+                                code("fraction") { +fraction }
                             }
                             renderRichTextInline(vastaus.teksti, vastaus.tekstinFormaatti, assetPrefix)
                         }
                     }
                 }
             }
-            if (tiedostot.isNotEmpty()) {
-                renderTiedostot(tiedostot)
+            // Älä toista @@PLUGINFILE@@-viittauksien kautta tekstiin upotettuja
+            // mediatiedostoja erikseen liitelistana.
+            val inlineAssetNames = collectInlineAssetNames(tehtava, vastaukset)
+            val visibleTiedostot = tiedostot.filterNot { it.tiedostonimi in inlineAssetNames }
+            if (visibleTiedostot.isNotEmpty()) {
+                renderTiedostot(visibleTiedostot)
             }
         }
+    }
+
+    private fun collectInlineAssetNames(
+        tehtava: TehtavaEntity,
+        vastaukset: List<TehtavaVastausEntity>,
+    ): Set<String> {
+        val names = mutableSetOf<String>()
+        if (tehtava.tekstinFormaatti == "html" && !tehtava.teksti.isNullOrBlank()) {
+            names += extractPluginFileNames(tehtava.teksti)
+        }
+        vastaukset.forEach { v ->
+            if (v.tekstinFormaatti == "html" && !v.teksti.isNullOrBlank()) {
+                names += extractPluginFileNames(v.teksti)
+            }
+        }
+        return names
     }
 
     private fun FlowContent.renderTiedostot(tiedostot: List<TehtavaTiedostoEntity>) {
@@ -258,13 +277,19 @@ internal fun rewriteMoodleAssetUrls(
 ): String {
     if (assetPrefix == null) return html
     return pluginFileRegex.replace(html) { match ->
-        val rawName = match.groupValues[1]
-        val decodedName =
-            try {
-                URLDecoder.decode(rawName, StandardCharsets.UTF_8)
-            } catch (_: IllegalArgumentException) {
-                rawName
-            }
-        downloadUrl("$assetPrefix$decodedName")
+        downloadUrl("$assetPrefix${decodePluginFileName(match.groupValues[1])}")
     }
 }
+
+private fun extractPluginFileNames(html: String): Set<String> =
+    pluginFileRegex
+        .findAll(html)
+        .map { decodePluginFileName(it.groupValues[1]) }
+        .toSet()
+
+private fun decodePluginFileName(raw: String): String =
+    try {
+        URLDecoder.decode(raw, StandardCharsets.UTF_8)
+    } catch (_: IllegalArgumentException) {
+        raw
+    }

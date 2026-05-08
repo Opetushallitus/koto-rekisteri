@@ -288,3 +288,37 @@ td p {
 tr.faded td {
   opacity: 0.4;
 }
+
+.tehtava-otsikko {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1ex;
+}
+
+.tehtava-otsikko small {
+  color: var(--oph-grey600);
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.vaihtoehdot-otsikko {
+  margin-top: var(--pico-block-spacing-vertical);
+  margin-bottom: calc(var(--pico-block-spacing-vertical) / 2);
+}
+
+ul.vaihtoehdot {
+  list-style: none;
+  padding-left: 0;
+}
+
+ul.vaihtoehdot li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75em;
+}
+
+ul.vaihtoehdot code.fraction {
+  flex: 0 0 4em;
+  text-align: right;
+}
