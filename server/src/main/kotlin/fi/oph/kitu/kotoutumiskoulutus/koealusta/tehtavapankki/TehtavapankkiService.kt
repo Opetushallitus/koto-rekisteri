@@ -212,20 +212,25 @@ class TehtavapankkiService(
     }
 
     @WithSpan
-    fun fetchAndParseFromS3(key: String): TypedResult<TehtavapankkiQuiz, TehtavapankkiParseError> {
+    fun fetchXmlBytes(key: String): TypedResult<ByteArray, TehtavapankkiParseError> {
         Span.current().setAttribute("s3.key", key)
         val resource =
             useS3 { bucket ->
                 if (objectExists(bucket, key)) download(bucket, key) else null
             } ?: return TypedResult.Failure(TehtavapankkiParseError.NotFound)
-        val stream =
-            try {
-                resource.inputStream
-            } catch (e: Throwable) {
-                return TypedResult.Failure(TehtavapankkiParseError.IO(e))
-            }
-        return stream.use { parser.parse(it) }
+        return try {
+            TypedResult.Success(resource.inputStream.use { it.readBytes() })
+        } catch (e: Throwable) {
+            TypedResult.Failure(TehtavapankkiParseError.IO(e))
+        }
     }
+
+    @WithSpan
+    fun fetchAndParseFromS3(key: String): TypedResult<TehtavapankkiQuiz, TehtavapankkiParseError> =
+        when (val bytes = fetchXmlBytes(key)) {
+            is TypedResult.Success -> parser.parse(bytes.value.inputStream())
+            is TypedResult.Failure -> TypedResult.Failure(bytes.error)
+        }
 
     @WithSpan
     private fun <T> useS3(f: S3Template.(bucketName: String) -> T): T? {
