@@ -80,12 +80,23 @@ class TehtavapankkiIngestServiceTest(
         // Source order is preserved; jarjestys is 1..N over non-category questions.
         assertEquals((1..11).toList(), tehtavat.map { it.jarjestys })
 
-        // First multichoice inherits from the most recent category (category-2 in fixture order).
+        // Fixturilla on 2 <category>-elementtiä alussa → 2 ryhmää, source-järjestyksessä.
+        val ryhmat = repository.findRyhmatByPakettiId(paketti.id!!)
+        assertEquals(2, ryhmat.size)
+        assertEquals(listOf("Esimerkki nimi", "Esimerkkikysymys."), ryhmat.map { it.nimi })
+        assertEquals(listOf(1, 2), ryhmat.map { it.jarjestys })
+
+        // Kaikki tehtävät kuuluvat toiseen ryhmään, koska molemmat kategoriat
+        // ovat fixturin alussa ennen muita kysymyksiä.
         val firstMultichoice = tehtavat.first { it.tyyppi == "multichoice" }
         assertEquals(
-            "Esimerkkikysymys.",
-            firstMultichoice.kategoria,
-            "Kategoria pitäisi periytyä fixturin category-2:n redaktoidusta tekstistä",
+            ryhmat[1].id,
+            firstMultichoice.ryhmaId,
+            "Tehtävän pitäisi kuulua category-2:sta luotuun ryhmään",
+        )
+        assertTrue(
+            tehtavat.all { it.ryhmaId == ryhmat[1].id },
+            "Kaikkien tehtävien pitäisi kuulua viimeiseen ryhmään, oli: ${tehtavat.map { it.ryhmaId }.toSet()}",
         )
 
         val vastaukset = repository.findVastauksetByTehtavaIds(tehtavat.mapNotNull { it.id })

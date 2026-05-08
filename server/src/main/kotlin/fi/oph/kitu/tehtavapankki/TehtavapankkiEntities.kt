@@ -42,17 +42,46 @@ data class TehtavapakettiEntity(
 }
 
 /**
+ * Tehtäväryhmä — Moodlessa `<question type="category">` luo kullekin paketille
+ * loogisia jakoja, joihin tehtävät kuuluvat. `nimi` vastaa lähdejärjestelmän
+ * antamaa polkua/otsikkoa, `jarjestys` säilyttää lähdeasiakirjan järjestyksen.
+ */
+data class TehtavaryhmaEntity(
+    val id: Int? = null,
+    val pakettiId: Int,
+    val nimi: String,
+    val jarjestys: Int,
+    val metadata: JsonNode = defaultObjectMapper.createObjectNode(),
+) {
+    companion object {
+        val fromRow: RowMapper<TehtavaryhmaEntity> =
+            RowMapper { rs, _ ->
+                TehtavaryhmaEntity(
+                    id = rs.getInt("id"),
+                    pakettiId = rs.getInt("paketti_id"),
+                    nimi = rs.getString("nimi"),
+                    jarjestys = rs.getInt("jarjestys"),
+                    metadata = defaultObjectMapper.readTree(rs.getString("metadata")),
+                )
+            }
+    }
+}
+
+/**
  * Yksittäinen kysymys / tehtävä paketissa. Tyyppikohtaiset kentät (esim. Moodlen
  * `defaultgrade`/`penalty`, `single`/`shuffleanswers`, cloudpoodllin `language`/
  * `audioskin`) tallennetaan `metadata`-jsonbiin — tässä taulussa pidetään vain
  * lähteiden välillä yhteiset, kyselyihin tarvittavat sarakkeet.
+ *
+ * `ryhmaId` viittaa tehtäväryhmään, jonka ingest-kerros määrittää
+ * lähdejärjestelmän kategoriaelementtien perusteella.
  */
 data class TehtavaEntity(
     val id: Int? = null,
     val pakettiId: Int,
+    val ryhmaId: Int,
     val tyyppi: String,
     val lahdeId: String? = null,
-    val kategoria: String? = null,
     val nimi: String? = null,
     val teksti: String? = null,
     val tekstinFormaatti: String? = null,
@@ -66,9 +95,9 @@ data class TehtavaEntity(
                 TehtavaEntity(
                     id = rs.getInt("id"),
                     pakettiId = rs.getInt("paketti_id"),
+                    ryhmaId = rs.getInt("ryhma_id"),
                     tyyppi = rs.getString("tyyppi"),
                     lahdeId = rs.getString("lahde_id"),
-                    kategoria = rs.getString("kategoria"),
                     nimi = rs.getString("nimi"),
                     teksti = rs.getString("teksti"),
                     tekstinFormaatti = rs.getString("tekstin_formaatti"),

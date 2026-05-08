@@ -44,15 +44,29 @@ class TehtavapankkiRepositoryTest(
             ),
         )
 
+    private fun seedRyhma(
+        pakettiId: Int,
+        nimi: String = "Yleinen",
+        jarjestys: Int = 1,
+    ): Int =
+        repo
+            .insertRyhmat(
+                listOf(
+                    TehtavaryhmaEntity(pakettiId = pakettiId, nimi = nimi, jarjestys = jarjestys),
+                ),
+            ).single()
+
     @Test
     fun `paketti, tehtavat ja vastaukset tallentuvat ja luetaan jarjestyksessa`() {
         val pakettiId = seedPaketti()
+        val ryhmaId = seedRyhma(pakettiId)
 
         val tehtavaIds =
             repo.insertTehtavat(
                 listOf(
                     TehtavaEntity(
                         pakettiId = pakettiId,
+                        ryhmaId = ryhmaId,
                         tyyppi = "multichoice",
                         nimi = "Eka kysymys",
                         teksti = "<p>Mikä?</p>",
@@ -65,6 +79,7 @@ class TehtavapankkiRepositoryTest(
                     ),
                     TehtavaEntity(
                         pakettiId = pakettiId,
+                        ryhmaId = ryhmaId,
                         tyyppi = "shortanswer",
                         nimi = "Toka kysymys",
                         teksti = "Vastaa.",
@@ -118,11 +133,14 @@ class TehtavapankkiRepositoryTest(
     }
 
     @Test
-    fun `paketin poisto cascade-poistaa tehtavat, vastaukset ja tiedostot`() {
+    fun `paketin poisto cascade-poistaa ryhmat, tehtavat, vastaukset ja tiedostot`() {
         val pakettiId = seedPaketti()
+        val ryhmaId = seedRyhma(pakettiId)
         val tehtavaIds =
             repo.insertTehtavat(
-                listOf(TehtavaEntity(pakettiId = pakettiId, tyyppi = "multichoice", jarjestys = 1)),
+                listOf(
+                    TehtavaEntity(pakettiId = pakettiId, ryhmaId = ryhmaId, tyyppi = "multichoice", jarjestys = 1),
+                ),
             )
         repo.insertVastaukset(
             listOf(TehtavaVastausEntity(tehtavaId = tehtavaIds[0], jarjestys = 1, teksti = "A")),
@@ -141,6 +159,7 @@ class TehtavapankkiRepositoryTest(
         assertEquals(1, deletedRows)
 
         assertNull(repo.findPakettiById(pakettiId))
+        assertEquals(emptyList(), repo.findRyhmatByPakettiId(pakettiId))
         assertEquals(emptyList(), repo.findTehtavatByPakettiId(pakettiId))
         val vastausCount =
             jdbc.queryForObject(
@@ -161,11 +180,12 @@ class TehtavapankkiRepositoryTest(
     @Test
     fun `tehtavan tiedostot tallennetaan ja luetaan ryhmiteltyna tehtava-id n mukaan`() {
         val pakettiId = seedPaketti()
+        val ryhmaId = seedRyhma(pakettiId)
         val tehtavaIds =
             repo.insertTehtavat(
                 listOf(
-                    TehtavaEntity(pakettiId = pakettiId, tyyppi = "description", jarjestys = 1),
-                    TehtavaEntity(pakettiId = pakettiId, tyyppi = "description", jarjestys = 2),
+                    TehtavaEntity(pakettiId = pakettiId, ryhmaId = ryhmaId, tyyppi = "description", jarjestys = 1),
+                    TehtavaEntity(pakettiId = pakettiId, ryhmaId = ryhmaId, tyyppi = "description", jarjestys = 2),
                 ),
             )
         repo.insertTiedostot(
@@ -233,11 +253,13 @@ class TehtavapankkiRepositoryTest(
                     metadata = defaultObjectMapper.readTree("""{"courseid": 42, "fetchedAt": "2026-01-01"}"""),
                 ),
             )
+        val ryhmaId = seedRyhma(pakettiId)
         val tehtavaIds =
             repo.insertTehtavat(
                 listOf(
                     TehtavaEntity(
                         pakettiId = pakettiId,
+                        ryhmaId = ryhmaId,
                         tyyppi = "multichoice",
                         jarjestys = 1,
                         metadata =
@@ -261,11 +283,13 @@ class TehtavapankkiRepositoryTest(
     @Test
     fun `tyyppi on TEXT-kentta ilman enum-rajoitusta - vapaa lahdetyyppi tallentuu sellaisenaan`() {
         val pakettiId = seedPaketti()
+        val ryhmaId = seedRyhma(pakettiId)
         val tehtavaIds =
             repo.insertTehtavat(
                 listOf(
                     TehtavaEntity(
                         pakettiId = pakettiId,
+                        ryhmaId = ryhmaId,
                         tyyppi = "made_up_type_for_test",
                         jarjestys = 1,
                     ),
