@@ -1,6 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
 import fi.oph.kitu.restclient.withJacksonStreamMaxStringLength
+import fi.oph.kitu.util.result.TypedResult
 import io.awspring.cloud.s3.S3Template
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
@@ -29,6 +30,7 @@ class TehtavapankkiService(
     val restClientBuilder: RestClient.Builder,
     private val s3Template: S3Template,
     private val tracer: Tracer,
+    private val parser: TehtavapankkiXmlParser,
 ) {
     @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
     lateinit var koealustaToken: String
@@ -119,6 +121,22 @@ class TehtavapankkiService(
                 null
             }
         }
+
+    @WithSpan
+    fun fetchAndParseFromS3(key: String): TypedResult<TehtavapankkiQuiz, TehtavapankkiParseError> {
+        Span.current().setAttribute("s3.key", key)
+        val resource =
+            useS3 { bucket ->
+                if (objectExists(bucket, key)) download(bucket, key) else null
+            } ?: return TypedResult.Failure(TehtavapankkiParseError.NotFound)
+        val stream =
+            try {
+                resource.inputStream
+            } catch (e: Throwable) {
+                return TypedResult.Failure(TehtavapankkiParseError.IO(e))
+            }
+        return stream.use { parser.parse(it) }
+    }
 
     @WithSpan
     private fun <T> useS3(f: S3Template.(bucketName: String) -> T): T? {
