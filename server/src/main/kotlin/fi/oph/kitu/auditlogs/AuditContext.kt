@@ -1,8 +1,10 @@
 package fi.oph.kitu.auditlogs
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.cas.CasUserDetails
-import fi.oph.kitu.util.result.TypedResult
 import org.springframework.core.io.ClassPathResource
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
@@ -34,17 +36,13 @@ data class AuditContext(
             return parsed
         }
 
-        fun get(): TypedResult<AuditContext, IllegalStateException> {
+        fun get(): Either<IllegalStateException, AuditContext> {
             val userDetails: CasUserDetails =
                 SecurityContextHolder.getContext().authentication?.principal as? CasUserDetails?
-                    ?: return TypedResult.Failure(
-                        IllegalStateException("User details not available via SecurityContextHolder"),
-                    )
+                    ?: return IllegalStateException("User details not available via SecurityContextHolder").left()
             val servletRequestAttributes =
                 RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes?
-                    ?: return TypedResult.Failure(
-                        IllegalStateException("HTTP request not available via RequestContextHolder"),
-                    )
+                    ?: return IllegalStateException("HTTP request not available via RequestContextHolder").left()
             val request = servletRequestAttributes.request
 
             val userOid = userDetails.oid
@@ -56,7 +54,7 @@ data class AuditContext(
             val ip = InetAddress.getByName(request.remoteAddr)
             val session = request.session.id
 
-            return TypedResult.Success(AuditContext(userOid, userAgent, ip, session, opetushallitusOrganisaatioOid))
+            return AuditContext(userOid, userAgent, ip, session, opetushallitusOrganisaatioOid).right()
         }
     }
 }

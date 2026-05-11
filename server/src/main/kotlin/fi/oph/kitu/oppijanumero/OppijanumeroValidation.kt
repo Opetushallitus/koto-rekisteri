@@ -15,8 +15,8 @@ class OppijanumeroValidation(
     ): ValidationResult<Oid> =
         try {
             onr.getHenkilo(oid).fold(
-                onSuccess = { Validation.ok(oid) },
-                onFailure = {
+                ifRight = { Validation.ok(oid) },
+                ifLeft = {
                     when (it) {
                         is OppijanumeroException.OppijaNotFoundException -> {
                             Validation.fail(

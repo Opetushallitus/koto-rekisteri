@@ -1,9 +1,10 @@
 package fi.oph.kitu.oppijanumero
 
+import arrow.core.Either
+import arrow.core.left
 import fi.oph.kitu.restclient.nullableBody
 import fi.oph.kitu.restclient.retrieveEntitySafely
 import fi.oph.kitu.util.defaultObjectMapper
-import fi.oph.kitu.util.result.TypedResult
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -40,7 +41,7 @@ class OppijanumerorekisteriClient(
         endpoint: String,
         body: OppijanumerorekisteriRequest? = null,
         responseType: Class<T>,
-    ): TypedResult<T, OppijanumeroException> {
+    ): Either<OppijanumeroException, T> {
         val uri = "$serviceUrl/$endpoint"
 
         val rawResponse =
@@ -56,11 +57,11 @@ class OppijanumerorekisteriClient(
         }
 
         return if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
-            TypedResult.Failure(OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest(), rawResponse))
+            OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest(), rawResponse).left()
         } else if (rawResponse.statusCode.is4xxClientError) {
-            TypedResult.Failure(OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse))
+            OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse).left()
         } else if (!rawResponse.statusCode.is2xxSuccessful) {
-            TypedResult.Failure(OppijanumeroException.UnexpectedError(body ?: EmptyRequest(), rawResponse))
+            OppijanumeroException.UnexpectedError(body ?: EmptyRequest(), rawResponse).left()
         } else {
             deserializeResponse(body ?: EmptyRequest(), rawResponse, responseType)
         }
@@ -77,19 +78,19 @@ class OppijanumerorekisteriClient(
         request: OppijanumerorekisteriRequest,
         response: ResponseEntity<String>,
         clazz: Class<T>,
-    ): TypedResult<T, OppijanumeroException> =
-        TypedResult
-            .runCatching {
+    ): Either<OppijanumeroException, T> =
+        Either
+            .catch {
                 defaultObjectMapper.readValue(response.body, clazz)
-            }.mapFailure { decodeError ->
-                TypedResult
-                    .runCatching {
+            }.mapLeft { decodeError ->
+                Either
+                    .catch {
                         defaultObjectMapper.readValue(
                             response.body,
                             OppijanumeroServiceError::class.java,
                         )
                     }.fold(
-                        onSuccess = { onrError ->
+                        ifRight = { onrError ->
                             OppijanumeroException.BadResponse(
                                 request = request,
                                 response = response,
@@ -97,7 +98,7 @@ class OppijanumerorekisteriClient(
                                 cause = decodeError,
                             )
                         },
-                        onFailure = { _ ->
+                        ifLeft = { _ ->
                             OppijanumeroException.MalformedResponse(
                                 request = request,
                                 response = response,

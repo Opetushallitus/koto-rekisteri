@@ -34,13 +34,13 @@ class KoealustaMappingService(
                 val oppija =
                     validator
                         .toOppija(user)
-                        .onFailure(validationErrors::add)
+                        .onLeft(validationErrors::add)
                         .getOrNull()
 
                 val oppijanumero =
                     oppija
                         ?.let(oppijanumeroService::getOppijanumero)
-                        ?.mapFailure {
+                        ?.mapLeft {
                             val response = if (it is OppijanumeroException.HasResponse) it.response else null
                             val debugInfo = OppijanumerorekisteriDebugInfo.from(it.request, response)
                             val onrInfo = oppijanumeroTroubleshootingService.troubleshootOppijanumero(oppija, response)
@@ -54,13 +54,13 @@ class KoealustaMappingService(
                                 debugInfo.toString(),
                                 onrInfo,
                             )
-                        }?.onFailure { oppijanumeroExceptions.add(it) }
+                        }?.onLeft { oppijanumeroExceptions.add(it) }
                         ?.getOrNull()
 
                 user.completions.mapNotNull { completion ->
                     validator
                         .completionToEntity(user, oppijanumero, completion)
-                        ?.onFailure { validationErrors.add(it) }
+                        ?.onLeft { validationErrors.add(it) }
                         ?.getOrNull()
                 }
             }

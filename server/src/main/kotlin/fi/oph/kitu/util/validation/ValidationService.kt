@@ -1,5 +1,6 @@
 package fi.oph.kitu.util.validation
 
+import arrow.core.flatMap
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.HenkilosuoritusValidation
 import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus

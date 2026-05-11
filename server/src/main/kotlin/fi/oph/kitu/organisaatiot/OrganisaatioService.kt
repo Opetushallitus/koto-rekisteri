@@ -1,10 +1,10 @@
 package fi.oph.kitu.organisaatiot
 
+import arrow.core.Either
 import com.fasterxml.jackson.annotation.JsonValue
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.cache.PersistentCache
-import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.CoroutineScope
@@ -28,13 +28,13 @@ data class Organisaatiot(
 interface OrganisaatioService {
     fun getOrganisaatioCache(): PersistentCache
 
-    fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException>
+    fun getOrganisaatio(oid: Oid): Either<OrganisaatiopalveluException, GetOrganisaatioResponse>
 
     fun getOrganisaatiohierarkia(
         aktiiviset: Boolean = true,
         suunnitellut: Boolean = false,
         lakkautetut: Boolean = false,
-    ): TypedResult<GetOrganisaatiohierarkiaResponse, OrganisaatiopalveluException>
+    ): Either<OrganisaatiopalveluException, GetOrganisaatiohierarkiaResponse>
 
     fun getOrganisaatiot(): Organisaatiot =
         getOrganisaatioCache().getAsap(Organisaatiot::class.java, "OrganisaatioService.organisaatiot") {
@@ -57,7 +57,7 @@ class OrganisaatioServiceImpl(
 
     @WithSpan
     @RetryOutboundIntegration
-    override fun getOrganisaatio(oid: Oid): TypedResult<GetOrganisaatioResponse, OrganisaatiopalveluException> =
+    override fun getOrganisaatio(oid: Oid): Either<OrganisaatiopalveluException, GetOrganisaatioResponse> =
         client.get("api/$oid", responseType = GetOrganisaatioResponse::class.java)
 
     @WithSpan
@@ -66,7 +66,7 @@ class OrganisaatioServiceImpl(
         aktiiviset: Boolean,
         suunnitellut: Boolean,
         lakkautetut: Boolean,
-    ): TypedResult<GetOrganisaatiohierarkiaResponse, OrganisaatiopalveluException> =
+    ): Either<OrganisaatiopalveluException, GetOrganisaatiohierarkiaResponse> =
         client.get(
             endpoint = "api/hierarkia/hae",
             query =

@@ -4,6 +4,7 @@ import fi.oph.kitu.koodisto.KoodistoService
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.validation.ValidationService
 import fi.oph.kitu.webmvc.csvAttachmentResponse
 import io.swagger.v3.oas.annotations.Operation

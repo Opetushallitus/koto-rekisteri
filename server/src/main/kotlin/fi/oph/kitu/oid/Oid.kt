@@ -1,8 +1,8 @@
 package fi.oph.kitu.oid
 
-import fi.oph.kitu.util.result.TypedResult
-import fi.oph.kitu.util.result.TypedResult.Failure
-import fi.oph.kitu.util.result.TypedResult.Success
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import io.swagger.v3.oas.annotations.media.Schema
 import org.ietf.jgss.GSSException
 import tools.jackson.databind.annotation.JsonSerialize
@@ -41,11 +41,11 @@ data class Oid private constructor(
                 Result.failure(MalformedOidError(source))
             }
 
-        fun parseTyped(source: String): TypedResult<Oid, MalformedOidError> =
+        fun parseTyped(source: String): Either<MalformedOidError, Oid> =
             try {
-                Success(Oid(org.ietf.jgss.Oid(source)))
+                Oid(org.ietf.jgss.Oid(source)).right()
             } catch (_: GSSException) {
-                Failure(MalformedOidError(source))
+                MalformedOidError(source).left()
             }
     }
 }

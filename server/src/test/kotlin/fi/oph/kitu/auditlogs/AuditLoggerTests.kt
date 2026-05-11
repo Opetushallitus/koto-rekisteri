@@ -6,6 +6,7 @@ import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.dev.mockdata.generateRandomOppijaOid
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.cas.CasUserDetails
+import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

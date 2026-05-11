@@ -4,6 +4,7 @@ import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.validation.ValidationService
 import fi.oph.kitu.webmvc.csvAttachmentResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioija

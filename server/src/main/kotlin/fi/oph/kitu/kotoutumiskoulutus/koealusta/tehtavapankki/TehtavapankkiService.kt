@@ -1,6 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
-import fi.oph.kitu.util.result.TypedResult
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import io.awspring.cloud.s3.S3Template
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
@@ -146,13 +148,13 @@ class TehtavapankkiService(
      * vaan kirjataan tulokseen `failed`-listaan.
      */
     @WithSpan
-    fun extractAndUploadAssets(xmlKey: String): TypedResult<AssetExtractResult, TehtavapankkiParseError> {
+    fun extractAndUploadAssets(xmlKey: String): Either<TehtavapankkiParseError, AssetExtractResult> {
         Span.current().setAttribute("xml.key", xmlKey)
         val parsed = fetchAndParseFromS3(xmlKey)
         val quiz =
             when (parsed) {
-                is TypedResult.Success -> parsed.value
-                is TypedResult.Failure -> return TypedResult.Failure(parsed.error)
+                is Either.Right -> parsed.value
+                is Either.Left -> return parsed.value.left()
             }
 
         val prefix = "${xmlKey.removeSuffix(".xml")} assets/"
@@ -177,7 +179,7 @@ class TehtavapankkiService(
         Span.current().setAttribute("assets.uploaded", uploaded.size.toLong())
         Span.current().setAttribute("assets.failed", failed.size.toLong())
 
-        return TypedResult.Success(AssetExtractResult(xmlKey, uploaded, failed))
+        return AssetExtractResult(xmlKey, uploaded, failed).right()
     }
 
     /**
@@ -199,24 +201,24 @@ class TehtavapankkiService(
     }
 
     @WithSpan
-    fun fetchXmlBytes(key: String): TypedResult<ByteArray, TehtavapankkiParseError> {
+    fun fetchXmlBytes(key: String): Either<TehtavapankkiParseError, ByteArray> {
         Span.current().setAttribute("s3.key", key)
         val resource =
             useS3 { bucket ->
                 if (objectExists(bucket, key)) download(bucket, key) else null
-            } ?: return TypedResult.Failure(TehtavapankkiParseError.NotFound)
+            } ?: return TehtavapankkiParseError.NotFound.left()
         return try {
-            TypedResult.Success(resource.inputStream.use { it.readBytes() })
+            resource.inputStream.use { it.readBytes() }.right()
         } catch (e: Throwable) {
-            TypedResult.Failure(TehtavapankkiParseError.IO(e))
+            TehtavapankkiParseError.IO(e).left()
         }
     }
 
     @WithSpan
-    fun fetchAndParseFromS3(key: String): TypedResult<TehtavapankkiQuiz, TehtavapankkiParseError> =
+    fun fetchAndParseFromS3(key: String): Either<TehtavapankkiParseError, TehtavapankkiQuiz> =
         when (val bytes = fetchXmlBytes(key)) {
-            is TypedResult.Success -> parser.parse(bytes.value.inputStream())
-            is TypedResult.Failure -> TypedResult.Failure(bytes.error)
+            is Either.Right -> parser.parse(bytes.value.inputStream())
+            is Either.Left -> bytes.value.left()
         }
 
     @WithSpan

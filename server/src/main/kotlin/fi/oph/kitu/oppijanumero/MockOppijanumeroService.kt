@@ -1,8 +1,10 @@
 package fi.oph.kitu.oppijanumero
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.defaultObjectMapper
-import fi.oph.kitu.util.result.TypedResult
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.ResponseEntity
@@ -12,7 +14,7 @@ import java.io.FileNotFoundException
 @Service
 @Profile("test | e2e | local-opintopolku")
 class MockOppijanumeroService : OppijanumeroService {
-    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> {
+    override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> {
         require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
         require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
         require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
@@ -28,33 +30,30 @@ class MockOppijanumeroService : OppijanumeroService {
 
         return when (oppija.hetu) {
             "INVALID_HETU" -> {
-                TypedResult.Failure(
-                    OppijanumeroException.BadRequest(request, response = ResponseEntity.badRequest().build()),
-                )
+                OppijanumeroException.BadRequest(request, response = ResponseEntity.badRequest().build()).left()
             }
 
             "WRONG_HETU" -> {
-                TypedResult.Failure(OppijanumeroException.OppijaNotIdentifiedException(request))
+                OppijanumeroException.OppijaNotIdentifiedException(request).left()
             }
 
             else -> {
                 oppijaToOid[oppija]?.let { oid ->
-                    TypedResult.Success(Oid.Companion.parse(oid).getOrThrow())
-                } ?: TypedResult.Failure(
-                    OppijanumeroException.OppijaNotFoundException(request, ResponseEntity.notFound().build()),
-                )
+                    Oid.Companion
+                        .parse(oid)
+                        .getOrThrow()
+                        .right()
+                } ?: OppijanumeroException.OppijaNotFoundException(request, ResponseEntity.notFound().build()).left()
             }
         }
     }
 
-    override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
+    override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
         try {
             val source = ClassPathResource("./opintopolku-mocks/oppijanumerorekisteri-service/henkilo/$oid.json").file
-            TypedResult.Success(defaultObjectMapper.readValue(source, OppijanumerorekisteriHenkilo::class.java))
+            defaultObjectMapper.readValue(source, OppijanumerorekisteriHenkilo::class.java).right()
         } catch (_: FileNotFoundException) {
-            TypedResult.Failure(
-                OppijanumeroException.OppijaNotFoundException(EmptyRequest(), ResponseEntity.notFound().build()),
-            )
+            OppijanumeroException.OppijaNotFoundException(EmptyRequest(), ResponseEntity.notFound().build()).left()
         }
 
     companion object {

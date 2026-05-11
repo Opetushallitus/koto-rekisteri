@@ -1,5 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
+import arrow.core.Either
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration.Companion.TEST_BUCKET
@@ -7,7 +8,6 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
-import fi.oph.kitu.util.result.TypedResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -199,7 +199,7 @@ class TehtavapankkiViewControllerTest(
             RequestBody.fromBytes(xmlBytes),
         )
         val result = ingestService.ingestFromS3(xmlKey)
-        return (result as TypedResult.Success).value.id!!
+        return (result as Either.Right).value.id!!
     }
 
     private fun virkailijaSession(): MockHttpSession {

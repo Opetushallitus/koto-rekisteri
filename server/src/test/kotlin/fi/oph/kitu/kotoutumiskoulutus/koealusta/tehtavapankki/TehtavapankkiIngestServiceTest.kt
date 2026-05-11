@@ -1,11 +1,11 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
+import arrow.core.Either
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration.Companion.TEST_BUCKET
 import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
-import fi.oph.kitu.util.result.TypedResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -54,7 +54,7 @@ class TehtavapankkiIngestServiceTest(
         )
 
         val result = ingestService.ingestFromS3(xmlKey)
-        assertIs<TypedResult.Success<TehtavapakettiEntity, TehtavapankkiParseError>>(result)
+        assertIs<Either.Right<TehtavapakettiEntity>>(result)
         val paketti = result.value
 
         assertEquals("moodle.koealusta", paketti.lahdejarjestelma)
@@ -133,12 +133,12 @@ class TehtavapankkiIngestServiceTest(
             RequestBody.fromBytes(xmlBytes),
         )
 
-        val first = (ingestService.ingestFromS3(xmlKey) as TypedResult.Success).value
+        val first = (ingestService.ingestFromS3(xmlKey) as Either.Right).value
 
         val tehtavatBefore = jdbc.queryForObject("SELECT COUNT(*) FROM tehtava", Int::class.java)
         val tiedostotBefore = jdbc.queryForObject("SELECT COUNT(*) FROM tehtava_tiedosto", Int::class.java)
 
-        val second = (ingestService.ingestFromS3(xmlKey) as TypedResult.Success).value
+        val second = (ingestService.ingestFromS3(xmlKey) as Either.Right).value
         assertEquals(first.id, second.id)
 
         val tehtavatAfter = jdbc.queryForObject("SELECT COUNT(*) FROM tehtava", Int::class.java)
@@ -157,9 +157,9 @@ class TehtavapankkiIngestServiceTest(
             RequestBody.fromString("""<?xml version="1.0"?><quiz></quiz>"""),
         )
 
-        val firstPaketti = (ingestService.ingestFromS3(firstKey) as TypedResult.Success).value
+        val firstPaketti = (ingestService.ingestFromS3(firstKey) as Either.Right).value
         Thread.sleep(20)
-        val secondPaketti = (ingestService.ingestFromS3(secondKey) as TypedResult.Success).value
+        val secondPaketti = (ingestService.ingestFromS3(secondKey) as Either.Right).value
 
         assertTrue(firstPaketti.id != secondPaketti.id, "Eri hashin pitäisi tuottaa eri paketti")
         val latest = repository.findLatestPakettiBySource("moodle.koealusta", "42")
@@ -170,7 +170,7 @@ class TehtavapankkiIngestServiceTest(
     @Test
     fun `ingest palauttaa NotFound kun XML ta ei loydy bucketista`() {
         val result = ingestService.ingestFromS3("ei-olemassa.xml")
-        assertIs<TypedResult.Failure<TehtavapakettiEntity, TehtavapankkiParseError>>(result)
-        assertEquals(TehtavapankkiParseError.NotFound, result.error)
+        assertIs<Either.Left<TehtavapankkiParseError>>(result)
+        assertEquals(TehtavapankkiParseError.NotFound, result.value)
     }
 }

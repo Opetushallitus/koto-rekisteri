@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt.html
 
+import arrow.core.Either
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.error
@@ -7,16 +8,15 @@ import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
-import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import kotlinx.html.FlowContent
 
 fun FlowContent.vktHenkilonTiedot(
     data: VktHenkilosuoritus,
-    henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
+    henkilo: Either<OppijanumeroException, OppijanumerorekisteriHenkilo>,
 ) {
     henkilo
-        .onSuccess {
+        .onRight {
             card(compact = true) {
                 infoTable(
                     "Henkilötunnus" to { +it.hetut().joinToString(", ") },
@@ -33,7 +33,7 @@ fun FlowContent.vktHenkilonTiedot(
                     },
                 )
             }
-        }.onFailure {
+        }.onLeft {
             card(compact = true) {
                 infoTable(
                     "Oppijanumero" to { +data.henkilo.oid.toString() },

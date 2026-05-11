@@ -1,6 +1,7 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
-import fi.oph.kitu.util.result.TypedResult
+import arrow.core.Either
+import arrow.core.right
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -8,11 +9,10 @@ import org.springframework.stereotype.Service
 @Profile("test")
 class IlmoittautumisjarjestelmaClientMock : IlmoittautumisjarjestelmaClient {
     val requests = mutableListOf<IlmoittautumisjarjestelmaRequest>()
-    val defaultResponse: TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException> =
-        TypedResult.Success(IlmoittautumisjarjestelmaResponse.ok(1))
+    val defaultResponse: Either<IlmoittautumisjarjestelmaException, IlmoittautumisjarjestelmaResponse> =
+        IlmoittautumisjarjestelmaResponse.ok(1).right()
 
-    var response: TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException> =
-        defaultResponse
+    var response: Either<IlmoittautumisjarjestelmaException, IlmoittautumisjarjestelmaResponse> = defaultResponse
 
     fun reset() {
         requests.clear()
@@ -25,9 +25,9 @@ class IlmoittautumisjarjestelmaClientMock : IlmoittautumisjarjestelmaClient {
         endpoint: String,
         body: IlmoittautumisjarjestelmaRequest,
         responseType: Class<T>,
-    ): TypedResult<T, out IlmoittautumisjarjestelmaException> {
+    ): Either<IlmoittautumisjarjestelmaException, T> {
         requests.add(body)
         @Suppress("UNCHECKED_CAST")
-        return response as TypedResult<T, out IlmoittautumisjarjestelmaException>
+        return response as Either<IlmoittautumisjarjestelmaException, T>
     }
 }

@@ -1,6 +1,6 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
-import fi.oph.kitu.util.result.TypedResult
+import arrow.core.Either
 import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -55,7 +55,7 @@ class IlmoittautumisjarjestelmaServiceImpl(
     @RetryOutboundIntegration
     private fun sendArvioinninTilat(
         request: YkiArvioinninTilaRequest,
-    ): TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException> =
+    ): Either<IlmoittautumisjarjestelmaException, IlmoittautumisjarjestelmaResponse> =
         client.post(
             "yki/v2/api/oauth2/registration/evaluation",
             request,
@@ -64,41 +64,44 @@ class IlmoittautumisjarjestelmaServiceImpl(
 
     private fun saveResponse(
         suoritukset: List<YkiSuoritusEntity>,
-        response: TypedResult<out IlmoittautumisjarjestelmaResponse, out IlmoittautumisjarjestelmaException>,
-    ) = response.fold({ response ->
-        val virheIds =
-            response.virheet
-                ?.let { virheet ->
-                    val tunnisteToSolkiIdMap = suoritukset.associate { YkiSuorituksenTunniste.of(it) to it.solkiId }
-                    virheet
-                        .flatMap { virhe ->
-                            tunnisteToSolkiIdMap
-                                .filterKeys { tunniste -> virhe.suoritus == tunniste }
-                                .map { it.value to virhe.virhe }
-                        }.toMap()
-                }.orEmpty()
+        response: Either<IlmoittautumisjarjestelmaException, IlmoittautumisjarjestelmaResponse>,
+    ) = response.fold(
+        ifRight = { ok ->
+            val virheIds =
+                ok.virheet
+                    ?.let { virheet ->
+                        val tunnisteToSolkiIdMap = suoritukset.associate { YkiSuorituksenTunniste.of(it) to it.solkiId }
+                        virheet
+                            .flatMap { virhe ->
+                                tunnisteToSolkiIdMap
+                                    .filterKeys { tunniste -> virhe.suoritus == tunniste }
+                                    .map { it.value to virhe.virhe }
+                            }.toMap()
+                    }.orEmpty()
 
-        val okSuoritukset = suoritukset.filterNot { virheIds.containsKey(it.solkiId) }
+            val okSuoritukset = suoritukset.filterNot { virheIds.containsKey(it.solkiId) }
 
-        okSuoritukset.forEach { suoritus ->
-            suoritusRepository.setArvioinninTilaSent(suoritus.solkiId)
-        }
-        virheIds.forEach { solkiId, virhe ->
-            suoritusRepository.setArvioinninTilanLahetysvirhe(solkiId, virhe)
-        }
+            okSuoritukset.forEach { suoritus ->
+                suoritusRepository.setArvioinninTilaSent(suoritus.solkiId)
+            }
+            virheIds.forEach { solkiId, virhe ->
+                suoritusRepository.setArvioinninTilanLahetysvirhe(solkiId, virhe)
+            }
 
-        Span
-            .current()
-            .setAttribute("suoritukset.success", okSuoritukset.map { it.solkiId }.joinToString(", "))
-            .setAttribute("suoritukset.fail", virheIds.entries.joinToString(", ") { "${it.key}=${it.value}" })
-    }, { exception ->
-        suoritukset.forEach { suoritus ->
-            suoritusRepository.setArvioinninTilanLahetysvirhe(
-                suoritus.solkiId,
-                exception.debugString(),
-            )
-        }
-    })
+            Span
+                .current()
+                .setAttribute("suoritukset.success", okSuoritukset.map { it.solkiId }.joinToString(", "))
+                .setAttribute("suoritukset.fail", virheIds.entries.joinToString(", ") { "${it.key}=${it.value}" })
+        },
+        ifLeft = { exception ->
+            suoritukset.forEach { suoritus ->
+                suoritusRepository.setArvioinninTilanLahetysvirhe(
+                    suoritus.solkiId,
+                    exception.debugString(),
+                )
+            }
+        },
+    )
 }
 
 @Service

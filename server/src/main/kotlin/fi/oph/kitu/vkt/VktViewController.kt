@@ -230,8 +230,8 @@ class VktViewController(
             }
         } else {
             koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus).fold(
-                onSuccess = { KoskiTransferState.PENDING to emptyList() },
-                onFailure = { KoskiTransferState.NOT_READY to it },
+                ifRight = { KoskiTransferState.PENDING to emptyList() },
+                ifLeft = { KoskiTransferState.NOT_READY to it },
             )
         }
 }

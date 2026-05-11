@@ -1,6 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
-import fi.oph.kitu.util.result.TypedResult
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
@@ -18,17 +20,17 @@ class TehtavapankkiXmlParser {
             .build()
 
     @WithSpan
-    fun parse(input: InputStream): TypedResult<TehtavapankkiQuiz, TehtavapankkiParseError> =
+    fun parse(input: InputStream): Either<TehtavapankkiParseError, TehtavapankkiQuiz> =
         try {
             val tree = xmlMapper.readTree(input)
             val quiz = buildQuiz(tree)
             Span.current().setAttribute("questionCount", quiz.questions.size.toLong())
-            TypedResult.Success(quiz)
+            quiz.right()
         } catch (e: Throwable) {
-            TypedResult.Failure(TehtavapankkiParseError.InvalidXml(e))
+            TehtavapankkiParseError.InvalidXml(e).left()
         }
 
-    fun parse(xml: String): TypedResult<TehtavapankkiQuiz, TehtavapankkiParseError> =
+    fun parse(xml: String): Either<TehtavapankkiParseError, TehtavapankkiQuiz> =
         parse(xml.byteInputStream(Charsets.UTF_8))
 
     private fun buildQuiz(root: JsonNode): TehtavapankkiQuiz {

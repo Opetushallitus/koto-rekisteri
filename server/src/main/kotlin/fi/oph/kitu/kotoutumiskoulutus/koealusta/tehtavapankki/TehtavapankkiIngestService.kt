@@ -1,5 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import fi.oph.kitu.tehtavapankki.TehtavaEntity
 import fi.oph.kitu.tehtavapankki.TehtavaTiedostoEntity
 import fi.oph.kitu.tehtavapankki.TehtavaVastausEntity
@@ -7,7 +10,6 @@ import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
 import fi.oph.kitu.tehtavapankki.TehtavaryhmaEntity
 import fi.oph.kitu.util.defaultObjectMapper
-import fi.oph.kitu.util.result.TypedResult
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -37,13 +39,13 @@ class TehtavapankkiIngestService(
      */
     @WithSpan
     @Transactional
-    fun ingestFromS3(xmlKey: String): TypedResult<TehtavapakettiEntity, TehtavapankkiParseError> {
+    fun ingestFromS3(xmlKey: String): Either<TehtavapankkiParseError, TehtavapakettiEntity> {
         Span.current().setAttribute("xml.key", xmlKey)
 
         val bytes =
             when (val r = tehtavapankkiService.fetchXmlBytes(xmlKey)) {
-                is TypedResult.Success -> r.value
-                is TypedResult.Failure -> return TypedResult.Failure(r.error)
+                is Either.Right -> r.value
+                is Either.Left -> return r.value.left()
             }
 
         val versioHash = sha256(bytes)
@@ -52,15 +54,13 @@ class TehtavapankkiIngestService(
         if (repository.existsByVersionHash(LAHDEJARJESTELMA, source.lahdeId, versioHash)) {
             Span.current().setAttribute("ingest.dedup", true)
             // Sama hash on jo tallessa: palautetaan olemassa oleva paketti.
-            return TypedResult.Success(
-                repository.findLatestPakettiBySource(LAHDEJARJESTELMA, source.lahdeId)!!,
-            )
+            return repository.findLatestPakettiBySource(LAHDEJARJESTELMA, source.lahdeId)!!.right()
         }
 
         val quiz =
             when (val r = parser.parse(bytes.inputStream())) {
-                is TypedResult.Success -> r.value
-                is TypedResult.Failure -> return TypedResult.Failure(r.error)
+                is Either.Right -> r.value
+                is Either.Left -> return r.value.left()
             }
 
         val pakettiId =
@@ -162,7 +162,7 @@ class TehtavapankkiIngestService(
         Span.current().setAttribute("vastaukset.count", vastaukset.size.toLong())
         Span.current().setAttribute("tiedostot.count", tiedostot.size.toLong())
 
-        return TypedResult.Success(repository.findPakettiById(pakettiId)!!)
+        return repository.findPakettiById(pakettiId)!!.right()
     }
 
     companion object {

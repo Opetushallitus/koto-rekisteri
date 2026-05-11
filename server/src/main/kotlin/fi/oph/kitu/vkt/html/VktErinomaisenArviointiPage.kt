@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt.html
 
+import arrow.core.Either
 import fi.oph.kitu.html.Navigation
 import fi.oph.kitu.html.Navigation.setCurrentItem
 import fi.oph.kitu.html.Page
@@ -20,7 +21,6 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.util.growToSize
-import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktOsakoe
 import kotlinx.html.FlowContent
@@ -33,7 +33,7 @@ import java.time.LocalDate
 object VktErinomaisenArviointiPage {
     fun render(
         data: VktHenkilosuoritus,
-        henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
+        henkilo: Either<OppijanumeroException, OppijanumerorekisteriHenkilo>,
         translations: Translations,
         messages: List<ViewMessageData>,
         koskiTransferState: Pair<KoskiTransferState, List<String>>,

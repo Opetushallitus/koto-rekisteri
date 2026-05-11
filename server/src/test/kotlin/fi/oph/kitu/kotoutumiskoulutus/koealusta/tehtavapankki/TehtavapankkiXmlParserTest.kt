@@ -1,6 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
-import fi.oph.kitu.util.result.TypedResult
+import arrow.core.Either
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 import kotlin.test.assertEquals
@@ -12,7 +12,7 @@ class TehtavapankkiXmlParserTest {
 
     private fun parseSuccess(xml: String): TehtavapankkiQuiz {
         val result = parser.parse(xml)
-        assertTrue(result is TypedResult.Success, "Parsinnan piti onnistua, oli: $result")
+        assertTrue(result is Either.Right, "Parsinnan piti onnistua, oli: $result")
         return result.value
     }
 
@@ -21,7 +21,7 @@ class TehtavapankkiXmlParserTest {
         val stream =
             ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml").inputStream
         val result = parser.parse(stream)
-        assertTrue(result is TypedResult.Success)
+        assertTrue(result is Either.Right)
         val quiz = result.value
 
         assertEquals(13, quiz.questions.size)
@@ -43,7 +43,7 @@ class TehtavapankkiXmlParserTest {
     fun `multichoice-kysymyksen vastausvaihtoehtojen fraction-arvot parsiutuvat oikein`() {
         val stream =
             ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml").inputStream
-        val quiz = (parser.parse(stream) as TypedResult.Success).value
+        val quiz = (parser.parse(stream) as Either.Right).value
         val firstMultichoice = quiz.questions.filterIsInstance<MultichoiceQuestion>().first()
 
         assertEquals(listOf(0.0, 100.0, 0.0), firstMultichoice.answers.map { it.fraction })
@@ -53,7 +53,7 @@ class TehtavapankkiXmlParserTest {
     fun `multichoice-kysymyksen sisaan upotettu png-tiedosto sailyy ehjana`() {
         val stream =
             ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml").inputStream
-        val quiz = (parser.parse(stream) as TypedResult.Success).value
+        val quiz = (parser.parse(stream) as Either.Right).value
 
         val files =
             quiz.questions
@@ -71,7 +71,7 @@ class TehtavapankkiXmlParserTest {
     fun `description-kysymyksen sisaan upotettu mp3-tiedosto sailyy ehjana`() {
         val stream =
             ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml").inputStream
-        val quiz = (parser.parse(stream) as TypedResult.Success).value
+        val quiz = (parser.parse(stream) as Either.Right).value
 
         val mp3 =
             quiz.questions
@@ -88,7 +88,7 @@ class TehtavapankkiXmlParserTest {
     fun `cloudpoodll-kysymyksen tags-lista parsiutuu kun tagit ovat olemassa`() {
         val stream =
             ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml").inputStream
-        val quiz = (parser.parse(stream) as TypedResult.Success).value
+        val quiz = (parser.parse(stream) as Either.Right).value
 
         val cloudpoodlls = quiz.questions.filterIsInstance<CloudpoodllQuestion>()
         assertEquals(2, cloudpoodlls.size)
@@ -293,7 +293,7 @@ class TehtavapankkiXmlParserTest {
     @Test
     fun `viallinen xml palauttaa InvalidXml-virheen`() {
         val result = parser.parse("<quiz><question type=\"category\"></quiz>")
-        assertTrue(result is TypedResult.Failure)
-        assertTrue(result.error is TehtavapankkiParseError.InvalidXml)
+        assertTrue(result is Either.Left)
+        assertTrue(result.value is TehtavapankkiParseError.InvalidXml)
     }
 }

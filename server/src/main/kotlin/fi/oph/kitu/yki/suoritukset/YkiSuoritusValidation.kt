@@ -87,7 +87,7 @@ class YkiSuoritusValidation(
             )
 
         return organisaatiot.getOrganisaatio(oid).fold(
-            onSuccess = { org ->
+            ifRight = { org ->
                 val tyypit = org.tyypit.mapNotNull { Koodisto.Organisaatiotyyppi.of(it) }
                 if (tyypit.intersects(sallitutOrganisaatiotyypit)) {
                     Validation.Companion.ok(s)
@@ -101,7 +101,7 @@ class YkiSuoritusValidation(
                     )
                 }
             },
-            onFailure = {
+            ifLeft = {
                 fail(
                     when (it) {
                         is OrganisaatiopalveluException.NotFoundException -> {
