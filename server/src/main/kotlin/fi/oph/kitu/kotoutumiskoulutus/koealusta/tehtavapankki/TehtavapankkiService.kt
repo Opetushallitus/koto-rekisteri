@@ -180,6 +180,24 @@ class TehtavapankkiService(
         return TypedResult.Success(AssetExtractResult(xmlKey, uploaded, failed))
     }
 
+    /**
+     * Tarkistaa onko XML:n vieressä jo purettuja assetteja eli onko
+     * `${xmlKey ilman .xml-päätettä} assets/` -prefixin alla yhtään objektia.
+     * Käytetään käynnistystarkistuksessa varmistamaan että aiemmin tallennetuista
+     * paketeista on myös assetit purettu S3:een.
+     */
+    @WithSpan
+    fun hasExtractedAssets(xmlKey: String): Boolean {
+        Span.current().setAttribute("xml.key", xmlKey)
+        val prefix = "${xmlKey.removeSuffix(".xml")} assets/"
+        return useS3 { bucket ->
+            s3Client
+                .listObjectsV2 { it.bucket(bucket).prefix(prefix).maxKeys(1) }
+                .contents()
+                .isNotEmpty()
+        } ?: false
+    }
+
     @WithSpan
     fun fetchXmlBytes(key: String): TypedResult<ByteArray, TehtavapankkiParseError> {
         Span.current().setAttribute("s3.key", key)
