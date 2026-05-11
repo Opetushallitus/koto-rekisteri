@@ -15,11 +15,10 @@ import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage
 import fi.oph.kitu.vkt.html.VktKoskiErrors
 import fi.oph.kitu.vkt.html.VktSuorituksetPage
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.a
 import kotlinx.html.br
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -83,9 +82,8 @@ class VktViewController(
         redirectToSuorituksetView(VktSuoritusFilter.HYVAN_JA_TYYDYTTAVAN_TASON_SUORITUKSET)
 
     private fun redirectToSuorituksetView(filter: VktSuoritusFilter): RedirectView {
-        val url = linkTo(methodOn(this::class.java).suorituksetView()).toString()
         val params = httpParams(filter.toMap())
-        return RedirectView(url + params)
+        return RedirectView(Links.Vkt.suoritukset() + params)
     }
 
     @GetMapping("/suoritukset/{oppijanumero}/{kieli}/{taso}", produces = ["text/html"])
@@ -159,11 +157,7 @@ class VktViewController(
         }
         vktSuoritukset.requestTransferToKoski(CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso))
         viewMessage.showSuccess("Muutokset tallennettu onnistuneesti.")
-        return RedirectView(
-            linkTo(
-                methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(oppijanumero, kieli, taso),
-            ).toString(),
-        )
+        return RedirectView(Links.Vkt.ilmoittautuneenArviointi(oppijanumero, kieli, taso))
     }
 
     @GetMapping("/koski-virheet", produces = ["text/html"])
@@ -195,11 +189,7 @@ class VktViewController(
             ),
             hidden = hidden,
         )
-        return RedirectView(
-            linkTo(
-                methodOn(VktViewController::class.java).showKoskiVirheet(),
-            ).toString(),
-        )
+        return RedirectView(Links.Vkt.koskiVirheet())
     }
 
     @GetMapping("/koski-request/{oppijanumero}/{kieli}/{taso}", produces = ["application/json"])
@@ -222,9 +212,7 @@ class VktViewController(
                     ViewMessageData.html(ViewMessageType.ERROR) {
                         +text
                         br()
-                        a(
-                            href = linkTo(methodOn(VktViewController::class.java).showKoskiVirheet()).toString(),
-                        ) { +"Näytä virheet" }
+                        a(href = Links.Vkt.koskiVirheet()) { +"Näytä virheet" }
                     }
                 } else {
                     null

@@ -6,10 +6,9 @@ import fi.oph.kitu.config.ApplicationProperties
 import fi.oph.kitu.config.isDeployedToOpintopolku
 import fi.oph.kitu.html.Navigation.flatten
 import fi.oph.kitu.html.Navigation.mainNavigation
-import fi.oph.kitu.webmvc.HomeController
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
-import org.springframework.hateoas.server.mvc.linkTo
 
 object Page {
     fun HEAD.loadRaamit() {
@@ -52,9 +51,7 @@ object Page {
                                 ul(classes = "breadcrumbs") {
                                     testId("breadcrumbs")
                                     li {
-                                        a(
-                                            href = linkTo(HomeController::home).toString(),
-                                        ) { strong { +"Kielitutkintorekisteri" } }
+                                        a(href = Links.home()) { strong { +"Kielitutkintorekisteri" } }
                                     }
                                 }
                             }

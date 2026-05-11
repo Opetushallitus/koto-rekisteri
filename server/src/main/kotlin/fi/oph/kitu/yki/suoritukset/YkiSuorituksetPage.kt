@@ -18,11 +18,10 @@ import fi.oph.kitu.html.table.enumFilter
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
+import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
-import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiSuorituksetParams
-import fi.oph.kitu.yki.YkiViewController
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
@@ -38,7 +37,6 @@ import kotlinx.html.nav
 import kotlinx.html.section
 import kotlinx.html.table
 import kotlinx.html.ul
-import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.security.web.csrf.CsrfToken
 
 object YkiSuorituksetPage {
@@ -58,14 +56,8 @@ object YkiSuorituksetPage {
 
             h1 { +"Yleinen kielitutkinto" }
             h2 { +"Suoritukset" }
-            errorsArticle(
-                errorsCount,
-                linkTo(YkiViewController::suorituksetVirheetView).toString(),
-            )
-            koskiErrorsArticle(
-                koskiErrorsCount,
-                linkTo(YkiViewController::koskiVirheetView).toString(),
-            )
+            errorsArticle(errorsCount, Links.Yki.suorituksetVirheet())
+            koskiErrorsArticle(koskiErrorsCount, Links.Yki.koskiVirheet())
 
             section(classes = "grid center-vertically") {
                 formPost(action = "", csrfToken = csrfToken) {
@@ -93,8 +85,7 @@ object YkiSuorituksetPage {
                             li { +"Suorituksia yhteensä: $totalSuoritukset" }
                             li {
                                 csvDownloadButton(
-                                    linkTo<YkiApiController> { getSuorituksetAsCsv() }.toString() +
-                                        "?${httpParams(filterParams.toMap())}",
+                                    Links.Yki.suorituksetCsv() + httpParams(filterParams.toMap()),
                                 )
                             }
                             li { ykiSuoritusFilterButton(filterParams) }

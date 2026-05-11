@@ -10,12 +10,10 @@ import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.VktMappingId
-import fi.oph.kitu.vkt.VktViewController
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.a
 import kotlinx.html.h1
 import kotlinx.html.h2
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
 object VktKoskiErrors {
     fun render(
@@ -38,15 +36,11 @@ object VktKoskiErrors {
                                 VktMappingId.parse(it.id)?.let {
                                     a(
                                         href =
-                                            linkTo(
-                                                methodOn(
-                                                    VktViewController::class.java,
-                                                ).ilmoittautuneenArviointiView(
-                                                    oppijanumero = it.ryhma.oppijanumero,
-                                                    kieli = it.ryhma.tutkintokieli,
-                                                    taso = it.ryhma.taitotaso,
-                                                ),
-                                            ).toString(),
+                                            Links.Vkt.ilmoittautuneenArviointi(
+                                                oppijanumero = it.ryhma.oppijanumero,
+                                                kieli = it.ryhma.tutkintokieli,
+                                                taso = it.ryhma.taitotaso,
+                                            ),
                                     ) {
                                         +it.ryhma.oppijanumero
                                         +" / "
@@ -64,15 +58,11 @@ object VktKoskiErrors {
                                 VktMappingId.parse(error.id)?.let { id ->
                                     a(
                                         href =
-                                            linkTo(
-                                                methodOn(
-                                                    VktViewController::class.java,
-                                                ).koskiRequestJson(
-                                                    id.ryhma.oppijanumero,
-                                                    id.ryhma.tutkintokieli,
-                                                    id.ryhma.taitotaso,
-                                                ),
-                                            ).toString(),
+                                            Links.Vkt.koskiRequestJson(
+                                                id.ryhma.oppijanumero,
+                                                id.ryhma.tutkintokieli,
+                                                id.ryhma.taitotaso,
+                                            ),
                                     ) {
                                         +"Näytä JSON"
                                     }
@@ -93,16 +83,12 @@ object VktKoskiErrors {
         hidden: Boolean,
     ): String? =
         VktMappingId.parse(error.id)?.let { id ->
-            linkTo(
-                methodOn(
-                    VktViewController::class.java,
-                ).hideKoskiVirheet(
-                    oppijanumero = id.ryhma.oppijanumero,
-                    tutkintokieli = id.ryhma.tutkintokieli,
-                    taitotaso = id.ryhma.taitotaso,
-                    hidden = hidden,
-                ),
-            ).toString()
+            Links.Vkt.hideKoskiVirheet(
+                oppijanumero = id.ryhma.oppijanumero,
+                tutkintokieli = id.ryhma.tutkintokieli,
+                taitotaso = id.ryhma.taitotaso,
+                hidden = hidden,
+            )
         }
 
     enum class Column(

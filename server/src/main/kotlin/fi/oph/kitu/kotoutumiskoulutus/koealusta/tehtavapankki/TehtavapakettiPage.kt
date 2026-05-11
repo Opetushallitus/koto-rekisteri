@@ -9,6 +9,7 @@ import fi.oph.kitu.tehtavapankki.TehtavaTiedostoEntity
 import fi.oph.kitu.tehtavapankki.TehtavaVastausEntity
 import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.tehtavapankki.TehtavaryhmaEntity
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.FlowContent
 import kotlinx.html.SECTION
 import kotlinx.html.a
@@ -31,8 +32,6 @@ import kotlinx.html.span
 import kotlinx.html.strong
 import kotlinx.html.ul
 import kotlinx.html.unsafe
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -257,10 +256,7 @@ private fun TehtavaTiedostoEntity.mediaKind(): MediaKind {
 
 private fun TehtavapakettiEntity.assetPrefix(): String? = s3Avain?.let { "${it.removeSuffix(".xml")} assets/" }
 
-private fun downloadUrl(s3Avain: String): String =
-    linkTo(
-        methodOn(TehtavapankkiViewController::class.java).downloadRedirect(s3Avain),
-    ).toString()
+private fun downloadUrl(s3Avain: String): String = Links.Tehtavapankki.download(s3Avain)
 
 private val pluginFileRegex = Regex("@@PLUGINFILE@@(?:/|%2F)([^\"'<>\\s)]+)")
 

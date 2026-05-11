@@ -9,13 +9,11 @@ import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.YkiMappingId
-import fi.oph.kitu.yki.YkiViewController
+import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import kotlinx.html.a
 import kotlinx.html.h1
 import kotlinx.html.h2
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
 object YkiKoskiErrors {
     fun render(
@@ -55,13 +53,7 @@ object YkiKoskiErrors {
                             },
                             Column.Virhe.withHtml { errorMessageDetails(it) },
                             Column.Request.withHtml { error ->
-                                a(
-                                    href =
-                                        linkTo(
-                                            methodOn(YkiViewController::class.java)
-                                                .koskiRequestJson(error.id.toInt()),
-                                        ).toString(),
-                                ) {
+                                a(href = Links.Yki.koskiRequestJson(error.id.toInt())) {
                                     +"Näytä JSON"
                                 }
                             },
@@ -94,11 +86,7 @@ object YkiKoskiErrors {
     ): String? =
         YkiMappingId.parse(error.id)?.let { id ->
             id.suoritusId?.let { suoritusId ->
-                linkTo(
-                    methodOn(
-                        YkiViewController::class.java,
-                    ).hideKoskiVirheet(suoritusId, hidden),
-                ).toString()
+                Links.Yki.hideKoskiVirheet(suoritusId, hidden)
             }
         }
 }

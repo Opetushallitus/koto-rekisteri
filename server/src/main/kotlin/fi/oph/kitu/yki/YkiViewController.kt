@@ -11,6 +11,7 @@ import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiYkiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
+import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.webmvc.rewriteAttribute
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
@@ -26,8 +27,6 @@ import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import jakarta.servlet.http.HttpSession
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.ResponseEntity
 import org.springframework.security.web.csrf.CsrfToken
 import org.springframework.stereotype.Controller
@@ -195,11 +194,7 @@ class YkiViewController(
             id = YkiMappingId(suoritusId),
             hidden = hidden,
         )
-        return RedirectView(
-            linkTo(
-                methodOn(YkiViewController::class.java).koskiVirheetView(),
-            ).toString(),
-        )
+        return RedirectView(Links.Yki.koskiVirheet())
     }
 
     @GetMapping("/koski-request/{suoritusId}", produces = ["application/json"])
@@ -252,11 +247,7 @@ class YkiViewController(
             }
         }
 
-        return RedirectView(
-            linkTo(
-                methodOn(YkiViewController::class.java).tarkistusArvioinnitView(),
-            ).toString(),
-        )
+        return RedirectView(Links.Yki.tarkistusArvioinnit())
     }
 
     // Väliaikainen rajapinta yki-import-ongelman selvittelyyn
