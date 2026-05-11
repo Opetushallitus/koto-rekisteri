@@ -1,10 +1,14 @@
 package fi.oph.kitu.yki.arvioijat
 
+import arrow.core.NonEmptyList
+import arrow.core.raise.Raise
+import arrow.core.raise.ensure
+import arrow.core.raise.zipOrAccumulate
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroValidation
 import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.validation.Validation
-import fi.oph.kitu.util.validation.ValidationResult
+import fi.oph.kitu.util.validation.Validation.ValidationError
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -16,25 +20,20 @@ class YkiArvioijaValidation(
     @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
 ) : Validation<YkiArvioija> {
-    override fun validationBeforeEnrichment(value: YkiArvioija): ValidationResult<YkiArvioija> =
-        Validation.fold(
-            value,
+    override fun Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment(value: YkiArvioija): YkiArvioija {
+        zipOrAccumulate(
+            { with(onr) { validateOppijanumero(value.arvioijaOid, listOf("arvioijaOid")) } },
             {
-                onr
-                    .validateOppijanumero(value.arvioijaOid, listOf("arvioijaOid"))
-                    .map { value }
+                ensure(value.henkilotunnus == null || !lainmuutos2026Voimassa()) {
+                    ValidationError(
+                        listOf("henkilotunnus"),
+                        "Kenttää henkilotunnus ei voi siirtää ${hetunSiirronRajapaiva.finnishDate()} alkaen",
+                    )
+                }
             },
-            shouldBeNull("henkilotunnus") { it.henkilotunnus },
-        )
+        ) { _, _ -> }
+        return value
+    }
 
-    private fun <T> shouldBeNull(
-        prop: String,
-        f: (YkiArvioija) -> T,
-    ) = Validation.assertTrue<YkiArvioija>(
-        getActual = { f(it) == null || !lainmuutos2026Voimassa(it) },
-        path = listOf(prop),
-        message = "Kenttää $prop ei voi siirtää ${hetunSiirronRajapaiva.finnishDate()} alkaen",
-    )
-
-    private fun lainmuutos2026Voimassa(value: YkiArvioija): Boolean = timeService.today() >= hetunSiirronRajapaiva
+    private fun lainmuutos2026Voimassa(): Boolean = timeService.today() >= hetunSiirronRajapaiva
 }

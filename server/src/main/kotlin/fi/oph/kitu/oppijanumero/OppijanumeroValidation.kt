@@ -1,43 +1,48 @@
 package fi.oph.kitu.oppijanumero
 
+import arrow.core.raise.Raise
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.util.validation.Validation
-import fi.oph.kitu.util.validation.ValidationResult
+import fi.oph.kitu.util.validation.Validation.ValidationError
 import org.springframework.stereotype.Service
 
 @Service
 class OppijanumeroValidation(
     val onr: OppijanumeroService,
 ) {
-    fun validateOppijanumero(
+    fun Raise<ValidationError>.validateOppijanumero(
         oid: Oid,
         path: List<String>,
-    ): ValidationResult<Oid> =
-        try {
-            onr.getHenkilo(oid).fold(
-                ifRight = { Validation.ok(oid) },
-                ifLeft = {
-                    when (it) {
-                        is OppijanumeroException.OppijaNotFoundException -> {
-                            Validation.fail(
-                                path,
-                                "Oppijanumeroa $oid ei löydy Oppijanumerorekisteristä",
-                            )
-                        }
+    ) {
+        val result =
+            try {
+                onr.getHenkilo(oid)
+            } catch (error: Throwable) {
+                raise(
+                    ValidationError(
+                        path,
+                        "Oppijanumeron tarkastus epäonnistui (${error::class.simpleName}). Yritä myöhemmin uudestaan.",
+                    ),
+                )
+            }
+        result.onLeft { exception ->
+            raise(
+                when (exception) {
+                    is OppijanumeroException.OppijaNotFoundException -> {
+                        ValidationError(
+                            path,
+                            "Oppijanumeroa $oid ei löydy Oppijanumerorekisteristä",
+                        )
+                    }
 
-                        else -> {
-                            Validation.fail(
-                                path,
-                                "Oppijanumeron tarkastus epäonnistui (${it::class.simpleName}). Yritä myöhemmin uudestaan.",
-                            )
-                        }
+                    else -> {
+                        ValidationError(
+                            path,
+                            "Oppijanumeron tarkastus epäonnistui (${exception::class.simpleName}). " +
+                                "Yritä myöhemmin uudestaan.",
+                        )
                     }
                 },
             )
-        } catch (error: Throwable) {
-            Validation.fail(
-                path,
-                "Oppijanumeron tarkastus epäonnistui (${error::class.simpleName}). Yritä myöhemmin uudestaan.",
-            )
         }
+    }
 }

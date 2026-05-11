@@ -1,5 +1,10 @@
 package fi.oph.kitu.yki.suoritukset
 
+import arrow.core.NonEmptyList
+import arrow.core.raise.Raise
+import arrow.core.raise.RaiseAccumulate
+import arrow.core.raise.ensure
+import arrow.core.raise.zipOrAccumulate
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
@@ -7,7 +12,7 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.util.intersects
 import fi.oph.kitu.util.validation.Validation
-import fi.oph.kitu.util.validation.ValidationResult
+import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
 import org.springframework.beans.factory.annotation.Value
@@ -23,18 +28,19 @@ class YkiSuoritusValidation(
     @param:Value("\${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
     val todistuskielenSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
-    override fun validationBeforeEnrichment(value: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        Validation.fold(
-            value,
-            { validateOrganisaatiot(it) },
-            { validateHetu(it) },
-            { validateArvointitila(it) },
-            { validateTarkistusarviointi(it) },
-            { validateKielikoodi(it) },
-            { validateTodistuskieli(it) },
-            { validateCountryCode(it) },
-            { validateArvosanat(it) },
-        )
+    override fun Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment(
+        value: YkiHenkilosuoritus,
+    ): YkiHenkilosuoritus =
+        zipOrAccumulate(
+            { validateOrganisaatiot(value) },
+            { validateHetu(value) },
+            { validateArvointitila(value) },
+            { validateTarkistusarviointi(value) },
+            { validateKielikoodi(value) },
+            { validateTodistuskieli(value) },
+            { validateCountryCode(value) },
+            { validateArvosanat(value) },
+        ) { _, _, _, _, _, _, _, modified -> modified }
 
     override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus {
         val arvosanaKeskeytetty =
@@ -50,27 +56,26 @@ class YkiSuoritusValidation(
         }
     }
 
-    fun validateTodistuskieli(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        if (s.suoritus.tutkintopaiva.isBefore(todistuskielenSiirronRajapaiva) || s.suoritus.todistuskieli != null) {
-            Validation.ok(s)
-        } else {
-            Validation.fail(
+    private fun Raise<ValidationError>.validateTodistuskieli(s: YkiHenkilosuoritus) {
+        ensure(s.suoritus.tutkintopaiva.isBefore(todistuskielenSiirronRajapaiva) || s.suoritus.todistuskieli != null) {
+            ValidationError(
                 listOf("suoritus", "todistuskieli"),
                 "Todistuskieli on pakollinen ${todistuskielenSiirronRajapaiva.finnishDate()} alkaen",
             )
         }
+    }
 
-    fun validateHetu(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        if (s.suoritus.tutkintopaiva.isBefore(hetunSiirronRajapaiva) || s.henkilo.hetu == null) {
-            Validation.Companion.ok(s)
-        } else {
-            Validation.Companion.fail(
+    private fun Raise<ValidationError>.validateHetu(s: YkiHenkilosuoritus) {
+        ensure(s.suoritus.tutkintopaiva.isBefore(hetunSiirronRajapaiva) || s.henkilo.hetu == null) {
+            ValidationError(
                 listOf("henkilo", "hetu"),
-                "Henkilötunnusta ei voi siirtää suoritukselle, jonka tutkintopäivä on ${hetunSiirronRajapaiva.finnishDate()} tai myöhemmin",
+                "Henkilötunnusta ei voi siirtää suoritukselle, jonka tutkintopäivä on " +
+                    "${hetunSiirronRajapaiva.finnishDate()} tai myöhemmin",
             )
         }
+    }
 
-    fun validateOrganisaatiot(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> {
+    private fun Raise<ValidationError>.validateOrganisaatiot(s: YkiHenkilosuoritus) {
         val suoritus = s.suoritus
         val sallitutOrganisaatiotyypit =
             listOf(
@@ -80,144 +85,143 @@ class YkiSuoritusValidation(
 
         val oid = suoritus.jarjestaja.oid
 
-        fun fail(reason: String): ValidationResult<YkiHenkilosuoritus> =
-            Validation.Companion.fail(
-                listOf("suoritus", "jarjestaja", "oid"),
-                reason,
-            )
-
-        return organisaatiot.getOrganisaatio(oid).fold(
+        organisaatiot.getOrganisaatio(oid).fold(
             ifRight = { org ->
                 val tyypit = org.tyypit.mapNotNull { Koodisto.Organisaatiotyyppi.of(it) }
-                if (tyypit.intersects(sallitutOrganisaatiotyypit)) {
-                    Validation.Companion.ok(s)
-                } else {
-                    fail(
+                ensure(tyypit.intersects(sallitutOrganisaatiotyypit)) {
+                    ValidationError(
+                        listOf("suoritus", "jarjestaja", "oid"),
                         "Organisaatio $oid on väärän tyyppinen: ${
                             tyypit.joinToString(", ") { it.name }
                         }. Sallitut tyypit: ${
-                            sallitutOrganisaatiotyypit.joinToString(", ") { it.name}
+                            sallitutOrganisaatiotyypit.joinToString(", ") { it.name }
                         }.",
                     )
                 }
             },
-            ifLeft = {
-                fail(
-                    when (it) {
-                        is OrganisaatiopalveluException.NotFoundException -> {
-                            "Organisaatiota ${suoritus.jarjestaja.oid} ei löydy organisaatiopalvelusta"
-                        }
+            ifLeft = { exception ->
+                raise(
+                    ValidationError(
+                        listOf("suoritus", "jarjestaja", "oid"),
+                        when (exception) {
+                            is OrganisaatiopalveluException.NotFoundException -> {
+                                "Organisaatiota ${suoritus.jarjestaja.oid} ei löydy organisaatiopalvelusta"
+                            }
 
-                        else -> {
-                            "Organisaation validointi epäonnistui"
-                        }
-                    },
+                            else -> {
+                                "Organisaation validointi epäonnistui"
+                            }
+                        },
+                    ),
                 )
             },
         )
     }
 
-    fun validateArvointitila(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
+    private fun RaiseAccumulate<ValidationError>.validateArvointitila(s: YkiHenkilosuoritus) {
         if (s.suoritus.arviointitila.arvioitu()) {
-            Validation.fold(
-                s,
-                Validation.assertTrue(
-                    { it.suoritus.arviointipaiva != null },
-                    listOf("suoritus", "arviointipaiva"),
-                    "Arviointitilan '${s.suoritus.arviointitila}' mukaan suoritus on arvioitu, mutta arviointipäivä puuttuu",
-                ),
-                *(
-                    s.suoritus.osat
-                        .mapIndexed { i, osakoe ->
-                            Validation.assertTrue<YkiHenkilosuoritus>(
-                                { osakoe.arvosana != null },
-                                listOf("suoritus", "osat", i.toString(), "arvosana"),
-                                "Arviointitilan '${s.suoritus.arviointitila}' mukaan suoritus on arvioitu, mutta arviointi puuttuu osakokeelta '${osakoe.tyyppi.name}'",
-                            )
-                        }.toTypedArray()
-                ),
-            )
+            accumulating {
+                ensure(s.suoritus.arviointipaiva != null) {
+                    ValidationError(
+                        listOf("suoritus", "arviointipaiva"),
+                        "Arviointitilan '${s.suoritus.arviointitila}' mukaan suoritus on arvioitu, " +
+                            "mutta arviointipäivä puuttuu",
+                    )
+                }
+            }
+            s.suoritus.osat.forEachIndexed { i, osakoe ->
+                accumulating {
+                    ensure(osakoe.arvosana != null) {
+                        ValidationError(
+                            listOf("suoritus", "osat", i.toString(), "arvosana"),
+                            "Arviointitilan '${s.suoritus.arviointitila}' mukaan suoritus on arvioitu, " +
+                                "mutta arviointi puuttuu osakokeelta '${osakoe.tyyppi.name}'",
+                        )
+                    }
+                }
+            }
         } else {
-            Validation.fold(
-                s,
-                Validation.assertTrue(
-                    { it.suoritus.arviointipaiva == null },
+            ensure(s.suoritus.arviointipaiva == null) {
+                ValidationError(
                     listOf("suoritus", "arviointipaiva"),
-                    "Arviointitilan '${s.suoritus.arviointitila}' mukaan suoritusta ei ole vielä arvioitu, mutta arviointipäivä on määritelty",
-                ),
+                    "Arviointitilan '${s.suoritus.arviointitila}' mukaan suoritusta ei ole vielä arvioitu, " +
+                        "mutta arviointipäivä on määritelty",
+                )
+            }
+        }
+    }
+
+    private fun RaiseAccumulate<ValidationError>.validateTarkistusarviointi(s: YkiHenkilosuoritus) {
+        accumulating {
+            val tarkastettavatOsakokeet =
+                s.suoritus.tarkistusarviointi
+                    ?.tarkistusarvioidutOsakokeet
+                    .orEmpty()
+            val muuttuneetOsakokeet =
+                s.suoritus.tarkistusarviointi
+                    ?.arvosanaMuuttui
+                    .orEmpty()
+            ensure(muuttuneetOsakokeet.minus(tarkastettavatOsakokeet).isEmpty()) {
+                ValidationError(
+                    listOf("suoritus", "tarkistusarviointi", "arvosanaMuuttui"),
+                    "Muuttuneet arvosanat sisälsivät osakokeita, jotka eivät olleet osa tarkistettavia osakokeita",
+                )
+            }
+        }
+        accumulating {
+            ensure(
+                (s.suoritus.tarkistusarviointi?.saapumispaiva ?: LocalDate.MIN) <=
+                    (s.suoritus.tarkistusarviointi?.kasittelypaiva ?: LocalDate.MAX),
+            ) {
+                ValidationError(
+                    listOf("suoritus", "tarkistusarviointi", "kasittelypaiva"),
+                    "Käsittelypäivä on ennen saapumispäivää",
+                )
+            }
+        }
+    }
+
+    private fun Raise<ValidationError>.validateKielikoodi(s: YkiHenkilosuoritus) {
+        ensure(!s.suoritus.kieli.isLegacy() || s.suoritus.tutkintopaiva.isBefore(LocalDate.of(2017, 1, 1))) {
+            ValidationError(
+                listOf("suoritus", "kieli"),
+                "Käytöstä poistuneita kielikoodeja (${Tutkintokieli.legacyEntries.joinToString(", ")}) ei voi käyttää",
             )
         }
+    }
 
-    fun validateTarkistusarviointi(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        Validation.fold(
-            s,
-            Validation.assertTrue(
-                {
-                    val tarkastettavatOsakokeet =
-                        it.suoritus.tarkistusarviointi
-                            ?.tarkistusarvioidutOsakokeet
-                            .orEmpty()
-                    val muuttuneetOsakokeet =
-                        it.suoritus.tarkistusarviointi
-                            ?.arvosanaMuuttui
-                            .orEmpty()
-
-                    muuttuneetOsakokeet.minus(tarkastettavatOsakokeet).isEmpty()
-                },
-                path = listOf("suoritus", "tarkistusarviointi", "arvosanaMuuttui"),
-                message =
-                    "Muuttuneet arvosanat sisälsivät osakokeita, jotka eivät olleet osa tarkistettavia osakokeita",
-            ),
-            Validation.assertTrue(
-                {
-                    (it.suoritus.tarkistusarviointi?.saapumispaiva ?: LocalDate.MIN) <=
-                        (it.suoritus.tarkistusarviointi?.kasittelypaiva ?: LocalDate.MAX)
-                },
-                path = listOf("suoritus", "tarkistusarviointi", "kasittelypaiva"),
-                message = "Käsittelypäivä on ennen saapumispäivää",
-            ),
-        )
-
-    fun validateKielikoodi(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> =
-        Validation.fold(
-            s,
-            Validation.assertTrue(
-                { !it.suoritus.kieli.isLegacy() || it.suoritus.tutkintopaiva.isBefore(LocalDate.of(2017, 1, 1)) },
-                listOf("suoritus", "kieli"),
-                "Käytöstä poistuneita kielikoodeja (${Tutkintokieli.legacyEntries.joinToString(", ") }) ei voi käyttää",
-            ),
-        )
-
-    fun validateCountryCode(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> {
-        if (s.henkilo.maa == null) return Validation.ok(s)
+    private fun Raise<ValidationError>.validateCountryCode(s: YkiHenkilosuoritus) {
+        if (s.henkilo.maa == null) return
         val koodisto =
             localizationService
                 .translationBuilder()
                 .koodistot("maatjavaltiot1")
                 .build()
-        val maatJaValtiot = koodisto.koodistot["maatjavaltiot1"] ?: return Validation.ok(s)
-        maatJaValtiot[s.henkilo.maa]
-            ?: return Validation.fail(
+        val maatJaValtiot = koodisto.koodistot["maatjavaltiot1"] ?: return
+        ensure(maatJaValtiot[s.henkilo.maa] != null) {
+            ValidationError(
                 listOf("henkilo", "maa"),
                 "Virheellinen maakoodi",
             )
-        return Validation.ok(s)
+        }
     }
 
-    fun validateArvosanat(s: YkiHenkilosuoritus): ValidationResult<YkiHenkilosuoritus> {
+    private fun Raise<ValidationError>.validateArvosanat(s: YkiHenkilosuoritus): YkiHenkilosuoritus {
         val osakokeet = s.suoritus.osat.mapNotNull { if (it.arvosana == 12) null else it }
-        if (osakokeet.isEmpty()) {
-            return Validation.fail(
-                path = listOf("suoritus", "osat"),
-                message = "Suorituksella täytyy olla vähintään yksi osakoe, johon on ilmottauduttu",
+        ensure(osakokeet.isNotEmpty()) {
+            ValidationError(
+                listOf("suoritus", "osat"),
+                "Suorituksella täytyy olla vähintään yksi osakoe, johon on ilmottauduttu",
             )
         }
         val validArvosanat = Koodisto.YkiArvosana.validIntegers
         val invalidArvosanat = osakokeet.mapNotNull { if (it.arvosana in validArvosanat) null else it.arvosana }
-        if (invalidArvosanat.isEmpty()) return Validation.ok(s.copy(suoritus = s.suoritus.copy(osat = osakokeet)))
-        return Validation.fail(
-            listOf("suoritus", "osat", "arvosana"),
-            "Suoritus sisältää virheellisiä arvosanoja: ${invalidArvosanat.joinToString(", ")}",
-        )
+        ensure(invalidArvosanat.isEmpty()) {
+            ValidationError(
+                listOf("suoritus", "osat", "arvosana"),
+                "Suoritus sisältää virheellisiä arvosanoja: ${invalidArvosanat.joinToString(", ")}",
+            )
+        }
+        return s.copy(suoritus = s.suoritus.copy(osat = osakokeet))
     }
 }
