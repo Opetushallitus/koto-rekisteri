@@ -1,28 +1,26 @@
 package fi.oph.kitu.util.validation
 
 import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import arrow.core.NonEmptyList
+import arrow.core.raise.Raise
 
-typealias ValidationResult<T> = Either<Validation.ValidationException, T>
+typealias ValidationResult<T> = Either<NonEmptyList<Validation.ValidationError>, T>
 
 interface Validation<T> {
-    fun validateAndEnrich(value: T): ValidationResult<T> {
-        val result = validationBeforeEnrichment(value)
-        if (result.isLeft()) {
-            return result
-        }
-        return validationAfterEnrichment(enrich(value))
+    fun Raise<NonEmptyList<ValidationError>>.validateAndEnrich(value: T): T {
+        val pre = validateBeforeEnrichment(value)
+        val enriched = enrich(pre)
+        return validateAfterEnrichment(enriched)
     }
 
-    fun validationBeforeEnrichment(value: T): ValidationResult<T> = ok(value)
+    fun Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment(value: T): T = value
 
     fun enrich(value: T): T = value
 
-    fun validationAfterEnrichment(value: T): ValidationResult<T> = ok(value)
+    fun Raise<NonEmptyList<ValidationError>>.validateAfterEnrichment(value: T): T = value
 
     data class ValidationException(
-        val errors: List<ValidationError>,
+        val errors: NonEmptyList<ValidationError>,
     ) : Exception(errors.joinToString("; "))
 
     data class ValidationError(
@@ -30,65 +28,5 @@ interface Validation<T> {
         val message: String,
     ) {
         override fun toString(): String = "${path.joinToString(".")}: $message"
-    }
-
-    companion object {
-        inline fun <reified T> fold(
-            value: T,
-            vararg validations: (T) -> ValidationResult<T>,
-        ): ValidationResult<T> {
-            val errors =
-                validations
-                    .map { it(value) }
-                    .flatMap { it.leftOrNull()?.errors.orEmpty() }
-            return if (errors.isNotEmpty()) {
-                fail(errors)
-            } else {
-                ok(value)
-            }
-        }
-
-        fun <T> ok(value: T): ValidationResult<T> = value.right()
-
-        fun <T> fail(
-            path: List<String>,
-            message: String,
-        ): ValidationResult<T> = fail(listOf(ValidationError(path, message)))
-
-        fun <T> fail(reasons: List<ValidationError>): ValidationResult<T> = ValidationException(reasons).left()
-
-        fun <T, A> assert(
-            getActual: (T) -> A,
-            path: List<String>,
-            message: String,
-            isOk: (A) -> Boolean,
-        ): (T) -> ValidationResult<T> =
-            {
-                if (isOk(getActual(it))) {
-                    ok(it)
-                } else {
-                    fail(path, message)
-                }
-            }
-
-        fun <T, A> assertEquals(
-            expected: A,
-            getActual: (T) -> A,
-            path: List<String>,
-            message: String,
-        ): (T) -> ValidationResult<T> = assert(getActual, path, message) { it == expected }
-
-        fun <T, A> assertNotEquals(
-            expected: A,
-            getActual: (T) -> A,
-            path: List<String>,
-            message: String,
-        ): (T) -> ValidationResult<T> = assert(getActual, path, message) { it != expected }
-
-        fun <T> assertTrue(
-            getActual: (T) -> Boolean,
-            path: List<String>,
-            message: String,
-        ): (T) -> ValidationResult<T> = assertEquals(true, getActual, path, message)
     }
 }

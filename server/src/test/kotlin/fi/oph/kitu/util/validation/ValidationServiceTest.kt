@@ -1,11 +1,15 @@
 package fi.oph.kitu.util.validation
 
+import arrow.core.left
+import arrow.core.nonEmptyListOf
+import arrow.core.right
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
@@ -65,10 +69,15 @@ class ValidationServiceTest(
                 ),
         )
 
+    private fun fail(
+        path: List<String>,
+        message: String,
+    ) = nonEmptyListOf(ValidationError(path, message)).left()
+
     @Test
     fun `YKI-suorituksen validoinnin happy path`() {
         val result = validation.validateAndEnrich(validiYkiSuoritus)
-        assertEquals(Validation.ok(validiYkiSuoritus), result)
+        assertEquals(validiYkiSuoritus.right(), result)
     }
 
     @Test
@@ -87,9 +96,10 @@ class ValidationServiceTest(
         val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
-            Validation.fail(
+            fail(
                 listOf("suoritus", "jarjestaja", "oid"),
-                "Organisaatio 1.2.246.562.10.346830761110 on väärän tyyppinen: Koulutustoimija, VarhaiskasvatuksenJarjestaja, Kunta. Sallitut tyypit: Oppilaitos, Toimipiste.",
+                "Organisaatio 1.2.246.562.10.346830761110 on väärän tyyppinen: Koulutustoimija, " +
+                    "VarhaiskasvatuksenJarjestaja, Kunta. Sallitut tyypit: Oppilaitos, Toimipiste.",
             ),
             result,
         )
@@ -108,7 +118,7 @@ class ValidationServiceTest(
         val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
-            Validation.fail(
+            fail(
                 listOf("henkilo", "hetu"),
                 "Henkilötunnusta ei voi siirtää suoritukselle, jonka tutkintopäivä on 1.1.2026 tai myöhemmin",
             ),
@@ -126,7 +136,7 @@ class ValidationServiceTest(
         val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
-            Validation.fail(
+            fail(
                 listOf("henkilo", "oid"),
                 "Oppijanumeroa 1.2.246.562.24.20000000000 ei löydy Oppijanumerorekisteristä",
             ),
@@ -142,7 +152,7 @@ class ValidationServiceTest(
         val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
-            Validation.fail(
+            fail(
                 listOf("suoritus", "arviointipaiva"),
                 "Arviointitilan 'ARVIOITU' mukaan suoritus on arvioitu, mutta arviointipäivä puuttuu",
             ),
@@ -158,7 +168,7 @@ class ValidationServiceTest(
         val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
-            Validation.fail(
+            fail(
                 listOf("suoritus", "arviointipaiva"),
                 "Arviointitilan 'ARVIOITAVA' mukaan suoritusta ei ole vielä arvioitu, mutta arviointipäivä on määritelty",
             ),
@@ -181,7 +191,7 @@ class ValidationServiceTest(
         val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
-            Validation.fail(
+            fail(
                 listOf("suoritus", "osat", "1", "arvosana"),
                 "Arviointitilan 'ARVIOITU' mukaan suoritus on arvioitu, mutta arviointi puuttuu osakokeelta 'PU'",
             ),
@@ -204,7 +214,7 @@ class ValidationServiceTest(
 
         val result = validation.validateAndEnrich(suoritus)
         assertEquals(
-            Validation.fail(
+            fail(
                 listOf("suoritus", "todistuskieli"),
                 "Todistuskieli on pakollinen 1.4.2026 alkaen",
             ),
@@ -226,10 +236,7 @@ class ValidationServiceTest(
             )
 
         val result = validation.validateAndEnrich(suoritus)
-        assertEquals(
-            Validation.ok(suoritus),
-            result,
-        )
+        assertEquals(suoritus.right(), result)
     }
 
     @Test
@@ -251,7 +258,7 @@ class ValidationServiceTest(
 
         val result = validation.validateAndEnrich(suoritus)
         assertEquals(
-            Validation.fail(
+            fail(
                 listOf("henkilo", "maa"),
                 "Virheellinen maakoodi",
             ),
@@ -277,9 +284,6 @@ class ValidationServiceTest(
             )
 
         val result = validation.validateAndEnrich(suoritus)
-        assertEquals(
-            Validation.ok(suoritus),
-            result,
-        )
+        assertEquals(suoritus.right(), result)
     }
 }

@@ -1,6 +1,8 @@
 package fi.oph.kitu.util.validation
 
-import arrow.core.flatMap
+import arrow.core.NonEmptyList
+import arrow.core.nonEmptyListOf
+import arrow.core.raise.either
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.HenkilosuoritusValidation
 import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
@@ -21,20 +23,44 @@ final class ValidationService(
 ) {
     inline fun <reified T : KielitutkinnonSuoritus> validateAndEnrich(
         hs: Henkilosuoritus<T>,
-    ): ValidationResult<out Henkilosuoritus<T>> {
-        val result =
-            commonValidation.validateAndEnrich(hs).flatMap {
-                when (hs.suoritus) {
-                    is VktSuoritus -> vkt.validateAndEnrich(Henkilosuoritus(hs.henkilo, hs.suoritus))
-                    is YkiSuoritus -> ykiSuoritus.validateAndEnrich(Henkilosuoritus(hs.henkilo, hs.suoritus))
-                    else -> throw IllegalStateException("Validation not implemented for ${hs::class.simpleName}")
+    ): ValidationResult<Henkilosuoritus<T>> =
+        either {
+            with(commonValidation) { validateAndEnrich(hs) }
+            @Suppress("UNCHECKED_CAST")
+            when (hs.suoritus) {
+                is VktSuoritus -> {
+                    with(vkt) {
+                        validateAndEnrich(Henkilosuoritus(hs.henkilo, hs.suoritus))
+                    } as Henkilosuoritus<T>
+                }
+
+                is YkiSuoritus -> {
+                    with(ykiSuoritus) {
+                        validateAndEnrich(Henkilosuoritus(hs.henkilo, hs.suoritus))
+                    } as Henkilosuoritus<T>
+                }
+
+                else -> {
+                    raise(
+                        nonEmptyListOf(
+                            Validation.ValidationError(
+                                emptyList(),
+                                "Validation not implemented for ${hs::class.simpleName}",
+                            ),
+                        ),
+                    )
                 }
             }
+        }
 
-        @Suppress("UNCHECKED_CAST")
-        return result as ValidationResult<out Henkilosuoritus<T>>
-    }
-
-    fun validateAndEnrich(arvioija: YkiArvioija): ValidationResult<out YkiArvioija> =
-        ykiArvioija.validateAndEnrich(arvioija)
+    fun validateAndEnrich(arvioija: YkiArvioija): ValidationResult<YkiArvioija> =
+        either { with(ykiArvioija) { validateAndEnrich(arvioija) } }
 }
+
+fun <T> ValidationResult<T>.getOrThrow(): T =
+    fold(
+        ifLeft = { errors: NonEmptyList<Validation.ValidationError> ->
+            throw Validation.ValidationException(errors)
+        },
+        ifRight = { it },
+    )

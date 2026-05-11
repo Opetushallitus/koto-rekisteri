@@ -1,9 +1,14 @@
 package fi.oph.kitu.vkt
 
+import arrow.core.NonEmptyList
+import arrow.core.raise.Raise
+import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
+import arrow.core.raise.zipOrAccumulate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.validation.Validation
-import fi.oph.kitu.util.validation.ValidationResult
+import fi.oph.kitu.util.validation.Validation.ValidationError
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -26,34 +31,35 @@ class VktValidation : Validation<VktHenkilosuoritus> {
             value
         }
 
-    override fun validationAfterEnrichment(value: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
-        Validation.fold(
-            value,
-            { validateSuorituspaikkakunta(it) },
-            { validateSuorituksenVastaanottaja(it) },
-            { validateOsasuoritustenArviointi(it) },
-        )
-
-    private fun validateSuorituspaikkakunta(s: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
-        if (s.suoritus.suorituspaikkakunta == null) {
-            Validation.fail(listOf("suoritus", "suorituspaikkakunta"), "Suorituspaikkakunta puuttuu")
-        } else {
-            Validation.ok(s)
-        }
-
-    private fun validateSuorituksenVastaanottaja(s: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
-        if (s.suoritus.suorituksenVastaanottaja == null) {
-            Validation.fail(listOf("suoritus", "suorituksenVastaanottaja"), "Suorituksen vastaanottaja puuttuu")
-        } else {
-            Validation.ok(s)
-        }
-
-    private fun validateOsasuoritustenArviointi(s: VktHenkilosuoritus): ValidationResult<VktHenkilosuoritus> =
-        if (s.suoritus.taitotaso == Koodisto.VktTaitotaso.HyväJaTyydyttävä &&
-            s.suoritus.osat.any { it.arviointi == null }
-        ) {
-            Validation.fail(listOf("suoritus", "osakokeet", "arviointi"), "Suorituksella on arvioimattomia osakokeita")
-        } else {
-            Validation.ok(s)
-        }
+    override fun Raise<NonEmptyList<ValidationError>>.validateAfterEnrichment(
+        value: VktHenkilosuoritus,
+    ): VktHenkilosuoritus {
+        zipOrAccumulate(
+            {
+                ensureNotNull(value.suoritus.suorituspaikkakunta) {
+                    ValidationError(listOf("suoritus", "suorituspaikkakunta"), "Suorituspaikkakunta puuttuu")
+                }
+            },
+            {
+                ensureNotNull(value.suoritus.suorituksenVastaanottaja) {
+                    ValidationError(
+                        listOf("suoritus", "suorituksenVastaanottaja"),
+                        "Suorituksen vastaanottaja puuttuu",
+                    )
+                }
+            },
+            {
+                ensure(
+                    value.suoritus.taitotaso != Koodisto.VktTaitotaso.HyväJaTyydyttävä ||
+                        value.suoritus.osat.all { it.arviointi != null },
+                ) {
+                    ValidationError(
+                        listOf("suoritus", "osakokeet", "arviointi"),
+                        "Suorituksella on arvioimattomia osakokeita",
+                    )
+                }
+            },
+        ) { _, _, _ -> }
+        return value
+    }
 }
