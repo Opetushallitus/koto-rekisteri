@@ -45,7 +45,6 @@ object TehtavapankkiPage {
                                 tr {
                                     th { +"Siirretty" }
                                     th { +"Koko" }
-                                    th { +"XML" }
                                     th { +"Sisältö" }
                                 }
                             }
@@ -55,19 +54,9 @@ object TehtavapankkiPage {
                                         td { +tp.timestamp.finnishDateTimeUTC() }
                                         td { +formatBytes(tp.size) }
                                         td {
-                                            a(
-                                                href =
-                                                    linkTo(
-                                                        methodOn(TehtavapankkiViewController::class.java)
-                                                            .downloadRedirect(tp.key),
-                                                    ).toString(),
-                                            ) {
-                                                attributes["download"] = ""
-                                                +"Lataa"
-                                            }
-                                        }
-                                        td {
-                                            pakettiIdsByS3Avain[tp.key]?.let { pakettiId ->
+                                            val pakettiId = pakettiIdsByS3Avain[tp.key]
+                                            if (pakettiId != null) {
+                                                // Paketti löytyy DB:stä — linkki näkymään, josta voi myös ladata XML:n.
                                                 a(
                                                     href =
                                                         linkTo(
@@ -75,6 +64,18 @@ object TehtavapankkiPage {
                                                                 .pakettiView(pakettiId),
                                                         ).toString(),
                                                 ) { +"Näytä sisältö" }
+                                            } else {
+                                                // Ei selattavaa versiota — tarjotaan raaka XML.
+                                                a(
+                                                    href =
+                                                        linkTo(
+                                                            methodOn(TehtavapankkiViewController::class.java)
+                                                                .downloadRedirect(tp.key),
+                                                        ).toString(),
+                                                ) {
+                                                    attributes["download"] = ""
+                                                    +"Lataa XML"
+                                                }
                                             }
                                         }
                                     }
