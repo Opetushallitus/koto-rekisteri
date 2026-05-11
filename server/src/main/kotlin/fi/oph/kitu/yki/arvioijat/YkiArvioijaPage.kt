@@ -7,7 +7,7 @@ import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.jdbc.SortDirection
-import fi.oph.kitu.yki.YkiViewController
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.article
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -15,7 +15,6 @@ import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
 import kotlinx.html.tr
-import org.springframework.hateoas.server.mvc.linkTo
 import kotlin.String
 import kotlin.enums.enumEntries
 
@@ -31,7 +30,7 @@ object YkiArvioijaPage {
         ) {
             h1 { +"Yleinen kielitutkinto" }
             h2 { +"Arvioijat" }
-            this.errorsArticle(errorsCount, linkTo(YkiViewController::arvioijatVirheetView).toString())
+            this.errorsArticle(errorsCount, Links.Yki.arvioijatVirheet())
 
             article(classes = "overflow-auto") {
                 table(classes = "striped") {

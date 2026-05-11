@@ -3,6 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.a
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -13,8 +14,6 @@ import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.thead
 import kotlinx.html.tr
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import kotlin.math.log10
 import kotlin.math.pow
 
@@ -57,22 +56,10 @@ object TehtavapankkiPage {
                                             val pakettiId = pakettiIdsByS3Avain[tp.key]
                                             if (pakettiId != null) {
                                                 // Paketti löytyy DB:stä — linkki näkymään, josta voi myös ladata XML:n.
-                                                a(
-                                                    href =
-                                                        linkTo(
-                                                            methodOn(TehtavapankkiViewController::class.java)
-                                                                .pakettiView(pakettiId),
-                                                        ).toString(),
-                                                ) { +"Näytä sisältö" }
+                                                a(href = Links.Tehtavapankki.paketti(pakettiId)) { +"Näytä sisältö" }
                                             } else {
                                                 // Ei selattavaa versiota — tarjotaan raaka XML.
-                                                a(
-                                                    href =
-                                                        linkTo(
-                                                            methodOn(TehtavapankkiViewController::class.java)
-                                                                .downloadRedirect(tp.key),
-                                                        ).toString(),
-                                                ) {
+                                                a(href = Links.Tehtavapankki.download(tp.key)) {
                                                     attributes["download"] = ""
                                                     +"Lataa XML"
                                                 }

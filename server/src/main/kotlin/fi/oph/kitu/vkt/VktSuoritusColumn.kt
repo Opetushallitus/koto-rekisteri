@@ -5,10 +5,9 @@ import fi.oph.kitu.html.table.ColumnTags
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.FlowContent
 import kotlinx.html.a
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
 enum class VktSuoritusColumn(
     override val entityName: String,
@@ -25,13 +24,11 @@ enum class VktSuoritusColumn(
         { it.suoritusId.toString() },
         {
             val url =
-                linkTo(
-                    methodOn(VktViewController::class.java).ilmoittautuneenArviointiView(
-                        oppijanumero = it.suorittajanOid,
-                        kieli = Koodisto.Tutkintokieli.valueOf(it.tutkintokieli),
-                        taso = Koodisto.VktTaitotaso.valueOf(it.taitotaso),
-                    ),
-                ).toString()
+                Links.Vkt.ilmoittautuneenArviointi(
+                    oppijanumero = it.suorittajanOid,
+                    kieli = Koodisto.Tutkintokieli.valueOf(it.tutkintokieli),
+                    taso = Koodisto.VktTaitotaso.valueOf(it.taitotaso),
+                )
 
             a(href = url) { +"Näytä" }
         },

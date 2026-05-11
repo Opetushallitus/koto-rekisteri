@@ -3,11 +3,9 @@ package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.ColumnTags
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
-import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.FlowContent
 import kotlinx.html.a
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
 enum class KielitestiSuoritusColumn(
     override val entityName: String,
@@ -24,8 +22,7 @@ enum class KielitestiSuoritusColumn(
         getValue = { it.id?.toString().orEmpty() },
         renderHtml = {
             it.id?.let { id ->
-                val link = linkTo(methodOn(KielitestiViewController::class.java).suoritusView(id))
-                a(href = link.toString()) { +"Näytä" }
+                a(href = Links.Kielitesti.suoritus(id)) { +"Näytä" }
             }
         },
     ),

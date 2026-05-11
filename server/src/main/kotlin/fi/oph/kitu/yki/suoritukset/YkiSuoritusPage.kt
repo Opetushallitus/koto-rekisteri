@@ -10,10 +10,8 @@ import fi.oph.kitu.html.warning
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
-import fi.oph.kitu.yki.YkiViewController
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.*
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
 object YkiSuoritusPage {
     fun render(
@@ -27,8 +25,7 @@ object YkiSuoritusPage {
 
         if (suoritus.id != viimeisinSuoritus.id) {
             warning("Tämä on suorituksen vanhempi versio (${suoritus.lastModified.finnishDateTimeUTC()}). ") {
-                val link = linkTo(methodOn(YkiViewController::class.java).suoritusView(viimeisinSuoritus.id!!))
-                a(href = link.toString()) {
+                a(href = Links.Yki.suoritus(viimeisinSuoritus.id!!)) {
                     +"Näytä uusin versio (${viimeisinSuoritus.lastModified.finnishDateTimeUTC()})"
                 }
             }

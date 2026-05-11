@@ -20,11 +20,11 @@ import fi.oph.kitu.html.table.trueFalseOrAllFilter
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
-import fi.oph.kitu.vkt.VktApiController
 import fi.oph.kitu.vkt.VktSuoritusColumn
 import fi.oph.kitu.vkt.VktSuoritusFilter
 import fi.oph.kitu.vkt.VktSuoritusFlat
 import fi.oph.kitu.vkt.VktSuoritusOrder
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.FlowContent
 import kotlinx.html.article
 import kotlinx.html.fieldSet
@@ -35,7 +35,6 @@ import kotlinx.html.li
 import kotlinx.html.nav
 import kotlinx.html.span
 import kotlinx.html.ul
-import org.springframework.hateoas.server.mvc.linkTo
 
 object VktSuorituksetPage {
     fun render(
@@ -66,8 +65,7 @@ object VktSuorituksetPage {
                             }
                             li {
                                 csvDownloadButton(
-                                    linkTo<VktApiController> { getSuorituksetCsv() }.toString() +
-                                        httpParams(filter.toMap()),
+                                    Links.Vkt.suorituksetCsv() + httpParams(filter.toMap()),
                                 )
                             }
                             li { vktSuoritusFilterButton(filter) }

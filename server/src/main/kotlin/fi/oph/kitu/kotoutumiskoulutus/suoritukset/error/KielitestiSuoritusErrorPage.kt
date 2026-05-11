@@ -4,8 +4,8 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.table.displayTableBody
 import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.jdbc.SortDirection
-import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
 import fi.oph.kitu.organisaatiot.Organisaatiot
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.h1
@@ -15,7 +15,6 @@ import kotlinx.html.li
 import kotlinx.html.nav
 import kotlinx.html.table
 import kotlinx.html.ul
-import org.springframework.hateoas.server.mvc.linkTo
 import kotlin.enums.enumEntries
 
 object KielitestiSuoritusErrorPage {
@@ -38,7 +37,7 @@ object KielitestiSuoritusErrorPage {
                                 +"Virheitä yhteensä: ${errors.count()}"
                             }
                             li {
-                                a(href = linkTo<KielitestiApiController> { getErrorsAsCsv() }.toString()) {
+                                a(href = Links.Kielitesti.virheetCsv()) {
                                     attributes["download"] = ""
                                     +"Lataa tiedot CSV:nä"
                                 }

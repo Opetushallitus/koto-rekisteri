@@ -6,13 +6,11 @@ import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.Tutkintotaso
-import fi.oph.kitu.yki.YkiViewController
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.span
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
 /**
  * Enum class representing columns in YKI Suoritus.
@@ -33,8 +31,7 @@ enum class YkiSuoritusColumn(
         getValue = { it.id?.toString().orEmpty() },
         renderHtml = {
             it.id?.let { id ->
-                val link = linkTo(methodOn(YkiViewController::class.java).suoritusView(id))
-                a(href = link.toString()) { +"Näytä" }
+                a(href = Links.Yki.suoritus(id)) { +"Näytä" }
             }
         },
     ),

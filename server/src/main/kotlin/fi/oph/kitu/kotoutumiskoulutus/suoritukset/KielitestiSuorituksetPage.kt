@@ -19,8 +19,7 @@ import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.html.testId
-import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
-import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
@@ -38,7 +37,6 @@ import kotlinx.html.li
 import kotlinx.html.nav
 import kotlinx.html.table
 import kotlinx.html.ul
-import org.springframework.hateoas.server.mvc.linkTo
 
 object KielitestiSuorituksetPage {
     fun render(
@@ -53,7 +51,7 @@ object KielitestiSuorituksetPage {
         ) {
             h1 { +"Kotoutumiskoulutuksen kielitaidon päättötesti" }
             h2 { +"Suoritukset" }
-            errorsArticle(errorsCount, linkTo(KielitestiViewController::virheetView).toString())
+            errorsArticle(errorsCount, Links.Kielitesti.virheet())
 
             form(action = "", method = FormMethod.get, classes = "grid center-vertically") {
                 hiddenValues(filterParams.toMap().filterKeys { it != "search" })
@@ -84,8 +82,7 @@ object KielitestiSuorituksetPage {
                             }
                             li {
                                 csvDownloadButton(
-                                    linkTo<KielitestiApiController> { getSuorituksetAsCsv() }.toString() +
-                                        "?${httpParams(filterParams.toMap())}",
+                                    Links.Kielitesti.suorituksetCsv() + httpParams(filterParams.toMap()),
                                 )
                             }
                             li { kielitestiSuoritusFilterButton(filterParams) }
