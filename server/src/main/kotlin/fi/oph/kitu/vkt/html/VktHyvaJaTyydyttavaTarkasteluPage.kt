@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt.html
 
+import arrow.core.Either
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.card
@@ -10,7 +11,6 @@ import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
-import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import fi.oph.kitu.vkt.VktOsakoe
 import kotlinx.html.FlowContent
@@ -21,7 +21,7 @@ import kotlinx.html.h3
 object VktHyvaJaTyydyttavaTarkasteluPage {
     fun render(
         data: VktHenkilosuoritus,
-        henkilo: TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>,
+        henkilo: Either<OppijanumeroException, OppijanumerorekisteriHenkilo>,
         translations: Translations,
         messages: List<ViewMessageData>,
         koskiTransferState: Pair<KoskiTransferState, List<String>>,

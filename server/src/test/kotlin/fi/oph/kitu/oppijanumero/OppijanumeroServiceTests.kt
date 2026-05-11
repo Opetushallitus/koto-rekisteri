@@ -1,7 +1,8 @@
 package fi.oph.kitu.oppijanumero
 
-import fi.oph.kitu.assertFailureIsThrowable
+import fi.oph.kitu.assertLeftIsThrowable
 import fi.oph.kitu.util.defaultObjectMapper
+import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
@@ -95,7 +96,7 @@ class OppijanumeroServiceTests {
                 ),
             )
 
-        assertFailureIsThrowable<OppijanumeroException.BadRequest>(
+        assertLeftIsThrowable<OppijanumeroException.BadRequest>(
             result,
             "Bad request to oppijanumero-service",
         )

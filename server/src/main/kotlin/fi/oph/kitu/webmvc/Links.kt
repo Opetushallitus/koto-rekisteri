@@ -10,22 +10,21 @@ import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
-import org.springframework.hateoas.server.mvc.linkTo
 
 object Links {
-    fun home(): String = linkTo(HomeController::home).toString()
+    fun home(): String = linkTo(methodOn(HomeController::class.java).home()).toString()
 
     object Vkt {
         fun suoritukset(): String = linkTo(methodOn(VktViewController::class.java).suorituksetView()).toString()
 
         fun erinomaisenTaitotasonIlmoittautuneet(): String =
-            linkTo(VktViewController::erinomaisenTaitotasonIlmoittautuneetView).toString()
+            linkTo(methodOn(VktViewController::class.java).erinomaisenTaitotasonIlmoittautuneetView()).toString()
 
         fun erinomaisenTaitotasonArvioidutSuoritukset(): String =
-            linkTo(VktViewController::erinomaisenTaitotasonArvioidutSuorituksetView).toString()
+            linkTo(methodOn(VktViewController::class.java).erinomaisenTaitotasonArvioidutSuorituksetView()).toString()
 
         fun hyvanJaTyydyttavanTaitotasonSuoritukset(): String =
-            linkTo(VktViewController::hyvanJaTyydyttavanTaitotasonSuorituksetView).toString()
+            linkTo(methodOn(VktViewController::class.java).hyvanJaTyydyttavanTaitotasonSuorituksetView()).toString()
 
         fun ilmoittautuneenArviointi(
             oppijanumero: String,
@@ -59,22 +58,24 @@ object Links {
                 ).hideKoskiVirheet(oppijanumero, tutkintokieli, taitotaso, hidden),
             ).toString()
 
-        fun suorituksetCsv(): String = linkTo<VktApiController> { getSuorituksetCsv() }.toString()
+        fun suorituksetCsv(): String = linkTo(methodOn(VktApiController::class.java).getSuorituksetCsv()).toString()
     }
 
     object Yki {
-        fun suoritukset(): String = linkTo(YkiViewController::suorituksetGetView).toString()
+        fun suoritukset(): String = linkTo(methodOn(YkiViewController::class.java).suorituksetGetView()).toString()
 
         fun suoritus(id: Int): String = linkTo(methodOn(YkiViewController::class.java).suoritusView(id)).toString()
 
-        fun arvioijat(): String = linkTo(YkiViewController::arvioijatView).toString()
+        fun arvioijat(): String = linkTo(methodOn(YkiViewController::class.java).arvioijatView()).toString()
 
         fun tarkistusArvioinnit(): String =
             linkTo(methodOn(YkiViewController::class.java).tarkistusArvioinnitView()).toString()
 
-        fun suorituksetVirheet(): String = linkTo(YkiViewController::suorituksetVirheetView).toString()
+        fun suorituksetVirheet(): String =
+            linkTo(methodOn(YkiViewController::class.java).suorituksetVirheetView()).toString()
 
-        fun arvioijatVirheet(): String = linkTo(YkiViewController::arvioijatVirheetView).toString()
+        fun arvioijatVirheet(): String =
+            linkTo(methodOn(YkiViewController::class.java).arvioijatVirheetView()).toString()
 
         fun koskiVirheet(): String = linkTo(methodOn(YkiViewController::class.java).koskiVirheetView()).toString()
 
@@ -86,24 +87,25 @@ object Links {
             hidden: Boolean,
         ): String = linkTo(methodOn(YkiViewController::class.java).hideKoskiVirheet(suoritusId, hidden)).toString()
 
-        fun suorituksetCsv(): String = linkTo<YkiApiController> { getSuorituksetAsCsv() }.toString()
+        fun suorituksetCsv(): String = linkTo(methodOn(YkiApiController::class.java).getSuorituksetAsCsv()).toString()
     }
 
     object Kielitesti {
-        fun suoritukset(): String = linkTo(KielitestiViewController::suorituksetView).toString()
+        fun suoritukset(): String = linkTo(methodOn(KielitestiViewController::class.java).suorituksetView()).toString()
 
         fun suoritus(id: Int): String =
             linkTo(methodOn(KielitestiViewController::class.java).suoritusView(id)).toString()
 
-        fun virheet(): String = linkTo(KielitestiViewController::virheetView).toString()
+        fun virheet(): String = linkTo(methodOn(KielitestiViewController::class.java).virheetView()).toString()
 
-        fun suorituksetCsv(): String = linkTo<KielitestiApiController> { getSuorituksetAsCsv() }.toString()
+        fun suorituksetCsv(): String =
+            linkTo(methodOn(KielitestiApiController::class.java).getSuorituksetAsCsv()).toString()
 
-        fun virheetCsv(): String = linkTo<KielitestiApiController> { getErrorsAsCsv() }.toString()
+        fun virheetCsv(): String = linkTo(methodOn(KielitestiApiController::class.java).getErrorsAsCsv()).toString()
     }
 
     object Tehtavapankki {
-        fun list(): String = linkTo(TehtavapankkiViewController::listView).toString()
+        fun list(): String = linkTo(methodOn(TehtavapankkiViewController::class.java).listView()).toString()
 
         fun paketti(id: Int): String =
             linkTo(methodOn(TehtavapankkiViewController::class.java).pakettiView(id)).toString()

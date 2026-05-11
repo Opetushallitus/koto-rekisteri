@@ -1,9 +1,11 @@
 package fi.oph.kitu.koski
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.util.result.TypedResult
-import fi.oph.kitu.util.result.mapValues
-import fi.oph.kitu.util.result.partitionBySuccess
+import fi.oph.kitu.util.result.getOrThrow
+import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktHenkilosuoritus
@@ -33,19 +35,19 @@ class KoskiService(
 ) {
     @WithSpan
     @RetryOutboundIntegration
-    fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<YkiSuoritusEntity, KoskiException> {
+    fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): Either<KoskiException, YkiSuoritusEntity> {
         val koskiRequest = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity).getOrNull()
 
         if (koskiRequest == null) {
             val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
             ykiSuoritusRepository.save(suoritus, true)
-            return TypedResult.Success(suoritus)
+            return suoritus.right()
         }
 
         val koskiResponse =
             when (val result = putToKoski(YkiMappingId(ykiSuoritusEntity.solkiId), koskiRequest)) {
-                is TypedResult.Success -> result.value
-                is TypedResult.Failure -> return TypedResult.Failure(result.error)
+                is Either.Right -> result.value
+                is Either.Left -> return result.value.left()
             }
 
         val koskiOpiskeluoikeus =
@@ -53,12 +55,10 @@ class KoskiService(
                 ?.opiskeluoikeudet
                 ?.first()
                 ?.oid
-                ?: return TypedResult.Failure(
-                    KoskiException(
-                        YkiMappingId(ykiSuoritusEntity.solkiId),
-                        "KOSKI opiskeluoikeus OID missing from response",
-                    ),
-                )
+                ?: return KoskiException(
+                    YkiMappingId(ykiSuoritusEntity.solkiId),
+                    "KOSKI opiskeluoikeus OID missing from response",
+                ).left()
 
         val suoritus =
             ykiSuoritusEntity.copy(
@@ -66,12 +66,12 @@ class KoskiService(
                 koskiSiirtoKasitelty = true,
             )
         ykiSuoritusRepository.save(suoritus, true)
-        return TypedResult.Success(suoritus)
+        return suoritus.right()
     }
 
     @WithSpan
     @RetryOutboundIntegration
-    fun sendYkiMitatointiToKoski(ykiSuoritusEntity: YkiSuoritusEntity): TypedResult<Unit, KoskiException> {
+    fun sendYkiMitatointiToKoski(ykiSuoritusEntity: YkiSuoritusEntity): Either<KoskiException, Unit> {
         if (ykiSuoritusEntity.koskiOpiskeluoikeus != null) {
             koskiYkiRequestMapper
                 .ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
@@ -96,23 +96,23 @@ class KoskiService(
             ykiSuoritusRepository.save(suoritus, true)
         }
 
-        return TypedResult.Success(Unit)
+        return Unit.right()
     }
 
     @WithSpan
     @RetryOutboundIntegration
-    fun sendVktSuoritusToKoski(suoritus: VktHenkilosuoritus): TypedResult<Unit, KoskiException> {
+    fun sendVktSuoritusToKoski(suoritus: VktHenkilosuoritus): Either<KoskiException, Unit> {
         val id = CustomVktSuoritusRepository.Tutkintoryhma.from(suoritus)
         val koskiRequest = koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus)
-        if (koskiRequest.isFailure) {
+        if (koskiRequest.isLeft()) {
             // Suoritus ei ole vielä valmis lähetettäväksi, mutta se ei ole tiedonsiirtovirhe.
-            return TypedResult.Success(Unit)
+            return Unit.right()
         }
 
         val koskiResponse =
             when (val result = putToKoski(VktMappingId(id), koskiRequest.getOrThrow())) {
-                is TypedResult.Success -> result.value
-                is TypedResult.Failure -> return TypedResult.Failure(result.error)
+                is Either.Right -> result.value
+                is Either.Left -> return result.value.left()
             }
 
         val koskiOpiskeluoikeusOid =
@@ -122,14 +122,14 @@ class KoskiService(
                 ?.oid
 
         vktSuoritusService.markKoskiTransferProcessed(id, koskiOpiskeluoikeusOid)
-        return TypedResult.Success(Unit)
+        return Unit.right()
     }
 
     @WithSpan
     fun sendYkiSuorituksetToKoski(): KoskiTransferReport {
         val suoritukset = ykiSuoritusRepository.findKoskeenLahettamattomatSuoritukset()
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
-        return reportErrors(results.mapValues { YkiMappingId(it.solkiId) })
+        return reportErrors(results.map { it.map { suoritus -> YkiMappingId(suoritus.solkiId) } })
     }
 
     @WithSpan
@@ -149,26 +149,25 @@ class KoskiService(
     private fun putToKoski(
         id: KoskiErrorMappingId,
         koskiRequest: KoskiRequest,
-    ): TypedResult<ResponseEntity<KoskiResponse>, KoskiException> =
+    ): Either<KoskiException, ResponseEntity<KoskiResponse>> =
         try {
-            TypedResult.Success(
-                koskiRestClient
-                    .put()
-                    .uri("oppija")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .body(koskiRequest)
-                    .retrieve()
-                    .toEntity<KoskiResponse>(),
-            )
+            koskiRestClient
+                .put()
+                .uri("oppija")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(koskiRequest)
+                .retrieve()
+                .toEntity<KoskiResponse>()
+                .right()
         } catch (e: RestClientException) {
-            TypedResult.Failure(KoskiException.from(id, e))
+            KoskiException.from(id, e).left()
         }
 
     private inline fun <reified T : KoskiErrorMappingId> reportErrors(
-        results: List<TypedResult<T, KoskiException>?>,
+        results: List<Either<KoskiException, T>?>,
     ): KoskiTransferReport {
-        val (success, failed) = results.filterNotNull().partitionBySuccess()
+        val (success, failed) = results.filterNotNull().splitIntoValuesAndErrors()
         success.forEach { id -> koskiErrors.reset(id) }
         failed.forEach { error -> koskiErrors.save(error.suoritusId, error.message ?: error.toString()) }
         failed.find { it is KoskiTechnicalException }?.let { throw it }

@@ -64,7 +64,7 @@ class YkiViewController(
                 if (suoritus.id == viimeisinSuoritus.id) {
                     Pair(
                         koskiErrorService.findById(YkiMappingId(suoritus.id)),
-                        koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus).errorOrNull(),
+                        koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus).leftOrNull(),
                     )
                 } else {
                     Pair(null, null)

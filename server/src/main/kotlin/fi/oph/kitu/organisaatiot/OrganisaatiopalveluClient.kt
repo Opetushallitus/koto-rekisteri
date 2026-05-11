@@ -1,9 +1,10 @@
 package fi.oph.kitu.organisaatiot
 
+import arrow.core.Either
+import arrow.core.left
 import fi.oph.kitu.restclient.nullableBody
 import fi.oph.kitu.restclient.retrieveEntitySafely
 import fi.oph.kitu.util.defaultObjectMapper
-import fi.oph.kitu.util.result.TypedResult
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -36,7 +37,7 @@ class OrganisaatiopalveluClient(
         query: Map<String, Any>,
         body: OrganisaatiopalveluRequest? = null,
         responseType: Class<T>,
-    ): TypedResult<T, OrganisaatiopalveluException> {
+    ): Either<OrganisaatiopalveluException, T> {
         val uriBuilder = UriComponentsBuilder.fromUriString("$serviceUrl/$endpoint")
         query.forEach { (key, value) -> uriBuilder.queryParam(key, value) }
         val uri = uriBuilder.build().toUri()
@@ -54,9 +55,9 @@ class OrganisaatiopalveluClient(
         }
 
         if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
-            return TypedResult.Failure(OrganisaatiopalveluException.NotFoundException(body ?: EmptyRequest()))
+            return OrganisaatiopalveluException.NotFoundException(body ?: EmptyRequest()).left()
         } else if (rawResponse.statusCode.is4xxClientError) {
-            return TypedResult.Failure(OrganisaatiopalveluException.BadRequest(body ?: EmptyRequest(), rawResponse))
+            return OrganisaatiopalveluException.BadRequest(body ?: EmptyRequest(), rawResponse).left()
         } else if (!rawResponse.statusCode.is2xxSuccessful) {
             throw OrganisaatiopalveluException.UnexpectedError(body ?: EmptyRequest(), rawResponse)
         }
@@ -75,19 +76,19 @@ class OrganisaatiopalveluClient(
         request: OrganisaatiopalveluRequest,
         response: ResponseEntity<String>,
         clazz: Class<T>,
-    ): TypedResult<T, OrganisaatiopalveluException> =
-        TypedResult
-            .runCatching {
+    ): Either<OrganisaatiopalveluException, T> =
+        Either
+            .catch {
                 defaultObjectMapper.readValue(response.body, clazz)
-            }.mapFailure { decodeError ->
-                TypedResult
-                    .runCatching {
+            }.mapLeft { decodeError ->
+                Either
+                    .catch {
                         defaultObjectMapper.readValue(
                             response.body,
                             OrganisaatiopalveluError::class.java,
                         )
                     }.fold(
-                        onSuccess = { orgError ->
+                        ifRight = { orgError ->
                             OrganisaatiopalveluException.BadResponse(
                                 request = request,
                                 response = response,
@@ -95,7 +96,7 @@ class OrganisaatiopalveluClient(
                                 cause = decodeError,
                             )
                         },
-                        onFailure = { _ ->
+                        ifLeft = { _ ->
                             OrganisaatiopalveluException.MalformedResponse(
                                 request = request,
                                 response = response,

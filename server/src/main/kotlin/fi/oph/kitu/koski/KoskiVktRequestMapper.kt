@@ -1,5 +1,8 @@
 package fi.oph.kitu.koski
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koodisto.KoskiKoodiviite
 import fi.oph.kitu.koski.KoskiRequest.Henkilo
@@ -11,7 +14,7 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.util.result.TypedResult
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.VktHenkilosuoritus
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
@@ -23,7 +26,7 @@ class KoskiVktRequestMapper {
     lateinit var vktOrganisaatioOid: String
 
     @WithSpan
-    fun vktSuoritusToKoskiRequest(henkilosuoritus: VktHenkilosuoritus): TypedResult<KoskiRequest, List<String>> {
+    fun vktSuoritusToKoskiRequest(henkilosuoritus: VktHenkilosuoritus): Either<List<String>, KoskiRequest> {
         val henkilo = henkilosuoritus.henkilo
         val suoritus = henkilosuoritus.suoritus
 
@@ -43,28 +46,25 @@ class KoskiVktRequestMapper {
                 .filter { it.puuttuvatOsakokeet().isEmpty() }
                 .filter { it.puuttuvatArvioinnit().isEmpty() }
 
-        val vahvistus: TypedResult<KielitutkintoSuoritus.VahvistusPaikkakunnalla, List<String>> =
+        val vahvistus: Either<List<String>, KielitutkintoSuoritus.VahvistusPaikkakunnalla> =
             if (kaikkiOsakokeetArvioitu &&
                 arviointipaiva != null &&
                 suoritus.suorituspaikkakunta != null &&
                 valmiitTutkinnot.isNotEmpty()
             ) {
-                TypedResult.Success(
-                    KielitutkintoSuoritus.VahvistusPaikkakunnalla(
+                KielitutkintoSuoritus
+                    .VahvistusPaikkakunnalla(
                         päivä = arviointipaiva,
                         myöntäjäOrganisaatio = Organisaatio(organisaatio.oid),
                         paikkakunta = KoskiKoodiviite(suoritus.suorituspaikkakunta, "kunta"),
-                    ),
-                )
+                    ).right()
             } else {
-                TypedResult.Failure(
-                    listOfNotNull(
-                        if (!kaikkiOsakokeetArvioitu) "Arviointi puuttuu" else null,
-                        if (arviointipaiva == null) "Viimeisintä arviointipäivää ei voida päätellä" else null,
-                        if (suoritus.suorituspaikkakunta == null) "Suorituspaikkakunta puuttuu" else null,
-                        if (valmiitTutkinnot.isEmpty()) "Ei valmiita tutkintoja" else null,
-                    ),
-                )
+                listOfNotNull(
+                    if (!kaikkiOsakokeetArvioitu) "Arviointi puuttuu" else null,
+                    if (arviointipaiva == null) "Viimeisintä arviointipäivää ei voida päätellä" else null,
+                    if (suoritus.suorituspaikkakunta == null) "Suorituspaikkakunta puuttuu" else null,
+                    if (valmiitTutkinnot.isEmpty()) "Ei valmiita tutkintoja" else null,
+                ).left()
             }
 
         return vahvistus.map { vahvistus ->

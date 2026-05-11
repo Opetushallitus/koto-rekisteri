@@ -1,8 +1,9 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
+import arrow.core.Either
+import arrow.core.left
 import fi.oph.kitu.restclient.retrieveEntitySafely
 import fi.oph.kitu.util.defaultObjectMapper
-import fi.oph.kitu.util.result.TypedResult
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -19,7 +20,7 @@ interface IlmoittautumisjarjestelmaClient {
         endpoint: String,
         body: IlmoittautumisjarjestelmaRequest,
         responseType: Class<T>,
-    ): TypedResult<T, out IlmoittautumisjarjestelmaException>
+    ): Either<IlmoittautumisjarjestelmaException, T>
 }
 
 @Service
@@ -35,7 +36,7 @@ class IlmoittautumisjarjestelmaClientImpl(
         endpoint: String,
         body: IlmoittautumisjarjestelmaRequest,
         responseType: Class<T>,
-    ): TypedResult<T, out IlmoittautumisjarjestelmaException> {
+    ): Either<IlmoittautumisjarjestelmaException, T> {
         val uri = URI.create("$serviceUrl/$endpoint")
         val rawResponse =
             restClient
@@ -50,9 +51,9 @@ class IlmoittautumisjarjestelmaClientImpl(
         }
 
         return if (rawResponse.statusCode.is4xxClientError) {
-            TypedResult.Failure(IlmoittautumisjarjestelmaException.BadRequest(body, rawResponse))
+            IlmoittautumisjarjestelmaException.BadRequest(body, rawResponse).left()
         } else if (!rawResponse.statusCode.is2xxSuccessful) {
-            TypedResult.Failure(IlmoittautumisjarjestelmaException.UnexpectedError(body, rawResponse))
+            IlmoittautumisjarjestelmaException.UnexpectedError(body, rawResponse).left()
         } else {
             deserializeResponse(body, rawResponse, responseType)
         }
@@ -63,11 +64,11 @@ class IlmoittautumisjarjestelmaClientImpl(
         request: IlmoittautumisjarjestelmaRequest,
         response: ResponseEntity<String>,
         clazz: Class<T>,
-    ): TypedResult<T, IlmoittautumisjarjestelmaException> =
-        TypedResult
-            .runCatching {
+    ): Either<IlmoittautumisjarjestelmaException, T> =
+        Either
+            .catch {
                 defaultObjectMapper.readValue(response.body, clazz)
-            }.mapFailure { decodeError ->
+            }.mapLeft { _ ->
                 IlmoittautumisjarjestelmaException.MalformedResponse(request, response)
             }
 }

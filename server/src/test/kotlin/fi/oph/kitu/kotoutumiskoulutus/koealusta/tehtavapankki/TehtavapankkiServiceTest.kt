@@ -1,9 +1,9 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
+import arrow.core.Either
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration.Companion.TEST_BUCKET
-import fi.oph.kitu.util.result.TypedResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -227,7 +227,7 @@ class TehtavapankkiServiceTest(
 
         val result = tehtavapankkiService.fetchAndParseFromS3(key)
 
-        assertIs<TypedResult.Success<TehtavapankkiQuiz, TehtavapankkiParseError>>(result)
+        assertIs<Either.Right<TehtavapankkiQuiz>>(result)
         assertEquals(1, result.value.questions.size)
         assertIs<CategoryQuestion>(result.value.questions.single())
     }
@@ -236,8 +236,8 @@ class TehtavapankkiServiceTest(
     fun `fetchAndParseFromS3 palauttaa NotFound-virheen tuntemattomalle avaimelle`() {
         val result = tehtavapankkiService.fetchAndParseFromS3("ei-olemassa.xml")
 
-        assertIs<TypedResult.Failure<TehtavapankkiQuiz, TehtavapankkiParseError>>(result)
-        assertEquals(TehtavapankkiParseError.NotFound, result.error)
+        assertIs<Either.Left<TehtavapankkiParseError>>(result)
+        assertEquals(TehtavapankkiParseError.NotFound, result.value)
     }
 
     @Test
@@ -318,13 +318,13 @@ class TehtavapankkiServiceTest(
         val parsedFiles =
             TehtavapankkiXmlParser()
                 .parse(xmlBytes.inputStream())
-                .let { (it as TypedResult.Success).value }
+                .let { (it as Either.Right).value }
                 .questions
                 .filterIsInstance<DescriptionQuestion>()
                 .flatMap { it.questiontext?.embeddedFiles.orEmpty() } +
                 TehtavapankkiXmlParser()
                     .parse(xmlBytes.inputStream())
-                    .let { (it as TypedResult.Success).value }
+                    .let { (it as Either.Right).value }
                     .questions
                     .filterIsInstance<MultichoiceQuestion>()
                     .flatMap { it.questiontext?.embeddedFiles.orEmpty() }
@@ -334,7 +334,7 @@ class TehtavapankkiServiceTest(
 
         val result = tehtavapankkiService.extractAndUploadAssets(xmlKey)
 
-        assertIs<TypedResult.Success<AssetExtractResult, TehtavapankkiParseError>>(result)
+        assertIs<Either.Right<AssetExtractResult>>(result)
         assertEquals(emptyList(), result.value.failed)
         assertEquals(expectedByName.size, result.value.uploadedAssets.size)
 
@@ -360,8 +360,8 @@ class TehtavapankkiServiceTest(
     fun `extractAndUploadAssets palauttaa NotFound-virheen tuntemattomalle xml-avaimelle`() {
         val result = tehtavapankkiService.extractAndUploadAssets("ei-olemassa.xml")
 
-        assertIs<TypedResult.Failure<AssetExtractResult, TehtavapankkiParseError>>(result)
-        assertEquals(TehtavapankkiParseError.NotFound, result.error)
+        assertIs<Either.Left<TehtavapankkiParseError>>(result)
+        assertEquals(TehtavapankkiParseError.NotFound, result.value)
     }
 
     @Test
@@ -383,7 +383,7 @@ class TehtavapankkiServiceTest(
 
         val result = tehtavapankkiService.extractAndUploadAssets(xmlKey)
 
-        assertIs<TypedResult.Success<AssetExtractResult, TehtavapankkiParseError>>(result)
+        assertIs<Either.Right<AssetExtractResult>>(result)
         val downloaded =
             s3Client
                 .getObject { it.bucket(TEST_BUCKET).key(pngAssetKey) }

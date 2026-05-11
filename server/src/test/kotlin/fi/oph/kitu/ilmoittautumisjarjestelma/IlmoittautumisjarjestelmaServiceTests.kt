@@ -1,5 +1,7 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
+import arrow.core.left
+import arrow.core.right
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.dev.YkiController
 import fi.oph.kitu.oid.Oid
@@ -8,7 +10,6 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
 import fi.oph.kitu.util.defaultObjectMapper
-import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.util.toJsonNode
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
@@ -109,9 +110,7 @@ class IlmoittautumisjarjestelmaServiceTests(
     @Test
     fun `Epäonnistunut kutsu #1 ei aiheuta poikkeusta rajapinnassa, mutta poikkeus tallennetaan virhetauluun`() {
         ilmoittautumisjarjestelmaClient.response =
-            TypedResult.Success(
-                IlmoittautumisjarjestelmaResponse.errorFor(entity, "SUORITUSTA_EI_LOYDY"),
-            )
+            IlmoittautumisjarjestelmaResponse.errorFor(entity, "SUORITUSTA_EI_LOYDY").right()
 
         assertDoesNotThrow {
             ykiApi.postHenkilosuoritus(suoritus)
@@ -124,12 +123,11 @@ class IlmoittautumisjarjestelmaServiceTests(
     @Test
     fun `Epäonnistunut kutsu #2 ei aiheuta poikkeusta rajapinnassa, mutta poikkeus tallennetaan virhetauluun`() {
         ilmoittautumisjarjestelmaClient.response =
-            TypedResult.Failure(
-                IlmoittautumisjarjestelmaException.UnexpectedError(
+            IlmoittautumisjarjestelmaException
+                .UnexpectedError(
                     request = YkiArvioinninTilaRequest.of(entity)!!,
                     response = ResponseEntity.notFound().build(),
-                ),
-            )
+                ).left()
 
         assertDoesNotThrow {
             ykiApi.postHenkilosuoritus(suoritus)

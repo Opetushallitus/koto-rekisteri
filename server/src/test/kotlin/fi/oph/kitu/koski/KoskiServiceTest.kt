@@ -1,9 +1,10 @@
 package fi.oph.kitu.koski
 
+import arrow.core.Either
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
-import fi.oph.kitu.util.result.TypedResult
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusService
@@ -126,8 +127,8 @@ class KoskiServiceTest(
             generateRandomYkiSuoritusEntity().copy(id = 1)
 
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus)
-        assertTrue(updatedSuoritus is TypedResult.Failure)
-        assertEquals(YkiMappingId(suoritus.solkiId), updatedSuoritus.errorOrNull()?.suoritusId)
+        assertTrue(updatedSuoritus is Either.Left)
+        assertEquals(YkiMappingId(suoritus.solkiId), updatedSuoritus.value.suoritusId)
     }
 
     @Test

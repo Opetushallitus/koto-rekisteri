@@ -1,11 +1,15 @@
 package fi.oph.kitu.util.validation
 
-typealias ValidationResult<T> = fi.oph.kitu.util.result.TypedResult<out T, Validation.ValidationException>
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
+
+typealias ValidationResult<T> = Either<Validation.ValidationException, T>
 
 interface Validation<T> {
     fun validateAndEnrich(value: T): ValidationResult<T> {
         val result = validationBeforeEnrichment(value)
-        if (result.isFailure) {
+        if (result.isLeft()) {
             return result
         }
         return validationAfterEnrichment(enrich(value))
@@ -36,7 +40,7 @@ interface Validation<T> {
             val errors =
                 validations
                     .map { it(value) }
-                    .flatMap { it.errorOrNull()?.errors.orEmpty() }
+                    .flatMap { it.leftOrNull()?.errors.orEmpty() }
             return if (errors.isNotEmpty()) {
                 fail(errors)
             } else {
@@ -44,18 +48,14 @@ interface Validation<T> {
             }
         }
 
-        fun <T> ok(value: T): ValidationResult<T> =
-            fi.oph.kitu.util.result.TypedResult
-                .Success(value)
+        fun <T> ok(value: T): ValidationResult<T> = value.right()
 
         fun <T> fail(
             path: List<String>,
             message: String,
         ): ValidationResult<T> = fail(listOf(ValidationError(path, message)))
 
-        fun <T> fail(reasons: List<ValidationError>): ValidationResult<T> =
-            fi.oph.kitu.util.result.TypedResult
-                .Failure(ValidationException(reasons))
+        fun <T> fail(reasons: List<ValidationError>): ValidationResult<T> = ValidationException(reasons).left()
 
         fun <T, A> assert(
             getActual: (T) -> A,

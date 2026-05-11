@@ -41,7 +41,7 @@ class AuditLogger(
         operation: AuditLogOperation,
         oppijaHenkiloOid: Oid,
     ) {
-        AuditContext.get().forEach { context ->
+        AuditContext.get().onRight { context ->
             slf4jLogger.info(
                 objectMapper.writeValueAsString(
                     AuditLogEntry(

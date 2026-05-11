@@ -1,7 +1,9 @@
 package fi.oph.kitu.oppijanumero
 
+import arrow.core.Either
+import arrow.core.flatMap
+import arrow.core.left
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.util.result.TypedResult
 import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -9,9 +11,9 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 interface OppijanumeroService {
-    fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException>
+    fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid>
 
-    fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException>
+    fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo>
 }
 
 @Service
@@ -21,7 +23,7 @@ class OppijanumeroServiceImpl(
 ) : OppijanumeroService {
     @WithSpan
     @RetryOutboundIntegration
-    override fun getOppijanumero(oppija: Oppija): TypedResult<Oid, OppijanumeroException> {
+    override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> {
         require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
         require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
         require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
@@ -44,11 +46,11 @@ class OppijanumeroServiceImpl(
                 span.setAttribute("response.areOppijanumeroAndOidSame", (body.oppijanumero == body.oid))
 
                 if (body.oppijanumero.isNullOrEmpty()) {
-                    TypedResult.Failure(OppijanumeroException.OppijaNotIdentifiedException(requestBody))
+                    OppijanumeroException.OppijaNotIdentifiedException(requestBody).left()
                 } else {
                     Oid
                         .parseTyped(body.oppijanumero)
-                        .mapFailure {
+                        .mapLeft {
                             OppijanumeroException.MalformedOppijanumero(
                                 requestBody,
                                 body.oppijanumero,
@@ -60,6 +62,6 @@ class OppijanumeroServiceImpl(
 
     @WithSpan
     @RetryOutboundIntegration
-    override fun getHenkilo(oid: Oid): TypedResult<OppijanumerorekisteriHenkilo, OppijanumeroException> =
+    override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
         client.onrGet("henkilo/$oid", OppijanumerorekisteriHenkilo::class.java)
 }

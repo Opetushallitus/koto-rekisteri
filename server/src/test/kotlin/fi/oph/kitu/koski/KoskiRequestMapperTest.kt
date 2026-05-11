@@ -1,5 +1,6 @@
 package fi.oph.kitu.koski
 
+import arrow.core.left
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.dev.mockdata.VktSuoritusMockGenerator
 import fi.oph.kitu.dev.mockdata.generateRandomOppijaOid
@@ -11,7 +12,7 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.util.result.TypedResult
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
@@ -221,7 +222,7 @@ class KoskiRequestMapperTest(
                 tekstinYmmartaminen = 10,
             )
         val koskiSuoritus = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
-        assertEquals(TypedResult.Failure(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")), koskiSuoritus)
+        assertEquals(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty").left(), koskiSuoritus)
     }
 
     @Test
@@ -233,7 +234,7 @@ class KoskiRequestMapperTest(
                 tekstinYmmartaminen = 11,
             )
         val koskiSuoritus = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
-        assertEquals(TypedResult.Failure(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")), koskiSuoritus)
+        assertEquals(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty").left(), koskiSuoritus)
     }
 
     @Test
@@ -389,7 +390,7 @@ class KoskiRequestMapperTest(
 
         val koskiSuoritus = koskiVktRequestMapper.vktSuoritusToKoskiRequest(henkilosuoritus)
 
-        assertEquals(TypedResult.Failure(listOf("Ei valmiita tutkintoja")), koskiSuoritus)
+        assertEquals(listOf("Ei valmiita tutkintoja").left(), koskiSuoritus)
     }
 
     @Test
