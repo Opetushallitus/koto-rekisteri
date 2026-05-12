@@ -6,11 +6,11 @@ import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
 import fi.oph.kitu.tiedontuontischema.HenkilosuoritusValidation
 import fi.oph.kitu.tiedontuontischema.KielitutkinnonSuoritus
 import fi.oph.kitu.tiedontuontischema.VktSuoritus
+import fi.oph.kitu.tiedontuontischema.VktValidation
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
-import fi.oph.kitu.vkt.VktValidation
+import fi.oph.kitu.tiedontuontischema.YkiSuoritusValidation
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaValidation
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusValidation
 import org.springframework.stereotype.Service
 
 @Service

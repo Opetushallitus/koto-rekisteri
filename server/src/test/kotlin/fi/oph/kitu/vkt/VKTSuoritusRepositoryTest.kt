@@ -5,6 +5,7 @@ import fi.oph.kitu.dev.mockdata.VktSuoritusMockGenerator
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.tiedontuontischema.VktValidation
 import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertAll
