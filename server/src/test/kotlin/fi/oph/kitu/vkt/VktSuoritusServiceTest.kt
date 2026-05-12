@@ -6,8 +6,10 @@ import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
 import fi.oph.kitu.dev.mockdata.VktSuoritusMockGenerator
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.tiedontuontischema.VktValidation
+import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertNull
@@ -36,8 +38,12 @@ class VktSuoritusServiceTest(
 
     @Test
     fun `get oppijan suoritukset`() {
+        val vastaanottajaOid = Oid.parse("1.2.246.562.24.10691606777").getOrThrow()
         val generator = VktSuoritusMockGenerator()
-        val suoritus = generator.generateRandomVktSuoritusEntity(vktValidation)
+        val suoritus =
+            generator
+                .generateRandomVktSuoritusEntity(vktValidation)
+                .copy(suorituksenVastaanottaja = vastaanottajaOid)
         val suoritus2 =
             generator
                 .generateRandomVktSuoritusEntity(vktValidation)
@@ -47,6 +53,7 @@ class VktSuoritusServiceTest(
                     sukunimi = suoritus.sukunimi,
                     tutkintokieli = suoritus.tutkintokieli,
                     taitotaso = suoritus.taitotaso,
+                    suorituksenVastaanottaja = vastaanottajaOid,
                 )
 
         suoritusRepository.saveAll(listOf(suoritus, suoritus2))

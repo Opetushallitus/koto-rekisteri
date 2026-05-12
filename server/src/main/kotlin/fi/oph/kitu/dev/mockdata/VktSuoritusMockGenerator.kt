@@ -27,8 +27,8 @@ class VktSuoritusMockGenerator(
 
     fun generateRandomVktSuoritusEntity(vktValidation: VktValidation): VktSuoritusEntity {
         index += 1
-        val henkilo = Henkilo(Oid.parse("1.2.246.562.24.20281155246").getOrThrow())
         val suoritus = randomSuoritus(index)
+        val henkilo = randomOppija(index)
         val henkilosuoritus = Henkilosuoritus(henkilo, suoritus)
         val enriched = vktValidation.enrich(henkilosuoritus)
         return VktSuoritusEntity.from(enriched)
