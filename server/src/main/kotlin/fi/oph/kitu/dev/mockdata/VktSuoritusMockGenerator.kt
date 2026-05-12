@@ -7,6 +7,7 @@ import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
 import fi.oph.kitu.tiedontuontischema.Lahdejarjestelma
 import fi.oph.kitu.tiedontuontischema.LahdejarjestelmanTunniste
 import fi.oph.kitu.tiedontuontischema.VktSuoritus
+import fi.oph.kitu.tiedontuontischema.VktValidation
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktOsakoe
@@ -14,7 +15,6 @@ import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
 import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
-import fi.oph.kitu.vkt.VktValidation
 import fi.oph.kitu.yki.Sukupuoli
 import java.time.LocalDate
 import kotlin.random.Random

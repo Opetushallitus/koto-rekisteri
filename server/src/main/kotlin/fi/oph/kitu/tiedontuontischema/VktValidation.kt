@@ -1,4 +1,4 @@
-package fi.oph.kitu.vkt
+package fi.oph.kitu.tiedontuontischema
 
 import arrow.core.NonEmptyList
 import arrow.core.raise.Raise
@@ -7,9 +7,7 @@ import arrow.core.raise.ensureNotNull
 import arrow.core.raise.zipOrAccumulate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
 import fi.oph.kitu.util.validation.Validation
-import fi.oph.kitu.util.validation.Validation.ValidationError
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -25,25 +23,25 @@ class VktValidation : Validation<VktHenkilosuoritus> {
                     suorituspaikkakunta =
                         it.suorituspaikkakunta ?: "091",
                     suorituksenVastaanottaja =
-                        it.suorituksenVastaanottaja ?: Oid.parse(palvelukayttajaOid).getOrNull(),
+                        it.suorituksenVastaanottaja ?: Oid.Companion.parse(palvelukayttajaOid).getOrNull(),
                 )
             }
         } else {
             value
         }
 
-    override fun Raise<NonEmptyList<ValidationError>>.validateAfterEnrichment(
+    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateAfterEnrichment(
         value: VktHenkilosuoritus,
     ): VktHenkilosuoritus {
         zipOrAccumulate(
             {
                 ensureNotNull(value.suoritus.suorituspaikkakunta) {
-                    ValidationError(listOf("suoritus", "suorituspaikkakunta"), "Suorituspaikkakunta puuttuu")
+                    Validation.ValidationError(listOf("suoritus", "suorituspaikkakunta"), "Suorituspaikkakunta puuttuu")
                 }
             },
             {
                 ensureNotNull(value.suoritus.suorituksenVastaanottaja) {
-                    ValidationError(
+                    Validation.ValidationError(
                         listOf("suoritus", "suorituksenVastaanottaja"),
                         "Suorituksen vastaanottaja puuttuu",
                     )
@@ -54,7 +52,7 @@ class VktValidation : Validation<VktHenkilosuoritus> {
                     value.suoritus.taitotaso != Koodisto.VktTaitotaso.HyväJaTyydyttävä ||
                         value.suoritus.osat.all { it.arviointi != null },
                 ) {
-                    ValidationError(
+                    Validation.ValidationError(
                         listOf("suoritus", "osakokeet", "arviointi"),
                         "Suorituksella on arvioimattomia osakokeita",
                     )
