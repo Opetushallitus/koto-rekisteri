@@ -1,10 +1,11 @@
 package fi.oph.kitu.tiedontuontischema
 
 import arrow.core.NonEmptyList
+import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.Raise
+import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
-import arrow.core.raise.zipOrAccumulate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.validation.Validation
@@ -30,24 +31,25 @@ class VktValidation : Validation<VktHenkilosuoritus> {
             value
         }
 
+    @OptIn(ExperimentalRaiseAccumulateApi::class)
     override fun Raise<NonEmptyList<Validation.ValidationError>>.validateAfterEnrichment(
         value: VktHenkilosuoritus,
     ): VktHenkilosuoritus {
-        zipOrAccumulate(
-            {
+        accumulate {
+            accumulating {
                 ensureNotNull(value.suoritus.suorituspaikkakunta) {
                     Validation.ValidationError(listOf("suoritus", "suorituspaikkakunta"), "Suorituspaikkakunta puuttuu")
                 }
-            },
-            {
+            }
+            accumulating {
                 ensureNotNull(value.suoritus.suorituksenVastaanottaja) {
                     Validation.ValidationError(
                         listOf("suoritus", "suorituksenVastaanottaja"),
                         "Suorituksen vastaanottaja puuttuu",
                     )
                 }
-            },
-            {
+            }
+            accumulating {
                 ensure(
                     value.suoritus.taitotaso != Koodisto.VktTaitotaso.HyväJaTyydyttävä ||
                         value.suoritus.osat.all { it.arviointi != null },
@@ -57,8 +59,8 @@ class VktValidation : Validation<VktHenkilosuoritus> {
                         "Suorituksella on arvioimattomia osakokeita",
                     )
                 }
-            },
-        ) { _, _, _ -> }
+            }
+        }
         return value
     }
 }
