@@ -10,6 +10,7 @@ import fi.oph.kitu.html.warning
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.koski.KoskiErrorEntity
+import fi.oph.kitu.tiedonsiirtoschema.YkiTarkastusarviointi
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.*
 

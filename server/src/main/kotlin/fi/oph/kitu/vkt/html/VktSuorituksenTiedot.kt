@@ -6,7 +6,7 @@ import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
-import fi.oph.kitu.vkt.VktHenkilosuoritus
+import fi.oph.kitu.tiedonsiirtoschema.VktHenkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.h3

@@ -5,6 +5,9 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedonsiirtoschema.VktHenkilosuoritus
+import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
+import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
 import fi.oph.kitu.util.IgnoreForEquality
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.MappedCollection
@@ -83,4 +86,26 @@ data class VktSuoritusEntity(
                 ),
             lisatty = createdAt,
         )
+
+    companion object {
+        fun from(hs: Henkilosuoritus<VktSuoritus>): VktSuoritusEntity {
+            val oppija = hs.henkilo
+            return with(hs.suoritus) {
+                VktSuoritusEntity(
+                    ilmoittautumisenId = hs.suoritus.lahdejarjestelmanId.toString(),
+                    suorittajanOid = oppija.oid,
+                    etunimet = oppija.etunimet.orEmpty(),
+                    sukunimi = oppija.sukunimi.orEmpty(),
+                    tutkintokieli = kieli,
+                    suorituspaikkakunta = suorituspaikkakunta,
+                    taitotaso = taitotaso,
+                    suorituksenVastaanottaja = suorituksenVastaanottaja,
+                    osakokeet = osat.map { it.toVktOsakoeRow() }.toSet(),
+                    tutkinnot = tutkinnot.map { it.toVktTutkintoRow() }.toSet(),
+                    koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,
+                    koskiSiirtoKasitelty = koskiSiirtoKasitelty,
+                )
+            }
+        }
+    }
 }

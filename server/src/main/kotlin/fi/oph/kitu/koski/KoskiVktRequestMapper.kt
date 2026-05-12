@@ -14,8 +14,8 @@ import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.LahdeJarjestelmanId
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila
 import fi.oph.kitu.koski.KoskiRequest.Opiskeluoikeus.Tila.OpiskeluoikeusJakso
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.tiedonsiirtoschema.VktHenkilosuoritus
 import fi.oph.kitu.util.result.getOrThrow
-import fi.oph.kitu.vkt.VktHenkilosuoritus
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service

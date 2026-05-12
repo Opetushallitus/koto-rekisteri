@@ -4,6 +4,8 @@ import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
+import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
 import fi.oph.kitu.util.IgnoreForEquality
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
@@ -13,6 +15,7 @@ import fi.oph.kitu.yki.Tutkintotaso
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.jdbc.core.RowMapper
+import java.lang.IllegalArgumentException
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
@@ -150,6 +153,59 @@ data class YkiSuoritusEntity(
             }
 
         val fromRootRow: RowMapper<YkiSuoritusEntity> = RowMapper { rs, _ -> buildEntity(rs) }
+
+        fun from(hs: Henkilosuoritus<YkiSuoritus>): YkiSuoritusEntity {
+            val henkilo = hs.henkilo
+            return with(hs.suoritus) {
+                fun arvosana(tyyppi: TutkinnonOsa): Int? =
+                    osat
+                        .firstOrNull { it.tyyppi == tyyppi }
+                        ?.arvosana
+
+                YkiSuoritusEntity(
+                    id = internalId,
+                    suorittajanOID = henkilo.oid,
+                    hetu = henkilo.hetu,
+                    sukupuoli = henkilo.sukupuoli ?: throw IllegalArgumentException("Sukupuoli puuttuu"),
+                    sukunimi = henkilo.sukunimi ?: throw IllegalArgumentException("Sukunimi puuttuu"),
+                    etunimet = henkilo.etunimet ?: throw IllegalArgumentException("Etunimet puuttuu"),
+                    kansalaisuus = henkilo.kansalaisuus ?: throw IllegalArgumentException("Kansalaisuus puuttuu"),
+                    katuosoite = henkilo.katuosoite ?: throw IllegalArgumentException("Katuosoite puuttuu"),
+                    postinumero = henkilo.postinumero ?: throw IllegalArgumentException("Postinumero puuttuu"),
+                    postitoimipaikka =
+                        henkilo.postitoimipaikka ?: throw IllegalArgumentException("Postitoimipaikka puuttuu"),
+                    maa = henkilo.maa,
+                    email = henkilo.email,
+                    solkiId = lahdejarjestelmanId.id.toInt(),
+                    lastModified = Instant.now(),
+                    tutkintopaiva = tutkintopaiva,
+                    tutkintokieli = kieli,
+                    tutkintotaso = tutkintotaso,
+                    todistuskieli = todistuskieli,
+                    jarjestajanTunnusOid = jarjestaja.oid,
+                    jarjestajanNimi = jarjestaja.nimi,
+                    arviointipaiva = arviointipaiva,
+                    tekstinYmmartaminen = arvosana(TutkinnonOsa.tekstinYmmartaminen),
+                    kirjoittaminen = arvosana(TutkinnonOsa.kirjoittaminen),
+                    rakenteetJaSanasto = arvosana(TutkinnonOsa.rakenteetJaSanasto),
+                    puheenYmmartaminen = arvosana(TutkinnonOsa.puheenYmmartaminen),
+                    puhuminen = arvosana(TutkinnonOsa.puhuminen),
+                    yleisarvosana = arvosana(TutkinnonOsa.yleisarvosana),
+                    tarkistusarvioinninSaapumisPvm = tarkistusarviointi?.saapumispaiva,
+                    tarkistusarvioinninAsiatunnus = tarkistusarviointi?.asiatunnus,
+                    tarkistusarvioidutOsakokeet = tarkistusarviointi?.tarkistusarvioidutOsakokeet?.toSet(),
+                    arvosanaMuuttui = tarkistusarviointi?.arvosanaMuuttui?.toSet(),
+                    perustelu = tarkistusarviointi?.perustelu,
+                    tarkistusarvioinninKasittelyPvm = tarkistusarviointi?.kasittelypaiva,
+                    tarkistusarviointiHyvaksyttyPvm = null,
+                    koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,
+                    koskiSiirtoKasitelty = koskiSiirtoKasitelty,
+                    arviointitila = arviointitila,
+                    arviointitilaLahetetty = null,
+                    arviointitilanLahetysvirhe = null,
+                )
+            }
+        }
 
         private fun buildEntity(
             rs: ResultSet,

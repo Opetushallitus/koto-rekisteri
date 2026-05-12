@@ -6,6 +6,7 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedonsiirtoschema.Arviointi
 import fi.oph.kitu.tiedonsiirtoschema.Arvioitava
 import fi.oph.kitu.tiedonsiirtoschema.Osasuoritus
+import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
 import java.time.Instant
 import java.time.LocalDate
 

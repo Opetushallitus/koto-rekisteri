@@ -7,6 +7,7 @@ import arrow.core.raise.ensureNotNull
 import arrow.core.raise.zipOrAccumulate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.tiedonsiirtoschema.VktHenkilosuoritus
 import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import org.springframework.beans.factory.annotation.Value
