@@ -1,4 +1,4 @@
-package fi.oph.kitu.tiedonsiirtoschema
+package fi.oph.kitu.tiedontuontischema
 
 import kotlin.random.Random
 

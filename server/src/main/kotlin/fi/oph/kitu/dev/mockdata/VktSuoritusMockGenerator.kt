@@ -2,11 +2,11 @@ package fi.oph.kitu.dev.mockdata
 
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.tiedonsiirtoschema.Henkilo
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
-import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
+import fi.oph.kitu.tiedontuontischema.Henkilo
+import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
+import fi.oph.kitu.tiedontuontischema.Lahdejarjestelma
+import fi.oph.kitu.tiedontuontischema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedontuontischema.VktSuoritus
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktOsakoe

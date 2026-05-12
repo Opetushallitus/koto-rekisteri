@@ -11,8 +11,8 @@ import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
-import fi.oph.kitu.tiedonsiirtoschema.YkiHenkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
+import fi.oph.kitu.tiedontuontischema.YkiHenkilosuoritus
+import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.util.intersects
 import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.util.validation.Validation.ValidationError

@@ -1,4 +1,4 @@
-package fi.oph.kitu.tiedonsiirtoschema
+package fi.oph.kitu.tiedontuontischema
 
 import arrow.core.NonEmptyList
 import arrow.core.raise.Raise

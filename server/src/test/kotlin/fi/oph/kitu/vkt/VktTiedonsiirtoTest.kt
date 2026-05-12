@@ -8,11 +8,11 @@ import fi.oph.kitu.koski.KoskiVktRequestMapper
 import fi.oph.kitu.koski.VktKielitaito
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.schema.SchemaTests
-import fi.oph.kitu.tiedonsiirtoschema.Henkilo
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
-import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
+import fi.oph.kitu.tiedontuontischema.Henkilo
+import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
+import fi.oph.kitu.tiedontuontischema.Lahdejarjestelma
+import fi.oph.kitu.tiedontuontischema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedontuontischema.VktSuoritus
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.BeforeEach
@@ -99,7 +99,7 @@ class VktTiedonsiirtoTest {
             """.trimIndent()
         putSuoritus(json) {
             isBadRequest(
-                "JSON parse error: Instantiation of [simple type, class fi.oph.kitu.tiedonsiirtoschema.VktSuoritus] value failed for JSON property taitotaso due to missing (therefore NULL) value for creator parameter taitotaso which is a non-nullable type",
+                "JSON parse error: Instantiation of [simple type, class fi.oph.kitu.tiedontuontischema.VktSuoritus] value failed for JSON property taitotaso due to missing (therefore NULL) value for creator parameter taitotaso which is a non-nullable type",
             )
         }
     }

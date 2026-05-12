@@ -4,7 +4,7 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.tiedonsiirtoschema.VktHenkilosuoritus
+import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.util.retry.RetryOutboundIntegration

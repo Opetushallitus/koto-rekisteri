@@ -10,7 +10,7 @@ import fi.oph.kitu.jdbc.toMap
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.tiedonsiirtoschema.VktHenkilosuoritus
+import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
 import fi.oph.kitu.util.cache.InMemoryCache
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository.Tutkintoryhma
 import io.opentelemetry.instrumentation.annotations.WithSpan

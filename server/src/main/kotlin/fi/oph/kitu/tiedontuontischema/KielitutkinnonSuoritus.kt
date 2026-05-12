@@ -1,10 +1,9 @@
-package fi.oph.kitu.tiedonsiirtoschema
+package fi.oph.kitu.tiedontuontischema
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.vkt.VktSuoritusEntity
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import java.time.OffsetDateTime

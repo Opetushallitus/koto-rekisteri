@@ -1,4 +1,4 @@
-package fi.oph.kitu.tiedonsiirtoschema
+package fi.oph.kitu.tiedontuontischema
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -6,7 +6,6 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.vkt.VktKirjallinenKielitaito
 import fi.oph.kitu.vkt.VktOsakoe
-import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktSuullinenKielitaito
 import fi.oph.kitu.vkt.VktTutkinto
 import fi.oph.kitu.vkt.VktYmmartamisenKielitaito

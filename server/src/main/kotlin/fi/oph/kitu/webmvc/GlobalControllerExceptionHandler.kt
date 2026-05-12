@@ -4,7 +4,7 @@ import fi.oph.kitu.config.isLocal
 import fi.oph.kitu.dev.MockResourceNotFoundError
 import fi.oph.kitu.html.ErrorPage
 import fi.oph.kitu.oppijanumero.OppijanumeroException
-import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
+import fi.oph.kitu.tiedontuontischema.TiedonsiirtoFailure
 import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.vkt.VktSuoritusNotFoundError
 import io.opentelemetry.api.trace.Span

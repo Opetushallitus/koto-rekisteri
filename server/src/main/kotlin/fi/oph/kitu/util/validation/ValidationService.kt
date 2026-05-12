@@ -2,11 +2,11 @@ package fi.oph.kitu.util.validation
 
 import arrow.core.NonEmptyList
 import arrow.core.raise.either
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.HenkilosuoritusValidation
-import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
-import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
-import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
+import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
+import fi.oph.kitu.tiedontuontischema.HenkilosuoritusValidation
+import fi.oph.kitu.tiedontuontischema.KielitutkinnonSuoritus
+import fi.oph.kitu.tiedontuontischema.VktSuoritus
+import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.vkt.VktValidation
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaValidation

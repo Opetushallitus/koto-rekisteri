@@ -70,7 +70,7 @@ Each domain typically contains its own `*ApiController`, `*ViewController` (serv
 - `organisaatiot/`, `koodisto/`, `yhteystiedot/` — reference-data clients
 - `auth/`, `oauth2client/` — CAS + OAuth2 (OPH virkailija SSO)
 - `observability/`, `auditlogs/` — OpenTelemetry + ECS-formatted structured logs
-- `csvparsing/`, `tiedonsiirtoschema/`, `koodisto/`, `html/`, `i18n/` — cross-cutting utilities
+- `csvparsing/`, `tiedontuontischema/`, `koodisto/`, `html/`, `i18n/` — cross-cutting utilities
 
 ### Cross-cutting pieces worth knowing
 

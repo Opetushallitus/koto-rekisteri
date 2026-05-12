@@ -3,8 +3,8 @@ package fi.oph.kitu.vkt
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.tiedonsiirtoschema.Osasuorituksellinen
-import fi.oph.kitu.tiedonsiirtoschema.Osasuoritus
+import fi.oph.kitu.tiedontuontischema.Osasuorituksellinen
+import fi.oph.kitu.tiedontuontischema.Osasuoritus
 import java.time.LocalDate
 
 @JsonSubTypes(

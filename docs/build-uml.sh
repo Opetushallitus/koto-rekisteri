@@ -13,7 +13,7 @@ packages=(
   "observability"
   "oppijanumero"
   "organisaatiot"
-  "tiedonsiirtoschema"
+  "tiedontuontischema"
   "validation"
   "vkt"
   "yki"
