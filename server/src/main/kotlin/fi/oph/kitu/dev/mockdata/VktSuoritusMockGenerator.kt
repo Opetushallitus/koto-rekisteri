@@ -6,12 +6,12 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktOsakoe
 import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
-import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
 import fi.oph.kitu.vkt.VktValidation
@@ -30,7 +30,8 @@ class VktSuoritusMockGenerator(
         val henkilo = Henkilo(Oid.parse("1.2.246.562.24.20281155246").getOrThrow())
         val suoritus = randomSuoritus(index)
         val henkilosuoritus = Henkilosuoritus(henkilo, suoritus)
-        return vktValidation.enrich(henkilosuoritus).suoritus.toVktSuoritusEntity(randomOppija(index))
+        val enriched = vktValidation.enrich(henkilosuoritus)
+        return VktSuoritusEntity.from(enriched)
     }
 
     fun randomSuoritus(index: Long): VktSuoritus {

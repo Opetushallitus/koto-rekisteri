@@ -10,22 +10,22 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedonsiirtoschema.YkiJarjestaja
+import fi.oph.kitu.tiedonsiirtoschema.YkiOsa
+import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
+import fi.oph.kitu.tiedonsiirtoschema.YkiTarkastusarviointi
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
-import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
-import fi.oph.kitu.yki.suoritukset.YkiOsa
-import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
-import fi.oph.kitu.yki.suoritukset.YkiTarkastusarviointi
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import io.opentelemetry.api.common.AttributeKey
@@ -152,7 +152,7 @@ class YkiServiceTests(
                     ),
             )
 
-        val entity = suoritus.toEntity<YkiSuoritusEntity>()
+        val entity = YkiSuoritusEntity.from(suoritus)
 
         ykiSuoritusRepository.save(entity.copy(lastModified = Instant.now().minusSeconds(100000)), false)
         ykiSuoritusRepository.save(entity.copy(lastModified = Instant.now().minusSeconds(1000)), false)

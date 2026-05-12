@@ -12,11 +12,11 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
-import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso

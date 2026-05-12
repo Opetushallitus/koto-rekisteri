@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
 import arrow.core.NonEmptyList
+import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.Raise
 import arrow.core.raise.RaiseAccumulate
 import arrow.core.raise.ensure
@@ -10,6 +11,8 @@ import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
+import fi.oph.kitu.tiedonsiirtoschema.YkiHenkilosuoritus
+import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
 import fi.oph.kitu.util.intersects
 import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.util.validation.Validation.ValidationError
@@ -118,6 +121,7 @@ class YkiSuoritusValidation(
         )
     }
 
+    @OptIn(ExperimentalRaiseAccumulateApi::class)
     private fun RaiseAccumulate<ValidationError>.validateArvointitila(s: YkiHenkilosuoritus) {
         if (s.suoritus.arviointitila.arvioitu()) {
             accumulating {
@@ -151,6 +155,7 @@ class YkiSuoritusValidation(
         }
     }
 
+    @OptIn(ExperimentalRaiseAccumulateApi::class)
     private fun RaiseAccumulate<ValidationError>.validateTarkistusarviointi(s: YkiHenkilosuoritus) {
         accumulating {
             val tarkastettavatOsakokeet =

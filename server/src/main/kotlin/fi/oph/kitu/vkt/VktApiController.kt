@@ -4,6 +4,7 @@ import fi.oph.kitu.koodisto.KoodistoService
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
+import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
 import fi.oph.kitu.util.validation.ValidationService
 import fi.oph.kitu.util.validation.getOrThrow
 import fi.oph.kitu.webmvc.csvAttachmentResponse
@@ -114,7 +115,7 @@ class VktApiController(
         @RequestBody data: Henkilosuoritus<VktSuoritus>,
     ): ResponseEntity<*> {
         val enrichedData = validation.validateAndEnrich(data).getOrThrow()
-        customSuoritusRepository.save(enrichedData.toEntity())
+        customSuoritusRepository.save(VktSuoritusEntity.from(enrichedData))
         return TiedonsiirtoSuccess().toResponseEntity()
     }
 

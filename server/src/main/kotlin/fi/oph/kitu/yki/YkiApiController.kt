@@ -4,12 +4,12 @@ import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
+import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
 import fi.oph.kitu.util.validation.ValidationService
 import fi.oph.kitu.util.validation.getOrThrow
 import fi.oph.kitu.webmvc.csvAttachmentResponse
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
-import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -131,7 +131,7 @@ class YkiApiController(
         val enrichedData = validationService.validateAndEnrich(data).getOrThrow()
         val entity =
             try {
-                enrichedData.toEntity<YkiSuoritusEntity>()
+                YkiSuoritusEntity.from(enrichedData)
             } catch (e: IllegalArgumentException) {
                 return TiedonsiirtoFailure
                     .badRequest(e.message.toString())

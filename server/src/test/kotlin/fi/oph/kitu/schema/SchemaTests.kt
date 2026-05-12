@@ -6,11 +6,14 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
+import fi.oph.kitu.tiedonsiirtoschema.YkiJarjestaja
+import fi.oph.kitu.tiedonsiirtoschema.YkiOsa
+import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
-import fi.oph.kitu.vkt.VktSuoritus
 import fi.oph.kitu.vkt.VktSuoritusEntity
 import fi.oph.kitu.vkt.VktTekstinYmmartamisenKoe
 import fi.oph.kitu.yki.Arviointitila
@@ -19,9 +22,6 @@ import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
-import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
-import fi.oph.kitu.yki.suoritukset.YkiOsa
-import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 import java.time.LocalDate
@@ -124,7 +124,7 @@ class SchemaTests {
 
     @Test
     fun `Conversion from VKT Henkilösuoritus to database entity and back does not change content`() {
-        val entity = vktHenkilosuoritus.toEntity<VktSuoritusEntity>()
+        val entity = VktSuoritusEntity.from(vktHenkilosuoritus)
 
         val restoredData = entity.toHenkilosuoritus()
         assertEquals(expected = vktHenkilosuoritus, actual = restoredData)

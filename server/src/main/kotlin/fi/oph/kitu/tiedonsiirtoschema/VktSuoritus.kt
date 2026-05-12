@@ -1,14 +1,15 @@
-package fi.oph.kitu.vkt
+package fi.oph.kitu.tiedonsiirtoschema
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.tiedonsiirtoschema.Henkilo
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.KielitutkinnonSuoritus
-import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.tiedonsiirtoschema.Osasuorituksellinen
+import fi.oph.kitu.vkt.VktKirjallinenKielitaito
+import fi.oph.kitu.vkt.VktOsakoe
+import fi.oph.kitu.vkt.VktSuoritusEntity
+import fi.oph.kitu.vkt.VktSuullinenKielitaito
+import fi.oph.kitu.vkt.VktTutkinto
+import fi.oph.kitu.vkt.VktYmmartamisenKielitaito
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -43,20 +44,4 @@ data class VktSuoritus(
     val tutkintopaiva: LocalDate? by lazy {
         osat.maxOfOrNull { it.tutkintopaiva }
     }
-
-    fun toVktSuoritusEntity(oppija: Henkilo): VktSuoritusEntity =
-        VktSuoritusEntity(
-            ilmoittautumisenId = lahdejarjestelmanId.toString(),
-            suorittajanOid = oppija.oid,
-            etunimet = oppija.etunimet.orEmpty(),
-            sukunimi = oppija.sukunimi.orEmpty(),
-            tutkintokieli = kieli,
-            suorituspaikkakunta = suorituspaikkakunta,
-            taitotaso = taitotaso,
-            suorituksenVastaanottaja = suorituksenVastaanottaja,
-            osakokeet = osat.map { it.toVktOsakoeRow() }.toSet(),
-            tutkinnot = tutkinnot.map { it.toVktTutkintoRow() }.toSet(),
-            koskiOpiskeluoikeus = koskiOpiskeluoikeusOid,
-            koskiSiirtoKasitelty = koskiSiirtoKasitelty,
-        )
 }

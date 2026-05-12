@@ -9,6 +9,10 @@ import fi.oph.kitu.tiedonsiirtoschema.Henkilo
 import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
 import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
 import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedonsiirtoschema.YkiJarjestaja
+import fi.oph.kitu.tiedonsiirtoschema.YkiOsa
+import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
+import fi.oph.kitu.tiedonsiirtoschema.YkiTarkastusarviointi
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.util.toJsonNode
 import fi.oph.kitu.yki.Arviointitila
@@ -20,12 +24,8 @@ import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
-import fi.oph.kitu.yki.suoritukset.YkiJarjestaja
-import fi.oph.kitu.yki.suoritukset.YkiOsa
-import fi.oph.kitu.yki.suoritukset.YkiSuoritus
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
-import fi.oph.kitu.yki.suoritukset.YkiTarkastusarviointi
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertNull
@@ -255,5 +255,5 @@ class IlmoittautumisjarjestelmaServiceTests(
         assertEquals(map[tunniste2], "wahoo")
     }
 
-    val entity = suoritus.toEntity<YkiSuoritusEntity>()
+    val entity = YkiSuoritusEntity.from(suoritus)
 }
