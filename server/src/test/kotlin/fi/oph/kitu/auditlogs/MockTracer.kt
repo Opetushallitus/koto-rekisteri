@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
  * Don't use this on integration tests, use the actual tracer with inmemory exporter
  */
 class MockTracer : Tracer {
-    override fun spanBuilder(spanName: String): SpanBuilder? = MockSpanbuilder()
+    override fun spanBuilder(spanName: String): SpanBuilder = MockSpanbuilder()
 }
 
 class MockSpanContext : SpanContext {
@@ -36,31 +36,31 @@ class MockSpan : Span {
     override fun <T : Any?> setAttribute(
         p0: AttributeKey<T?>,
         p1: T?,
-    ): Span? = MockSpan()
+    ): Span = MockSpan()
 
     override fun addEvent(
         name: String,
         attributes: Attributes,
-    ): Span? = MockSpan()
+    ): Span = MockSpan()
 
     override fun addEvent(
         name: String,
         attributes: Attributes,
         timestamp: Long,
         unit: TimeUnit,
-    ): Span? = MockSpan()
+    ): Span = MockSpan()
 
     override fun setStatus(
         statusCode: StatusCode,
         description: String,
-    ): Span? = MockSpan()
+    ): Span = MockSpan()
 
     override fun recordException(
         exception: Throwable,
         additionalAttributes: Attributes,
-    ): Span? = MockSpan()
+    ): Span = MockSpan()
 
-    override fun updateName(name: String): Span? = MockSpan()
+    override fun updateName(name: String): Span = MockSpan()
 
     override fun end() {}
 
@@ -69,54 +69,54 @@ class MockSpan : Span {
         unit: TimeUnit,
     ) {}
 
-    override fun getSpanContext(): SpanContext? = MockSpanContext()
+    override fun getSpanContext(): SpanContext = MockSpanContext()
 
     override fun isRecording(): Boolean = false
 }
 
 class MockSpanbuilder : SpanBuilder {
-    override fun setParent(context: Context): SpanBuilder? = this
+    override fun setParent(context: Context): SpanBuilder = this
 
-    override fun setNoParent(): SpanBuilder? = this
+    override fun setNoParent(): SpanBuilder = this
 
-    override fun addLink(spanContext: SpanContext): SpanBuilder? = this
+    override fun addLink(spanContext: SpanContext): SpanBuilder = this
 
     override fun addLink(
         spanContext: SpanContext,
         attributes: Attributes,
-    ): SpanBuilder? = this
+    ): SpanBuilder = this
 
     override fun setAttribute(
         key: String,
-        value: String,
-    ): SpanBuilder? = this
+        value: String?,
+    ): SpanBuilder = this
 
     override fun setAttribute(
         key: String,
         value: Long,
-    ): SpanBuilder? = this
+    ): SpanBuilder = this
 
     override fun setAttribute(
         key: String,
         value: Double,
-    ): SpanBuilder? = this
+    ): SpanBuilder = this
 
     override fun setAttribute(
         key: String,
         value: Boolean,
-    ): SpanBuilder? = this
+    ): SpanBuilder = this
 
-    override fun <T : Any?> setAttribute(
-        key: AttributeKey<T?>,
-        value: T & Any,
-    ): SpanBuilder? = this
+    override fun <T : Any> setAttribute(
+        key: AttributeKey<T>,
+        value: T?,
+    ): SpanBuilder = this
 
-    override fun setSpanKind(spanKind: SpanKind): SpanBuilder? = this
+    override fun setSpanKind(spanKind: SpanKind): SpanBuilder = this
 
     override fun setStartTimestamp(
         startTimestamp: Long,
         unit: TimeUnit,
-    ): SpanBuilder? = this
+    ): SpanBuilder = this
 
-    override fun startSpan(): Span? = MockSpan()
+    override fun startSpan(): Span = MockSpan()
 }
