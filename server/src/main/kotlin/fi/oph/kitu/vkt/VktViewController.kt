@@ -10,7 +10,7 @@ import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiVktRequestMapper
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.tiedonsiirtoschema.VktHenkilosuoritus
+import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
 import fi.oph.kitu.vkt.html.KoskiTransferState
 import fi.oph.kitu.vkt.html.VktErinomaisenArviointiPage
 import fi.oph.kitu.vkt.html.VktHyvaJaTyydyttavaTarkasteluPage

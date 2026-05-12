@@ -1,10 +1,10 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoFailure
-import fi.oph.kitu.tiedonsiirtoschema.TiedonsiirtoSuccess
-import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
+import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
+import fi.oph.kitu.tiedontuontischema.TiedonsiirtoFailure
+import fi.oph.kitu.tiedontuontischema.TiedonsiirtoSuccess
+import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.util.validation.ValidationService
 import fi.oph.kitu.util.validation.getOrThrow
 import fi.oph.kitu.webmvc.csvAttachmentResponse

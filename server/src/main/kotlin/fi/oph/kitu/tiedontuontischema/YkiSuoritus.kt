@@ -1,4 +1,4 @@
-package fi.oph.kitu.tiedonsiirtoschema
+package fi.oph.kitu.tiedontuontischema
 
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
@@ -8,8 +8,6 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
-import java.lang.IllegalArgumentException
-import java.time.Instant
 import java.time.LocalDate
 
 typealias YkiHenkilosuoritus = Henkilosuoritus<YkiSuoritus>

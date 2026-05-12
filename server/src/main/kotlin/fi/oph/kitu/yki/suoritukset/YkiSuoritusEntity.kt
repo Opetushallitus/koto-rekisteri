@@ -4,8 +4,8 @@ import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.jdbc.getTypedArrayOrNull
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
+import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
+import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.util.IgnoreForEquality
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli

@@ -1,8 +1,8 @@
 package fi.oph.kitu.vkt
 
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.VktHenkilosuoritus
+import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
+import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
 
 fun mergeVktHenkilosuoritukset(
     henkilosuoritukset: List<VktHenkilosuoritus>,

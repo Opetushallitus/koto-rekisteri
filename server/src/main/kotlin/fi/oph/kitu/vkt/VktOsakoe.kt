@@ -3,10 +3,9 @@ package fi.oph.kitu.vkt
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.tiedonsiirtoschema.Arviointi
-import fi.oph.kitu.tiedonsiirtoschema.Arvioitava
-import fi.oph.kitu.tiedonsiirtoschema.Osasuoritus
-import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
+import fi.oph.kitu.tiedontuontischema.Arviointi
+import fi.oph.kitu.tiedontuontischema.Arvioitava
+import fi.oph.kitu.tiedontuontischema.Osasuoritus
 import java.time.Instant
 import java.time.LocalDate
 

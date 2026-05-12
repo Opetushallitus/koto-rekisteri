@@ -2,14 +2,14 @@ package fi.oph.kitu.schema
 
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.tiedonsiirtoschema.Henkilo
-import fi.oph.kitu.tiedonsiirtoschema.Henkilosuoritus
-import fi.oph.kitu.tiedonsiirtoschema.Lahdejarjestelma
-import fi.oph.kitu.tiedonsiirtoschema.LahdejarjestelmanTunniste
-import fi.oph.kitu.tiedonsiirtoschema.VktSuoritus
-import fi.oph.kitu.tiedonsiirtoschema.YkiJarjestaja
-import fi.oph.kitu.tiedonsiirtoschema.YkiOsa
-import fi.oph.kitu.tiedonsiirtoschema.YkiSuoritus
+import fi.oph.kitu.tiedontuontischema.Henkilo
+import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
+import fi.oph.kitu.tiedontuontischema.Lahdejarjestelma
+import fi.oph.kitu.tiedontuontischema.LahdejarjestelmanTunniste
+import fi.oph.kitu.tiedontuontischema.VktSuoritus
+import fi.oph.kitu.tiedontuontischema.YkiJarjestaja
+import fi.oph.kitu.tiedontuontischema.YkiOsa
+import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe

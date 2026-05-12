@@ -2,7 +2,7 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.jdbc.pageSql
 import fi.oph.kitu.koodisto.Koodisto
-import fi.oph.kitu.tiedonsiirtoschema.VktHenkilosuoritus
+import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
 import fi.oph.kitu.util.equalsIgnoringAnnotated
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.data.repository.CrudRepository
