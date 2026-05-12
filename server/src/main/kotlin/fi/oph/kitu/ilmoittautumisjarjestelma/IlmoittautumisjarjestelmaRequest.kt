@@ -1,5 +1,8 @@
 package fi.oph.kitu.ilmoittautumisjarjestelma
 
+import arrow.core.NonEmptyList
+import arrow.core.nonEmptyListOf
+import arrow.core.toNonEmptyListOrNull
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
@@ -11,26 +14,19 @@ import java.time.LocalDate
 sealed interface IlmoittautumisjarjestelmaRequest
 
 data class YkiArvioinninTilaRequest(
-    val tilat: List<YkiArvioinninTila>,
+    val tilat: NonEmptyList<YkiArvioinninTila>,
 ) : IlmoittautumisjarjestelmaRequest {
-    init {
-        require(tilat.isNotEmpty()) { "Tilat list must not be empty" }
-    }
-
     companion object {
         fun of(entity: YkiSuoritusEntity): YkiArvioinninTilaRequest? =
             YkiArvioinninTila.of(entity)?.let {
-                YkiArvioinninTilaRequest(listOf(it))
+                YkiArvioinninTilaRequest(nonEmptyListOf(it))
             }
 
-        fun of(entities: List<YkiSuoritusEntity>): YkiArvioinninTilaRequest? {
-            val tilat = entities.mapNotNull { YkiArvioinninTila.of(it) }
-            return if (tilat.isNotEmpty()) {
-                YkiArvioinninTilaRequest(tilat)
-            } else {
-                null
-            }
-        }
+        fun of(entities: List<YkiSuoritusEntity>): YkiArvioinninTilaRequest? =
+            entities
+                .mapNotNull { YkiArvioinninTila.of(it) }
+                .toNonEmptyListOrNull()
+                ?.let { YkiArvioinninTilaRequest(it) }
     }
 }
 
