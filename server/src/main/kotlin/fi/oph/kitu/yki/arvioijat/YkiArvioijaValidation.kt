@@ -1,9 +1,10 @@
 package fi.oph.kitu.yki.arvioijat
 
 import arrow.core.NonEmptyList
+import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.Raise
+import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
-import arrow.core.raise.zipOrAccumulate
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroValidation
 import fi.oph.kitu.util.TimeService
@@ -20,18 +21,19 @@ class YkiArvioijaValidation(
     @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
 ) : Validation<YkiArvioija> {
+    @OptIn(ExperimentalRaiseAccumulateApi::class)
     override fun Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment(value: YkiArvioija): YkiArvioija {
-        zipOrAccumulate(
-            { with(onr) { validateOppijanumero(value.arvioijaOid, listOf("arvioijaOid")) } },
-            {
+        accumulate {
+            accumulating { with(onr) { validateOppijanumero(value.arvioijaOid, listOf("arvioijaOid")) } }
+            accumulating {
                 ensure(value.henkilotunnus == null || !lainmuutos2026Voimassa()) {
                     ValidationError(
                         listOf("henkilotunnus"),
                         "Kenttää henkilotunnus ei voi siirtää ${hetunSiirronRajapaiva.finnishDate()} alkaen",
                     )
                 }
-            },
-        ) { _, _ -> }
+            }
+        }
         return value
     }
 
