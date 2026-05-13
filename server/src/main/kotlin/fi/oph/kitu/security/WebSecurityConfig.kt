@@ -36,7 +36,7 @@ import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 
 fun developmentProfileActive(environment: Environment): Boolean {
-    val enableDevApiOn = listOf(AppProfile.Local, AppProfile.Test, AppProfile.E2ETest)
+    val enableDevApiOn = listOf(AppProfile.Local, AppProfile.Test, AppProfile.E2ETest, AppProfile.LocalOpintopolku)
     val disableDevApiOn = listOf(AppProfile.QA, AppProfile.Prod)
 
     return environment.hasOneOfProfiles(enableDevApiOn) && environment.hasNoneOfProfiles(disableDevApiOn)

@@ -41,7 +41,7 @@ import kotlin.system.exitProcess
 
 @RestController
 @RequestMapping("/dev")
-@Profile("local", "e2e")
+@Profile("local", "e2e", "local-opintopolku")
 class MockLoginController(
     private val environment: Environment,
     private val applicationContext: WebApplicationContext,
