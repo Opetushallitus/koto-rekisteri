@@ -77,8 +77,10 @@ docker compose up -d db
 ./scripts/start_offline_dev.sh ./mvnw -o spring-boot:run
 ```
 
-Kirjautuminen tapahtuu mock-loginin kautta osoitteessa
-`http://localhost:8080/kielitutkinnot/dev/mocklogin/ROOT` (ks. `MockUser`-enum käytettävissä olevista rooleista).
+Kirjautumaton pyyntö ohjataan automaattisesti mock-kirjautumissivulle
+`http://localhost:8080/kielitutkinnot/dev/login`, josta voi valita käyttäjätilin
+(roolit määritelty `MockUser`-enumissa). Tilin voi valita myös suoraan URL:lla
+`http://localhost:8080/kielitutkinnot/dev/mocklogin/ROOT`.
 
 Rajoitukset offline-tilassa:
 
