@@ -5,6 +5,7 @@ import org.apereo.cas.client.validation.TicketValidator
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.cas.ServiceProperties
 import org.springframework.security.cas.authentication.CasAuthenticationProvider
@@ -62,6 +63,7 @@ class CasConfig {
     fun casTicketValidator(): TicketValidator = Cas30ServiceTicketValidator("https://$opintopolkuHostname/cas")
 
     @Bean
+    @Profile("!local-opintopolku")
     fun authenticationEntryPoint(serviceProperties: ServiceProperties): AuthenticationEntryPoint =
         CasAuthenticationEntryPoint().apply {
             setLoginUrl("https://$opintopolkuHostname/cas/login")

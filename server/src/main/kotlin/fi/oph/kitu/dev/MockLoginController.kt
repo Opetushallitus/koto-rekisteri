@@ -10,13 +10,33 @@ import fi.oph.kitu.security.cas.CasUserDetails
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import kotlinx.html.a
+import kotlinx.html.body
+import kotlinx.html.h1
+import kotlinx.html.head
+import kotlinx.html.html
+import kotlinx.html.lang
+import kotlinx.html.li
+import kotlinx.html.link
+import kotlinx.html.main
+import kotlinx.html.meta
+import kotlinx.html.p
+import kotlinx.html.span
+import kotlinx.html.stream.createHTML
+import kotlinx.html.strong
+import kotlinx.html.title
+import kotlinx.html.ul
+import kotlinx.html.unsafe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -26,6 +46,8 @@ import org.springframework.security.oauth2.jwt.JwsHeader
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
+import org.springframework.security.web.AuthenticationEntryPoint
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -59,6 +81,9 @@ class MockLoginController(
             exitProcess(SpringApplication.exit(applicationContext))
         }
     }
+
+    @GetMapping("/login", produces = [MediaType.TEXT_HTML_VALUE])
+    fun mockLoginPage(): ResponseEntity<String> = ResponseEntity.ok(renderMockLoginPage(rootUrl))
 
     @GetMapping("/mocklogin")
     fun mocklogin(
@@ -211,3 +236,46 @@ data class OAuthTokenResponse(
     val token_type: String = "bearer",
     val expires_in: Long = 3600,
 )
+
+private fun renderMockLoginPage(rootUrl: String): String =
+    createHTML().html {
+        lang = "fi"
+        head {
+            title { +"Mock-kirjautuminen" }
+            meta(name = "color-scheme", content = "light")
+            link(href = "$rootUrl/pico.min.css", rel = "stylesheet")
+            link(href = "$rootUrl/style.css", rel = "stylesheet")
+            unsafe { +"<style>.mocklogin-roles{color:var(--muted-color);font-size:0.875rem;}</style>" }
+        }
+        body {
+            main("container") {
+                h1 { +"Mock-kirjautuminen" }
+                p { +"Valitse käyttäjätili offline-kehitystä varten." }
+                ul {
+                    MockUser.entries.forEach { user ->
+                        li {
+                            a(href = "$rootUrl/dev/mocklogin/${user.name}") {
+                                strong { +user.name }
+                            }
+                            val roles =
+                                user.login.authorities
+                                    .joinToString(", ") { it.name }
+                                    .ifEmpty { "ei rooleja" }
+                            span(classes = "mocklogin-roles") { +" — $roles" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+/**
+ * Offline-tilassa virkailijaa ei voi ohjata Untuvan CAS-loginiin, joten korvataan
+ * CAS-entrypoint paikallisella ohjauksella mock-kirjautumissivulle.
+ */
+@Configuration
+@Profile("local-opintopolku")
+class MockLoginEntryPointConfig {
+    @Bean
+    fun authenticationEntryPoint(): AuthenticationEntryPoint = LoginUrlAuthenticationEntryPoint("/dev/login")
+}
