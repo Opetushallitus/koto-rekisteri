@@ -50,6 +50,42 @@ skriptille voi antaa `--setup-only` parametrin. Tällöin suoritetaan kehitysymp
 ./scripts/start_local_env.sh --setup-only
 ```
 
+### Offline-kehitys
+
+Kun internet-yhteyttä ei ole saatavilla (esim. lentokoneessa tai junassa), sovelluksen voi käynnistää
+ilman AWS Secrets Manager -kutsuja ja ilman Untuva Opintopolun saavutettavuutta. Tämä käyttää
+`local-opintopolku`-profiilia, joka mockaa Koodisto-, Oppijanumero-, Organisaatio- ja
+Tehtäväpankki-palvelut sekä ohittaa Otuvan JWT-validoinnin paikallisella avaimella.
+
+Ennakkovaatimukset (tee verkossa ollessasi):
+
+- Maven-, mise- ja Docker-image-välimuistit ovat valmiina paikallisesti (`./mvnw package` ja `docker compose pull` kerran).
+
+Käyttö:
+
+```shell
+# Käynnistä tietokanta (Docker-image pitää olla välimuistissa)
+docker compose up -d db
+
+# Avaa IDEA offline-profiilien kanssa
+./scripts/start_offline_dev.sh idea .
+
+# Tai käynnistä palvelin suoraan
+./scripts/start_offline_dev.sh ./scripts/start_local_server.sh
+
+# Tarvittaessa offline-tilassa myös Mavenin osalta
+./scripts/start_offline_dev.sh ./mvnw -o spring-boot:run
+```
+
+Kirjautuminen tapahtuu mock-loginin kautta osoitteessa
+`http://localhost:8080/kielitutkinnot/dev/mocklogin/ROOT` (ks. `MockUser`-enum käytettävissä olevista rooleista).
+
+Rajoitukset offline-tilassa:
+
+- KOSKI-, YKI- ja Koealusta-tuontien ajastetut tehtävät on poistettu käytöstä.
+- Ulkoiset integraatiot palauttavat mock-dataa eivätkä kutsu oikeita palveluita.
+- E2E-testit (Playwright) eivät kuulu offline-tukeen.
+
 ### IDEA
 
 #### Laajennukset
