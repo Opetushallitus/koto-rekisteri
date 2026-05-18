@@ -22,7 +22,11 @@ fun FlowContent.viewMessage(message: ViewMessageData?) {
     message?.let {
         article(classes = it.type.cssClass) {
             testId("viewMessage")
-            unsafe { +it.text }
+            if (it.isHtml) {
+                unsafe { +it.text }
+            } else {
+                +it.text
+            }
         }
     }
 }
@@ -30,12 +34,13 @@ fun FlowContent.viewMessage(message: ViewMessageData?) {
 data class ViewMessageData(
     val text: String,
     val type: ViewMessageType,
+    val isHtml: Boolean = false,
 ) : Serializable {
     companion object {
         fun html(
             type: ViewMessageType,
             f: FlowContent.() -> Unit,
-        ): ViewMessageData = ViewMessageData(createHTML().section { f() }, type)
+        ): ViewMessageData = ViewMessageData(createHTML().section { f() }, type, isHtml = true)
 
         fun from(koskiError: KoskiErrorEntity): ViewMessageData =
             html(ViewMessageType.ERROR) {
