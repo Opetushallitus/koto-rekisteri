@@ -325,4 +325,57 @@ class CsvParsingTest(
             """.trimIndent()
         assertEquals(expectedCsv, outputStream.toString(Charsets.UTF_8))
     }
+
+    @Test
+    fun `csv export neutralizes spreadsheet-formula trigger characters`() {
+        val datePattern = "yyyy-MM-dd"
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern)
+        val parser = parser.withUseHeader(true)
+        val writable =
+            listOf(
+                YkiSuoritusCsvResponse(
+                    suorittajanOID = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                    hetu = "010180-9026",
+                    sukupuoli = Sukupuoli.N,
+                    sukunimi = "=cmd|'/c calc'!A0",
+                    etunimet = "@SUM(A1)",
+                    kansalaisuus = "EST",
+                    katuosoite = "Testikuja 5",
+                    postinumero = "40100",
+                    postitoimipaikka = "Testilä",
+                    maa = "FIN",
+                    email = "+attack@example.com",
+                    solkiTunniste = 1,
+                    lastModified = Instant.parse("2024-10-30T13:53:56Z"),
+                    tutkintopaiva = LocalDate.parse("2024-09-01", dateFormatter),
+                    tutkintokieli = Tutkintokieli.FIN,
+                    tutkintotaso = Tutkintotaso.YT,
+                    todistuskieli = Todistuskieli.FIN,
+                    jarjestajanOID = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
+                    jarjestajanNimi = "Jyväskylän yliopisto",
+                    arviointitila = Arviointitila.ARVIOITAVA,
+                    tilaLahetetty = null,
+                    arviointipaiva = null,
+                    tekstinYmmartaminen = null,
+                    kirjoittaminen = null,
+                    rakenteetJaSanasto = null,
+                    puheenYmmartaminen = null,
+                    puhuminen = null,
+                    yleisarvosana = null,
+                    tarkistusarvioinninSaapumisPvm = null,
+                    tarkistusarvioinninAsiatunnus = null,
+                    tarkistusarvioidutOsakokeet = null,
+                    arvosanaMuuttui = null,
+                    perustelu = null,
+                    tarkistusarvioinninKasittelyPvm = null,
+                ),
+            )
+        val outputStream = ByteArrayOutputStream()
+        parser.streamDataAsCsv(outputStream, writable)
+        val csv = outputStream.toString(Charsets.UTF_8)
+
+        assertTrue(csv.contains("'=cmd|"), "sukunimi must be tick-prefixed; got:\n$csv")
+        assertTrue(csv.contains("'@SUM"), "etunimet must be tick-prefixed; got:\n$csv")
+        assertTrue(csv.contains("'+attack@example.com"), "email must be tick-prefixed; got:\n$csv")
+    }
 }

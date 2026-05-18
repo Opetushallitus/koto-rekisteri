@@ -74,11 +74,19 @@ class CsvParser(
                 .addSerializer(Oid::class.java, OidSerializer())
                 .addDeserializer(Oid::class.java, OidDeserializer())
 
+    // Neutralizes spreadsheet-formula triggers on String exports.
+    // Only affects writing — readers use Jackson's default String deserializer.
+    val csvFormulaSafeStringModule: SimpleModule
+        get() =
+            SimpleModule()
+                .addSerializer(String::class.java, CsvFormulaSafeStringSerializer())
+
     final inline fun <reified T> getCsvMapper() =
         CsvMapper
             .builder()
             .withFeatures<T>()
             .addModule(oidModule)
+            .addModule(csvFormulaSafeStringModule)
             .build()
 
     final inline fun <reified T> streamDataAsCsv(
