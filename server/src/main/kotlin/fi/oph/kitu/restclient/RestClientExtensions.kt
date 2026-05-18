@@ -61,8 +61,10 @@ fun RestClient.Builder.withLenientStringConverter(): RestClient.Builder {
     }
 }
 
-// 200 000 000 is 10x the default
-fun RestClient.Builder.withJacksonStreamMaxStringLength(maxStringLength: Int = 200_000_000): RestClient.Builder =
+// Jackson 3's own default is 20 MB. Callers that have a documented reason
+// (e.g. Koealusta tehtäväpankki — see TehtavapankkiClientImpl) override
+// with an explicit larger value; the helper's own default stays modest.
+fun RestClient.Builder.withJacksonStreamMaxStringLength(maxStringLength: Int = 10_000_000): RestClient.Builder =
     this
         .clone()
         .configureMessageConverters { cs ->
