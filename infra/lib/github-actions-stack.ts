@@ -52,7 +52,12 @@ export class GithubActionsStack extends Stack {
       new PolicyStatement({
         sid: "AllowLiveTailing",
         actions: ["logs:StartLiveTail"],
-        resources: ["*"],
+        // _deploy-env.yml tails the KituService log group after assuming this
+        // role in the target environment account. Scope to that log group only;
+        // wildcard resources would also expose audit logs and other apps.
+        resources: [
+          `arn:aws:logs:${this.region}:${this.account}:log-group:KituService`,
+        ],
       }),
     )
   }
