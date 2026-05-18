@@ -3,8 +3,10 @@
   "lockFileMaintenance": { "enabled": true },
   "packageRules": [
     {
+      "minimumReleaseAge": "3 days"
+    },
+    {
       "matchUpdateTypes": ["minor", "patch"],
-      "minimumReleaseAge": "3 days",
       "automerge": true
     }
   ],
