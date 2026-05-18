@@ -170,6 +170,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check formatting
         run: ./scripts/check-formatting.sh
+      - name: Check workflow security
+        run: ./scripts/check-workflows.sh
 
   build_image:
     name: Build image
