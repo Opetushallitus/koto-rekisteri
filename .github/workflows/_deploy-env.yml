@@ -68,6 +68,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
         working-directory: infra
+      - name: Verify npm registry signatures
+        run: npm audit signatures
+        working-directory: infra
       - name: diff
         working-directory: infra
         if: inputs.action == 'diff'
