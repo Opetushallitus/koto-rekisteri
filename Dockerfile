@@ -10,14 +10,18 @@ RUN mvn package -DskipTests
 
 FROM amazoncorretto:25.0.3-al2023
 
-RUN groupadd -r app && useradd -r -g app -u 10001 -d /kitu app \
+# amazoncorretto:25.0.3-al2023 on minimaalinen AL2023 -image ilman
+# shadow-utils-pakettia, joten lisätään ei-root-käyttäjä suoraan
+# /etc/passwd- ja /etc/group-tiedostoihin pakettien asentamisen sijaan.
+RUN echo 'app:x:10001:' >> /etc/group \
+ && echo 'app:x:10001:10001::/kitu:/sbin/nologin' >> /etc/passwd \
  && mkdir -p /kitu/server/target \
- && chown -R app:app /kitu
+ && chown -R 10001:10001 /kitu
 
 WORKDIR /kitu/server/target
 
-COPY --from=backend-builder --chown=app:app /kitu/server/target/kitu-0.0.1-SNAPSHOT.jar /kitu/server/target/kitu-0.0.1-SNAPSHOT.jar
+COPY --from=backend-builder --chown=10001:10001 /kitu/server/target/kitu-0.0.1-SNAPSHOT.jar /kitu/server/target/kitu-0.0.1-SNAPSHOT.jar
 
-USER app
+USER 10001
 
 ENTRYPOINT ["java", "-jar", "kitu-0.0.1-SNAPSHOT.jar"]
