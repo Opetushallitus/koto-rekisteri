@@ -34,6 +34,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter
 
 fun developmentProfileActive(environment: Environment): Boolean {
     val enableDevApiOn = listOf(AppProfile.Local, AppProfile.Test, AppProfile.E2ETest, AppProfile.LocalOpintopolku)
@@ -80,6 +81,16 @@ class WebSecurityConfig {
             csrf {
                 disable()
             }
+            headers {
+                httpStrictTransportSecurity {
+                    maxAgeInSeconds = 31_536_000L
+                    includeSubDomains = true
+                    preload = false
+                }
+                referrerPolicy {
+                    policy = ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN
+                }
+            }
             securityMatcher({ request ->
                 isOauth2Request(request)
             })
@@ -121,6 +132,16 @@ class WebSecurityConfig {
                 )
                 if (environment.isE2ETest()) {
                     disable()
+                }
+            }
+            headers {
+                httpStrictTransportSecurity {
+                    maxAgeInSeconds = 31_536_000L
+                    includeSubDomains = true
+                    preload = false
+                }
+                referrerPolicy {
+                    policy = ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN
                 }
             }
             logout {
