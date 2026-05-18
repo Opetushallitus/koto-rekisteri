@@ -25,8 +25,8 @@ jobs:
       infra: ${{ steps.filter.outputs.infra }}
       image: ${{ steps.filter.outputs.image }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4
         id: filter
         with:
           filters: |
@@ -44,10 +44,10 @@ jobs:
     runs-on: ubuntu-24.04
     needs: list_changes
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install tools
         if: needs.list_changes.outputs.mise == 'true'
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4
         with:
           experimental: true
         env:
@@ -61,9 +61,9 @@ jobs:
       contents: write
     needs: update_tools_cache
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install tools
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4
         with:
           experimental: true
         env:
@@ -73,7 +73,7 @@ jobs:
       # doesn't fail the workflow run (and trigger a Slack false alarm).
       - name: Update dependency graph (attempt 1/3)
         id: submit1
-        uses: advanced-security/maven-dependency-submission-action@v5.0.0
+        uses: advanced-security/maven-dependency-submission-action@b275d12641ac2d2108b2cbb7598b154ad2f2cee8 # v5.0.0
         continue-on-error: true
         with:
           directory: server
@@ -84,7 +84,7 @@ jobs:
       - name: Update dependency graph (attempt 2/3)
         id: submit2
         if: steps.submit1.outcome == 'failure'
-        uses: advanced-security/maven-dependency-submission-action@v5.0.0
+        uses: advanced-security/maven-dependency-submission-action@b275d12641ac2d2108b2cbb7598b154ad2f2cee8 # v5.0.0
         continue-on-error: true
         with:
           directory: server
@@ -95,7 +95,7 @@ jobs:
       - name: Update dependency graph (attempt 3/3)
         id: submit3
         if: steps.submit2.outcome == 'failure'
-        uses: advanced-security/maven-dependency-submission-action@v5.0.0
+        uses: advanced-security/maven-dependency-submission-action@b275d12641ac2d2108b2cbb7598b154ad2f2cee8 # v5.0.0
         continue-on-error: true
         with:
           directory: server
@@ -110,9 +110,9 @@ jobs:
     runs-on: ubuntu-24.04
     needs: update_tools_cache
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install tools
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4
         with:
           experimental: true
         env:
@@ -127,9 +127,9 @@ jobs:
     runs-on: ubuntu-24.04
     needs: update_tools_cache
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install tools
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4
         with:
           experimental: true
         env:
@@ -146,7 +146,7 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
         working-directory: e2e
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -158,9 +158,9 @@ jobs:
     runs-on: ubuntu-24.04
     needs: update_tools_cache
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install tools
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4
         with:
           experimental: true
         env:
@@ -185,24 +185,24 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install tools
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4
         with:
           experimental: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Log in to utility account
-        uses: aws-actions/configure-aws-credentials@v6.1.1
+        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
         if: github.ref_name == 'main'
         with:
           aws-region: eu-west-1
           role-to-assume: arn:aws:iam::961341524988:role/kitu-github-actions-role
-      - uses: aws-actions/amazon-ecr-login@v2
+      - uses: aws-actions/amazon-ecr-login@fa648b43de3d4d023bcb3f89ed6940096949c419 # v2
         id: login-ecr
         if: github.ref_name == 'main'
-      - uses: docker/setup-buildx-action@v4
-      - uses: docker/build-push-action@v7
+      - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+      - uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
           push: ${{ github.ref_name == 'main' }}
           tags: ${{
@@ -269,21 +269,21 @@ jobs:
       id-token: write
       pages: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install tools
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4
         with:
           experimental: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Pages
-        uses: actions/configure-pages@v6
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
       - name: Build component documentation
         run: |
           mkdir -p docs/uml
           docs/build-uml.sh untuva qa prod
       - name: Build html files from markdown files
-        uses: actions/jekyll-build-pages@v1
+        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1
         with:
           source: ./
           destination: ./docs/output
@@ -291,7 +291,7 @@ jobs:
         run: |
           sudo chmod -R 777 docs/output
           CI=true docs/build.sh
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: docs/output
-      - uses: actions/deploy-pages@v5
+      - uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
