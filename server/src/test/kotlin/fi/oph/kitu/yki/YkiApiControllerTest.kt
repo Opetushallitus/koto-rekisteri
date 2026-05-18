@@ -553,7 +553,59 @@ class YkiApiControllerTest(
             )
 
         postSuoritus(suoritus) {
-            isBadRequest("suoritus.osat.arvosana: Suoritus sisältää virheellisiä arvosanoja: 13, 666, 123")
+            isBadRequest(
+                "suoritus.osat.arvosana: Suoritus sisältää tutkintotasolle YT virheellisiä arvosanoja: 13, 666, 123",
+            )
+        }
+    }
+
+    @Test
+    fun `Suoritus, jolla on tutkintotasolle liian korkea arvosana, aiheuttaa virheen`() {
+        val suoritus =
+            Henkilosuoritus(
+                henkilo =
+                    Henkilo(
+                        oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                        etunimet = "Ranja Testi",
+                        sukunimi = "Öhman-Testi",
+                        sukupuoli = Sukupuoli.N,
+                        kansalaisuus = "EST",
+                        katuosoite = "Testikuja 5",
+                        postinumero = "40100",
+                        postitoimipaikka = "Testilä",
+                        maa = "FIN",
+                        email = "testi@testi.fi",
+                    ),
+                suoritus =
+                    YkiSuoritus(
+                        tutkintotaso = Tutkintotaso.PT,
+                        kieli = Tutkintokieli.ENG,
+                        todistuskieli = Todistuskieli.FIN,
+                        jarjestaja =
+                            YkiJarjestaja(
+                                oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
+                                nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+                            ),
+                        tutkintopaiva = LocalDate.of(2026, 9, 1),
+                        arviointipaiva = LocalDate.of(2026, 12, 13),
+                        arviointitila = Arviointitila.ARVIOITU,
+                        osat =
+                            listOf(
+                                YkiOsa(tyyppi = TutkinnonOsa.puhuminen, arvosana = 2),
+                                YkiOsa(tyyppi = TutkinnonOsa.puheenYmmartaminen, arvosana = 1),
+                                YkiOsa(tyyppi = TutkinnonOsa.kirjoittaminen, arvosana = 3),
+                                YkiOsa(tyyppi = TutkinnonOsa.tekstinYmmartaminen, arvosana = 5),
+                            ),
+                        lahdejarjestelmanId =
+                            LahdejarjestelmanTunniste(
+                                id = "183424",
+                                lahde = Lahdejarjestelma.Solki,
+                            ),
+                    ),
+            )
+
+        postSuoritus(suoritus) {
+            isBadRequest("suoritus.osat.arvosana: Suoritus sisältää tutkintotasolle PT virheellisiä arvosanoja: 3, 5")
         }
     }
 

@@ -218,12 +218,14 @@ class YkiSuoritusValidation(
                 "Suorituksella täytyy olla vähintään yksi osakoe, johon on ilmottauduttu",
             )
         }
-        val validArvosanat = Koodisto.YkiArvosana.validIntegers
+        val tutkintotaso = s.suoritus.tutkintotaso
+        val validArvosanat = Koodisto.YkiArvosana.validIntegersFor(tutkintotaso)
         val invalidArvosanat = osakokeet.mapNotNull { if (it.arvosana in validArvosanat) null else it.arvosana }
         ensure(invalidArvosanat.isEmpty()) {
             Validation.ValidationError(
                 listOf("suoritus", "osat", "arvosana"),
-                "Suoritus sisältää virheellisiä arvosanoja: ${invalidArvosanat.joinToString(", ")}",
+                "Suoritus sisältää tutkintotasolle $tutkintotaso virheellisiä arvosanoja: " +
+                    invalidArvosanat.joinToString(", "),
             )
         }
         return s.copy(suoritus = s.suoritus.copy(osat = osakokeet))

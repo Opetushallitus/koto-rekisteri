@@ -210,7 +210,12 @@ object Koodisto {
                     }
                 }
 
-            val validIntegers = setOf(0, 1, 2, 3, 4, 5, 6, 9, 10, 11)
+            fun validIntegersFor(tutkintotaso: Tutkintotaso): Set<Int> =
+                when (tutkintotaso) {
+                    Tutkintotaso.PT -> setOf(0, 1, 2, 9, 10, 11)
+                    Tutkintotaso.KT -> setOf(0, 1, 2, 3, 4, 9, 10, 11)
+                    Tutkintotaso.YT -> setOf(0, 1, 2, 3, 4, 5, 6, 9, 10, 11)
+                }
         }
     }
 
