@@ -1,10 +1,15 @@
 package fi.oph.kitu.yhteystiedot
 
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.auditlogs.AUDIT_LOGGER_NAME
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -16,6 +21,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.postgresql.PostgreSQLContainer
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import ch.qos.logback.classic.Logger as LogbackLogger
 
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
@@ -30,6 +38,9 @@ class YhteystiedotApiControllerTest {
 
     @Autowired private lateinit var ykiSuoritukset: YkiSuoritusRepository
 
+    private val auditLogbackLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME) as LogbackLogger
+    private val listAppender = ListAppender<ILoggingEvent>()
+
     @BeforeEach
     fun setup() {
         mockMvc =
@@ -37,7 +48,19 @@ class YhteystiedotApiControllerTest {
                 .webAppContextSetup(context)
                 .apply { springSecurity() }
                 .build()
+        listAppender.start()
+        auditLogbackLogger.addAppender(listAppender)
     }
+
+    @AfterEach
+    fun cleanup() {
+        listAppender.stop()
+        auditLogbackLogger.detachAppender(listAppender)
+    }
+
+    private fun lookupAuditEntry() = listAppender.list.single { it.message == "Yhteystiedot lookup" }
+
+    private fun auditFields() = lookupAuditEntry().keyValuePairs.associate { it.key to it.value }
 
     @Test
     fun `Hakeminen olemassaolevalla oidilla palauttaa yhteystiedot`() {
@@ -79,6 +102,11 @@ class YhteystiedotApiControllerTest {
                     )
                 }
             }
+
+        val audit = auditFields()
+        assertEquals("opiskeluoikeus_oid", audit["lookup.field"])
+        assertEquals(opiskeluoikeusOid.toString(), audit["lookup.value"])
+        assertEquals(true, audit["lookup.found"])
     }
 
     @Test
@@ -102,6 +130,15 @@ class YhteystiedotApiControllerTest {
                     )
                 }
             }
+
+        val audit = auditFields()
+        assertEquals("opiskeluoikeus_oid", audit["lookup.field"])
+        assertEquals(opiskeluoikeusOid, audit["lookup.value"])
+        assertEquals(false, audit["lookup.found"])
+        assertTrue(
+            audit.containsKey("auth.principal_oid"),
+            "principal_oid field must be present even when JWT is absent",
+        )
     }
 
     @Test
@@ -144,6 +181,11 @@ class YhteystiedotApiControllerTest {
                     )
                 }
             }
+
+        val audit = auditFields()
+        assertEquals("lahdejarjestelman_tunnus", audit["lookup.field"])
+        assertEquals(tunnus, audit["lookup.value"])
+        assertEquals(true, audit["lookup.found"])
     }
 
     @Test
@@ -167,5 +209,10 @@ class YhteystiedotApiControllerTest {
                     )
                 }
             }
+
+        val audit = auditFields()
+        assertEquals("lahdejarjestelman_tunnus", audit["lookup.field"])
+        assertEquals(tunnus, audit["lookup.value"])
+        assertEquals(false, audit["lookup.found"])
     }
 }
