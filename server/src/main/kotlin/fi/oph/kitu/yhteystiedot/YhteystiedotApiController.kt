@@ -1,8 +1,11 @@
 package fi.oph.kitu.yhteystiedot
 
+import fi.oph.kitu.auditlogs.AUDIT_LOGGER_NAME
+import fi.oph.kitu.auditlogs.add
 import fi.oph.kitu.oid.Oid
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -10,18 +13,52 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import tools.jackson.databind.json.JsonMapper
 
+/**
+ * Keskitetty B2B-lookup todistuksen yhteystiedoille. KOSKI:lle myönnetty
+ * `KIELITUTKINTOREKISTERI_TODISTUS_YHTEYSTIEDOT_LUKEMINEN` -käyttöoikeus
+ * oikeuttaa hakemaan minkä tahansa opiskeluoikeuden yhteystiedot — tämä on
+ * tarkoitettu toimintatapa, koska KOSKI tarvitsee tiedot kielitutkintojen
+ * todistusten postitusta varten. Älä myönnä tätä oikeutta
+ * organisaatiokohtaisille virkailijoille ilman erillistä tietuetason
+ * pääsynvalvontaa.
+ *
+ * Jokainen kutsu kirjautuu audit-lokiin (kutsujan JWT-subject + haettu
+ * tunniste + löytyikö) jälkikäteistä jäljitettävyyttä varten.
+ */
 @RestController
 @RequestMapping("/yhteystiedot/api")
 @Tag(name = "Todistuksen yhteystiedot")
 class YhteystiedotApiController(
     val yhteystiedotService: YhteystiedotService,
 ) {
+    private val auditLogger = LoggerFactory.getLogger(AUDIT_LOGGER_NAME)
+
+    private fun auditLookup(
+        field: String,
+        value: String,
+        found: Boolean,
+    ) {
+        val principalOid =
+            (SecurityContextHolder.getContext().authentication?.principal as? Jwt)?.subject
+        auditLogger
+            .atInfo()
+            .add(
+                "event" to "yhteystiedot.lookup",
+                "auth.principal_oid" to principalOid,
+                "lookup.field" to field,
+                "lookup.value" to value,
+                "lookup.found" to found,
+            ).log("Yhteystiedot lookup")
+    }
+
     /**
      * Palauttaa todistuksen postitusosoitteen sekä toivotun kielen todistukselle annettuun opiskeluoikeuden tunnisteeseen (OID) liittyen.
      *
@@ -98,11 +135,13 @@ class YhteystiedotApiController(
     )
     fun getYhteystiedotByOid(
         @PathVariable oid: Oid,
-    ): ResponseEntity<*> =
-        yhteystiedotService
-            .getYhteystiedotByOpiskeluoikeusOid(oid)
+    ): ResponseEntity<*> {
+        val result = yhteystiedotService.getYhteystiedotByOpiskeluoikeusOid(oid)
+        auditLookup("opiskeluoikeus_oid", oid.toString(), result != null)
+        return result
             ?.let { ResponseEntity(it, HttpStatus.OK) }
             ?: ResponseEntity(YhteystietoNotFound(oid.toString()), HttpStatus.NOT_FOUND)
+    }
 
     /**
      * Palauttaa todistuksen postitusosoitteen sekä toivotun kielen todistukselle annettuun lähdejärjestelmän tunnukseen liittyen.
@@ -183,11 +222,13 @@ class YhteystiedotApiController(
     )
     fun getYhteystiedotByLahdenjarjestelmanTunnus(
         @PathVariable tunnus: String,
-    ): ResponseEntity<*> =
-        yhteystiedotService
-            .getYhteystiedotByLahdejarjestelmanTunnus(tunnus)
+    ): ResponseEntity<*> {
+        val result = yhteystiedotService.getYhteystiedotByLahdejarjestelmanTunnus(tunnus)
+        auditLookup("lahdejarjestelman_tunnus", tunnus, result != null)
+        return result
             ?.let { ResponseEntity(it, HttpStatus.OK) }
             ?: ResponseEntity(YhteystietoNotFound(tunnus), HttpStatus.NOT_FOUND)
+    }
 }
 
 data class YhteystietoNotFound(
