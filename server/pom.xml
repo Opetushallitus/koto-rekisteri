@@ -34,6 +34,16 @@
         <flyway.version>12.6.1</flyway.version>
         <opentelemetry-semconv.version>1.41.1</opentelemetry-semconv.version>
         <opentelemetry.instrumentation.version>2.27.0</opentelemetry.instrumentation.version>
+
+        <!-- Pakotetut päivitykset Spring Boot -BOMin yli, kun BOM jää ilmoitettujen
+             haavoittuvuuksien taakse. Tarkista jokainen Spring Boot -päivityksen
+             yhteydessä, voiko poistaa. -->
+        <!-- https://github.com/Opetushallitus/kielitutkintorekisteri/security/dependabot
+             alerts 116, 118-123 (Netty 4.2.13.Final) -->
+        <netty.version>4.2.13.Final</netty.version>
+        <!-- https://github.com/Opetushallitus/kielitutkintorekisteri/security/dependabot/117
+             (pgjdbc 42.7.11) -->
+        <postgresql.version>42.7.11</postgresql.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -184,12 +194,6 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>cloudwatchlogs</artifactId>
         </dependency>
-        <!-- https://github.com/Opetushallitus/kielitutkintorekisteri/security/dependabot/44 -->
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-codec-http2</artifactId>
-            <version>4.2.13.Final</version>
-        </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sso</artifactId>
@@ -204,11 +208,6 @@
             <version>4.0.2</version>
         </dependency>
 
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-handler</artifactId>
-            <version>4.2.13.Final</version>
-        </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-html-jvm</artifactId>
