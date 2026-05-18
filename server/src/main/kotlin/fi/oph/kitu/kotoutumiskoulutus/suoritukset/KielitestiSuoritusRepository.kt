@@ -136,7 +136,7 @@ data class KielitestiSuoritusFilter(
 
     private fun toSql() =
         SqlFilterBuilder().apply {
-            add(searchAndOrgQuery(), searchParams())
+            add(searchAndOrgQuery(), searchParams() + orgOidsParams())
             add(testikieli?.let { "testikieli = :filter_kieli" }, "filter_kieli" to testikieli?.name)
             add(suoritusalku?.let { "suoritusaika >= :filter_alkupaiva" }, "filter_alkupaiva" to suoritusalku)
             add(
@@ -176,8 +176,13 @@ data class KielitestiSuoritusFilter(
 
     private fun orgOidsQuery(): String? =
         orgOids.takeIf { it.isNotEmpty() && it.size < 10 }?.let {
-            "oppilaitos_oid IN (${it.joinToString(",") { oid -> "'$oid'" }})"
+            "oppilaitos_oid IN (:filter_org_oids)"
         }
+
+    private fun orgOidsParams(): Map<String, Any?> =
+        orgOids.takeIf { it.isNotEmpty() && it.size < 10 }?.let {
+            mapOf("filter_org_oids" to it.map(Oid::toString))
+        } ?: emptyMap()
 }
 
 data class KielitestiSuoritusOrder(
