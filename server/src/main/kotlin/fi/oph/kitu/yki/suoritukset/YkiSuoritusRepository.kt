@@ -1,6 +1,9 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.i18n.finnishDate
+import arrow.core.Either
+import arrow.core.raise.either
+import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
 import fi.oph.kitu.jdbc.Columns
 import fi.oph.kitu.jdbc.ConflictHandler
 import fi.oph.kitu.jdbc.Constraint
@@ -149,47 +152,53 @@ class YkiSuoritusRepository(
     fun hyvaksyTarkistusarvioinnit(
         suoritusIds: List<Int>,
         pvm: LocalDate,
-    ): Int {
-        findLatestBySolkiIds(suoritusIds).forEach { suoritus ->
-            val suorituksenNimi by lazy {
-                "'${suoritus.suorittajanOID} ${suoritus.sukunimi} ${suoritus.etunimet}, ${suoritus.tutkintotaso} ${suoritus.tutkintokieli}'"
+    ): Either<HyvaksyTarkistusarviointiError, Int> =
+        either {
+            val suoritukset = findLatestBySolkiIds(suoritusIds)
+
+            suoritukset.forEach { suoritus ->
+                val suorituksenNimi =
+                    "'${suoritus.suorittajanOID} ${suoritus.sukunimi} ${suoritus.etunimet}, " +
+                        "${suoritus.tutkintotaso} ${suoritus.tutkintokieli}'"
+
+                ensure(suoritus.arviointitila.tarkistusarvioitu()) {
+                    HyvaksyTarkistusarviointiError.EiTarkistusarvioitu(suorituksenNimi)
+                }
+                val kasittelyPvm =
+                    ensureNotNull(suoritus.tarkistusarvioinninKasittelyPvm) {
+                        HyvaksyTarkistusarviointiError.KasittelyPvmPuuttuu(suorituksenNimi)
+                    }
+                ensure(!kasittelyPvm.isAfter(pvm)) {
+                    HyvaksyTarkistusarviointiError.PaivamaaraEnnenKasittelya(
+                        suorituksenNimi = suorituksenNimi,
+                        pvm = pvm,
+                        kasittelyPvm = kasittelyPvm,
+                    )
+                }
             }
-            if (!suoritus.arviointitila.tarkistusarvioitu()) {
-                throw IllegalStateException(
-                    "Tarkistusarvioimatonta suoritusta $suorituksenNimi ei voi asettaa hyväksytyksi",
+
+            suoritukset.forEach { suoritus ->
+                save(
+                    suoritus.copy(
+                        id = null,
+                        arviointitila = Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
+                        lastModified = Instant.now(),
+                    ),
+                    true,
                 )
             }
-            if (suoritus.tarkistusarvioinninKasittelyPvm == null) {
-                throw IllegalStateException(
-                    "Tarkistusarviointia suoritukselle $suorituksenNimi ei voi hyväksyä, ennen kuin se on käsitelty.",
-                )
-            }
-            if (suoritus.tarkistusarvioinninKasittelyPvm.isAfter(pvm)) {
-                throw IllegalStateException(
-                    "Tarkistusarviointi suoritukselle $suorituksenNimi ei voi hyväksyä päivämäärällä ${pvm.finnishDate()}, koska se on aiemmin kuin käsittelypäivä ${suoritus.tarkistusarvioinninKasittelyPvm.finnishDate()}.",
-                )
-            }
-            save(
-                suoritus.copy(
-                    id = null,
-                    arviointitila = Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
-                    lastModified = Instant.now(),
-                ),
-                true,
+
+            jdbcTemplate.update(
+                """
+                INSERT INTO yki_suoritus_lisatieto (solki_id, tarkistusarviointi_hyvaksytty_pvm)
+                    VALUES ${suoritusIds.joinToString(",") { "(?, ?)" }}
+                ON CONFLICT ON CONSTRAINT yki_suoritus_lisatieto_pkey
+                    DO UPDATE SET
+                        tarkistusarviointi_hyvaksytty_pvm = EXCLUDED.tarkistusarviointi_hyvaksytty_pvm
+                """.trimIndent(),
+                *suoritusIds.flatMap { listOf(it, pvm) }.toTypedArray<Any>(),
             )
         }
-
-        return jdbcTemplate.update(
-            """
-            INSERT INTO yki_suoritus_lisatieto (solki_id, tarkistusarviointi_hyvaksytty_pvm)
-                VALUES ${suoritusIds.joinToString(",") { "(?, ?)" }}
-            ON CONFLICT ON CONSTRAINT yki_suoritus_lisatieto_pkey
-                DO UPDATE SET
-                    tarkistusarviointi_hyvaksytty_pvm = EXCLUDED.tarkistusarviointi_hyvaksytty_pvm
-            """.trimIndent(),
-            *suoritusIds.flatMap { listOf(it, pvm) }.toTypedArray<Any>(),
-        )
-    }
 
     @WithSpan
     fun countSuoritukset(

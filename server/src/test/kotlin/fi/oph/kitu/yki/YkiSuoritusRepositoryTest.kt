@@ -1,7 +1,9 @@
 package fi.oph.kitu.yki
 
+import arrow.core.Either
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.yki.suoritukset.HyvaksyTarkistusarviointiError
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
@@ -16,6 +18,7 @@ import java.time.LocalDate
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -144,6 +147,90 @@ class YkiSuoritusRepositoryTest(
 
         val anotherSuoritukset = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "testi"))
         assertEquals(2, anotherSuoritukset.count())
+    }
+
+    @Test
+    fun `hyvaksyTarkistusarvioinnit returns Left for a non-tarkistusarvioitu suoritus`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity()
+                .copy(arviointitila = Arviointitila.ARVIOITU)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val result =
+            ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(
+                suoritusIds = listOf(suoritus.solkiId),
+                pvm = LocalDate.now(),
+            )
+
+        assertIs<Either.Left<*>>(result)
+        assertIs<HyvaksyTarkistusarviointiError.EiTarkistusarvioitu>(result.value)
+        // Ei muutosta arviointitilassa
+        val storedAfter = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+        assertEquals(Arviointitila.ARVIOITU, storedAfter.arviointitila)
+    }
+
+    @Test
+    fun `hyvaksyTarkistusarvioinnit returns Left when kasittelyPvm is missing`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity()
+                .copy(
+                    arviointitila = Arviointitila.TARKISTUSARVIOITU,
+                    tarkistusarvioinninKasittelyPvm = null,
+                )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val result =
+            ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(
+                suoritusIds = listOf(suoritus.solkiId),
+                pvm = LocalDate.now(),
+            )
+
+        assertIs<Either.Left<*>>(result)
+        assertIs<HyvaksyTarkistusarviointiError.KasittelyPvmPuuttuu>(result.value)
+    }
+
+    @Test
+    fun `hyvaksyTarkistusarvioinnit returns Left when hyvaksyttyPvm is before kasittelyPvm`() {
+        val kasittelyPvm = LocalDate.of(2025, 6, 15)
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                arviointitila = Arviointitila.TARKISTUSARVIOITU,
+                tarkistusarvioinninKasittelyPvm = kasittelyPvm,
+            )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val result =
+            ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(
+                suoritusIds = listOf(suoritus.solkiId),
+                pvm = kasittelyPvm.minusDays(1),
+            )
+
+        assertIs<Either.Left<*>>(result)
+        assertIs<HyvaksyTarkistusarviointiError.PaivamaaraEnnenKasittelya>(result.value)
+        val storedAfter = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+        assertEquals(Arviointitila.TARKISTUSARVIOITU, storedAfter.arviointitila)
+    }
+
+    @Test
+    fun `hyvaksyTarkistusarvioinnit returns Right and updates state when conditions are met`() {
+        val kasittelyPvm = LocalDate.of(2025, 6, 15)
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                arviointitila = Arviointitila.TARKISTUSARVIOITU,
+                tarkistusarvioinninKasittelyPvm = kasittelyPvm,
+            )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val result =
+            ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(
+                suoritusIds = listOf(suoritus.solkiId),
+                pvm = kasittelyPvm,
+            )
+
+        assertIs<Either.Right<Int>>(result)
+        assertEquals(1, result.value)
+        val storedAfter = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+        assertEquals(Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY, storedAfter.arviointitila)
     }
 
     @Test
