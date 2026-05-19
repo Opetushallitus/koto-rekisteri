@@ -1,5 +1,6 @@
 package fi.oph.kitu.vkt
 
+import arrow.core.getOrElse
 import fi.oph.kitu.auditlogs.AuditLogOperation
 import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.html.Pagination
@@ -85,7 +86,12 @@ class VktSuoritusService(
                 mapOf()
             }
 
-        return if (suoritukset.isEmpty()) null else mergeVktHenkilosuoritukset(suoritukset, suorituksenVastaanottajat)
+        return if (suoritukset.isEmpty()) {
+            null
+        } else {
+            mergeVktHenkilosuoritukset(suoritukset, suorituksenVastaanottajat)
+                .getOrElse { error(it.message) }
+        }
     }
 
     @WithSpan("VktSuoritusService.findEnrichedForCsv")

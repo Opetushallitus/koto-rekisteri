@@ -158,7 +158,7 @@ class VktSuoritusServiceTest(
                     buildSuoritus(uusinnanTutkintopaiva, Koodisto.VktArvosana.Tyydyttävä),
                 ),
                 emptyMap(),
-            )
+            ).getOrThrow()
 
         val tutkinto = suoritusyhdistelma.suoritus.tutkinnot.first()
         assertEquals(ekaTutkintopaiva, tutkinto.tutkintopaivaTodistuksella())
