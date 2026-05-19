@@ -37,7 +37,7 @@ class VKTSuoritusRepositoryTest(
         val suoritus =
             VktSuoritusEntity(
                 ilmoittautumisenId = "1",
-                suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                suorittajanOid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow(),
                 etunimet = "Testi",
                 sukunimi = "Testinen",
                 tutkintokieli = Koodisto.Tutkintokieli.FIN,
@@ -132,7 +132,7 @@ class VKTSuoritusRepositoryTest(
             listOf(
                 VktSuoritusEntity(
                     ilmoittautumisenId = "1",
-                    suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                    suorittajanOid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow(),
                     etunimet = "Testi",
                     sukunimi = "Testinen",
                     tutkintokieli = Koodisto.Tutkintokieli.FIN,
@@ -160,7 +160,7 @@ class VKTSuoritusRepositoryTest(
                 ),
                 VktSuoritusEntity(
                     ilmoittautumisenId = "2",
-                    suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678912").getOrThrow(),
+                    suorittajanOid = Oid.parse("1.2.246.562.24.12345678912").getOrThrow(),
                     etunimet = "Maija",
                     sukunimi = "Mehiläinen",
                     tutkintokieli = Koodisto.Tutkintokieli.FIN,
@@ -226,7 +226,7 @@ class VKTSuoritusRepositoryTest(
         val suoritus =
             VktSuoritusEntity(
                 ilmoittautumisenId = "1",
-                suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                suorittajanOid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow(),
                 etunimet = "Testi",
                 sukunimi = "Testinen",
                 tutkintokieli = Koodisto.Tutkintokieli.FIN,
@@ -269,7 +269,7 @@ class VKTSuoritusRepositoryTest(
         val suoritus =
             VktSuoritusEntity(
                 ilmoittautumisenId = "1",
-                suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                suorittajanOid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow(),
                 etunimet = "Testi",
                 sukunimi = "Testinen",
                 tutkintokieli = Koodisto.Tutkintokieli.FIN,
@@ -306,7 +306,7 @@ class VKTSuoritusRepositoryTest(
         val suoritus =
             VktSuoritusEntity(
                 ilmoittautumisenId = "1",
-                suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                suorittajanOid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow(),
                 etunimet = "Testi",
                 sukunimi = "Testinen",
                 tutkintokieli = Koodisto.Tutkintokieli.FIN,
@@ -365,7 +365,7 @@ class VKTSuoritusRepositoryTest(
         val suoritus =
             VktSuoritusEntity(
                 ilmoittautumisenId = "1",
-                suorittajanOid = Oid.parseTyped("1.2.246.562.24.12345678910").getOrThrow(),
+                suorittajanOid = Oid.parse("1.2.246.562.24.12345678910").getOrThrow(),
                 etunimet = "Testi",
                 sukunimi = "Testinen",
                 tutkintokieli = Koodisto.Tutkintokieli.FIN,

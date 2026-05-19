@@ -3,6 +3,7 @@ package fi.oph.kitu.csvparsing
 import arrow.core.Either
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.Tutkintokieli

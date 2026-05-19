@@ -6,6 +6,7 @@ import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.auditlogs.AUDIT_LOGGER_NAME
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach

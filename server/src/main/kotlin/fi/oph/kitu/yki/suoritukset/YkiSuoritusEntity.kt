@@ -7,6 +7,7 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.util.IgnoreForEquality
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa

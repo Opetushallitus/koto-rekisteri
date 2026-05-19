@@ -182,6 +182,6 @@ class KoealustaSuoritusValidator {
         oid: String,
     ): Either<KoealustaMappingError.Validation, Oid> =
         Oid
-            .parseTyped(oid)
+            .parse(oid)
             .mapLeft { KoealustaMappingError.Validation.MalformedField(userId, fieldName, oid) }
 }

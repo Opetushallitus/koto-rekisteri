@@ -7,6 +7,7 @@ import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
+import fi.oph.kitu.util.result.getOrThrow
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

@@ -8,6 +8,7 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
+import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

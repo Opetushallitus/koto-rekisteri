@@ -1,6 +1,7 @@
 package fi.oph.kitu.dev.mockdata
 
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.util.result.getOrThrow
 import kotlin.random.Random
 
 enum class OidClass(

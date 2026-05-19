@@ -11,6 +11,7 @@ import fi.oph.kitu.tiedontuontischema.YkiJarjestaja
 import fi.oph.kitu.tiedontuontischema.YkiOsa
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.util.defaultObjectMapper
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktPuheenYmmartamisenKoe
 import fi.oph.kitu.vkt.VktPuhumisenKoe
