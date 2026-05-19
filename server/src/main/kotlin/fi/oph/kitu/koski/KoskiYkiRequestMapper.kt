@@ -1,8 +1,8 @@
 package fi.oph.kitu.koski
 
 import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import arrow.core.raise.either
+import arrow.core.raise.ensure
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koodisto.Koodisto.YkiArvosana
 import fi.oph.kitu.koski.KoskiRequest.Henkilo
@@ -28,11 +28,21 @@ class KoskiYkiRequestMapper {
     lateinit var ykiOrganisaatioOid: String
 
     @WithSpan
-    fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): Either<List<String>, KoskiRequest> {
-        val estonSyyt = koskiSiirronEstonSyyt(ykiSuoritus)
-        return if (estonSyyt.isNotEmpty()) {
-            estonSyyt.left()
-        } else {
+    fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): Either<KoskiYkiMappingError, KoskiRequest> =
+        either {
+            val estonSyyt = koskiSiirronEstonSyyt(ykiSuoritus)
+            ensure(estonSyyt.isEmpty()) { KoskiYkiMappingError.EstoSyyt(estonSyyt) }
+
+            val osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus).bind()
+            val yleisarvosana =
+                ykiSuoritus.yleisarvosana?.let {
+                    YkiArvosana
+                        .of(it, ykiSuoritus.tutkintotaso)
+                        .mapLeft { e -> KoskiYkiMappingError.InvalidArvosana(e) }
+                        .bind()
+                        .toKoski()
+                }
+
             KoskiRequest(
                 henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID),
                 opiskeluoikeudet =
@@ -85,35 +95,35 @@ class KoskiYkiRequestMapper {
                                                         Organisaatio(ykiSuoritus.jarjestajanTunnusOid),
                                                 )
                                             },
-                                        osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus),
-                                        yleisarvosana =
-                                            ykiSuoritus.yleisarvosana?.let {
-                                                YkiArvosana.of(it, ykiSuoritus.tutkintotaso).toKoski()
-                                            },
+                                        osasuoritukset = osasuoritukset,
+                                        yleisarvosana = yleisarvosana,
                                     ),
                                 ),
                         ),
                     ),
-            ).right()
+            )
         }
-    }
 
-    private fun convertYkiSuoritusToKoskiOsasuoritukset(suoritusEntity: YkiSuoritusEntity): List<Osasuoritus> =
-        mapOf(
-            Koodisto.YkiSuorituksenOsa.TekstinYmmartaminen to suoritusEntity.tekstinYmmartaminen,
-            Koodisto.YkiSuorituksenOsa.Kirjoittaminen to suoritusEntity.kirjoittaminen,
-            Koodisto.YkiSuorituksenOsa.PuheenYmmartaminen to suoritusEntity.puheenYmmartaminen,
-            Koodisto.YkiSuorituksenOsa.Puhuminen to suoritusEntity.puhuminen,
-            Koodisto.YkiSuorituksenOsa.RakenteetJaSanasto to suoritusEntity.rakenteetJaSanasto,
-        ).mapNotNull { (suorituksenNimi, arvosana) ->
-            arvosana?.let {
-                suoritusEntity.arviointipaiva?.let {
-                    yleisenKielitutkinnonOsa(
-                        suorituksenNimi,
-                        arvosana,
-                        suoritusEntity.tutkintotaso,
-                        suoritusEntity.arviointipaiva,
-                    )
+    private fun convertYkiSuoritusToKoskiOsasuoritukset(
+        suoritusEntity: YkiSuoritusEntity,
+    ): Either<KoskiYkiMappingError, List<Osasuoritus>> =
+        either {
+            mapOf(
+                Koodisto.YkiSuorituksenOsa.TekstinYmmartaminen to suoritusEntity.tekstinYmmartaminen,
+                Koodisto.YkiSuorituksenOsa.Kirjoittaminen to suoritusEntity.kirjoittaminen,
+                Koodisto.YkiSuorituksenOsa.PuheenYmmartaminen to suoritusEntity.puheenYmmartaminen,
+                Koodisto.YkiSuorituksenOsa.Puhuminen to suoritusEntity.puhuminen,
+                Koodisto.YkiSuorituksenOsa.RakenteetJaSanasto to suoritusEntity.rakenteetJaSanasto,
+            ).mapNotNull { (suorituksenNimi, arvosana) ->
+                arvosana?.let {
+                    suoritusEntity.arviointipaiva?.let {
+                        yleisenKielitutkinnonOsa(
+                            suorituksenNimi,
+                            arvosana,
+                            suoritusEntity.tutkintotaso,
+                            suoritusEntity.arviointipaiva,
+                        ).bind()
+                    }
                 }
             }
         }
@@ -145,18 +155,24 @@ class KoskiYkiRequestMapper {
         arvosana: Int,
         tutkintotaso: Tutkintotaso,
         arviointipaiva: LocalDate,
-    ) = YkiOsasuoritus(
-        koulutusmoduuli =
-            OsasuorituksenKoulutusmoduuli(
-                tunniste = suorituksenNimi.toKoski(),
-            ),
-        arviointi =
-            listOf(
-                Arvosana(
-                    arvosana = YkiArvosana.of(arvosana, tutkintotaso).toKoski(),
-                    päivä = arviointipaiva,
-                ),
-            ),
-        alkamispäivä = null,
-    )
+    ): Either<KoskiYkiMappingError, YkiOsasuoritus> =
+        YkiArvosana
+            .of(arvosana, tutkintotaso)
+            .mapLeft { e -> KoskiYkiMappingError.InvalidArvosana(e) }
+            .map { arvosanaKoodi ->
+                YkiOsasuoritus(
+                    koulutusmoduuli =
+                        OsasuorituksenKoulutusmoduuli(
+                            tunniste = suorituksenNimi.toKoski(),
+                        ),
+                    arviointi =
+                        listOf(
+                            Arvosana(
+                                arvosana = arvosanaKoodi.toKoski(),
+                                päivä = arviointipaiva,
+                            ),
+                        ),
+                    alkamispäivä = null,
+                )
+            }
 }
