@@ -232,23 +232,23 @@ class YkiViewController(
         viewMessage: ViewMessage? = null,
     ): RedirectView {
         suoritukset?.let {
-            try {
-                val updated =
-                    ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(
-                        suoritusIds = suoritukset,
-                        pvm = hyvaksyttyPvm ?: LocalDate.now(),
-                    )
-                viewMessage?.showSuccess(
-                    if (updated > 1) {
-                        "$updated tarkistusarviointia merkitty hyväksytyksi"
-                    } else {
-                        "1 tarkistusarviointi merkitty hyväksytyksi"
+            ykiSuoritusRepository
+                .hyvaksyTarkistusarvioinnit(
+                    suoritusIds = suoritukset,
+                    pvm = hyvaksyttyPvm ?: LocalDate.now(),
+                ).fold(
+                    ifLeft = { error -> viewMessage?.showError(error.message) },
+                    ifRight = { updated ->
+                        viewMessage?.showSuccess(
+                            if (updated > 1) {
+                                "$updated tarkistusarviointia merkitty hyväksytyksi"
+                            } else {
+                                "1 tarkistusarviointi merkitty hyväksytyksi"
+                            },
+                        )
+                        ilmoittautumisjarjestelma.sendAllUpdatedArvioinninTilat()
                     },
                 )
-                ilmoittautumisjarjestelma.sendAllUpdatedArvioinninTilat()
-            } catch (e: IllegalStateException) {
-                viewMessage?.showError(e.message ?: "Tuntematon virhe")
-            }
         }
 
         return RedirectView(Links.Yki.tarkistusArvioinnit())
