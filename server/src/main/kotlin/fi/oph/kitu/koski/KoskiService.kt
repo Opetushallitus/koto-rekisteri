@@ -56,6 +56,13 @@ class KoskiService(
                                 "Suorituksen muuntaminen Koski-pyynnöksi epäonnistui: ${error.cause.message}",
                             ).left()
                         }
+
+                        is KoskiYkiMappingError.InvalidKoodistoValue -> {
+                            return KoskiValidationException(
+                                YkiMappingId(ykiSuoritusEntity.solkiId),
+                                "Suorituksen muuntaminen Koski-pyynnöksi epäonnistui: ${error.cause.message}",
+                            ).left()
+                        }
                     }
                 }
             }

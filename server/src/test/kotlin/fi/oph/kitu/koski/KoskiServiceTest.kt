@@ -8,6 +8,7 @@ import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusService
+import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
@@ -264,6 +265,49 @@ class KoskiServiceTest(
         val errorEntity = koskiErrorService.findById(YkiMappingId(invalid.solkiId))
         assertNotNull(errorEntity)
         assertTrue(errorEntity.message!!.contains("Koski-pyynnöksi"))
+    }
+
+    @Test
+    fun `Vanhentuneen tutkintokielen mappausvirhe ei keskeytä Koski-eräajoa`() {
+        val koskiResponse = successfulKoskiResponseFor("1.2.246.562.24.20281155246", 183424)
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(ExpectedCount.times(2), requestTo("oppija"))
+            .andRespond(withSuccess(koskiResponse, MediaType.APPLICATION_JSON))
+
+        val service =
+            KoskiService(
+                mockRestClientBuilder.build(),
+                koskiYkiRequestMapper,
+                koskiVktRequestMapper,
+                ykiSuoritusRepository,
+                customVktSuoritusRepository,
+                vktSuoritusService,
+                koskiErrorService,
+            )
+
+        val legacy =
+            generateRandomYkiSuoritusEntity().copy(
+                tutkintokieli = Tutkintokieli.SWE10,
+            )
+        ykiSuoritusRepository.saveAllNewEntities(
+            listOf(
+                generateRandomYkiSuoritusEntity(),
+                legacy,
+                generateRandomYkiSuoritusEntity(),
+            ),
+        )
+
+        service.sendYkiSuorituksetToKoski()
+
+        val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
+        assertEquals(3, updatedSuoritukset.size)
+        assertEquals(2, updatedSuoritukset.filter { it.koskiOpiskeluoikeus != null }.size)
+
+        val errorEntity = koskiErrorService.findById(YkiMappingId(legacy.solkiId))
+        assertNotNull(errorEntity)
+        assertTrue(errorEntity.message!!.contains("Koski-pyynnöksi"))
+        assertTrue(errorEntity.message!!.contains("SWE10"))
     }
 
     @Test

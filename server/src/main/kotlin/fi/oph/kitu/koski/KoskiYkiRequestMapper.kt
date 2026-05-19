@@ -42,6 +42,16 @@ class KoskiYkiRequestMapper {
                         .bind()
                         .toKoski()
                 }
+            val tutkintotasoKoodi =
+                Koodisto.YkiTutkintotaso
+                    .fromName(ykiSuoritus.tutkintotaso.name)
+                    .mapLeft { e -> KoskiYkiMappingError.InvalidKoodistoValue(e) }
+                    .bind()
+            val tutkintokieliKoodi =
+                Koodisto.Tutkintokieli
+                    .fromName(ykiSuoritus.tutkintokieli.name)
+                    .mapLeft { e -> KoskiYkiMappingError.InvalidKoodistoValue(e) }
+                    .bind()
 
             KoskiRequest(
                 henkilö = Henkilo(oid = ykiSuoritus.suorittajanOID),
@@ -75,15 +85,8 @@ class KoskiYkiRequestMapper {
                                         tyyppi = Koodisto.SuorituksenTyyppi.YleinenKielitutkinto,
                                         koulutusmoduuli =
                                             KoulutusModuuli(
-                                                tunniste =
-                                                    Koodisto.YkiTutkintotaso
-                                                        .valueOf(
-                                                            ykiSuoritus.tutkintotaso.name,
-                                                        ).toKoski(),
-                                                kieli =
-                                                    Koodisto.Tutkintokieli.valueOf(
-                                                        ykiSuoritus.tutkintokieli.name,
-                                                    ),
+                                                tunniste = tutkintotasoKoodi.toKoski(),
+                                                kieli = tutkintokieliKoodi,
                                             ),
                                         toimipiste = Organisaatio(oid = Oid.parse(ykiOrganisaatioOid).getOrThrow()),
                                         järjestäjä = Organisaatio(oid = ykiSuoritus.jarjestajanTunnusOid),

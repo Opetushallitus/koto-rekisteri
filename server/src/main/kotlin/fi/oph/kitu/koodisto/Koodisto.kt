@@ -85,6 +85,12 @@ object Koodisto {
         ;
 
         override val koodistoUri: String = "ykitutkintotaso"
+
+        companion object {
+            fun fromName(name: String): Either<InvalidKoodistoValueError, YkiTutkintotaso> =
+                entries.firstOrNull { it.name == name }?.right()
+                    ?: InvalidKoodistoValueError("ykitutkintotaso", name).left()
+        }
     }
 
     enum class Tutkintokieli(
@@ -111,6 +117,12 @@ object Koodisto {
         ;
 
         override val koodistoUri: String = "kieli"
+
+        companion object {
+            fun fromName(name: String): Either<InvalidKoodistoValueError, Tutkintokieli> =
+                entries.firstOrNull { it.name == name }?.right()
+                    ?: InvalidKoodistoValueError("kieli", name).left()
+        }
     }
 
     enum class YkiSuorituksenOsa(
@@ -279,3 +291,8 @@ data class InvalidYkiArvosanaError(
     val arvosana: Int,
     val tutkintotaso: Tutkintotaso,
 ) : Exception("Virheellinen arvosana $arvosana tutkintotasolle $tutkintotaso")
+
+data class InvalidKoodistoValueError(
+    val koodistoUri: String,
+    val name: String,
+) : Exception("Tuntematon arvo \"$name\" koodistossa $koodistoUri")
