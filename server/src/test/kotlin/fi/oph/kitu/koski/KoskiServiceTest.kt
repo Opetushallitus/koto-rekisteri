@@ -8,6 +8,7 @@ import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusService
+import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.YkiService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
@@ -215,6 +216,54 @@ class KoskiServiceTest(
         val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
         assertEquals(3, updatedSuoritukset.size)
         assertEquals(2, updatedSuoritukset.filter { it.koskiOpiskeluoikeus != null }.size)
+    }
+
+    @Test
+    fun `Yhden suorituksen mappausvirhe ei keskeytä Koski-eräajoa`() {
+        val koskiResponse = successfulKoskiResponseFor("1.2.246.562.24.20281155246", 183424)
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(ExpectedCount.times(2), requestTo("oppija"))
+            .andRespond(withSuccess(koskiResponse, MediaType.APPLICATION_JSON))
+
+        val service =
+            KoskiService(
+                mockRestClientBuilder.build(),
+                koskiYkiRequestMapper,
+                koskiVktRequestMapper,
+                ykiSuoritusRepository,
+                customVktSuoritusRepository,
+                vktSuoritusService,
+                koskiErrorService,
+            )
+
+        val invalid =
+            generateRandomYkiSuoritusEntity().copy(
+                tutkintotaso = Tutkintotaso.PT,
+                tekstinYmmartaminen = 1,
+                kirjoittaminen = 1,
+                rakenteetJaSanasto = 1,
+                puheenYmmartaminen = 1,
+                puhuminen = 5,
+                yleisarvosana = 1,
+            )
+        ykiSuoritusRepository.saveAllNewEntities(
+            listOf(
+                generateRandomYkiSuoritusEntity(),
+                invalid,
+                generateRandomYkiSuoritusEntity(),
+            ),
+        )
+
+        service.sendYkiSuorituksetToKoski()
+
+        val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
+        assertEquals(3, updatedSuoritukset.size)
+        assertEquals(2, updatedSuoritukset.filter { it.koskiOpiskeluoikeus != null }.size)
+
+        val errorEntity = koskiErrorService.findById(YkiMappingId(invalid.solkiId))
+        assertNotNull(errorEntity)
+        assertTrue(errorEntity.message!!.contains("Koski-pyynnöksi"))
     }
 
     @Test
