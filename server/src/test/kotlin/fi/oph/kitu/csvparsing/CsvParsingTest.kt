@@ -75,8 +75,8 @@ class CsvParsingTest(
         assertNull(suoritus.yleisarvosana)
         assertNull(suoritus.tarkistusarvioinninSaapumisPvm)
         assertEquals("", suoritus.tarkistusarvioinninAsiatunnus)
-        assertEquals("0", suoritus.tarkistusarvioidutOsakokeet)
-        assertEquals("0", suoritus.arvosanaMuuttui)
+        assertEquals(0, suoritus.tarkistusarvioidutOsakokeet)
+        assertEquals(0, suoritus.arvosanaMuuttui)
         assertEquals("", suoritus.perustelu)
         assertNull(suoritus.tarkistusarvioinninKasittelyPvm)
     }
@@ -171,8 +171,8 @@ class CsvParsingTest(
         assertNull(suoritus.yleisarvosana)
         assertNull(suoritus.tarkistusarvioinninSaapumisPvm)
         assertEquals("", suoritus.tarkistusarvioinninAsiatunnus)
-        assertEquals("0", suoritus.tarkistusarvioidutOsakokeet)
-        assertEquals("0", suoritus.arvosanaMuuttui)
+        assertEquals(0, suoritus.tarkistusarvioidutOsakokeet)
+        assertEquals(0, suoritus.arvosanaMuuttui)
         assertEquals("Tarkistusarvioinnin perustelu\\nJossa rivinvaihto", suoritus.perustelu)
         assertNull(suoritus.tarkistusarvioinninKasittelyPvm)
     }
@@ -213,6 +213,30 @@ class CsvParsingTest(
 
         val row5 = results[4]
         assertTrue(row5 is Either.Right)
+    }
+
+    @Test
+    fun `viallinen tarkistusarvioidutOsakokeet-arvo ei kaada koko eräajoa`() {
+        val csv =
+            """
+            "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,abc,0,,
+            "1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,
+            """.trimIndent()
+
+        val results = parser.convertCsvToData<YkiSuoritusCsv>(csv)
+        assertEquals(2, results.size)
+
+        val virheellinen = results[0]
+        assertTrue(virheellinen is Either.Left)
+        assertTrue(virheellinen.value is InvalidFormatCsvExportError)
+        assertEquals(
+            "tarkistusarvioidutOsakokeet",
+            (virheellinen.value as InvalidFormatCsvExportError).fieldWithValidationError,
+        )
+
+        val ehja = results[1]
+        assertTrue(ehja is Either.Right)
+        assertEquals(0, ehja.value.tarkistusarvioidutOsakokeet)
     }
 
     @Test
