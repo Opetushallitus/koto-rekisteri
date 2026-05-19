@@ -36,7 +36,15 @@ class KoskiService(
     @WithSpan
     @RetryOutboundIntegration
     fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): Either<KoskiException, YkiSuoritusEntity> {
-        val koskiRequest = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity).getOrNull()
+        val koskiRequest =
+            try {
+                koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity).getOrNull()
+            } catch (e: Throwable) {
+                return KoskiValidationException(
+                    YkiMappingId(ykiSuoritusEntity.solkiId),
+                    "Suorituksen muuntaminen Koski-pyynnöksi epäonnistui: ${e.message ?: e.javaClass.simpleName}",
+                ).left()
+            }
 
         if (koskiRequest == null) {
             val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
