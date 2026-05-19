@@ -37,20 +37,28 @@ class KoskiService(
     @RetryOutboundIntegration
     fun sendYkiSuoritusToKoski(ykiSuoritusEntity: YkiSuoritusEntity): Either<KoskiException, YkiSuoritusEntity> {
         val koskiRequest =
-            try {
-                koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity).getOrNull()
-            } catch (e: Throwable) {
-                return KoskiValidationException(
-                    YkiMappingId(ykiSuoritusEntity.solkiId),
-                    "Suorituksen muuntaminen Koski-pyynnöksi epäonnistui: ${e.message ?: e.javaClass.simpleName}",
-                ).left()
-            }
+            when (val result = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(ykiSuoritusEntity)) {
+                is Either.Right -> {
+                    result.value
+                }
 
-        if (koskiRequest == null) {
-            val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
-            ykiSuoritusRepository.save(suoritus, true)
-            return suoritus.right()
-        }
+                is Either.Left -> {
+                    when (val error = result.value) {
+                        is KoskiYkiMappingError.EstoSyyt -> {
+                            val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
+                            ykiSuoritusRepository.save(suoritus, true)
+                            return suoritus.right()
+                        }
+
+                        is KoskiYkiMappingError.InvalidArvosana -> {
+                            return KoskiValidationException(
+                                YkiMappingId(ykiSuoritusEntity.solkiId),
+                                "Suorituksen muuntaminen Koski-pyynnöksi epäonnistui: ${error.cause.message}",
+                            ).left()
+                        }
+                    }
+                }
+            }
 
         val koskiResponse =
             when (val result = putToKoski(YkiMappingId(ykiSuoritusEntity.solkiId), koskiRequest)) {

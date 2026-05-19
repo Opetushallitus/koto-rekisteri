@@ -1,5 +1,8 @@
 package fi.oph.kitu.koodisto
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import com.fasterxml.jackson.annotation.JsonValue
 import fi.oph.kitu.html.table.HideInTableFilter
 import fi.oph.kitu.i18n.LocalizedString
@@ -147,65 +150,41 @@ object Koodisto {
             fun of(
                 arvosana: Int,
                 tutkintotaso: Tutkintotaso,
-            ): YkiArvosana =
+            ): Either<InvalidYkiArvosanaError, YkiArvosana> =
                 when (tutkintotaso) {
                     Tutkintotaso.PT -> {
                         when (arvosana) {
-                            0 -> ALLE1
-
-                            1 -> PT1
-
-                            2 -> PT2
-
-                            9 -> EiVoiArvioida
-
-                            10 -> Keskeytetty
-
-                            11 -> Vilppi
-
-                            else -> throw IllegalArgumentException(
-                                "Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso",
-                            )
+                            0 -> ALLE1.right()
+                            1 -> PT1.right()
+                            2 -> PT2.right()
+                            9 -> EiVoiArvioida.right()
+                            10 -> Keskeytetty.right()
+                            11 -> Vilppi.right()
+                            else -> InvalidYkiArvosanaError(arvosana, tutkintotaso).left()
                         }
                     }
 
                     Tutkintotaso.KT -> {
                         when (arvosana) {
-                            3 -> KT3
-
-                            4 -> KT4
-
-                            0, 1, 2 -> ALLE3
-
-                            9 -> EiVoiArvioida
-
-                            10 -> Keskeytetty
-
-                            11 -> Vilppi
-
-                            else -> throw IllegalArgumentException(
-                                "Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso",
-                            )
+                            3 -> KT3.right()
+                            4 -> KT4.right()
+                            0, 1, 2 -> ALLE3.right()
+                            9 -> EiVoiArvioida.right()
+                            10 -> Keskeytetty.right()
+                            11 -> Vilppi.right()
+                            else -> InvalidYkiArvosanaError(arvosana, tutkintotaso).left()
                         }
                     }
 
                     Tutkintotaso.YT -> {
                         when (arvosana) {
-                            5 -> YT5
-
-                            6 -> YT6
-
-                            0, 1, 2, 3, 4 -> ALLE5
-
-                            9 -> EiVoiArvioida
-
-                            10 -> Keskeytetty
-
-                            11 -> Vilppi
-
-                            else -> throw IllegalArgumentException(
-                                "Invalid YKI arvosana $arvosana for tutkintotaso $tutkintotaso",
-                            )
+                            5 -> YT5.right()
+                            6 -> YT6.right()
+                            0, 1, 2, 3, 4 -> ALLE5.right()
+                            9 -> EiVoiArvioida.right()
+                            10 -> Keskeytetty.right()
+                            11 -> Vilppi.right()
+                            else -> InvalidYkiArvosanaError(arvosana, tutkintotaso).left()
                         }
                     }
                 }
@@ -295,3 +274,8 @@ object Koodisto {
 
     const val ORGANISAATIOTYYPPI_KOODISTO_URI = "organisaatiotyyppi"
 }
+
+data class InvalidYkiArvosanaError(
+    val arvosana: Int,
+    val tutkintotaso: Tutkintotaso,
+) : Exception("Virheellinen arvosana $arvosana tutkintotasolle $tutkintotaso")

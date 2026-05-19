@@ -222,7 +222,10 @@ class KoskiRequestMapperTest(
                 tekstinYmmartaminen = 10,
             )
         val koskiSuoritus = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
-        assertEquals(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty").left(), koskiSuoritus)
+        assertEquals(
+            KoskiYkiMappingError.EstoSyyt(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")).left(),
+            koskiSuoritus,
+        )
     }
 
     @Test
@@ -234,7 +237,10 @@ class KoskiRequestMapperTest(
                 tekstinYmmartaminen = 11,
             )
         val koskiSuoritus = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
-        assertEquals(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty").left(), koskiSuoritus)
+        assertEquals(
+            KoskiYkiMappingError.EstoSyyt(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")).left(),
+            koskiSuoritus,
+        )
     }
 
     @Test

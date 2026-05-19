@@ -270,22 +270,22 @@ fun ykiArvosanaText(
     taso: Tutkintotaso,
 ): String =
     arvosana?.let {
-        try {
-            Koodisto.YkiArvosana.of(arvosana, taso).viewText
-        } catch (_: IllegalArgumentException) {
-            null
-        }
+        Koodisto.YkiArvosana
+            .of(arvosana, taso)
+            .getOrNull()
+            ?.viewText
     } ?: ""
 
 fun FlowContent.ykiArvosana(
     arvosana: Int?,
     taso: Tutkintotaso,
 ) = arvosana?.let {
-    try {
-        +Koodisto.YkiArvosana.of(arvosana, taso).viewText
-    } catch (_: IllegalArgumentException) {
-        span(classes = "invalid-value") {
-            +arvosana.toString()
-        }
-    }
+    Koodisto.YkiArvosana.of(arvosana, taso).fold(
+        ifLeft = {
+            span(classes = "invalid-value") {
+                +arvosana.toString()
+            }
+        },
+        ifRight = { +it.viewText },
+    )
 }

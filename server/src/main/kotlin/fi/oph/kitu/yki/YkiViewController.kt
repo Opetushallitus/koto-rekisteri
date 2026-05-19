@@ -9,6 +9,7 @@ import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.koski.KoskiErrorService
+import fi.oph.kitu.koski.KoskiYkiMappingError
 import fi.oph.kitu.koski.KoskiYkiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.webmvc.Links
@@ -64,7 +65,10 @@ class YkiViewController(
                 if (suoritus.id == viimeisinSuoritus.id) {
                     Pair(
                         koskiErrorService.findById(YkiMappingId(suoritus.id)),
-                        koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus).leftOrNull(),
+                        when (val left = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus).leftOrNull()) {
+                            is KoskiYkiMappingError.EstoSyyt -> left.syyt
+                            else -> null
+                        },
                     )
                 } else {
                     Pair(null, null)
