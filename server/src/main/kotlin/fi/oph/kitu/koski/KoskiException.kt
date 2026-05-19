@@ -1,5 +1,6 @@
 package fi.oph.kitu.koski
 
+import fi.oph.kitu.koodisto.InvalidKoodistoValueError
 import fi.oph.kitu.koodisto.InvalidYkiArvosanaError
 import org.springframework.web.client.RestClientException
 
@@ -38,5 +39,9 @@ sealed interface KoskiYkiMappingError {
 
     data class InvalidArvosana(
         val cause: InvalidYkiArvosanaError,
+    ) : KoskiYkiMappingError
+
+    data class InvalidKoodistoValue(
+        val cause: InvalidKoodistoValueError,
     ) : KoskiYkiMappingError
 }
