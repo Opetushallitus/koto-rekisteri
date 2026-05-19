@@ -39,8 +39,12 @@ infra/
     ├── log-groups-stack.ts          # Log groups + LogErrors/LogWarnings filters + alarms
     ├── backups-stack.ts             # AWS Backup vault for the Aurora cluster
     ├── koski-audit-logs-integration-stack.ts  # Subscription filter + Lambda → KOSKI SQS
-    └── koski-audit-logs-integration/  # Lambda source for the above
+    ├── koski-audit-logs-integration/  # Lambda source for the above
+    └── yki-historia-upload-stack.ts   # Prod-only S3 bucket for YKI-historia uploads
 ```
+
+`infra/scripts/` holds Node helpers invoked by top-level `scripts/*.sh`
+(currently just `presign-yki-historia-upload.mjs`, see below).
 
 ## Util stage (`bin/infra.ts`, `lib/utility-stage.ts`)
 
@@ -95,6 +99,30 @@ order (because of dependencies):
     the audit log group → Lambda → SQS in the KOSKI account. The Lambda assumes
     a role (`kitu-sqs-sender`) that the KOSKI account creates with a matching
     trust policy.
+
+### Prod-only stacks
+
+`Prod/YkiHistoriaUpload` (`lib/yki-historia-upload-stack.ts`) is wired
+directly in `bin/infra.ts` as a child of the `Prod` stage — not in
+`environment-stage.ts`, since there is no Dev/Test analogue. It creates a
+single S3 bucket `kitu-yki-historia-upload-prod` that an external
+organization writes to via on-demand presigned PUT URLs (≤5 GB per file).
+The bucket is versioned, BlockPublicAccess all, S3-managed encryption,
+`enforceSSL`, ACLs disabled (`BUCKET_OWNER_ENFORCED`), removalPolicy
+RETAIN, and aborts incomplete multipart uploads after 7 days. The Spring
+Boot app does not access this bucket — OPH admins download the files via
+the AWS console.
+
+To mint a URL, an OPH admin runs locally:
+
+```bash
+./scripts/yki_historia_upload_presign.sh --key <object-key>
+```
+
+The script invokes `infra/scripts/presign-yki-historia-upload.mjs` (uses
+`@aws-sdk/s3-request-presigner` — `aws s3 presign` in AWS CLI 2.34.x is
+GET-only) and prints the URL plus a ready-to-paste `curl --upload-file`
+one-liner for the uploader. Default TTL is 7 days (the SigV4 maximum).
 
 ## Service stack details (`lib/service-stack.ts`)
 
@@ -297,3 +325,7 @@ Listed here because deploys silently or loudly fail when these don't exist:
 - **`TAG` env var** set to a tag that exists in the Util ECR repo. CI sets this
   automatically; locally use `TAG=$(git rev-parse main)` to deploy main's
   image, or pin to a specific commit.
+
+`Prod/YkiHistoriaUpload` has no manual prerequisites — the bucket is
+CDK-managed and the `oph-ktr-prod` SSO profile is already configured by
+`scripts/ensure_aws_profiles.sh`.
