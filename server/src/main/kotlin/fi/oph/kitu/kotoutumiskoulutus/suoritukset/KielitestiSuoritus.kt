@@ -5,6 +5,7 @@ import fi.oph.kitu.jdbc.sortedWithDirectionBy
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import fi.oph.kitu.util.IgnoreForEquality
+import fi.oph.kitu.util.result.getOrThrow
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table

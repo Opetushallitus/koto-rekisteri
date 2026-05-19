@@ -2,6 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusFilter
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

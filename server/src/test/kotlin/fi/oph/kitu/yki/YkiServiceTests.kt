@@ -14,6 +14,7 @@ import fi.oph.kitu.tiedontuontischema.YkiJarjestaja
 import fi.oph.kitu.tiedontuontischema.YkiOsa
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService

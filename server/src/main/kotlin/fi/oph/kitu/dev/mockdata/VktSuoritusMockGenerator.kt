@@ -8,6 +8,7 @@ import fi.oph.kitu.tiedontuontischema.Lahdejarjestelma
 import fi.oph.kitu.tiedontuontischema.LahdejarjestelmanTunniste
 import fi.oph.kitu.tiedontuontischema.VktSuoritus
 import fi.oph.kitu.tiedontuontischema.VktValidation
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.VktArvionti
 import fi.oph.kitu.vkt.VktKirjoittamisenKoe
 import fi.oph.kitu.vkt.VktOsakoe

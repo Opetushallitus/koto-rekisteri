@@ -12,6 +12,7 @@ import fi.oph.kitu.tiedontuontischema.LahdejarjestelmanTunniste
 import fi.oph.kitu.tiedontuontischema.YkiJarjestaja
 import fi.oph.kitu.tiedontuontischema.YkiOsa
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa

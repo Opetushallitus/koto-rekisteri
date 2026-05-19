@@ -2,6 +2,7 @@ package fi.oph.kitu
 
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.defaultObjectMapper
+import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -12,7 +13,7 @@ class OidTest {
 
     @Test
     fun `parsing correctly formatted string as OID succeeds`() {
-        assertTrue(Oid.parse(validOidString).isSuccess)
+        assertTrue(Oid.parse(validOidString).isRight())
     }
 
     @Test
@@ -24,7 +25,7 @@ class OidTest {
 
     @Test
     fun `parsing incorrectly formatted string as OID returns a failure`() {
-        assertTrue(Oid.parse(nonValidOidString).isFailure)
+        assertTrue(Oid.parse(nonValidOidString).isLeft())
     }
 
     @Test

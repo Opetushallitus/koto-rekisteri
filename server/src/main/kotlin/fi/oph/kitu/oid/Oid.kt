@@ -3,6 +3,7 @@ package fi.oph.kitu.oid
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import fi.oph.kitu.util.result.getOrThrow
 import io.swagger.v3.oas.annotations.media.Schema
 import org.ietf.jgss.GSSException
 import tools.jackson.databind.annotation.JsonSerialize
@@ -34,14 +35,7 @@ data class Oid private constructor(
     }
 
     companion object {
-        fun parse(source: String?): Result<Oid> =
-            try {
-                Result.success(Oid(org.ietf.jgss.Oid(source)))
-            } catch (_: GSSException) {
-                Result.failure(MalformedOidError(source))
-            }
-
-        fun parseTyped(source: String): Either<MalformedOidError, Oid> =
+        fun parse(source: String?): Either<MalformedOidError, Oid> =
             try {
                 Oid(org.ietf.jgss.Oid(source)).right()
             } catch (_: GSSException) {

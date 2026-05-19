@@ -14,6 +14,7 @@ import fi.oph.kitu.tiedontuontischema.YkiOsa
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.util.defaultObjectMapper
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.toJsonNode
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Sukupuoli

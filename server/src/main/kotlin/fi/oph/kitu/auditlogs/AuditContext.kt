@@ -5,6 +5,7 @@ import arrow.core.left
 import arrow.core.right
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.cas.CasUserDetails
+import fi.oph.kitu.util.result.getOrThrow
 import org.springframework.core.io.ClassPathResource
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder

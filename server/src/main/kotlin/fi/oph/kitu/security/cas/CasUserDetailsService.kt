@@ -21,7 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class CasUserDetailsService : AuthenticationUserDetailsService<CasAssertionAuthenticationToken> {
     override fun loadUserDetails(token: CasAssertionAuthenticationToken): UserDetails {
         val attributes = token.assertion.principal.attributes
-        val oid = Oid.parseTyped(attributes["oidHenkilo"] as String).getOrThrow()
+        val oid = Oid.parse(attributes["oidHenkilo"] as String).getOrThrow()
 
         return CasUserDetails(
             token.name,

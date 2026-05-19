@@ -5,6 +5,7 @@ import arrow.core.left
 import arrow.core.right
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.defaultObjectMapper
+import fi.oph.kitu.util.result.getOrThrow
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.ResponseEntity

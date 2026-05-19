@@ -9,6 +9,7 @@ import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.equalsIgnoringAnnotated
+import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired

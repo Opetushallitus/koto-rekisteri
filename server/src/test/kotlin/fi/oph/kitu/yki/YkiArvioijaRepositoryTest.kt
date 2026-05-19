@@ -2,6 +2,7 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila

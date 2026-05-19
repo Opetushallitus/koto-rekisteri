@@ -42,7 +42,7 @@ class AuthEventAuditListenerTest {
 
     @Test
     fun `kirjautumisen onnistuminen audit-lokitetaan principal-OIDin kanssa`() {
-        val oid = Oid.parseTyped("1.2.246.562.24.19563255030").getOrNull()!!
+        val oid = Oid.parse("1.2.246.562.24.19563255030").getOrNull()!!
         val auth =
             UsernamePasswordAuthenticationToken(
                 CasUserDetails(
@@ -105,7 +105,7 @@ class AuthEventAuditListenerTest {
 
     @Test
     fun `uloskirjautuminen audit-lokitetaan`() {
-        val oid = Oid.parseTyped("1.2.246.562.24.19563255030").getOrNull()!!
+        val oid = Oid.parse("1.2.246.562.24.19563255030").getOrNull()!!
         val auth =
             UsernamePasswordAuthenticationToken(
                 CasUserDetails(

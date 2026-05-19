@@ -69,7 +69,7 @@ class AuditLoggerTests(
                 ),
             )
 
-            val oid = Oid.parseTyped("1.2.246.562.24.19563255030").getOrThrow()
+            val oid = Oid.parse("1.2.246.562.24.19563255030").getOrThrow()
             val principal =
                 CasUserDetails(
                     name = "test",

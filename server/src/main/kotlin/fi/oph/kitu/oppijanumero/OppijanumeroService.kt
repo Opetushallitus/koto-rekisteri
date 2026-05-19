@@ -49,7 +49,7 @@ class OppijanumeroServiceImpl(
                     OppijanumeroException.OppijaNotIdentifiedException(requestBody).left()
                 } else {
                     Oid
-                        .parseTyped(body.oppijanumero)
+                        .parse(body.oppijanumero)
                         .mapLeft {
                             OppijanumeroException.MalformedOppijanumero(
                                 requestBody,
