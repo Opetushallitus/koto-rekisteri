@@ -8,6 +8,11 @@ sealed class Question {
     abstract val type: String
 }
 
+// Question-alityypit, jotka tallennetaan TehtavaEntity-riveiksi.
+// CategoryQuestion (ryhmäraja) ja UnknownQuestion (tuntematon <question type="…">)
+// eivät tarkoituksella laajenna tätä.
+sealed class IngestableQuestion : Question()
+
 data class CategoryQuestion(
     val category: FormattedText? = null,
     val info: FormattedText? = null,
@@ -24,7 +29,7 @@ data class DescriptionQuestion(
     val penalty: Double? = null,
     val hidden: Int? = null,
     val idnumber: String? = null,
-) : Question() {
+) : IngestableQuestion() {
     override val type: String = "description"
 }
 
@@ -44,7 +49,7 @@ data class MultichoiceQuestion(
     val partiallycorrectfeedback: FormattedText? = null,
     val incorrectfeedback: FormattedText? = null,
     val answers: List<Answer> = emptyList(),
-) : Question() {
+) : IngestableQuestion() {
     override val type: String = "multichoice"
 }
 
@@ -58,7 +63,7 @@ data class ShortanswerQuestion(
     val idnumber: String? = null,
     val usecase: Int? = null,
     val answers: List<Answer> = emptyList(),
-) : Question() {
+) : IngestableQuestion() {
     override val type: String = "shortanswer"
 }
 
@@ -81,7 +86,7 @@ data class EssayQuestion(
     val filetypeslist: String? = null,
     val graderinfo: FormattedText? = null,
     val responsetemplate: FormattedText? = null,
-) : Question() {
+) : IngestableQuestion() {
     override val type: String = "essay"
 }
 
@@ -108,7 +113,7 @@ data class CloudpoodllQuestion(
     val safesave: Int? = null,
     val noaudiofilters: Int? = null,
     val tags: List<Tag> = emptyList(),
-) : Question() {
+) : IngestableQuestion() {
     override val type: String = "cloudpoodll"
 }
 

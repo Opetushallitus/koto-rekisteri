@@ -35,13 +35,10 @@ class KoealustaSuoritusValidator {
                 ).left()
         }
 
-        checkNotNull(koealustaUser.SSN)
-        checkNotNull(koealustaUser.preferredname)
-
         return Oppija(
             etunimet = koealustaUser.firstnames.trim(),
-            hetu = koealustaUser.SSN.trim(),
-            kutsumanimi = koealustaUser.preferredname.trim(),
+            hetu = koealustaUser.SSN!!.trim(),
+            kutsumanimi = koealustaUser.preferredname!!.trim(),
             sukunimi = koealustaUser.lastname.trim(),
         ).right()
     }
@@ -96,12 +93,6 @@ class KoealustaSuoritusValidator {
 
         if (user.preferredname == null || oppijanumero == null) return null
 
-        checkNotNull(luetunYmmartaminen)
-        checkNotNull(kuullunYmmartaminen)
-        checkNotNull(kirjoittaminen)
-        checkNotNull(puhe)
-        checkNotNull(schoolOid)
-
         return KielitestiSuoritus(
             etunimet = user.firstnames.trim(),
             sukunimi = user.lastname.trim(),
@@ -109,13 +100,13 @@ class KoealustaSuoritusValidator {
             email = user.email,
             oppijanumero = oppijanumero,
             suoritusaika = Instant.ofEpochSecond(completion.timecompleted),
-            oppilaitosOid = schoolOid,
+            oppilaitosOid = schoolOid!!,
             kurssiId = completion.courseid,
             kurssi = completion.coursename,
-            luetunYmmartaminen = luetunYmmartaminen,
-            kuullunYmmartaminen = kuullunYmmartaminen,
-            puhe = puhe,
-            kirjoittaminen = kirjoittaminen,
+            luetunYmmartaminen = luetunYmmartaminen!!,
+            kuullunYmmartaminen = kuullunYmmartaminen!!,
+            puhe = puhe!!,
+            kirjoittaminen = kirjoittaminen!!,
             testikieli = testikieli,
             opettajanEmail = completion.teacheremail,
             tehtavapaketti = completion.questionbank,

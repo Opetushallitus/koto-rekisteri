@@ -1,6 +1,7 @@
 package fi.oph.kitu.csvparsing
 
 import arrow.core.Either
+import arrow.core.left
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oid.OidDeserializer
@@ -119,9 +120,15 @@ class CsvParser(
                 val schema = getSchema<T>(csvMapper)
                 val lineSeparator =
                     onlyOrNull(schema.lineSeparator)
-                        // This error would be probably due to internal changes so we don't pass it to normal error handling.
-                        ?: throw IllegalStateException(
-                            "Can't find only one line seperator from schema (${schema.lineSeparator}).",
+                        ?: return@use listOf(
+                            SimpleCsvExportError(
+                                lineNumber = 0,
+                                context = null,
+                                exception =
+                                    IllegalStateException(
+                                        "Can't find only one line seperator from schema (${schema.lineSeparator}).",
+                                    ),
+                            ).left(),
                         )
 
                 return@use csvMapper

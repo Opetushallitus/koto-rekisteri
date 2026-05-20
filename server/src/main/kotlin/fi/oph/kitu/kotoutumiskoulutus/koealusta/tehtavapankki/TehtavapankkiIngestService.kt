@@ -85,6 +85,7 @@ class TehtavapankkiIngestService(
         val pendingRyhmat = mutableListOf<TehtavaryhmaEntity>()
         val pendingTehtavat = mutableListOf<PendingTehtava>()
         var currentRyhmaIdx: Int? = null
+        var skippedUnknownQuestions = 0
         for (q in quiz.questions) {
             when (q) {
                 is CategoryQuestion -> {
@@ -98,7 +99,13 @@ class TehtavapankkiIngestService(
                     currentRyhmaIdx = pendingRyhmat.lastIndex
                 }
 
-                else -> {
+                is UnknownQuestion -> {
+                    // Tuntematonta question-tyyppiä ei voida tallentaa tehtava-tauluun;
+                    // ohitetaan se hiljaisesti mutta merkitään span-attribuuttiin näkyväksi.
+                    skippedUnknownQuestions++
+                }
+
+                is IngestableQuestion -> {
                     if (currentRyhmaIdx == null) {
                         pendingRyhmat +=
                             TehtavaryhmaEntity(
@@ -161,6 +168,7 @@ class TehtavapankkiIngestService(
         Span.current().setAttribute("tehtavat.count", tehtavat.size.toLong())
         Span.current().setAttribute("vastaukset.count", vastaukset.size.toLong())
         Span.current().setAttribute("tiedostot.count", tiedostot.size.toLong())
+        Span.current().setAttribute("skipped.unknown_question_count", skippedUnknownQuestions.toLong())
 
         return repository.findPakettiById(pakettiId)!!.right()
     }
@@ -171,7 +179,7 @@ class TehtavapankkiIngestService(
 }
 
 private data class PendingTehtava(
-    val question: Question,
+    val question: IngestableQuestion,
     val ryhmaIdx: Int,
     val jarjestys: Int,
 )
@@ -214,46 +222,27 @@ private fun sha256(bytes: ByteArray): String {
     return digest.joinToString("") { "%02x".format(it) }
 }
 
-private fun Question.embeddedFiles(): List<EmbeddedFile> =
+private fun IngestableQuestion.embeddedFiles(): List<EmbeddedFile> =
     when (this) {
         is DescriptionQuestion -> questiontext?.embeddedFiles.orEmpty()
         is MultichoiceQuestion -> questiontext?.embeddedFiles.orEmpty()
         is ShortanswerQuestion -> questiontext?.embeddedFiles.orEmpty()
         is EssayQuestion -> questiontext?.embeddedFiles.orEmpty()
         is CloudpoodllQuestion -> questiontext?.embeddedFiles.orEmpty()
-        is CategoryQuestion, is UnknownQuestion -> emptyList()
     }
 
-private fun Question.toTehtavaEntity(
+private fun IngestableQuestion.toTehtavaEntity(
     pakettiId: Int,
     ryhmaId: Int,
     jarjestys: Int,
 ): TehtavaEntity {
     val (name, qtext, lahdeId) =
         when (this) {
-            is DescriptionQuestion -> {
-                Triple(name, questiontext, idnumber)
-            }
-
-            is MultichoiceQuestion -> {
-                Triple(name, questiontext, idnumber)
-            }
-
-            is ShortanswerQuestion -> {
-                Triple(name, questiontext, idnumber)
-            }
-
-            is EssayQuestion -> {
-                Triple(name, questiontext, idnumber)
-            }
-
-            is CloudpoodllQuestion -> {
-                Triple(name, questiontext, idnumber)
-            }
-
-            is CategoryQuestion, is UnknownQuestion -> {
-                throw IllegalStateException("toTehtavaEntity called on $type")
-            }
+            is DescriptionQuestion -> Triple(name, questiontext, idnumber)
+            is MultichoiceQuestion -> Triple(name, questiontext, idnumber)
+            is ShortanswerQuestion -> Triple(name, questiontext, idnumber)
+            is EssayQuestion -> Triple(name, questiontext, idnumber)
+            is CloudpoodllQuestion -> Triple(name, questiontext, idnumber)
         }
     return TehtavaEntity(
         pakettiId = pakettiId,
@@ -274,7 +263,7 @@ private fun CategoryQuestion.toRyhmaMetadata(): JsonNode {
     return node
 }
 
-private fun Question.toMetadata(): JsonNode {
+private fun IngestableQuestion.toMetadata(): JsonNode {
     val node = defaultObjectMapper.createObjectNode()
     when (this) {
         is DescriptionQuestion -> {
@@ -333,13 +322,11 @@ private fun Question.toMetadata(): JsonNode {
                 tags.mapNotNull { it.text }.filter { it.isNotBlank() }.forEach { arr.add(it) }
             }
         }
-
-        is CategoryQuestion, is UnknownQuestion -> {}
     }
     return node
 }
 
-private fun Question.toVastausEntities(tehtavaId: Int): List<TehtavaVastausEntity> {
+private fun IngestableQuestion.toVastausEntities(tehtavaId: Int): List<TehtavaVastausEntity> {
     val answers =
         when (this) {
             is MultichoiceQuestion -> answers
