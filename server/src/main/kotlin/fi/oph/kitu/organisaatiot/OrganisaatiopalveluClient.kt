@@ -50,19 +50,17 @@ class OrganisaatiopalveluClient(
                 .nullableBody(body)
                 .retrieveEntitySafely(String::class.java)
 
-        if (rawResponse == null) {
-            throw RuntimeException("Failed to fetch data from organisaatiopalvelu")
-        }
-
-        if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
-            return OrganisaatiopalveluException.NotFoundException(body ?: EmptyRequest()).left()
+        return if (rawResponse == null) {
+            OrganisaatiopalveluException.NullResponse(body ?: EmptyRequest()).left()
+        } else if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
+            OrganisaatiopalveluException.NotFoundException(body ?: EmptyRequest()).left()
         } else if (rawResponse.statusCode.is4xxClientError) {
-            return OrganisaatiopalveluException.BadRequest(body ?: EmptyRequest(), rawResponse).left()
+            OrganisaatiopalveluException.BadRequest(body ?: EmptyRequest(), rawResponse).left()
         } else if (!rawResponse.statusCode.is2xxSuccessful) {
-            throw OrganisaatiopalveluException.UnexpectedError(body ?: EmptyRequest(), rawResponse)
+            OrganisaatiopalveluException.UnexpectedError(body ?: EmptyRequest(), rawResponse).left()
+        } else {
+            deserializeResponse(body ?: EmptyRequest(), rawResponse, responseType)
         }
-
-        return deserializeResponse(body ?: EmptyRequest(), rawResponse, responseType)
     }
 
     /**

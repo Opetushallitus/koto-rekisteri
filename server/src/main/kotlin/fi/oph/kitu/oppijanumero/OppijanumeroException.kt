@@ -68,4 +68,9 @@ sealed class OppijanumeroException(
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
         cause: Throwable? = null,
     ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
+
+    class NullResponse(
+        request: OppijanumerorekisteriRequest,
+        message: String = "Empty or unserializable response from oppijanumero-service",
+    ) : OppijanumeroException(request, message)
 }

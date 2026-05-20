@@ -28,6 +28,11 @@ sealed class IlmoittautumisjarjestelmaException(
         cause: Throwable? = null,
     ) : IlmoittautumisjarjestelmaException(request, response, "Malformed response", cause)
 
+    class NullResponse(
+        request: IlmoittautumisjarjestelmaRequest,
+        message: String = "Empty or unserializable response",
+    ) : IlmoittautumisjarjestelmaException(request, null, message)
+
     fun debugString(): String =
         listOfNotNull(
             message,

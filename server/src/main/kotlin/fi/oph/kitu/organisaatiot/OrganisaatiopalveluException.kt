@@ -53,6 +53,11 @@ sealed class OrganisaatiopalveluException(
         organisaatiopalveluError: OrganisaatiopalveluError? = null,
         cause: Throwable? = null,
     ) : OrganisaatiopalveluException(request, message, organisaatiopalveluError, cause)
+
+    class NullResponse(
+        request: OrganisaatiopalveluRequest,
+        message: String = "Empty or unserializable response from organisaatio-service",
+    ) : OrganisaatiopalveluException(request, message)
 }
 
 data class OrganisaatiopalveluError(

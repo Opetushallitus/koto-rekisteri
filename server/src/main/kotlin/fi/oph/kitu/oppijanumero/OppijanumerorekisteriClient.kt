@@ -52,11 +52,9 @@ class OppijanumerorekisteriClient(
                 .nullableBody(body)
                 .retrieveEntitySafely(String::class.java)
 
-        if (rawResponse == null) {
-            throw RuntimeException("Failed to fetch data from oppijanumerorekisteri")
-        }
-
-        return if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
+        return if (rawResponse == null) {
+            OppijanumeroException.NullResponse(body ?: EmptyRequest()).left()
+        } else if (rawResponse.statusCode == HttpStatus.NOT_FOUND) {
             OppijanumeroException.OppijaNotFoundException(body ?: EmptyRequest(), rawResponse).left()
         } else if (rawResponse.statusCode.is4xxClientError) {
             OppijanumeroException.BadRequest(body ?: EmptyRequest(), rawResponse).left()
