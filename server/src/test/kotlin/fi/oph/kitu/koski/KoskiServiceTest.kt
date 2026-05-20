@@ -164,7 +164,7 @@ class KoskiServiceTest(
                 generateRandomYkiSuoritusEntity(),
             ),
         )
-        service.sendYkiSuorituksetToKoski()
+        service.sendYkiSuorituksetToKoski().getOrThrow()
         val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
         assertEquals(3, updatedSuoritukset.size)
         updatedSuoritukset.forEach {
@@ -212,7 +212,7 @@ class KoskiServiceTest(
             ),
         )
 
-        service.sendYkiSuorituksetToKoski()
+        service.sendYkiSuorituksetToKoski().getOrThrow()
 
         val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
         assertEquals(3, updatedSuoritukset.size)
@@ -256,7 +256,7 @@ class KoskiServiceTest(
             ),
         )
 
-        service.sendYkiSuorituksetToKoski()
+        service.sendYkiSuorituksetToKoski().getOrThrow()
 
         val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
         assertEquals(3, updatedSuoritukset.size)
@@ -298,7 +298,7 @@ class KoskiServiceTest(
             ),
         )
 
-        service.sendYkiSuorituksetToKoski()
+        service.sendYkiSuorituksetToKoski().getOrThrow()
 
         val updatedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
         assertEquals(3, updatedSuoritukset.size)
