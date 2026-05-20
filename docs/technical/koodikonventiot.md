@@ -27,11 +27,11 @@ muodot:
 - `enrich`
 - `Raise<NonEmptyList<ValidationError>>.validateAfterEnrichment`
 
-Käytä `zipOrAccumulate`- (rinnakkainen virhekeräys) tai `mapOrAccumulate`-funktioita kun tarve on kerätä 
+Käytä `zipOrAccumulate`- (rinnakkainen virhekeräys) tai `mapOrAccumulate`-funktioita kun tarve on kerätä
 samaan tietueeseen useampi virheilmoitus; käytä `ensure` ja `ensureNotNull`
 predikaattien käsittelyyn.
 
-Kontrollerikerros kutsuu validointia muodossa `validation.validateAndEnrich(…).getOrThrow()`. 
+Kontrollerikerros kutsuu validointia muodossa `validation.validateAndEnrich(…).getOrThrow()`.
 Tämä poikkeus napataan `GlobalControllerExceptionHandler`issa ja muunnetaan 400-vastaukseksi.
 
 ## Jackson 3
