@@ -1,5 +1,8 @@
 package fi.oph.kitu.yki
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 import fi.oph.kitu.html.table.HideInTableFilter
@@ -39,12 +42,5 @@ enum class Tutkintokieli(
 
     companion object {
         val legacyEntries = setOf(SWE10, ENG11, ENG12)
-
-        @JvmStatic
-        @JsonCreator
-        fun fromSolkiCode(value: String): Tutkintokieli =
-            entries.find { it.solkiCode == value } ?: throw IllegalArgumentException("Unknown Solki code: $value")
     }
 }
-
-fun ResultSet.getTutkintokieli(columnLabel: String): Tutkintokieli = Tutkintokieli.valueOf(getString(columnLabel))
