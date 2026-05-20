@@ -287,6 +287,16 @@ jobs:
         run: |
           mkdir -p docs/uml
           docs/build-uml.sh untuva qa prod
+      - name: Verify technical documentation pages exist
+        # docs/technical/ on käsinkirjoitettu tekninen dokumentaatio,
+        # jonka jekyll-vaihe rendaa automaattisesti. Tämä tarkistus pysäyttää
+        # CI:n, mikäli kansio tai jokin odotetuista sivuista on poistettu
+        # vahingossa.
+        run: |
+          test -d docs/technical
+          for page in README.md arkkitehtuuri.md koodikonventiot.md integraatiot.md yllapito.md; do
+            test -f "docs/technical/$page" || { echo "::error::docs/technical/$page puuttuu"; exit 1; }
+          done
       - name: Build html files from markdown files
         uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1
         with:
