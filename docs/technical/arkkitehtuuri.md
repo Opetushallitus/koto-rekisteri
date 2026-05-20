@@ -8,7 +8,7 @@ HTML-sivuja sekä JSON-rajapintoja.
 ## Repositorion rakenne
 
 | Hakemisto  | Sisältö                                                                                         |
-| ---------- |-------------------------------------------------------------------------------------------------|
+| ---------- | ----------------------------------------------------------------------------------------------- |
 | `server/`  | Spring Boot 4 + Kotlin 2.3 -taustapalvelu. Lähdekansiot `src/main/kotlin` ja `src/test/kotlin`. |
 | `infra/`   | AWS CDK -sovellus (TypeScript). Ympäristöt: `Util`, `Dev`, `Test`, `Prod`.                      |
 | `e2e/`     | Playwright-end-to-end-testit, jotka ajetaan oikeaa palvelinta + Postgresia vasten.              |
