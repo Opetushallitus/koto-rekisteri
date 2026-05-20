@@ -46,11 +46,9 @@ class IlmoittautumisjarjestelmaClientImpl(
                 .body(body)
                 .retrieveEntitySafely(String::class.java)
 
-        if (rawResponse == null) {
-            throw RuntimeException("Failed to send data to kielitutkintojen ilmoittautumisjärjestelmä")
-        }
-
-        return if (rawResponse.statusCode.is4xxClientError) {
+        return if (rawResponse == null) {
+            IlmoittautumisjarjestelmaException.NullResponse(body).left()
+        } else if (rawResponse.statusCode.is4xxClientError) {
             IlmoittautumisjarjestelmaException.BadRequest(body, rawResponse).left()
         } else if (!rawResponse.statusCode.is2xxSuccessful) {
             IlmoittautumisjarjestelmaException.UnexpectedError(body, rawResponse).left()
