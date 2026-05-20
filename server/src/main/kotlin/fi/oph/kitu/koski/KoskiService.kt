@@ -149,14 +149,14 @@ class KoskiService(
     }
 
     @WithSpan
-    fun sendYkiSuorituksetToKoski(): KoskiTransferReport {
+    fun sendYkiSuorituksetToKoski(): Either<KoskiTechnicalException, KoskiTransferReport> {
         val suoritukset = ykiSuoritusRepository.findKoskeenLahettamattomatSuoritukset()
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
         return reportErrors(results.map { it.map { suoritus -> YkiMappingId(suoritus.solkiId) } })
     }
 
     @WithSpan
-    fun sendVktSuorituksetToKoski(): KoskiTransferReport {
+    fun sendVktSuorituksetToKoski(): Either<KoskiTechnicalException, KoskiTransferReport> {
         val siirrettavat = customVktSuoritusRepository.findOpiskeluoikeudetForKoskiTransfer()
         val results =
             siirrettavat.map { id ->
@@ -189,15 +189,20 @@ class KoskiService(
 
     private inline fun <reified T : KoskiErrorMappingId> reportErrors(
         results: List<Either<KoskiException, T>?>,
-    ): KoskiTransferReport {
+    ): Either<KoskiTechnicalException, KoskiTransferReport> {
         val (success, failed) = results.filterNotNull().splitIntoValuesAndErrors()
         success.forEach { id -> koskiErrors.reset(id) }
         failed.forEach { error -> koskiErrors.save(error.suoritusId, error.message ?: error.toString()) }
-        failed.find { it is KoskiTechnicalException }?.let { throw it }
+        failed.forEach {
+            when (it) {
+                is KoskiTechnicalException -> return it.left()
+                else -> Unit
+            }
+        }
         return KoskiTransferReport(
             success.size,
             results.size,
-        )
+        ).right()
     }
 }
 

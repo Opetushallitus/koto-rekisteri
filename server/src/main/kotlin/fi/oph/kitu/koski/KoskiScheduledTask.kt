@@ -2,6 +2,7 @@ package fi.oph.kitu.koski
 
 import com.github.kagkarlsson.scheduler.task.Task
 import fi.oph.kitu.config.ConditionalOnNonEmptyProperty
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.scheduling.recurringStatefulTask
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
@@ -21,7 +22,7 @@ class KoskiYkiScheduledTask(
     @Bean
     fun sendYkiSuoritukset(koskiService: KoskiService): Task<String> =
         tracer.recurringStatefulTask("Lähetä YKI-suoritukset KOSKI-palveluun", ykiSchedule, "") { _ ->
-            koskiService.sendYkiSuorituksetToKoski().toString()
+            koskiService.sendYkiSuorituksetToKoski().getOrThrow().toString()
         }
 }
 
@@ -37,6 +38,6 @@ class KoskiVktScheduledTask(
     @Bean
     fun sendVktSuoritukset(koskiService: KoskiService): Task<String> =
         tracer.recurringStatefulTask("Lähetä VKT-suoritukset KOSKI-palveluun", vktSchedule, "") { _ ->
-            koskiService.sendVktSuorituksetToKoski().toString()
+            koskiService.sendVktSuorituksetToKoski().getOrThrow().toString()
         }
 }
