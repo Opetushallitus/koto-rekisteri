@@ -4,7 +4,7 @@ import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.ColumnTags
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import fi.oph.kitu.i18n.finnishDate
-import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.Tutkintotaso
@@ -248,7 +248,7 @@ enum class YkiSuoritusColumn(
         uiHeaderValue = "Versio",
         urlParam = "version",
         getValue = { it.id?.toString().orEmpty() },
-        renderHtml = { +it.lastModified.finnishDateTimeUTC() },
+        renderHtml = { +it.lastModified.finnishDateTime() },
     ),
 }
 

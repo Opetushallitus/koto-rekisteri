@@ -7,7 +7,7 @@ import fi.oph.kitu.html.hiddenErrorsBanner
 import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.i18n.Translations
-import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.webmvc.Links
@@ -51,7 +51,7 @@ object VktKoskiErrors {
                                 } ?: +it.id
                             },
                             Column.Aikaleima.withHtml {
-                                +it.timestamp.finnishDateTimeUTC()
+                                +it.timestamp.finnishDateTime()
                             },
                             Column.Virhe.withHtml { errorMessageDetails(it) },
                             Column.Request.withHtml { error ->

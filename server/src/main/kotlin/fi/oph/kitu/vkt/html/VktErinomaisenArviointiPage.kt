@@ -16,7 +16,7 @@ import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDate
-import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
@@ -119,7 +119,7 @@ fun FlowContent.vktErinomainenOsakoeTable(
                             Navigation.MenuItem("Hylätty", Koodisto.VktArvosana.Hylätty.name),
                             Navigation.MenuItem(
                                 "Ei suoritusta (poistetaan${it.merkittyPoistettavaksi?.let { pvm ->
-                                    " ${pvm.finnishDateTimeUTC()}"
+                                    " ${pvm.finnishDateTime()}"
                                 } ?: ""})",
                                 Koodisto.VktArvosana.EiSuoritusta.name,
                             ),
