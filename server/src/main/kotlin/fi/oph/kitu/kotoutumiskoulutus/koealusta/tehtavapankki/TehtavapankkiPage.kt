@@ -50,7 +50,7 @@ object TehtavapankkiPage {
                             tbody {
                                 tps.forEachIndexed { index, tp ->
                                     tr(classes = if (index > 0) "faded" else null) {
-                                        td { +tp.timestamp.finnishDateTime() }
+                                        td { finnishDateTime(tp.timestamp) }
                                         td { +formatBytes(tp.size) }
                                         td {
                                             val pakettiId = pakettiIdsByS3Avain[tp.key]

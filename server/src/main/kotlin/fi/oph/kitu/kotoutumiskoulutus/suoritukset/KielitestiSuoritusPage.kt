@@ -46,7 +46,7 @@ object KielitestiSuoritusPage {
                 "Kurssi" to { +"${suoritus.kurssi} (${suoritus.kurssiId})" },
                 "Järjestäjä" to { +"${orgs.nimet[suoritus.oppilaitosOid]} (${suoritus.oppilaitosOid})" },
                 "Opettajan sähköpostiosoite" to { +suoritus.opettajanEmail.orEmpty() },
-                "Suoritusaika" to { +suoritus.suoritusaika.finnishDateTime() },
+                "Suoritusaika" to { finnishDateTime(suoritus.suoritusaika) },
                 "Testikieli" to { +suoritus.testikieli.toString() },
                 "Tehtäväpaketti" to { +suoritus.tehtavapaketti.orEmpty() },
             )
@@ -69,7 +69,7 @@ object KielitestiSuoritusPage {
         h3 { +"Integraatiot" }
         card(compact = true) {
             infoTable(
-                "Viimeksi muokattu" to { +suoritus.lastModified.finnishDateTime() },
+                "Viimeksi muokattu" to { finnishDateTime(suoritus.lastModified) },
             )
         }
     }

@@ -5,24 +5,24 @@ import { enumerate } from "../../util/arrays"
 
 const fs = node_fs.promises
 
-const toFinnishDateTime = (isoString: string) => {
-  const t = new Date(isoString)
-  return [
-    t.getUTCDate(),
-    ".",
-    t.getUTCMonth() + 1,
-    ".",
-    t.getUTCFullYear(),
-    " ",
-    t.getUTCHours(),
-    ":",
-    t.getUTCMinutes(),
-    ":",
-    t.getUTCSeconds(),
-    "Z",
-  ]
-    .map((x) => (typeof x == "number" ? x.toString().padStart(2, "0") : x))
-    .join("")
+const toFinnishDateTime = (isoString: string, includeTimezone = false) => {
+  const parts = new Intl.DateTimeFormat("fi-FI", {
+    timeZone: "Europe/Helsinki",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+    ...(includeTimezone ? { timeZoneName: "longOffset" as const } : {}),
+  }).formatToParts(new Date(isoString))
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)!.value
+  const base = `${get("day")}.${get("month")}.${get("year")} ${get("hour")}:${get("minute")}:${get("second")}`
+  if (!includeTimezone) return base
+  const [, sign, hours] = get("timeZoneName").match(/([+-])(\d{1,2})/)!
+  return `${base}${sign}${hours.padStart(2, "0")}`
 }
 
 describe('"Koto Suoritukset" -page', () => {
@@ -58,17 +58,19 @@ describe('"Koto Suoritukset" -page', () => {
     const virheFixture = fixtureData.suoritusVirhe
     const hetuCell = errors.getByRole("cell", { name: virheFixture.hetu })
     const nimiCell = errors.getByText(virheFixture.nimi)
-    const schoolOidCell = errors.getByText(virheFixture.schoolOid)
+    const schoolOidCell = errors.getByText(virheFixture.schoolOid!)
     const teacherEmailCell = errors.getByText(virheFixture.teacherEmail)
     const virheenLuontiaikaCell = errors.getByText(
       toFinnishDateTime(virheFixture.virheenLuontiaika),
     )
-    const viestiCell = errors.getByText(virheFixture.viesti)
+    const viestiCell = errors.getByText(virheFixture.viesti!)
     const virheellinenKenttaCell = errors.getByText(
-      virheFixture.virheellinenKentta,
+      virheFixture.virheellinenKentta!,
       { exact: true },
     )
-    const virheellinenArvoCell = errors.getByText(virheFixture.virheellinenArvo)
+    const virheellinenArvoCell = errors.getByText(
+      virheFixture.virheellinenArvo!,
+    )
 
     await expect(hetuCell).toHaveAttribute("data-testid", "hetu")
     await expect(nimiCell).toHaveAttribute("data-testid", "nimi")
@@ -102,7 +104,7 @@ describe('"Koto Suoritukset" -page', () => {
 
     const errors = await kielitestiErrorPage.getErrorTableBody()
     const ratkaisuehdotusCell = errors.getByText(
-      fixtureData.virheEino.onrLisatietoja,
+      fixtureData.virheEino.onrLisatietoja!,
     )
     await expect(ratkaisuehdotusCell).toHaveAttribute(
       "data-testid",
@@ -163,9 +165,9 @@ describe('"Koto Suoritukset" -page', () => {
         column: "Virheen luontiaika",
         tableColumnIndex: 4,
         order: [
-          toFinnishDateTime("2024-11-22T10:49:49Z"),
-          toFinnishDateTime("2025-05-26T12:34:56Z"),
-          toFinnishDateTime("2042-12-22T22:42:42Z"),
+          toFinnishDateTime("2024-11-22T10:49:49Z", true),
+          toFinnishDateTime("2025-05-26T12:34:56Z", true),
+          toFinnishDateTime("2042-12-22T22:42:42Z", true),
         ],
       },
       {

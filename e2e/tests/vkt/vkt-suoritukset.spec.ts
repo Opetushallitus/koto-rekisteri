@@ -143,7 +143,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     )
     const errorMessage = vktSuorituksenTiedotPage
       .getPageContent()
-      .getByText("KOSKI-siirto on epäonnistunut 24.09.2025 11:51:45Z:")
+      .getByText("KOSKI-siirto on epäonnistunut 24.09.2025 14:51:45:")
     await expect(errorMessage).toBeVisible()
     await expect(
       errorMessage.getByRole("listitem").filter({ hasText: "key" }).last(),
@@ -216,7 +216,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 
     const errorMessage = vktSuorituksenTiedotPage
       .getPageContent()
-      .getByText("KOSKI-siirto on epäonnistunut 24.09.2025 13:12:32Z:")
+      .getByText("KOSKI-siirto on epäonnistunut 24.09.2025 16:12:32:")
     await expect(errorMessage).toBeVisible()
     await expect(
       errorMessage.getByRole("listitem").filter({ hasText: "key" }).last(),
