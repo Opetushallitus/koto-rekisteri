@@ -2,7 +2,9 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
+import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.infoTable
+import fi.oph.kitu.html.json
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.tehtavapankki.TehtavaEntity
 import fi.oph.kitu.tehtavapankki.TehtavaTiedostoEntity
@@ -15,7 +17,9 @@ import kotlinx.html.SECTION
 import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.audio
+import kotlinx.html.b
 import kotlinx.html.code
+import kotlinx.html.details
 import kotlinx.html.div
 import kotlinx.html.figcaption
 import kotlinx.html.figure
@@ -30,8 +34,14 @@ import kotlinx.html.section
 import kotlinx.html.small
 import kotlinx.html.span
 import kotlinx.html.strong
+import kotlinx.html.summary
 import kotlinx.html.ul
 import kotlinx.html.unsafe
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ArrayNode
+import tools.jackson.databind.node.NumericNode
+import tools.jackson.databind.node.ObjectNode
+import tools.jackson.databind.node.StringNode
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -61,7 +71,7 @@ object TehtavapakettiPage {
         }
 
     private fun SECTION.renderHeader(paketti: TehtavapakettiEntity) {
-        h1 { +paketti.nimi }
+        h1 { +paketti.nimi.stripMoodlePrefix() }
         card(compact = true) {
             infoTable(
                 "Lähdejärjestelmä" to { +paketti.lahdejarjestelma },
@@ -84,6 +94,9 @@ object TehtavapakettiPage {
         }
     }
 
+    private fun String.stripMoodlePrefix() =
+        this.replaceFirst(Regex("^\\$\\w+\\$/\\w+/?"), "").takeIf { it.isNotBlank() } ?: "(tyhjä nimi)"
+
     private fun SECTION.renderRyhma(
         ryhma: TehtavaryhmaEntity,
         tehtavat: List<TehtavaEntity>,
@@ -92,7 +105,7 @@ object TehtavapakettiPage {
         assetPrefix: String?,
     ) {
         section {
-            h2 { +"${ryhma.jarjestys}. ${ryhma.nimi}" }
+            h2 { +"${ryhma.jarjestys}. ${ryhma.nimi.stripMoodlePrefix()}" }
             card {
                 if (tehtavat.isEmpty()) {
                     p { +"Ei tehtäviä." }
@@ -121,6 +134,12 @@ object TehtavapakettiPage {
                 strong { +"${tehtava.jarjestys}. ${tehtava.nimi ?: "(nimetön)"}" }
                 small { +moodleTehtavatyyppiNimi(tehtava.tyyppi) }
             }
+            tehtava.lahdeId?.let {
+                p {
+                    b { +"Tehtävän tunniste:" }
+                    +" $it"
+                }
+            }
             if (!tehtava.teksti.isNullOrBlank()) {
                 renderRichText(tehtava.teksti, tehtava.tekstinFormaatti, assetPrefix)
             }
@@ -145,6 +164,8 @@ object TehtavapakettiPage {
             if (visibleTiedostot.isNotEmpty()) {
                 renderTiedostot(visibleTiedostot)
             }
+
+            tehtavaMetadata(tehtava.metadata)
         }
     }
 
@@ -332,3 +353,86 @@ private val moodleTehtavatyyppiNimet =
     )
 
 internal fun moodleTehtavatyyppiNimi(tyyppi: String): String = moodleTehtavatyyppiNimet[tyyppi.lowercase()] ?: tyyppi
+
+private fun FlowContent.tehtavaMetadata(data: JsonNode) {
+    if (!data.isEmpty) {
+        card {
+            cardContent {
+                details {
+                    summary { +"Metadata" }
+                    tehtavaMetadataJson(data)
+                }
+            }
+        }
+    }
+}
+
+private fun FlowContent.tehtavaMetadataJson(node: JsonNode) {
+    when (node) {
+        is ArrayNode -> {
+            ul { node.forEach { li { tehtavaMetadataJson(it) } } }
+        }
+
+        is ObjectNode -> {
+            tehtavaMetadataObject(node)
+        }
+
+        is StringNode -> {
+            +node.stringValue()
+        }
+
+        is NumericNode -> {
+            +node.asString()
+        }
+
+        else -> {
+            +node.toString()
+        }
+    }
+}
+
+private fun FlowContent.tehtavaMetadataObject(obj: ObjectNode) {
+    val props = obj.properties()
+    if (obj.has("text")) {
+        tehtavaMetadataJson(obj.get("text"))
+    } else {
+        ul {
+            props.forEach { prop ->
+                val (key, value) = tehtavaMetadataProperty(prop.key, prop.value)
+                li {
+                    b {
+                        +key
+                        +": "
+                    }
+                    span { tehtavaMetadataJson(value) }
+                }
+            }
+        }
+    }
+}
+
+private fun tehtavaMetadataProperty(
+    key: String,
+    value: JsonNode,
+): Pair<String, JsonNode> =
+    when (key) {
+        "hidden" -> "Piilotettu" to translateBoolean(value)
+        "single" -> "Vain yksi vastaus" to translateBoolean(value)
+        "penalty" -> "Rangaistuskerroin" to value
+        "defaultgrade" -> "Oletuspistemäärä" to value
+        "shuffleanswers" -> "Sekoita vastaukset" to translateBoolean(value)
+        "answernumbering" -> "Vastauksen numeroiminen" to value
+        "correctfeedback" -> "Palaute oikeasta vastauksesta" to value
+        "generalfeedback" -> "Yleispalauta" to value
+        "incorrectfeedback" -> "Palaute väärästä vastauksesta" to value
+        "showstandardinstruction" -> "Näytä vakio-ohje" to value
+        "partiallycorrectfeedback" -> "Palaute osittain oikeasta vastauksesta" to value
+        else -> key to value
+    }
+
+private fun translateBoolean(node: JsonNode) =
+    when (node.toString()) {
+        "0", "false" -> StringNode("Ei")
+        "1", "true" -> StringNode("Kyllä")
+        else -> node
+    }

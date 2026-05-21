@@ -143,7 +143,7 @@ class TehtavapankkiViewControllerTest(
         assertContains(response, "Suomi alkeet")
         assertContains(response, "moodle.koealusta")
         // Both ryhmät from the fixture
-        assertContains(response, "\$course\$/top")
+        assertContains(response, "(tyhjä nimi)")
         assertContains(response, "Suomen kieli A2 - esimerkkitehtävät")
         // At least one tehtävä body content survived
         assertContains(response, "Mikä on Suomen pääkaupunki?")
