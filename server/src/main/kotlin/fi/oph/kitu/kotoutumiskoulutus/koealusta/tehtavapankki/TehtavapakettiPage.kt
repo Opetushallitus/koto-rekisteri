@@ -5,6 +5,7 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.json
+import fi.oph.kitu.html.safeHtml
 import fi.oph.kitu.i18n.finnishDateTimeUTC
 import fi.oph.kitu.tehtavapankki.TehtavaEntity
 import fi.oph.kitu.tehtavapankki.TehtavaTiedostoEntity
@@ -35,6 +36,7 @@ import kotlinx.html.small
 import kotlinx.html.span
 import kotlinx.html.strong
 import kotlinx.html.summary
+import kotlinx.html.title
 import kotlinx.html.ul
 import kotlinx.html.unsafe
 import tools.jackson.databind.JsonNode
@@ -233,15 +235,16 @@ object TehtavapakettiPage {
         format: String?,
         assetPrefix: String?,
     ) {
+        val cleaned = stripPoodllPlaceholders(text)
         if (format == "html") {
             // Lähde on Moodlen virkailijakohtainen export, ei loppukäyttäjäsyöte.
             // S3-asset-viittaukset (@@PLUGINFILE@@/...) kirjoitetaan oikeiksi
             // download-linkeiksi, jotta upotetut <audio>/<img>-elementit toimivat.
             div("tehtava-teksti") {
-                unsafe { +rewriteMoodleAssetUrls(text, assetPrefix) }
+                unsafe { +rewriteMoodleAssetUrls(cleaned, assetPrefix) }
             }
         } else {
-            pre("tehtava-teksti") { +text }
+            pre("tehtava-teksti") { +cleaned }
         }
     }
 
@@ -251,12 +254,14 @@ object TehtavapakettiPage {
         assetPrefix: String?,
     ) {
         if (text.isNullOrBlank()) return
+        val cleaned = stripPoodllPlaceholders(text)
+        if (cleaned.isBlank()) return
         if (format == "html") {
             span {
-                unsafe { +rewriteMoodleAssetUrls(text, assetPrefix) }
+                unsafe { +rewriteMoodleAssetUrls(cleaned, assetPrefix) }
             }
         } else {
-            +text
+            +cleaned
         }
     }
 }
@@ -280,6 +285,14 @@ private fun TehtavapakettiEntity.assetPrefix(): String? = s3Avain?.let { "${it.r
 private fun downloadUrl(s3Avain: String): String = Links.Tehtavapankki.download(s3Avain)
 
 private val pluginFileRegex = Regex("@@PLUGINFILE@@(?:/|%2F)([^\"'<>\\s)]+)")
+
+// Moodlen Poodll-pluginin sisäänkirjoittama placeholder, esim.
+// `{POODLL:type="pw-multiplayeraudio",canplaycount="1",...}`. Korvataan
+// renderoitavasta tekstistä, koska virkailijalle siitä ei ole hyötyä eikä
+// sisältö ole varsinaista kysymystekstiä.
+private val poodllPlaceholderRegex = Regex("\\{POODLL:[^}]*}")
+
+internal fun stripPoodllPlaceholders(text: String): String = poodllPlaceholderRegex.replace(text, "")
 
 /**
  * Korvaa Moodlen `@@PLUGINFILE@@/<filename>`-viittaukset varsinaisilla
@@ -394,12 +407,16 @@ private fun FlowContent.tehtavaMetadataJson(node: JsonNode) {
 private fun FlowContent.tehtavaMetadataObject(obj: ObjectNode) {
     val props = obj.properties()
     if (obj.has("text")) {
-        tehtavaMetadataJson(obj.get("text"))
+        when (obj.get("format").asString()) {
+            "html" -> span { safeHtml(obj.get("text").asString()) }
+            else -> tehtavaMetadataJson(obj.get("text"))
+        }
     } else {
         ul {
             props.forEach { prop ->
                 val (key, value) = tehtavaMetadataProperty(prop.key, prop.value)
                 li {
+                    title = value.toString()
                     b {
                         +key
                         +": "
@@ -423,10 +440,33 @@ private fun tehtavaMetadataProperty(
         "shuffleanswers" -> "Sekoita vastaukset" to translateBoolean(value)
         "answernumbering" -> "Vastauksen numeroiminen" to value
         "correctfeedback" -> "Palaute oikeasta vastauksesta" to value
-        "generalfeedback" -> "Yleispalauta" to value
+        "generalfeedback" -> "Yleispalaute" to value
         "incorrectfeedback" -> "Palaute väärästä vastauksesta" to value
         "showstandardinstruction" -> "Näytä vakio-ohje" to value
         "partiallycorrectfeedback" -> "Palaute osittain oikeasta vastauksesta" to value
+        "responseformat" -> "Vastausmuoto" to value
+        "responsefieldlines" -> "Vastauskentän rivimäärä" to value
+        "responserequired" -> "Vastaus pakollinen" to translateBoolean(value)
+        "responsetemplate" -> "Vastauspohja" to value
+        "maxwordlimit" -> "Sanamäärän enimmäisraja" to value
+        "minwordlimit" -> "Sanamäärän vähimmäisraja" to value
+        "attachments" -> "Liitteiden sallittu määrä" to value
+        "attachmentsrequired" -> "Vaadittavat liitteet" to value
+        "maxbytes" -> "Tiedoston enimmäiskoko" to value
+        "noaudiofilters" -> "Ei äänen suodattimia" to translateBoolean(value)
+        "transcriber" -> "Puheentunnistus / litteroija" to translateBoolean(value)
+        "transcode" -> "Koodaus / muunnos" to translateBoolean(value)
+        "audioskin" -> "Äänisoittimen teema" to value
+        "videoskin" -> "Videosoittimen teema" to value
+        "studentplayer" -> "Opiskelijan soitin" to translateBoolean(value)
+        "teacherplayer" -> "Opettajan soitin" to translateBoolean(value)
+        "timelimit" -> "Aikaraja" to value
+        "expiredays" -> "Vanhentumispäivät" to value
+        "language" -> "Kieli" to value
+        "tags" -> "Tunnisteet" to value
+        "safesave" -> "Turvallinen tallennus" to translateBoolean(value)
+        "usecase" -> "Käyttötarkoitus" to value
+        "graderinfo" -> "Arviointiohjeet" to value
         else -> key to value
     }
 
