@@ -54,10 +54,13 @@ class TehtavapankkiService(
         response.questionbanks.forEachIndexed { index, (courseid, coursename, xml) ->
             val sanitizedCoursename = sanitizeFilename(coursename)
             val filename = "$courseid-$sanitizedCoursename/$now-$index.xml"
-            val stream = xml.byteInputStream(Charsets.UTF_8)
 
-            useS3 { bucketName ->
-                upload(bucketName, filename, stream)
+            xml.use { source ->
+                source.openStream().use { stream ->
+                    useS3 { bucketName ->
+                        upload(bucketName, filename, stream)
+                    }
+                }
             }
         }
     }

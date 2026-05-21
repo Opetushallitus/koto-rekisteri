@@ -54,7 +54,7 @@ class TehtavapankkiServiceTest(
                         TehtavapankkiResponse.Questionbank(
                             courseid = 42,
                             coursename = "Suomi alkeet",
-                            xml = "<questions><q id=\"1\"/></questions>",
+                            xml = StringXmlSource("<questions><q id=\"1\"/></questions>"),
                         ),
                     ),
             )
