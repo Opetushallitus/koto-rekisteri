@@ -84,8 +84,7 @@ object YkiArvioijaPage {
                                     td {
                                         ao.rekisteriintuontiaika
                                             ?.toInstant()
-                                            ?.finnishDateTime()
-                                            ?.let { +it }
+                                            ?.let { finnishDateTime(it) }
                                     }
                                 }
                             }

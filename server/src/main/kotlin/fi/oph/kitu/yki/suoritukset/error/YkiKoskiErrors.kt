@@ -49,7 +49,7 @@ object YkiKoskiErrors {
                                 +(errorIdToSuoritusMap[error.id]?.solkiId?.toString() ?: "#${error.id}")
                             },
                             Column.Aikaleima.withHtml {
-                                +it.timestamp.finnishDateTime()
+                                finnishDateTime(it.timestamp)
                             },
                             Column.Virhe.withHtml { errorMessageDetails(it) },
                             Column.Request.withHtml { error ->

@@ -27,7 +27,9 @@ object YkiSuoritusPage {
         if (suoritus.id != viimeisinSuoritus.id) {
             warning("Tämä on suorituksen vanhempi versio (${suoritus.lastModified.finnishDateTime()}). ") {
                 a(href = Links.Yki.suoritus(viimeisinSuoritus.id!!)) {
-                    +"Näytä uusin versio (${viimeisinSuoritus.lastModified.finnishDateTime()})"
+                    +"Näytä uusin versio ("
+                    finnishDateTime(viimeisinSuoritus.lastModified)
+                    +")"
                 }
             }
         }
@@ -150,7 +152,7 @@ object YkiSuoritusPage {
         infoTable(
             "Solki-tunniste" to { +"${suoritus.solkiId}" },
             "Viimeksi muokattu" to {
-                +suoritus.lastModified.finnishDateTime()
+                finnishDateTime(suoritus.lastModified)
             },
             "KOSKI" to {
                 if (koskiSiirronEstonSyyt?.isNotEmpty() == true) {
@@ -173,10 +175,11 @@ object YkiSuoritusPage {
                 }
             },
             "KIOS" to {
-                +(
+                (
                     suoritus.arviointitilaLahetetty?.let {
-                        "Arviointitila lähetetty ${it.toInstant().finnishDateTime()}"
-                    } ?: "Arviointitilaa ei ole lähetetty"
+                        +"Arviointitila lähetetty "
+                        finnishDateTime(it.toInstant())
+                    } ?: +"Arviointitilaa ei ole lähetetty"
                 )
             },
             suoritus.arviointitilanLahetysvirhe?.let {

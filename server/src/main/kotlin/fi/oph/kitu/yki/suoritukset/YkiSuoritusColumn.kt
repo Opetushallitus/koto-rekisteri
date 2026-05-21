@@ -248,7 +248,7 @@ enum class YkiSuoritusColumn(
         uiHeaderValue = "Versio",
         urlParam = "version",
         getValue = { it.id?.toString().orEmpty() },
-        renderHtml = { +it.lastModified.finnishDateTime() },
+        renderHtml = { finnishDateTime(it.lastModified) },
     ),
 }
 

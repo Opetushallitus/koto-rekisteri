@@ -44,7 +44,9 @@ data class ViewMessageData(
 
         fun from(koskiError: KoskiErrorEntity): ViewMessageData =
             html(ViewMessageType.ERROR) {
-                +"KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTime()}: "
+                +"KOSKI-siirto on epäonnistunut "
+                finnishDateTime(koskiError.timestamp)
+                +": "
 
                 val error = koskiError.errorJson()
                 section {

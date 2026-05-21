@@ -81,7 +81,7 @@ object TehtavapakettiPage {
                     code { +paketti.versioHash.take(12) }
                 },
                 "Ladattu" to {
-                    paketti.luotu?.let { +it.toInstant().finnishDateTime() } ?: +"–"
+                    paketti.luotu?.let { finnishDateTime(it.toInstant()) } ?: +"–"
                 },
                 paketti.s3Avain?.let { key ->
                     "XML-tiedosto" to {
