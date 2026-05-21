@@ -5,7 +5,7 @@ import fi.oph.kitu.html.errorsArticle
 import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.finnishDate
-import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.article
@@ -84,7 +84,7 @@ object YkiArvioijaPage {
                                     td {
                                         ao.rekisteriintuontiaika
                                             ?.toInstant()
-                                            ?.finnishDateTimeUTC()
+                                            ?.finnishDateTime()
                                             ?.let { +it }
                                     }
                                 }

@@ -2,7 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
-import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.a
 import kotlinx.html.h1
@@ -50,7 +50,7 @@ object TehtavapankkiPage {
                             tbody {
                                 tps.forEachIndexed { index, tp ->
                                     tr(classes = if (index > 0) "faded" else null) {
-                                        td { +tp.timestamp.finnishDateTimeUTC() }
+                                        td { +tp.timestamp.finnishDateTime() }
                                         td { +formatBytes(tp.size) }
                                         td {
                                             val pakettiId = pakettiIdsByS3Avain[tp.key]

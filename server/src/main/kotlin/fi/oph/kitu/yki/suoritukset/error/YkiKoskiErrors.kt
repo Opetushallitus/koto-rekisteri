@@ -6,7 +6,7 @@ import fi.oph.kitu.html.errorMessageDetails
 import fi.oph.kitu.html.hiddenErrorsBanner
 import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.table.displayTable
-import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.webmvc.Links
@@ -49,7 +49,7 @@ object YkiKoskiErrors {
                                 +(errorIdToSuoritusMap[error.id]?.solkiId?.toString() ?: "#${error.id}")
                             },
                             Column.Aikaleima.withHtml {
-                                +it.timestamp.finnishDateTimeUTC()
+                                +it.timestamp.finnishDateTime()
                             },
                             Column.Virhe.withHtml { errorMessageDetails(it) },
                             Column.Request.withHtml { error ->

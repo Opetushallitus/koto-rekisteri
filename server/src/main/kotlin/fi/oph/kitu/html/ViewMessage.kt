@@ -1,6 +1,6 @@
 package fi.oph.kitu.html
 
-import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.webmvc.rewriteAttribute
 import jakarta.servlet.http.HttpSession
@@ -44,7 +44,7 @@ data class ViewMessageData(
 
         fun from(koskiError: KoskiErrorEntity): ViewMessageData =
             html(ViewMessageType.ERROR) {
-                +"KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTimeUTC()}: "
+                +"KOSKI-siirto on epäonnistunut ${koskiError.timestamp.finnishDateTime()}: "
 
                 val error = koskiError.errorJson()
                 section {

@@ -8,7 +8,7 @@ import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.json
 import fi.oph.kitu.html.warning
 import fi.oph.kitu.i18n.finnishDate
-import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.webmvc.Links
@@ -25,9 +25,9 @@ object YkiSuoritusPage {
         h2 { +"Yleinen kielitutkinto" }
 
         if (suoritus.id != viimeisinSuoritus.id) {
-            warning("Tämä on suorituksen vanhempi versio (${suoritus.lastModified.finnishDateTimeUTC()}). ") {
+            warning("Tämä on suorituksen vanhempi versio (${suoritus.lastModified.finnishDateTime()}). ") {
                 a(href = Links.Yki.suoritus(viimeisinSuoritus.id!!)) {
-                    +"Näytä uusin versio (${viimeisinSuoritus.lastModified.finnishDateTimeUTC()})"
+                    +"Näytä uusin versio (${viimeisinSuoritus.lastModified.finnishDateTime()})"
                 }
             }
         }
@@ -150,7 +150,7 @@ object YkiSuoritusPage {
         infoTable(
             "Solki-tunniste" to { +"${suoritus.solkiId}" },
             "Viimeksi muokattu" to {
-                +suoritus.lastModified.finnishDateTimeUTC()
+                +suoritus.lastModified.finnishDateTime()
             },
             "KOSKI" to {
                 if (koskiSiirronEstonSyyt?.isNotEmpty() == true) {
@@ -175,7 +175,7 @@ object YkiSuoritusPage {
             "KIOS" to {
                 +(
                     suoritus.arviointitilaLahetetty?.let {
-                        "Arviointitila lähetetty ${it.toInstant().finnishDateTimeUTC()}"
+                        "Arviointitila lähetetty ${it.toInstant().finnishDateTime()}"
                     } ?: "Arviointitilaa ei ole lähetetty"
                 )
             },

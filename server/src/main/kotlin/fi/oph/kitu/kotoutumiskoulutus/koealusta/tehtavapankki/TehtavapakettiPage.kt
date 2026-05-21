@@ -4,9 +4,8 @@ import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.infoTable
-import fi.oph.kitu.html.json
 import fi.oph.kitu.html.safeHtml
-import fi.oph.kitu.i18n.finnishDateTimeUTC
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.tehtavapankki.TehtavaEntity
 import fi.oph.kitu.tehtavapankki.TehtavaTiedostoEntity
 import fi.oph.kitu.tehtavapankki.TehtavaVastausEntity
@@ -82,7 +81,7 @@ object TehtavapakettiPage {
                     code { +paketti.versioHash.take(12) }
                 },
                 "Ladattu" to {
-                    paketti.luotu?.let { +it.toInstant().finnishDateTimeUTC() } ?: +"–"
+                    paketti.luotu?.let { +it.toInstant().finnishDateTime() } ?: +"–"
                 },
                 paketti.s3Avain?.let { key ->
                     "XML-tiedosto" to {
