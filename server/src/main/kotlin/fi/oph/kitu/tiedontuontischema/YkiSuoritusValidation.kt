@@ -4,8 +4,8 @@ import arrow.core.NonEmptyList
 import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.Raise
 import arrow.core.raise.RaiseAccumulate
+import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
-import arrow.core.raise.zipOrAccumulate
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
@@ -28,19 +28,21 @@ class YkiSuoritusValidation(
     @param:Value("\${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
     val todistuskielenSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
+    @OptIn(ExperimentalRaiseAccumulateApi::class)
     override fun Raise<NonEmptyList<Validation.ValidationError>>.validateBeforeEnrichment(
         value: YkiHenkilosuoritus,
     ): YkiHenkilosuoritus =
-        zipOrAccumulate(
-            { validateOrganisaatiot(value) },
-            { validateHetu(value) },
-            { validateArvointitila(value) },
-            { validateTarkistusarviointi(value) },
-            { validateKielikoodi(value) },
-            { validateTodistuskieli(value) },
-            { validateCountryCode(value) },
-            { validateArvosanat(value) },
-        ) { _, _, _, _, _, _, _, modified -> modified }
+        accumulate {
+            accumulating { validateOrganisaatiot(value) }
+            accumulating { validateHetu(value) }
+            accumulating { validateArvointitila(value) }
+            accumulating { validateTarkistusarviointi(value) }
+            accumulating { validateKielikoodi(value) }
+            accumulating { validateTodistuskieli(value) }
+            accumulating { validateCountryCode(value) }
+            val modified by accumulating { validateArvosanat(value) }
+            modified
+        }
 
     override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus {
         val arvosanaKeskeytetty =

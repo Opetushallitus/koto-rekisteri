@@ -27,7 +27,7 @@ muodot:
 - `enrich`
 - `Raise<NonEmptyList<ValidationError>>.validateAfterEnrichment`
 
-Käytä `zipOrAccumulate`- (rinnakkainen virhekeräys) tai `mapOrAccumulate`-funktioita kun tarve on kerätä
+Käytä `accumulate` / `accumulating` -funktioita kun tarve on kerätä
 samaan tietueeseen useampi virheilmoitus; käytä `ensure` ja `ensureNotNull`
 predikaattien käsittelyyn.
 
