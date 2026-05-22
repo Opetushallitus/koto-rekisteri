@@ -1,6 +1,5 @@
 package fi.oph.kitu.tiedontuontischema
 
-import arrow.core.NonEmptyList
 import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.Raise
 import arrow.core.raise.RaiseAccumulate
@@ -13,6 +12,7 @@ import fi.oph.kitu.organisaatiot.OrganisaatioService
 import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
 import fi.oph.kitu.util.intersects
 import fi.oph.kitu.util.validation.Validation
+import fi.oph.kitu.util.validation.ValidationRaise
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
 import org.springframework.beans.factory.annotation.Value
@@ -29,7 +29,7 @@ class YkiSuoritusValidation(
     val todistuskielenSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
     @OptIn(ExperimentalRaiseAccumulateApi::class)
-    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateBeforeEnrichment(value: YkiHenkilosuoritus) {
+    override fun ValidationRaise.validateBeforeEnrichment(value: YkiHenkilosuoritus) {
         accumulate {
             accumulating { validateHetu(value) }
             accumulating { validateArvointitila(value) }
@@ -63,7 +63,7 @@ class YkiSuoritusValidation(
     }
 
     @OptIn(ExperimentalRaiseAccumulateApi::class)
-    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateAfterEnrichment(value: YkiHenkilosuoritus) {
+    override fun ValidationRaise.validateAfterEnrichment(value: YkiHenkilosuoritus) {
         accumulate {
             accumulating { validateOsakokeitaOnAtLeastOne(value) }
             accumulating { validateArvosanat(value) }

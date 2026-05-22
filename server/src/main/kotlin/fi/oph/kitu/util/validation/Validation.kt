@@ -6,19 +6,21 @@ import arrow.core.raise.Raise
 
 typealias ValidationResult<T> = Either<NonEmptyList<Validation.ValidationError>, T>
 
+typealias ValidationRaise = Raise<NonEmptyList<Validation.ValidationError>>
+
 interface Validation<T> {
-    fun Raise<NonEmptyList<ValidationError>>.validateAndEnrich(value: T): T {
+    fun ValidationRaise.validateAndEnrich(value: T): T {
         validateBeforeEnrichment(value)
         val enriched = enrich(value)
         validateAfterEnrichment(enriched)
         return enriched
     }
 
-    fun Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment(value: T) {}
+    fun ValidationRaise.validateBeforeEnrichment(value: T) {}
 
     fun enrich(value: T): T = value
 
-    fun Raise<NonEmptyList<ValidationError>>.validateAfterEnrichment(value: T) {}
+    fun ValidationRaise.validateAfterEnrichment(value: T) {}
 
     data class ValidationException(
         val errors: NonEmptyList<ValidationError>,
