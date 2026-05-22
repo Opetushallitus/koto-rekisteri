@@ -35,7 +35,9 @@ inline fun <reified T : Any> Tracer.recurringStatefulTask(
     Tasks
         .recurring(name, ExtendedSchedules.parse(schedule), T::class.java)
         .initialData(initialData)
-        .executeStateful { taskInstance, _ -> traced(name) { block(taskInstance.data) } }
+        .executeStateful { taskInstance, _ ->
+            traced(name) { block(taskInstance.data ?: initialData) }
+        }
 
 @PublishedApi
 internal inline fun <R> Tracer.traced(
