@@ -31,7 +31,7 @@ class YkiSuoritusValidation(
     @OptIn(ExperimentalRaiseAccumulateApi::class)
     override fun Raise<NonEmptyList<Validation.ValidationError>>.validateBeforeEnrichment(
         value: YkiHenkilosuoritus,
-    ): YkiHenkilosuoritus =
+    ): YkiHenkilosuoritus {
         accumulate {
             accumulating { validateHetu(value) }
             accumulating { validateArvointitila(value) }
@@ -39,22 +39,41 @@ class YkiSuoritusValidation(
             accumulating { validateKielikoodi(value) }
             accumulating { validateTodistuskieli(value) }
             accumulating { validateCountryCode(value) }
-            val modified by accumulating { validateArvosanat(value) }
-            modified
         }
+        return value
+    }
 
     override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus {
         val arvosanaKeskeytetty =
             Koodisto.YkiArvosana.Keskeytetty.koodiarvo
                 .toInt()
 
-        val suoritus: YkiSuoritus = value.suoritus
+        val osatIlmoittautuneista = value.suoritus.osat.filter { it.arvosana != 12 }
+        val arviointitila =
+            if (osatIlmoittautuneista.any { it.arvosana == arvosanaKeskeytetty }) {
+                Arviointitila.KESKEYTETTY
+            } else {
+                value.suoritus.arviointitila
+            }
 
-        return if (suoritus.osat.any { it.arvosana == arvosanaKeskeytetty }) {
-            value.copy(suoritus = suoritus.copy(arviointitila = Arviointitila.KESKEYTETTY))
-        } else {
-            value
+        return value.copy(
+            suoritus =
+                value.suoritus.copy(
+                    osat = osatIlmoittautuneista,
+                    arviointitila = arviointitila,
+                ),
+        )
+    }
+
+    @OptIn(ExperimentalRaiseAccumulateApi::class)
+    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateAfterEnrichment(
+        value: YkiHenkilosuoritus,
+    ): YkiHenkilosuoritus {
+        accumulate {
+            accumulating { validateOsakokeitaOnAtLeastOne(value) }
+            accumulating { validateArvosanat(value) }
         }
+        return value
     }
 
     private fun Raise<Validation.ValidationError>.validateTodistuskieli(s: YkiHenkilosuoritus) {
@@ -168,17 +187,19 @@ class YkiSuoritusValidation(
         }
     }
 
-    private fun Raise<Validation.ValidationError>.validateArvosanat(s: YkiHenkilosuoritus): YkiHenkilosuoritus {
-        val osakokeet = s.suoritus.osat.mapNotNull { if (it.arvosana == 12) null else it }
-        ensure(osakokeet.isNotEmpty()) {
+    private fun Raise<Validation.ValidationError>.validateOsakokeitaOnAtLeastOne(s: YkiHenkilosuoritus) {
+        ensure(s.suoritus.osat.isNotEmpty()) {
             Validation.ValidationError(
                 listOf("suoritus", "osat"),
                 "Suorituksella täytyy olla vähintään yksi osakoe, johon on ilmottauduttu",
             )
         }
+    }
+
+    private fun Raise<Validation.ValidationError>.validateArvosanat(s: YkiHenkilosuoritus) {
         val tutkintotaso = s.suoritus.tutkintotaso
         val validArvosanat = Koodisto.YkiArvosana.validIntegersFor(tutkintotaso)
-        val invalidArvosanat = osakokeet.mapNotNull { if (it.arvosana in validArvosanat) null else it.arvosana }
+        val invalidArvosanat = s.suoritus.osat.mapNotNull { if (it.arvosana in validArvosanat) null else it.arvosana }
         ensure(invalidArvosanat.isEmpty()) {
             Validation.ValidationError(
                 listOf("suoritus", "osat", "arvosana"),
@@ -186,6 +207,5 @@ class YkiSuoritusValidation(
                     invalidArvosanat.joinToString(", "),
             )
         }
-        return s.copy(suoritus = s.suoritus.copy(osat = osakokeet))
     }
 }
