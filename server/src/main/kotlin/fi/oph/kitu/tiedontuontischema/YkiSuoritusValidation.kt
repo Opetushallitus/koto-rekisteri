@@ -1,6 +1,5 @@
 package fi.oph.kitu.tiedontuontischema
 
-import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.Raise
 import arrow.core.raise.RaiseAccumulate
 import arrow.core.raise.accumulate
@@ -28,7 +27,6 @@ class YkiSuoritusValidation(
     @param:Value("\${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
     val todistuskielenSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
-    @OptIn(ExperimentalRaiseAccumulateApi::class)
     override fun ValidationRaise.validateBeforeEnrichment(value: YkiHenkilosuoritus) {
         accumulate {
             accumulating { validateHetu(value) }
@@ -62,7 +60,6 @@ class YkiSuoritusValidation(
         )
     }
 
-    @OptIn(ExperimentalRaiseAccumulateApi::class)
     override fun ValidationRaise.validateAfterEnrichment(value: YkiHenkilosuoritus) {
         accumulate {
             accumulating { validateOsakokeitaOnAtLeastOne(value) }
@@ -89,7 +86,6 @@ class YkiSuoritusValidation(
         }
     }
 
-    @OptIn(ExperimentalRaiseAccumulateApi::class)
     private fun RaiseAccumulate<Validation.ValidationError>.validateArvointitila(s: YkiHenkilosuoritus) {
         if (s.suoritus.arviointitila.arvioitu()) {
             accumulating {
@@ -123,7 +119,6 @@ class YkiSuoritusValidation(
         }
     }
 
-    @OptIn(ExperimentalRaiseAccumulateApi::class)
     private fun RaiseAccumulate<Validation.ValidationError>.validateTarkistusarviointi(s: YkiHenkilosuoritus) {
         accumulating {
             val tarkastettavatOsakokeet =

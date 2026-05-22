@@ -1,6 +1,5 @@
 package fi.oph.kitu.tiedontuontischema
 
-import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
@@ -30,7 +29,6 @@ class VktValidation : Validation<VktHenkilosuoritus> {
             value
         }
 
-    @OptIn(ExperimentalRaiseAccumulateApi::class)
     override fun ValidationRaise.validateAfterEnrichment(value: VktHenkilosuoritus) {
         accumulate {
             accumulating {
