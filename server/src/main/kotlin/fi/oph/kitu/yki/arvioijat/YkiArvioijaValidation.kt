@@ -1,6 +1,5 @@
 package fi.oph.kitu.yki.arvioijat
 
-import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
 import fi.oph.kitu.i18n.finnishDate
@@ -20,7 +19,6 @@ class YkiArvioijaValidation(
     @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
 ) : Validation<YkiArvioija> {
-    @OptIn(ExperimentalRaiseAccumulateApi::class)
     override fun ValidationRaise.validateBeforeEnrichment(value: YkiArvioija) {
         accumulate {
             accumulating { with(onr) { validateOppijanumero(value.arvioijaOid, listOf("arvioijaOid")) } }

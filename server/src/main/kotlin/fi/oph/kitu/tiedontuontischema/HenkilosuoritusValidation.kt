@@ -1,6 +1,5 @@
 package fi.oph.kitu.tiedontuontischema
 
-import arrow.core.raise.ExperimentalRaiseAccumulateApi
 import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
 import fi.oph.kitu.oppijanumero.OppijanumeroValidation
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service
 class HenkilosuoritusValidation(
     val onr: OppijanumeroValidation,
 ) : Validation<Henkilosuoritus<*>> {
-    @OptIn(ExperimentalRaiseAccumulateApi::class)
     override fun ValidationRaise.validateBeforeEnrichment(value: Henkilosuoritus<*>) {
         accumulate {
             accumulating {
