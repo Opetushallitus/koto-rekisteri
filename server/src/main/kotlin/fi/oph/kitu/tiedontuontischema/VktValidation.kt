@@ -1,14 +1,13 @@
 package fi.oph.kitu.tiedontuontischema
 
-import arrow.core.NonEmptyList
 import arrow.core.raise.ExperimentalRaiseAccumulateApi
-import arrow.core.raise.Raise
 import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.validation.Validation
+import fi.oph.kitu.util.validation.ValidationRaise
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -32,7 +31,7 @@ class VktValidation : Validation<VktHenkilosuoritus> {
         }
 
     @OptIn(ExperimentalRaiseAccumulateApi::class)
-    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateAfterEnrichment(value: VktHenkilosuoritus) {
+    override fun ValidationRaise.validateAfterEnrichment(value: VktHenkilosuoritus) {
         accumulate {
             accumulating {
                 ensureNotNull(value.suoritus.suorituspaikkakunta) {

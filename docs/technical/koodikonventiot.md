@@ -23,23 +23,26 @@ Lomake- tai rajapintadataa validoivat luokat toteuttavat oman
 `Validation<T>`-rajapinnan (`util/validation/Validation.kt`) ja ylikirjoittavat
 muodot:
 
-- `Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment`
+- `ValidationRaise.validateBeforeEnrichment`
 - `enrich`
-- `Raise<NonEmptyList<ValidationError>>.validateAfterEnrichment`
+- `ValidationRaise.validateAfterEnrichment`
 
 Vaiheet ajetaan järjestyksessä (`validateAndEnrich`): ensin pre-validointi,
 sitten enrichment, lopuksi post-validointi.
 
+`ValidationRaise` on aliperuste tyypille `Raise<NonEmptyList<ValidationError>>`;
+sen rinnakkainen `ValidationResult<T>` on `Either<NonEmptyList<ValidationError>, T>`.
+Molemmat määritellään samassa `Validation.kt`-tiedostossa.
+
 **Pidä vaiheet erillään:** `validate*`-vaiheet eivät muunna arvoa, vaan
-ainoastaan tarkistavat sen. Aliva­lidaattorit ovat siis muotoa
-`Raise<ValidationError>.(T) -> Unit` ja palauttavat sisääntulon sellaisenaan.
-Kaikki johdantatieto ja muunnokset (mm. default-arvojen täydentäminen,
-välitilojen suodatus) elävät `enrich`-vaiheessa, jolla ei ole `Raise`-vastaanotinta
-eikä se voi epäonnistua. Jos tarkistus riippuu enrichmentin tuottamasta tilasta,
-se kuuluu `validateAfterEnrichment`iin — esimerkkinä `YkiSuoritusValidation`,
-jossa `enrich` suodattaa pois ne osakokeet joihin ei ole tultu paikalle
-(arvosana `12`) ja `validateAfterEnrichment` varmistaa suodatuksen jälkeen
-"vähintään yksi osakoe" -invariantin.
+ainoastaan tarkistavat sen — ne palauttavat `Unit`, jolloin tyyppijärjestelmä
+estää muunnokset. Kaikki johdantatieto ja muunnokset (mm. default-arvojen
+täydentäminen, välitilojen suodatus) elävät `enrich`-vaiheessa, jolla ei ole
+`Raise`-vastaanotinta eikä se voi epäonnistua. Jos tarkistus riippuu enrichmentin
+tuottamasta tilasta, se kuuluu `validateAfterEnrichment`iin — esimerkkinä
+`YkiSuoritusValidation`, jossa `enrich` suodattaa pois ne osakokeet joihin ei
+ole tultu paikalle (arvosana `12`) ja `validateAfterEnrichment` varmistaa
+suodatuksen jälkeen "vähintään yksi osakoe" -invariantin.
 
 Käytä `accumulate` / `accumulating` -funktioita kun tarve on kerätä
 samaan tietueeseen useampi virheilmoitus; käytä `ensure` ja `ensureNotNull`
