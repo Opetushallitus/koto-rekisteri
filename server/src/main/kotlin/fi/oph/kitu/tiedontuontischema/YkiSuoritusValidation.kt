@@ -29,9 +29,7 @@ class YkiSuoritusValidation(
     val todistuskielenSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
     @OptIn(ExperimentalRaiseAccumulateApi::class)
-    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateBeforeEnrichment(
-        value: YkiHenkilosuoritus,
-    ): YkiHenkilosuoritus {
+    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateBeforeEnrichment(value: YkiHenkilosuoritus) {
         accumulate {
             accumulating { validateHetu(value) }
             accumulating { validateArvointitila(value) }
@@ -40,7 +38,6 @@ class YkiSuoritusValidation(
             accumulating { validateTodistuskieli(value) }
             accumulating { validateCountryCode(value) }
         }
-        return value
     }
 
     override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus {
@@ -66,14 +63,11 @@ class YkiSuoritusValidation(
     }
 
     @OptIn(ExperimentalRaiseAccumulateApi::class)
-    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateAfterEnrichment(
-        value: YkiHenkilosuoritus,
-    ): YkiHenkilosuoritus {
+    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateAfterEnrichment(value: YkiHenkilosuoritus) {
         accumulate {
             accumulating { validateOsakokeitaOnAtLeastOne(value) }
             accumulating { validateArvosanat(value) }
         }
-        return value
     }
 
     private fun Raise<Validation.ValidationError>.validateTodistuskieli(s: YkiHenkilosuoritus) {

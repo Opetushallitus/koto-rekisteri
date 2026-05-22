@@ -22,7 +22,7 @@ class YkiArvioijaValidation(
     val hetunSiirronRajapaiva: LocalDate,
 ) : Validation<YkiArvioija> {
     @OptIn(ExperimentalRaiseAccumulateApi::class)
-    override fun Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment(value: YkiArvioija): YkiArvioija {
+    override fun Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment(value: YkiArvioija) {
         accumulate {
             accumulating { with(onr) { validateOppijanumero(value.arvioijaOid, listOf("arvioijaOid")) } }
             accumulating {
@@ -34,7 +34,6 @@ class YkiArvioijaValidation(
                 }
             }
         }
-        return value
     }
 
     private fun lainmuutos2026Voimassa(): Boolean = timeService.today() >= hetunSiirronRajapaiva

@@ -15,9 +15,7 @@ class HenkilosuoritusValidation(
     val onr: OppijanumeroValidation,
 ) : Validation<Henkilosuoritus<*>> {
     @OptIn(ExperimentalRaiseAccumulateApi::class)
-    override fun Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment(
-        value: Henkilosuoritus<*>,
-    ): Henkilosuoritus<*> {
+    override fun Raise<NonEmptyList<ValidationError>>.validateBeforeEnrichment(value: Henkilosuoritus<*>) {
         accumulate {
             accumulating {
                 ensure(value.suoritus.internalId == null) {
@@ -45,6 +43,5 @@ class HenkilosuoritusValidation(
             }
             accumulating { with(onr) { validateOppijanumero(value.henkilo.oid, listOf("henkilo", "oid")) } }
         }
-        return value
     }
 }

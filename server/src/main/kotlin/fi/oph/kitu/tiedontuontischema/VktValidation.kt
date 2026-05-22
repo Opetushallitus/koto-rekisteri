@@ -32,9 +32,7 @@ class VktValidation : Validation<VktHenkilosuoritus> {
         }
 
     @OptIn(ExperimentalRaiseAccumulateApi::class)
-    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateAfterEnrichment(
-        value: VktHenkilosuoritus,
-    ): VktHenkilosuoritus {
+    override fun Raise<NonEmptyList<Validation.ValidationError>>.validateAfterEnrichment(value: VktHenkilosuoritus) {
         accumulate {
             accumulating {
                 ensureNotNull(value.suoritus.suorituspaikkakunta) {
@@ -61,6 +59,5 @@ class VktValidation : Validation<VktHenkilosuoritus> {
                 }
             }
         }
-        return value
     }
 }
