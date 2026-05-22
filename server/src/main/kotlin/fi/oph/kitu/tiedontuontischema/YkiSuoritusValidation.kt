@@ -33,7 +33,6 @@ class YkiSuoritusValidation(
         value: YkiHenkilosuoritus,
     ): YkiHenkilosuoritus =
         accumulate {
-            accumulating { validateOrganisaatiot(value) }
             accumulating { validateHetu(value) }
             accumulating { validateArvointitila(value) }
             accumulating { validateTarkistusarviointi(value) }
@@ -75,49 +74,6 @@ class YkiSuoritusValidation(
                     "${hetunSiirronRajapaiva.finnishDate()} tai myöhemmin",
             )
         }
-    }
-
-    private fun Raise<Validation.ValidationError>.validateOrganisaatiot(s: YkiHenkilosuoritus) {
-        val suoritus = s.suoritus
-        val sallitutOrganisaatiotyypit =
-            listOf(
-                Koodisto.Organisaatiotyyppi.Oppilaitos,
-                Koodisto.Organisaatiotyyppi.Toimipiste,
-            )
-
-        val oid = suoritus.jarjestaja.oid
-
-        organisaatiot.getOrganisaatio(oid).fold(
-            ifRight = { org ->
-                val tyypit = org.tyypit.mapNotNull { Koodisto.Organisaatiotyyppi.of(it) }
-                ensure(tyypit.intersects(sallitutOrganisaatiotyypit)) {
-                    Validation.ValidationError(
-                        listOf("suoritus", "jarjestaja", "oid"),
-                        "Organisaatio $oid on väärän tyyppinen: ${
-                            tyypit.joinToString(", ") { it.name }
-                        }. Sallitut tyypit: ${
-                            sallitutOrganisaatiotyypit.joinToString(", ") { it.name }
-                        }.",
-                    )
-                }
-            },
-            ifLeft = { exception ->
-                raise(
-                    Validation.ValidationError(
-                        listOf("suoritus", "jarjestaja", "oid"),
-                        when (exception) {
-                            is OrganisaatiopalveluException.NotFoundException -> {
-                                "Organisaatiota ${suoritus.jarjestaja.oid} ei löydy organisaatiopalvelusta"
-                            }
-
-                            else -> {
-                                "Organisaation validointi epäonnistui"
-                            }
-                        },
-                    ),
-                )
-            },
-        )
     }
 
     @OptIn(ExperimentalRaiseAccumulateApi::class)

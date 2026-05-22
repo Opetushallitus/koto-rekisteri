@@ -82,31 +82,6 @@ class ValidationServiceTest(
     }
 
     @Test
-    fun `YKI-suoritusta ei voi siirtaa koulutustoimijatasoisella organisaatiolla`() {
-        val suoritus =
-            validiYkiSuoritus.modifySuoritus {
-                it.copy(
-                    jarjestaja =
-                        YkiJarjestaja(
-                            oid = Oid.parse("1.2.246.562.10.346830761110").getOrThrow(),
-                            nimi = "Helsingin kaupunki",
-                        ),
-                )
-            }
-
-        val result = validation.validateAndEnrich(suoritus)
-
-        assertEquals(
-            fail(
-                listOf("suoritus", "jarjestaja", "oid"),
-                "Organisaatio 1.2.246.562.10.346830761110 on väärän tyyppinen: Koulutustoimija, " +
-                    "VarhaiskasvatuksenJarjestaja, Kunta. Sallitut tyypit: Oppilaitos, Toimipiste.",
-            ),
-            result,
-        )
-    }
-
-    @Test
     fun `Henkilotunnusta ei voi siirtaa vuoden 2026 alusta alkaen`() {
         val suoritus =
             validiYkiSuoritus.modifySuoritus {
