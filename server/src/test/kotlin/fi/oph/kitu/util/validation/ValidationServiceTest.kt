@@ -262,4 +262,28 @@ class ValidationServiceTest(
         val result = validation.validateAndEnrich(suoritus)
         assertEquals(suoritus.right(), result)
     }
+
+    @Test
+    fun `YKI-suorituksen maakoodi muunnetaan automaattisesti isoiksi kirjaimiksi`() {
+        val suoritus =
+            validiYkiSuoritus.copy(
+                henkilo =
+                    validiYkiSuoritus.henkilo.copy(
+                        hetu = null,
+                        maa = "fin",
+                    ),
+                suoritus =
+                    validiYkiSuoritus.suoritus.copy(
+                        tutkintopaiva = LocalDate.of(2026, 4, 1),
+                        arviointipaiva = LocalDate.of(2026, 4, 2),
+                        todistuskieli = Todistuskieli.FIN,
+                    ),
+            )
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            suoritus.copy(henkilo = suoritus.henkilo.copy(maa = "FIN")).right(),
+            result,
+        )
+    }
 }

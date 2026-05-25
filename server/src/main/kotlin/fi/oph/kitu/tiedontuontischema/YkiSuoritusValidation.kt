@@ -4,12 +4,9 @@ import arrow.core.raise.Raise
 import arrow.core.raise.RaiseAccumulate
 import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
-import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.organisaatiot.OrganisaatioService
-import fi.oph.kitu.organisaatiot.OrganisaatiopalveluException
-import fi.oph.kitu.util.intersects
 import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.util.validation.ValidationRaise
 import fi.oph.kitu.yki.Arviointitila
@@ -21,7 +18,6 @@ import java.time.LocalDate
 @Service
 class YkiSuoritusValidation(
     val organisaatiot: OrganisaatioService,
-    val localizationService: LocalizationService,
     @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
     @param:Value("\${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
@@ -34,7 +30,6 @@ class YkiSuoritusValidation(
             accumulating { validateTarkistusarviointi(value) }
             accumulating { validateKielikoodi(value) }
             accumulating { validateTodistuskieli(value) }
-            accumulating { validateCountryCode(value) }
         }
     }
 
@@ -156,22 +151,6 @@ class YkiSuoritusValidation(
                 "Käytöstä poistuneita kielikoodeja (${Tutkintokieli.Companion.legacyEntries.joinToString(
                     ", ",
                 )}) ei voi käyttää",
-            )
-        }
-    }
-
-    private fun Raise<Validation.ValidationError>.validateCountryCode(s: YkiHenkilosuoritus) {
-        if (s.henkilo.maa == null) return
-        val koodisto =
-            localizationService
-                .translationBuilder()
-                .koodistot("maatjavaltiot1")
-                .build()
-        val maatJaValtiot = koodisto.koodistot["maatjavaltiot1"] ?: return
-        ensure(maatJaValtiot[s.henkilo.maa] != null) {
-            Validation.ValidationError(
-                listOf("henkilo", "maa"),
-                "Virheellinen maakoodi",
             )
         }
     }
