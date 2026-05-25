@@ -1,5 +1,6 @@
 package fi.oph.kitu.webmvc
 
+import fi.oph.kitu.csvparsing.writeExcelCsvPrelude
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableCsvRenderer
 import org.springframework.http.HttpHeaders
@@ -18,6 +19,7 @@ inline fun <reified C : Enum<C>, T> csvAttachmentResponse(
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=$filename")
         .body(
             StreamingResponseBody { output ->
+                output.writeExcelCsvPrelude()
                 DisplayTableCsvRenderer.renderCsv<C, _>(
                     output = output,
                     data = data,
