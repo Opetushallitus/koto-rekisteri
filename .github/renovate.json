@@ -1,10 +1,8 @@
 {
   "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
   "lockFileMaintenance": { "enabled": true },
+  "minimumReleaseAge": "3 days",
   "packageRules": [
-    {
-      "minimumReleaseAge": "3 days"
-    },
     {
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
