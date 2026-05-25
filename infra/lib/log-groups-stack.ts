@@ -190,13 +190,18 @@ export class LogGroupsStack extends Stack {
       .addMetricFilter("PostYkiSuoritus", {
         metricName: "PostYkiSuoritus",
         metricNamespace: "Kitu",
+        // CloudWatch Logs metric filter patterns cannot reference JSON keys that
+        // contain periods (no bracket/quote escape works), so attributes like
+        // http.route / http.request.method are unreachable. The AWS X-Ray
+        // LOCAL_ROOT bridge emits the same SERVER span with flat, dot-free keys
+        // — uri holds the matched route relative to the servlet context path.
         filterPattern: FilterPattern.all(
           FilterPattern.stringValue(
-            "$.attributes.http.route",
+            "$.attributes.uri",
             "=",
-            "/kielitutkinnot/yki/api/suoritus",
+            "/yki/api/suoritus",
           ),
-          FilterPattern.stringValue("$.attributes.http.method", "=", "POST"),
+          FilterPattern.stringValue("$.attributes.method", "=", "POST"),
           FilterPattern.stringValue("$.status.code", "!=", "ERROR"),
         ),
       })
