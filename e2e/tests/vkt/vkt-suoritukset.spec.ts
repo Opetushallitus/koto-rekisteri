@@ -17,6 +17,9 @@ import VktSuorituksetPage from "../../models/vkt/VktSuorituksetPage"
 
 const fs = node_fs.promises
 
+const stripExcelCsvPrelude = (csv: string): string =>
+  csv.replace(/^\uFEFF/, "").replace(/^sep=.\r?\n/, "")
+
 describe("Valtionkielitutkinnon suoritukset page", () => {
   beforeEach(async ({ db, vktSuoritus, config }) => {
     await db.withEmptyDatabase()
@@ -547,7 +550,7 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     ])
     const path = await download.path()
     expect(path).not.toBeNull()
-    return fs.readFile(path!, "utf8")
+    return stripExcelCsvPrelude(await fs.readFile(path!, "utf8"))
   }
 
   function parseCsv(csv: string): Record<string, string>[] {
@@ -630,7 +633,7 @@ describe("Valtionkielitutkinnon suoritukset csv download filtering", () => {
     ])
     const path = await download.path()
     expect(path).not.toBeNull()
-    return fs.readFile(path!, "utf8")
+    return stripExcelCsvPrelude(await fs.readFile(path!, "utf8"))
   }
 
   const csvRowCount = (csv: string) =>

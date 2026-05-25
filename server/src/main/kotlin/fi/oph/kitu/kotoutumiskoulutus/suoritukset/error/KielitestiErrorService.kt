@@ -2,7 +2,6 @@ package fi.oph.kitu.kotoutumiskoulutus.suoritukset.error
 
 import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.csvparsing.CsvParser
-import fi.oph.kitu.csvparsing.writeExcelCsvPrelude
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.findAllSorted
 import fi.oph.kitu.observability.setAttribute
@@ -42,7 +41,6 @@ class KielitestiErrorService(
                 val errors = getErrors(orderBy, orderByDirection)
                 span.setAttribute("dataCount", errors.count())
                 val outputStream = ByteArrayOutputStream()
-                outputStream.writeExcelCsvPrelude()
                 csvParser
                     .withUseHeader(true)
                     .streamDataAsCsv(outputStream, errors)
