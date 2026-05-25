@@ -1,5 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
+import fi.oph.kitu.csvparsing.writeExcelCsvPrelude
 import fi.oph.kitu.i18n.isoDate
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuorituksetParams
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusColumn
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 
 @RestController
@@ -37,18 +39,16 @@ class KielitestiApiController(
         )
 
     @GetMapping("/suoritukset/virheet", produces = ["text/csv"])
-    fun getErrorsAsCsv(): ResponseEntity<Resource> =
-        ResponseEntity
+    fun getErrorsAsCsv(): ResponseEntity<Resource> {
+        val body =
+            ByteArrayOutputStream().apply {
+                writeExcelCsvPrelude()
+                errorService.generateErrorsCsvStream().writeTo(this)
+            }
+        return ResponseEntity
             .ok()
             .contentType(MediaType.parseMediaType("text/csv"))
             .header("Content-Disposition", "attachment; filename=koto-virheet-${LocalDate.now().isoDate()}.csv")
-            .body(
-                InputStreamResource(
-                    ByteArrayInputStream(
-                        errorService
-                            .generateErrorsCsvStream()
-                            .toByteArray(),
-                    ),
-                ),
-            )
+            .body(InputStreamResource(ByteArrayInputStream(body.toByteArray())))
+    }
 }
