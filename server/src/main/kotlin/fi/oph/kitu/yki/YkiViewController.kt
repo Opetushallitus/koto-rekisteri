@@ -135,12 +135,17 @@ class YkiViewController(
     }
 
     @GetMapping("/poikkeamat", produces = ["text/html"])
-    fun poikkeamatView(): ResponseEntity<String> =
-        ResponseEntity.ok(
-            YkiSuoritusPoikkeamaPage.render(
-                poikkeamat = ykiSuoritusPoikkeamaRepository.findAll().sortedByDescending { it.havaittu },
-            ),
+    fun poikkeamatView(): ResponseEntity<String> {
+        val poikkeamat = ykiSuoritusPoikkeamaRepository.findAll().sortedByDescending { it.havaittu }
+        val solkiIdToSuoritusId =
+            ykiSuoritusRepository
+                .findLatestBySolkiIds(poikkeamat.map { it.solkiId }.distinct())
+                .mapNotNull { s -> s.id?.let { s.solkiId to it } }
+                .toMap()
+        return ResponseEntity.ok(
+            YkiSuoritusPoikkeamaPage.render(poikkeamat, solkiIdToSuoritusId),
         )
+    }
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
     fun suorituksetVirheetView(

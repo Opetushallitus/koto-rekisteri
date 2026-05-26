@@ -21,7 +21,10 @@ import kotlinx.html.thead
 import kotlinx.html.tr
 
 object YkiSuoritusPoikkeamaPage {
-    fun render(poikkeamat: List<YkiSuoritusPoikkeama>): String =
+    fun render(
+        poikkeamat: List<YkiSuoritusPoikkeama>,
+        solkiIdToSuoritusId: Map<Int, Int>,
+    ): String =
         Page.renderHtml(wideContent = true) {
             h1 { +"Yleinen kielitutkinto" }
             h2 { +"Suoritusten poikkeamat" }
@@ -58,7 +61,14 @@ object YkiSuoritusPoikkeamaPage {
                             poikkeamat.forEach { p ->
                                 tr {
                                     attributes["data-kentta"] = p.kentta
-                                    td { a(href = Links.Yki.suoritus(p.solkiId)) { +p.solkiId.toString() } }
+                                    td {
+                                        val internalId = solkiIdToSuoritusId[p.solkiId]
+                                        if (internalId != null) {
+                                            a(href = Links.Yki.suoritus(internalId)) { +p.solkiId.toString() }
+                                        } else {
+                                            +p.solkiId.toString()
+                                        }
+                                    }
                                     td { +p.kentta }
                                     td { +p.arvoKitussa }
                                     td { +p.arvoSolkissa }
