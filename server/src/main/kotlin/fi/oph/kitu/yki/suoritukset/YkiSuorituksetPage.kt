@@ -9,6 +9,7 @@ import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.koskiErrorsArticle
 import fi.oph.kitu.html.pagination
+import fi.oph.kitu.html.poikkeamatArticle
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.dateFilter
@@ -47,6 +48,7 @@ object YkiSuorituksetPage {
         pagination: Pagination,
         errorsCount: Long,
         koskiErrorsCount: Long,
+        poikkeamatCount: Long,
         csrfToken: CsrfToken?,
     ): String =
         Page.renderHtml(
@@ -58,6 +60,7 @@ object YkiSuorituksetPage {
             h2 { +"Suoritukset" }
             errorsArticle(errorsCount, Links.Yki.suorituksetVirheet())
             koskiErrorsArticle(koskiErrorsCount, Links.Yki.koskiVirheet())
+            poikkeamatArticle(poikkeamatCount, Links.Yki.poikkeamat())
 
             section(classes = "grid center-vertically") {
                 formPost(action = "", csrfToken = csrfToken) {

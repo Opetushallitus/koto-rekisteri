@@ -30,6 +30,9 @@ class YkiSuoritusPoikkeamaRepository(
             "SELECT * FROM yki_suoritus_poikkeama ORDER BY solki_id, kentta",
             YkiSuoritusPoikkeama.fromRow,
         )
+
+    fun count(): Long =
+        jdbcTemplate.queryForObject("SELECT COUNT(*) FROM yki_suoritus_poikkeama", Long::class.java) ?: 0L
 }
 
 data class YkiSuoritusPoikkeama(
