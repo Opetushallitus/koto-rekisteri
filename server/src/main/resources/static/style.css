@@ -326,3 +326,12 @@ ul.vaihtoehdot code.fraction {
   flex: 0 0 4em;
   text-align: right;
 }
+
+.kentta-filters {
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.kentta-filter[aria-pressed="false"] {
+  opacity: 0.5;
+}
