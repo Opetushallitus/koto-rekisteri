@@ -183,15 +183,15 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
 
     const csvContent = await fs.readFile(path!, "utf8")
     let headers =
-      "Oppijanumero,Sukunimi,Etunimet,Kutsumanimi,Sähköposti,Kurssin ID,Kurssin nimi,Testikieli,Oppilaitos OID,Oppilaitos,Opettajan sähköposti,Suoritusaika,Luetun ymmärtäminen,Kuullun ymmärtäminen,Puhe,Kirjoittaminen"
+      "Oppijanumero;Sukunimi;Etunimet;Kutsumanimi;Sähköposti;Kurssin ID;Kurssin nimi;Testikieli;Oppilaitos OID;Oppilaitos;Opettajan sähköposti;Suoritusaika;Luetun ymmärtäminen;Kuullun ymmärtäminen;Puhe;Kirjoittaminen"
     let anniina =
-      "1.2.246.562.24.24941612410,Torvinen-Testi,Anniina Testi,Anniina,devnull-12@oph.fi,33,Integrationstestning,SWE,1.2.3.4.5.7,1.2.3.4.5.7,opettaja@testi.oph.fi,2025-01-22T10:30:27Z,A1,B1,Yli B1,A2\n"
+      "1.2.246.562.24.24941612410;Torvinen-Testi;Anniina Testi;Anniina;devnull-12@oph.fi;33;Integrationstestning;SWE;1.2.3.4.5.7;1.2.3.4.5.7;opettaja@testi.oph.fi;2025-01-22T10:30:27Z;A1;B1;Yli B1;A2\n"
     let eino =
-      "1.2.246.562.24.67409348034,Välimaa-Testi,Eino Testi,Eino,devnull-10@oph.fi,32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
+      "1.2.246.562.24.67409348034;Välimaa-Testi;Eino Testi;Eino;devnull-10@oph.fi;32;Integraatio testaus;FIN;1.2.3.4.5.6;1.2.3.4.5.6;opettaja@testi.oph.fi;2024-11-22T10:49:49Z;A1;B1;Alle A1;B1\n"
     let magdalena =
-      "1.2.246.562.24.33342764709,Sallinen-Testi,Magdalena Testi,Magdalena,devnull-14@oph.fi,33,Integrationstestning,SWE,1.2.3.4.5.7,1.2.3.4.5.7,opettaja@testi.oph.fi,2025-01-22T10:30:27Z,A1,B1,Yli B1,A2\n"
+      "1.2.246.562.24.33342764709;Sallinen-Testi;Magdalena Testi;Magdalena;devnull-14@oph.fi;33;Integrationstestning;SWE;1.2.3.4.5.7;1.2.3.4.5.7;opettaja@testi.oph.fi;2025-01-22T10:30:27Z;A1;B1;Yli B1;A2\n"
     let toni =
-      "1.2.246.562.24.16014275446,Laasonen-Testi,Toni Testi,Toni,devnull-6@oph.fi,32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,opettaja@testi.oph.fi,2024-11-24T11:36:43Z,A1,B1,Alle A1,B1\n"
+      "1.2.246.562.24.16014275446;Laasonen-Testi;Toni Testi;Toni;devnull-6@oph.fi;32;Integraatio testaus;FIN;1.2.3.4.5.6;1.2.3.4.5.6;opettaja@testi.oph.fi;2024-11-24T11:36:43Z;A1;B1;Alle A1;B1\n"
 
     expect(csvContent).toContain(headers)
     expect(csvContent).toContain(anniina)
@@ -282,15 +282,15 @@ describe("Kotoutumiskoulutuksen kielitesti -page", () => {
 
       const csvContent = await fs.readFile(path!, "utf8")
       let headers =
-        "Kurssin ID,Kurssin nimi,Testikieli,Oppilaitos OID,Oppilaitos,Suoritusaika,Luetun ymmärtäminen,Kuullun ymmärtäminen,Puhe,Kirjoittaminen"
+        "Kurssin ID;Kurssin nimi;Testikieli;Oppilaitos OID;Oppilaitos;Suoritusaika;Luetun ymmärtäminen;Kuullun ymmärtäminen;Puhe;Kirjoittaminen"
       let anniina =
-        "\n33,Integrationstestning,SWE,1.2.3.4.5.7,1.2.3.4.5.7,2025-01-22T10:30:27Z,A1,B1,Yli B1,A2\n"
+        "\n33;Integrationstestning;SWE;1.2.3.4.5.7;1.2.3.4.5.7;2025-01-22T10:30:27Z;A1;B1;Yli B1;A2\n"
       let eino =
-        "\n32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,2024-11-22T10:49:49Z,A1,B1,Alle A1,B1\n"
+        "\n32;Integraatio testaus;FIN;1.2.3.4.5.6;1.2.3.4.5.6;2024-11-22T10:49:49Z;A1;B1;Alle A1;B1\n"
       let magdalena =
-        "\n33,Integrationstestning,SWE,1.2.3.4.5.7,1.2.3.4.5.7,2025-01-22T10:30:27Z,A1,B1,Yli B1,A2\n"
+        "\n33;Integrationstestning;SWE;1.2.3.4.5.7;1.2.3.4.5.7;2025-01-22T10:30:27Z;A1;B1;Yli B1;A2\n"
       let toni =
-        "\n32,Integraatio testaus,FIN,1.2.3.4.5.6,1.2.3.4.5.6,2024-11-24T11:36:43Z,A1,B1,Alle A1,B1\n"
+        "\n32;Integraatio testaus;FIN;1.2.3.4.5.6;1.2.3.4.5.6;2024-11-24T11:36:43Z;A1;B1;Alle A1;B1\n"
 
       expect(csvContent).toContain(headers)
       expect(csvContent).toContain(anniina)

@@ -81,9 +81,9 @@ class KielitestiCsvTest(
         val actualCsv = kielitestiErrorService.generateErrorsCsvStream()
         val expectedCsv =
             """
-            virheenLuontiaika,suorittajanOid,hetu,nimi,etunimet,sukunimi,kutsumanimi,schoolOid,teacherEmail,viesti,lisatietoja,onrLisatietoja,virheellinenKentta,virheellinenArvo
-            2024-11-22T10:49:49Z,,010180-9026,"Ranja Testi Öhman-Testi",Ranja,"Testi Öhman-Testi",Ranja,"1.2.246.562.10.14893989377",testi@example.com,"Kirjoitusvirhe nimessä tai henkilötunnuksessa","{""request"": {""etunimet"": ""Ranja"", ""hetu"": ""010180-9026"", ""kutsumanimi"": ""Ranja"", ""sukunimi"": ""Testi Öhman-Testi""}}","etunimet: Ranja Testi, kutsumanimi: Ranja, sukunimi: Öhman-Testi",,
-            2024-11-22T10:49:49Z,"1.2.246.562.24.67409348034",010180-9026,"Eino Testi Välimaa-Testi","Eino Test",Välimaa-Testi,Eino,"1.2.246.562.10.14893989377",testi@example.com,"Unexpectedly missing quiz grade ""puhuminen"" on course ""Testaus"" for user ""1"".",,,puhuminen,"virheellinen arvosana"
+            virheenLuontiaika;suorittajanOid;hetu;nimi;etunimet;sukunimi;kutsumanimi;schoolOid;teacherEmail;viesti;lisatietoja;onrLisatietoja;virheellinenKentta;virheellinenArvo
+            "2024-11-22T10:49:49Z";;"010180-9026";"Ranja Testi Öhman-Testi";Ranja;"Testi Öhman-Testi";Ranja;"1.2.246.562.10.14893989377";"testi@example.com";"Kirjoitusvirhe nimessä tai henkilötunnuksessa";"{""request"": {""etunimet"": ""Ranja"", ""hetu"": ""010180-9026"", ""kutsumanimi"": ""Ranja"", ""sukunimi"": ""Testi Öhman-Testi""}}";"etunimet: Ranja Testi, kutsumanimi: Ranja, sukunimi: Öhman-Testi";;
+            "2024-11-22T10:49:49Z";"1.2.246.562.24.67409348034";"010180-9026";"Eino Testi Välimaa-Testi";"Eino Test";"Välimaa-Testi";Eino;"1.2.246.562.10.14893989377";"testi@example.com";"Unexpectedly missing quiz grade ""puhuminen"" on course ""Testaus"" for user ""1"".";;;puhuminen;"virheellinen arvosana"
 
             """.trimIndent()
 
