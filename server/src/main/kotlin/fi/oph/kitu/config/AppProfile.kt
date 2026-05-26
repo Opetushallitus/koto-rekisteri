@@ -7,7 +7,7 @@ enum class AppProfile(
 ) {
     Prod("prod"),
     QA("qa"),
-    Untuva("dev"),
+    Untuva("untuva"),
     Test("test"),
     E2ETest("e2e"),
     Local("local"),
