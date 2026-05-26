@@ -17,6 +17,7 @@ import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
@@ -43,6 +44,7 @@ import kotlin.test.assertEquals
 @Import(DBContainerConfiguration::class)
 class YkiApiControllerTest(
     @param:Autowired val timeService: TestTimeService,
+    @param:Autowired val arvioijaRepository: YkiArvioijaRepository,
 ) {
     @Autowired
     private lateinit var context: WebApplicationContext
@@ -716,6 +718,45 @@ class YkiApiControllerTest(
             postArvioija(arvioija) {
                 isOk()
             }
+        }
+    }
+
+    @Test
+    fun `Yki-arvioijan tallennuksessa puuttuva jatkorekisterointi defaultoituu falseksi`() {
+        arvioijaRepository.deleteAll()
+        timeService.runWithFixedClock(LocalDate.of(2025, 10, 20).toInstant()) {
+            val arvioijaOid = "1.2.246.562.24.59267607404"
+            val rawJson =
+                """
+                {
+                  "arvioijaOid": "$arvioijaOid",
+                  "henkilotunnus": "160800A172A",
+                  "sukunimi": "Kivinen-Testi",
+                  "etunimet": "Petro Testi",
+                  "sahkopostiosoite": "devnull-2@oph.fi",
+                  "katuosoite": "Haltin vanha autiotupa",
+                  "postinumero": "99490",
+                  "postitoimipaikka": "Enontekiö",
+                  "ensimmainenRekisterointipaiva": "2005-01-21",
+                  "arviointioikeudet": [
+                    {
+                      "kieli": "fin",
+                      "tasot": ["PT", "KT", "YT"],
+                      "tila": "AKTIIVINEN",
+                      "kaudenAlkupaiva": "2005-12-07",
+                      "kaudenPaattymispaiva": "2020-12-07"
+                    }
+                  ]
+                }
+                """.trimIndent()
+
+            post("/yki/api/arvioija", rawJson) { isOk() }
+
+            val saved =
+                arvioijaRepository
+                    .findAll()
+                    .single { it.arvioijaOid.toString() == arvioijaOid }
+            assertEquals(false, saved.arviointioikeudet.single().jatkorekisterointi)
         }
     }
 

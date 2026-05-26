@@ -53,5 +53,5 @@ data class YkiArviointioikeus(
     val tila: YkiArvioijaTila,
     val kaudenAlkupaiva: LocalDate?,
     val kaudenPaattymispaiva: LocalDate?,
-    val jatkorekisterointi: Boolean,
+    val jatkorekisterointi: Boolean = false,
 )
