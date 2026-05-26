@@ -281,7 +281,7 @@
         <dependency>
             <groupId>com.github.kagkarlsson</groupId>
             <artifactId>db-scheduler-spring-boot-4-starter</artifactId>
-            <version>16.9.0</version>
+            <version>16.10.0</version>
         </dependency>
         <!-- Transitive dep of the vendored io.rocketbase.extension fork under
              src/main/kotlin/io/rocketbase/extension. See README.md there. -->
