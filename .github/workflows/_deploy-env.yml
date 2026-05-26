@@ -76,7 +76,11 @@ jobs:
         if: inputs.action == 'diff'
         run: |
           npx cdk ${{ inputs.action }} --require-approval=never --exclusively '${{ inputs.environment }}/${{ inputs.stacks }}' --progress=events &> >(tee cdk.log)
-          cdk-notifier --log-file cdk.log --vcs github --repo kielitutkintorekisteri --owner ${{ github.repository_owner }} --pull-request-id ${{ github.event.number }} --template extendedWithResources --tag-id ${{ inputs.environment }} --suppress-hash-changes --suppress-hash-changes-regex '[+-].*?[a-fA-F0-9]{40}'
+          if [ -n "${{ github.event.number }}" ]; then
+            cdk-notifier --log-file cdk.log --vcs github --repo kielitutkintorekisteri --owner ${{ github.repository_owner }} --pull-request-id ${{ github.event.number }} --template extendedWithResources --tag-id ${{ inputs.environment }} --suppress-hash-changes --suppress-hash-changes-regex '[+-].*?[a-fA-F0-9]{40}'
+          else
+            echo "::notice::Skipping cdk-notifier PR comment — no PR associated with this run (workflow_dispatch). Diff output is in the job log above."
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: deploy
