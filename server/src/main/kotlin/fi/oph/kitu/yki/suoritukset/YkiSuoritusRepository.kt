@@ -222,6 +222,14 @@ class YkiSuoritusRepository(
     }
 
     @WithSpan
+    fun findAllSolkiIds(): List<Int> =
+        jdbcTemplate
+            .queryForList(
+                "SELECT DISTINCT solki_id FROM yki_suoritus",
+                Int::class.java,
+            ).filterNotNull()
+
+    @WithSpan
     fun findLatestBySolkiIds(ids: List<Int>): List<YkiSuoritusEntity> =
         if (ids.isEmpty()) {
             emptyList()
