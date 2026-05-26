@@ -31,3 +31,17 @@ fun FlowContent.koskiErrorsArticle(
         }
     }
 }
+
+fun FlowContent.poikkeamatArticle(
+    count: Long,
+    link: String,
+) {
+    if (count > 0) {
+        error("Solkin ja Kitu:n välillä on $count poikkeamaa.") {
+            br()
+            a(link) {
+                +"Katso poikkeamat"
+            }
+        }
+    }
+}

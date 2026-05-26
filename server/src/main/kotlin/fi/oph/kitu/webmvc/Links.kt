@@ -74,6 +74,8 @@ object Links {
         fun suorituksetVirheet(): String =
             linkTo(methodOn(YkiViewController::class.java).suorituksetVirheetView()).toString()
 
+        fun poikkeamat(): String = linkTo(methodOn(YkiViewController::class.java).poikkeamatView()).toString()
+
         fun arvioijatVirheet(): String =
             linkTo(methodOn(YkiViewController::class.java).arvioijatVirheetView()).toString()
 

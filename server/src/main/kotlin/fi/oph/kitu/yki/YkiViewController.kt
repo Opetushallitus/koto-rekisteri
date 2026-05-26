@@ -21,6 +21,8 @@ import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPage
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaPage
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
@@ -49,6 +51,7 @@ class YkiViewController(
     private val arvioijaErrorService: YkiArvioijaErrorService,
     private val koskiErrorService: KoskiErrorService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
+    private val ykiSuoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val koskiYkiRequestMapper: KoskiYkiRequestMapper,
     @param:Qualifier("koskiObjectMapper")
     private val koskiObjectMapper: JsonMapper,
@@ -125,10 +128,19 @@ class YkiViewController(
                     ),
                 errorsCount = suoritusErrorService.countErrors(),
                 koskiErrorsCount = koskiErrorService.countByEntity("yki", false).toLong(),
+                poikkeamatCount = ykiSuoritusPoikkeamaRepository.count(),
                 csrfToken = csrfToken,
             ),
         )
     }
+
+    @GetMapping("/poikkeamat", produces = ["text/html"])
+    fun poikkeamatView(): ResponseEntity<String> =
+        ResponseEntity.ok(
+            YkiSuoritusPoikkeamaPage.render(
+                poikkeamat = ykiSuoritusPoikkeamaRepository.findAll().sortedByDescending { it.havaittu },
+            ),
+        )
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
     fun suorituksetVirheetView(
