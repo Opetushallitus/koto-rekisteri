@@ -20,7 +20,7 @@ import kotlin.reflect.full.findAnnotation
 class CsvParser(
     final val tracer: Tracer,
 ) {
-    val columnSeparator: Char = ','
+    var columnSeparator: Char = ','
     val lineSeparator: String = "\n"
     var useHeader: Boolean = false
     val quoteChar: Char = '"'
@@ -28,6 +28,13 @@ class CsvParser(
     fun withUseHeader(value: Boolean): CsvParser =
         CsvParser(tracer).also {
             it.useHeader = value
+            it.columnSeparator = columnSeparator
+        }
+
+    fun withColumnSeparator(value: Char): CsvParser =
+        CsvParser(tracer).also {
+            it.useHeader = useHeader
+            it.columnSeparator = value
         }
 
     init {

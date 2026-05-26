@@ -123,7 +123,7 @@ describe('"YKI Suoritukset" -page', () => {
         "Todistuskieli",
         "Tila lähetetty",
         "Opiskeluoikeus-OID",
-      ].join(","),
+      ].join(";"),
     ) // Validate headers
   })
 
@@ -158,7 +158,7 @@ describe('"YKI Suoritukset" -page', () => {
         "Yleisarvosana",
         "Todistuskieli",
         "Tila lähetetty",
-      ].join(","),
+      ].join(";"),
     ) // Validate headers
   })
 

@@ -43,6 +43,7 @@ class KielitestiErrorService(
                 val outputStream = ByteArrayOutputStream()
                 csvParser
                     .withUseHeader(true)
+                    .withColumnSeparator(';')
                     .streamDataAsCsv(outputStream, errors)
 
                 return@use outputStream

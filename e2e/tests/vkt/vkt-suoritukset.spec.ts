@@ -17,8 +17,7 @@ import VktSuorituksetPage from "../../models/vkt/VktSuorituksetPage"
 
 const fs = node_fs.promises
 
-const stripExcelCsvPrelude = (csv: string): string =>
-  csv.replace(/^\uFEFF/, "").replace(/^sep=.\r?\n/, "")
+const stripExcelCsvPrelude = (csv: string): string => csv.replace(/^\uFEFF/, "")
 
 describe("Valtionkielitutkinnon suoritukset page", () => {
   beforeEach(async ({ db, vktSuoritus, config }) => {
@@ -557,9 +556,9 @@ describe("Valtionkielitutkinnon suoritukset csv download", () => {
     const [headerLine, ...rest] = csv
       .split("\n")
       .filter((line) => line.length > 0)
-    const headers = headerLine.split(",")
+    const headers = headerLine.split(";")
     return rest.map((line) => {
-      const cols = line.split(",")
+      const cols = line.split(";")
       return Object.fromEntries(headers.map((h, i) => [h, cols[i] ?? ""]))
     })
   }
@@ -714,7 +713,7 @@ describe("Valtionkielitutkinnon suoritukset csv download filtering", () => {
     const headerBefore = (await downloadCsv(page, vktSuorituksetPage)).split(
       "\n",
     )[0]
-    const columnsBefore = headerBefore.split(",").length
+    const columnsBefore = headerBefore.split(";").length
 
     const dialog = await vktSuorituksetPage.openFilterDialog()
     await dialog.hideHenkilotiedot(true)
@@ -723,7 +722,7 @@ describe("Valtionkielitutkinnon suoritukset csv download filtering", () => {
     const headerAfter = (await downloadCsv(page, vktSuorituksetPage)).split(
       "\n",
     )[0]
-    const columnsAfter = headerAfter.split(",").length
+    const columnsAfter = headerAfter.split(";").length
 
     expect(columnsAfter).toBeLessThan(columnsBefore)
   })

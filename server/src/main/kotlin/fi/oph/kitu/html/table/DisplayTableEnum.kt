@@ -95,7 +95,7 @@ inline fun <reified T : Enum<T>> hasTag(
     }
 
 object DisplayTableCsvRenderer {
-    const val SEPARATOR = ","
+    const val SEPARATOR = ";"
 
     inline fun <reified E : Enum<E>, T> renderCsv(
         output: OutputStream,
