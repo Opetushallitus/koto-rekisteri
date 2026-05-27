@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.csvDownloadButton
 import fi.oph.kitu.html.javascript
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.finnishDate
@@ -33,6 +34,8 @@ object YkiSuoritusPoikkeamaPage {
             if (poikkeamat.isEmpty()) {
                 p { +"Ei havaittuja poikkeamia." }
             } else {
+                p { csvDownloadButton(Links.Yki.poikkeamatCsv()) }
+
                 val kentat = poikkeamat.map { it.kentta }.distinct().sorted()
 
                 div(classes = "kentta-filters") {
