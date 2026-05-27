@@ -45,6 +45,8 @@ data class YkiSuoritusPoikkeama(
     override fun toString(): String = "$solkiId.$kentta: Solki '$arvoSolkissa', Kitu '$arvoKitussa'"
 
     companion object {
+        const val SUORITUS_PUUTTUU_KITUSTA = "(suoritus puuttuu Kitusta)"
+
         val fromRow: RowMapper<YkiSuoritusPoikkeama> =
             RowMapper { rs, _ ->
                 YkiSuoritusPoikkeama(

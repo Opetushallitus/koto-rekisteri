@@ -16,6 +16,7 @@ import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
@@ -23,6 +24,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
@@ -34,11 +36,16 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.http.MediaType
+import org.springframework.test.web.client.MockRestServiceServer
+import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
+import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
 import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
@@ -57,12 +64,56 @@ class YkiServiceTests(
     @param:Autowired private val ilmoittautumisjarjestelmaService: IlmoittautumisjarjestelmaService,
     @param:Autowired private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     @param:Autowired private val ykiService: YkiService,
+    @param:Autowired private val suoritusMapper: YkiSuoritusMappingService,
+    @param:Autowired private val arvioijaMapper: YkiArvioijaMappingService,
 ) {
     @BeforeEach
     fun nukeDb() {
         ykiArvioijaRepository.deleteAll()
         ykiSuoritusRepository.deleteAll()
+        suoritusPoikkeamaRepository.deleteAll()
         inMemorySpanExporter.reset()
+    }
+
+    @Test
+    fun `checkYkiAnomalies tallentaa puuttuva-suoritus -poikkeaman kun Solkin suoritusta ei ole Kitussa`() {
+        val solkiId = 999999
+        val csv =
+            """"1.2.246.562.24.20281155246","010180-9026","N","Puuttuja","Pekka Tapio","FIN","Mäkitie 1","00100","Helsinki","pekka@example.fi",$solkiId,2024-06-01T10:00:00Z,2024-06-15,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto",,,,,,,,,,0,0,,"""
+
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        val from = Instant.parse("2024-01-01T00:00:00Z")
+        mockServer
+            .expect(requestTo("suoritukset?m=2024-01-01T00:00:00Z"))
+            .andRespond(withSuccess(csv, MediaType.parseMediaType("text/csv")))
+
+        val service =
+            YkiService(
+                mockRestClientBuilder.build(),
+                ykiSuoritusRepository,
+                ykiSuoritusErrorService,
+                suoritusMapper,
+                ykiArvioijaRepository,
+                arvioijaMapper,
+                ykiArvioijaErrorService,
+                ilmoittautumisjarjestelmaService,
+                suoritusPoikkeamaRepository,
+                auditLogger,
+                parser,
+            )
+
+        service.checkYkiAnomalies(from)
+
+        val poikkeamat = suoritusPoikkeamaRepository.findAll()
+        assertEquals(1, poikkeamat.size)
+        val poikkeama = poikkeamat.first()
+        assertEquals(solkiId, poikkeama.solkiId)
+        assertEquals(YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA, poikkeama.kentta)
+        assertEquals("", poikkeama.arvoKitussa)
+        assertTrue(poikkeama.arvoSolkissa.contains("Puuttuja"))
+        assertTrue(poikkeama.arvoSolkissa.contains("Pekka Tapio"))
+        assertTrue(poikkeama.arvoSolkissa.contains("YT"))
+        assertTrue(poikkeama.arvoSolkissa.contains("2024-06-15"))
     }
 
     @Test
