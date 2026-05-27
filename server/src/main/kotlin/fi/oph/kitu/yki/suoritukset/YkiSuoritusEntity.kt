@@ -25,10 +25,12 @@ import java.time.LocalDate
 @Table(name = "yki_suoritus")
 data class YkiSuoritusEntity(
     @Id
-    @IgnoreForEquality("SOLKI")
+    @IgnoreForEquality("SOLKICSV")
     @IgnoreForEquality("DB")
     val id: Int?,
     val suorittajanOID: Oid,
+    // Hetuja ei ole enää tallennettu Kielitutkintorekisteriin 1.1.2026 alkaen
+    @IgnoreForEquality("SOLKICSV")
     val hetu: String?,
     val sukupuoli: Sukupuoli,
     val sukunimi: String,
@@ -37,15 +39,19 @@ data class YkiSuoritusEntity(
     val katuosoite: String,
     val postinumero: String,
     val postitoimipaikka: String,
+    // Maatieto ei tule CSV-rajapinnan kautta
+    @IgnoreForEquality("SOLKICSV")
     val maa: String?, // ISO 3166-1 mukainen kolmikirjaiminen lyhenne
     val email: String?,
     val solkiId: Int,
-    @IgnoreForEquality("SOLKI")
+    @IgnoreForEquality("SOLKICSV")
     @IgnoreForEquality("DB")
     val lastModified: Instant,
     val tutkintopaiva: LocalDate,
     val tutkintokieli: Tutkintokieli,
     val tutkintotaso: Tutkintotaso,
+    // Todistuskieli ei tule CSV-rajapinnan kautta
+    @IgnoreForEquality("SOLKICSV")
     val todistuskieli: Todistuskieli?,
     val jarjestajanTunnusOid: Oid,
     val jarjestajanNimi: String,
@@ -63,14 +69,14 @@ data class YkiSuoritusEntity(
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
     val tarkistusarviointiHyvaksyttyPvm: LocalDate?,
-    @IgnoreForEquality("SOLKI")
+    @IgnoreForEquality("SOLKICSV")
     val koskiOpiskeluoikeus: Oid?,
-    @IgnoreForEquality("SOLKI")
+    @IgnoreForEquality("SOLKICSV")
     val koskiSiirtoKasitelty: Boolean?,
     val arviointitila: Arviointitila,
-    @IgnoreForEquality("SOLKI")
+    @IgnoreForEquality("SOLKICSV")
     val arviointitilaLahetetty: Timestamp?,
-    @IgnoreForEquality("SOLKI")
+    @IgnoreForEquality("SOLKICSV")
     val arviointitilanLahetysvirhe: String?,
     val lahdejarjestelmanTunnus: String = "yki.$solkiId",
 ) {
