@@ -136,7 +136,7 @@ class YkiViewController(
 
     @GetMapping("/poikkeamat", produces = ["text/html"])
     fun poikkeamatView(): ResponseEntity<String> {
-        val poikkeamat = ykiSuoritusPoikkeamaRepository.findAll().sortedByDescending { it.havaittu }
+        val poikkeamat = ykiSuoritusPoikkeamaRepository.findAll()
         val solkiIdToSuoritusId =
             ykiSuoritusRepository
                 .findLatestBySolkiIds(poikkeamat.map { it.solkiId }.distinct())
