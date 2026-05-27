@@ -42,7 +42,7 @@ object YkiSuoritusPoikkeamaPage {
                     attributes["role"] = "group"
                     kentat.forEach { kentta ->
                         button(type = ButtonType.button, classes = "kentta-filter") {
-                            attributes["aria-pressed"] = "true"
+                            attributes["aria-pressed"] = "false"
                             attributes["data-kentta-filter"] = kentta
                             testId("kentta-filter-$kentta")
                             +kentta
@@ -99,8 +99,9 @@ object YkiSuoritusPoikkeamaPage {
                                 .filter(b => b.getAttribute('aria-pressed') === 'true')
                                 .map(b => b.dataset.kenttaFilter)
                         );
+                        const filtering = active.size > 0;
                         rows.forEach(r => {
-                            r.hidden = !active.has(r.dataset.kentta);
+                            r.hidden = filtering && !active.has(r.dataset.kentta);
                         });
                     }
                     buttons.forEach(b => b.addEventListener('click', () => {
