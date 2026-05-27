@@ -3,6 +3,7 @@ package fi.oph.kitu.yki.suoritukset
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.javascript
 import fi.oph.kitu.html.testId
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.ButtonType
@@ -51,6 +52,9 @@ object YkiSuoritusPoikkeamaPage {
                         thead {
                             tr {
                                 th { +"Solki-ID" }
+                                th { +"Tutkintopäivä" }
+                                th { +"Kieli" }
+                                th { +"Taso" }
                                 th { +"Kenttä" }
                                 th { +"Arvo Kitussa" }
                                 th { +"Arvo Solkissa" }
@@ -69,6 +73,9 @@ object YkiSuoritusPoikkeamaPage {
                                             +p.solkiId.toString()
                                         }
                                     }
+                                    td { p.tutkintopaiva?.let { finnishDate(it) } }
+                                    td { p.tutkintokieli?.let { +it.name } }
+                                    td { p.tutkintotaso?.let { +it.name } }
                                     td { +p.kentta }
                                     td { +p.arvoKitussa }
                                     td { +p.arvoSolkissa }

@@ -111,6 +111,9 @@ class YkiService(
                                 "${entity.sukunimi} ${entity.etunimet}, " +
                                     "${entity.tutkintotaso}, ${entity.tutkintopaiva}",
                             havaittu = time,
+                            tutkintopaiva = entity.tutkintopaiva,
+                            tutkintokieli = entity.tutkintokieli,
+                            tutkintotaso = entity.tutkintotaso,
                         ),
                     )
                 } else {
@@ -124,6 +127,9 @@ class YkiService(
                                 arvoKitussa = value.second.toString(),
                                 arvoSolkissa = value.first.toString(),
                                 havaittu = time,
+                                tutkintopaiva = existing.tutkintopaiva,
+                                tutkintokieli = existing.tutkintokieli,
+                                tutkintotaso = existing.tutkintotaso,
                             )
                         }
                 }

@@ -1,5 +1,6 @@
 package fi.oph.kitu.dev.mockdata
 
+import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
 import java.time.Instant
@@ -36,6 +37,8 @@ private val poikkeamaTemplates =
         PoikkeamaTemplate("tarkistusarvioinninKasittelyPvm", "2024-04-01", "2024-04-02"),
     )
 
+private val tutkintokielet = Tutkintokieli.entries.filterNot { it.isLegacy() }
+
 fun generateRandomYkiSuoritusPoikkeama(
     solkiId: Int,
     random: Random = Random,
@@ -48,6 +51,9 @@ fun generateRandomYkiSuoritusPoikkeama(
         arvoKitussa = template.arvoKitussa,
         arvoSolkissa = template.arvoSolkissa,
         havaittu = havaittu,
+        tutkintopaiva = LocalDate.now().minusDays(random.nextLong(0, 365)),
+        tutkintokieli = tutkintokielet.random(random),
+        tutkintotaso = Tutkintotaso.entries.random(random),
     )
 }
 
@@ -61,6 +67,7 @@ fun generateRandomMissingYkiSuoritusPoikkeama(
     val sukunimi = sukunimet.random(random)
     val etunimi = etunimet.random(random)
     val taso = Tutkintotaso.entries.random(random)
+    val kieli = tutkintokielet.random(random)
     val tutkintopaiva = LocalDate.now().minusDays(random.nextLong(0, 365))
     val havaittu = Instant.now().minus(random.nextLong(0, 30), ChronoUnit.DAYS)
     return YkiSuoritusPoikkeama(
@@ -69,5 +76,8 @@ fun generateRandomMissingYkiSuoritusPoikkeama(
         arvoKitussa = "",
         arvoSolkissa = "$sukunimi $etunimi, $taso, $tutkintopaiva",
         havaittu = havaittu,
+        tutkintopaiva = tutkintopaiva,
+        tutkintokieli = kieli,
+        tutkintotaso = taso,
     )
 }

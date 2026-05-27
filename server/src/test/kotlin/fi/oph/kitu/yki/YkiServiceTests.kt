@@ -114,6 +114,9 @@ class YkiServiceTests(
         assertTrue(poikkeama.arvoSolkissa.contains("Pekka Tapio"))
         assertTrue(poikkeama.arvoSolkissa.contains("YT"))
         assertTrue(poikkeama.arvoSolkissa.contains("2024-06-15"))
+        assertEquals(LocalDate.of(2024, 6, 15), poikkeama.tutkintopaiva)
+        assertEquals(Tutkintokieli.FIN, poikkeama.tutkintokieli)
+        assertEquals(Tutkintotaso.YT, poikkeama.tutkintotaso)
     }
 
     @Test
