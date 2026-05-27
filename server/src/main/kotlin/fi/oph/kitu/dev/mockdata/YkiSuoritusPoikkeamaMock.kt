@@ -1,7 +1,9 @@
 package fi.oph.kitu.dev.mockdata
 
+import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
 import java.time.Instant
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.random.Random
 
@@ -49,6 +51,27 @@ fun generateRandomYkiSuoritusPoikkeama(
         kentta = template.kentta,
         arvoKitussa = template.arvoKitussa,
         arvoSolkissa = template.arvoSolkissa,
+        havaittu = havaittu,
+    )
+}
+
+private val sukunimet = listOf("Mäkinen", "Virtanen", "Korhonen", "Nieminen", "Mäkelä", "Hämäläinen")
+private val etunimet = listOf("Anna", "Matti", "Liisa", "Jukka", "Sofia", "Mikael", "Aino", "Eero")
+
+fun generateRandomMissingYkiSuoritusPoikkeama(
+    solkiId: Int,
+    random: Random = Random,
+): YkiSuoritusPoikkeama {
+    val sukunimi = sukunimet.random(random)
+    val etunimi = etunimet.random(random)
+    val taso = Tutkintotaso.entries.random(random)
+    val tutkintopaiva = LocalDate.now().minusDays(random.nextLong(0, 365))
+    val havaittu = Instant.now().minus(random.nextLong(0, 30), ChronoUnit.DAYS)
+    return YkiSuoritusPoikkeama(
+        solkiId = solkiId,
+        kentta = YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA,
+        arvoKitussa = "",
+        arvoSolkissa = "$sukunimi $etunimi, $taso, $tutkintopaiva",
         havaittu = havaittu,
     )
 }

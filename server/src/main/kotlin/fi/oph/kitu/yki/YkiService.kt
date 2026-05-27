@@ -95,17 +95,29 @@ class YkiService(
 
         suoritusPoikkeamaRepository.deleteAll()
         entities.forEach { entity ->
-            suoritusRepository
-                .findLatestBySolkiIds(listOf(entity.solkiId))
-                .firstOrNull()
-                ?.let { existing ->
-                    val diff =
-                        entity
-                            .findDifferentProperties(existing, "SOLKI")
-                            .ignoreEmptyValues()
-                    val time = Instant.now()
-                    diff.forEach { (key, value) ->
-                        val poikkeama =
+            val existing =
+                suoritusRepository
+                    .findLatestBySolkiIds(listOf(entity.solkiId))
+                    .firstOrNull()
+            val time = Instant.now()
+            val poikkeamat =
+                if (existing == null) {
+                    listOf(
+                        YkiSuoritusPoikkeama(
+                            solkiId = entity.solkiId,
+                            kentta = YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA,
+                            arvoKitussa = "",
+                            arvoSolkissa =
+                                "${entity.sukunimi} ${entity.etunimet}, " +
+                                    "${entity.tutkintotaso}, ${entity.tutkintopaiva}",
+                            havaittu = time,
+                        ),
+                    )
+                } else {
+                    entity
+                        .findDifferentProperties(existing, "SOLKI")
+                        .ignoreEmptyValues()
+                        .map { (key, value) ->
                             YkiSuoritusPoikkeama(
                                 solkiId = entity.solkiId,
                                 kentta = key,
@@ -113,12 +125,14 @@ class YkiService(
                                 arvoSolkissa = value.second.toString(),
                                 havaittu = time,
                             )
-                        suoritusPoikkeamaRepository.save(poikkeama)
-                        logger.error(
-                            "Havaittu poikkeama yki-suorituksen tiedoissa verratuuna Solkin tietoihin: $poikkeama",
-                        )
-                    }
+                        }
                 }
+            poikkeamat.forEach { poikkeama ->
+                suoritusPoikkeamaRepository.save(poikkeama)
+                logger.error(
+                    "Havaittu poikkeama yki-suorituksen tiedoissa verratuuna Solkin tietoihin: $poikkeama",
+                )
+            }
         }
 
         if (hasErrors) {

@@ -4,6 +4,7 @@ import fi.oph.kitu.config.isProduction
 import fi.oph.kitu.config.isQA
 import fi.oph.kitu.dev.mockdata.VktSuoritusMockGenerator
 import fi.oph.kitu.dev.mockdata.generateRandomKielitestiSuoritus
+import fi.oph.kitu.dev.mockdata.generateRandomMissingYkiSuoritusPoikkeama
 import fi.oph.kitu.dev.mockdata.generateRandomYkiArvioijaEntity
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusErrorEntity
@@ -98,7 +99,15 @@ class CreateMockDataController(
         val solkiIds = suoritusRepository.findAllSolkiIds()
         if (solkiIds.isEmpty()) return emptyList()
         return List(count ?: 10) {
-            generateRandomYkiSuoritusPoikkeama(solkiId = solkiIds.random())
+            // Joka neljäs poikkeama on "suoritus puuttuu Kitusta" -tyyppinen,
+            // jolloin käytetään synteettistä solki_id:tä jota ei ole Kitussa.
+            if (kotlin.random.Random.nextInt(4) == 0) {
+                generateRandomMissingYkiSuoritusPoikkeama(
+                    solkiId = kotlin.random.Random.nextInt(9_000_000, 9_999_999),
+                )
+            } else {
+                generateRandomYkiSuoritusPoikkeama(solkiId = solkiIds.random())
+            }
         }.onEach { suoritusPoikkeamaRepository.save(it) }
     }
 
