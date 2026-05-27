@@ -115,7 +115,7 @@ class YkiService(
                     )
                 } else {
                     entity
-                        .findDifferentProperties(existing, "SOLKI")
+                        .findDifferentProperties(existing, "SOLKICSV")
                         .ignoreEmptyValues()
                         .map { (key, value) ->
                             YkiSuoritusPoikkeama(
