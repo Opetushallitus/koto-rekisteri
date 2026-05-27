@@ -121,8 +121,8 @@ class YkiService(
                             YkiSuoritusPoikkeama(
                                 solkiId = entity.solkiId,
                                 kentta = key,
-                                arvoKitussa = value.first.toString(),
-                                arvoSolkissa = value.second.toString(),
+                                arvoKitussa = value.second.toString(),
+                                arvoSolkissa = value.first.toString(),
                                 havaittu = time,
                             )
                         }
