@@ -90,6 +90,8 @@ object Links {
         ): String = linkTo(methodOn(YkiViewController::class.java).hideKoskiVirheet(suoritusId, hidden)).toString()
 
         fun suorituksetCsv(): String = linkTo(methodOn(YkiApiController::class.java).getSuorituksetAsCsv()).toString()
+
+        fun poikkeamatCsv(): String = linkTo(methodOn(YkiApiController::class.java).getPoikkeamatAsCsv()).toString()
     }
 
     object Kielitesti {

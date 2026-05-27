@@ -12,6 +12,8 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaColumn
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
@@ -40,6 +42,7 @@ class YkiApiController(
     private val validationService: ValidationService,
     private val ykiArvioijaRepository: YkiArvioijaRepository,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
+    private val ykiSuoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
 ) {
     @GetMapping("/suoritukset", "/suoritus", produces = ["text/csv"])
@@ -50,6 +53,13 @@ class YkiApiController(
             filename = params.csvFileName(),
             data = service.allSuoritukset(params.versionHistory, params.toFilter()),
             excludeTags = params.excludeTags(),
+        )
+
+    @GetMapping("/poikkeamat", produces = ["text/csv"])
+    fun getPoikkeamatAsCsv(): ResponseEntity<StreamingResponseBody> =
+        csvAttachmentResponse<YkiSuoritusPoikkeamaColumn, _>(
+            filename = "yki-poikkeamat.csv",
+            data = ykiSuoritusPoikkeamaRepository.findAll(),
         )
 
     @PostMapping("/suoritus")
