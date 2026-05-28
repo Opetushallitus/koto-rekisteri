@@ -34,7 +34,7 @@ class TehtavapankkiService(
     private val tracer: Tracer,
     private val parser: TehtavapankkiXmlParser,
 ) {
-    @Value("\${kitu.kotoutumiskoulutus.tehtavapankki.bucket:#{null}}")
+    @Value($$"${kitu.kotoutumiskoulutus.tehtavapankki.bucket:#{null}}")
     var bucket: String? = null
 
     /**

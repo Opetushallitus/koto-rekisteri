@@ -26,10 +26,10 @@ class KoealustaService(
     private val auditLogger: AuditLogger,
     private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
 ) {
-    @Value("\${kitu.kotoutumiskoulutus.koealusta.wstoken}")
+    @Value($$"${kitu.kotoutumiskoulutus.koealusta.wstoken}")
     lateinit var koealustaToken: String
 
-    @Value("\${kitu.kotoutumiskoulutus.koealusta.baseurl}")
+    @Value($$"${kitu.kotoutumiskoulutus.koealusta.baseurl}")
     lateinit var koealustaBaseUrl: String
 
     private val restClient by lazy {

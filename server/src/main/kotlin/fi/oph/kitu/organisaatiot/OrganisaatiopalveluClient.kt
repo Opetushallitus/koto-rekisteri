@@ -20,7 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder
 class OrganisaatiopalveluClient(
     @param:Qualifier("oauth2RestClient")
     val restClient: RestClient,
-    @param:Value("\${kitu.organisaatiopalvelu.service.url}")
+    @param:Value($$"${kitu.organisaatiopalvelu.service.url}")
     val serviceUrl: String,
 ) {
     @WithSpan

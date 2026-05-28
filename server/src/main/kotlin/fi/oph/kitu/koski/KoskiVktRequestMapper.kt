@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class KoskiVktRequestMapper {
-    @Value("\${kitu.oids.valtionhallinnonkielitutkinnot}")
+    @Value($$"${kitu.oids.valtionhallinnonkielitutkinnot}")
     lateinit var vktOrganisaatioOid: String
 
     @WithSpan

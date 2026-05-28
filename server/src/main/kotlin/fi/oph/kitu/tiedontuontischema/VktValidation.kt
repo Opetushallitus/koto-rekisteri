@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class VktValidation : Validation<VktHenkilosuoritus> {
-    @Value("\${kitu.oids.palvelukayttaja}")
+    @Value($$"${kitu.oids.palvelukayttaja}")
     lateinit var palvelukayttajaOid: String
 
     override fun enrich(value: VktHenkilosuoritus): VktHenkilosuoritus =

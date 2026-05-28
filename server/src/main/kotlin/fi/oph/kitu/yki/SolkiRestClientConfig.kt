@@ -10,13 +10,13 @@ import java.util.Base64
 class SolkiRestClientConfig(
     private val restClientBuilder: RestClient.Builder,
 ) {
-    @Value("\${kitu.yki.baseUrl}")
+    @Value($$"${kitu.yki.baseUrl}")
     private lateinit var baseUrl: String
 
-    @Value("\${kitu.yki.username}")
+    @Value($$"${kitu.yki.username}")
     private lateinit var user: String
 
-    @Value("\${kitu.yki.password}")
+    @Value($$"${kitu.yki.password}")
     private lateinit var password: String
 
     @Bean("solkiRestClient")

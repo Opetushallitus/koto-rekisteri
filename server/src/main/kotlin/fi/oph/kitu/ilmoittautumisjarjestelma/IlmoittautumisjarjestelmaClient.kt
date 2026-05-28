@@ -28,7 +28,7 @@ interface IlmoittautumisjarjestelmaClient {
 class IlmoittautumisjarjestelmaClientImpl(
     @param:Qualifier("oauth2RestClient")
     val restClient: RestClient,
-    @param:Value("\${kitu.ilmoittautumispalvelu.service.url}")
+    @param:Value($$"${kitu.ilmoittautumispalvelu.service.url}")
     val serviceUrl: String,
 ) : IlmoittautumisjarjestelmaClient {
     @WithSpan

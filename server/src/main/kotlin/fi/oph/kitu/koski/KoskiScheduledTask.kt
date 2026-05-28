@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration
 class KoskiYkiScheduledTask(
     private val tracer: Tracer,
 ) {
-    @Value("\${kitu.koski.scheduling.yki.schedule}")
+    @Value($$"${kitu.koski.scheduling.yki.schedule}")
     lateinit var ykiSchedule: String
 
     @Bean
@@ -32,7 +32,7 @@ class KoskiYkiScheduledTask(
 class KoskiVktScheduledTask(
     private val tracer: Tracer,
 ) {
-    @Value("\${kitu.koski.scheduling.vkt.schedule}")
+    @Value($$"${kitu.koski.scheduling.vkt.schedule}")
     lateinit var vktSchedule: String
 
     @Bean

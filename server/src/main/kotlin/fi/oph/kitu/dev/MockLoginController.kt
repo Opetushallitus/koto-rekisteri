@@ -72,7 +72,7 @@ class MockLoginController(
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val securityContextRepository = HttpSessionSecurityContextRepository()
 
-    @Value("\${kitu.appUrl}")
+    @Value($$"${kitu.appUrl}")
     private lateinit var rootUrl: String
 
     @PostConstruct

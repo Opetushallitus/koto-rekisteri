@@ -13,13 +13,13 @@ import java.util.Base64
 class KoskiRestClientConfig(
     private val restClientBuilder: RestClient.Builder,
 ) {
-    @Value("\${kitu.koski.baseUrl}")
+    @Value($$"${kitu.koski.baseUrl}")
     private lateinit var koskiBaseUrl: String
 
-    @Value("\${kitu.koski.username:\${kitu.palvelukayttaja.username}}")
+    @Value($$"${kitu.koski.username:\${kitu.palvelukayttaja.username}}")
     private lateinit var user: String
 
-    @Value("\${kitu.koski.password:\${kitu.palvelukayttaja.password}}")
+    @Value($$"${kitu.koski.password:\${kitu.palvelukayttaja.password}}")
     private lateinit var password: String
 
     @Bean("koskiRestClient")

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration
 class IlmoittautumisjarjestelmaScheduledTasks(
     private val tracer: Tracer,
 ) {
-    @Value("\${kitu.yki.scheduling.retrySendingFailedArviointitilat.schedule}")
+    @Value($$"${kitu.yki.scheduling.retrySendingFailedArviointitilat.schedule}")
     lateinit var retrySendingFailedArviointitilatSchedule: String
 
     @WithSpan

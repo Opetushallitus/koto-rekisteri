@@ -17,10 +17,10 @@ import org.springframework.security.web.AuthenticationEntryPoint
 
 @Configuration
 class CasConfig {
-    @Value("\${kitu.appUrl}")
+    @Value($$"${kitu.appUrl}")
     lateinit var appUrl: String
 
-    @Value("\${kitu.opintopolkuHostname}")
+    @Value($$"${kitu.opintopolkuHostname}")
     lateinit var opintopolkuHostname: String
 
     @Bean
