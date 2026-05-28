@@ -9,13 +9,17 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-fun LocalDate.finnishDate(): String = format(DateTimeFormatter.ofPattern("d.M.yyyy"))
+private val finnishDateFormatter = DateTimeFormatter.ofPattern("d.M.yyyy")
+private val isoDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+private val finnishDateTimeWithZoneFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ssX")
+private val finnishDateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
-fun LocalDate.isoDate(): String = format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+fun LocalDate.finnishDate(): String = format(finnishDateFormatter)
+
+fun LocalDate.isoDate(): String = format(isoDateFormatter)
 
 fun Instant.finnishDateTime(includeTimeZone: Boolean = true): String =
-    DateTimeFormatter
-        .ofPattern(if (includeTimeZone) "dd.MM.yyyy HH:mm:ssX" else "dd.MM.yyyy HH:mm:ss")
+    (if (includeTimeZone) finnishDateTimeWithZoneFormatter else finnishDateTimeFormatter)
         .format(this.atZone(ZoneId.systemDefault()))
 
 fun FlowContent.finnishDate(d: LocalDate) {

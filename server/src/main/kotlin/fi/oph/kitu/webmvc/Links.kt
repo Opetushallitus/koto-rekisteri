@@ -1,5 +1,6 @@
 package fi.oph.kitu.webmvc
 
+import fi.oph.kitu.config.ApplicationProperties
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
@@ -64,7 +65,7 @@ object Links {
     object Yki {
         fun suoritukset(): String = linkTo(methodOn(YkiViewController::class.java).suorituksetGetView()).toString()
 
-        fun suoritus(id: Int): String = linkTo(methodOn(YkiViewController::class.java).suoritusView(id)).toString()
+        fun suoritus(id: Int): String = "${ApplicationProperties.kitu.appUrl}/yki/suoritukset/$id"
 
         fun arvioijat(): String = linkTo(methodOn(YkiViewController::class.java).arvioijatView()).toString()
 
