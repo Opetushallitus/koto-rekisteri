@@ -58,7 +58,6 @@ object Koodisto {
         YleisenKielitutkinnonOsa("yleisenkielitutkinnonosa"),
         ValtionhallinnonKielitutkinto("valtionhallinnonkielitutkinto"),
         ValtionhallinnonKielitaito("valtionhallinnonkielitaito"),
-        ValtionhallinnonKielitutkinnonOsa("valtionhallinnonkielitutkinnonosa"),
         ValtionhallinnonKielitutkinnonOsakoe("valtionhallinnonkielitutkinnonosakoe"),
         ;
 

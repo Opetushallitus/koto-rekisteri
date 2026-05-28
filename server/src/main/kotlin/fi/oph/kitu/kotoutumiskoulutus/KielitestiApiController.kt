@@ -33,7 +33,7 @@ class KielitestiApiController(
         @ModelAttribute params: KielitestiSuorituksetParams = KielitestiSuorituksetParams(),
     ): ResponseEntity<StreamingResponseBody> =
         csvAttachmentResponse<KielitestiSuoritusColumn, _>(
-            filename = "koto-suoritukset-${LocalDate.now().isoDate()}.csv",
+            filename = params.csvFileName(),
             data = suoritusService.getSuorituksetForCsv(params.toFilter()),
             excludeTags = params.excludeTags(),
         )

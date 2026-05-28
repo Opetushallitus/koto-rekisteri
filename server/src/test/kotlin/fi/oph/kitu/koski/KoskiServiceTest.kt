@@ -264,7 +264,7 @@ class KoskiServiceTest(
 
         val errorEntity = koskiErrorService.findById(YkiMappingId(invalid.solkiId))
         assertNotNull(errorEntity)
-        assertTrue(errorEntity.message!!.contains("Koski-pyynnöksi"))
+        assertTrue(errorEntity.message.contains("Koski-pyynnöksi"))
     }
 
     @Test
@@ -306,8 +306,8 @@ class KoskiServiceTest(
 
         val errorEntity = koskiErrorService.findById(YkiMappingId(legacy.solkiId))
         assertNotNull(errorEntity)
-        assertTrue(errorEntity.message!!.contains("Koski-pyynnöksi"))
-        assertTrue(errorEntity.message!!.contains("SWE10"))
+        assertTrue(errorEntity.message.contains("Koski-pyynnöksi"))
+        assertTrue(errorEntity.message.contains("SWE10"))
     }
 
     @Test

@@ -77,23 +77,6 @@ annotation class ColumnTags(
     vararg val tag: ColumnTag,
 )
 
-fun <T : RenderableDisplayTableEnum<T>> List<T>.getByTags(tags: Set<ColumnTag>): List<T> =
-    filter {
-        it.javaClass.annotations.any { annotation ->
-            annotation is ColumnTags &&
-                annotation.tag.intersect(tags).isNotEmpty()
-        }
-    }
-
-inline fun <reified T : Enum<T>> hasTag(
-    value: T,
-    tag: ColumnTag,
-): Boolean =
-    T::class.java.getField(value.name).annotations.any { annotation ->
-        annotation is ColumnTags &&
-            annotation.tag.contains(tag)
-    }
-
 object DisplayTableCsvRenderer {
     const val SEPARATOR = ";"
 

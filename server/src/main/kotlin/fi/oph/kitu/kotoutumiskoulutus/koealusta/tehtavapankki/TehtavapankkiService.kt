@@ -31,7 +31,6 @@ class TehtavapankkiService(
     private val client: TehtavapankkiClient,
     private val s3Template: S3Template,
     private val s3Client: S3Client,
-    private val tracer: Tracer,
     private val parser: TehtavapankkiXmlParser,
 ) {
     @Value($$"${kitu.kotoutumiskoulutus.tehtavapankki.bucket:#{null}}")

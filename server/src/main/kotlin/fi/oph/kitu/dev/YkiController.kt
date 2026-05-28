@@ -36,13 +36,6 @@ class YkiController(
 
     private val responses = ConcurrentHashMap<String, ResponseEntity<String>>()
 
-    fun setResponse(
-        endpoint: String,
-        response: ResponseEntity<String>,
-    ) {
-        responses[endpoint] = response
-    }
-
     @GetMapping("/yki/import/arvioijat")
     fun fakeYkiArvioijatImport(): ResponseEntity<String> =
         responses.getOrDefault(
@@ -59,9 +52,7 @@ class YkiController(
         )
 
     @GetMapping("/yki/import/suoritukset")
-    fun fakeYkiSuorituksetImport(
-        @RequestParam m: String,
-    ): ResponseEntity<String> =
+    fun fakeYkiSuorituksetImport(): ResponseEntity<String> =
         responses.getOrDefault(
             "/yki/import/suoritukset",
             ResponseEntity.ok(
