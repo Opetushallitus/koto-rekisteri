@@ -22,7 +22,7 @@ class VktValidation : Validation<VktHenkilosuoritus> {
                     suorituspaikkakunta =
                         it.suorituspaikkakunta ?: "091",
                     suorituksenVastaanottaja =
-                        it.suorituksenVastaanottaja ?: Oid.Companion.parse(palvelukayttajaOid).getOrNull(),
+                        it.suorituksenVastaanottaja ?: Oid.parse(palvelukayttajaOid).getOrNull(),
                 )
             }
         } else {

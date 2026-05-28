@@ -25,7 +25,7 @@ object YkiKoskiErrors {
             val errorIdToSuoritusMap =
                 errors
                     .mapNotNull { error ->
-                        YkiMappingId.Companion
+                        YkiMappingId
                             .parse(error.id)
                             ?.suoritusId
                             ?.let { id -> suoritukset.find { it.solkiId == id } }

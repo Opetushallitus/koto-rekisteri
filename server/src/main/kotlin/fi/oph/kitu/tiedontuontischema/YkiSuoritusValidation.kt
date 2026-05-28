@@ -120,10 +120,12 @@ class YkiSuoritusValidation(
                 s.suoritus.tarkistusarviointi
                     ?.tarkistusarvioidutOsakokeet
                     .orEmpty()
+                    .toSet()
             val muuttuneetOsakokeet =
                 s.suoritus.tarkistusarviointi
                     ?.arvosanaMuuttui
                     .orEmpty()
+                    .toSet()
             ensure(muuttuneetOsakokeet.minus(tarkastettavatOsakokeet).isEmpty()) {
                 Validation.ValidationError(
                     listOf("suoritus", "tarkistusarviointi", "arvosanaMuuttui"),
@@ -148,7 +150,7 @@ class YkiSuoritusValidation(
         ensure(!s.suoritus.kieli.isLegacy() || s.suoritus.tutkintopaiva.isBefore(LocalDate.of(2017, 1, 1))) {
             Validation.ValidationError(
                 listOf("suoritus", "kieli"),
-                "Käytöstä poistuneita kielikoodeja (${Tutkintokieli.Companion.legacyEntries.joinToString(
+                "Käytöstä poistuneita kielikoodeja (${Tutkintokieli.legacyEntries.joinToString(
                     ", ",
                 )}) ei voi käyttää",
             )

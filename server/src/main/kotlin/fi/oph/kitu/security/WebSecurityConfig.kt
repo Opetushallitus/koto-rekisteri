@@ -189,7 +189,7 @@ class WebSecurityConfig {
     fun sslProxyCustomizer(): WebServerFactoryCustomizer<TomcatServletWebServerFactory> =
         WebServerFactoryCustomizer { container ->
             container.addConnectorCustomizers(
-                TomcatConnectorCustomizer { connector ->
+                { connector ->
                     connector.scheme = "https"
                     connector.secure = true
                 },

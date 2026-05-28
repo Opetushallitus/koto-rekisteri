@@ -132,7 +132,7 @@ class KoealustaSuoritusValidator {
                 ).left()
         } else {
             try {
-                Arvosana.Companion.fromString(result.quizGrade).right()
+                Arvosana.fromString(result.quizGrade).right()
             } catch (_: IllegalArgumentException) {
                 KoealustaMappingError.Validation
                     .MalformedField(
@@ -156,7 +156,7 @@ class KoealustaSuoritusValidator {
                 ).left()
         } else {
             try {
-                Testikieli.Companion.fromString(lang).right()
+                Testikieli.fromString(lang).right()
             } catch (_: IllegalArgumentException) {
                 KoealustaMappingError.Validation
                     .MalformedField(

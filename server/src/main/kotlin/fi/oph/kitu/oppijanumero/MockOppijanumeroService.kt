@@ -40,7 +40,7 @@ class MockOppijanumeroService : OppijanumeroService {
 
             else -> {
                 oppijaToOid[oppija]?.let { oid ->
-                    Oid.Companion
+                    Oid
                         .parse(oid)
                         .getOrThrow()
                         .right()

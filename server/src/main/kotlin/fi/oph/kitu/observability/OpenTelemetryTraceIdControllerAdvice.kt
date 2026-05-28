@@ -11,12 +11,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice
 
 @ControllerAdvice
 class OpenTelemetryTraceIdControllerAdvice : ResponseBodyAdvice<Any> {
-    public override fun supports(
+    override fun supports(
         returnType: MethodParameter,
         converterType: Class<out HttpMessageConverter<*>>,
     ): Boolean = true
 
-    public override fun beforeBodyWrite(
+    override fun beforeBodyWrite(
         body: Any?,
         returnType: MethodParameter,
         selectedContentType: MediaType,

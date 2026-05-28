@@ -26,4 +26,4 @@ class SpringLifecycleListener {
 }
 
 inline fun <reified E : ApplicationEvent> forEventType(consumer: Consumer<E>): GenericApplicationListener =
-    GenericApplicationListener.forEventType<E>(E::class.java, consumer)
+    GenericApplicationListener.forEventType(E::class.java, consumer)

@@ -91,7 +91,7 @@ class ViewMessage(
         val message = session.getAttribute(KEY)
         return if (message != null) {
             session.removeAttribute(KEY)
-            return message as ViewMessageData
+            message as ViewMessageData
         } else {
             null
         }
