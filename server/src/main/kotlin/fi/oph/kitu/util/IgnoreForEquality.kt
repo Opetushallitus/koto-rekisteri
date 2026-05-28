@@ -33,7 +33,7 @@ fun propsEqual(
     context: String,
 ): Boolean {
     if (a === b) return true
-    if (a == null || b == null) return a == b
+    if (a == null || b == null) return false
     if (a is Collection<*> && b is Collection<*>) {
         return collectionsEqualIgnoringAnnotated(a, b, context)
     }

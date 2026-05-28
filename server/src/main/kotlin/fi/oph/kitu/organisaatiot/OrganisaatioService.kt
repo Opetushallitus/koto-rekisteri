@@ -42,9 +42,7 @@ interface OrganisaatioService {
         } ?: Organisaatiot.EMPTY
 
     fun searchOrganisaatiot(query: String): Organisaatiot =
-        getOrganisaatiot().let {
-            Organisaatiot(it.nimet.filter { (_, nimi) -> nimi.contains(query, ignoreCase = true) }.toMap())
-        }
+        Organisaatiot(getOrganisaatiot().nimet.filter { (_, nimi) -> nimi.contains(query, ignoreCase = true) }.toMap())
 }
 
 @Service

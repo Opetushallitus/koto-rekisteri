@@ -34,7 +34,7 @@ class PlantUmlService(
 enum class UmlItemType(
     val stereotype: String? = null,
 ) {
-    GENERIC_BEAN(),
+    GENERIC_BEAN,
     CONFIGURATION_BEAN("Configuration"),
     SERVICE_BEAN("Service"),
     REPOSITORY_BEAN("Repository"),

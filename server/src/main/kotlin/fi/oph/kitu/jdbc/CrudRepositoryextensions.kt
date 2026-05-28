@@ -7,6 +7,6 @@ import org.springframework.data.repository.CrudRepository
  */
 fun <S : Any, K : Any> CrudRepository<S, K>.replaceAll(data: Iterable<S>): Iterable<S> {
     this.deleteAll()
-    this.saveAll<S>(data)
+    this.saveAll(data)
     return this.findAll()
 }

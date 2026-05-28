@@ -78,7 +78,7 @@ data class VktSuoritusEntity(
                             fi.oph.kitu.vkt.VktOsakoe
                                 .from(it)
                         },
-                    lahdejarjestelmanId = LahdejarjestelmanTunniste.Companion.from(ilmoittautumisenId),
+                    lahdejarjestelmanId = LahdejarjestelmanTunniste.from(ilmoittautumisenId),
                     internalId = id,
                     koskiOpiskeluoikeusOid = koskiOpiskeluoikeus,
                     koskiSiirtoKasitelty = koskiSiirtoKasitelty,
