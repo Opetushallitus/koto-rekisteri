@@ -1,12 +1,7 @@
 package fi.oph.kitu.yki
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 import fi.oph.kitu.html.table.HideInTableFilter
-import java.sql.ResultSet
 
 /** ISO 639-2 Alpha 3
  *  Legacy langugage codes:

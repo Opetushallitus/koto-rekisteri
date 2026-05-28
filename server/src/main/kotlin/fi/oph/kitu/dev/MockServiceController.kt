@@ -2,7 +2,6 @@ package fi.oph.kitu.dev
 
 import fi.oph.kitu.dev.mockdata.generateRandomSsnBirthdayAndSex
 import fi.oph.kitu.yki.Sukupuoli
-import kotlinx.html.emptyMap
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus

@@ -1,10 +1,8 @@
 package fi.oph.kitu.tiedontuontischema
 
 import arrow.core.NonEmptyList
-import arrow.core.raise.Raise
 import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
-import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.koodisto.KoodistoService
 import fi.oph.kitu.oppijanumero.OppijanumeroValidation
 import fi.oph.kitu.util.validation.Validation
