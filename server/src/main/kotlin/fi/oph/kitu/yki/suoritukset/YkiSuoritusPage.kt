@@ -95,13 +95,13 @@ object YkiSuoritusPage {
                         { +it.kasittelypaiva?.finnishDate().orDash() }
                 },
                 tarkistusarviointi?.let { "Tarkistusarvioinnin asiatunnus" to { +it.asiatunnus } },
-                tarkistusarviointi?.let {
+                tarkistusarviointi?.let { arviointi ->
                     "Tarkistusarvioidut osakokeet" to
-                        { +it.tarkistusarvioidutOsakokeet?.joinToString(", ") { it.viewText }.orDash() }
+                        { +arviointi.tarkistusarvioidutOsakokeet?.joinToString(", ") { it.viewText }.orDash() }
                 },
-                tarkistusarviointi?.let {
+                tarkistusarviointi?.let { arviointi ->
                     "Arvosana muuttui" to
-                        { +it.arvosanaMuuttui?.joinToString(", ") { it.viewText }.orDash() }
+                        { +arviointi.arvosanaMuuttui?.joinToString(", ") { it.viewText }.orDash() }
                 },
                 tarkistusarviointi?.let { "Perustelu" to { +it.perustelu } },
             )

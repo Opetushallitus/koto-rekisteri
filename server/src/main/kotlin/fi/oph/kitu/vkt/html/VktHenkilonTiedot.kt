@@ -16,16 +16,16 @@ fun FlowContent.vktHenkilonTiedot(
     henkilo: Either<OppijanumeroException, OppijanumerorekisteriHenkilo>,
 ) {
     henkilo
-        .onRight {
+        .onRight { hlo ->
             card(compact = true) {
                 infoTable(
-                    "Henkilötunnus" to { +it.hetut().joinToString(", ") },
+                    "Henkilötunnus" to { +hlo.hetut().joinToString(", ") },
                     "Henkilö-oid" to { +data.henkilo.oid.toString() },
-                    "Syntymäaika" to { it.syntymaaika?.finnishDate()?.let { +it } },
+                    "Syntymäaika" to { hlo.syntymaaika?.finnishDate()?.let { +it } },
                     "Yksilöinti" to {
-                        if (it.yksiloityVTJ == true || it.yksiloity == true) {
+                        if (hlo.yksiloityVTJ == true || hlo.yksiloity == true) {
                             +"Yksilöity"
-                        } else if (it.yksilointiYritetty == true) {
+                        } else if (hlo.yksilointiYritetty == true) {
                             +"Yksilöintiä yritetty"
                         } else {
                             +"Ei yksilöity"

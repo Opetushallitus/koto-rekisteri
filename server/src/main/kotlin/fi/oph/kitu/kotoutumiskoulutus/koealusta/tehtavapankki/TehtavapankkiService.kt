@@ -152,9 +152,8 @@ class TehtavapankkiService(
     @WithSpan
     fun extractAndUploadAssets(xmlKey: String): Either<TehtavapankkiParseError, AssetExtractResult> {
         Span.current().setAttribute("xml.key", xmlKey)
-        val parsed = fetchAndParseFromS3(xmlKey)
         val quiz =
-            when (parsed) {
+            when (val parsed = fetchAndParseFromS3(xmlKey)) {
                 is Either.Right -> parsed.value
                 is Either.Left -> return parsed.value.left()
             }

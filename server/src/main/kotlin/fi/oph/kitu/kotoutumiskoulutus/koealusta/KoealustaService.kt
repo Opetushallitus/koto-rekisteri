@@ -91,7 +91,7 @@ class KoealustaService(
 
         span.setAttribute("db.saved", savedSuoritukset.count())
 
-        if (validationFailure != null && validationFailure.isNotEmpty()) {
+        if (validationFailure?.isNotEmpty() == true) {
             span.setAttribute("db.saved.error.validation", validationErrors.count())
             span.setAttribute("db.saved.error.onr", oppijanumeroErrors.count())
             return from

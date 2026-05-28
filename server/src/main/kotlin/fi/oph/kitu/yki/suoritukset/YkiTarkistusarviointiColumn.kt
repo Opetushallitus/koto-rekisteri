@@ -76,7 +76,7 @@ enum class YkiTarkistusarviointiColumn(
         renderHtml = {
             it.perustelu?.let { x -> p { +x } }
             ul {
-                it.tarkistusarvioidutOsakokeet.orEmpty().map { osakoe ->
+                it.tarkistusarvioidutOsakokeet.orEmpty().forEach { osakoe ->
                     li {
                         +"${osakoe.viewText}: "
                         if (it.arvosanaMuuttui?.contains(osakoe) == true) {

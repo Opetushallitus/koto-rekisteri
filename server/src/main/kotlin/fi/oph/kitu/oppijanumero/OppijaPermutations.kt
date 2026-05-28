@@ -30,5 +30,5 @@ object OppijaPermutations {
         }
 
     fun getSplitPermutations(names: List<String>): List<Pair<List<String>, List<String>>> =
-        (1..(names.size - 1)).map { names.splitAt(it) }
+        (1..<names.size).map { names.splitAt(it) }
 }

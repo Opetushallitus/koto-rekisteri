@@ -33,7 +33,7 @@ class KoskiVktRequestMapper {
         val kaikkiOsakokeetArvioitu = suoritus.osat.all { it.arviointi != null }
 
         val organisaatio: Organisaatio =
-            suoritus.osat.firstNotNullOfOrNull { it.oppilaitos?.let { Organisaatio(it) } }
+            suoritus.osat.firstNotNullOfOrNull { osa -> osa.oppilaitos?.let { Organisaatio(it) } }
                 ?: Oid.parse(vktOrganisaatioOid).map { Organisaatio(it) }.getOrThrow()
 
         val arviointipaiva =
