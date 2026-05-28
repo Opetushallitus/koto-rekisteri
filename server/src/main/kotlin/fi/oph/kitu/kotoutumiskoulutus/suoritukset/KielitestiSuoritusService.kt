@@ -60,23 +60,4 @@ class KielitestiSuoritusService(
 
                 return suoritukset.map { it.copy(oppilaitos = organisaatiot.nimet[it.oppilaitosOid]?.fi) }
             }
-
-    fun List<KielitestiSuoritus>.sortByName(
-        orderBy: KielitestiSuoritusColumn,
-        orderByDirection: SortDirection,
-    ): List<KielitestiSuoritus> =
-        when (orderBy) {
-            KielitestiSuoritusColumn.Oppilaitos -> {
-                val nimet = organisaatioService.getOrganisaatiot().nimet
-                this.sortedWithDirectionBy(orderByDirection) {
-                    it.oppilaitosOid
-                        ?.let { oid -> nimet[oid]?.toString() }
-                        ?: it.oppilaitosOid?.toString().orEmpty()
-                }
-            }
-
-            else -> {
-                this
-            }
-        }
 }

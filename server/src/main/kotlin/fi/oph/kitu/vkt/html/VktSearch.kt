@@ -13,10 +13,6 @@ import kotlinx.html.form
 import kotlinx.html.id
 import kotlinx.html.input
 
-fun FlowContent.vktSearch(searchQuery: String?) {
-    vktSearch(VktSuoritusFilter(searchQuery))
-}
-
 fun FlowContent.vktSearch(filter: VktSuoritusFilter) {
     form(action = "", method = FormMethod.get, classes = "grid center-vertically") {
         hiddenValues(filter.toMap().filterKeys { it != "search" })

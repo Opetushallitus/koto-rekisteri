@@ -5,6 +5,5 @@ enum class PeerService(
 ) {
     Koealusta("koealusta"),
     Solki("solki"),
-    Cas("cas"),
     Oppijanumero("oppijanumero"),
 }

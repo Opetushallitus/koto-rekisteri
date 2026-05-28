@@ -42,9 +42,6 @@ class YkiService(
     private val suoritusErrorService: YkiSuoritusErrorService,
     private val suoritusMapper: YkiSuoritusMappingService,
     private val arvioijaRepository: YkiArvioijaRepository,
-    private val arvioijaMapper: YkiArvioijaMappingService,
-    private val arvioijaErrorService: YkiArvioijaErrorService,
-    private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
     private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val auditLogger: AuditLogger,
     private val parser: CsvParser,
@@ -211,10 +208,6 @@ class YkiService(
     sealed class Error(
         message: String,
     ) : Throwable(message) {
-        class EmptyArvioijatResponse : Error("Empty body on arvioijat response")
-
-        class EmptyArvioijat : Error("Unexpected empty list of arvioijat")
-
         class CsvConversionError(
             service: String,
             errors: List<CsvExportError>,

@@ -18,18 +18,4 @@ data class Henkilo(
     val email: String? = null,
 ) {
     fun kokoNimi(): String = "$sukunimi, $etunimet"
-
-    fun fill(onr: OppijanumeroService): Henkilo? =
-        if (etunimet != null || sukunimi != null) {
-            onr
-                .getHenkilo(oid)
-                .map { tiedot ->
-                    copy(
-                        etunimet = tiedot.etunimet,
-                        sukunimi = tiedot.sukunimi,
-                    )
-                }.getOrNull()
-        } else {
-            this
-        }
 }

@@ -27,16 +27,16 @@ class OppijanumerorekisteriClient(
     fun <T> onrGet(
         endpoint: String,
         responseType: Class<T>,
-    ) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint, responseType = responseType)
+    ) = fetch(HttpMethod.GET, endpoint, responseType = responseType)
 
     @WithSpan
     fun <T, R : OppijanumerorekisteriRequest> onrPost(
         endpoint: String,
         body: R,
         clazz: Class<T>,
-    ) = fetch<T, R>(HttpMethod.POST, endpoint, body, clazz)
+    ) = fetch(HttpMethod.POST, endpoint, body, clazz)
 
-    fun <T, R : OppijanumerorekisteriRequest> fetch(
+    fun <T> fetch(
         httpMethod: HttpMethod,
         endpoint: String,
         body: OppijanumerorekisteriRequest? = null,

@@ -39,8 +39,8 @@ class AuthEventAuditListener {
                 .atInfo()
                 .add(*commonFields("auth.failure", event))
                 .add(
-                    "auth.attempted_name" to event.authentication?.name,
-                    "auth.failure_reason" to event.exception?.javaClass?.simpleName,
+                    "auth.attempted_name" to event.authentication.name,
+                    "auth.failure_reason" to event.exception.javaClass.simpleName,
                 ).log("Spring Security auth event")
         }
 

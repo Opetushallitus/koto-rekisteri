@@ -28,10 +28,10 @@ class OrganisaatiopalveluClient(
         endpoint: String,
         query: Map<String, Any> = emptyMap(),
         responseType: Class<T>,
-    ) = fetch<T, EmptyRequest>(HttpMethod.GET, endpoint, query, responseType = responseType)
+    ) = fetch(HttpMethod.GET, endpoint, query, responseType = responseType)
 
     @WithSpan
-    fun <T, R : OrganisaatiopalveluRequest> fetch(
+    fun <T> fetch(
         httpMethod: HttpMethod,
         endpoint: String,
         query: Map<String, Any>,

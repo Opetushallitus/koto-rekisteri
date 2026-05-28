@@ -30,7 +30,6 @@ interface CustomYkiArvioijaRepository {
 @Repository
 class CustomYkiArvioijaRepositoryImpl(
     val jdbcTemplate: JdbcTemplate,
-    val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
 ) : CustomYkiArvioijaRepository {
     /**
      * Override to allow handling duplicates/conflicts. The default implementation from CrudRepository fails

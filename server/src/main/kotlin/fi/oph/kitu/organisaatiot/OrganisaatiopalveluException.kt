@@ -46,14 +46,6 @@ sealed class OrganisaatiopalveluException(
         cause: Throwable? = null,
     ) : OrganisaatiopalveluException(request, message, organisaatiopalveluError, cause)
 
-    class MalformedOid(
-        request: OrganisaatiopalveluRequest,
-        oppijanumero: String?,
-        message: String = "Received a malformed organisaatio oid \"$oppijanumero\" for $request",
-        organisaatiopalveluError: OrganisaatiopalveluError? = null,
-        cause: Throwable? = null,
-    ) : OrganisaatiopalveluException(request, message, organisaatiopalveluError, cause)
-
     class NullResponse(
         request: OrganisaatiopalveluRequest,
         message: String = "Empty or unserializable response from organisaatio-service",

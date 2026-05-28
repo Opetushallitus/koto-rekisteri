@@ -38,9 +38,3 @@ fun getRandomLocalDates(
 ) = List(count) {
     getRandomLocalDate(min, max, random)
 }
-
-fun getRandomOffsetDateTime(
-    min: OffsetDateTime,
-    max: OffsetDateTime = OffsetDateTime.now(),
-    random: Random = Random,
-): OffsetDateTime = OffsetDateTime.ofInstant(getRandomInstant(min.toInstant(), max.toInstant(), random), min.offset)

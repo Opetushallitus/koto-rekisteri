@@ -29,11 +29,9 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBod
 @RequestMapping("/api/vkt")
 @Tag(name = "Valtionhallinnon kielitutkinto")
 class VktApiController(
-    val vktRepository: VktSuoritusRepository,
     val customSuoritusRepository: CustomVktSuoritusRepository,
     val service: VktSuoritusService,
     private val validation: ValidationService,
-    private val koodistoService: KoodistoService,
 ) {
     @PutMapping("/kios", produces = ["application/json"])
     @Operation(

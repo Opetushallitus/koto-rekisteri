@@ -79,9 +79,6 @@ class YkiSuoritusMappingService(
         arviointitilanLahetysvirhe = null,
     )
 
-    @WithSpan
-    fun convertToResponseIterable(iterable: Iterable<YkiSuoritusEntity>) = iterable.map { convertToResponse(it) }
-
     fun convertToResponse(entity: YkiSuoritusEntity): YkiSuoritusCsvResponse =
         YkiSuoritusCsvResponse(
             suorittajanOID = entity.suorittajanOID,
