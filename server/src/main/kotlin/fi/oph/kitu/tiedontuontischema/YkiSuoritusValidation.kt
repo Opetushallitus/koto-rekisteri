@@ -18,9 +18,9 @@ import java.time.LocalDate
 @Service
 class YkiSuoritusValidation(
     val organisaatiot: OrganisaatioService,
-    @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
+    @param:Value($$"${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
-    @param:Value("\${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
+    @param:Value($$"${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
     val todistuskielenSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
     override fun ValidationRaise.validateBeforeEnrichment(value: YkiHenkilosuoritus) {

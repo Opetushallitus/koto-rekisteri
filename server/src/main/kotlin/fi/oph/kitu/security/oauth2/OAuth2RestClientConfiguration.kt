@@ -16,7 +16,7 @@ import org.springframework.web.client.RestClient
 @Profile("!test & !e2e")
 @Configuration
 class OAuth2RestClientConfiguration {
-    @Value("\${kitu.palvelukayttaja.callerid}")
+    @Value($$"${kitu.palvelukayttaja.callerid}")
     private lateinit var callerId: String
 
     @Bean

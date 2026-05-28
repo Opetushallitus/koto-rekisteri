@@ -16,13 +16,13 @@ import kotlin.time.Duration.Companion.days
 class YkiScheduledTasks(
     private val tracer: Tracer,
 ) {
-    @Value("\${kitu.yki.scheduling.import.schedule}")
+    @Value($$"${kitu.yki.scheduling.import.schedule}")
     lateinit var ykiImportSchedule: String
 
-    @Value("\${kitu.yki.scheduling.largeImport.schedule}")
+    @Value($$"${kitu.yki.scheduling.largeImport.schedule}")
     lateinit var ykiMonthlyImportSchedule: String
 
-    @Value("\${kitu.yki.scheduling.importArvioijat.schedule}")
+    @Value($$"${kitu.yki.scheduling.importArvioijat.schedule}")
     lateinit var ykiImportArvioijatSchedule: String
 
     @WithSpan

@@ -24,7 +24,7 @@ import java.time.LocalDate
 
 @Service
 class KoskiYkiRequestMapper {
-    @Value("\${kitu.oids.yleisetkielitutkinnot}")
+    @Value($$"${kitu.oids.yleisetkielitutkinnot}")
     lateinit var ykiOrganisaatioOid: String
 
     @WithSpan

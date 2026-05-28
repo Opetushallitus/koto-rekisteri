@@ -31,7 +31,7 @@ class VktSuoritusService(
     private val oppijanumeroService: OppijanumeroService,
     private val localizationService: LocalizationService,
 ) {
-    @Value("\${kitu.vkt.scheduling.cleanup.retentionTime}")
+    @Value($$"${kitu.vkt.scheduling.cleanup.retentionTime}")
     lateinit var retentionTimeForDeletedSetting: String
     val retentionTimeForDeletedSeconds by lazy { Duration.parse(retentionTimeForDeletedSetting).inWholeSeconds }
 

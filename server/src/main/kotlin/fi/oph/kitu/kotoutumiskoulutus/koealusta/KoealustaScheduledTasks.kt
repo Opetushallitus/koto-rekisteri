@@ -14,7 +14,7 @@ import java.time.Instant
 class KoealustaScheduledTasks(
     private val tracer: Tracer,
 ) {
-    @Value("\${kitu.kotoutumiskoulutus.koealusta.scheduling.import.schedule}")
+    @Value($$"${kitu.kotoutumiskoulutus.koealusta.scheduling.import.schedule}")
     lateinit var koealustaImportSchedule: String
 
     @Bean

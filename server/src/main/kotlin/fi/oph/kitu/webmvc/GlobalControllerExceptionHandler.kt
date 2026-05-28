@@ -22,7 +22,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 class GlobalControllerExceptionHandler(
     val environment: Environment,
 ) {
-    @Value("\${trace-ui:}")
+    @Value($$"${trace-ui:}")
     private lateinit var traceUiUrl: String
 
     @ExceptionHandler

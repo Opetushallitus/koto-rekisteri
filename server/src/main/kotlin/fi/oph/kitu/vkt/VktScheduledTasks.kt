@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration
 class VktScheduledTasks(
     private val tracer: Tracer,
 ) {
-    @Value("\${kitu.vkt.scheduling.cleanup.schedule}")
+    @Value($$"${kitu.vkt.scheduling.cleanup.schedule}")
     lateinit var vktCleanupSchedule: String
 
     @WithSpan

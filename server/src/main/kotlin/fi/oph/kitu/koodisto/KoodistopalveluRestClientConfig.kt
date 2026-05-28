@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClient
 class KoodistopalveluRestClientConfig(
     private val restClientBuilder: RestClient.Builder,
 ) {
-    @Value("\${kitu.koodistopalvelu.baseUrl}")
+    @Value($$"${kitu.koodistopalvelu.baseUrl}")
     private lateinit var koodistopalveluBaseUrl: String
 
     @Bean("koodistopalveluRestClient")

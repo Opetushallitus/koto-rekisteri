@@ -16,7 +16,7 @@ import java.time.LocalDate
 class YkiArvioijaValidation(
     val onr: OppijanumeroValidation,
     val timeService: TimeService,
-    @param:Value("\${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
+    @param:Value($$"${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
     val hetunSiirronRajapaiva: LocalDate,
 ) : Validation<YkiArvioija> {
     override fun ValidationRaise.validateBeforeEnrichment(value: YkiArvioija) {

@@ -26,10 +26,10 @@ class AuditLogger(
     private val logSeq = AtomicInteger(0)
     val bootTime = timeService.now()
 
-    @Value("\${kitu.appUrl}")
+    @Value($$"${kitu.appUrl}")
     lateinit var appUrl: String
 
-    @Value("\${kitu.env.name}")
+    @Value($$"${kitu.env.name}")
     lateinit var environment: String
 
     /**

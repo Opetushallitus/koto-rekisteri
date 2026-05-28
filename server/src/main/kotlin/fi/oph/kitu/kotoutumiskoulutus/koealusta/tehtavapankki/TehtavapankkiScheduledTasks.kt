@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Profile
 class TehtavapankkiScheduledTasks(
     private val tracer: Tracer,
 ) {
-    @Value("\${kitu.kotoutumiskoulutus.koealusta.scheduling.importTehtavapankki.schedule}")
+    @Value($$"${kitu.kotoutumiskoulutus.koealusta.scheduling.importTehtavapankki.schedule}")
     var tehtavapankkiImportSchedule: String? = null
 
     @Bean

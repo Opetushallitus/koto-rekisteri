@@ -20,7 +20,7 @@ import java.net.URI
 class OppijanumerorekisteriClient(
     @param:Qualifier("oauth2RestClient")
     val restClient: RestClient,
-    @param:Value("\${kitu.oppijanumero.service.url}")
+    @param:Value($$"${kitu.oppijanumero.service.url}")
     val serviceUrl: String,
 ) {
     @WithSpan
