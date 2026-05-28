@@ -267,4 +267,19 @@ class YkiSuoritusRepositoryTest(
             )
         assertEquals(2L, countRanjaAll, "Assert failed for count all suoritukset with a search term")
     }
+
+    @Test
+    fun `count suoritukset with tutkintokieli filter matches find result size`() {
+        val fin = generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.FIN)
+        val swe = generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.SWE)
+        val fin2 = generateRandomYkiSuoritusEntity().copy(tutkintokieli = Tutkintokieli.FIN)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(fin, swe, fin2))
+
+        val filter = YkiSuoritusFilter(tutkintokieli = Tutkintokieli.FIN)
+        val count = ykiSuoritusRepository.countSuoritukset(filter)
+        val found = ykiSuoritusRepository.find(filter).count().toLong()
+
+        assertEquals(found, count, "count ja find tuloksen koko poikkesivat alitauluhaarassa")
+        assertEquals(2L, count)
+    }
 }

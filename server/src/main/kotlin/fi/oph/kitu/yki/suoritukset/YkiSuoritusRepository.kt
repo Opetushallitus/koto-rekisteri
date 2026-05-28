@@ -206,16 +206,25 @@ class YkiSuoritusRepository(
         distinct: Boolean = true,
     ): Long {
         val sql =
-            buildSql(
-                withCtes("viimeisin_suoritus" to selectSuorituksetFull(viimeisin = distinct, filter.whereSql())),
-                "SELECT COUNT(*) FROM viimeisin_suoritus",
-            )
-
-        val params = filter.params()
+            if (filter.requiresSubTables()) {
+                buildSql(
+                    withCtes("viimeisin_suoritus" to selectSuorituksetFull(viimeisin = distinct, filter.whereSql())),
+                    "SELECT COUNT(*) FROM viimeisin_suoritus",
+                )
+            } else {
+                buildSql(
+                    if (distinct) {
+                        "SELECT COUNT(DISTINCT solki_id) FROM yki_suoritus"
+                    } else {
+                        "SELECT COUNT(*) FROM yki_suoritus"
+                    },
+                    filter.whereSql(),
+                )
+            }
 
         return jdbcNamedParameterTemplate.queryForObject(
             sql,
-            params,
+            filter.params(),
             Long::class.java,
         )
             ?: 0
