@@ -26,7 +26,7 @@ class HenkilosuoritusValidation(
                 }
             }
             accumulating {
-                ensure(value.suoritus.koskiSiirtoKasitelty != true) {
+                ensure(!value.suoritus.koskiSiirtoKasitelty) {
                     ValidationError(
                         listOf("suoritus", "koskiSiirtoKasitelty"),
                         "koskiSiirtoKasitelty on sisäinen kenttä, eikä sitä voi asettaa arvoon true",

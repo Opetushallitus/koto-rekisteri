@@ -56,7 +56,7 @@ class MockServiceController {
         }
     }
 
-    private fun getSeed(input: String): Random = Random(input.fold(0, { acc, char -> acc + char.code }))
+    private fun getSeed(input: String): Random = Random(input.fold(0) { acc, char -> acc + char.code })
 }
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND)

@@ -84,7 +84,7 @@ class IlmoittautumisjarjestelmaServiceImpl(
             okSuoritukset.forEach { suoritus ->
                 suoritusRepository.setArvioinninTilaSent(suoritus.solkiId)
             }
-            virheIds.forEach { solkiId, virhe ->
+            virheIds.forEach { (solkiId, virhe) ->
                 suoritusRepository.setArvioinninTilanLahetysvirhe(solkiId, virhe)
             }
 

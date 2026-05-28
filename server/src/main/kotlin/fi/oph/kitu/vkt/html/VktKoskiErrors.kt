@@ -32,8 +32,8 @@ object VktKoskiErrors {
                     rows = errors,
                     columns =
                         listOf(
-                            Column.Tutkintoryhma.withHtml {
-                                VktMappingId.parse(it.id)?.let {
+                            Column.Tutkintoryhma.withHtml { ryhma ->
+                                VktMappingId.parse(ryhma.id)?.let {
                                     a(
                                         href =
                                             Links.Vkt.ilmoittautuneenArviointi(
@@ -48,7 +48,7 @@ object VktKoskiErrors {
                                         +" / "
                                         +t.get(it.ryhma.taitotaso)
                                     }
-                                } ?: +it.id
+                                } ?: +ryhma.id
                             },
                             Column.Aikaleima.withHtml {
                                 finnishDateTime(it.timestamp)

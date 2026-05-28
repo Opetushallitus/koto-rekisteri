@@ -174,14 +174,13 @@ data class YkiMappingId(
     override fun mappedId(): String = suoritusId.toString()
 
     companion object {
-        fun parse(id: String): YkiMappingId? {
+        fun parse(id: String): YkiMappingId? =
             try {
-                return YkiMappingId(
+                YkiMappingId(
                     suoritusId = id.toInt(),
                 )
             } catch (_: Throwable) {
-                return null
+                null
             }
-        }
     }
 }

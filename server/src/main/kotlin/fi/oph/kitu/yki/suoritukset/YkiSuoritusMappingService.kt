@@ -59,7 +59,7 @@ class YkiSuoritusMappingService(
         arviointitila =
             if (csv.arviointipaiva == null) {
                 Arviointitila.ARVIOITAVA
-            } else if (csv.tarkistusarvioinninAsiatunnus == null || csv.tarkistusarvioinninAsiatunnus.isEmpty()) {
+            } else if (csv.tarkistusarvioinninAsiatunnus.isNullOrEmpty()) {
                 Arviointitila.ARVIOITU
             } else if (csv.tarkistusarvioinninKasittelyPvm == null) {
                 Arviointitila.TARKISTUSARVIOITAVA
