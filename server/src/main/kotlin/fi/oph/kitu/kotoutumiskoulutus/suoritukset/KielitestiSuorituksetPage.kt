@@ -32,7 +32,6 @@ import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.header
 import kotlinx.html.id
-import kotlinx.html.input
 import kotlinx.html.li
 import kotlinx.html.nav
 import kotlinx.html.table
