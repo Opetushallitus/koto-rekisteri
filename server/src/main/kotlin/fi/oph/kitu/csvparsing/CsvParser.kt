@@ -89,7 +89,7 @@ class CsvParser(
             SimpleModule()
                 .addSerializer(String::class.java, CsvFormulaSafeStringSerializer())
 
-    final inline fun <reified T> getCsvMapper() =
+    final inline fun <reified T> getCsvMapper(): CsvMapper =
         CsvMapper
             .builder()
             .withFeatures<T>()
