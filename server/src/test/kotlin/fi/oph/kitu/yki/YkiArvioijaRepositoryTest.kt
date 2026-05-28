@@ -68,7 +68,6 @@ class YkiArvioijaRepositoryTest(
         assertEquals(
             arvioija.copy(
                 arviointioikeudet = listOf(sweArviointioikeus, engArviointioikeus),
-                henkilotunnus = null,
             ),
             saved?.copy(
                 id = null,
@@ -169,9 +168,7 @@ class YkiArvioijaRepositoryTest(
         val saved = arvioijaRepository.findById(savedIds.first()).getOrNull()
         assertEquals(1, savedIds.count())
         assertEquals(
-            updatedArvioija.copy(
-                henkilotunnus = null,
-            ),
+            updatedArvioija,
             saved?.copy(
                 id = null,
                 arviointioikeudet =
@@ -182,5 +179,46 @@ class YkiArvioijaRepositoryTest(
         )
         val updatedArvioijat = arvioijaRepository.findAll()
         assertEquals(1, updatedArvioijat.count())
+    }
+
+    @Test
+    fun `Päivitys nollaa aiemmin tallennetun henkilötunnuksen, jos tulevassa datassa hetua ei ole`() {
+        val arviointioikeus =
+            YkiArviointioikeusEntity(
+                id = null,
+                arvioijaId = null,
+                kaudenAlkupaiva = LocalDate.of(2026, 3, 1),
+                kaudenPaattymispaiva = LocalDate.of(2027, 3, 1),
+                jatkorekisterointi = false,
+                tila = YkiArvioijaTila.AKTIIVINEN,
+                kieli = Tutkintokieli.SWE,
+                tasot = setOf(Tutkintotaso.YT),
+                ensimmainenRekisterointipaiva = LocalDate.of(2026, 3, 1),
+                rekisteriintuontiaika = null,
+            )
+
+        val arvioijaHetulla =
+            YkiArvioijaEntity(
+                id = null,
+                arvioijaOid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                henkilotunnus = "010180-9026",
+                sukunimi = "Öhman-Testi",
+                etunimet = "Ranja Testi",
+                sahkopostiosoite = "testi@testi.fi",
+                katuosoite = "Testikuja 5",
+                postinumero = "40100",
+                postitoimipaikka = "Testilä",
+                arviointioikeudet = listOf(arviointioikeus),
+            )
+
+        val firstId = arvioijaRepository.upsert(arvioijaHetulla)
+        assertEquals("010180-9026", arvioijaRepository.findById(firstId).getOrNull()?.henkilotunnus)
+
+        // Päivitys ilman hetua (vastaa lainmuutoksen jälkeen validoinnin läpäissyttä syötettä):
+        // tallennetun rivin henkilotunnus pitää nollautua, eikä se saa jäädä lojumaan.
+        arvioijaRepository.upsert(arvioijaHetulla.copy(henkilotunnus = null))
+
+        val saved = arvioijaRepository.findById(firstId).getOrNull()
+        assertEquals(null, saved?.henkilotunnus)
     }
 }
