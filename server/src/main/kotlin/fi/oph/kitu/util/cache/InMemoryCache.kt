@@ -1,8 +1,9 @@
 package fi.oph.kitu.util.cache
 
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
 class InMemoryCache<I, O>(
     val ttl: Duration,
@@ -16,15 +17,15 @@ class InMemoryCache<I, O>(
             .compute(key) { _, current ->
                 current?.takeIf { !it.isExpired() }
                     ?: fn(key)?.let { value ->
-                        CacheItem(value, LocalDateTime.now().plusSeconds(ttl.inWholeSeconds))
+                        CacheItem(value, Instant.now().plus(ttl.toJavaDuration()))
                     }
             }?.value
     }
 
     data class CacheItem<T>(
         val value: T,
-        val expiresAt: LocalDateTime,
+        val expiresAt: Instant,
     ) {
-        fun isExpired(): Boolean = expiresAt.isBefore(LocalDateTime.now())
+        fun isExpired(): Boolean = expiresAt.isBefore(Instant.now())
     }
 }
