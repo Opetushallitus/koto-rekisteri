@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import kotlin.test.assertContains
+import kotlin.test.assertFalse
 
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
@@ -43,12 +44,7 @@ class HomeControllerTest(
 
     @Test
     fun `etusivu renderoityy ja sisaltaa nelja sektiokorttia`() {
-        val response =
-            mockMvc
-                .perform(get("/").session(virkailijaSession()))
-                .andExpect(status().isOk)
-                .andReturn()
-                .response.contentAsString
+        val response = getHtml("/")
 
         assertContains(response, "Kielitutkintorekisteri")
         assertContains(response, """data-testid="dashboard"""")
@@ -60,12 +56,7 @@ class HomeControllerTest(
 
     @Test
     fun `etusivulla on sektion otsikot`() {
-        val response =
-            mockMvc
-                .perform(get("/").session(virkailijaSession()))
-                .andExpect(status().isOk)
-                .andReturn()
-                .response.contentAsString
+        val response = getHtml("/")
 
         assertContains(response, "Yleinen kielitutkinto")
         assertContains(response, "Valtionhallinnon kielitutkinto")
@@ -74,35 +65,71 @@ class HomeControllerTest(
     }
 
     @Test
-    fun `etusivu sisaltaa linkit alasivuille`() {
-        val response =
-            mockMvc
-                .perform(get("/").session(virkailijaSession()))
-                .andExpect(status().isOk)
-                .andReturn()
-                .response.contentAsString
+    fun `etusivulla on placeholderit ja loader-skripti mutta ei yki vkt koto statirivien sisaltoa`() {
+        val response = getHtml("/")
 
-        assertContains(response, "Suoritukset")
-        assertContains(response, "Arvioijat")
-        assertContains(response, "Tarkistusarvioinnit")
-        assertContains(response, "Tehtäväpaketit")
-        assertContains(response, "Eräajojen hallinta")
-        assertContains(response, "Erinomaisen taidon ilmoittautuneet")
-        assertContains(response, "Hyvän ja tyydyttävän taidon suoritukset")
+        assertContains(response, """data-card-content="yki"""")
+        assertContains(response, """data-card-content="vkt"""")
+        assertContains(response, """data-card-content="koto"""")
+        assertContains(response, "skeleton-row")
+        assertContains(response, """aria-busy="true"""")
+        assertContains(response, "/dashboard/yki")
+        assertContains(response, "/dashboard/vkt")
+        assertContains(response, "/dashboard/koto")
+        assertFalse(
+            response.contains("Viimeisin saapunut suoritus"),
+            "\"Viimeisin saapunut suoritus\"-rivi esiintyy vain fragmenteissa, ei yläpalkin navigaatiossa",
+        )
     }
 
     @Test
-    fun `etusivu nayttaa viivan kun viimeisinta saapunutta suoritusta ei ole`() {
-        val response =
-            mockMvc
-                .perform(get("/").session(virkailijaSession()))
-                .andExpect(status().isOk)
-                .andReturn()
-                .response.contentAsString
-
-        assertContains(response, "Viimeisin saapunut suoritus")
-        assertContains(response, "—")
+    fun `admin kortin linkki renderoidaan synkronisesti`() {
+        val response = getHtml("/")
+        assertContains(response, "Eräajojen hallinta")
+        assertContains(response, "/kielitutkinnot/db-scheduler")
     }
+
+    @Test
+    fun `dashboard yki -fragmentti palauttaa statirivit`() {
+        val fragment = getHtml("/dashboard/yki")
+
+        assertContains(fragment, """class="dashboard-stats"""")
+        assertContains(fragment, "Suoritukset")
+        assertContains(fragment, "Arvioijat")
+        assertContains(fragment, "Tarkistusarvioinnit")
+        assertContains(fragment, "Viimeisin saapunut suoritus")
+        assertFalse(fragment.contains("<html"), "Fragmenttivastaus ei sisällä sivun kuorta")
+        assertFalse(fragment.contains("<head"), "Fragmenttivastaus ei sisällä sivun kuorta")
+    }
+
+    @Test
+    fun `dashboard vkt -fragmentti palauttaa statirivit`() {
+        val fragment = getHtml("/dashboard/vkt")
+
+        assertContains(fragment, """class="dashboard-stats"""")
+        assertContains(fragment, "Kaikki suoritukset")
+        assertContains(fragment, "Erinomaisen taidon ilmoittautuneet")
+        assertContains(fragment, "Hyvän ja tyydyttävän taidon suoritukset")
+        assertFalse(fragment.contains("<html"), "Fragmenttivastaus ei sisällä sivun kuorta")
+    }
+
+    @Test
+    fun `dashboard koto -fragmentti palauttaa statirivit`() {
+        val fragment = getHtml("/dashboard/koto")
+
+        assertContains(fragment, """class="dashboard-stats"""")
+        assertContains(fragment, "Suoritukset")
+        assertContains(fragment, "Tehtäväpaketit")
+        assertContains(fragment, "Tuonnin virheet")
+        assertFalse(fragment.contains("<html"), "Fragmenttivastaus ei sisällä sivun kuorta")
+    }
+
+    private fun getHtml(path: String): String =
+        mockMvc
+            .perform(get(path).session(virkailijaSession()))
+            .andExpect(status().isOk)
+            .andReturn()
+            .response.contentAsString
 
     private fun virkailijaSession(): MockHttpSession {
         val principal =

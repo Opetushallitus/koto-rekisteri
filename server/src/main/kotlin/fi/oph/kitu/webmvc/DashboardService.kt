@@ -33,6 +33,12 @@ class DashboardService(
     @WithSpan
     fun getStats(): DashboardStats = cache.get(Unit) ?: compute()
 
+    fun getYkiStats(): YkiStats = getStats().yki
+
+    fun getVktStats(): VktStats = getStats().vkt
+
+    fun getKotoStats(): KotoStats = getStats().koto
+
     private fun compute(): DashboardStats =
         DashboardStats(
             yki = ykiStats(),

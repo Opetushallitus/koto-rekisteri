@@ -15,6 +15,14 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 object Links {
     fun home(): String = linkTo(methodOn(HomeController::class.java).home()).toString()
 
+    object Dashboard {
+        fun yki(): String = linkTo(methodOn(HomeController::class.java).ykiCard()).toString()
+
+        fun vkt(): String = linkTo(methodOn(HomeController::class.java).vktCard()).toString()
+
+        fun koto(): String = linkTo(methodOn(HomeController::class.java).kotoCard()).toString()
+    }
+
     object Vkt {
         fun suoritukset(): String = linkTo(methodOn(VktViewController::class.java).suorituksetView()).toString()
 
