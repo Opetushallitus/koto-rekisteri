@@ -26,7 +26,7 @@ class DashboardServiceTest(
         jdbc.execute("TRUNCATE TABLE koto_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE vkt_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE koski_error")
-        clearCache()
+        clearAllCaches()
     }
 
     @Test
@@ -54,38 +54,42 @@ class DashboardServiceTest(
     }
 
     @Test
-    fun `cache palauttaa saman instanssin TTL-ikkunan sisalla`() {
-        val first = dashboardService.getStats()
-        val second = dashboardService.getStats()
-
-        assertSame(first, second)
+    fun `per-section accessor palauttaa saman instanssin TTL-ikkunan sisalla`() {
+        assertSame(dashboardService.getYkiStats(), dashboardService.getYkiStats())
+        assertSame(dashboardService.getVktStats(), dashboardService.getVktStats())
+        assertSame(dashboardService.getKotoStats(), dashboardService.getKotoStats())
     }
 
     @Test
-    fun `per-section accessorit palauttavat samat arvot kuin getStats`() {
-        val stats = dashboardService.getStats()
+    fun `vain hidas sektio kuluttaa hidasta laskentaa ja muut sektiot palaavat erikseen`() {
+        val ykiBefore = dashboardService.getYkiStats()
+        clearVktCache()
 
-        assertSame(stats.yki, dashboardService.getYkiStats())
-        assertSame(stats.vkt, dashboardService.getVktStats())
-        assertSame(stats.koto, dashboardService.getKotoStats())
+        assertSame(ykiBefore, dashboardService.getYkiStats(), "YKI-cache ei tyhjentynyt VKT-tyhjennyksen mukana")
     }
 
     @Test
     fun `cache tyhjennys saa seuraavan kutsun laskemaan tulokset uudelleen`() {
-        val first = dashboardService.getStats()
-        clearCache()
-        val second = dashboardService.getStats()
+        val first = dashboardService.getYkiStats()
+        clearAllCaches()
+        val second = dashboardService.getYkiStats()
 
         assertEquals(first, second)
-        assertSame(first, first)
-        // not assertSame(first, second) — they are equal-by-value but recomputed
     }
 
-    private fun clearCache() {
+    private fun clearAllCaches() {
+        clearCache("ykiCache")
+        clearCache("vktCache")
+        clearCache("kotoCache")
+    }
+
+    private fun clearVktCache() = clearCache("vktCache")
+
+    private fun clearCache(fieldName: String) {
         val target = AopTestUtils.getTargetObject<DashboardService>(dashboardService)
         val cacheField =
             DashboardService::class.java
-                .getDeclaredField("cache")
+                .getDeclaredField(fieldName)
                 .apply { isAccessible = true }
         val cache = cacheField.get(target)
         val itemsField =

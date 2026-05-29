@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.time.OffsetDateTime
+import java.util.concurrent.CompletableFuture
 
 interface VktSuoritusRepository :
     CrudRepository<VktSuoritusEntity, Int>,
@@ -126,6 +127,32 @@ class CustomVktSuoritusRepository(
         )
 
     @WithSpan
+    fun countSuorituksetByTaitotaso(): VktSuoritusCountsByTaitotaso {
+        val total = CompletableFuture.supplyAsync { numberOfRowsForListView(VktSuoritusFilter()) }
+        val ilmoittautuneetErinom =
+            CompletableFuture.supplyAsync {
+                numberOfRowsForListView(VktSuoritusFilter.ERINOMAISEN_TASON_ILMOITTAUTUNEET)
+            }
+        val suorituksetErinom =
+            CompletableFuture.supplyAsync {
+                numberOfRowsForListView(VktSuoritusFilter.ERINOMAISEN_TASON_SUORITUKSET)
+            }
+        val suorituksetHyvaJaTyydyttava =
+            CompletableFuture.supplyAsync {
+                numberOfRowsForListView(VktSuoritusFilter.HYVAN_JA_TYYDYTTAVAN_TASON_SUORITUKSET)
+            }
+        CompletableFuture
+            .allOf(total, ilmoittautuneetErinom, suorituksetErinom, suorituksetHyvaJaTyydyttava)
+            .join()
+        return VktSuoritusCountsByTaitotaso(
+            total = total.get().toLong(),
+            erinomaisenTasonIlmoittautuneet = ilmoittautuneetErinom.get().toLong(),
+            erinomaisenTasonSuoritukset = suorituksetErinom.get().toLong(),
+            hyvanJaTyydyttavanTasonSuoritukset = suorituksetHyvaJaTyydyttava.get().toLong(),
+        )
+    }
+
+    @WithSpan
     fun numberOfRowsForListView(filter: VktSuoritusFilter): Int {
         val query =
             """
@@ -237,6 +264,13 @@ class CustomVktSuoritusRepository(
 
         jdbcTemplate.update(query)
     }
+
+    data class VktSuoritusCountsByTaitotaso(
+        val total: Long,
+        val erinomaisenTasonIlmoittautuneet: Long,
+        val erinomaisenTasonSuoritukset: Long,
+        val hyvanJaTyydyttavanTasonSuoritukset: Long,
+    )
 
     data class Tutkintoryhma(
         val oppijanumero: String,
