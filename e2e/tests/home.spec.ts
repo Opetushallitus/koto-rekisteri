@@ -52,4 +52,29 @@ describe("Etusivun kojelautanäkymä", () => {
     const latest = page.getByTestId("latest-received").first()
     await expect(latest).toHaveText("—")
   })
+
+  test("yki/vkt/koto-korttien sisältö ladataan fragmenttina ja korvaa paikkamerkit", async ({
+    indexPage,
+    page,
+  }) => {
+    const fragmentRequests = [
+      page.waitForResponse((r) => r.url().endsWith("/dashboard/yki") && r.ok()),
+      page.waitForResponse((r) => r.url().endsWith("/dashboard/vkt") && r.ok()),
+      page.waitForResponse(
+        (r) => r.url().endsWith("/dashboard/koto") && r.ok(),
+      ),
+    ]
+
+    await indexPage.open()
+    await Promise.all(fragmentRequests)
+
+    await expect(page.locator('[data-card-content="yki"]')).toHaveCount(0)
+    await expect(page.locator('[data-card-content="vkt"]')).toHaveCount(0)
+    await expect(page.locator('[data-card-content="koto"]')).toHaveCount(0)
+    await expect(
+      page
+        .getByTestId("yki-links")
+        .getByRole("link", { name: "Tarkistusarvioinnit" }),
+    ).toBeVisible()
+  })
 })

@@ -62,6 +62,15 @@ class DashboardServiceTest(
     }
 
     @Test
+    fun `per-section accessorit palauttavat samat arvot kuin getStats`() {
+        val stats = dashboardService.getStats()
+
+        assertSame(stats.yki, dashboardService.getYkiStats())
+        assertSame(stats.vkt, dashboardService.getVktStats())
+        assertSame(stats.koto, dashboardService.getKotoStats())
+    }
+
+    @Test
     fun `cache tyhjennys saa seuraavan kutsun laskemaan tulokset uudelleen`() {
         val first = dashboardService.getStats()
         clearCache()

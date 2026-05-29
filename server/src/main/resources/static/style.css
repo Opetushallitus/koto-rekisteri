@@ -424,3 +424,38 @@ ul.dashboard-stats li.stat-row:first-child {
   background: var(--oph-yellow1);
   color: var(--oph-grey900);
 }
+
+.skeleton-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1em;
+  padding: 0.5rem 0;
+}
+
+.skeleton {
+  display: inline-block;
+  height: 1em;
+  border-radius: var(--pico-border-radius);
+  background: var(--oph-grey200);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-label {
+  flex: 1;
+  max-width: 70%;
+}
+
+.skeleton-value {
+  width: 2.5em;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
