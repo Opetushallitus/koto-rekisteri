@@ -5,7 +5,6 @@ import fi.oph.kitu.kotoutumiskoulutus.suoritukset.CustomKielitestiSuoritusReposi
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorRepository
 import fi.oph.kitu.util.cache.InMemoryCache
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
-import fi.oph.kitu.vkt.VktSuoritusFilter
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
@@ -28,25 +27,28 @@ class DashboardService(
     private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
     private val koskiErrorService: KoskiErrorService,
 ) {
-    private val cache = InMemoryCache<Unit, DashboardStats>(ttl = 60.seconds) { compute() }
+    private val ykiCache = InMemoryCache<Unit, YkiStats>(ttl = 60.seconds) { computeYki() }
+    private val vktCache = InMemoryCache<Unit, VktStats>(ttl = 60.seconds) { computeVkt() }
+    private val kotoCache = InMemoryCache<Unit, KotoStats>(ttl = 60.seconds) { computeKoto() }
 
     @WithSpan
-    fun getStats(): DashboardStats = cache.get(Unit) ?: compute()
+    fun getYkiStats(): YkiStats = ykiCache.get(Unit) ?: computeYki()
 
-    fun getYkiStats(): YkiStats = getStats().yki
+    @WithSpan
+    fun getVktStats(): VktStats = vktCache.get(Unit) ?: computeVkt()
 
-    fun getVktStats(): VktStats = getStats().vkt
+    @WithSpan
+    fun getKotoStats(): KotoStats = kotoCache.get(Unit) ?: computeKoto()
 
-    fun getKotoStats(): KotoStats = getStats().koto
-
-    private fun compute(): DashboardStats =
+    @WithSpan
+    fun getStats(): DashboardStats =
         DashboardStats(
-            yki = ykiStats(),
-            vkt = vktStats(),
-            koto = kotoStats(),
+            yki = getYkiStats(),
+            vkt = getVktStats(),
+            koto = getKotoStats(),
         )
 
-    private fun ykiStats(): YkiStats =
+    private fun computeYki(): YkiStats =
         YkiStats(
             suoritusCount = ykiSuoritusRepository.countSuoritukset(),
             arvioijaCount = ykiArvioijaRepository.count(),
@@ -57,26 +59,19 @@ class DashboardService(
             poikkeamatCount = ykiPoikkeamaRepository.count(),
         )
 
-    private fun vktStats(): VktStats =
-        VktStats(
-            suoritusCount = customVktSuoritusRepository.numberOfRowsForListView(VktSuoritusFilter()).toLong(),
-            ilmoittautuneetErinomaisenTaso =
-                customVktSuoritusRepository
-                    .numberOfRowsForListView(VktSuoritusFilter.ERINOMAISEN_TASON_ILMOITTAUTUNEET)
-                    .toLong(),
-            suorituksetErinomaisenTaso =
-                customVktSuoritusRepository
-                    .numberOfRowsForListView(VktSuoritusFilter.ERINOMAISEN_TASON_SUORITUKSET)
-                    .toLong(),
-            suorituksetHyvaJaTyydyttavaTaso =
-                customVktSuoritusRepository
-                    .numberOfRowsForListView(VktSuoritusFilter.HYVAN_JA_TYYDYTTAVAN_TASON_SUORITUKSET)
-                    .toLong(),
+    private fun computeVkt(): VktStats {
+        val counts = customVktSuoritusRepository.countSuorituksetByTaitotaso()
+        return VktStats(
+            suoritusCount = counts.total,
+            ilmoittautuneetErinomaisenTaso = counts.erinomaisenTasonIlmoittautuneet,
+            suorituksetErinomaisenTaso = counts.erinomaisenTasonSuoritukset,
+            suorituksetHyvaJaTyydyttavaTaso = counts.hyvanJaTyydyttavanTasonSuoritukset,
             latestReceivedAt = customVktSuoritusRepository.findLatestCreatedAt()?.toInstant(),
             koskiErrorCount = koskiErrorService.countByEntity("vkt", hidden = false).toLong(),
         )
+    }
 
-    private fun kotoStats(): KotoStats =
+    private fun computeKoto(): KotoStats =
         KotoStats(
             suoritusCount = customKielitestiSuoritusRepository.countSuoritukset().toLong(),
             latestReceivedAt = customKielitestiSuoritusRepository.findLatestLastModified(),
