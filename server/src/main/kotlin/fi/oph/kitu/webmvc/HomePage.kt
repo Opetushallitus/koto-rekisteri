@@ -150,7 +150,7 @@ object HomePage {
             cardContent {
                 h2(classes = "dashboard-card-title") { +"Ylläpito" }
                 ul(classes = "dashboard-stats") {
-                    statRow("Eräajojen hallinta", value = null, href = "/kielitutkinnot/db-scheduler")
+                    statRow("Eräajojen hallinta", value = null, href = Links.Admin.dbScheduler())
                 }
             }
         }

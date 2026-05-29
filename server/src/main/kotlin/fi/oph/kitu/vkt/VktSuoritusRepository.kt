@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.time.OffsetDateTime
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 
 interface VktSuoritusRepository :
     CrudRepository<VktSuoritusEntity, Int>,
@@ -128,28 +129,34 @@ class CustomVktSuoritusRepository(
 
     @WithSpan
     fun countSuorituksetByTaitotaso(): VktSuoritusCountsByTaitotaso {
-        val total = CompletableFuture.supplyAsync { numberOfRowsForListView(VktSuoritusFilter()) }
-        val ilmoittautuneetErinom =
-            CompletableFuture.supplyAsync {
-                numberOfRowsForListView(VktSuoritusFilter.ERINOMAISEN_TASON_ILMOITTAUTUNEET)
+        val futures =
+            listOf(
+                VktSuoritusFilter(),
+                VktSuoritusFilter.ERINOMAISEN_TASON_ILMOITTAUTUNEET,
+                VktSuoritusFilter.ERINOMAISEN_TASON_SUORITUKSET,
+                VktSuoritusFilter.HYVAN_JA_TYYDYTTAVAN_TASON_SUORITUKSET,
+            ).map { filter ->
+                CompletableFuture.supplyAsync({ numberOfRowsForListView(filter) }, countExecutor)
             }
-        val suorituksetErinom =
-            CompletableFuture.supplyAsync {
-                numberOfRowsForListView(VktSuoritusFilter.ERINOMAISEN_TASON_SUORITUKSET)
-            }
-        val suorituksetHyvaJaTyydyttava =
-            CompletableFuture.supplyAsync {
-                numberOfRowsForListView(VktSuoritusFilter.HYVAN_JA_TYYDYTTAVAN_TASON_SUORITUKSET)
-            }
-        CompletableFuture
-            .allOf(total, ilmoittautuneetErinom, suorituksetErinom, suorituksetHyvaJaTyydyttava)
-            .join()
+        try {
+            CompletableFuture.allOf(*futures.toTypedArray()).join()
+        } catch (t: Throwable) {
+            futures.forEach { it.cancel(true) }
+            throw t
+        }
         return VktSuoritusCountsByTaitotaso(
-            total = total.get().toLong(),
-            erinomaisenTasonIlmoittautuneet = ilmoittautuneetErinom.get().toLong(),
-            erinomaisenTasonSuoritukset = suorituksetErinom.get().toLong(),
-            hyvanJaTyydyttavanTasonSuoritukset = suorituksetHyvaJaTyydyttava.get().toLong(),
+            total = futures[0].get().toLong(),
+            erinomaisenTasonIlmoittautuneet = futures[1].get().toLong(),
+            erinomaisenTasonSuoritukset = futures[2].get().toLong(),
+            hyvanJaTyydyttavanTasonSuoritukset = futures[3].get().toLong(),
         )
+    }
+
+    companion object {
+        private val countExecutor =
+            Executors.newFixedThreadPool(4) { runnable ->
+                Thread(runnable, "vkt-dashboard-count").apply { isDaemon = true }
+            }
     }
 
     @WithSpan

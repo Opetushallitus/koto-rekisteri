@@ -23,6 +23,10 @@ object Links {
         fun koto(): String = linkTo(methodOn(HomeController::class.java).kotoCard()).toString()
     }
 
+    object Admin {
+        fun dbScheduler(): String = "${ApplicationProperties.kitu.appUrl}/db-scheduler"
+    }
+
     object Vkt {
         fun suoritukset(): String = linkTo(methodOn(VktViewController::class.java).suorituksetView()).toString()
 

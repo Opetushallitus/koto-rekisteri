@@ -1,9 +1,11 @@
 package fi.oph.kitu.util.cache
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -60,12 +62,13 @@ class InMemoryCacheTest {
     }
 
     @Test
+    @Timeout(value = 5, unit = TimeUnit.SECONDS)
     fun `rinnakkaiset get-kutsut samaan avaimeen ajavat fn-funktion vain kerran`() {
         val calls = AtomicInteger(0)
         val startGate = CountDownLatch(1)
         val cache =
             InMemoryCache<Unit, String>(ttl = 1.minutes) {
-                startGate.await()
+                startGate.await(2, TimeUnit.SECONDS)
                 calls.incrementAndGet()
                 Thread.sleep(50)
                 "value"
@@ -75,7 +78,7 @@ class InMemoryCacheTest {
         try {
             val futures = (1..16).map { CompletableFuture.supplyAsync({ cache.get(Unit) }, executor) }
             startGate.countDown()
-            val results = futures.map { it.get() }
+            val results = futures.map { it.get(2, TimeUnit.SECONDS) }
 
             assertEquals(List(16) { "value" }, results)
             assertEquals(1, calls.get(), "fn:n pitäisi olla ajettu vain kerran 16 rinnakkaiselle pyynnölle")

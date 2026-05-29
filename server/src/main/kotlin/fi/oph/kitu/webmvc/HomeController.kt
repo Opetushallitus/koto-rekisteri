@@ -1,8 +1,10 @@
 package fi.oph.kitu.webmvc
 
+import org.springframework.http.CacheControl
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
+import java.time.Duration
 
 @RestController
 class HomeController(
@@ -13,13 +15,19 @@ class HomeController(
 
     @GetMapping("/dashboard/yki", produces = ["text/html"])
     fun ykiCard(): ResponseEntity<String> =
-        ResponseEntity.ok(HomePage.renderYkiCardContent(dashboardService.getYkiStats()))
+        cachedFragment(HomePage.renderYkiCardContent(dashboardService.getYkiStats()))
 
     @GetMapping("/dashboard/vkt", produces = ["text/html"])
     fun vktCard(): ResponseEntity<String> =
-        ResponseEntity.ok(HomePage.renderVktCardContent(dashboardService.getVktStats()))
+        cachedFragment(HomePage.renderVktCardContent(dashboardService.getVktStats()))
 
     @GetMapping("/dashboard/koto", produces = ["text/html"])
     fun kotoCard(): ResponseEntity<String> =
-        ResponseEntity.ok(HomePage.renderKotoCardContent(dashboardService.getKotoStats()))
+        cachedFragment(HomePage.renderKotoCardContent(dashboardService.getKotoStats()))
+
+    private fun cachedFragment(body: String): ResponseEntity<String> =
+        ResponseEntity
+            .ok()
+            .cacheControl(CacheControl.maxAge(Duration.ofSeconds(60)).mustRevalidate())
+            .body(body)
 }

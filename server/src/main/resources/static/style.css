@@ -459,3 +459,9 @@ ul.dashboard-stats li.stat-row:first-child {
     opacity: 0.4;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

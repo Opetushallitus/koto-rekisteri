@@ -32,13 +32,14 @@ class DashboardService(
     private val kotoCache = InMemoryCache<Unit, KotoStats>(ttl = 60.seconds) { computeKoto() }
 
     @WithSpan
-    fun getYkiStats(): YkiStats = ykiCache.get(Unit) ?: computeYki()
+    fun getYkiStats(): YkiStats = ykiCache.get(Unit) ?: error("ykiCache returned null; computeYki must yield non-null")
 
     @WithSpan
-    fun getVktStats(): VktStats = vktCache.get(Unit) ?: computeVkt()
+    fun getVktStats(): VktStats = vktCache.get(Unit) ?: error("vktCache returned null; computeVkt must yield non-null")
 
     @WithSpan
-    fun getKotoStats(): KotoStats = kotoCache.get(Unit) ?: computeKoto()
+    fun getKotoStats(): KotoStats =
+        kotoCache.get(Unit) ?: error("kotoCache returned null; computeKoto must yield non-null")
 
     @WithSpan
     fun getStats(): DashboardStats =
