@@ -231,6 +231,14 @@ class YkiSuoritusRepository(
     }
 
     @WithSpan
+    fun findLatestLastModified(): Instant? =
+        jdbcTemplate
+            .queryForObject(
+                "SELECT MAX(last_modified) FROM yki_suoritus",
+                Timestamp::class.java,
+            )?.toInstant()
+
+    @WithSpan
     fun findAllSolkiIds(): List<Int> =
         jdbcTemplate
             .queryForList(
