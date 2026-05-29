@@ -119,6 +119,13 @@ class CustomVktSuoritusRepository(
     }
 
     @WithSpan
+    fun findLatestCreatedAt(): OffsetDateTime? =
+        jdbcTemplate.queryForObject(
+            "SELECT MAX(created_at) FROM vkt_suoritus",
+            OffsetDateTime::class.java,
+        )
+
+    @WithSpan
     fun numberOfRowsForListView(filter: VktSuoritusFilter): Int {
         val query =
             """

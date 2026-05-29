@@ -97,6 +97,14 @@ class CustomKielitestiSuoritusRepository(
             ?: 0
     }
 
+    fun findLatestLastModified(): java.time.Instant? =
+        jdbcNamedParameterTemplate
+            .queryForObject(
+                "SELECT MAX(last_modified) FROM koto_suoritus",
+                emptyMap<String, Any>(),
+                Timestamp::class.java,
+            )?.toInstant()
+
     fun exists(suoritus: KielitestiSuoritus): Boolean {
         val existing = findLatestSuoritusVersion(suoritus) ?: return false
         return existing.equalsIgnoringAnnotated(suoritus, "KOTO")

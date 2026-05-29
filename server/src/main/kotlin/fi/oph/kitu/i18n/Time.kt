@@ -4,6 +4,7 @@ import fi.oph.kitu.html.testId
 import kotlinx.html.FlowContent
 import kotlinx.html.span
 import kotlinx.html.title
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -35,5 +36,21 @@ fun FlowContent.finnishDateTime(dt: Instant) {
         testId("datetime")
         title = dt.toString()
         +dt.finnishDateTime(includeTimeZone = false)
+    }
+}
+
+fun formatRelativeTime(
+    t: Instant?,
+    now: Instant = Instant.now(),
+): String {
+    if (t == null) return "—"
+    val seconds = Duration.between(t, now).seconds.coerceAtLeast(0)
+    return when {
+        seconds < 60 -> "juuri nyt"
+        seconds < 60 * 60 -> "${seconds / 60} min sitten"
+        seconds < 60 * 60 * 24 -> "${seconds / 3_600} t sitten"
+        seconds < 60 * 60 * 24 * 2 -> "eilen"
+        seconds < 60 * 60 * 24 * 7 -> "${seconds / 86_400} pv sitten"
+        else -> t.atZone(ZoneId.systemDefault()).toLocalDate().finnishDate()
     }
 }

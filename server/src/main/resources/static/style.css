@@ -335,3 +335,92 @@ ul.vaihtoehdot code.fraction {
 .kentta-filter[aria-pressed="false"] {
   opacity: 0.5;
 }
+
+.dashboard-grid {
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+}
+
+.dashboard-grid > article {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-grid > article > .cardContent {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-card-title {
+  margin-bottom: var(--pico-block-spacing-vertical);
+}
+
+ul.dashboard-stats {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+ul.dashboard-stats li.stat-row {
+  list-style: none;
+  border-top: 1px solid var(--oph-grey200);
+}
+
+ul.dashboard-stats li.stat-row::marker {
+  content: "";
+}
+
+ul.dashboard-stats li.stat-row:first-child {
+  border-top: none;
+}
+
+.stat-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1em;
+  padding: 0.5rem 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.stat-link:hover .stat-label {
+  text-decoration: underline;
+}
+
+.stat-label {
+  flex: 1;
+}
+
+.stat-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--pico-primary);
+  font-weight: 600;
+}
+
+.stat-value-muted {
+  color: var(--oph-grey600);
+  font-weight: normal;
+}
+
+.badge {
+  padding: 0.1em 0.6em;
+  border-radius: 999px;
+  color: var(--oph-white);
+  font-weight: 600;
+}
+
+.badge-error {
+  background: var(--oph-orange3);
+}
+
+.badge-warning {
+  background: var(--oph-yellow1);
+  color: var(--oph-grey900);
+}
