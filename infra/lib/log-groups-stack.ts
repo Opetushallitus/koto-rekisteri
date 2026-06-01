@@ -72,7 +72,7 @@ export class LogGroupsStack extends Stack {
       })
       .metric({ statistic: Stats.SAMPLE_COUNT })
       .createAlarm(this, "ErrorsAlarm", {
-        threshold: 1,
+        threshold: 3,
         evaluationPeriods: 1,
         treatMissingData: TreatMissingData.NOT_BREACHING,
       })
