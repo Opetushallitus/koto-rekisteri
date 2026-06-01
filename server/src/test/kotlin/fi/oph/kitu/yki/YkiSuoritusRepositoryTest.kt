@@ -150,6 +150,21 @@ class YkiSuoritusRepositoryTest(
     }
 
     @Test
+    fun `find suoritus with solki id search term`() {
+        val target = generateRandomYkiSuoritusEntity().copy(solkiId = 314159)
+        val other = generateRandomYkiSuoritusEntity().copy(solkiId = 271828)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(target, other))
+
+        val exact = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "314159"))
+        assertEquals(1, exact.count())
+        assertEquals(target.solkiId, exact.first().solkiId)
+
+        val partial = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "3141"))
+        assertEquals(1, partial.count())
+        assertEquals(target.solkiId, partial.first().solkiId)
+    }
+
+    @Test
     fun `hyvaksyTarkistusarvioinnit returns Left for a non-tarkistusarvioitu suoritus`() {
         val suoritus =
             generateRandomYkiSuoritusEntity()

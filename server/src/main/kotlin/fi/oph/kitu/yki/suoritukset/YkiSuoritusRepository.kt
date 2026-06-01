@@ -106,7 +106,7 @@ class YkiSuoritusRepository(
                     withCtes(
                         "suoritus" to selectSuorituksetRoot(distinct),
                     ),
-                    "SELECT * FROM suoritus",
+                    "SELECT * FROM suoritus AS yki_suoritus",
                     filter.whereSql(),
                     "ORDER BY $order",
                     pagingQuery(limit, offset),
