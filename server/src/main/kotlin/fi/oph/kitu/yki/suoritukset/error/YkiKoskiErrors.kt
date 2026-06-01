@@ -43,10 +43,22 @@ object YkiKoskiErrors {
                     columns =
                         listOf(
                             Column.Oppijanumero.withHtml { error ->
-                                +(errorIdToSuoritusMap[error.id]?.suorittajanOID?.toString() ?: "???")
+                                val suoritus = errorIdToSuoritusMap[error.id]
+                                val oppijanumero = suoritus?.suorittajanOID?.toString()
+                                if (suoritus?.id != null && oppijanumero != null) {
+                                    a(href = Links.Yki.suoritus(suoritus.id)) { +oppijanumero }
+                                } else {
+                                    +(oppijanumero ?: "???")
+                                }
                             },
                             Column.SuorituksenTunniste.withHtml { error ->
-                                +(errorIdToSuoritusMap[error.id]?.solkiId?.toString() ?: "#${error.id}")
+                                val suoritus = errorIdToSuoritusMap[error.id]
+                                val tunniste = suoritus?.solkiId?.toString() ?: "#${error.id}"
+                                if (suoritus?.id != null) {
+                                    a(href = Links.Yki.suoritus(suoritus.id)) { +tunniste }
+                                } else {
+                                    +tunniste
+                                }
                             },
                             Column.Aikaleima.withHtml {
                                 finnishDateTime(it.timestamp)

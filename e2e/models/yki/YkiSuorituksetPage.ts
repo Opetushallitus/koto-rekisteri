@@ -63,7 +63,7 @@ export default class YkiSuorituksetPage extends BasePage {
   async setSearchTerm(search: string) {
     await this.getContent()
       .getByRole("search")
-      .getByPlaceholder("Oppijanumero, henkilötunnus tai hakusana")
+      .getByPlaceholder("Oppijanumero, henkilötunnus, Solki-ID tai hakusana")
       .fill(search)
   }
 
