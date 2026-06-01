@@ -38,6 +38,7 @@ data class YkiSuoritusFilter(
             OR hetu ILIKE :filter_search
             OR jarjestajan_tunnus_oid ILIKE :filter_search
             OR jarjestajan_nimi ILIKE :filter_search
+            OR yki_suoritus.solki_id::text ILIKE :filter_search
             """.trimIndent()
         }
 }

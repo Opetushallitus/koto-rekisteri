@@ -71,7 +71,7 @@ object YkiSuorituksetPage {
                             type = InputType.text,
                             name = "search",
                             value = filterParams.search,
-                            placeholder = "Oppijanumero, henkilötunnus tai hakusana",
+                            placeholder = "Oppijanumero, henkilötunnus, Solki-ID tai hakusana",
                         ) {
                             button(type = ButtonType.submit) {
                                 +"Suodata"
