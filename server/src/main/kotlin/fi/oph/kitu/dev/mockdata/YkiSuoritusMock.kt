@@ -49,6 +49,7 @@ fun generateRandomYkiSuoritusEntity(
         email = randomPerson.email,
         solkiId = Random.nextInt(100000, 999999),
         lastModified = lastModified,
+        receivedAt = lastModified,
         tutkintopaiva = tutkintopaiva,
         tutkintokieli =
             Tutkintokieli.entries

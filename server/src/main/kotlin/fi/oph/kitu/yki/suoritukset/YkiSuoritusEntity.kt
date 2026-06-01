@@ -47,6 +47,12 @@ data class YkiSuoritusEntity(
     @IgnoreForEquality("SOLKICSV")
     @IgnoreForEquality("DB")
     val lastModified: Instant,
+    // Aika jolloin kitu vastaanotti suorituksen ulkoiselta järjestelmältä. Sisäiset versiokirjoitukset
+    // (esim. tarkistusarvioinnin hyväksyminen) säilyttävät edellisen version arvon; dashboard käyttää
+    // tätä "Viimeisin saapunut suoritus" -aikaleimana.
+    @IgnoreForEquality("SOLKICSV")
+    @IgnoreForEquality("DB")
+    val receivedAt: Instant,
     val tutkintopaiva: LocalDate,
     val tutkintokieli: Tutkintokieli,
     val tutkintotaso: Tutkintotaso,
@@ -185,6 +191,7 @@ data class YkiSuoritusEntity(
                     email = henkilo.email,
                     solkiId = lahdejarjestelmanId.id.toInt(),
                     lastModified = Instant.now(),
+                    receivedAt = Instant.now(),
                     tutkintopaiva = tutkintopaiva,
                     tutkintokieli = kieli,
                     tutkintotaso = tutkintotaso,
@@ -250,6 +257,7 @@ data class YkiSuoritusEntity(
                 email = rs.getString("email"),
                 solkiId = rs.getInt("solki_id"),
                 lastModified = rs.getTimestamp("last_modified").toInstant(),
+                receivedAt = rs.getTimestamp("received_at").toInstant(),
                 tutkintopaiva = rs.getObject("tutkintopaiva", LocalDate::class.java),
                 tutkintokieli = Tutkintokieli.valueOf(rs.getString("tutkintokieli")),
                 tutkintotaso = Tutkintotaso.valueOf(rs.getString("tutkintotaso")),

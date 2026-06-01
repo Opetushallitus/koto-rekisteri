@@ -53,7 +53,7 @@ class DashboardService(
         YkiStats(
             suoritusCount = ykiSuoritusRepository.countSuoritukset(),
             arvioijaCount = ykiArvioijaRepository.count(),
-            latestReceivedAt = ykiSuoritusRepository.findLatestLastModified(),
+            latestReceivedAt = ykiSuoritusRepository.findLatestReceivedAt(),
             suoritusImportErrorCount = ykiSuoritusErrorService.countErrors(),
             arvioijaImportErrorCount = ykiArvioijaErrorService.countErrors(),
             koskiErrorCount = koskiErrorService.countByEntity("yki", hidden = false).toLong(),

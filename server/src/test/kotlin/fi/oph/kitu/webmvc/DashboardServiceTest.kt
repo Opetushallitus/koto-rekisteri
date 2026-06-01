@@ -1,6 +1,9 @@
 package fi.oph.kitu.webmvc
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.yki.Arviointitila
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.util.AopTestUtils
+import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
@@ -16,6 +20,7 @@ import kotlin.test.assertSame
 class DashboardServiceTest(
     @param:Autowired private val dashboardService: DashboardService,
     @param:Autowired private val jdbc: JdbcTemplate,
+    @param:Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
 ) {
     @BeforeEach
     fun cleanup() {
@@ -66,6 +71,40 @@ class DashboardServiceTest(
         clearVktCache()
 
         assertSame(ykiBefore, dashboardService.getYkiStats(), "YKI-cache ei tyhjentynyt VKT-tyhjennyksen mukana")
+    }
+
+    @Test
+    fun `tarkistusarvioinnin hyvaksynta ei muuta YKI viimeisin saapunut -aikaleimaa`() {
+        val solkiId = 654321
+        val ulkoinenSaapumisaika = Instant.parse("2026-05-01T08:00:00Z")
+        val virkailijanHyvaksyntaaika = Instant.parse("2026-06-01T12:00:00Z")
+
+        val ulkoinenSuoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                solkiId = solkiId,
+                lastModified = ulkoinenSaapumisaika,
+                receivedAt = ulkoinenSaapumisaika,
+                arviointitila = Arviointitila.ARVIOITU,
+            )
+        ykiSuoritusRepository.save(ulkoinenSuoritus, false)
+        clearAllCaches()
+        assertEquals(ulkoinenSaapumisaika, dashboardService.getYkiStats().latestReceivedAt)
+
+        // Virkailija hyväksyy tarkistusarvioinnin: data class .copy() säilyttää receivedAt:n alkuperäisessä arvossa.
+        val hyvaksyntaVersio =
+            ulkoinenSuoritus.copy(
+                id = null,
+                lastModified = virkailijanHyvaksyntaaika,
+                arviointitila = Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
+            )
+        ykiSuoritusRepository.save(hyvaksyntaVersio, true)
+        clearAllCaches()
+
+        assertEquals(
+            ulkoinenSaapumisaika,
+            dashboardService.getYkiStats().latestReceivedAt,
+            "received_at ei saa edetä virkailijan tarkistusarvioinnin hyväksymisestä",
+        )
     }
 
     @Test

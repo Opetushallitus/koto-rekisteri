@@ -97,6 +97,11 @@ class CustomKielitestiSuoritusRepository(
             ?: 0
     }
 
+    // Dashboard käyttää tätä "Viimeisin saapunut suoritus" -aikaleimana. Semantiikka on oikea koska
+    // koto_suoritus on read-only virkailijalle: vain KoealustaService.importSuoritukset (ajastettu Koealusta-
+    // polling) kirjoittaa ja exists()-tarkistus estää duplikaatit. Jos tulevaisuudessa lisätään esim.
+    // virkailijan-UI:sta laukeava koto_suoritus-write, semantiikka rikkoutuu ja tämä metodi pitää korvata
+    // erillisellä received_at-sarakkeella (vrt. YkiSuoritusRepository.findLatestReceivedAt).
     fun findLatestLastModified(): java.time.Instant? =
         jdbcNamedParameterTemplate
             .queryForObject(

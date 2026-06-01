@@ -120,6 +120,12 @@ class CustomVktSuoritusRepository(
         return jdbcNamedParameterTemplate.queryForList(query, params, Int::class.java).filterNotNull()
     }
 
+    // Dashboard käyttää tätä "Viimeisin saapunut suoritus" -aikaleimana. Semantiikka on tällä hetkellä
+    // oikea koska vkt_suoritus.created_at asetetaan add_rekisteriintuontiaika-DB-triggerillä BEFORE INSERT
+    // ja vain VktApiController.putHenkilosuoritus insertoi rivejä. Virkailija-UI päivittää vkt_osakoe-tauluun
+    // eikä Koski-tilan päivitykset koske vkt_suoritus.created_at. Jos tulevaisuudessa lisätään
+    // virkailija-UI:sta laukeava vkt_suoritus-insert, semantiikka rikkoutuu ja tämä metodi pitää korvata
+    // erillisellä received_at-sarakkeella (vrt. YkiSuoritusRepository.findLatestReceivedAt).
     @WithSpan
     fun findLatestCreatedAt(): OffsetDateTime? =
         jdbcTemplate.queryForObject(
