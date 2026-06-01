@@ -45,6 +45,18 @@ export class AlarmsStack extends cdk.Stack {
     this.alarmSnsTopic = this.createSnsTopic("AlarmSnsTopic")
     this.infoSnsTopic = this.createSnsTopic("InfoSnsTopic")
 
+    // Ilman tätä Q ei pysty julkaisemaan tutkimustapahtumia
+    // chatbotNotificationChannelsin SNS-aiheeseen, joten Slackiin ei tule
+    // tutkimusviestejä vaikka tutkimus käynnistyisi onnistuneesti.
+    // Katso: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Investigations-Integrations.html#Investigations-Integrations-Chat-policy
+    this.alarmSnsTopic.grantPublish(
+      new ServicePrincipal("aiops.amazonaws.com", {
+        conditions: {
+          StringEquals: { "aws:SourceAccount": this.account },
+        },
+      }),
+    )
+
     const alarmsSlack = props.slack
       ? this.createSlackChannelConfiguration(
           "SlackBot",

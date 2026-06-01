@@ -215,9 +215,9 @@ Per `lib/accounts.ts`:
 
 Workspace `T02C6SZL7KP` for all envs.
 
-### IAM identities involved
+### IAM identities and policies involved
 
-Three roles, easy to confuse:
+Four pieces, easy to confuse:
 
 1. **Investigation group role** (`InvestigationGroupRole` in
    `alarms-stack.ts`). Assumed by `aiops.amazonaws.com`. Has
@@ -234,6 +234,15 @@ Three roles, easy to confuse:
    the right to call `CreateInvestigation` / `CreateInvestigationEvent` on
    this group, scoped to alarms in the same account/region. Without this,
    alarms silently fail to start investigations.
+4. **Alarm SNS topic resource policy** (`alarmSnsTopic` in `alarms-stack.ts`).
+   Grants `aiops.amazonaws.com` `sns:Publish` on the topic, with an
+   `aws:SourceAccount` condition. Q publishes investigation events directly
+   to whichever SNS topic is listed under the investigation group's
+   `chatbotNotificationChannels` — without this grant, the publish is
+   silently denied, so `CreateInvestigation` succeeds but no
+   `CreateInvestigationEvent` ever follows and Slack stays empty even though
+   an investigation was created. See
+   [Investigations chat integration](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Investigations-Integrations.html#Investigations-Integrations-Chat-policy).
 
 ### Log-based metric filters (`lib/log-groups-stack.ts`)
 
@@ -265,6 +274,10 @@ aws aiops get-investigation-group --identifier <name> --region eu-west-1 --profi
 # Chatbot Slack channel role + attached policies
 aws chatbot describe-slack-channel-configurations --region us-east-1 --profile <env> \
   --query 'SlackChannelConfigurations[?ConfigurationName==`<channel-name>`].IamRoleArn'
+
+# Alarm SNS topic policy — must list aiops.amazonaws.com as a Publish principal
+aws sns get-topic-attributes --topic-arn <alarm-sns-arn> --region eu-west-1 \
+  --profile <env> --query 'Attributes.Policy' --output text | jq .
 aws iam list-attached-role-policies --role-name <role-from-above> --profile <env>
 ```
 
