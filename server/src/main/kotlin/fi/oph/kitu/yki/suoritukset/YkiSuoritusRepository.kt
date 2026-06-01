@@ -230,11 +230,15 @@ class YkiSuoritusRepository(
             ?: 0
     }
 
+    // received_at asetetaan vain ulkoisesta importista (YkiSuoritusEntity.from / YkiSuoritusMappingService) ja
+    // säilyy ennallaan sisäisten versiokirjoitusten yli (data class .copy() preservoi sen
+    // hyvaksyTarkistusarvioinnit-kutsussa). Siksi tämä kysely vastaa "Viimeisin saapunut suoritus"
+    // -semantiikkaa eikä bumppaa virkailijatoiminnasta.
     @WithSpan
-    fun findLatestLastModified(): Instant? =
+    fun findLatestReceivedAt(): Instant? =
         jdbcTemplate
             .queryForObject(
-                "SELECT MAX(last_modified) FROM yki_suoritus",
+                "SELECT MAX(received_at) FROM yki_suoritus",
                 Timestamp::class.java,
             )?.toInstant()
 
@@ -400,6 +404,7 @@ class YkiSuoritusRepository(
                 "email" to suoritus.email,
                 "solki_id" to suoritus.solkiId.toString(),
                 "last_modified" to Timestamp.from(suoritus.lastModified),
+                "received_at" to Timestamp.from(suoritus.receivedAt),
                 "koski_opiskeluoikeus" to suoritus.koskiOpiskeluoikeus?.toString(),
                 "koski_siirto_kasitelty" to (suoritus.koskiSiirtoKasitelty ?: false),
                 "arviointitila" to suoritus.arviointitila.toString(),

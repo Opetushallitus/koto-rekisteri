@@ -6,6 +6,7 @@ import fi.oph.kitu.yki.Sukupuoli
 import fi.oph.kitu.yki.TutkinnonOsa.Companion.toTutkinnonOsaSet
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.time.LocalDate
 
 @Service
@@ -34,6 +35,7 @@ class YkiSuoritusMappingService(
         csv.email,
         csv.suoritusID,
         csv.lastModified,
+        receivedAt = Instant.now(),
         csv.tutkintopaiva,
         csv.tutkintokieli,
         csv.tutkintotaso,
