@@ -327,13 +327,30 @@ ul.vaihtoehdot code.fraction {
   text-align: right;
 }
 
-.kentta-filters {
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
+th {
+  vertical-align: top;
 }
 
-.kentta-filter[aria-pressed="false"] {
-  opacity: 0.5;
+th > details.dropdown {
+  display: block;
+  margin: 0;
+  vertical-align: middle;
+}
+
+th > details.dropdown > summary {
+  font-weight: normal;
+  font-size: 0.85em;
+  padding: 0.2em 0.6em;
+  margin: 0;
+}
+
+th > details.dropdown label {
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+article.overflow-auto:has(details.dropdown[open]) {
+  overflow: visible;
 }
 
 .dashboard-grid {
