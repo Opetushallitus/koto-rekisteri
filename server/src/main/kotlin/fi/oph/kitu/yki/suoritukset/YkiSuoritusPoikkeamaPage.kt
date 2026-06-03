@@ -1,17 +1,15 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.html.CheckboxItem
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.checkboxDropdown
 import fi.oph.kitu.html.csvDownloadButton
 import fi.oph.kitu.html.javascript
-import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.webmvc.Links
-import kotlinx.html.ButtonType
 import kotlinx.html.a
 import kotlinx.html.article
-import kotlinx.html.button
-import kotlinx.html.div
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.p
@@ -38,18 +36,6 @@ object YkiSuoritusPoikkeamaPage {
 
                 val kentat = poikkeamat.map { it.kentta }.distinct().sorted()
 
-                div(classes = "kentta-filters") {
-                    attributes["role"] = "group"
-                    kentat.forEach { kentta ->
-                        button(type = ButtonType.button, classes = "kentta-filter") {
-                            attributes["aria-pressed"] = "false"
-                            attributes["data-kentta-filter"] = kentta
-                            testId("kentta-filter-$kentta")
-                            +kentta
-                        }
-                    }
-                }
-
                 article(classes = "overflow-auto") {
                     table(classes = "striped") {
                         thead {
@@ -58,7 +44,22 @@ object YkiSuoritusPoikkeamaPage {
                                 th { +"Tutkintopäivä" }
                                 th { +"Kieli" }
                                 th { +"Taso" }
-                                th { +"Kenttä" }
+                                th {
+                                    +"Kenttä"
+                                    checkboxDropdown(
+                                        title = "Suodata",
+                                        items =
+                                            kentat.map {
+                                                CheckboxItem(
+                                                    value = it,
+                                                    label = it,
+                                                    testId = "kentta-filter-$it",
+                                                )
+                                            },
+                                        classes = "kentta-filter",
+                                        testId = "kentta-filter",
+                                    )
+                                }
                                 th { +"Arvo Kitussa" }
                                 th { +"Arvo Solkissa" }
                                 th { +"Havaittu" }
@@ -91,24 +92,20 @@ object YkiSuoritusPoikkeamaPage {
 
                 javascript(
                     """
-                    const buttons = document.querySelectorAll('.kentta-filter');
+                    const dropdown = document.querySelector('.kentta-filter');
+                    const checkboxes = dropdown.querySelectorAll('input[type=checkbox]');
                     const rows = document.querySelectorAll('tbody tr[data-kentta]');
-                    function apply() {
+                    dropdown.addEventListener('change', () => {
                         const active = new Set(
-                            Array.from(buttons)
-                                .filter(b => b.getAttribute('aria-pressed') === 'true')
-                                .map(b => b.dataset.kenttaFilter)
+                            Array.from(checkboxes)
+                                .filter(c => c.checked)
+                                .map(c => c.value)
                         );
                         const filtering = active.size > 0;
                         rows.forEach(r => {
                             r.hidden = filtering && !active.has(r.dataset.kentta);
                         });
-                    }
-                    buttons.forEach(b => b.addEventListener('click', () => {
-                        const pressed = b.getAttribute('aria-pressed') === 'true';
-                        b.setAttribute('aria-pressed', String(!pressed));
-                        apply();
-                    }));
+                    });
                     """.trimIndent(),
                 )
             }
