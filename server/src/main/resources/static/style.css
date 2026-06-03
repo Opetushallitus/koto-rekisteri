@@ -357,6 +357,25 @@ tr.repeat-group td.group-cell {
   visibility: hidden;
 }
 
+td.group-cell input[type="checkbox"][data-select-group],
+th input[type="checkbox"][data-select-all-visible],
+td input[type="checkbox"][data-poikkeama-checkbox] {
+  margin: 0 0.5em 0 0;
+  vertical-align: middle;
+}
+
+.poikkeamat-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-bottom: var(--pico-typography-spacing-vertical);
+}
+
+.poikkeamat-toolbar > button {
+  margin: 0;
+  width: auto;
+}
+
 .dashboard-grid {
   grid-template-columns: 1fr 1fr;
   align-items: stretch;

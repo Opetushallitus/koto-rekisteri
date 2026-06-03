@@ -12,6 +12,7 @@ import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiYkiMappingError
 import fi.oph.kitu.koski.KoskiYkiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
+import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.webmvc.rewriteAttribute
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
@@ -19,9 +20,11 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
+import fi.oph.kitu.yki.suoritukset.PoikkeamaKey
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaPage
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaPatchService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
@@ -52,6 +55,7 @@ class YkiViewController(
     private val koskiErrorService: KoskiErrorService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
     private val ykiSuoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
+    private val ykiSuoritusPoikkeamaPatchService: YkiSuoritusPoikkeamaPatchService,
     private val koskiYkiRequestMapper: KoskiYkiRequestMapper,
     @param:Qualifier("koskiObjectMapper")
     private val koskiObjectMapper: JsonMapper,
@@ -135,7 +139,7 @@ class YkiViewController(
     }
 
     @GetMapping("/poikkeamat", produces = ["text/html"])
-    fun poikkeamatView(): ResponseEntity<String> {
+    fun poikkeamatView(viewMessage: ViewMessage? = null): ResponseEntity<String> {
         val poikkeamat = ykiSuoritusPoikkeamaRepository.findAll()
         val solkiIdToSuoritusId =
             ykiSuoritusRepository
@@ -143,8 +147,48 @@ class YkiViewController(
                 .mapNotNull { s -> s.id?.let { s.solkiId to it } }
                 .toMap()
         return ResponseEntity.ok(
-            YkiSuoritusPoikkeamaPage.render(poikkeamat, solkiIdToSuoritusId),
+            YkiSuoritusPoikkeamaPage.render(poikkeamat, solkiIdToSuoritusId, viewMessage?.consume()),
         )
+    }
+
+    @PostMapping("/poikkeamat/patchaa")
+    fun patchaaPoikkeamat(
+        @RequestParam(name = "poikkeama", required = false) poikkeamat: List<String>?,
+        viewMessage: ViewMessage?,
+    ): RedirectView {
+        val keys = (poikkeamat ?: emptyList()).mapNotNull(PoikkeamaKey::decode)
+        val (succeeded, failed) =
+            ykiSuoritusPoikkeamaPatchService
+                .patchaa(keys)
+                .splitIntoValuesAndErrors()
+
+        viewMessage?.let { msg ->
+            when {
+                succeeded.isEmpty() && failed.isEmpty() -> {
+                    msg.showInfo("Yhtään poikkeamaa ei ollut valittuna.")
+                }
+
+                failed.isEmpty() -> {
+                    msg.showSuccess("${succeeded.size} poikkeamaa korjattu.")
+                }
+
+                succeeded.isEmpty() -> {
+                    msg.showError(
+                        "Yhtäkään poikkeamaa ei voitu korjata: " +
+                            failed.joinToString("; ") { "${it.key.solkiId}/${it.key.kentta}: ${it.message}" },
+                    )
+                }
+
+                else -> {
+                    msg.showInfo(
+                        "${succeeded.size} poikkeamaa korjattu, ${failed.size} epäonnistui: " +
+                            failed.joinToString("; ") { "${it.key.solkiId}/${it.key.kentta}: ${it.message}" },
+                    )
+                }
+            }
+        }
+
+        return RedirectView(Links.Yki.poikkeamat())
     }
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])

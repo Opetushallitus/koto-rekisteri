@@ -40,6 +40,28 @@ class YkiSuoritusPoikkeamaRepository(
             YkiSuoritusPoikkeama.fromRow,
         )
 
+    fun findByKey(
+        solkiId: Int,
+        kentta: String,
+    ): YkiSuoritusPoikkeama? =
+        jdbcTemplate
+            .query(
+                "SELECT * FROM yki_suoritus_poikkeama WHERE solki_id = ? AND kentta = ?",
+                YkiSuoritusPoikkeama.fromRow,
+                solkiId,
+                kentta,
+            ).firstOrNull()
+
+    fun deleteByKey(
+        solkiId: Int,
+        kentta: String,
+    ): Int =
+        jdbcTemplate.update(
+            "DELETE FROM yki_suoritus_poikkeama WHERE solki_id = ? AND kentta = ?",
+            solkiId,
+            kentta,
+        )
+
     fun count(): Long =
         jdbcTemplate.queryForObject("SELECT COUNT(*) FROM yki_suoritus_poikkeama", Long::class.java) ?: 0L
 }

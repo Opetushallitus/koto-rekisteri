@@ -1,6 +1,7 @@
 package fi.oph.kitu.html
 
 import kotlinx.html.FlowContent
+import kotlinx.html.FlowOrInteractiveOrPhrasingContent
 import kotlinx.html.INPUT
 import kotlinx.html.InputFormEncType
 import kotlinx.html.InputFormMethod
@@ -22,7 +23,7 @@ fun Tag.testId(id: String?) {
     if (id != null) data("testid", id)
 }
 
-fun FlowContent.input(
+fun FlowOrInteractiveOrPhrasingContent.input(
     type: InputType? = null,
     formEncType: InputFormEncType? = null,
     formMethod: InputFormMethod? = null,
