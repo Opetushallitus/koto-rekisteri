@@ -196,6 +196,95 @@ class YkiServiceTests(
     }
 
     @Test
+    fun `checkYkiAnomalies upsertaa saman poikkeaman ja säilyttää alkuperäisen havaittu-ajan`() {
+        val solkiId = 888888
+        val firstCsv =
+            """"1.2.246.562.24.20281155246","010180-9026","N","EkaSuku","Eka Etu","FIN","Mäkitie 1","00100","Helsinki","pekka@example.fi",$solkiId,2024-06-01T10:00:00Z,2024-06-15,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto",,,,,,,,,,0,0,,"""
+        val secondCsv =
+            """"1.2.246.562.24.20281155246","010180-9026","N","TokaSuku","Toka Etu","FIN","Mäkitie 1","00100","Helsinki","pekka@example.fi",$solkiId,2024-06-01T10:00:00Z,2024-06-15,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto",,,,,,,,,,0,0,,"""
+
+        val from = Instant.parse("2024-01-01T00:00:00Z")
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("suoritukset?m=2024-01-01T00:00:00Z"))
+            .andRespond(withSuccess(firstCsv, MediaType.parseMediaType("text/csv")))
+        mockServer
+            .expect(requestTo("suoritukset?m=2024-01-01T00:00:00Z"))
+            .andRespond(withSuccess(secondCsv, MediaType.parseMediaType("text/csv")))
+
+        val service =
+            YkiService(
+                mockRestClientBuilder.build(),
+                ykiSuoritusRepository,
+                ykiSuoritusErrorService,
+                suoritusMapper,
+                ykiArvioijaRepository,
+                suoritusPoikkeamaRepository,
+                auditLogger,
+                parser,
+            )
+
+        service.checkYkiAnomalies(from)
+        val firstHavaittu =
+            suoritusPoikkeamaRepository
+                .findByKey(solkiId, YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA)!!
+                .havaittu
+
+        Thread.sleep(50)
+        service.checkYkiAnomalies(from)
+
+        val poikkeamat = suoritusPoikkeamaRepository.findAll()
+        assertEquals(1, poikkeamat.size)
+        val poikkeama = poikkeamat.first()
+        assertTrue(poikkeama.arvoSolkissa.contains("TokaSuku"))
+        assertTrue(poikkeama.arvoSolkissa.contains("Toka Etu"))
+        assertEquals(firstHavaittu, poikkeama.havaittu)
+    }
+
+    @Test
+    fun `checkYkiAnomalies ei poista poikkeamia jotka eivät kuulu Solki-vastaukseen`() {
+        val olemassaolevaSolkiId = 777777
+        val olemassaolevaHavaittu = Instant.parse("2024-01-15T08:00:00Z")
+        suoritusPoikkeamaRepository.save(
+            YkiSuoritusPoikkeama(
+                solkiId = olemassaolevaSolkiId,
+                kentta = YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA,
+                arvoKitussa = "",
+                arvoSolkissa = "Vanha poikkeama, YT, 2024-01-10",
+                havaittu = olemassaolevaHavaittu,
+                tutkintopaiva = LocalDate.of(2024, 1, 10),
+                tutkintokieli = Tutkintokieli.FIN,
+                tutkintotaso = Tutkintotaso.YT,
+            ),
+        )
+
+        val from = Instant.parse("2024-05-01T00:00:00Z")
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("suoritukset?m=2024-05-01T00:00:00Z"))
+            .andRespond(withSuccess("", MediaType.parseMediaType("text/csv")))
+
+        val service =
+            YkiService(
+                mockRestClientBuilder.build(),
+                ykiSuoritusRepository,
+                ykiSuoritusErrorService,
+                suoritusMapper,
+                ykiArvioijaRepository,
+                suoritusPoikkeamaRepository,
+                auditLogger,
+                parser,
+            )
+
+        service.checkYkiAnomalies(from)
+
+        val poikkeamat = suoritusPoikkeamaRepository.findAll()
+        assertEquals(1, poikkeamat.size)
+        assertEquals(olemassaolevaSolkiId, poikkeamat.first().solkiId)
+        assertEquals(olemassaolevaHavaittu, poikkeamat.first().havaittu)
+    }
+
+    @Test
     fun `Arvointitila is updated correctly also on csv update`() {
         val expected =
             mapOf(

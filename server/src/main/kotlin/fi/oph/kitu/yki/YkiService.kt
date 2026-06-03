@@ -90,7 +90,6 @@ class YkiService(
 
         val entities = suoritusMapper.convertToEntityIterable(suoritukset)
 
-        suoritusPoikkeamaRepository.deleteAll()
         entities.forEach { entity ->
             val existing =
                 suoritusRepository
