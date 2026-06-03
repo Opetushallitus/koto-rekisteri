@@ -84,9 +84,10 @@ object YkiSuoritusPoikkeamaPage {
                         tbody {
                             poikkeamat.forEach { p ->
                                 tr {
+                                    attributes["data-solki-id"] = p.solkiId.toString()
                                     attributes["data-kentta"] = p.kentta
                                     p.tutkintopaiva?.let { attributes["data-tutkintopaiva"] = it.toString() }
-                                    td {
+                                    td(classes = "group-cell") {
                                         val internalId = solkiIdToSuoritusId[p.solkiId]
                                         if (internalId != null) {
                                             a(href = Links.Yki.suoritus(internalId)) { +p.solkiId.toString() }
@@ -94,9 +95,9 @@ object YkiSuoritusPoikkeamaPage {
                                             +p.solkiId.toString()
                                         }
                                     }
-                                    td { p.tutkintopaiva?.let { finnishDate(it) } }
-                                    td { p.tutkintokieli?.let { +it.name } }
-                                    td { p.tutkintotaso?.let { +it.name } }
+                                    td(classes = "group-cell") { p.tutkintopaiva?.let { finnishDate(it) } }
+                                    td(classes = "group-cell") { p.tutkintokieli?.let { +it.name } }
+                                    td(classes = "group-cell") { p.tutkintotaso?.let { +it.name } }
                                     td { +p.kentta }
                                     td { +p.arvoKitussa }
                                     td { +p.arvoSolkissa }
@@ -125,8 +126,16 @@ object YkiSuoritusPoikkeamaPage {
                             }
                             r.hidden = !visible;
                         });
+                        let prevSolkiId = null;
+                        rows.forEach(r => {
+                            if (r.hidden) return;
+                            const id = r.dataset.solkiId;
+                            r.classList.toggle('repeat-group', id === prevSolkiId);
+                            prevSolkiId = id;
+                        });
                     }
                     dropdowns.forEach(d => d.addEventListener('change', apply));
+                    apply();
                     """.trimIndent(),
                 )
             }

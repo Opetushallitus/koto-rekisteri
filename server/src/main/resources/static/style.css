@@ -353,6 +353,10 @@ article.overflow-auto:has(details.dropdown[open]) {
   overflow: visible;
 }
 
+tr.repeat-group td.group-cell {
+  visibility: hidden;
+}
+
 .dashboard-grid {
   grid-template-columns: 1fr 1fr;
   align-items: stretch;
