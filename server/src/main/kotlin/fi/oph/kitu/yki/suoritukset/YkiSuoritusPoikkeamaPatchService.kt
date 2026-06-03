@@ -81,9 +81,9 @@ class YkiSuoritusPoikkeamaPatchService(
     private val suoritusRepository: YkiSuoritusRepository,
     private val auditLogger: AuditLogger,
 ) {
-    fun patchaa(keys: List<PoikkeamaKey>): List<Either<PatchFailure, PoikkeamaKey>> = keys.map(::patchaaYksi)
+    fun patch(keys: List<PoikkeamaKey>): List<Either<PatchFailure, PoikkeamaKey>> = keys.map(::patchOne)
 
-    private fun patchaaYksi(key: PoikkeamaKey): Either<PatchFailure, PoikkeamaKey> {
+    private fun patchOne(key: PoikkeamaKey): Either<PatchFailure, PoikkeamaKey> {
         val poikkeama =
             poikkeamaRepository.findByKey(key.solkiId, key.kentta)
                 ?: return PatchFailure.PoikkeamaNotFound(key).left()
