@@ -46,6 +46,8 @@ object YkiSuoritusPoikkeamaPage {
             } else {
                 val kentat = poikkeamat.map { it.kentta }.distinct().sorted()
                 val tutkintopaivat = poikkeamat.mapNotNull { it.tutkintopaiva }.distinct().sortedDescending()
+                val tutkintokielet = poikkeamat.mapNotNull { it.tutkintokieli }.distinct().sortedBy { it.name }
+                val tutkintotasot = poikkeamat.mapNotNull { it.tutkintotaso }.distinct().sortedBy { it.name }
 
                 formPost(action = Links.Yki.poikkeamatPatch()) {
                     div(classes = "poikkeamat-toolbar") {
@@ -79,8 +81,38 @@ object YkiSuoritusPoikkeamaPage {
                                             dataAttributes = mapOf("filter-key" to "tutkintopaiva"),
                                         )
                                     }
-                                    th { +"Kieli" }
-                                    th { +"Taso" }
+                                    th {
+                                        +"Kieli"
+                                        checkboxDropdown(
+                                            title = "Suodata",
+                                            items =
+                                                tutkintokielet.map {
+                                                    CheckboxItem(
+                                                        value = it.name,
+                                                        label = it.name,
+                                                        testId = "tutkintokieli-filter-${it.name}",
+                                                    )
+                                                },
+                                            testId = "tutkintokieli-filter",
+                                            dataAttributes = mapOf("filter-key" to "tutkintokieli"),
+                                        )
+                                    }
+                                    th {
+                                        +"Taso"
+                                        checkboxDropdown(
+                                            title = "Suodata",
+                                            items =
+                                                tutkintotasot.map {
+                                                    CheckboxItem(
+                                                        value = it.name,
+                                                        label = it.name,
+                                                        testId = "tutkintotaso-filter-${it.name}",
+                                                    )
+                                                },
+                                            testId = "tutkintotaso-filter",
+                                            dataAttributes = mapOf("filter-key" to "tutkintotaso"),
+                                        )
+                                    }
                                     th {
                                         input(type = InputType.checkBox) {
                                             attributes["data-select-all-visible"] = ""
@@ -112,6 +144,8 @@ object YkiSuoritusPoikkeamaPage {
                                         attributes["data-solki-id"] = p.solkiId.toString()
                                         attributes["data-kentta"] = p.kentta
                                         p.tutkintopaiva?.let { attributes["data-tutkintopaiva"] = it.toString() }
+                                        p.tutkintokieli?.let { attributes["data-tutkintokieli"] = it.name }
+                                        p.tutkintotaso?.let { attributes["data-tutkintotaso"] = it.name }
                                         td(classes = "group-cell") {
                                             input(type = InputType.checkBox) {
                                                 attributes["data-select-group"] = p.solkiId.toString()
