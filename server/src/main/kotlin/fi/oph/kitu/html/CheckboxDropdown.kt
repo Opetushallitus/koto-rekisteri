@@ -3,7 +3,6 @@ package fi.oph.kitu.html
 import kotlinx.html.DETAILS
 import kotlinx.html.InputType
 import kotlinx.html.Tag
-import kotlinx.html.attributesMapOf
 import kotlinx.html.label
 import kotlinx.html.li
 import kotlinx.html.summary
@@ -24,11 +23,15 @@ fun Tag.checkboxDropdown(
     name: String? = null,
     classes: String? = null,
     testId: String? = null,
+    dataAttributes: Map<String, String> = emptyMap(),
     block: DETAILS.() -> Unit = {},
 ) {
-    val classAttr = listOfNotNull("dropdown", classes).joinToString(" ")
-    DETAILS(attributesMapOf("class", classAttr), consumer).visit {
-        testId(testId)
+    val attrs = LinkedHashMap<String, String>()
+    attrs["class"] = listOfNotNull("dropdown", classes).joinToString(" ")
+    if (testId != null) attrs["data-testid"] = testId
+    dataAttributes.forEach { (k, v) -> attrs["data-$k"] = v }
+
+    DETAILS(attrs, consumer).visit {
         summary { +title }
         ul {
             items.forEach { item ->
