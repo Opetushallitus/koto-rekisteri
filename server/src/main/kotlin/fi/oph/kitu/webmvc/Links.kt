@@ -89,6 +89,9 @@ object Links {
 
         fun poikkeamat(): String = linkTo(methodOn(YkiViewController::class.java).poikkeamatView()).toString()
 
+        fun poikkeamatPatch(): String =
+            linkTo(methodOn(YkiViewController::class.java).patchaaPoikkeamat(null, null)).toString()
+
         fun arvioijatVirheet(): String =
             linkTo(methodOn(YkiViewController::class.java).arvioijatVirheetView()).toString()
 

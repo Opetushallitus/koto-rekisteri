@@ -34,4 +34,5 @@ enum class AuditLogOperation(
     KielitestiSuoritusViewed("KielitestiSuoritusViewed"),
     VktSuoritusViewed("VktSuoritusViewed"),
     YkiSuoritusViewed("YkiSuoritusViewed"),
+    YkiSuoritusPatched("YkiSuoritusPatched"),
 }

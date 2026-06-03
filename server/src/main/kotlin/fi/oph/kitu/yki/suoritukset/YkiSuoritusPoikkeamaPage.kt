@@ -2,14 +2,23 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.html.CheckboxItem
 import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.checkboxDropdown
 import fi.oph.kitu.html.csvDownloadButton
+import fi.oph.kitu.html.formPost
+import fi.oph.kitu.html.input
 import fi.oph.kitu.html.javascript
+import fi.oph.kitu.html.testId
+import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.webmvc.Links
+import kotlinx.html.ButtonType
+import kotlinx.html.InputType
 import kotlinx.html.a
 import kotlinx.html.article
+import kotlinx.html.button
+import kotlinx.html.div
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.p
@@ -24,84 +33,117 @@ object YkiSuoritusPoikkeamaPage {
     fun render(
         poikkeamat: List<YkiSuoritusPoikkeama>,
         solkiIdToSuoritusId: Map<Int, Int>,
+        message: ViewMessageData? = null,
     ): String =
         Page.renderHtml(wideContent = true) {
             h1 { +"Yleinen kielitutkinto" }
             h2 { +"Suoritusten poikkeamat" }
 
+            viewMessage(message)
+
             if (poikkeamat.isEmpty()) {
                 p { +"Ei havaittuja poikkeamia." }
             } else {
-                p { csvDownloadButton(Links.Yki.poikkeamatCsv()) }
-
                 val kentat = poikkeamat.map { it.kentta }.distinct().sorted()
                 val tutkintopaivat = poikkeamat.mapNotNull { it.tutkintopaiva }.distinct().sortedDescending()
 
-                article(classes = "overflow-auto") {
-                    table(classes = "striped") {
-                        thead {
-                            tr {
-                                th { +"Solki-ID" }
-                                th {
-                                    +"Tutkintopäivä"
-                                    checkboxDropdown(
-                                        title = "Suodata",
-                                        items =
-                                            tutkintopaivat.map {
-                                                CheckboxItem(
-                                                    value = it.toString(),
-                                                    label = it.finnishDate(),
-                                                    testId = "tutkintopaiva-filter-$it",
-                                                )
-                                            },
-                                        testId = "tutkintopaiva-filter",
-                                        dataAttributes = mapOf("filter-key" to "tutkintopaiva"),
-                                    )
-                                }
-                                th { +"Kieli" }
-                                th { +"Taso" }
-                                th {
-                                    +"Kenttä"
-                                    checkboxDropdown(
-                                        title = "Suodata",
-                                        items =
-                                            kentat.map {
-                                                CheckboxItem(
-                                                    value = it,
-                                                    label = it,
-                                                    testId = "kentta-filter-$it",
-                                                )
-                                            },
-                                        testId = "kentta-filter",
-                                        dataAttributes = mapOf("filter-key" to "kentta"),
-                                    )
-                                }
-                                th { +"Arvo Kitussa" }
-                                th { +"Arvo Solkissa" }
-                                th { +"Havaittu" }
-                            }
+                formPost(action = Links.Yki.poikkeamatPatch()) {
+                    div(classes = "poikkeamat-toolbar") {
+                        csvDownloadButton(Links.Yki.poikkeamatCsv())
+                        button(type = ButtonType.submit, classes = "patch-button") {
+                            attributes["disabled"] = ""
+                            attributes["data-patch-button"] = ""
+                            testId("tallenna-korjaukset")
+                            +"Tallenna korjaukset"
                         }
-                        tbody {
-                            poikkeamat.forEach { p ->
+                    }
+
+                    article(classes = "overflow-auto") {
+                        table(classes = "striped") {
+                            thead {
                                 tr {
-                                    attributes["data-solki-id"] = p.solkiId.toString()
-                                    attributes["data-kentta"] = p.kentta
-                                    p.tutkintopaiva?.let { attributes["data-tutkintopaiva"] = it.toString() }
-                                    td(classes = "group-cell") {
-                                        val internalId = solkiIdToSuoritusId[p.solkiId]
-                                        if (internalId != null) {
-                                            a(href = Links.Yki.suoritus(internalId)) { +p.solkiId.toString() }
-                                        } else {
-                                            +p.solkiId.toString()
-                                        }
+                                    th { +"Solki-ID" }
+                                    th {
+                                        +"Tutkintopäivä"
+                                        checkboxDropdown(
+                                            title = "Suodata",
+                                            items =
+                                                tutkintopaivat.map {
+                                                    CheckboxItem(
+                                                        value = it.toString(),
+                                                        label = it.finnishDate(),
+                                                        testId = "tutkintopaiva-filter-$it",
+                                                    )
+                                                },
+                                            testId = "tutkintopaiva-filter",
+                                            dataAttributes = mapOf("filter-key" to "tutkintopaiva"),
+                                        )
                                     }
-                                    td(classes = "group-cell") { p.tutkintopaiva?.let { finnishDate(it) } }
-                                    td(classes = "group-cell") { p.tutkintokieli?.let { +it.name } }
-                                    td(classes = "group-cell") { p.tutkintotaso?.let { +it.name } }
-                                    td { +p.kentta }
-                                    td { +p.arvoKitussa }
-                                    td { +p.arvoSolkissa }
-                                    td { finnishDateTime(p.havaittu) }
+                                    th { +"Kieli" }
+                                    th { +"Taso" }
+                                    th {
+                                        input(type = InputType.checkBox) {
+                                            attributes["data-select-all-visible"] = ""
+                                            testId("valitse-nakyvat")
+                                        }
+                                        +"Kenttä"
+                                        checkboxDropdown(
+                                            title = "Suodata",
+                                            items =
+                                                kentat.map {
+                                                    CheckboxItem(
+                                                        value = it,
+                                                        label = it,
+                                                        testId = "kentta-filter-$it",
+                                                    )
+                                                },
+                                            testId = "kentta-filter",
+                                            dataAttributes = mapOf("filter-key" to "kentta"),
+                                        )
+                                    }
+                                    th { +"Arvo Kitussa" }
+                                    th { +"Arvo Solkissa" }
+                                    th { +"Havaittu" }
+                                }
+                            }
+                            tbody {
+                                poikkeamat.forEach { p ->
+                                    tr {
+                                        attributes["data-solki-id"] = p.solkiId.toString()
+                                        attributes["data-kentta"] = p.kentta
+                                        p.tutkintopaiva?.let { attributes["data-tutkintopaiva"] = it.toString() }
+                                        td(classes = "group-cell") {
+                                            input(type = InputType.checkBox) {
+                                                attributes["data-select-group"] = p.solkiId.toString()
+                                                testId("select-group-${p.solkiId}")
+                                            }
+                                            val internalId = solkiIdToSuoritusId[p.solkiId]
+                                            if (internalId != null) {
+                                                a(href = Links.Yki.suoritus(internalId)) { +p.solkiId.toString() }
+                                            } else {
+                                                +p.solkiId.toString()
+                                            }
+                                        }
+                                        td(classes = "group-cell") { p.tutkintopaiva?.let { finnishDate(it) } }
+                                        td(classes = "group-cell") { p.tutkintokieli?.let { +it.name } }
+                                        td(classes = "group-cell") { p.tutkintotaso?.let { +it.name } }
+                                        td {
+                                            if (p.kentta != YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA) {
+                                                input(
+                                                    type = InputType.checkBox,
+                                                    name = "poikkeama",
+                                                    value = PoikkeamaKey(p.solkiId, p.kentta).encode(),
+                                                ) {
+                                                    attributes["data-poikkeama-checkbox"] = ""
+                                                    testId("poikkeama-checkbox-${p.solkiId}-${p.kentta}")
+                                                }
+                                            }
+                                            +p.kentta
+                                        }
+                                        td { +p.arvoKitussa }
+                                        td { +p.arvoSolkissa }
+                                        td { finnishDateTime(p.havaittu) }
+                                    }
                                 }
                             }
                         }
@@ -112,6 +154,10 @@ object YkiSuoritusPoikkeamaPage {
                     """
                     const dropdowns = document.querySelectorAll('thead [data-filter-key]');
                     const rows = document.querySelectorAll('tbody tr');
+                    const patchButton = document.querySelector('[data-patch-button]');
+                    const selectAllVisible = document.querySelector('[data-select-all-visible]');
+                    const patchCheckboxes = document.querySelectorAll('[data-poikkeama-checkbox]');
+
                     function apply() {
                         rows.forEach(r => {
                             let visible = true;
@@ -133,8 +179,44 @@ object YkiSuoritusPoikkeamaPage {
                             r.classList.toggle('repeat-group', id === prevSolkiId);
                             prevSolkiId = id;
                         });
+                        if (patchButton) {
+                            patchButton.disabled = !document.querySelector('[data-poikkeama-checkbox]:checked');
+                        }
+                        document.querySelectorAll('[data-select-group]').forEach(groupCb => {
+                            const groupId = groupCb.dataset.selectGroup;
+                            const rowCbs = document.querySelectorAll(
+                                'tr[data-solki-id="' + groupId + '"] [data-poikkeama-checkbox]'
+                            );
+                            const checkedCount = Array.from(rowCbs).filter(c => c.checked).length;
+                            groupCb.checked = checkedCount > 0 && checkedCount === rowCbs.length;
+                            groupCb.indeterminate = checkedCount > 0 && checkedCount < rowCbs.length;
+                        });
                     }
+
                     dropdowns.forEach(d => d.addEventListener('change', apply));
+                    patchCheckboxes.forEach(cb => cb.addEventListener('change', apply));
+
+                    if (selectAllVisible) {
+                        selectAllVisible.addEventListener('change', () => {
+                            rows.forEach(r => {
+                                if (r.hidden) return;
+                                const cb = r.querySelector('[data-poikkeama-checkbox]');
+                                if (cb) cb.checked = selectAllVisible.checked;
+                            });
+                            apply();
+                        });
+                    }
+
+                    document.querySelectorAll('[data-select-group]').forEach(groupCb => {
+                        groupCb.addEventListener('change', () => {
+                            const groupId = groupCb.dataset.selectGroup;
+                            document.querySelectorAll(
+                                'tr[data-solki-id="' + groupId + '"] [data-poikkeama-checkbox]'
+                            ).forEach(cb => { cb.checked = groupCb.checked; });
+                            apply();
+                        });
+                    });
+
                     apply();
                     """.trimIndent(),
                 )
