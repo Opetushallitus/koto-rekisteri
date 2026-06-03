@@ -35,13 +35,29 @@ object YkiSuoritusPoikkeamaPage {
                 p { csvDownloadButton(Links.Yki.poikkeamatCsv()) }
 
                 val kentat = poikkeamat.map { it.kentta }.distinct().sorted()
+                val tutkintopaivat = poikkeamat.mapNotNull { it.tutkintopaiva }.distinct().sortedDescending()
 
                 article(classes = "overflow-auto") {
                     table(classes = "striped") {
                         thead {
                             tr {
                                 th { +"Solki-ID" }
-                                th { +"Tutkintopäivä" }
+                                th {
+                                    +"Tutkintopäivä"
+                                    checkboxDropdown(
+                                        title = "Suodata",
+                                        items =
+                                            tutkintopaivat.map {
+                                                CheckboxItem(
+                                                    value = it.toString(),
+                                                    label = it.finnishDate(),
+                                                    testId = "tutkintopaiva-filter-$it",
+                                                )
+                                            },
+                                        testId = "tutkintopaiva-filter",
+                                        dataAttributes = mapOf("filter-key" to "tutkintopaiva"),
+                                    )
+                                }
                                 th { +"Kieli" }
                                 th { +"Taso" }
                                 th {
@@ -56,8 +72,8 @@ object YkiSuoritusPoikkeamaPage {
                                                     testId = "kentta-filter-$it",
                                                 )
                                             },
-                                        classes = "kentta-filter",
                                         testId = "kentta-filter",
+                                        dataAttributes = mapOf("filter-key" to "kentta"),
                                     )
                                 }
                                 th { +"Arvo Kitussa" }
@@ -69,6 +85,7 @@ object YkiSuoritusPoikkeamaPage {
                             poikkeamat.forEach { p ->
                                 tr {
                                     attributes["data-kentta"] = p.kentta
+                                    p.tutkintopaiva?.let { attributes["data-tutkintopaiva"] = it.toString() }
                                     td {
                                         val internalId = solkiIdToSuoritusId[p.solkiId]
                                         if (internalId != null) {
@@ -92,20 +109,24 @@ object YkiSuoritusPoikkeamaPage {
 
                 javascript(
                     """
-                    const dropdown = document.querySelector('.kentta-filter');
-                    const checkboxes = dropdown.querySelectorAll('input[type=checkbox]');
-                    const rows = document.querySelectorAll('tbody tr[data-kentta]');
-                    dropdown.addEventListener('change', () => {
-                        const active = new Set(
-                            Array.from(checkboxes)
-                                .filter(c => c.checked)
-                                .map(c => c.value)
-                        );
-                        const filtering = active.size > 0;
+                    const dropdowns = document.querySelectorAll('thead [data-filter-key]');
+                    const rows = document.querySelectorAll('tbody tr');
+                    function apply() {
                         rows.forEach(r => {
-                            r.hidden = filtering && !active.has(r.dataset.kentta);
+                            let visible = true;
+                            for (const d of dropdowns) {
+                                const active = Array.from(
+                                    d.querySelectorAll('input[type=checkbox]:checked')
+                                ).map(c => c.value);
+                                if (active.length > 0 && !active.includes(r.getAttribute('data-' + d.dataset.filterKey))) {
+                                    visible = false;
+                                    break;
+                                }
+                            }
+                            r.hidden = !visible;
                         });
-                    });
+                    }
+                    dropdowns.forEach(d => d.addEventListener('change', apply));
                     """.trimIndent(),
                 )
             }
