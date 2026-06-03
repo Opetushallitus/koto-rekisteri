@@ -151,15 +151,15 @@ class YkiViewController(
         )
     }
 
-    @PostMapping("/poikkeamat/patchaa")
-    fun patchaaPoikkeamat(
+    @PostMapping("/poikkeamat/patch")
+    fun patchPoikkeamat(
         @RequestParam(name = "poikkeama", required = false) poikkeamat: List<String>?,
         viewMessage: ViewMessage?,
     ): RedirectView {
         val keys = (poikkeamat ?: emptyList()).mapNotNull(PoikkeamaKey::decode)
         val (succeeded, failed) =
             ykiSuoritusPoikkeamaPatchService
-                .patchaa(keys)
+                .patch(keys)
                 .splitIntoValuesAndErrors()
 
         viewMessage?.let { msg ->
