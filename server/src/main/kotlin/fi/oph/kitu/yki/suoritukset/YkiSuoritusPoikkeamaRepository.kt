@@ -1,5 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.jdbc.Columns
+import fi.oph.kitu.jdbc.UpdateOnConflict
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import org.springframework.jdbc.core.JdbcTemplate
@@ -19,7 +21,9 @@ class YkiSuoritusPoikkeamaRepository(
         jdbcTemplate.update(
             """
             INSERT INTO yki_suoritus_poikkeama
+                (solki_id, kentta, arvo_kitussa, arvo_solkissa, havaittu, tutkintopaiva, tutkintokieli, tutkintotaso)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            $UPSERT_ON_CONFLICT
             """.trimIndent(),
             poikkeama.solkiId,
             poikkeama.kentta,
@@ -64,6 +68,14 @@ class YkiSuoritusPoikkeamaRepository(
 
     fun count(): Long =
         jdbcTemplate.queryForObject("SELECT COUNT(*) FROM yki_suoritus_poikkeama", Long::class.java) ?: 0L
+
+    companion object {
+        private val UPSERT_ON_CONFLICT =
+            UpdateOnConflict(
+                conflictTarget = Columns.of("solki_id", "kentta"),
+                columns = listOf("arvo_kitussa", "arvo_solkissa", "tutkintopaiva", "tutkintokieli", "tutkintotaso"),
+            ).toString()
+    }
 }
 
 data class YkiSuoritusPoikkeama(
