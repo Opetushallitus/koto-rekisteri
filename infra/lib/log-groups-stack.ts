@@ -203,6 +203,7 @@ export class LogGroupsStack extends Stack {
           ),
           FilterPattern.stringValue("$.attributes.method", "=", "POST"),
           FilterPattern.stringValue("$.status.code", "!=", "ERROR"),
+          FilterPattern.booleanValue("$.attributes.arvioitu", true),
         ),
       })
       .metric({
@@ -210,7 +211,7 @@ export class LogGroupsStack extends Stack {
         period: Duration.minutes(1),
       })
       .createAlarm(this, "YkiSuoritusAlarm", {
-        alarmDescription: "YKI-suorituksia vastaanotettu",
+        alarmDescription: "YKI-suorituksia arvioitu",
         threshold: 1,
         evaluationPeriods: 1, // 5 minutes
         comparisonOperator:

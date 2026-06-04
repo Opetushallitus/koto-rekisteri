@@ -153,6 +153,8 @@ class YkiApiController(
                     }
             }
 
+        Span.current().setAttribute("arvioitu", entity.arviointitila.arvioitu())
+
         ykiSuoritusRepository.save(entity, false)
         ilmoittautumisjarjestelma.sendArvioinninTila(entity)
         return TiedonsiirtoSuccess().toResponseEntity()
