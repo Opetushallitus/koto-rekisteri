@@ -131,9 +131,6 @@ class YkiService(
                 }
             poikkeamat.forEach { poikkeama ->
                 suoritusPoikkeamaRepository.save(poikkeama)
-                logger.error(
-                    "Havaittu poikkeama yki-suorituksen tiedoissa verratuuna Solkin tietoihin: $poikkeama",
-                )
             }
         }
 
