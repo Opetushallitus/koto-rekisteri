@@ -52,9 +52,13 @@ class TehtavapankkiServiceTest(
                 questionbanks =
                     listOf(
                         TehtavapankkiResponse.Questionbank(
-                            courseid = 42,
-                            coursename = "Suomi alkeet",
+                            courseId = 42,
+                            courseName = "Suomi alkeet",
                             xml = StringXmlSource("<questions><q id=\"1\"/></questions>"),
+                            published = Instant.ofEpochMilli(0),
+                            generated = Instant.ofEpochMilli(0),
+                            version = "test",
+                            language = "fin",
                         ),
                     ),
             )
@@ -96,18 +100,36 @@ class TehtavapankkiServiceTest(
                         {
                           "courseid": 7,
                           "coursename": "Suomi 2",
-                          "xml": "<questions><q id=\"a\"/></questions>"
+                          "coursestartdate": 0,
+                          "filegenerated": 0,
+                          "questionbankversion": "v1",
+                          "language": "fin",
+                          "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml"
                         },
                         {
                           "courseid": 8,
                           "coursename": "Suomi 3",
-                          "xml": "<questions><q id=\"b\"/></questions>"
+                          "coursestartdate": 0,
+                          "filegenerated": 0,
+                          "questionbankversion": "v1",
+                          "language": "fin",
+                          "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/8/qb.xml"
                         }
                       ]
                     }
                     """.trimIndent(),
                     MediaType.APPLICATION_JSON,
                 ),
+            )
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml?token=testitoken"))
+            .andRespond(
+                withSuccess("<questions><q id=\"a\"/></questions>", MediaType.APPLICATION_XML),
+            )
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/8/qb.xml?token=testitoken"))
+            .andRespond(
+                withSuccess("<questions><q id=\"b\"/></questions>", MediaType.APPLICATION_XML),
             )
 
         tehtavapankkiClient.koealustaToken = "testitoken"

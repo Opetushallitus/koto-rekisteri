@@ -10,6 +10,10 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
+import org.springframework.web.util.UriComponentsBuilder
+import java.net.URI
+import java.nio.file.Files
+import java.time.Instant
 
 @Service
 @Profile("!local-opintopolku")
@@ -49,13 +53,36 @@ class TehtavapankkiClientImpl(
             questionbanks =
                 raw.questionbanks.map { qb ->
                     TehtavapankkiResponse.Questionbank(
-                        courseid = qb.courseid,
-                        coursename = qb.coursename,
-                        xml = StringXmlSource(qb.xml),
+                        courseId = qb.courseid,
+                        courseName = qb.coursename,
+                        published = qb.coursestartdate.toLong().let { Instant.ofEpochMilli(it) },
+                        generated = qb.filegenerated.toLong().let { Instant.ofEpochMilli(it) },
+                        version = qb.questionbankversion,
+                        language = qb.language,
+                        xml = buildXmlSource(qb.downloadurl),
                     )
                 },
         )
     }
+
+    private fun buildXmlSource(downloadUrl: String): XmlSource {
+        val uri =
+            UriComponentsBuilder
+                .fromUriString(downloadUrl)
+                .queryParam("token", koealustaToken)
+                .build()
+                .toUri()
+        return FileXmlSource(spoolToTempFile(uri), deleteOnClose = true)
+    }
+
+    private fun spoolToTempFile(uri: URI) =
+        Files.createTempFile("tehtavapankki-", ".xml").also { tmp ->
+            restClient.get().uri(uri).exchange { _, response ->
+                response.body.use { input ->
+                    Files.newOutputStream(tmp).use { out -> input.copyTo(out) }
+                }
+            }
+        }
 
     private data class RawTehtavapankkiResponse(
         @param:JsonProperty("questionbanks")
@@ -67,7 +94,15 @@ class TehtavapankkiClientImpl(
         val courseid: Int,
         @param:JsonProperty("coursename")
         val coursename: String,
-        @param:JsonProperty("xml")
-        val xml: String,
+        @param:JsonProperty("coursestartdate")
+        val coursestartdate: Int,
+        @param:JsonProperty("questionbankversion")
+        val questionbankversion: String,
+        @param:JsonProperty("language")
+        val language: String,
+        @param:JsonProperty("downloadurl")
+        val downloadurl: String,
+        @param:JsonProperty("filegenerated")
+        val filegenerated: Int,
     )
 }

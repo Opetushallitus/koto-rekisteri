@@ -50,11 +50,11 @@ class TehtavapankkiService(
     @WithSpan
     fun uploadTehtavapankki(response: TehtavapankkiResponse) {
         val now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-        response.questionbanks.forEachIndexed { index, (courseid, coursename, xml) ->
-            val sanitizedCoursename = sanitizeFilename(coursename)
-            val filename = "$courseid-$sanitizedCoursename/$now-$index.xml"
+        response.questionbanks.forEachIndexed { index, qb ->
+            val sanitizedCoursename = sanitizeFilename(qb.courseName)
+            val filename = "${qb.courseId}-$sanitizedCoursename/$now-$index.xml"
 
-            xml.use { source ->
+            qb.xml.use { source ->
                 source.openStream().use { stream ->
                     useS3 { bucketName ->
                         upload(bucketName, filename, stream)
