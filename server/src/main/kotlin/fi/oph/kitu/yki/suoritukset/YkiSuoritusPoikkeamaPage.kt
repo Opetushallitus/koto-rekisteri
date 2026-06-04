@@ -147,32 +147,36 @@ object YkiSuoritusPoikkeamaPage {
                                         p.tutkintokieli?.let { attributes["data-tutkintokieli"] = it.name }
                                         p.tutkintotaso?.let { attributes["data-tutkintotaso"] = it.name }
                                         td(classes = "group-cell") {
-                                            input(type = InputType.checkBox) {
-                                                attributes["data-select-group"] = p.solkiId.toString()
-                                                testId("select-group-${p.solkiId}")
-                                            }
-                                            val internalId = solkiIdToSuoritusId[p.solkiId]
-                                            if (internalId != null) {
-                                                a(href = Links.Yki.suoritus(internalId)) { +p.solkiId.toString() }
-                                            } else {
-                                                +p.solkiId.toString()
+                                            div(classes = "select-group") {
+                                                input(type = InputType.checkBox) {
+                                                    attributes["data-select-group"] = p.solkiId.toString()
+                                                    testId("select-group-${p.solkiId}")
+                                                }
+                                                val internalId = solkiIdToSuoritusId[p.solkiId]
+                                                if (internalId != null) {
+                                                    a(href = Links.Yki.suoritus(internalId)) { +p.solkiId.toString() }
+                                                } else {
+                                                    +p.solkiId.toString()
+                                                }
                                             }
                                         }
                                         td(classes = "group-cell") { p.tutkintopaiva?.let { finnishDate(it) } }
                                         td(classes = "group-cell") { p.tutkintokieli?.let { +it.name } }
                                         td(classes = "group-cell") { p.tutkintotaso?.let { +it.name } }
                                         td {
-                                            if (p.kentta != YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA) {
-                                                input(
-                                                    type = InputType.checkBox,
-                                                    name = "poikkeama",
-                                                    value = PoikkeamaKey(p.solkiId, p.kentta).encode(),
-                                                ) {
-                                                    attributes["data-poikkeama-checkbox"] = ""
-                                                    testId("poikkeama-checkbox-${p.solkiId}-${p.kentta}")
+                                            div(classes = "select-group") {
+                                                if (p.kentta != YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA) {
+                                                    input(
+                                                        type = InputType.checkBox,
+                                                        name = "poikkeama",
+                                                        value = PoikkeamaKey(p.solkiId, p.kentta).encode(),
+                                                    ) {
+                                                        attributes["data-poikkeama-checkbox"] = ""
+                                                        testId("poikkeama-checkbox-${p.solkiId}-${p.kentta}")
+                                                    }
                                                 }
+                                                +p.kentta
                                             }
-                                            +p.kentta
                                         }
                                         td { +p.arvoKitussa }
                                         td { +p.arvoSolkissa }
