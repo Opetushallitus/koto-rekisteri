@@ -156,6 +156,7 @@ class YkiApiController(
         Span.current().setAttribute("arvioitu", entity.arviointitila.arvioitu())
 
         ykiSuoritusRepository.save(entity, false)
+        ykiSuoritusPoikkeamaRepository.deleteBySolkiId(entity.solkiId)
         ilmoittautumisjarjestelma.sendArvioinninTila(entity)
         return TiedonsiirtoSuccess().toResponseEntity()
     }

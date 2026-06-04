@@ -66,6 +66,12 @@ class YkiSuoritusPoikkeamaRepository(
             kentta,
         )
 
+    fun deleteBySolkiId(solkiId: Int): Int =
+        jdbcTemplate.update(
+            "DELETE FROM yki_suoritus_poikkeama WHERE solki_id = ?",
+            solkiId,
+        )
+
     fun count(): Long =
         jdbcTemplate.queryForObject("SELECT COUNT(*) FROM yki_suoritus_poikkeama", Long::class.java) ?: 0L
 
