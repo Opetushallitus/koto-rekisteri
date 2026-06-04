@@ -3,6 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.file.Path
+import java.time.Instant
 
 /**
  * Paikallisen kehityksen mock-klientti: palauttaa testidatana käytetyn
@@ -24,15 +25,23 @@ class MockTehtavapankkiClient : TehtavapankkiClient {
         val questionbank =
             if (customXmlPath.isNullOrBlank()) {
                 TehtavapankkiResponse.Questionbank(
-                    courseid = 42,
-                    coursename = "Suomi alkeet",
+                    courseId = 42,
+                    courseName = "Suomi alkeet",
+                    published = Instant.ofEpochMilli(0),
+                    generated = Instant.now(),
+                    version = "example",
+                    language = "FIN",
                     xml = ClassPathXmlSource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml"),
                 )
             } else {
                 val path = Path.of(customXmlPath)
                 TehtavapankkiResponse.Questionbank(
-                    courseid = customXmlPath.fold(0) { acc, c -> acc + c.code } % 10000,
-                    coursename = path.fileName.toString().substringBeforeLast('.'),
+                    courseId = customXmlPath.fold(0) { acc, c -> acc + c.code } % 10000,
+                    courseName = path.fileName.toString().substringBeforeLast('.'),
+                    published = Instant.ofEpochMilli(0),
+                    generated = Instant.now(),
+                    version = "custom",
+                    language = "FIN",
                     xml = FileXmlSource(path),
                 )
             }
