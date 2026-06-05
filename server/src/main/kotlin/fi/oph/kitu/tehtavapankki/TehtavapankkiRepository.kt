@@ -20,11 +20,12 @@ class TehtavapankkiRepository(
             .query(
                 """
                 INSERT INTO tehtavapaketti (
-                    lahdejarjestelma, lahde_id, nimi, versio_hash, s3_avain, metadata, lahde_filegenerated
+                    lahdejarjestelma, lahde_id, nimi, versio_hash, s3_avain, metadata,
+                    lahde_filegenerated, lahde_published, lahde_version, lahde_language
                 )
                 VALUES (
                     :lahdejarjestelma, :lahde_id, :nimi, :versio_hash, :s3_avain, :metadata::jsonb,
-                    :lahde_filegenerated
+                    :lahde_filegenerated, :lahde_published, :lahde_version, :lahde_language
                 )
                 RETURNING id
                 """.trimIndent(),
@@ -35,7 +36,10 @@ class TehtavapankkiRepository(
                     .addValue("versio_hash", paketti.versioHash)
                     .addValue("s3_avain", paketti.s3Avain)
                     .addValue("metadata", paketti.metadata.serialize())
-                    .addValue("lahde_filegenerated", paketti.lahdeFilegenerated),
+                    .addValue("lahde_filegenerated", paketti.lahdeFilegenerated)
+                    .addValue("lahde_published", paketti.lahdePublished)
+                    .addValue("lahde_version", paketti.lahdeVersion)
+                    .addValue("lahde_language", paketti.lahdeLanguage),
                 SingleColumnRowMapper(Int::class.java),
             ).first()!!
 
@@ -58,13 +62,28 @@ class TehtavapankkiRepository(
             .firstOrNull()
 
     @WithSpan
-    fun updateFilegenerated(
+    fun updateLahdeMetadata(
         id: Int,
-        lahdeFilegenerated: OffsetDateTime,
+        lahdeFilegenerated: OffsetDateTime?,
+        lahdePublished: OffsetDateTime?,
+        lahdeVersion: String?,
+        lahdeLanguage: String?,
     ): Int =
         jdbc.update(
-            "UPDATE tehtavapaketti SET lahde_filegenerated = :fg WHERE id = :id",
-            mapOf("id" to id, "fg" to lahdeFilegenerated),
+            """
+            UPDATE tehtavapaketti
+            SET lahde_filegenerated = :fg,
+                lahde_published     = :pub,
+                lahde_version       = :ver,
+                lahde_language      = :lang
+            WHERE id = :id
+            """.trimIndent(),
+            MapSqlParameterSource()
+                .addValue("id", id)
+                .addValue("fg", lahdeFilegenerated)
+                .addValue("pub", lahdePublished)
+                .addValue("ver", lahdeVersion)
+                .addValue("lang", lahdeLanguage),
         )
 
     @WithSpan

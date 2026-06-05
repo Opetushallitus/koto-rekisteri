@@ -1,5 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
+import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -30,7 +31,20 @@ class TehtavapankkiViewController(
             tehtavapankkiRepository.findIdsByS3Avain(
                 tehtavapaketit.values.flatten().map { it.key },
             )
-        return ResponseEntity.ok(TehtavapankkiPage.render(tehtavapaketit, pakettiIdsByS3Avain))
+        // Hae viimeisin DB-paketti per S3-ryhmä (kansio). Ryhmän nimi on
+        // muotoa "{courseid}-{sanitized_coursename}", samaa logiikkaa kuin
+        // MoodleSourceIdentifiers käyttää avaimen jäsentämiseen.
+        val latestPakettiByGroup: Map<String, TehtavapakettiEntity?> =
+            tehtavapaketit.keys.associateWith { group ->
+                val courseId = group.substringBefore('-')
+                tehtavapankkiRepository.findLatestPakettiBySource(
+                    TehtavapankkiIngestService.LAHDEJARJESTELMA,
+                    courseId,
+                )
+            }
+        return ResponseEntity.ok(
+            TehtavapankkiPage.render(tehtavapaketit, pakettiIdsByS3Avain, latestPakettiByGroup),
+        )
     }
 
     @WithSpan

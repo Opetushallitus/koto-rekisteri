@@ -2,18 +2,22 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.a
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.p
+import kotlinx.html.small
 import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.thead
 import kotlinx.html.tr
+import java.time.ZoneId
 import kotlin.math.log10
 import kotlin.math.pow
 
@@ -26,9 +30,22 @@ object TehtavapankkiPage {
         return "%.2f %s".format(value, units[digitGroups])
     }
 
+    private fun summaryLine(paketti: TehtavapakettiEntity): String? {
+        val parts =
+            buildList {
+                paketti.lahdeLanguage?.let { add(languageLabel(it)) }
+                paketti.lahdeVersion?.let { add("versio $it") }
+                paketti.lahdeFilegenerated?.let {
+                    add("generoitu ${it.atZoneSameInstant(ZoneId.systemDefault()).toLocalDate().finnishDate()}")
+                }
+            }
+        return parts.takeIf { it.isNotEmpty() }?.joinToString(" · ")
+    }
+
     fun render(
         tehtavapaketit: Map<String, List<TehtavapakettiObject>>,
         pakettiIdsByS3Avain: Map<String, Int> = emptyMap(),
+        latestPakettiByGroup: Map<String, TehtavapakettiEntity?> = emptyMap(),
     ): String =
         Page.renderHtml {
             h1 { +"Kotoutumiskoulutuksen tehtäväpankki" }
@@ -38,6 +55,11 @@ object TehtavapankkiPage {
             } else {
                 tehtavapaketit.forEach { (group, tps) ->
                     h2 { +group }
+                    latestPakettiByGroup[group]?.let { paketti ->
+                        summaryLine(paketti)?.let { line ->
+                            p { small { +line } }
+                        }
+                    }
                     card(overflowAuto = true, compact = true) {
                         table(classes = "compact striped") {
                             thead {
