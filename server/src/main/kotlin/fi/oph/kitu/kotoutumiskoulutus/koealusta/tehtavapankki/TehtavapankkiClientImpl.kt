@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
+import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.toEntity
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
@@ -76,11 +77,26 @@ class TehtavapankkiClientImpl(
     }
 
     private fun spoolToTempFile(uri: URI) =
-        Files.createTempFile("tehtavapankki-", ".xml").also { tmp ->
-            restClient.get().uri(uri).exchange { _, response ->
-                response.body.use { input ->
-                    Files.newOutputStream(tmp).use { out -> input.copyTo(out) }
+        Files.createTempFile("tehtavapankki-", ".xml").apply {
+            try {
+                restClient.get().uri(uri).exchange { _, response ->
+                    if (!response.statusCode.is2xxSuccessful) {
+                        throw RestClientResponseException(
+                            "Tehtäväpankin XML-lataus epäonnistui ($uri): ${response.statusCode}",
+                            response.statusCode,
+                            response.statusText,
+                            response.headers,
+                            null,
+                            null,
+                        )
+                    }
+                    response.body.use { input ->
+                        Files.newOutputStream(this).use { out -> input.copyTo(out) }
+                    }
                 }
+            } catch (e: Throwable) {
+                Files.deleteIfExists(this)
+                throw e
             }
         }
 
