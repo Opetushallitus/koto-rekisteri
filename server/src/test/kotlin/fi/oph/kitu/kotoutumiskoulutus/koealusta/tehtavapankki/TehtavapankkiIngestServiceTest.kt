@@ -205,6 +205,34 @@ class TehtavapankkiIngestServiceTest(
     }
 
     @Test
+    fun `ingest tallentaa published, version ja language S3 user metadatasta`() {
+        val xmlKey = "42-Suomi_alkeet/2026-01-01T00:00:00-fg5000-0.xml"
+        s3Client.putObject(
+            { req ->
+                req
+                    .bucket(TEST_BUCKET)
+                    .key(xmlKey)
+                    .metadata(
+                        mapOf(
+                            TehtavapankkiService.S3_META_PUBLISHED_MS to "1672531200000",
+                            TehtavapankkiService.S3_META_VERSION to "v3",
+                            TehtavapankkiService.S3_META_LANGUAGE to "FIN",
+                        ),
+                    )
+            },
+            RequestBody.fromBytes(xmlBytes),
+        )
+
+        val paketti = (ingestService.ingestFromS3(xmlKey) as Either.Right).value
+        assertEquals(
+            Instant.ofEpochMilli(1672531200000).atOffset(ZoneOffset.UTC),
+            paketti.lahdePublished,
+        )
+        assertEquals("v3", paketti.lahdeVersion)
+        assertEquals("FIN", paketti.lahdeLanguage)
+    }
+
+    @Test
     fun `ingest paivittaa lahde_filegeneratedin myos hash-dedup-haarassa`() {
         val firstKey = "42-Suomi_alkeet/2026-01-01T00:00:00-fg1000-0.xml"
         val secondKey = "42-Suomi_alkeet/2026-02-01T00:00:00-fg2000-0.xml"
@@ -231,5 +259,50 @@ class TehtavapankkiIngestServiceTest(
             Instant.ofEpochMilli(2000).atOffset(ZoneOffset.UTC),
             persisted.lahdeFilegenerated,
         )
+    }
+
+    @Test
+    fun `ingest paivittaa myos lahde_version, language ja published dedup-haarassa`() {
+        val firstKey = "42-Suomi_alkeet/2026-01-01T00:00:00-fg1000-0.xml"
+        val secondKey = "42-Suomi_alkeet/2026-02-01T00:00:00-fg2000-0.xml"
+        s3Client.putObject(
+            { req ->
+                req.bucket(TEST_BUCKET).key(firstKey).metadata(
+                    mapOf(
+                        TehtavapankkiService.S3_META_PUBLISHED_MS to "1000000",
+                        TehtavapankkiService.S3_META_VERSION to "v1",
+                        TehtavapankkiService.S3_META_LANGUAGE to "FIN",
+                    ),
+                )
+            },
+            RequestBody.fromBytes(xmlBytes),
+        )
+        s3Client.putObject(
+            { req ->
+                req.bucket(TEST_BUCKET).key(secondKey).metadata(
+                    mapOf(
+                        TehtavapankkiService.S3_META_PUBLISHED_MS to "2000000",
+                        TehtavapankkiService.S3_META_VERSION to "v2",
+                        TehtavapankkiService.S3_META_LANGUAGE to "SWE",
+                    ),
+                )
+            },
+            RequestBody.fromBytes(xmlBytes),
+        )
+
+        ingestService.ingestFromS3(firstKey)
+        val second = (ingestService.ingestFromS3(secondKey) as Either.Right).value
+
+        assertEquals("v2", second.lahdeVersion)
+        assertEquals("SWE", second.lahdeLanguage)
+        assertEquals(
+            Instant.ofEpochMilli(2000000).atOffset(ZoneOffset.UTC),
+            second.lahdePublished,
+        )
+
+        val persisted = repository.findPakettiById(second.id!!)
+        assertNotNull(persisted)
+        assertEquals("v2", persisted.lahdeVersion)
+        assertEquals("SWE", persisted.lahdeLanguage)
     }
 }

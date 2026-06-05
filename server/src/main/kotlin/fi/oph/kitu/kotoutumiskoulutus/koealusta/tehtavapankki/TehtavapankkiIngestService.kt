@@ -55,15 +55,40 @@ class TehtavapankkiIngestService(
         val source = MoodleSourceIdentifiers.fromS3Key(xmlKey)
         val lahdeFilegenerated =
             source.filegeneratedMs?.let { OffsetDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneOffset.UTC) }
+        val s3UserMetadata = tehtavapankkiService.fetchS3UserMetadata(xmlKey)
+        val lahdePublished =
+            s3UserMetadata[TehtavapankkiService.S3_META_PUBLISHED_MS]
+                ?.toLongOrNull()
+                ?.let { OffsetDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneOffset.UTC) }
+        val lahdeVersion = s3UserMetadata[TehtavapankkiService.S3_META_VERSION]?.takeIf { it.isNotBlank() }
+        val lahdeLanguage = s3UserMetadata[TehtavapankkiService.S3_META_LANGUAGE]?.takeIf { it.isNotBlank() }
 
         if (repository.existsByVersionHash(LAHDEJARJESTELMA, source.lahdeId, versioHash)) {
             Span.current().setAttribute("ingest.dedup", true)
             val latest = repository.findLatestPakettiBySource(LAHDEJARJESTELMA, source.lahdeId)!!
-            // Sama sisältö, mutta lähde voi olla bumpannut filegeneratedia —
-            // päivitetään se silti, jotta seuraava import skippaa latauksen.
-            if (lahdeFilegenerated != null && latest.lahdeFilegenerated != lahdeFilegenerated) {
-                repository.updateFilegenerated(latest.id!!, lahdeFilegenerated)
-                return latest.copy(lahdeFilegenerated = lahdeFilegenerated).right()
+            // Sama sisältö, mutta lähde voi olla bumpannut metadataa —
+            // päivitetään ne silti, jotta seuraava import skippaa latauksen
+            // ja näkymä esittää tuoreimmat lähde-arvot.
+            val changed =
+                (lahdeFilegenerated != null && latest.lahdeFilegenerated != lahdeFilegenerated) ||
+                    (lahdePublished != null && latest.lahdePublished != lahdePublished) ||
+                    (lahdeVersion != null && latest.lahdeVersion != lahdeVersion) ||
+                    (lahdeLanguage != null && latest.lahdeLanguage != lahdeLanguage)
+            if (changed) {
+                repository.updateLahdeMetadata(
+                    id = latest.id!!,
+                    lahdeFilegenerated = lahdeFilegenerated ?: latest.lahdeFilegenerated,
+                    lahdePublished = lahdePublished ?: latest.lahdePublished,
+                    lahdeVersion = lahdeVersion ?: latest.lahdeVersion,
+                    lahdeLanguage = lahdeLanguage ?: latest.lahdeLanguage,
+                )
+                return latest
+                    .copy(
+                        lahdeFilegenerated = lahdeFilegenerated ?: latest.lahdeFilegenerated,
+                        lahdePublished = lahdePublished ?: latest.lahdePublished,
+                        lahdeVersion = lahdeVersion ?: latest.lahdeVersion,
+                        lahdeLanguage = lahdeLanguage ?: latest.lahdeLanguage,
+                    ).right()
             }
             return latest.right()
         }
@@ -88,6 +113,9 @@ class TehtavapankkiIngestService(
                             .put("courseid", source.courseidInt)
                             .put("sanitizedCoursename", source.sanitizedCoursename),
                     lahdeFilegenerated = lahdeFilegenerated,
+                    lahdePublished = lahdePublished,
+                    lahdeVersion = lahdeVersion,
+                    lahdeLanguage = lahdeLanguage,
                 ),
             )
 

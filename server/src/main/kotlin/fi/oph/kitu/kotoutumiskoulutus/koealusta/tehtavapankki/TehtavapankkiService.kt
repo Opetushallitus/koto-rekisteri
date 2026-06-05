@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
+import io.awspring.cloud.s3.ObjectMetadata
 import io.awspring.cloud.s3.S3Template
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import java.io.ByteArrayInputStream
 import java.net.URL
 import java.time.Instant
@@ -38,6 +40,15 @@ class TehtavapankkiService(
     @Value($$"${kitu.kotoutumiskoulutus.tehtavapankki.bucket:#{null}}")
     var bucket: String? = null
 
+    companion object {
+        // S3 user metadata -avaimet — tallennetaan x-amz-meta-* otsikoiksi.
+        // AWS lower-case:ttaa avaimet header-tasolla, joten pidetään
+        // pikkukirjaimisina jotta vertailu toimii ilman normalisointia.
+        const val S3_META_PUBLISHED_MS: String = "lahde-published-ms"
+        const val S3_META_VERSION: String = "lahde-version"
+        const val S3_META_LANGUAGE: String = "lahde-language"
+    }
+
     /**
      * 1. Replaces white spaces with underscore.
      * 2. Replaces any character that isn't a number, letter or underscore with nothing.
@@ -60,15 +71,37 @@ class TehtavapankkiService(
             // voi tallentaa lähdejärjestelmän version per paketti.
             val filename =
                 "${meta.courseId}-$sanitizedCoursename/$now-fg${meta.generated.toEpochMilli()}-$index.xml"
+            // Lähdejärjestelmän muu metadata kulkee S3-objektin
+            // user metadata -otsikoissa, jotta ingest näkee sen
+            // tarvitsematta erillistä tilaa tai sidecar-tiedostoa.
+            val objectMetadata =
+                ObjectMetadata
+                    .builder()
+                    .metadata(S3_META_PUBLISHED_MS, meta.published.toEpochMilli().toString())
+                    .metadata(S3_META_VERSION, meta.version)
+                    .metadata(S3_META_LANGUAGE, meta.language)
+                    .build()
 
             download.use { d ->
                 d.xml.openStream().use { stream ->
                     useS3 { bucketName ->
-                        upload(bucketName, filename, stream)
+                        upload(bucketName, filename, stream, objectMetadata)
                     }
                 }
             }
         }
+    }
+
+    @WithSpan
+    fun fetchS3UserMetadata(key: String): Map<String, String> {
+        Span.current().setAttribute("s3.key", key)
+        return useS3 { bucket ->
+            try {
+                s3Client.headObject { it.bucket(bucket).key(key) }.metadata()
+            } catch (_: NoSuchKeyException) {
+                emptyMap()
+            }
+        }.orEmpty()
     }
 
     @WithSpan

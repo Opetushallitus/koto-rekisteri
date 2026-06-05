@@ -24,6 +24,9 @@ data class TehtavapakettiEntity(
     val metadata: JsonNode = defaultObjectMapper.createObjectNode(),
     val luotu: OffsetDateTime? = null,
     val lahdeFilegenerated: OffsetDateTime? = null,
+    val lahdePublished: OffsetDateTime? = null,
+    val lahdeVersion: String? = null,
+    val lahdeLanguage: String? = null,
 ) {
     companion object {
         val fromRow: RowMapper<TehtavapakettiEntity> =
@@ -38,6 +41,9 @@ data class TehtavapakettiEntity(
                     metadata = defaultObjectMapper.readTree(rs.getString("metadata")),
                     luotu = rs.getObject("luotu", OffsetDateTime::class.java),
                     lahdeFilegenerated = rs.getObject("lahde_filegenerated", OffsetDateTime::class.java),
+                    lahdePublished = rs.getObject("lahde_published", OffsetDateTime::class.java),
+                    lahdeVersion = rs.getString("lahde_version"),
+                    lahdeLanguage = rs.getString("lahde_language"),
                 )
             }
     }

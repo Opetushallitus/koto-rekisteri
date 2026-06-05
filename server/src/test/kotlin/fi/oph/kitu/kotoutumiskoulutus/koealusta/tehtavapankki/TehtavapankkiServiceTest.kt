@@ -54,7 +54,7 @@ class TehtavapankkiServiceTest(
     }
 
     @Test
-    fun `uploadTehtavapankki kirjoittaa tiedostot S3-buckettiin filegenerated-suffiksilla`() {
+    fun `uploadTehtavapankki kirjoittaa tiedostot S3-buckettiin filegenerated-suffiksilla ja user metadatan`() {
         val downloads =
             listOf(
                 QuestionBankDownload(
@@ -62,10 +62,10 @@ class TehtavapankkiServiceTest(
                         QuestionBankMetadata(
                             courseId = 42,
                             courseName = "Suomi alkeet",
-                            published = Instant.ofEpochMilli(0),
+                            published = Instant.ofEpochMilli(1672531200000),
                             generated = Instant.ofEpochMilli(1733400000000),
                             version = "test",
-                            language = "fin",
+                            language = "FIN",
                             downloadUrl = "ignored",
                         ),
                     xml = StringXmlSource("<questions><q id=\"1\"/></questions>"),
@@ -93,6 +93,40 @@ class TehtavapankkiServiceTest(
                 .readAllBytes()
                 .toString(Charsets.UTF_8)
         assertEquals("<questions><q id=\"1\"/></questions>", content)
+
+        val head = s3Client.headObject { it.bucket(TEST_BUCKET).key(key) }
+        assertEquals("1672531200000", head.metadata()[TehtavapankkiService.S3_META_PUBLISHED_MS])
+        assertEquals("test", head.metadata()[TehtavapankkiService.S3_META_VERSION])
+        assertEquals("FIN", head.metadata()[TehtavapankkiService.S3_META_LANGUAGE])
+    }
+
+    @Test
+    fun `fetchS3UserMetadata palauttaa objektin user metadatan`() {
+        val key = "42-Suomi_alkeet/2026-01-01T00-00-00-fg5-0.xml"
+        s3Client.putObject(
+            { req ->
+                req
+                    .bucket(TEST_BUCKET)
+                    .key(key)
+                    .metadata(
+                        mapOf(
+                            TehtavapankkiService.S3_META_VERSION to "v9",
+                            TehtavapankkiService.S3_META_LANGUAGE to "ENG",
+                        ),
+                    )
+            },
+            RequestBody.fromString("<x/>"),
+        )
+
+        val metadata = tehtavapankkiService.fetchS3UserMetadata(key)
+        assertEquals("v9", metadata[TehtavapankkiService.S3_META_VERSION])
+        assertEquals("ENG", metadata[TehtavapankkiService.S3_META_LANGUAGE])
+    }
+
+    @Test
+    fun `fetchS3UserMetadata palauttaa tyhjan mapin tuntemattomalle avaimelle`() {
+        val metadata = tehtavapankkiService.fetchS3UserMetadata("ei-olemassa.xml")
+        assertEquals(emptyMap<String, String>(), metadata)
     }
 
     @Test

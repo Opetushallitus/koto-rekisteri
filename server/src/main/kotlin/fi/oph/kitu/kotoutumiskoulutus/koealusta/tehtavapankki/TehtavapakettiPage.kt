@@ -80,6 +80,14 @@ object TehtavapakettiPage {
                 "Versio" to {
                     code { +paketti.versioHash.take(12) }
                 },
+                paketti.lahdeVersion?.let { v -> "Lähdeversio" to { code { +v } } },
+                paketti.lahdeLanguage?.let { lang -> "Kieli" to { +languageLabel(lang) } },
+                paketti.lahdePublished?.let { pub ->
+                    "Kurssin alku" to { finnishDateTime(pub.toInstant()) }
+                },
+                paketti.lahdeFilegenerated?.let { gen ->
+                    "Lähde generoitu" to { finnishDateTime(gen.toInstant()) }
+                },
                 "Ladattu" to {
                     paketti.luotu?.let { finnishDateTime(it.toInstant()) } ?: +"–"
                 },
@@ -365,6 +373,24 @@ private val moodleTehtavatyyppiNimet =
     )
 
 internal fun moodleTehtavatyyppiNimi(tyyppi: String): String = moodleTehtavatyyppiNimet[tyyppi.lowercase()] ?: tyyppi
+
+// Koealustan kielikoodit ovat tyypillisesti ISO 639-2 kolmikirjaimisia
+// (FIN/SWE/ENG). Esitetään virkailijalle suomeksi; tuntematon koodi
+// näytetään raakana, jotta uudet kielet eivät jää kokonaan piiloon.
+private val languageLabels =
+    mapOf(
+        "fin" to "suomi",
+        "swe" to "ruotsi",
+        "eng" to "englanti",
+        "rus" to "venäjä",
+        "est" to "viro",
+        "ara" to "arabia",
+        "fas" to "persia",
+        "som" to "somali",
+        "ukr" to "ukraina",
+    )
+
+internal fun languageLabel(code: String): String = languageLabels[code.lowercase()] ?: code
 
 private fun FlowContent.tehtavaMetadata(data: JsonNode) {
     if (!data.isEmpty) {
