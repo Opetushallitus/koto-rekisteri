@@ -23,6 +23,7 @@ data class TehtavapakettiEntity(
     val s3Avain: String? = null,
     val metadata: JsonNode = defaultObjectMapper.createObjectNode(),
     val luotu: OffsetDateTime? = null,
+    val lahdeFilegenerated: OffsetDateTime? = null,
 ) {
     companion object {
         val fromRow: RowMapper<TehtavapakettiEntity> =
@@ -36,6 +37,7 @@ data class TehtavapakettiEntity(
                     s3Avain = rs.getString("s3_avain"),
                     metadata = defaultObjectMapper.readTree(rs.getString("metadata")),
                     luotu = rs.getObject("luotu", OffsetDateTime::class.java),
+                    lahdeFilegenerated = rs.getObject("lahde_filegenerated", OffsetDateTime::class.java),
                 )
             }
     }

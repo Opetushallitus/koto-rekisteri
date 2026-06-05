@@ -3,6 +3,7 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
 import io.awspring.cloud.s3.S3Template
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
@@ -32,6 +33,7 @@ class TehtavapankkiService(
     private val s3Template: S3Template,
     private val s3Client: S3Client,
     private val parser: TehtavapankkiXmlParser,
+    private val repository: TehtavapankkiRepository,
 ) {
     @Value($$"${kitu.kotoutumiskoulutus.tehtavapankki.bucket:#{null}}")
     var bucket: String? = null
@@ -48,14 +50,19 @@ class TehtavapankkiService(
             .take(128)
 
     @WithSpan
-    fun uploadTehtavapankki(response: TehtavapankkiResponse) {
+    fun uploadTehtavapankki(downloads: List<QuestionBankDownload>) {
         val now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-        response.questionbanks.forEachIndexed { index, qb ->
-            val sanitizedCoursename = sanitizeFilename(qb.courseName)
-            val filename = "${qb.courseId}-$sanitizedCoursename/$now-$index.xml"
+        downloads.forEachIndexed { index, download ->
+            val meta = download.metadata
+            val sanitizedCoursename = sanitizeFilename(meta.courseName)
+            // Avain sisältää sekä lataushetken aikaleiman (lukukelpoinen) että
+            // Koealustan filegenerated epoch-ms:n (parsittava), jotta ingest
+            // voi tallentaa lähdejärjestelmän version per paketti.
+            val filename =
+                "${meta.courseId}-$sanitizedCoursename/$now-fg${meta.generated.toEpochMilli()}-$index.xml"
 
-            qb.xml.use { source ->
-                source.openStream().use { stream ->
+            download.use { d ->
+                d.xml.openStream().use { stream ->
                     useS3 { bucketName ->
                         upload(bucketName, filename, stream)
                     }
@@ -66,7 +73,26 @@ class TehtavapankkiService(
 
     @WithSpan
     fun importTehtavapankki() {
-        uploadTehtavapankki(client.importQuestionBanks())
+        val metas = client.listQuestionBanks()
+        var skipped = 0
+        val downloads =
+            metas.mapNotNull { meta ->
+                val prev =
+                    repository.findLatestFilegeneratedBySource(
+                        TehtavapankkiIngestService.LAHDEJARJESTELMA,
+                        meta.courseId.toString(),
+                    )
+                if (prev != null && prev.toInstant() == meta.generated) {
+                    skipped++
+                    null
+                } else {
+                    QuestionBankDownload(meta, client.downloadXml(meta))
+                }
+            }
+        Span.current().setAttribute("tehtavapankki.metas.count", metas.size.toLong())
+        Span.current().setAttribute("tehtavapankki.skipped.count", skipped.toLong())
+        Span.current().setAttribute("tehtavapankki.downloaded.count", downloads.size.toLong())
+        uploadTehtavapankki(downloads)
     }
 
     @WithSpan
@@ -212,6 +238,17 @@ class TehtavapankkiService(
             f(s3Template, bucketName)
         }
     }
+}
+
+/**
+ * Service-tason kapseli, joka pitää metadatan ja avoinna olevan XmlSourcen
+ * yhdessä. Sulkemalla tämä sulkee XmlSourcen (esim. poistaa väliaikaistiedoston).
+ */
+data class QuestionBankDownload(
+    val metadata: QuestionBankMetadata,
+    val xml: XmlSource,
+) : AutoCloseable {
+    override fun close() = xml.close()
 }
 
 data class TehtavapakettiObject(
