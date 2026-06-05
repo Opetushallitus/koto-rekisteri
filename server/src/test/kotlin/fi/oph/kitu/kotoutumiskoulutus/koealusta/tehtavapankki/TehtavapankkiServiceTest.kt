@@ -4,6 +4,8 @@ import arrow.core.Either
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration
 import fi.oph.kitu.LocalStackContainerConfiguration.Companion.TEST_BUCKET
+import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
+import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
@@ -19,6 +22,8 @@ import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import java.net.URI
 import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.Base64
 import kotlin.test.assertEquals
@@ -34,36 +39,40 @@ class TehtavapankkiServiceTest(
     @param:Autowired private val tehtavapankkiService: TehtavapankkiService,
     @param:Autowired private val tehtavapankkiClient: TehtavapankkiClientImpl,
     @param:Autowired private val s3Client: S3Client,
+    @param:Autowired private val repository: TehtavapankkiRepository,
+    @param:Autowired private val jdbc: JdbcTemplate,
 ) {
     @BeforeEach
-    fun emptyBucket() {
+    fun reset() {
         s3Client
             .listObjectsV2 { it.bucket(TEST_BUCKET) }
             .contents()
             .forEach { obj ->
                 s3Client.deleteObject { it.bucket(TEST_BUCKET).key(obj.key()) }
             }
+        jdbc.execute("DELETE FROM tehtavapaketti")
     }
 
     @Test
-    fun `uploadTehtavapankki kirjoittaa tiedostot S3-buckettiin`() {
-        val response =
-            TehtavapankkiResponse(
-                questionbanks =
-                    listOf(
-                        TehtavapankkiResponse.Questionbank(
+    fun `uploadTehtavapankki kirjoittaa tiedostot S3-buckettiin filegenerated-suffiksilla`() {
+        val downloads =
+            listOf(
+                QuestionBankDownload(
+                    metadata =
+                        QuestionBankMetadata(
                             courseId = 42,
                             courseName = "Suomi alkeet",
-                            xml = StringXmlSource("<questions><q id=\"1\"/></questions>"),
                             published = Instant.ofEpochMilli(0),
-                            generated = Instant.ofEpochMilli(0),
+                            generated = Instant.ofEpochMilli(1733400000000),
                             version = "test",
                             language = "fin",
+                            downloadUrl = "ignored",
                         ),
-                    ),
+                    xml = StringXmlSource("<questions><q id=\"1\"/></questions>"),
+                ),
             )
 
-        tehtavapankkiService.uploadTehtavapankki(response)
+        tehtavapankkiService.uploadTehtavapankki(downloads)
 
         val objects = s3Client.listObjectsV2 { it.bucket(TEST_BUCKET) }
         assertEquals(1, objects.keyCount(), "Yksi tiedosto pitäisi olla ladattu")
@@ -72,6 +81,10 @@ class TehtavapankkiServiceTest(
         assertTrue(
             key.startsWith("42-Suomi_alkeet/"),
             "Avaimen pitäisi olla courseid-coursename/-prefiksillä, oli: $key",
+        )
+        assertTrue(
+            key.contains("-fg1733400000000-"),
+            "Avaimessa pitäisi olla filegenerated epoch-ms, oli: $key",
         )
 
         val content =
@@ -83,7 +96,22 @@ class TehtavapankkiServiceTest(
     }
 
     @Test
-    fun `importTehtavapankki hakee koealustasta ja kirjoittaa S3-buckettiin`() {
+    fun `importTehtavapankki lataa muuttuneet ja ohittaa skipattavat`() {
+        // Edellisellä ajolla on jo tuotu courseid=7 filegenerated=1733400000:lla,
+        // joten se pitäisi skipata. Courseid=8:lla ei ole vastaavaa riviä, joten se
+        // pitäisi ladata.
+        repository.insertPaketti(
+            TehtavapakettiEntity(
+                lahdejarjestelma = "moodle.koealusta",
+                lahdeId = "7",
+                nimi = "Suomi 2",
+                versioHash = "esim-hash",
+                s3Avain = null,
+                lahdeFilegenerated =
+                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(1733400000), ZoneOffset.UTC),
+            ),
+        )
+
         val mockServer = MockRestServiceServer.bindTo(tehtavapankkiClient.restClientBuilder).build()
         mockServer
             .expect(
@@ -101,7 +129,7 @@ class TehtavapankkiServiceTest(
                           "courseid": 7,
                           "coursename": "Suomi 2",
                           "coursestartdate": 0,
-                          "filegenerated": 0,
+                          "filegenerated": 1733400000,
                           "questionbankversion": "v1",
                           "language": "fin",
                           "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml"
@@ -110,7 +138,7 @@ class TehtavapankkiServiceTest(
                           "courseid": 8,
                           "coursename": "Suomi 3",
                           "coursestartdate": 0,
-                          "filegenerated": 0,
+                          "filegenerated": 1733400001,
                           "questionbankversion": "v1",
                           "language": "fin",
                           "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/8/qb.xml"
@@ -121,11 +149,8 @@ class TehtavapankkiServiceTest(
                     MediaType.APPLICATION_JSON,
                 ),
             )
-        mockServer
-            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml?token=testitoken"))
-            .andRespond(
-                withSuccess("<questions><q id=\"a\"/></questions>", MediaType.APPLICATION_XML),
-            )
+        // Vain courseid=8:n latauksen pitäisi tapahtua — courseid=7 skipataan
+        // ennen pluginfile.php-kutsua.
         mockServer
             .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/8/qb.xml?token=testitoken"))
             .andRespond(
@@ -145,23 +170,23 @@ class TehtavapankkiServiceTest(
                 .contents()
                 .map { it.key() }
 
-        assertEquals(2, keys.size, "Molempien tehtäväpankkien pitäisi olla ladattu")
+        assertEquals(1, keys.size, "Vain courseid=8:n pitäisi olla ladattu, oli: $keys")
+        val suomi3Key = keys.single()
         assertTrue(
-            keys.any { it.startsWith("7-Suomi_2/") },
-            "Avaimien joukosta pitäisi löytyä 7-Suomi_2/-prefiksi, oli: $keys",
+            suomi3Key.startsWith("8-Suomi_3/"),
+            "Ladatun avaimen pitäisi alkaa courseid=8:n kansiopolulla, oli: $suomi3Key",
         )
         assertTrue(
-            keys.any { it.startsWith("8-Suomi_3/") },
-            "Avaimien joukosta pitäisi löytyä 8-Suomi_3/-prefiksi, oli: $keys",
+            suomi3Key.contains("-fg1733400001-"),
+            "Avaimessa pitäisi olla filegenerated epoch-ms, oli: $suomi3Key",
         )
 
-        val suomi2Key = keys.single { it.startsWith("7-Suomi_2/") }
-        val suomi2Content =
+        val suomi3Content =
             s3Client
-                .getObject { it.bucket(TEST_BUCKET).key(suomi2Key) }
+                .getObject { it.bucket(TEST_BUCKET).key(suomi3Key) }
                 .readAllBytes()
                 .toString(Charsets.UTF_8)
-        assertEquals("<questions><q id=\"a\"/></questions>", suomi2Content)
+        assertEquals("<questions><q id=\"b\"/></questions>", suomi3Content)
     }
 
     @Test

@@ -16,9 +16,12 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.TestPropertySource
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
+import java.time.Instant
+import java.time.ZoneOffset
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -172,5 +175,61 @@ class TehtavapankkiIngestServiceTest(
         val result = ingestService.ingestFromS3("ei-olemassa.xml")
         assertIs<Either.Left<TehtavapankkiParseError>>(result)
         assertEquals(TehtavapankkiParseError.NotFound, result.value)
+    }
+
+    @Test
+    fun `ingest tallentaa lahde_filegeneratedin S3-avaimen fg-suffiksista`() {
+        val xmlKey = "42-Suomi_alkeet/2026-01-01T00:00:00-fg1733400000000-0.xml"
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(xmlKey) },
+            RequestBody.fromBytes(xmlBytes),
+        )
+
+        val paketti = (ingestService.ingestFromS3(xmlKey) as Either.Right).value
+        assertEquals(
+            Instant.ofEpochMilli(1733400000000).atOffset(ZoneOffset.UTC),
+            paketti.lahdeFilegenerated,
+        )
+    }
+
+    @Test
+    fun `ingest jattaa lahde_filegeneratedin nulliksi kun avaimessa ei ole fg-suffiksia`() {
+        val xmlKey = "42-Suomi_alkeet/2026-01-01.xml"
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(xmlKey) },
+            RequestBody.fromBytes(xmlBytes),
+        )
+
+        val paketti = (ingestService.ingestFromS3(xmlKey) as Either.Right).value
+        assertNull(paketti.lahdeFilegenerated)
+    }
+
+    @Test
+    fun `ingest paivittaa lahde_filegeneratedin myos hash-dedup-haarassa`() {
+        val firstKey = "42-Suomi_alkeet/2026-01-01T00:00:00-fg1000-0.xml"
+        val secondKey = "42-Suomi_alkeet/2026-02-01T00:00:00-fg2000-0.xml"
+        s3Client.putObject({ it.bucket(TEST_BUCKET).key(firstKey) }, RequestBody.fromBytes(xmlBytes))
+        s3Client.putObject({ it.bucket(TEST_BUCKET).key(secondKey) }, RequestBody.fromBytes(xmlBytes))
+
+        val first = (ingestService.ingestFromS3(firstKey) as Either.Right).value
+        assertEquals(
+            Instant.ofEpochMilli(1000).atOffset(ZoneOffset.UTC),
+            first.lahdeFilegenerated,
+        )
+
+        val second = (ingestService.ingestFromS3(secondKey) as Either.Right).value
+        assertEquals(first.id, second.id, "Sama hash → sama paketti (dedup)")
+        assertEquals(
+            Instant.ofEpochMilli(2000).atOffset(ZoneOffset.UTC),
+            second.lahdeFilegenerated,
+            "Lähteen uusi filegenerated pitäisi tallentua myös dedup-haarassa",
+        )
+
+        val persisted = repository.findPakettiById(first.id!!)
+        assertNotNull(persisted)
+        assertEquals(
+            Instant.ofEpochMilli(2000).atOffset(ZoneOffset.UTC),
+            persisted.lahdeFilegenerated,
+        )
     }
 }

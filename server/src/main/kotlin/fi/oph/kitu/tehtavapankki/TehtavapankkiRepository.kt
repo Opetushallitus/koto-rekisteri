@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.JsonNode
+import java.time.OffsetDateTime
 
 @Service
 class TehtavapankkiRepository(
@@ -18,8 +19,13 @@ class TehtavapankkiRepository(
         jdbc
             .query(
                 """
-                INSERT INTO tehtavapaketti (lahdejarjestelma, lahde_id, nimi, versio_hash, s3_avain, metadata)
-                VALUES (:lahdejarjestelma, :lahde_id, :nimi, :versio_hash, :s3_avain, :metadata::jsonb)
+                INSERT INTO tehtavapaketti (
+                    lahdejarjestelma, lahde_id, nimi, versio_hash, s3_avain, metadata, lahde_filegenerated
+                )
+                VALUES (
+                    :lahdejarjestelma, :lahde_id, :nimi, :versio_hash, :s3_avain, :metadata::jsonb,
+                    :lahde_filegenerated
+                )
                 RETURNING id
                 """.trimIndent(),
                 MapSqlParameterSource()
@@ -28,9 +34,38 @@ class TehtavapankkiRepository(
                     .addValue("nimi", paketti.nimi)
                     .addValue("versio_hash", paketti.versioHash)
                     .addValue("s3_avain", paketti.s3Avain)
-                    .addValue("metadata", paketti.metadata.serialize()),
+                    .addValue("metadata", paketti.metadata.serialize())
+                    .addValue("lahde_filegenerated", paketti.lahdeFilegenerated),
                 SingleColumnRowMapper(Int::class.java),
             ).first()!!
+
+    @WithSpan
+    fun findLatestFilegeneratedBySource(
+        lahdejarjestelma: String,
+        lahdeId: String,
+    ): OffsetDateTime? =
+        jdbc
+            .query(
+                """
+                SELECT lahde_filegenerated
+                FROM tehtavapaketti
+                WHERE lahdejarjestelma = :lahdejarjestelma AND lahde_id = :lahde_id
+                ORDER BY luotu DESC
+                LIMIT 1
+                """.trimIndent(),
+                mapOf("lahdejarjestelma" to lahdejarjestelma, "lahde_id" to lahdeId),
+            ) { rs, _ -> rs.getObject("lahde_filegenerated", OffsetDateTime::class.java) }
+            .firstOrNull()
+
+    @WithSpan
+    fun updateFilegenerated(
+        id: Int,
+        lahdeFilegenerated: OffsetDateTime,
+    ): Int =
+        jdbc.update(
+            "UPDATE tehtavapaketti SET lahde_filegenerated = :fg WHERE id = :id",
+            mapOf("id" to id, "fg" to lahdeFilegenerated),
+        )
 
     @WithSpan
     @Transactional

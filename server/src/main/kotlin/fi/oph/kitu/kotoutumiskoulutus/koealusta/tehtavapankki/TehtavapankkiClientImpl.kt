@@ -35,7 +35,7 @@ class TehtavapankkiClientImpl(
     }
 
     @WithSpan
-    override fun importQuestionBanks(): TehtavapankkiResponse {
+    override fun listQuestionBanks(): List<QuestionBankMetadata> {
         Span.current().setAttribute("function", "local_completion_export_export_question_bank")
         val raw =
             restClient
@@ -50,26 +50,24 @@ class TehtavapankkiClientImpl(
                 .retrieve()
                 .toEntity<RawTehtavapankkiResponse>()
                 .body!!
-        return TehtavapankkiResponse(
-            questionbanks =
-                raw.questionbanks.map { qb ->
-                    TehtavapankkiResponse.Questionbank(
-                        courseId = qb.courseid,
-                        courseName = qb.coursename,
-                        published = qb.coursestartdate.toLong().let { Instant.ofEpochMilli(it) },
-                        generated = qb.filegenerated.toLong().let { Instant.ofEpochMilli(it) },
-                        version = qb.questionbankversion,
-                        language = qb.language,
-                        xml = buildXmlSource(qb.downloadurl),
-                    )
-                },
-        )
+        return raw.questionbanks.map { qb ->
+            QuestionBankMetadata(
+                courseId = qb.courseid,
+                courseName = qb.coursename,
+                published = Instant.ofEpochMilli(qb.coursestartdate.toLong()),
+                generated = Instant.ofEpochMilli(qb.filegenerated.toLong()),
+                version = qb.questionbankversion,
+                language = qb.language,
+                downloadUrl = qb.downloadurl,
+            )
+        }
     }
 
-    private fun buildXmlSource(downloadUrl: String): XmlSource {
+    @WithSpan
+    override fun downloadXml(meta: QuestionBankMetadata): XmlSource {
         val uri =
             UriComponentsBuilder
-                .fromUriString(downloadUrl)
+                .fromUriString(meta.downloadUrl)
                 .queryParam("token", koealustaToken)
                 .build()
                 .toUri()

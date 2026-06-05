@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.node.ObjectNode
 import java.security.MessageDigest
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 @Service
 @ConditionalOnProperty(
@@ -50,11 +53,19 @@ class TehtavapankkiIngestService(
 
         val versioHash = sha256(bytes)
         val source = MoodleSourceIdentifiers.fromS3Key(xmlKey)
+        val lahdeFilegenerated =
+            source.filegeneratedMs?.let { OffsetDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneOffset.UTC) }
 
         if (repository.existsByVersionHash(LAHDEJARJESTELMA, source.lahdeId, versioHash)) {
             Span.current().setAttribute("ingest.dedup", true)
-            // Sama hash on jo tallessa: palautetaan olemassa oleva paketti.
-            return repository.findLatestPakettiBySource(LAHDEJARJESTELMA, source.lahdeId)!!.right()
+            val latest = repository.findLatestPakettiBySource(LAHDEJARJESTELMA, source.lahdeId)!!
+            // Sama sisältö, mutta lähde voi olla bumpannut filegeneratedia —
+            // päivitetään se silti, jotta seuraava import skippaa latauksen.
+            if (lahdeFilegenerated != null && latest.lahdeFilegenerated != lahdeFilegenerated) {
+                repository.updateFilegenerated(latest.id!!, lahdeFilegenerated)
+                return latest.copy(lahdeFilegenerated = lahdeFilegenerated).right()
+            }
+            return latest.right()
         }
 
         val quiz =
@@ -76,6 +87,7 @@ class TehtavapankkiIngestService(
                             .createObjectNode()
                             .put("courseid", source.courseidInt)
                             .put("sanitizedCoursename", source.sanitizedCoursename),
+                    lahdeFilegenerated = lahdeFilegenerated,
                 ),
             )
 
@@ -189,16 +201,23 @@ internal data class MoodleSourceIdentifiers(
     val nimi: String,
     val sanitizedCoursename: String,
     val courseidInt: Int?,
+    val filegeneratedMs: Long?,
 ) {
     companion object {
+        // Tiedostonimessä Koealustan filegenerated upotetaan muodossa `-fg{epochMs}-`,
+        // esim. `2026-01-01T10:00:00-fg1733400000000-0.xml`.
+        private val FILEGENERATED_REGEX = Regex("-fg(\\d+)-")
+
         /**
-         * S3-avain on muotoa `{courseid}-{sanitized_coursename}/{timestamp}-{index}.xml`.
-         * Palautetaan courseid ja paras-arvaus alkuperäisestä kurssin nimestä
-         * (alaviivat takaisin välilyönneiksi). Lähdedatan oikea
-         * coursename-merkkijono säilyy raakana metadatassa.
+         * S3-avain on muotoa `{courseid}-{sanitized_coursename}/{timestamp}-fg{filegeneratedMs}-{index}.xml`.
+         * Palautetaan courseid, paras-arvaus alkuperäisestä kurssin nimestä
+         * (alaviivat takaisin välilyönneiksi) ja Koealustan filegenerated jos
+         * avain sen sisältää. Vanhat (ennen optimointia ladatut) avaimet ovat
+         * ilman `-fg{ms}-` osaa, jolloin `filegeneratedMs` on null.
          */
         fun fromS3Key(xmlKey: String): MoodleSourceIdentifiers {
             val folder = xmlKey.substringBefore('/')
+            val basename = xmlKey.substringAfter('/')
             val dashIndex = folder.indexOf('-')
             val (courseidStr, sanitized) =
                 if (dashIndex >= 0) {
@@ -207,11 +226,18 @@ internal data class MoodleSourceIdentifiers(
                     folder to ""
                 }
             val nimi = sanitized.replace('_', ' ').ifBlank { folder }
+            val filegeneratedMs =
+                FILEGENERATED_REGEX
+                    .find(basename)
+                    ?.groupValues
+                    ?.get(1)
+                    ?.toLongOrNull()
             return MoodleSourceIdentifiers(
                 lahdeId = courseidStr,
                 nimi = nimi,
                 sanitizedCoursename = sanitized,
                 courseidInt = courseidStr.toIntOrNull(),
+                filegeneratedMs = filegeneratedMs,
             )
         }
     }
