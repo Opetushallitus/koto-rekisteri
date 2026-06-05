@@ -2,8 +2,10 @@ package fi.oph.kitu.koski
 
 import arrow.core.Either
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.vkt.VktSuoritusRepository
@@ -29,6 +31,7 @@ import org.springframework.test.web.client.response.MockRestResponseCreators.wit
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
 import org.testcontainers.postgresql.PostgreSQLContainer
+import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -58,10 +61,14 @@ class KoskiServiceTest(
     @Autowired
     private lateinit var ykiService: YkiService
 
+    @Autowired
+    private lateinit var timeService: TestTimeService
+
     @BeforeEach
     fun nukeDb() {
         ykiSuoritusRepository.deleteAll()
         inMemorySpanExporter.reset()
+        timeService.resetClock()
     }
 
     @Test
@@ -88,6 +95,7 @@ class KoskiServiceTest(
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
+                timeService,
             )
 
         val updatedSuoritus = service.sendYkiSuoritusToKoski(suoritus).getOrThrow()
@@ -124,6 +132,7 @@ class KoskiServiceTest(
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
+                timeService,
             )
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(id = 1)
@@ -155,6 +164,7 @@ class KoskiServiceTest(
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
+                timeService,
             )
 
         ykiSuoritusRepository.saveAllNewEntities(
@@ -202,6 +212,7 @@ class KoskiServiceTest(
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
+                timeService,
             )
 
         ykiSuoritusRepository.saveAllNewEntities(
@@ -236,6 +247,7 @@ class KoskiServiceTest(
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
+                timeService,
             )
 
         val invalid =
@@ -284,6 +296,7 @@ class KoskiServiceTest(
                 customVktSuoritusRepository,
                 vktSuoritusService,
                 koskiErrorService,
+                timeService,
             )
 
         val legacy =
@@ -339,6 +352,89 @@ class KoskiServiceTest(
         assertEquals(lahetetyt.map { it.solkiId }, listOf(viimeisinVersio.solkiId))
     }
 
+    @Test
+    fun `YKI-lähetys KOSKI-palveluun estetään kun blockedUntil on tulevaisuudessa`() {
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        val blockedUntil = LocalDateTime.of(2026, 6, 22, 9, 0)
+
+        val service =
+            KoskiService(
+                mockRestClientBuilder.build(),
+                koskiYkiRequestMapper,
+                koskiVktRequestMapper,
+                ykiSuoritusRepository,
+                customVktSuoritusRepository,
+                vktSuoritusService,
+                koskiErrorService,
+                timeService,
+                ykiTransferBlockedUntil = blockedUntil,
+            )
+
+        ykiSuoritusRepository.saveAllNewEntities(listOf(generateRandomYkiSuoritusEntity()))
+
+        timeService.fixClock(
+            blockedUntil
+                .minusMinutes(1)
+                .atZone(TimeService.zoneId)
+                .toInstant(),
+        )
+
+        val report = service.sendYkiSuorituksetToKoski().getOrThrow()
+
+        assertEquals(0, report.successfulTransfers)
+        assertEquals(0, report.totalCount)
+        assertEquals(blockedUntil, report.blockedUntil)
+        assertTrue(report.toString().contains("estetty"))
+        assertTrue(report.toString().contains(blockedUntil.toString()))
+
+        val storedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
+        assertEquals(1, storedSuoritukset.size)
+        assertEquals(false, storedSuoritukset[0].koskiSiirtoKasitelty)
+
+        mockServer.verify()
+    }
+
+    @Test
+    fun `YKI-lähetys KOSKI-palveluun etenee kun blockedUntil on menneisyydessä`() {
+        val koskiResponse = successfulKoskiResponseFor("1.2.246.562.24.20281155246", 183424)
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("oppija"))
+            .andRespond(withSuccess(koskiResponse, MediaType.APPLICATION_JSON))
+
+        val blockedUntil = LocalDateTime.of(2026, 6, 22, 9, 0)
+
+        val service =
+            KoskiService(
+                mockRestClientBuilder.build(),
+                koskiYkiRequestMapper,
+                koskiVktRequestMapper,
+                ykiSuoritusRepository,
+                customVktSuoritusRepository,
+                vktSuoritusService,
+                koskiErrorService,
+                timeService,
+                ykiTransferBlockedUntil = blockedUntil,
+            )
+
+        ykiSuoritusRepository.saveAllNewEntities(listOf(generateRandomYkiSuoritusEntity()))
+
+        timeService.fixClock(
+            blockedUntil
+                .plusMinutes(1)
+                .atZone(TimeService.zoneId)
+                .toInstant(),
+        )
+
+        val report = service.sendYkiSuorituksetToKoski().getOrThrow()
+
+        assertEquals(1, report.successfulTransfers)
+        assertEquals(1, report.totalCount)
+        assertEquals(null, report.blockedUntil)
+
+        mockServer.verify()
+    }
+
     private fun setupKoskiMock(response: String): KoskiService {
         val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
         mockServer
@@ -358,6 +454,7 @@ class KoskiServiceTest(
             customVktSuoritusRepository,
             vktSuoritusService,
             koskiErrorService,
+            timeService,
         )
     }
 

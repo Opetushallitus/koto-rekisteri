@@ -5,6 +5,7 @@ import arrow.core.left
 import arrow.core.right
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
+import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.util.retry.RetryOutboundIntegration
@@ -14,6 +15,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -32,6 +34,9 @@ class KoskiService(
     private val customVktSuoritusRepository: CustomVktSuoritusRepository,
     private val vktSuoritusService: VktSuoritusService,
     private val koskiErrors: KoskiErrorService,
+    private val timeService: TimeService,
+    @param:Value($$"${kitu.koski.yki.transferBlockedUntil:#{null}}")
+    private val ykiTransferBlockedUntil: LocalDateTime? = null,
 ) {
     @WithSpan
     @RetryOutboundIntegration
@@ -150,9 +155,17 @@ class KoskiService(
 
     @WithSpan
     fun sendYkiSuorituksetToKoski(): Either<KoskiTechnicalException, KoskiTransferReport> {
+        if (isYkiTransferBlocked()) {
+            return KoskiTransferReport(0, 0, blockedUntil = ykiTransferBlockedUntil).right()
+        }
         val suoritukset = ykiSuoritusRepository.findKoskeenLahettamattomatSuoritukset()
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
         return reportErrors(results.map { it.map { suoritus -> YkiMappingId(suoritus.solkiId) } })
+    }
+
+    private fun isYkiTransferBlocked(): Boolean {
+        val blockedUntil = ykiTransferBlockedUntil ?: return false
+        return timeService.now().isBefore(blockedUntil.atZone(TimeService.zoneId).toInstant())
     }
 
     @WithSpan
@@ -210,12 +223,17 @@ data class KoskiTransferReport(
     val successfulTransfers: Int,
     val totalCount: Int,
     val timestamp: LocalDateTime = LocalDateTime.now(),
+    val blockedUntil: LocalDateTime? = null,
 ) {
     override fun toString(): String =
-        (
-            listOfNotNull(
-                "Viimeisin onnistunut eräajo: $timestamp",
-                "Siirretty $successfulTransfers / $totalCount",
-            )
-        ).joinToString("; ")
+        if (blockedUntil != null) {
+            "KOSKI-lähetys estetty $blockedUntil asti"
+        } else {
+            (
+                listOfNotNull(
+                    "Viimeisin onnistunut eräajo: $timestamp",
+                    "Siirretty $successfulTransfers / $totalCount",
+                )
+            ).joinToString("; ")
+        }
 }
