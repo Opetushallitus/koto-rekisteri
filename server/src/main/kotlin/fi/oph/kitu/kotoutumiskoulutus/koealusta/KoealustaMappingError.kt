@@ -23,7 +23,7 @@ sealed class KoealustaMappingError(
         message: String,
         schoolOid: Oid?,
         teacherEmail: String?,
-        val koealustaUser: User,
+        val koealustaUser: KoealustaOppija,
         val validationErrors: List<Validation>,
         val oppijanumero: Oid? = null,
     ) : KoealustaMappingError(message, schoolOid, teacherEmail)
@@ -32,7 +32,7 @@ sealed class KoealustaMappingError(
         message: String,
         schoolOid: Oid?,
         teacherEmail: String?,
-        koealustaUser: User,
+        koealustaUser: KoealustaOppija,
         validationErrors: List<Validation>,
     ) : ValidationFailure(message, schoolOid, teacherEmail, koealustaUser, validationErrors)
 
@@ -40,7 +40,7 @@ sealed class KoealustaMappingError(
         message: String,
         schoolOid: Oid?,
         teacherEmail: String?,
-        koealustaUser: User,
+        koealustaUser: KoealustaOppija,
         validationErrors: List<Validation>,
         oppijanumero: Oid?,
     ) : ValidationFailure(message, schoolOid, teacherEmail, koealustaUser, validationErrors, oppijanumero)

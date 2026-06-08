@@ -8,9 +8,16 @@ import tools.jackson.module.kotlin.readValue
 class KoealustaResponseParser(
     private val jacksonObjectMapper: ObjectMapper,
 ) {
-    fun parse(json: String): KoealustaSuorituksetResponse =
+    fun parseSuoritus(json: String): KoealustaSuorituksetResponse =
         try {
             jacksonObjectMapper.readValue<KoealustaSuorituksetResponse>(json)
+        } catch (e: Throwable) {
+            throw parseMoodleError(json, e)
+        }
+
+    fun parseKeskenerainen(json: String): KoealustaKeskeneraisetResponse =
+        try {
+            jacksonObjectMapper.readValue<KoealustaKeskeneraisetResponse>(json)
         } catch (e: Throwable) {
             throw parseMoodleError(json, e)
         }

@@ -110,6 +110,12 @@ class CustomKielitestiSuoritusRepository(
                 Timestamp::class.java,
             )?.toInstant()
 
+    fun deleteAllKeskeneraiset(): Int =
+        jdbcNamedParameterTemplate.update(
+            "DELETE FROM koto_suoritus WHERE completed = false",
+            emptyMap<String, Any>(),
+        )
+
     fun exists(suoritus: KielitestiSuoritus): Boolean {
         val existing = findLatestSuoritusVersion(suoritus) ?: return false
         return existing.equalsIgnoringAnnotated(suoritus, "KOTO")
@@ -127,8 +133,8 @@ class CustomKielitestiSuoritusRepository(
         val paramMap =
             mapOf(
                 "kurssiId" to suoritus.kurssiId,
-                "oppijanumero" to suoritus.oppijanumero.toString(),
-                "suoritusaika" to Timestamp.from(suoritus.suoritusaika),
+                "oppijanumero" to suoritus.oppijanumero?.toString(),
+                "suoritusaika" to suoritus.suoritusaika?.let { Timestamp.from(it) },
             )
         return jdbcNamedParameterTemplate.query(sql, paramMap, KielitestiSuoritus.fromRow).firstOrNull()
     }

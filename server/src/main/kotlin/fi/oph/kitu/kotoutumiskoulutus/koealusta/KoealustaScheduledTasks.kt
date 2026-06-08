@@ -2,6 +2,7 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
 import com.github.kagkarlsson.scheduler.task.Task
 import fi.oph.kitu.util.scheduling.recurringStatefulTask
+import fi.oph.kitu.util.scheduling.recurringTask
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
@@ -24,6 +25,15 @@ class KoealustaScheduledTasks(
             koealustaImportSchedule,
             Instant.EPOCH,
         ) { previous ->
-            koealustaService.importSuoritukset(previous)
+            koealustaService.importValmiitSuoritukset(previous)
+        }
+
+    @Bean
+    fun dailyImportKeskeneraisetKotoSuoritukset(koealustaService: KoealustaService): Task<Void> =
+        tracer.recurringTask(
+            "Hae kotoutumiskoulutuksen keskeneräiset suoritukset",
+            koealustaImportSchedule,
+        ) {
+            koealustaService.importKeskeneraisetSuoritukset()
         }
 }

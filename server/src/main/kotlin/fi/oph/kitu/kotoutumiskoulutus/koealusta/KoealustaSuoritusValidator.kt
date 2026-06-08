@@ -10,14 +10,15 @@ import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.Oppija
+import fi.oph.kitu.util.result.getOrThrow
 import org.springframework.stereotype.Service
 import java.time.Instant
 
 @Service
 class KoealustaSuoritusValidator {
-    fun toOppija(koealustaUser: User): Either<KoealustaMappingError.OppijaValidationFailure, Oppija> {
+    fun toOppija(koealustaUser: KoealustaOppija): Either<KoealustaMappingError.OppijaValidationFailure, Oppija> {
         val errors = mutableListOf<KoealustaMappingError.Validation>()
-        if (koealustaUser.SSN.isNullOrEmpty()) {
+        if (koealustaUser.ssn.isNullOrEmpty()) {
             errors.add(KoealustaMappingError.Validation.MissingField("SSN", koealustaUser.userid))
         }
         if (koealustaUser.preferredname.isNullOrEmpty()) {
@@ -28,8 +29,8 @@ class KoealustaSuoritusValidator {
             return KoealustaMappingError
                 .OppijaValidationFailure(
                     "Validation failure on converting user \"${koealustaUser.userid}\" to oppija",
-                    schoolOid = Oid.parse(koealustaUser.completions.first().schoolOID).getOrNull(),
-                    teacherEmail = koealustaUser.completions.first().teacheremail,
+                    schoolOid = Oid.parse(koealustaUser.schoolOID()).getOrNull(),
+                    teacherEmail = koealustaUser.teacherEmail(),
                     koealustaUser,
                     errors,
                 ).left()
@@ -37,7 +38,7 @@ class KoealustaSuoritusValidator {
 
         return Oppija(
             etunimet = koealustaUser.firstnames.trim(),
-            hetu = koealustaUser.SSN!!.trim(),
+            hetu = koealustaUser.ssn!!.trim(),
             kutsumanimi = koealustaUser.preferredname!!.trim(),
             sukunimi = koealustaUser.lastname.trim(),
         ).right()
@@ -110,6 +111,45 @@ class KoealustaSuoritusValidator {
             testikieli = testikieli,
             opettajanEmail = completion.teacheremail,
             tehtavapaketti = completion.questionbank,
+            completed = true,
+        ).right()
+    }
+
+    fun courseToEntity(
+        user: KoealustaOppija,
+        course: KoealustaKeskeneraisetResponse.User.Course,
+    ): Either<KoealustaMappingError.SuoritusValidationFailure, KielitestiSuoritus>? {
+        val errors = mutableListOf<KoealustaMappingError.Validation>()
+
+        val schoolOid =
+            validate("schoolOID", user.userid, course.schoolOID.orEmpty())
+                .onLeft { errors.add(it) }
+                .getOrNull()
+
+        if (errors.isNotEmpty()) {
+            return createValidationError(user, course, errors, null)
+        }
+
+        if (user.preferredname == null) return null
+
+        return KielitestiSuoritus(
+            etunimet = user.firstnames.trim(),
+            sukunimi = user.lastname.trim(),
+            kutsumanimi = user.preferredname?.trim().orEmpty(),
+            email = user.email,
+            oppijanumero = null,
+            suoritusaika = null,
+            oppilaitosOid = schoolOid!!,
+            kurssiId = course.courseid,
+            kurssi = course.coursename,
+            luetunYmmartaminen = null,
+            kuullunYmmartaminen = null,
+            puhe = null,
+            kirjoittaminen = null,
+            testikieli = null,
+            opettajanEmail = course.teacheremail,
+            tehtavapaketti = null,
+            completed = false,
         ).right()
     }
 
@@ -175,4 +215,22 @@ class KoealustaSuoritusValidator {
         Oid
             .parse(oid)
             .mapLeft { KoealustaMappingError.Validation.MalformedField(userId, fieldName, oid) }
+
+    private fun createValidationError(
+        user: KoealustaOppija,
+        course: KoealustaCourse,
+        errors: List<KoealustaMappingError.Validation>,
+        oppijanumero: Oid?,
+    ) = KoealustaMappingError
+        .SuoritusValidationFailure(
+            message =
+                """
+                Validation failure on course completion on "${course.coursename}" for user "${user.userid}"
+                """.trimIndent(),
+            schoolOid = Oid.parse(course.schoolOID).getOrNull(),
+            teacherEmail = course.teacheremail,
+            koealustaUser = user,
+            validationErrors = errors.toList(),
+            oppijanumero = oppijanumero,
+        ).left()
 }

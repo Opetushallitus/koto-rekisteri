@@ -150,7 +150,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -236,7 +236,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -328,7 +328,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -438,7 +438,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -547,7 +547,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -636,7 +636,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -680,7 +680,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -744,7 +744,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -793,7 +793,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         val errors = kielitestiSuoritusErrorRepository.findAll()
         val suoritukset = customKielitestiSuoritusRepository.findAll()
@@ -809,7 +809,7 @@ class KoealustaServiceTests(
             fun () = assertEquals(1, suoritukset.count(), "There should be one saved suoritus"),
         )
 
-        koealustaService.importSuoritukset(from = lastSeen)
+        koealustaService.importValmiitSuoritukset(from = lastSeen)
         koealusta.verify()
 
         val suoritukset2 = customKielitestiSuoritusRepository.findAll()
@@ -889,7 +889,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -974,7 +974,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        koealustaService.importSuoritukset(Instant.EPOCH)
+        koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -1039,8 +1039,8 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        koealustaService.importSuoritukset(Instant.EPOCH)
-        koealustaService.importSuoritukset(Instant.EPOCH)
+        koealustaService.importValmiitSuoritukset(Instant.EPOCH)
+        koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -1116,7 +1116,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val importFrom = koealustaService.importSuoritukset(Instant.EPOCH)
+        val importFrom = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         mockServer.verify()
@@ -1138,7 +1138,7 @@ class KoealustaServiceTests(
                 ),
             )
 
-        koealustaService.importSuoritukset(importFrom)
+        koealustaService.importValmiitSuoritukset(importFrom)
         mockServer.verify()
         val suoritukset = customKielitestiSuoritusRepository.findAll()
         assertEquals(2, suoritukset.count())
@@ -1211,7 +1211,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -1302,7 +1302,7 @@ class KoealustaServiceTests(
         koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         // Test
-        val lastSeen = koealustaService.importSuoritukset(Instant.EPOCH)
+        val lastSeen = koealustaService.importValmiitSuoritukset(Instant.EPOCH)
 
         // Verification
         koealusta.verify()
@@ -1324,6 +1324,269 @@ class KoealustaServiceTests(
                     "Missing \"lang\" for user \"1\"",
                     error.viesti,
                 ),
+        )
+    }
+
+    private fun keskenerainenUser(
+        userid: Int,
+        courseid: Int,
+        coursename: String,
+    ) = """
+        {
+          "userid": $userid,
+          "firstnames": "Kesken Testi",
+          "lastname": "Öhman-Testi",
+          "preferredname": "Kesken",
+          "SSN": "010180-9026",
+          "email": "kesken.testi@oph.fi",
+          "courses": [
+            {
+              "courseid": $courseid,
+              "coursename": "$coursename",
+              "schoolOID": "1.2.246.562.10.1234567890",
+              "teacheremail": "opettaja@testi.oph.fi"
+            }
+          ]
+        }
+        """.trimIndent()
+
+    private fun expectKeskeneraisetRequest(
+        koealustaService: KoealustaService,
+        body: String,
+    ): MockRestServiceServer {
+        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_incomplete_course_participants&moodlewsrestformat=json",
+                ),
+            ).andRespond(withSuccess(body, MediaType.APPLICATION_JSON))
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        return mockServer
+    }
+
+    @Test
+    fun `keskeneräinen import saves suoritukset with null result fields and completed false`(
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        val mockServer =
+            expectKeskeneraisetRequest(
+                koealustaService,
+                """
+                {
+                  "users": [${keskenerainenUser(10, 50, "Kotoutumiskoulutus kesken")}]
+                }
+                """.trimIndent(),
+            )
+
+        koealustaService.importKeskeneraisetSuoritukset()
+
+        mockServer.verify()
+
+        val suoritukset = customKielitestiSuoritusRepository.findAll().toList()
+        assertEquals(1, suoritukset.size)
+
+        val keskenerainen = suoritukset.first()
+        assertAll(
+            fun() = assertEquals(false, keskenerainen.completed),
+            fun() = assertEquals(null, keskenerainen.oppijanumero),
+            fun() = assertEquals(null, keskenerainen.suoritusaika),
+            fun() = assertEquals(null, keskenerainen.luetunYmmartaminen),
+            fun() = assertEquals(null, keskenerainen.kuullunYmmartaminen),
+            fun() = assertEquals(null, keskenerainen.puhe),
+            fun() = assertEquals(null, keskenerainen.kirjoittaminen),
+            fun() = assertEquals(null, keskenerainen.testikieli),
+            fun() = assertEquals(50, keskenerainen.kurssiId),
+            fun() = assertEquals("Kotoutumiskoulutus kesken", keskenerainen.kurssi),
+            fun() = assertEquals("Kesken Testi", keskenerainen.etunimet),
+            fun() = assertEquals("Kesken", keskenerainen.kutsumanimi),
+            fun() = assertEquals(Oid.parse("1.2.246.562.10.1234567890").getOrThrow(), keskenerainen.oppilaitosOid),
+        )
+    }
+
+    @Test
+    fun `subsequent keskeneräinen import replaces the previous incomplete set`(
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        val mockServer =
+            expectKeskeneraisetRequest(
+                koealustaService,
+                """
+                {
+                  "users": [
+                    ${keskenerainenUser(10, 50, "Kurssi A")},
+                    ${keskenerainenUser(11, 51, "Kurssi B")}
+                  ]
+                }
+                """.trimIndent(),
+            )
+
+        koealustaService.importKeskeneraisetSuoritukset()
+        mockServer.verify()
+        assertEquals(2, customKielitestiSuoritusRepository.findAll().count())
+
+        mockServer.reset()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_incomplete_course_participants&moodlewsrestformat=json",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [${keskenerainenUser(10, 50, "Kurssi A")}]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.importKeskeneraisetSuoritukset()
+        mockServer.verify()
+
+        val suoritukset = customKielitestiSuoritusRepository.findAll().toList()
+        assertAll(
+            fun() = assertEquals(1, suoritukset.size, "Previous incomplete set should have been replaced"),
+            fun() = assertEquals(50, suoritukset.first().kurssiId),
+        )
+    }
+
+    @Test
+    fun `keskeneräinen import does not remove valmis suoritukset`(
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$validSuoritus]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_incomplete_course_participants&moodlewsrestformat=json",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [${keskenerainenUser(10, 50, "Kurssi A")}]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        koealustaService.importValmiitSuoritukset(Instant.EPOCH)
+        koealustaService.importKeskeneraisetSuoritukset()
+
+        mockServer.verify()
+
+        val suoritukset = customKielitestiSuoritusRepository.findAll().toList()
+        val valmis = suoritukset.single { it.completed }
+        val keskenerainen = suoritukset.single { !it.completed }
+
+        assertAll(
+            fun() = assertEquals(2, suoritukset.size),
+            fun() = assertEquals(Oid.parse("1.2.246.562.24.33342764709").getOrThrow(), valmis.oppijanumero),
+            fun() = assertEquals(50, keskenerainen.kurssiId),
+        )
+    }
+
+    @Test
+    fun `keskeneräinen import persists its validation errors without wiping valmis errors`(
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        val invalidKeskenerainen =
+            """
+            {
+              "userid": 20,
+              "firstnames": "Kesken Testi",
+              "lastname": "Öhman-Testi",
+              "preferredname": "Kesken",
+              "SSN": "010180-9026",
+              "email": "kesken.testi@oph.fi",
+              "courses": [
+                {
+                  "courseid": 60,
+                  "coursename": "Kurssi virhe",
+                  "schoolOID": "INVALID_OID",
+                  "teacheremail": "opettaja@testi.oph.fi"
+                }
+              ]
+            }
+            """.trimIndent()
+
+        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$invalidHetu]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_incomplete_course_participants&moodlewsrestformat=json",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$invalidKeskenerainen]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        koealustaService.importValmiitSuoritukset(Instant.EPOCH)
+        koealustaService.importKeskeneraisetSuoritukset()
+
+        mockServer.verify()
+
+        val errors = kielitestiSuoritusErrorRepository.findAll().toList()
+        val keskenerainenError = errors.single { !it.completed }
+
+        assertAll(
+            fun() = assertEquals(2, errors.size, "Valmis and keskeneräinen errors should coexist"),
+            fun() = assertEquals(1, errors.count { it.completed }),
+            fun() = assertEquals("schoolOID", keskenerainenError.virheellinenKentta),
+            fun() = assertEquals("INVALID_OID", keskenerainenError.virheellinenArvo),
+            fun() = assertEquals(0, customKielitestiSuoritusRepository.findAll().count()),
         )
     }
 }
