@@ -2,7 +2,6 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
 import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.auditlogs.PeerService
-import fi.oph.kitu.jdbc.replaceAll
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.CustomKielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorRepository
@@ -12,7 +11,9 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 import java.time.Instant
@@ -40,36 +41,25 @@ class KoealustaService(
     }
 
     @WithSpan("koealusta.import.suoritukset")
-    fun importSuoritukset(from: Instant): Instant {
+    fun importValmiitSuoritukset(from: Instant): Instant {
         val span = Span.current()
-        val remoteFunction = "local_completion_export_get_completions"
-
-        span.setAttribute("function", remoteFunction)
-        span.setAttribute("from", from.toString())
 
         val response =
-            restClient
-                .get()
-                .uri(
-                    "/webservice/rest/server.php?wstoken={token}&wsfunction={function}&moodlewsrestformat=json&from={from}",
-                    mapOf<String, Any>(
-                        "token" to koealustaToken,
-                        "function" to remoteFunction,
-                        "from" to from.epochSecond,
-                    ),
-                ).accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .toEntity<String>()
+            makeMoodleRequest(
+                "local_completion_export_get_completions",
+                "from" to from.epochSecond,
+            )
 
         if (response.body == null) {
             return from
         }
 
-        val (suoritukset, validationFailure) = mappingService.responseStringToEntity(response.body!!)
+        val (suoritukset, validationFailure) = mappingService.responseStringToKielitestiSuoritus(response.body!!)
 
         val validationErrors = mappingService.convertErrors(validationFailure?.validationErrors.orEmpty())
         val oppijanumeroErrors = mappingService.convertErrors(validationFailure?.oppijanumeroExceptions.orEmpty())
-        kielitestiSuoritusErrorRepository.replaceAll(validationErrors + oppijanumeroErrors)
+        kielitestiSuoritusErrorRepository.deleteAllByCompleted(true)
+        kielitestiSuoritusErrorRepository.saveAll(validationErrors + oppijanumeroErrors)
 
         val savedSuoritukset =
             suoritukset
@@ -97,6 +87,66 @@ class KoealustaService(
             return from
         }
 
-        return suoritukset.maxOfOrNull { it.suoritusaika } ?: from
+        return suoritukset.mapNotNull { it.suoritusaika }.maxOrNull() ?: from
+    }
+
+    @WithSpan("koealusta.import.keskeneraiset")
+    @Transactional
+    fun importKeskeneraisetSuoritukset() {
+        val span = Span.current()
+
+        val body =
+            makeMoodleRequest("local_completion_export_get_incomplete_course_participants").body ?: return
+
+        val (suoritukset, validationFailure) = mappingService.responseStringToKeskenerainenSuoritus(body)
+
+        val validationErrors =
+            mappingService
+                .convertErrors(validationFailure?.validationErrors.orEmpty())
+                .map { it.copy(completed = false) }
+        kielitestiSuoritusErrorRepository.deleteAllByCompleted(false)
+        kielitestiSuoritusErrorRepository.saveAll(validationErrors)
+
+        customKielitestiSuoritusRepository.deleteAllKeskeneraiset()
+
+        val savedSuoritukset =
+            kielitestiSuoritusRepository
+                .saveAll(suoritukset)
+                .also {
+                    auditLogger.logAllInternalOnly("Kielitesti keskeneräinen suoritus imported", it) { suoritus ->
+                        arrayOf(
+                            "suoritus.id" to suoritus.id,
+                            "principal.name" to "koealusta.import",
+                            "peer.service" to PeerService.Koealusta.value,
+                        )
+                    }
+                }
+
+        span.setAttribute("db.saved", savedSuoritukset.count())
+        span.setAttribute("db.saved.error.validation", validationErrors.count())
+    }
+
+    private fun makeMoodleRequest(
+        remoteFunction: String,
+        vararg params: Pair<String, Any>,
+    ): ResponseEntity<String> {
+        val span = Span.current()
+        span.setAttribute("function", remoteFunction)
+        params.forEach { (key, value) -> span.setAttribute(key, value.toString()) }
+
+        return restClient
+            .get()
+            .uri { builder ->
+                builder
+                    .path("/webservice/rest/server.php")
+                    .apply {
+                        queryParam("wstoken", koealustaToken)
+                        queryParam("wsfunction", remoteFunction)
+                        queryParam("moodlewsrestformat", "json")
+                        params.forEach { (key, value) -> queryParam(key, value) }
+                    }.build()
+            }.accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .toEntity<String>()
     }
 }

@@ -46,7 +46,7 @@ object KielitestiSuoritusPage {
                 "Kurssi" to { +"${suoritus.kurssi} (${suoritus.kurssiId})" },
                 "Järjestäjä" to { +"${orgs.nimet[suoritus.oppilaitosOid]} (${suoritus.oppilaitosOid})" },
                 "Opettajan sähköpostiosoite" to { +suoritus.opettajanEmail.orEmpty() },
-                "Suoritusaika" to { finnishDateTime(suoritus.suoritusaika) },
+                "Suoritusaika" to { suoritus.suoritusaika?.let { finnishDateTime(it) } },
                 "Testikieli" to { +suoritus.testikieli.toString() },
                 "Tehtäväpaketti" to { +suoritus.tehtavapaketti.orEmpty() },
             )

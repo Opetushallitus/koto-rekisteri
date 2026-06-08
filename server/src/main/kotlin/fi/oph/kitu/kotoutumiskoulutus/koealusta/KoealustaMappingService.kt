@@ -21,9 +21,48 @@ class KoealustaMappingService(
     private val oppijanumeroTroubleshootingService: OppijanumeroTroubleshootingService,
 ) {
     @WithSpan
-    fun responseStringToEntity(body: String) = convertToEntity(parser.parse(body))
+    fun responseStringToKeskenerainenSuoritus(body: String) =
+        convertToKielitestiKeskenerainen(parser.parseKeskenerainen(body))
 
-    fun convertToEntity(
+    fun convertToKielitestiKeskenerainen(
+        suorituksetResponse: KoealustaKeskeneraisetResponse,
+    ): Pair<List<KielitestiSuoritus>, ValidationFailure?> {
+        val validationErrors = mutableListOf<KoealustaMappingError>()
+
+        val keskeneraiset =
+            suorituksetResponse.users.flatMap { user ->
+                validator
+                    .toOppija(user)
+                    .onLeft(validationErrors::add)
+                    .getOrNull()
+
+                user.courses.mapNotNull { course ->
+                    validator
+                        .courseToEntity(user, course)
+                        ?.onLeft { validationErrors.add(it) }
+                        ?.getOrNull()
+                }
+            }
+
+        val validationFailure =
+            if (validationErrors.isNotEmpty()) {
+                ValidationFailure(
+                    message =
+                        "Parsing KielitestiSuoritus failed: There were ${validationErrors.size} validation errors.",
+                    oppijanumeroExceptions = emptyList(),
+                    validationErrors = validationErrors,
+                )
+            } else {
+                null
+            }
+
+        return Pair(keskeneraiset, validationFailure)
+    }
+
+    @WithSpan
+    fun responseStringToKielitestiSuoritus(body: String) = convertToKielitestiSuoritus(parser.parseSuoritus(body))
+
+    fun convertToKielitestiSuoritus(
         suorituksetResponse: KoealustaSuorituksetResponse,
     ): Pair<List<KielitestiSuoritus>, ValidationFailure?> {
         val oppijanumeroExceptions = mutableListOf<KoealustaMappingError>()
@@ -92,7 +131,7 @@ class KoealustaMappingService(
                     KielitestiSuoritusError(
                         id = null,
                         suorittajanOid = error.oppijanumero.toString(),
-                        hetu = error.koealustaUser.SSN,
+                        hetu = error.koealustaUser.ssn,
                         nimi = "${error.koealustaUser.lastname} ${error.koealustaUser.firstnames}",
                         etunimet = error.koealustaUser.firstnames,
                         sukunimi = error.koealustaUser.lastname,

@@ -46,4 +46,6 @@ data class KielitestiSuoritusError(
     val virheellinenArvo: String?,
     val lisatietoja: String?,
     val onrLisatietoja: String? = null,
+    @JsonIgnore
+    val completed: Boolean = true,
 )
