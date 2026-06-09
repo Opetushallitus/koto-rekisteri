@@ -32,7 +32,7 @@ enum class KielitestiSuoritusColumn(
         entityName = "oppijanumero",
         uiHeaderValue = "Oppijanumero",
         urlParam = "oppijanumero",
-        getValue = { it.oppijanumero.toString() },
+        getValue = { it.oppijanumero?.toString() ?: "-" },
     ),
 
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
@@ -88,7 +88,7 @@ enum class KielitestiSuoritusColumn(
         entityName = "testikieli",
         uiHeaderValue = "Testikieli",
         urlParam = "testikieli",
-        getValue = { (it.testikieli?.toString().orEmpty()) },
+        getValue = { it.testikieli?.toString() ?: "-" },
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT)
@@ -120,7 +120,7 @@ enum class KielitestiSuoritusColumn(
         entityName = "suoritusaika",
         uiHeaderValue = "Suoritusaika",
         urlParam = "suoritusaika",
-        getValue = { it.suoritusaika.toString() },
+        getValue = { it.suoritusaika?.toString() ?: "-" },
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT)
@@ -128,7 +128,7 @@ enum class KielitestiSuoritusColumn(
         entityName = "luetun_ymmartaminen",
         uiHeaderValue = "Luetun ymmärtäminen",
         urlParam = "luetun_ymmartaminen",
-        getValue = { it.luetunYmmartaminen?.arvosana.orEmpty() },
+        getValue = { it.luetunYmmartaminen?.arvosana ?: "-" },
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT)
@@ -136,7 +136,7 @@ enum class KielitestiSuoritusColumn(
         entityName = "kuullun_ymmartaminen",
         uiHeaderValue = "Kuullun ymmärtäminen",
         urlParam = "kuullun_ymmartaminen",
-        getValue = { it.kuullunYmmartaminen?.arvosana.orEmpty() },
+        getValue = { it.kuullunYmmartaminen?.arvosana ?: "-" },
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT)
@@ -144,7 +144,7 @@ enum class KielitestiSuoritusColumn(
         entityName = "puhe",
         uiHeaderValue = "Puhe",
         urlParam = "puhe",
-        getValue = { it.puhe?.arvosana.orEmpty() },
+        getValue = { it.puhe?.arvosana ?: "-" },
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT)
@@ -152,6 +152,6 @@ enum class KielitestiSuoritusColumn(
         entityName = "kirjoittaminen",
         uiHeaderValue = "Kirjoittaminen",
         urlParam = "kirjoittaminen",
-        getValue = { it.kirjoittaminen?.arvosana.orEmpty() },
+        getValue = { it.kirjoittaminen?.arvosana ?: "-" },
     ),
 }
