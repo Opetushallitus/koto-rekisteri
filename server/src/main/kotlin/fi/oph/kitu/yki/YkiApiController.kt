@@ -8,6 +8,7 @@ import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.util.validation.ValidationService
 import fi.oph.kitu.util.validation.getOrThrow
 import fi.oph.kitu.webmvc.csvAttachmentResponse
+import fi.oph.kitu.yki.Arviointitila.ARVIOITU
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
@@ -153,7 +154,10 @@ class YkiApiController(
                     }
             }
 
-        Span.current().setAttribute("arvioitu", entity.arviointitila.arvioitu())
+        Span.current().setAttribute(
+            "arvioitu",
+            entity.arviointitila == ARVIOITU || entity.arviointitila == Arviointitila.TARKISTUSARVIOITU,
+        )
 
         ykiSuoritusRepository.save(entity, false)
         ykiSuoritusPoikkeamaRepository.deleteBySolkiId(entity.solkiId)
