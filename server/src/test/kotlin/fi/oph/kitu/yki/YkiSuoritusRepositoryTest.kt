@@ -2,6 +2,8 @@ package fi.oph.kitu.yki
 
 import arrow.core.Either
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.dev.mockdata.OidClass
+import fi.oph.kitu.dev.mockdata.createOid
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.HyvaksyTarkistusarviointiError
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
@@ -152,7 +154,13 @@ class YkiSuoritusRepositoryTest(
     @Test
     fun `find suoritus with solki id search term`() {
         val target = generateRandomYkiSuoritusEntity().copy(solkiId = 314159)
-        val other = generateRandomYkiSuoritusEntity().copy(solkiId = 271828)
+        val other =
+            generateRandomYkiSuoritusEntity().copy(
+                solkiId = 271828,
+                suorittajanOID = createOid(OidClass.USER, 22222222222),
+                jarjestajanTunnusOid = createOid(OidClass.ORG, 22222222222),
+                hetu = "010100A002H",
+            )
         ykiSuoritusRepository.saveAllNewEntities(listOf(target, other))
 
         val exact = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "314159"))
