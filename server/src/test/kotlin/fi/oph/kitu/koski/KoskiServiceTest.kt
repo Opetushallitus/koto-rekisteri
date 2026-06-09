@@ -5,6 +5,8 @@ import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.tiedontuontischema.Lahdejarjestelma
+import fi.oph.kitu.tiedontuontischema.LahdejarjestelmanTunniste
 import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
@@ -431,6 +433,60 @@ class KoskiServiceTest(
         assertEquals(1, report.successfulTransfers)
         assertEquals(1, report.totalCount)
         assertEquals(null, report.blockedUntil)
+
+        mockServer.verify()
+    }
+
+    @Test
+    fun `OPHTesti-suoritus lähetetään KOSKI-palveluun vaikka muiden lähetys on estetty`() {
+        val ophTestiSuoritus =
+            generateRandomYkiSuoritusEntity()
+                .copy(
+                    lahdejarjestelmanTunnus =
+                        LahdejarjestelmanTunniste("123456", Lahdejarjestelma.OPHTesti).toTunnus(),
+                )
+        val solkiSuoritus = generateRandomYkiSuoritusEntity()
+
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("oppija"))
+            .andRespond(withSuccess(successfulKoskiResponseFor(ophTestiSuoritus), MediaType.APPLICATION_JSON))
+
+        val blockedUntil = LocalDateTime.of(2026, 6, 22, 9, 0)
+
+        val service =
+            KoskiService(
+                mockRestClientBuilder.build(),
+                koskiYkiRequestMapper,
+                koskiVktRequestMapper,
+                ykiSuoritusRepository,
+                customVktSuoritusRepository,
+                vktSuoritusService,
+                koskiErrorService,
+                timeService,
+                ykiTransferBlockedUntil = blockedUntil,
+            )
+
+        ykiSuoritusRepository.saveAllNewEntities(listOf(ophTestiSuoritus, solkiSuoritus))
+
+        timeService.fixClock(
+            blockedUntil
+                .minusMinutes(1)
+                .atZone(TimeService.zoneId)
+                .toInstant(),
+        )
+
+        val report = service.sendYkiSuorituksetToKoski().getOrThrow()
+
+        assertEquals(1, report.successfulTransfers)
+        assertEquals(1, report.totalCount)
+        assertEquals(blockedUntil, report.blockedUntil)
+        assertTrue(report.toString().contains("estetty"))
+        assertTrue(report.toString().contains("Siirretty 1 / 1"))
+
+        val storedSuoritukset = ykiService.allSuoritukset(versionHistory = false)
+        assertEquals(true, storedSuoritukset.first { it.isOphTesti() }.koskiSiirtoKasitelty)
+        assertEquals(false, storedSuoritukset.first { !it.isOphTesti() }.koskiSiirtoKasitelty)
 
         mockServer.verify()
     }
