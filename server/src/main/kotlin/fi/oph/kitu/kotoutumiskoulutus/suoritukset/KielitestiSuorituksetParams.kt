@@ -55,7 +55,7 @@ data class KielitestiSuorituksetParams(
 
     fun csvFileName() =
         listOfNotNull(
-            "yki_suoritukset",
+            "koto",
             if (piilotaHenkilotiedot) null else "henkilotiedot",
             testikieli?.toString(),
             suoritusalku?.toString(),
