@@ -65,7 +65,7 @@ class VktSuoritusMockGenerator(
             lahdejarjestelmanId =
                 LahdejarjestelmanTunniste(
                     "$index",
-                    Lahdejarjestelma.KIOS,
+                    Lahdejarjestelma.OPHTesti,
                 ),
         )
     }
