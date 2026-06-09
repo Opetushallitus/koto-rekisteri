@@ -27,7 +27,7 @@ object KielitestiSuoritusPage {
         h3 { +"Henkilötiedot" }
         card(compact = true) {
             infoTable(
-                "Oppijanumero" to { +suoritus.oppijanumero.toString() },
+                "Oppijanumero" to { +(suoritus.oppijanumero?.toString() ?: "-") },
                 "Sukunimi" to { +suoritus.sukunimi },
                 "Etunimet" to { +suoritus.etunimet },
                 "Kutsumanimi" to { +suoritus.kutsumanimi },
@@ -46,8 +46,8 @@ object KielitestiSuoritusPage {
                 "Kurssi" to { +"${suoritus.kurssi} (${suoritus.kurssiId})" },
                 "Järjestäjä" to { +"${orgs.nimet[suoritus.oppilaitosOid]} (${suoritus.oppilaitosOid})" },
                 "Opettajan sähköpostiosoite" to { +suoritus.opettajanEmail.orEmpty() },
-                "Suoritusaika" to { suoritus.suoritusaika?.let { finnishDateTime(it) } },
-                "Testikieli" to { +suoritus.testikieli.toString() },
+                "Suoritusaika" to { suoritus.suoritusaika?.let { finnishDateTime(it) } ?: +"-" },
+                "Testikieli" to { +(suoritus.testikieli?.toString() ?: "-") },
                 "Tehtäväpaketti" to { +suoritus.tehtavapaketti.orEmpty() },
             )
         }
@@ -57,10 +57,10 @@ object KielitestiSuoritusPage {
         h3 { +"Arvionti" }
         card(compact = true) {
             infoTable(
-                "Luetun ymmärtäminen" to { +suoritus.luetunYmmartaminen.toString() },
-                "Kuullun ymmärtäminen" to { +suoritus.kuullunYmmartaminen.toString() },
-                "Puhe" to { +suoritus.puhe.toString() },
-                "Kirjoittaminen" to { +suoritus.kirjoittaminen.toString() },
+                "Luetun ymmärtäminen" to { +(suoritus.luetunYmmartaminen?.toString() ?: "-") },
+                "Kuullun ymmärtäminen" to { +(suoritus.kuullunYmmartaminen?.toString() ?: "-") },
+                "Puhe" to { +(suoritus.puhe?.toString() ?: "-") },
+                "Kirjoittaminen" to { +(suoritus.kirjoittaminen?.toString() ?: "-") },
             )
         }
     }
