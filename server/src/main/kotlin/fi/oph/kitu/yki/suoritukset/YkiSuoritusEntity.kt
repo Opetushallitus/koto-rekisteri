@@ -5,6 +5,7 @@ import fi.oph.kitu.jdbc.getTypedArrayOrNull
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
+import fi.oph.kitu.tiedontuontischema.Lahdejarjestelma
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.util.IgnoreForEquality
 import fi.oph.kitu.util.result.getOrThrow
@@ -95,6 +96,8 @@ data class YkiSuoritusEntity(
             TutkinnonOsa.RS -> rakenteetJaSanasto
             TutkinnonOsa.YL -> yleisarvosana
         }
+
+    fun isOphTesti(): Boolean = Lahdejarjestelma.ofTunnus(lahdejarjestelmanTunnus) == Lahdejarjestelma.OPHTesti
 
     fun tarkistusarviointiHyvaksyttyViewText(): String? =
         tarkistusarviointiHyvaksyttyPvm?.finnishDate()
@@ -217,6 +220,7 @@ data class YkiSuoritusEntity(
                     arviointitila = arviointitila,
                     arviointitilaLahetetty = null,
                     arviointitilanLahetysvirhe = null,
+                    lahdejarjestelmanTunnus = lahdejarjestelmanId.toTunnus(),
                 )
             }
         }

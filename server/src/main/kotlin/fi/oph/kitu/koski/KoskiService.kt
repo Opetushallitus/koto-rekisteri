@@ -155,12 +155,16 @@ class KoskiService(
 
     @WithSpan
     fun sendYkiSuorituksetToKoski(): Either<KoskiTechnicalException, KoskiTransferReport> {
-        if (isYkiTransferBlocked()) {
-            return KoskiTransferReport(0, 0, blockedUntil = ykiTransferBlockedUntil).right()
-        }
-        val suoritukset = ykiSuoritusRepository.findKoskeenLahettamattomatSuoritukset()
+        val transferBlocked = isYkiTransferBlocked()
+        val suoritukset =
+            ykiSuoritusRepository
+                .findKoskeenLahettamattomatSuoritukset()
+                .filter { !transferBlocked || it.isOphTesti() }
         val results = suoritukset.map { sendYkiSuoritusToKoski(it) }
-        return reportErrors(results.map { it.map { suoritus -> YkiMappingId(suoritus.solkiId) } })
+        return reportErrors(
+            results.map { it.map { suoritus -> YkiMappingId(suoritus.solkiId) } },
+            blockedUntil = ykiTransferBlockedUntil.takeIf { transferBlocked },
+        )
     }
 
     private fun isYkiTransferBlocked(): Boolean {
@@ -202,6 +206,7 @@ class KoskiService(
 
     private inline fun <reified T : KoskiErrorMappingId> reportErrors(
         results: List<Either<KoskiException, T>?>,
+        blockedUntil: LocalDateTime? = null,
     ): Either<KoskiTechnicalException, KoskiTransferReport> {
         val (success, failed) = results.filterNotNull().splitIntoValuesAndErrors()
         success.forEach { id -> koskiErrors.reset(id) }
@@ -215,6 +220,7 @@ class KoskiService(
         return KoskiTransferReport(
             success.size,
             results.size,
+            blockedUntil = blockedUntil,
         ).right()
     }
 }
@@ -225,15 +231,16 @@ data class KoskiTransferReport(
     val timestamp: LocalDateTime = LocalDateTime.now(),
     val blockedUntil: LocalDateTime? = null,
 ) {
-    override fun toString(): String =
-        if (blockedUntil != null) {
-            "KOSKI-lähetys estetty $blockedUntil asti"
-        } else {
-            (
-                listOfNotNull(
-                    "Viimeisin onnistunut eräajo: $timestamp",
-                    "Siirretty $successfulTransfers / $totalCount",
-                )
+    override fun toString(): String {
+        val eraajo =
+            listOf(
+                "Viimeisin onnistunut eräajo: $timestamp",
+                "Siirretty $successfulTransfers / $totalCount",
             ).joinToString("; ")
+        return if (blockedUntil != null) {
+            "KOSKI-lähetys estetty $blockedUntil asti; $eraajo"
+        } else {
+            eraajo
         }
+    }
 }

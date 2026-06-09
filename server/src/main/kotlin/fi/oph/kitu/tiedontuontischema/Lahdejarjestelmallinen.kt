@@ -12,6 +12,8 @@ data class LahdejarjestelmanTunniste(
 ) {
     override fun toString() = "$lahde:$id"
 
+    fun toTunnus() = "${lahde.tunnusPrefix}.$id"
+
     companion object {
         fun from(s: String): LahdejarjestelmanTunniste {
             val tokens = s.split(":", limit = 2)
@@ -26,9 +28,17 @@ data class LahdejarjestelmanTunniste(
     }
 }
 
-enum class Lahdejarjestelma {
-    KIOS,
-    Solki,
-    OPHTesti,
-    Unknown,
+enum class Lahdejarjestelma(
+    val tunnusPrefix: String,
+) {
+    KIOS("kios"),
+    Solki("yki"),
+    OPHTesti("ophtesti"),
+    Unknown("tuntematon"),
+    ;
+
+    companion object {
+        fun ofTunnus(tunnus: String): Lahdejarjestelma =
+            entries.firstOrNull { tunnus.startsWith("${it.tunnusPrefix}.") } ?: Unknown
+    }
 }
