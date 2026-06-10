@@ -8,6 +8,7 @@ import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -17,7 +18,9 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
+import org.springframework.test.web.client.response.MockRestResponseCreators.withServerError
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
+import org.springframework.web.client.RestClientResponseException
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import java.net.URI
@@ -26,7 +29,9 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.Base64
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -35,13 +40,22 @@ import kotlin.test.assertTrue
 @SpringBootTest
 @Import(DBContainerConfiguration::class, LocalStackContainerConfiguration::class)
 @TestPropertySource(properties = ["spring.cloud.aws.s3.enabled=true"])
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TehtavapankkiServiceTest(
     @param:Autowired private val tehtavapankkiService: TehtavapankkiService,
+    @param:Autowired private val ingestService: TehtavapankkiIngestService,
     @param:Autowired private val tehtavapankkiClient: TehtavapankkiClientImpl,
     @param:Autowired private val s3Client: S3Client,
     @param:Autowired private val repository: TehtavapankkiRepository,
     @param:Autowired private val jdbc: JdbcTemplate,
 ) {
+    // Yksi MockRestServiceServer per jaettu Spring-konteksti: clientin restClient
+    // rakennetaan laiskasti vain kerran, joten sidonta on tehtävä ennen ensimmäistä
+    // client-kutsua ja jaettava kaikkien testien kesken reset()-pohjaisesti.
+    private val mockServer: MockRestServiceServer by lazy {
+        MockRestServiceServer.bindTo(tehtavapankkiClient.restClientBuilder).build()
+    }
+
     @BeforeEach
     fun reset() {
         s3Client
@@ -51,7 +65,36 @@ class TehtavapankkiServiceTest(
                 s3Client.deleteObject { it.bucket(TEST_BUCKET).key(obj.key()) }
             }
         jdbc.execute("DELETE FROM tehtavapaketti")
+        tehtavapankkiClient.koealustaToken = "testitoken"
+        tehtavapankkiClient.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+        mockServer.reset()
     }
+
+    private val listResponse =
+        """
+        {
+          "questionbanks": [
+            {
+              "courseid": 7,
+              "coursename": "Suomi 2",
+              "coursestartdate": 0,
+              "filegenerated": 1733400000,
+              "questionbankversion": "v1",
+              "language": "fin",
+              "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml"
+            },
+            {
+              "courseid": 8,
+              "coursename": "Suomi 3",
+              "coursestartdate": 0,
+              "filegenerated": 1733400001,
+              "questionbankversion": "v1",
+              "language": "fin",
+              "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/8/qb.xml"
+            }
+          ]
+        }
+        """.trimIndent()
 
     @Test
     fun `uploadTehtavapankki kirjoittaa tiedostot S3-buckettiin filegenerated-suffiksilla ja user metadatan`() {
@@ -146,7 +189,6 @@ class TehtavapankkiServiceTest(
             ),
         )
 
-        val mockServer = MockRestServiceServer.bindTo(tehtavapankkiClient.restClientBuilder).build()
         mockServer
             .expect(
                 requestTo(
@@ -154,35 +196,7 @@ class TehtavapankkiServiceTest(
                         "wstoken=testitoken&moodlewsrestformat=json&" +
                         "wsfunction=local_completion_export_export_question_bank",
                 ),
-            ).andRespond(
-                withSuccess(
-                    """
-                    {
-                      "questionbanks": [
-                        {
-                          "courseid": 7,
-                          "coursename": "Suomi 2",
-                          "coursestartdate": 0,
-                          "filegenerated": 1733400000,
-                          "questionbankversion": "v1",
-                          "language": "fin",
-                          "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml"
-                        },
-                        {
-                          "courseid": 8,
-                          "coursename": "Suomi 3",
-                          "coursestartdate": 0,
-                          "filegenerated": 1733400001,
-                          "questionbankversion": "v1",
-                          "language": "fin",
-                          "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/8/qb.xml"
-                        }
-                      ]
-                    }
-                    """.trimIndent(),
-                    MediaType.APPLICATION_JSON,
-                ),
-            )
+            ).andRespond(withSuccess(listResponse, MediaType.APPLICATION_JSON))
         // Vain courseid=8:n latauksen pitäisi tapahtua — courseid=7 skipataan
         // ennen pluginfile.php-kutsua.
         mockServer
@@ -190,9 +204,6 @@ class TehtavapankkiServiceTest(
             .andRespond(
                 withSuccess("<questions><q id=\"b\"/></questions>", MediaType.APPLICATION_XML),
             )
-
-        tehtavapankkiClient.koealustaToken = "testitoken"
-        tehtavapankkiClient.koealustaBaseUrl = "https://localhost:8080/dev/koto"
 
         tehtavapankkiService.importTehtavapankki()
 
@@ -221,6 +232,123 @@ class TehtavapankkiServiceTest(
                 .readAllBytes()
                 .toString(Charsets.UTF_8)
         assertEquals("<questions><q id=\"b\"/></questions>", suomi3Content)
+    }
+
+    @Test
+    fun `importTehtavapankki ohittaa ei-XML-vastauksen mutta vie terveen kurssin S3-ageen`() {
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?" +
+                        "wstoken=testitoken&moodlewsrestformat=json&" +
+                        "wsfunction=local_completion_export_export_question_bank",
+                ),
+            ).andRespond(withSuccess(listResponse, MediaType.APPLICATION_JSON))
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml?token=testitoken"))
+            .andRespond(withSuccess("<questions><q id=\"a\"/></questions>", MediaType.APPLICATION_XML))
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/8/qb.xml?token=testitoken"))
+            .andRespond(
+                withSuccess(
+                    """{"error":"Pääsyn hallinnan poikkeus","errorcode":"accessexception","stacktrace":null,"debuginfo":null,"reproductionlink":null}""",
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        val failures = tehtavapankkiService.importTehtavapankki()
+
+        mockServer.verify()
+
+        assertEquals(1, failures.size, "Vain courseid=8:n pitäisi epäonnistua")
+        assertEquals(8, failures.single().courseId)
+        assertContains(failures.single().reason, "accessexception")
+
+        val keys =
+            s3Client
+                .listObjectsV2 { it.bucket(TEST_BUCKET) }
+                .contents()
+                .map { it.key() }
+        assertEquals(1, keys.size, "Vain terveen courseid=7:n pitäisi olla S3:ssa, oli: $keys")
+        assertTrue(keys.single().startsWith("7-Suomi_2/"), "Avaimen pitäisi olla courseid=7, oli: ${keys.single()}")
+    }
+
+    @Test
+    fun `importTehtavapankki kaatuu valittomasti eika vie mitaan kun lataus-URL on virheellinen`() {
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?" +
+                        "wstoken=testitoken&moodlewsrestformat=json&" +
+                        "wsfunction=local_completion_export_export_question_bank",
+                ),
+            ).andRespond(withSuccess(listResponse, MediaType.APPLICATION_JSON))
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml?token=testitoken"))
+            .andRespond(withSuccess("<questions><q id=\"a\"/></questions>", MediaType.APPLICATION_XML))
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/8/qb.xml?token=testitoken"))
+            .andRespond(withServerError())
+
+        assertFailsWith<RestClientResponseException> {
+            tehtavapankkiService.importTehtavapankki()
+        }
+
+        val keys =
+            s3Client
+                .listObjectsV2 { it.bucket(TEST_BUCKET) }
+                .contents()
+                .map { it.key() }
+        assertEquals(0, keys.size, "Fail-fast: mitään ei pitäisi viedä S3:een, oli: $keys")
+    }
+
+    @Test
+    fun `importAndIngest ingestoi terveen kurssin mutta heittaa kun toinen kurssi epaonnistuu`() {
+        val validQuiz =
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <quiz>
+              <question type="category">
+                <category><text>${'$'}course${'$'}/top/A1</text></category>
+                <info format="html"><text/></info>
+                <idnumber/>
+              </question>
+            </quiz>
+            """.trimIndent()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?" +
+                        "wstoken=testitoken&moodlewsrestformat=json&" +
+                        "wsfunction=local_completion_export_export_question_bank",
+                ),
+            ).andRespond(withSuccess(listResponse, MediaType.APPLICATION_JSON))
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml?token=testitoken"))
+            .andRespond(withSuccess(validQuiz, MediaType.APPLICATION_XML))
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/8/qb.xml?token=testitoken"))
+            .andRespond(
+                withSuccess(
+                    """{"error":"Pääsyn hallinnan poikkeus","errorcode":"accessexception","stacktrace":null,"debuginfo":null,"reproductionlink":null}""",
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        val ex =
+            assertFailsWith<TehtavapankkiImportException> {
+                ingestService.importAndIngest()
+            }
+        assertContains(ex.message!!, "accessexception")
+
+        assertNotNull(
+            repository.findLatestPakettiBySource(TehtavapankkiIngestService.LAHDEJARJESTELMA, "7"),
+            "Terveen courseid=7:n pitäisi olla ingestoitu vaikka courseid=8 epäonnistui",
+        )
+        assertNull(
+            repository.findLatestPakettiBySource(TehtavapankkiIngestService.LAHDEJARJESTELMA, "8"),
+            "Virheellistä courseid=8:aa ei pitäisi ingestoida",
+        )
     }
 
     @Test

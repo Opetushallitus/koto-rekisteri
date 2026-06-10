@@ -105,11 +105,13 @@ class TehtavapankkiService(
     }
 
     @WithSpan
-    fun importTehtavapankki() {
+    fun importTehtavapankki(): List<TehtavapankkiDownloadFailure> {
         val metas = client.listQuestionBanks()
         var skipped = 0
-        val downloads =
-            metas.mapNotNull { meta ->
+        val downloads = mutableListOf<QuestionBankDownload>()
+        val failures = mutableListOf<TehtavapankkiDownloadFailure>()
+        try {
+            metas.forEach { meta ->
                 val prev =
                     repository.findLatestFilegeneratedBySource(
                         TehtavapankkiIngestService.LAHDEJARJESTELMA,
@@ -117,15 +119,24 @@ class TehtavapankkiService(
                     )
                 if (prev != null && prev.toInstant() == meta.generated) {
                     skipped++
-                    null
                 } else {
-                    QuestionBankDownload(meta, client.downloadXml(meta))
+                    try {
+                        downloads += QuestionBankDownload(meta, client.downloadXml(meta))
+                    } catch (e: TehtavapankkiDownloadException) {
+                        failures += TehtavapankkiDownloadFailure(meta.courseId, e.message ?: "lataus epäonnistui")
+                    }
                 }
             }
+        } catch (e: Throwable) {
+            downloads.forEach { runCatching { it.close() } }
+            throw e
+        }
         Span.current().setAttribute("tehtavapankki.metas.count", metas.size.toLong())
         Span.current().setAttribute("tehtavapankki.skipped.count", skipped.toLong())
         Span.current().setAttribute("tehtavapankki.downloaded.count", downloads.size.toLong())
+        Span.current().setAttribute("tehtavapankki.failed.count", failures.size.toLong())
         uploadTehtavapankki(downloads)
+        return failures
     }
 
     @WithSpan
@@ -283,6 +294,11 @@ data class QuestionBankDownload(
 ) : AutoCloseable {
     override fun close() = xml.close()
 }
+
+data class TehtavapankkiDownloadFailure(
+    val courseId: Int,
+    val reason: String,
+)
 
 data class TehtavapakettiObject(
     val key: String,

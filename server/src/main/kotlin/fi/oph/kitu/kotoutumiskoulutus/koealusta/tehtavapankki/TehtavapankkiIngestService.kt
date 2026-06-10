@@ -34,6 +34,63 @@ class TehtavapankkiIngestService(
     private val repository: TehtavapankkiRepository,
 ) {
     /**
+     * Ajastetun tehtävän kokonaisuus: lataa tehtäväpankit S3:een, siivoaa
+     * duplikaatit ja ingestoi kunkin kurssin uusimman XML:n tietokantaan.
+     * Vialliset kurssit ohitetaan, mutta jos yksikin lataus tai ingest
+     * epäonnistui, heitetään lopuksi [TehtavapankkiImportException] jotta
+     * tehtävä menee FAILED-tilaan.
+     */
+    @WithSpan
+    fun importAndIngest() {
+        val downloadFailures = tehtavapankkiService.importTehtavapankki()
+        // Tuoreelle siirrolle ei tule uutta avainta jos sisältö on
+        // ennallaan: poistetaan kunkin kurssin sisällä saman sisältöiset
+        // objektit jotta bucket ei kasva turhaan.
+        tehtavapankkiService.removeDuplicates()
+        // Käydään kunkin kurssin uusimmat XML:t läpi: puretaan upotetut
+        // <file>-blobit erillisiksi S3-objekteiksi (mp3-/png-assetit) ja
+        // tallennetaan parsittu sisältö yleiseen tehtäväpankki-skeemaan.
+        val ingestFailures =
+            tehtavapankkiService
+                .listTehtavapaketit()
+                .values
+                .mapNotNull { it.firstOrNull() }
+                .mapNotNull { obj ->
+                    tehtavapankkiService.extractAndUploadAssets(obj.key)
+                    ingestFromS3(obj.key).leftOrNull()?.let { obj.key to it }
+                }
+
+        Span.current().setAttribute("import.download_failures", downloadFailures.size.toLong())
+        Span.current().setAttribute("import.ingest_failures", ingestFailures.size.toLong())
+
+        if (downloadFailures.isNotEmpty() || ingestFailures.isNotEmpty()) {
+            throw TehtavapankkiImportException(failureMessage(downloadFailures, ingestFailures))
+        }
+    }
+
+    private fun failureMessage(
+        downloadFailures: List<TehtavapankkiDownloadFailure>,
+        ingestFailures: List<Pair<String, TehtavapankkiParseError>>,
+    ): String {
+        val parts = mutableListOf<String>()
+        if (downloadFailures.isNotEmpty()) {
+            parts += "latausvirheet=" + downloadFailures.joinToString("; ") { "kurssi ${it.courseId}: ${it.reason}" }
+        }
+        if (ingestFailures.isNotEmpty()) {
+            parts +=
+                "ingest-virheet=" + ingestFailures.joinToString("; ") { (key, error) -> "$key: ${error.describe()}" }
+        }
+        return "Tehtäväpankin tuonti epäonnistui (${parts.joinToString(", ")})"
+    }
+
+    private fun TehtavapankkiParseError.describe(): String =
+        when (this) {
+            is TehtavapankkiParseError.NotFound -> "ei löytynyt"
+            is TehtavapankkiParseError.InvalidXml -> "virheellinen XML: ${cause.message ?: cause::class.simpleName}"
+            is TehtavapankkiParseError.IO -> "IO-virhe: ${cause.message ?: cause::class.simpleName}"
+        }
+
+    /**
      * Lataa S3:sta löytyvän XML-tiedoston, parsii sen ja tallentaa yleiseen
      * tehtäväpankki-skeemaan (tehtavapaketti / tehtava / tehtava_vastaus /
      * tehtava_tiedosto). Versio_hash lasketaan raakojen tavujen SHA-256:sta,
