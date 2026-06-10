@@ -9,6 +9,7 @@ import org.springframework.test.web.client.response.MockRestResponseCreators.wit
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 import java.time.Instant
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -89,5 +90,105 @@ class TehtavapankkiClientImplTest {
         assertFailsWith<RestClientResponseException> {
             client.downloadXml(meta)
         }
+    }
+
+    @Test
+    fun `downloadXml heittaa kun XML-latausvastaus on Moodlen JSON-virhe`() {
+        val builder = RestClient.builder()
+        val mockServer = MockRestServiceServer.bindTo(builder).build()
+        mockServer
+            .expect(requestTo("https://example.test/koto/pluginfile.php/9/qb.xml?token=testitoken"))
+            .andRespond(
+                withSuccess(
+                    """{"error":"Pääsyn hallinnan poikkeus","errorcode":"accessexception","stacktrace":null,"debuginfo":null,"reproductionlink":null}""",
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        val client =
+            TehtavapankkiClientImpl(builder).apply {
+                koealustaToken = "testitoken"
+                koealustaBaseUrl = "https://example.test/koto"
+            }
+
+        val meta =
+            QuestionBankMetadata(
+                courseId = 9,
+                courseName = "Suomi virheellinen",
+                published = Instant.ofEpochMilli(0),
+                generated = Instant.ofEpochMilli(0),
+                version = "v1",
+                language = "fin",
+                downloadUrl = "https://example.test/koto/pluginfile.php/9/qb.xml",
+            )
+
+        val ex =
+            assertFailsWith<TehtavapankkiDownloadException> {
+                client.downloadXml(meta)
+            }
+        assertContains(ex.message!!, "accessexception")
+    }
+
+    @Test
+    fun `downloadXml onnistuu kun runko on XML BOMilla ja alku-whitespacella`() {
+        val builder = RestClient.builder()
+        val mockServer = MockRestServiceServer.bindTo(builder).build()
+        val xml = "\uFEFF\n  <?xml version=\"1.0\"?><questions><q id=\"a\"/></questions>"
+        mockServer
+            .expect(requestTo("https://example.test/koto/pluginfile.php/9/qb.xml?token=testitoken"))
+            .andRespond(withSuccess(xml, MediaType.APPLICATION_XML))
+
+        val client =
+            TehtavapankkiClientImpl(builder).apply {
+                koealustaToken = "testitoken"
+                koealustaBaseUrl = "https://example.test/koto"
+            }
+
+        val meta =
+            QuestionBankMetadata(
+                courseId = 9,
+                courseName = "Suomi",
+                published = Instant.ofEpochMilli(0),
+                generated = Instant.ofEpochMilli(0),
+                version = "v1",
+                language = "fin",
+                downloadUrl = "https://example.test/koto/pluginfile.php/9/qb.xml",
+            )
+
+        client.downloadXml(meta).use { source ->
+            val content = source.openStream().use { it.readBytes().toString(Charsets.UTF_8) }
+            assertEquals(xml, content)
+        }
+    }
+
+    @Test
+    fun `listQuestionBanks heittaa kun vastaus on Moodlen JSON-virhe`() {
+        val builder = RestClient.builder()
+        val mockServer = MockRestServiceServer.bindTo(builder).build()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://example.test/koto/webservice/rest/server.php?" +
+                        "wstoken=testitoken&moodlewsrestformat=json&" +
+                        "wsfunction=local_completion_export_export_question_bank",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """{"error":"Pääsyn hallinnan poikkeus","errorcode":"accessexception","stacktrace":null,"debuginfo":null,"reproductionlink":null}""",
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        val client =
+            TehtavapankkiClientImpl(builder).apply {
+                koealustaToken = "testitoken"
+                koealustaBaseUrl = "https://example.test/koto"
+            }
+
+        val ex =
+            assertFailsWith<TehtavapankkiDownloadException> {
+                client.listQuestionBanks()
+            }
+        assertContains(ex.message!!, "accessexception")
     }
 }
