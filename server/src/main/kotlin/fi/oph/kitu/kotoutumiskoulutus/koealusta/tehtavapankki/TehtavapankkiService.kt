@@ -108,10 +108,15 @@ class TehtavapankkiService(
     fun importTehtavapankki(): List<TehtavapankkiDownloadFailure> {
         val metas = client.listQuestionBanks()
         var skipped = 0
+        var skippedEmptyFilename = 0
         val downloads = mutableListOf<QuestionBankDownload>()
         val failures = mutableListOf<TehtavapankkiDownloadFailure>()
         try {
             metas.forEach { meta ->
+                if (meta.filename().isBlank()) {
+                    skippedEmptyFilename++
+                    return@forEach
+                }
                 val prev =
                     repository.findLatestFilegeneratedBySource(
                         TehtavapankkiIngestService.LAHDEJARJESTELMA,
@@ -133,6 +138,7 @@ class TehtavapankkiService(
         }
         Span.current().setAttribute("tehtavapankki.metas.count", metas.size.toLong())
         Span.current().setAttribute("tehtavapankki.skipped.count", skipped.toLong())
+        Span.current().setAttribute("tehtavapankki.skipped_empty_filename.count", skippedEmptyFilename.toLong())
         Span.current().setAttribute("tehtavapankki.downloaded.count", downloads.size.toLong())
         Span.current().setAttribute("tehtavapankki.failed.count", failures.size.toLong())
         uploadTehtavapankki(downloads)
@@ -325,6 +331,8 @@ data class FailedAsset(
 
 // AWS palauttaa ETagin lainausmerkeissä; karsitaan ne ennen vertailua.
 private fun String.normalizeETag(): String = this.trim('"')
+
+private fun QuestionBankMetadata.filename(): String = downloadUrl.substringBefore('?').substringAfterLast('/')
 
 private fun TehtavapankkiQuiz.allEmbeddedFiles(): List<EmbeddedFile> =
     questions.flatMap { question ->
