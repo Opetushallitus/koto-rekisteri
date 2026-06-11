@@ -352,6 +352,61 @@ class TehtavapankkiServiceTest(
     }
 
     @Test
+    fun `importTehtavapankki ohittaa kurssin jonka lataustiedoston nimi on tyhja`() {
+        val listResponseEmptyFilename =
+            """
+            {
+              "questionbanks": [
+                {
+                  "courseid": 7,
+                  "coursename": "Suomi 2",
+                  "coursestartdate": 0,
+                  "filegenerated": 1733400000,
+                  "questionbankversion": "v1",
+                  "language": "fin",
+                  "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml"
+                },
+                {
+                  "courseid": 9,
+                  "coursename": "Suomi tyhja",
+                  "coursestartdate": 0,
+                  "filegenerated": 1733400002,
+                  "questionbankversion": "v1",
+                  "language": "fin",
+                  "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/9/"
+                }
+              ]
+            }
+            """.trimIndent()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?" +
+                        "wstoken=testitoken&moodlewsrestformat=json&" +
+                        "wsfunction=local_completion_export_export_question_bank",
+                ),
+            ).andRespond(withSuccess(listResponseEmptyFilename, MediaType.APPLICATION_JSON))
+        // Vain courseid=7:n lataus odotetaan — courseid=9 ohitetaan tyhjän
+        // tiedostonimen takia ilman pluginfile.php-kutsua.
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml?token=testitoken"))
+            .andRespond(withSuccess("<questions><q id=\"a\"/></questions>", MediaType.APPLICATION_XML))
+
+        val failures = tehtavapankkiService.importTehtavapankki()
+
+        mockServer.verify()
+
+        assertTrue(failures.isEmpty(), "Tyhjän tiedostonimen ei pitäisi tuottaa virhettä, oli: $failures")
+        val keys =
+            s3Client
+                .listObjectsV2 { it.bucket(TEST_BUCKET) }
+                .contents()
+                .map { it.key() }
+        assertEquals(1, keys.size, "Vain courseid=7:n pitäisi olla S3:ssa, oli: $keys")
+        assertTrue(keys.single().startsWith("7-Suomi_2/"), "Avaimen pitäisi olla courseid=7, oli: ${keys.single()}")
+    }
+
+    @Test
     fun `listTehtavapaketit palauttaa bucketin objektit`() {
         val startTime = Instant.now()
         s3Client.putObject(
