@@ -110,6 +110,7 @@ object KielitestiSuorituksetPage {
                         columns = columns,
                         rowClasses = "suoritus",
                         rowTestId = { "suoritus-summary-row" },
+                        isFaded = { a -> !a.completed },
                     )
                 }
             }

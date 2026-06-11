@@ -120,7 +120,7 @@ enum class KielitestiSuoritusColumn(
         entityName = "suoritusaika",
         uiHeaderValue = "Suoritusaika",
         urlParam = "suoritusaika",
-        getValue = { it.suoritusaika?.toString() ?: "-" },
+        getValue = { it.suoritusaika?.toString() ?: if (!it.completed) "Kesken" else "-" },
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT)
