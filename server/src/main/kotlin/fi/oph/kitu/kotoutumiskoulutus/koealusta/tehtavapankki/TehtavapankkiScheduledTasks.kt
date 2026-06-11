@@ -19,11 +19,11 @@ class TehtavapankkiScheduledTasks(
     var tehtavapankkiImportSchedule: String? = null
 
     @Bean
-    fun importKotoTehtavapankki(ingestService: TehtavapankkiIngestService): Task<Void> =
+    fun importKotoTehtavapankki(importService: TehtavapankkiImportService): Task<Void> =
         tracer.recurringTask(
             "Kotoutumiskoulutuksen kielitaidon tehtäväpankin lataus",
             tehtavapankkiImportSchedule!!,
         ) {
-            ingestService.importAndIngest()
+            importService.importAndIngest()
         }
 }
