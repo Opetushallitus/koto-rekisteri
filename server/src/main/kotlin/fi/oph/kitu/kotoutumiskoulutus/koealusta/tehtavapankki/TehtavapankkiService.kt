@@ -16,6 +16,8 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import java.io.ByteArrayInputStream
 import java.net.URL
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -228,12 +230,13 @@ class TehtavapankkiService(
     @WithSpan
     fun extractAndUploadAssets(xmlKey: String): Either<TehtavapankkiParseError, AssetExtractResult> {
         Span.current().setAttribute("xml.key", xmlKey)
-        val quiz =
-            when (val parsed = fetchAndParseFromS3(xmlKey)) {
-                is Either.Right -> parsed.value
-                is Either.Left -> return parsed.value.left()
-            }
+        return fetchAndParseFromS3(xmlKey).map { quiz -> uploadAssets(xmlKey, quiz) }
+    }
 
+    fun uploadAssets(
+        xmlKey: String,
+        quiz: TehtavapankkiQuiz,
+    ): AssetExtractResult {
         val prefix = "${xmlKey.removeSuffix(".xml")} assets/"
         val uploaded = mutableListOf<String>()
         val failed = mutableListOf<FailedAsset>()
@@ -256,28 +259,46 @@ class TehtavapankkiService(
         Span.current().setAttribute("assets.uploaded", uploaded.size.toLong())
         Span.current().setAttribute("assets.failed", failed.size.toLong())
 
-        return AssetExtractResult(xmlKey, uploaded, failed).right()
+        return AssetExtractResult(xmlKey, uploaded, failed)
     }
 
+    /**
+     * Lataa S3-objektin väliaikaistiedostoon streamaten, jottei isoa tehtäväpankkia
+     * tarvitse materialisoida muistiin. Kutsujan vastuulla on poistaa tiedosto.
+     */
     @WithSpan
-    fun fetchXmlBytes(key: String): Either<TehtavapankkiParseError, ByteArray> {
+    fun fetchToTempFile(key: String): Either<TehtavapankkiParseError, Path> {
         Span.current().setAttribute("s3.key", key)
         val resource =
             useS3 { bucket ->
                 if (objectExists(bucket, key)) download(bucket, key) else null
             } ?: return TehtavapankkiParseError.NotFound.left()
+        val tempFile = Files.createTempFile("tehtavapankki-ingest-", ".xml")
         return try {
-            resource.inputStream.use { it.readBytes() }.right()
+            resource.inputStream.use { input ->
+                Files.newOutputStream(tempFile).use { output -> input.copyTo(output) }
+            }
+            tempFile.right()
         } catch (e: Throwable) {
+            Files.deleteIfExists(tempFile)
             TehtavapankkiParseError.IO(e).left()
         }
     }
 
     @WithSpan
     fun fetchAndParseFromS3(key: String): Either<TehtavapankkiParseError, TehtavapankkiQuiz> =
-        when (val bytes = fetchXmlBytes(key)) {
-            is Either.Right -> parser.parse(bytes.value.inputStream())
-            is Either.Left -> bytes.value.left()
+        when (val tempFile = fetchToTempFile(key)) {
+            is Either.Right -> {
+                try {
+                    Files.newInputStream(tempFile.value).use { parser.parse(it) }
+                } finally {
+                    Files.deleteIfExists(tempFile.value)
+                }
+            }
+
+            is Either.Left -> {
+                tempFile.value.left()
+            }
         }
 
     @WithSpan

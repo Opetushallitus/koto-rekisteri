@@ -49,7 +49,6 @@ class TehtavapankkiImportService(
 
     private fun ingestOne(key: String): Pair<String, String>? =
         try {
-            tehtavapankkiService.extractAndUploadAssets(key)
             ingestService.ingestFromS3(key).leftOrNull()?.let { key to it.describe() }
         } catch (e: Exception) {
             Span.current().setAttribute("ingest.threw", true)
