@@ -6,17 +6,26 @@ import arrow.core.right
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
+import tools.jackson.core.StreamReadConstraints
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.JsonNode
+import tools.jackson.dataformat.xml.XmlFactory
 import tools.jackson.dataformat.xml.XmlMapper
 import java.io.InputStream
 
 @Service
 class TehtavapankkiXmlParser {
+    // Tehtäväpankit sisältävät base64-upotettuja mediatiedostoja, jotka voivat
+    // ylittää Jacksonin oletusrajan (20 MB). Nostetaan lataus­polun rajan tasalle.
     private val xmlMapper: XmlMapper =
         XmlMapper
-            .builder()
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .builder(
+                XmlFactory
+                    .builder()
+                    .streamReadConstraints(
+                        StreamReadConstraints.builder().maxStringLength(200_000_000).build(),
+                    ).build(),
+            ).disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build()
 
     @WithSpan

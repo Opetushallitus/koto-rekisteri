@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.node.ObjectNode
+import java.nio.file.Files
+import java.nio.file.Path
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -45,13 +47,13 @@ class TehtavapankkiIngestService(
     fun ingestFromS3(xmlKey: String): Either<TehtavapankkiParseError, TehtavapakettiEntity> {
         Span.current().setAttribute("xml.key", xmlKey)
 
-        val bytes =
-            when (val r = tehtavapankkiService.fetchXmlBytes(xmlKey)) {
+        val loaded =
+            when (val r = loadAndUploadAssets(xmlKey)) {
                 is Either.Right -> r.value
                 is Either.Left -> return r.value.left()
             }
 
-        val versioHash = sha256(bytes)
+        val versioHash = loaded.versioHash
         val source = MoodleSourceIdentifiers.fromS3Key(xmlKey)
         val lahdeFilegenerated =
             source.filegeneratedMs?.let { OffsetDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneOffset.UTC) }
@@ -93,11 +95,7 @@ class TehtavapankkiIngestService(
             return latest.right()
         }
 
-        val quiz =
-            when (val r = parser.parse(bytes.inputStream())) {
-                is Either.Right -> r.value
-                is Either.Left -> return r.value.left()
-            }
+        val quiz = loaded.quiz
 
         val pakettiId =
             repository.insertPaketti(
@@ -213,10 +211,43 @@ class TehtavapankkiIngestService(
         return repository.findPakettiById(pakettiId)!!.right()
     }
 
+    /**
+     * Lataa XML:n S3:sta väliaikaistiedostoon, laskee versio_hashin ja parsii
+     * sisällön streamaten — koko tiedostoa ei materialisoida muistiin. Parsittua
+     * sisältöä käytetään sekä assettien purkuun että ingestiin (yksi parsinta).
+     */
+    private fun loadAndUploadAssets(xmlKey: String): Either<TehtavapankkiParseError, LoadedQuiz> {
+        val tempFile =
+            when (val r = tehtavapankkiService.fetchToTempFile(xmlKey)) {
+                is Either.Right -> r.value
+                is Either.Left -> return r.value.left()
+            }
+        return try {
+            val versioHash = sha256(tempFile)
+            when (val r = Files.newInputStream(tempFile).use { parser.parse(it) }) {
+                is Either.Right -> {
+                    tehtavapankkiService.uploadAssets(xmlKey, r.value)
+                    LoadedQuiz(r.value, versioHash).right()
+                }
+
+                is Either.Left -> {
+                    r.value.left()
+                }
+            }
+        } finally {
+            Files.deleteIfExists(tempFile)
+        }
+    }
+
     companion object {
         const val LAHDEJARJESTELMA: String = "moodle.koealusta"
     }
 }
+
+private data class LoadedQuiz(
+    val quiz: TehtavapankkiQuiz,
+    val versioHash: String,
+)
 
 private data class PendingTehtava(
     val question: IngestableQuestion,
@@ -271,9 +302,17 @@ internal data class MoodleSourceIdentifiers(
     }
 }
 
-private fun sha256(bytes: ByteArray): String {
-    val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
-    return digest.joinToString("") { "%02x".format(it) }
+private fun sha256(path: Path): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    Files.newInputStream(path).use { input ->
+        val buffer = ByteArray(64 * 1024)
+        while (true) {
+            val read = input.read(buffer)
+            if (read < 0) break
+            digest.update(buffer, 0, read)
+        }
+    }
+    return digest.digest().joinToString("") { "%02x".format(it) }
 }
 
 private fun IngestableQuestion.embeddedFiles(): List<EmbeddedFile> =

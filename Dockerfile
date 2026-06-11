@@ -24,4 +24,4 @@ COPY --from=backend-builder --chown=10001:10001 /kitu/server/target/kitu-0.0.1-S
 
 USER 10001
 
-ENTRYPOINT ["java", "-jar", "kitu-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "kitu-0.0.1-SNAPSHOT.jar"]
