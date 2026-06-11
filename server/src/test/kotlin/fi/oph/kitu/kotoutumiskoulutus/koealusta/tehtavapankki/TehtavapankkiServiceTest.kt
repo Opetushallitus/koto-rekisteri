@@ -43,7 +43,7 @@ import kotlin.test.assertTrue
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TehtavapankkiServiceTest(
     @param:Autowired private val tehtavapankkiService: TehtavapankkiService,
-    @param:Autowired private val ingestService: TehtavapankkiIngestService,
+    @param:Autowired private val importService: TehtavapankkiImportService,
     @param:Autowired private val tehtavapankkiClient: TehtavapankkiClientImpl,
     @param:Autowired private val s3Client: S3Client,
     @param:Autowired private val repository: TehtavapankkiRepository,
@@ -337,7 +337,7 @@ class TehtavapankkiServiceTest(
 
         val ex =
             assertFailsWith<TehtavapankkiImportException> {
-                ingestService.importAndIngest()
+                importService.importAndIngest()
             }
         assertContains(ex.message!!, "accessexception")
 
@@ -348,6 +348,76 @@ class TehtavapankkiServiceTest(
         assertNull(
             repository.findLatestPakettiBySource(TehtavapankkiIngestService.LAHDEJARJESTELMA, "8"),
             "Virheellistä courseid=8:aa ei pitäisi ingestoida",
+        )
+    }
+
+    @Test
+    fun `importAndIngest ingestoi terveen paketin vaikka toisen paketin ingest epaonnistuu`() {
+        val validQuiz =
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <quiz>
+              <question type="category">
+                <category><text>${'$'}course${'$'}/top/A1</text></category>
+                <info format="html"><text/></info>
+                <idnumber/>
+              </question>
+            </quiz>
+            """.trimIndent()
+        // courseid=3 ladataan ja viedään S3:een (alkaa <:lla), mutta sen XML on
+        // viallinen → ingest palauttaa Left. courseid=7 on validi. Avain "3-..."
+        // järjestyy ennen "7-..." joten viallinen ingestoidaan ensin.
+        val listResponseTwoValid =
+            """
+            {
+              "questionbanks": [
+                {
+                  "courseid": 3,
+                  "coursename": "Suomi 3",
+                  "coursestartdate": 0,
+                  "filegenerated": 1733400000,
+                  "questionbankversion": "v1",
+                  "language": "fin",
+                  "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/3/qb.xml"
+                },
+                {
+                  "courseid": 7,
+                  "coursename": "Suomi 7",
+                  "coursestartdate": 0,
+                  "filegenerated": 1733400001,
+                  "questionbankversion": "v1",
+                  "language": "fin",
+                  "downloadurl": "https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml"
+                }
+              ]
+            }
+            """.trimIndent()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?" +
+                        "wstoken=testitoken&moodlewsrestformat=json&" +
+                        "wsfunction=local_completion_export_export_question_bank",
+                ),
+            ).andRespond(withSuccess(listResponseTwoValid, MediaType.APPLICATION_JSON))
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/3/qb.xml?token=testitoken"))
+            .andRespond(withSuccess("<rikki>", MediaType.APPLICATION_XML))
+        mockServer
+            .expect(requestTo("https://localhost:8080/dev/koto/pluginfile.php/7/qb.xml?token=testitoken"))
+            .andRespond(withSuccess(validQuiz, MediaType.APPLICATION_XML))
+
+        assertFailsWith<TehtavapankkiImportException> {
+            importService.importAndIngest()
+        }
+
+        assertNotNull(
+            repository.findLatestPakettiBySource(TehtavapankkiIngestService.LAHDEJARJESTELMA, "7"),
+            "Terveen courseid=7:n pitäisi olla ingestoitu vaikka courseid=3:n ingest epäonnistui",
+        )
+        assertNull(
+            repository.findLatestPakettiBySource(TehtavapankkiIngestService.LAHDEJARJESTELMA, "3"),
+            "Viallista courseid=3:a ei pitäisi ingestoida",
         )
     }
 
