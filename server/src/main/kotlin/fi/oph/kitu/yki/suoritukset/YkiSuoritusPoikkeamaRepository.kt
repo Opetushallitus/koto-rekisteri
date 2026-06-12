@@ -56,21 +56,31 @@ class YkiSuoritusPoikkeamaRepository(
                 kentta,
             ).firstOrNull()
 
-    fun deleteByKey(
-        solkiId: Int,
-        kentta: String,
-    ): Int =
-        jdbcTemplate.update(
-            "DELETE FROM yki_suoritus_poikkeama WHERE solki_id = ? AND kentta = ?",
-            solkiId,
-            kentta,
+    fun findBySolkiIds(solkiIds: List<Int>): List<YkiSuoritusPoikkeama> {
+        if (solkiIds.isEmpty()) return emptyList()
+        val placeholders = solkiIds.joinToString(",") { "?" }
+        return jdbcTemplate.query(
+            "SELECT * FROM yki_suoritus_poikkeama WHERE solki_id IN ($placeholders)",
+            YkiSuoritusPoikkeama.fromRow,
+            *solkiIds.toTypedArray(),
         )
+    }
 
     fun deleteBySolkiId(solkiId: Int): Int =
         jdbcTemplate.update(
             "DELETE FROM yki_suoritus_poikkeama WHERE solki_id = ?",
             solkiId,
         )
+
+    fun deleteByKeys(keys: List<PoikkeamaKey>): Int {
+        if (keys.isEmpty()) return 0
+        val placeholders = keys.joinToString(",") { "(?, ?)" }
+        val args = keys.flatMap { listOf<Any>(it.solkiId, it.kentta) }.toTypedArray()
+        return jdbcTemplate.update(
+            "DELETE FROM yki_suoritus_poikkeama WHERE (solki_id, kentta) IN ($placeholders)",
+            *args,
+        )
+    }
 
     fun count(): Long =
         jdbcTemplate.queryForObject("SELECT COUNT(*) FROM yki_suoritus_poikkeama", Long::class.java) ?: 0L

@@ -191,71 +191,94 @@ object YkiSuoritusPoikkeamaPage {
                 javascript(
                     """
                     const dropdowns = document.querySelectorAll('thead [data-filter-key]');
-                    const rows = document.querySelectorAll('tbody tr');
+                    const rows = Array.from(document.querySelectorAll('tbody tr'));
                     const patchButton = document.querySelector('[data-patch-button]');
                     const selectAllVisible = document.querySelector('[data-select-all-visible]');
-                    const patchCheckboxes = document.querySelectorAll('[data-poikkeama-checkbox]');
 
-                    function apply() {
-                        rows.forEach(r => {
-                            let visible = true;
-                            for (const d of dropdowns) {
-                                const active = Array.from(
-                                    d.querySelectorAll('input[type=checkbox]:checked')
-                                ).map(c => c.value);
-                                if (active.length > 0 && !active.includes(r.getAttribute('data-' + d.dataset.filterKey))) {
-                                    visible = false;
-                                    break;
-                                }
-                            }
-                            r.hidden = !visible;
-                        });
-                        let prevSolkiId = null;
-                        rows.forEach(r => {
-                            if (r.hidden) return;
-                            const id = r.dataset.solkiId;
-                            r.classList.toggle('repeat-group', id === prevSolkiId);
-                            prevSolkiId = id;
-                        });
+                    const groups = new Map();
+                    function groupOf(id) {
+                        let g = groups.get(id);
+                        if (!g) { g = { groupCbs: [], memberCbs: [] }; groups.set(id, g); }
+                        return g;
+                    }
+                    rows.forEach(r => {
+                        const g = groupOf(r.dataset.solkiId);
+                        r.querySelectorAll('[data-select-group]').forEach(cb => g.groupCbs.push(cb));
+                        r.querySelectorAll('[data-poikkeama-checkbox]').forEach(cb => g.memberCbs.push(cb));
+                    });
+
+                    function updatePatchButton() {
                         if (patchButton) {
                             patchButton.disabled = !document.querySelector('[data-poikkeama-checkbox]:checked');
                         }
-                        document.querySelectorAll('[data-select-group]').forEach(groupCb => {
-                            const groupId = groupCb.dataset.selectGroup;
-                            const rowCbs = document.querySelectorAll(
-                                'tr[data-solki-id="' + groupId + '"] [data-poikkeama-checkbox]'
-                            );
-                            const checkedCount = Array.from(rowCbs).filter(c => c.checked).length;
-                            groupCb.checked = checkedCount > 0 && checkedCount === rowCbs.length;
-                            groupCb.indeterminate = checkedCount > 0 && checkedCount < rowCbs.length;
+                    }
+
+                    function updateGroupState(id) {
+                        const g = groups.get(id);
+                        if (!g) return;
+                        const total = g.memberCbs.length;
+                        const checked = g.memberCbs.filter(cb => cb.checked).length;
+                        g.groupCbs.forEach(groupCb => {
+                            groupCb.checked = checked > 0 && checked === total;
+                            groupCb.indeterminate = checked > 0 && checked < total;
                         });
                     }
 
-                    dropdowns.forEach(d => d.addEventListener('change', apply));
-                    patchCheckboxes.forEach(cb => cb.addEventListener('change', apply));
+                    function applyFilter() {
+                        const active = Array.from(dropdowns)
+                            .map(d => ({
+                                key: d.dataset.filterKey,
+                                values: new Set(
+                                    Array.from(d.querySelectorAll('input[type=checkbox]:checked')).map(c => c.value)
+                                ),
+                            }))
+                            .filter(f => f.values.size > 0);
+
+                        let prevSolkiId = null;
+                        rows.forEach(r => {
+                            const visible = active.every(f => f.values.has(r.getAttribute('data-' + f.key)));
+                            r.hidden = !visible;
+                            if (visible) {
+                                const id = r.dataset.solkiId;
+                                r.classList.toggle('repeat-group', id === prevSolkiId);
+                                prevSolkiId = id;
+                            }
+                        });
+                    }
+
+                    dropdowns.forEach(d => d.addEventListener('change', applyFilter));
+
+                    groups.forEach((g, id) => {
+                        g.memberCbs.forEach(cb => cb.addEventListener('change', () => {
+                            updateGroupState(id);
+                            updatePatchButton();
+                        }));
+                        g.groupCbs.forEach(groupCb => groupCb.addEventListener('change', () => {
+                            g.memberCbs.forEach(cb => { cb.checked = groupCb.checked; });
+                            updateGroupState(id);
+                            updatePatchButton();
+                        }));
+                    });
 
                     if (selectAllVisible) {
                         selectAllVisible.addEventListener('change', () => {
+                            const affected = new Set();
                             rows.forEach(r => {
                                 if (r.hidden) return;
                                 const cb = r.querySelector('[data-poikkeama-checkbox]');
-                                if (cb) cb.checked = selectAllVisible.checked;
+                                if (cb) {
+                                    cb.checked = selectAllVisible.checked;
+                                    affected.add(r.dataset.solkiId);
+                                }
                             });
-                            apply();
+                            affected.forEach(updateGroupState);
+                            updatePatchButton();
                         });
                     }
 
-                    document.querySelectorAll('[data-select-group]').forEach(groupCb => {
-                        groupCb.addEventListener('change', () => {
-                            const groupId = groupCb.dataset.selectGroup;
-                            document.querySelectorAll(
-                                'tr[data-solki-id="' + groupId + '"] [data-poikkeama-checkbox]'
-                            ).forEach(cb => { cb.checked = groupCb.checked; });
-                            apply();
-                        });
-                    });
-
-                    apply();
+                    applyFilter();
+                    groups.forEach((g, id) => updateGroupState(id));
+                    updatePatchButton();
                     """.trimIndent(),
                 )
             }

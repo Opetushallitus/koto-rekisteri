@@ -267,41 +267,48 @@ class YkiSuoritusRepository(
     fun save(
         suoritus: YkiSuoritusEntity,
         updateOnConflict: Boolean,
+        forceWrite: Boolean = false,
     ): Int? =
-        if (!exists(suoritus)) {
-            insertSuoritus(suoritus, updateOnConflict)?.let { suoritusId ->
+        if (forceWrite || !exists(suoritus)) {
+            insertSuoritusWithChildren(suoritus, updateOnConflict)
+        } else {
+            null
+        }
 
-                val osakokeet = suoritus.osakokeet()
-                val osakoeIds =
-                    osakokeet.associate {
-                        it.tyyppi to
-                            insertOsakoe(
-                                suoritusId,
-                                it.tyyppi,
-                                it.arviointipaiva,
-                                it.arvosana,
+    private fun insertSuoritusWithChildren(
+        suoritus: YkiSuoritusEntity,
+        updateOnConflict: Boolean,
+    ): Int? =
+        insertSuoritus(suoritus, updateOnConflict)?.let { suoritusId ->
+
+            val osakokeet = suoritus.osakokeet()
+            val osakoeIds =
+                osakokeet.associate {
+                    it.tyyppi to
+                        insertOsakoe(
+                            suoritusId,
+                            it.tyyppi,
+                            it.arviointipaiva,
+                            it.arvosana,
+                        )
+                }
+
+            if (suoritus.tarkistusarvioinninAsiatunnus != null && suoritus.tarkistusarvioinninSaapumisPvm != null) {
+                suoritus.tarkistusarvioidutOsakokeet?.let {
+                    val tarkistusarviointiId = insertTarkistusarviointi(suoritus)
+                    suoritus.tarkistusarvioidutOsakokeet.forEach { osakoe ->
+                        osakoeIds[osakoe]?.let { osakoeId ->
+                            insertOsakoeTarkistusarviointiJoin(
+                                osakoeId,
+                                tarkistusarviointiId,
+                                suoritus.arvosanaMuuttui?.contains(osakoe),
                             )
-                    }
-
-                if (suoritus.tarkistusarvioinninAsiatunnus != null && suoritus.tarkistusarvioinninSaapumisPvm != null) {
-                    suoritus.tarkistusarvioidutOsakokeet?.let {
-                        val tarkistusarviointiId = insertTarkistusarviointi(suoritus)
-                        suoritus.tarkistusarvioidutOsakokeet.forEach { osakoe ->
-                            osakoeIds[osakoe]?.let { osakoeId ->
-                                insertOsakoeTarkistusarviointiJoin(
-                                    osakoeId,
-                                    tarkistusarviointiId,
-                                    suoritus.arvosanaMuuttui?.contains(osakoe),
-                                )
-                            }
                         }
                     }
                 }
-
-                suoritusId
             }
-        } else {
-            null
+
+            suoritusId
         }
 
     @WithSpan
