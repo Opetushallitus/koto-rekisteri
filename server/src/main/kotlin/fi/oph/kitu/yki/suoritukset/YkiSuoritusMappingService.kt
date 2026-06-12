@@ -62,7 +62,19 @@ class YkiSuoritusMappingService(
             if (csv.arviointipaiva == null) {
                 Arviointitila.ARVIOITAVA
             } else if (csv.tarkistusarvioinninAsiatunnus.isNullOrEmpty()) {
-                Arviointitila.ARVIOITU
+                if (listOf(
+                        csv.tekstinYmmartaminen,
+                        csv.kirjoittaminen,
+                        csv.rakenteetJaSanasto,
+                        csv.puheenYmmartaminen,
+                        csv.puhuminen,
+                        csv.yleisarvosana,
+                    ).any { it == 10 }
+                ) {
+                    Arviointitila.KESKEYTETTY
+                } else {
+                    Arviointitila.ARVIOITU
+                }
             } else if (csv.tarkistusarvioinninKasittelyPvm == null) {
                 Arviointitila.TARKISTUSARVIOITAVA
             } else {
