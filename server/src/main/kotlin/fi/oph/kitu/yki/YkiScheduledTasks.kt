@@ -17,8 +17,7 @@ private val HELSINKI = ZoneId.of("Europe/Helsinki")
 
 fun anomalyCheckLookback(today: LocalDate): Period =
     when {
-        today.dayOfMonth == 1 -> Period.ofYears(1)
-        today.dayOfWeek == DayOfWeek.SUNDAY -> Period.ofMonths(3)
+        today.dayOfWeek == DayOfWeek.SATURDAY -> Period.ofYears(1)
         else -> Period.ofMonths(1)
     }
 
