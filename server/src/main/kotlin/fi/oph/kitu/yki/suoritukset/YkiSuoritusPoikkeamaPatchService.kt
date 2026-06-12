@@ -81,43 +81,89 @@ class YkiSuoritusPoikkeamaPatchService(
     private val suoritusRepository: YkiSuoritusRepository,
     private val auditLogger: AuditLogger,
 ) {
-    fun patch(keys: List<PoikkeamaKey>): List<Either<PatchFailure, PoikkeamaKey>> = keys.map(::patchOne)
+    fun patch(keys: List<PoikkeamaKey>): List<Either<PatchFailure, PoikkeamaKey>> {
+        if (keys.isEmpty()) return emptyList()
 
-    private fun patchOne(key: PoikkeamaKey): Either<PatchFailure, PoikkeamaKey> {
-        val poikkeama =
-            poikkeamaRepository.findByKey(key.solkiId, key.kentta)
-                ?: return PatchFailure.PoikkeamaNotFound(key).left()
+        val distinctSolkiIds = keys.map { it.solkiId }.distinct()
+        val entitiesBySolki =
+            suoritusRepository.findLatestBySolkiIds(distinctSolkiIds).associateBy { it.solkiId }
+        val poikkeamatByKey =
+            poikkeamaRepository
+                .findBySolkiIds(distinctSolkiIds)
+                .associateBy { PoikkeamaKey(it.solkiId, it.kentta) }
 
-        if (poikkeama.kentta == YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA) {
-            return PatchFailure.MissingSuoritusNotPatchable(key).left()
+        val resultsByKey: Map<PoikkeamaKey, Either<PatchFailure, PoikkeamaKey>> =
+            keys
+                .groupBy { it.solkiId }
+                .flatMap { (solkiId, groupKeys) ->
+                    val entity = entitiesBySolki[solkiId]
+                    if (entity == null) {
+                        groupKeys.map { it to PatchFailure.SuoritusNotFound(it).left() }
+                    } else {
+                        patchGroup(groupKeys, entity, poikkeamatByKey)
+                    }
+                }.toMap()
+
+        return keys.map { resultsByKey.getValue(it) }
+    }
+
+    private fun patchGroup(
+        keys: List<PoikkeamaKey>,
+        entity: YkiSuoritusEntity,
+        poikkeamatByKey: Map<PoikkeamaKey, YkiSuoritusPoikkeama>,
+    ): List<Pair<PoikkeamaKey, Either<PatchFailure, PoikkeamaKey>>> {
+        val results = mutableListOf<Pair<PoikkeamaKey, Either<PatchFailure, PoikkeamaKey>>>()
+        val appliedKeys = mutableListOf<PoikkeamaKey>()
+        var patched = entity
+
+        for (key in keys) {
+            val poikkeama = poikkeamatByKey[key]
+            when {
+                poikkeama == null -> {
+                    results.add(key to PatchFailure.PoikkeamaNotFound(key).left())
+                }
+
+                poikkeama.kentta == YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA -> {
+                    results.add(key to PatchFailure.MissingSuoritusNotPatchable(key).left())
+                }
+
+                else -> {
+                    try {
+                        patched = applyArvoSolkissa(patched, key.kentta, poikkeama.arvoSolkissa)
+                        appliedKeys.add(key)
+                    } catch (_: UnknownKenttaException) {
+                        results.add(key to PatchFailure.UnknownKentta(key).left())
+                    } catch (e: Exception) {
+                        val cause = e.message ?: e::class.simpleName.orEmpty()
+                        results.add(key to PatchFailure.ValueParseFailed(key, cause).left())
+                    }
+                }
+            }
         }
 
-        val entity =
-            suoritusRepository.findLatestBySolkiIds(listOf(key.solkiId)).firstOrNull()
-                ?: return PatchFailure.SuoritusNotFound(key).left()
+        if (appliedKeys.isEmpty()) return results
 
-        val patched =
+        val saveError =
             try {
-                applyArvoSolkissa(entity, key.kentta, poikkeama.arvoSolkissa)
-            } catch (_: UnknownKenttaException) {
-                return PatchFailure.UnknownKentta(key).left()
+                suoritusRepository.save(
+                    patched.copy(id = null, lastModified = Instant.now()),
+                    updateOnConflict = true,
+                    forceWrite = true,
+                )
+                null
             } catch (e: Exception) {
-                return PatchFailure.ValueParseFailed(key, e.message ?: e::class.simpleName.orEmpty()).left()
+                e.message ?: e::class.simpleName.orEmpty()
             }
 
-        try {
-            suoritusRepository.save(
-                patched.copy(id = null, lastModified = Instant.now()),
-                updateOnConflict = true,
-            )
-        } catch (e: Exception) {
-            return PatchFailure.SaveFailed(key, e.message ?: e::class.simpleName.orEmpty()).left()
+        if (saveError != null) {
+            appliedKeys.forEach { results.add(it to PatchFailure.SaveFailed(it, saveError).left()) }
+        } else {
+            poikkeamaRepository.deleteByKeys(appliedKeys)
+            auditLogger.log(AuditLogOperation.YkiSuoritusPatched, oppijaHenkiloOid = entity.suorittajanOID)
+            appliedKeys.forEach { results.add(it to it.right()) }
         }
 
-        poikkeamaRepository.deleteByKey(key.solkiId, key.kentta)
-        auditLogger.log(AuditLogOperation.YkiSuoritusPatched, oppijaHenkiloOid = entity.suorittajanOID)
-
-        return key.right()
+        return results
     }
 }
 
