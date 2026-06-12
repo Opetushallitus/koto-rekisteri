@@ -75,6 +75,7 @@ data class YkiSuoritusEntity(
     val arvosanaMuuttui: Set<TutkinnonOsa>?,
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
+    @IgnoreForEquality("SOLKICSV")
     val tarkistusarviointiHyvaksyttyPvm: LocalDate?,
     @IgnoreForEquality("SOLKICSV")
     val koskiOpiskeluoikeus: Oid?,
