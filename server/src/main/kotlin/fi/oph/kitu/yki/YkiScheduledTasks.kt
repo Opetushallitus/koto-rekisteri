@@ -32,6 +32,9 @@ class YkiScheduledTasks(
     @Value($$"${kitu.yki.scheduling.anomalyCheck.schedule}")
     lateinit var ykiAnomalyCheckSchedule: String
 
+    @Value($$"${kitu.yki.scheduling.anomalyCheckFullYear.schedule}")
+    lateinit var ykiAnomalyCheckFullYearSchedule: String
+
     @Value($$"${kitu.yki.scheduling.importArvioijat.schedule}")
     lateinit var ykiImportArvioijatSchedule: String
 
@@ -41,6 +44,22 @@ class YkiScheduledTasks(
         tracer.recurringStatefulTask("Tarkista poikkeamat YKI-suorituksissa", ykiAnomalyCheckSchedule) {
             val today = LocalDate.now(HELSINKI)
             val from = today.minus(anomalyCheckLookback(today)).atStartOfDay(HELSINKI).toInstant()
+            ykiService.checkYkiAnomalies(from)
+        }
+
+    @WithSpan
+    @Bean
+    fun onDemandFullYearAnomalyCheck(ykiService: YkiService): Task<Void> =
+        tracer.recurringStatefulTask(
+            "Tarkista poikkeamat YKI-suorituksissa (koko vuosi, manuaalinen)",
+            ykiAnomalyCheckFullYearSchedule,
+        ) {
+            val from =
+                LocalDate
+                    .now(HELSINKI)
+                    .minusYears(1)
+                    .atStartOfDay(HELSINKI)
+                    .toInstant()
             ykiService.checkYkiAnomalies(from)
         }
 }
