@@ -21,6 +21,8 @@ object Links {
         fun vkt(): String = linkTo(methodOn(HomeController::class.java).vktCard()).toString()
 
         fun koto(): String = linkTo(methodOn(HomeController::class.java).kotoCard()).toString()
+
+        fun admin(): String = linkTo(methodOn(HomeController::class.java).adminCard()).toString()
     }
 
     object Admin {

@@ -31,6 +31,7 @@ class DashboardServiceTest(
         jdbc.execute("TRUNCATE TABLE koto_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE vkt_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE koski_error")
+        jdbc.execute("TRUNCATE TABLE tehtavapaketti CASCADE")
         clearAllCaches()
     }
 
@@ -40,6 +41,7 @@ class DashboardServiceTest(
 
         assertEquals(0L, stats.yki.suoritusCount)
         assertEquals(0L, stats.yki.arvioijaCount)
+        assertEquals(0L, stats.yki.tarkistusarvioinnitOdottamassaCount)
         assertEquals(null, stats.yki.latestReceivedAt)
         assertEquals(0L, stats.yki.suoritusImportErrorCount)
         assertEquals(0L, stats.yki.arvioijaImportErrorCount)
@@ -54,6 +56,7 @@ class DashboardServiceTest(
         assertEquals(0L, stats.vkt.koskiErrorCount)
 
         assertEquals(0L, stats.koto.suoritusCount)
+        assertEquals(0L, stats.koto.tehtavapaketitCount)
         assertEquals(null, stats.koto.latestReceivedAt)
         assertEquals(0L, stats.koto.importErrorCount)
     }
@@ -63,6 +66,7 @@ class DashboardServiceTest(
         assertSame(dashboardService.getYkiStats(), dashboardService.getYkiStats())
         assertSame(dashboardService.getVktStats(), dashboardService.getVktStats())
         assertSame(dashboardService.getKotoStats(), dashboardService.getKotoStats())
+        assertSame(dashboardService.getAdminStats(), dashboardService.getAdminStats())
     }
 
     @Test
@@ -120,6 +124,7 @@ class DashboardServiceTest(
         clearCache("ykiCache")
         clearCache("vktCache")
         clearCache("kotoCache")
+        clearCache("adminCache")
     }
 
     private fun clearVktCache() = clearCache("vktCache")

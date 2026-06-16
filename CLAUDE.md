@@ -51,7 +51,7 @@ Backend tests spin up PostgreSQL via Testcontainers — Docker must be running. 
 
 ### Layout
 
-- `server/` — Spring Boot 4.0.6 + Kotlin backend. Source roots are `src/main/kotlin` and `src/test/kotlin` (configured in `pom.xml`, not the Maven defaults). Packages under `fi.oph.kitu/` are organized by **feature domain**, not by layer.
+- `server/` — Spring Boot 4.1.0 + Kotlin backend. Source roots are `src/main/kotlin` and `src/test/kotlin` (configured in `pom.xml`, not the Maven defaults). Packages under `fi.oph.kitu/` are organized by **feature domain**, not by layer.
 - `infra/` — AWS CDK (TypeScript) app. `bin/infra.ts` wires four stages: `Util` (shared ECR repo + GitHub Actions roles), then `Dev`/`Test`/`Prod`. Each env stage composes stacks (`service-stack`, `db-stack`, `network-stack`, `alarms-stack`, `bastion-stack`, `backups-stack`, `koski-audit-logs-integration-stack`, ...). Deploys pick the container by `TAG` env var.
 - `e2e/` — Playwright tests against a real server + Postgres.
 - `scripts/` — bash helpers for local env, AWS profile/secret setup, tmux orchestration.

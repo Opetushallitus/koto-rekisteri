@@ -25,6 +25,10 @@ class HomeController(
     fun kotoCard(): ResponseEntity<String> =
         cachedFragment(HomePage.renderKotoCardContent(dashboardService.getKotoStats()))
 
+    @GetMapping("/dashboard/admin", produces = ["text/html"])
+    fun adminCard(): ResponseEntity<String> =
+        cachedFragment(HomePage.renderAdminCardContent(dashboardService.getAdminStats()))
+
     private fun cachedFragment(body: String): ResponseEntity<String> =
         ResponseEntity
             .ok()
