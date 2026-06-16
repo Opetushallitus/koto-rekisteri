@@ -34,7 +34,7 @@ object HomePage {
                     contentKey = "koto",
                     title = "Kotoutumiskoulutuksen kielitaidon päättötesti",
                 )
-                adminCard()
+                lazyCard(groupId = "admin", contentKey = "admin", title = "Ylläpito")
             }
             javascript(loaderScript())
         }
@@ -54,10 +54,15 @@ object HomePage {
             kotoRows(s)
         }
 
+    fun renderAdminCardContent(s: AdminStats): String =
+        createHTML().ul(classes = "dashboard-stats") {
+            adminRows(s)
+        }
+
     private fun UL.ykiRows(s: YkiStats) {
         statRow("Suoritukset", s.suoritusCount, Links.Yki.suoritukset())
         statRow("Arvioijat", s.arvioijaCount, Links.Yki.arvioijat())
-        statRow("Tarkistusarvioinnit", value = null, href = Links.Yki.tarkistusArvioinnit())
+        statRow("Tarkistusarvioinnit", s.tarkistusarvioinnitOdottamassaCount, Links.Yki.tarkistusArvioinnit())
         statRow(
             label = "Suoritusten tuonnin virheet",
             value = s.suoritusImportErrorCount,
@@ -113,7 +118,7 @@ object HomePage {
 
     private fun UL.kotoRows(s: KotoStats) {
         statRow("Suoritukset", s.suoritusCount, Links.Kielitesti.suoritukset())
-        statRow("Tehtäväpaketit", value = null, href = Links.Tehtavapankki.list())
+        statRow("Tehtäväpaketit", s.tehtavapaketitCount, Links.Tehtavapankki.list())
         statRow(
             label = "Tuonnin virheet",
             value = s.importErrorCount,
@@ -121,6 +126,17 @@ object HomePage {
             errorIfNonZero = true,
         )
         latestReceivedRow(s.latestReceivedAt, Links.Kielitesti.suoritukset())
+    }
+
+    private fun UL.adminRows(s: AdminStats) {
+        statRow("Käynnissä olevat eräajot", s.runningCount, Links.Admin.dbScheduler())
+        statRow(
+            label = "Eräajot virhetilassa",
+            value = s.failingCount,
+            href = Links.Admin.dbScheduler(),
+            errorIfNonZero = true,
+        )
+        statRow("Eräajojen hallinta", value = null, href = Links.Admin.dbScheduler())
     }
 
     private fun FlowContent.lazyCard(
@@ -143,17 +159,6 @@ object HomePage {
             }
         }
     }
-
-    private fun FlowContent.adminCard() =
-        card {
-            testId("admin-links")
-            cardContent {
-                h2(classes = "dashboard-card-title") { +"Ylläpito" }
-                ul(classes = "dashboard-stats") {
-                    statRow("Eräajojen hallinta", value = null, href = Links.Admin.dbScheduler())
-                }
-            }
-        }
 
     private fun UL.statRow(
         label: String,
@@ -197,11 +202,13 @@ object HomePage {
         val ykiUrl = Links.Dashboard.yki()
         val vktUrl = Links.Dashboard.vkt()
         val kotoUrl = Links.Dashboard.koto()
+        val adminUrl = Links.Dashboard.admin()
         return """
             const cards = [
-                { id: "yki",  url: "$ykiUrl" },
-                { id: "vkt",  url: "$vktUrl" },
-                { id: "koto", url: "$kotoUrl" },
+                { id: "yki",   url: "$ykiUrl" },
+                { id: "vkt",   url: "$vktUrl" },
+                { id: "koto",  url: "$kotoUrl" },
+                { id: "admin", url: "$adminUrl" },
             ];
             cards.forEach(({ id, url }) => {
                 const target = document.querySelector('[data-card-content="' + id + '"]');

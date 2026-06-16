@@ -73,9 +73,11 @@ class HomeControllerTest(
         assertContains(response, """data-card-content="koto"""")
         assertContains(response, "skeleton-row")
         assertContains(response, """aria-busy="true"""")
+        assertContains(response, """data-card-content="admin"""")
         assertContains(response, "/dashboard/yki")
         assertContains(response, "/dashboard/vkt")
         assertContains(response, "/dashboard/koto")
+        assertContains(response, "/dashboard/admin")
         assertFalse(
             response.contains("Viimeisin saapunut suoritus"),
             "\"Viimeisin saapunut suoritus\"-rivi esiintyy vain fragmenteissa, ei yläpalkin navigaatiossa",
@@ -83,10 +85,15 @@ class HomeControllerTest(
     }
 
     @Test
-    fun `admin kortin linkki renderoidaan synkronisesti`() {
-        val response = getHtml("/")
-        assertContains(response, "Eräajojen hallinta")
-        assertContains(response, "/kielitutkinnot/db-scheduler")
+    fun `dashboard admin -fragmentti palauttaa erajaotilastot ja hallintalinkin`() {
+        val fragment = getHtml("/dashboard/admin")
+
+        assertContains(fragment, """class="dashboard-stats"""")
+        assertContains(fragment, "Käynnissä olevat eräajot")
+        assertContains(fragment, "Eräajot virhetilassa")
+        assertContains(fragment, "Eräajojen hallinta")
+        assertContains(fragment, "/kielitutkinnot/db-scheduler")
+        assertFalse(fragment.contains("<html"), "Fragmenttivastaus ei sisällä sivun kuorta")
     }
 
     @Test

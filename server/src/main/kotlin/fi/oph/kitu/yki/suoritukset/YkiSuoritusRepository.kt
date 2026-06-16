@@ -201,6 +201,19 @@ class YkiSuoritusRepository(
         }
 
     @WithSpan
+    fun countTarkistusarvioinnitOdottamassaHyvaksyntaa(): Long =
+        jdbcNamedParameterTemplate.queryForObject(
+            buildSql(
+                withCtes(
+                    "viimeisin_suoritus" to selectSuorituksetFull(viimeisin = true, "WHERE arviointitila = :tila"),
+                ),
+                "SELECT COUNT(*) FROM viimeisin_suoritus",
+            ),
+            mapOf("tila" to Arviointitila.TARKISTUSARVIOITU.name),
+            Long::class.java,
+        ) ?: 0
+
+    @WithSpan
     fun countSuoritukset(
         filter: YkiSuoritusFilter = YkiSuoritusFilter(),
         distinct: Boolean = true,
