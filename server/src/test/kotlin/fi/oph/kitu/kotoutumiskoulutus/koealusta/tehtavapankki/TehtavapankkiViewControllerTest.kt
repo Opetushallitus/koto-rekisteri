@@ -7,6 +7,7 @@ import fi.oph.kitu.LocalStackContainerConfiguration.Companion.TEST_BUCKET
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
+import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
 import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.BeforeEach
@@ -187,6 +188,52 @@ class TehtavapankkiViewControllerTest(
         assertContains(response, xmlKey.substringBefore("/"))
         assertContains(response, "Näytä sisältö")
         assertContains(response, "/koto-tehtavapankki/paketti/$pakettiId")
+    }
+
+    @Test
+    fun `listView nayttaa kullekin saman courseid_n kansiolle sen oman lahdeversion`() {
+        val esimerkkiKey = "17-Kielitesti_esimerkki/2026-01-01T00:00:00-0.xml"
+        val pilotointiKey = "17-Kielitesti_opettaja_pilotointi/2026-02-02T00:00:00-0.xml"
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(esimerkkiKey) },
+            RequestBody.fromString("<questions/>"),
+        )
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(pilotointiKey) },
+            RequestBody.fromString("<questions/>"),
+        )
+        repository.insertPaketti(
+            TehtavapakettiEntity(
+                lahdejarjestelma = TehtavapankkiIngestService.LAHDEJARJESTELMA,
+                lahdeId = "17",
+                nimi = "Kielitesti esimerkki",
+                versioHash = "hash-esimerkki",
+                s3Avain = esimerkkiKey,
+                lahdeVersion = "vEsimerkki",
+            ),
+        )
+        repository.insertPaketti(
+            TehtavapakettiEntity(
+                lahdejarjestelma = TehtavapankkiIngestService.LAHDEJARJESTELMA,
+                lahdeId = "17",
+                nimi = "Kielitesti opettaja pilotointi",
+                versioHash = "hash-pilotointi",
+                s3Avain = pilotointiKey,
+                lahdeVersion = "vPilotointi",
+            ),
+        )
+
+        val response =
+            mockMvc
+                .perform(get("/koto-tehtavapankki").session(virkailijaSession()))
+                .andExpect(status().isOk)
+                .andReturn()
+                .response.contentAsString
+
+        // Saman courseid:n kummankin kansion tiivistelmä näyttää oman versionsa
+        // eikä courseid:n viimeisintä.
+        assertContains(response, "versio vEsimerkki")
+        assertContains(response, "versio vPilotointi")
     }
 
     private fun ingestFixture(): Int {

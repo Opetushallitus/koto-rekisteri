@@ -281,18 +281,18 @@ class TehtavapankkiRepositoryTest(
     }
 
     @Test
-    fun `findIdsByS3Avain palauttaa loytyneet avaimet ja jattaa tuntemattomat pois`() {
+    fun `findPaketitByS3Avaimet palauttaa loytyneet paketit ja jattaa tuntemattomat pois`() {
         val pakettiIdA = seedPaketti(lahdeId = "1", versioHash = "h1", s3Avain = "1-foo/a.xml")
         val pakettiIdB = seedPaketti(lahdeId = "2", versioHash = "h2", s3Avain = "2-bar/b.xml")
 
-        val map =
-            repo.findIdsByS3Avain(
+        val paketit =
+            repo.findPaketitByS3Avaimet(
                 listOf("1-foo/a.xml", "2-bar/b.xml", "ei-loydy/c.xml"),
             )
 
-        assertEquals(setOf("1-foo/a.xml", "2-bar/b.xml"), map.keys)
-        assertEquals(pakettiIdA, map["1-foo/a.xml"])
-        assertEquals(pakettiIdB, map["2-bar/b.xml"])
+        assertEquals(setOf("1-foo/a.xml", "2-bar/b.xml"), paketit.map { it.s3Avain }.toSet())
+        assertEquals(pakettiIdA, paketit.single { it.s3Avain == "1-foo/a.xml" }.id)
+        assertEquals(pakettiIdB, paketit.single { it.s3Avain == "2-bar/b.xml" }.id)
     }
 
     @Test

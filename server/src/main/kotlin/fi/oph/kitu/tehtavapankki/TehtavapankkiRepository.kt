@@ -280,18 +280,17 @@ class TehtavapankkiRepository(
         )
 
     /**
-     * Karttaa S3-avaimet niihin tehtäväpaketteihin, jotka on jo tallennettu
-     * tietokantaan. Annetuista avaimista palautuvat vain ne, joille löytyy rivi.
+     * Hakee annettuja S3-avaimia vastaavat tehtäväpaketit. Palautuvat vain ne
+     * avaimet, joille löytyy rivi tietokannasta.
      */
     @WithSpan
-    fun findIdsByS3Avain(s3Avaimet: Collection<String>): Map<String, Int> {
-        if (s3Avaimet.isEmpty()) return emptyMap()
-        return jdbc
-            .query(
-                "SELECT s3_avain, id FROM tehtavapaketti WHERE s3_avain IN (:keys)",
-                mapOf("keys" to s3Avaimet),
-            ) { rs, _ -> rs.getString("s3_avain") to rs.getInt("id") }
-            .toMap()
+    fun findPaketitByS3Avaimet(s3Avaimet: Collection<String>): List<TehtavapakettiEntity> {
+        if (s3Avaimet.isEmpty()) return emptyList()
+        return jdbc.query(
+            "SELECT * FROM tehtavapaketti WHERE s3_avain IN (:keys)",
+            mapOf("keys" to s3Avaimet),
+            TehtavapakettiEntity.fromRow,
+        )
     }
 }
 
