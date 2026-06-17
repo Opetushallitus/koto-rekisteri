@@ -514,6 +514,39 @@ class TehtavapankkiServiceTest(
     }
 
     @Test
+    fun `groupTehtavapaketit jarjestaa ryhmat uusin ensin ja versiot ryhman sisalla uusin ensin`() {
+        val base = Instant.parse("2026-01-01T00:00:00Z")
+
+        fun obj(
+            folder: String,
+            offsetSeconds: Long,
+        ) = TehtavapakettiObject(
+            key = "$folder/$offsetSeconds.xml",
+            filename = "$folder/$offsetSeconds.xml",
+            size = 1,
+            timestamp = base.plusSeconds(offsetSeconds),
+        )
+
+        val result =
+            groupTehtavapaketit(
+                listOf(
+                    obj("1-Vanha", 5),
+                    obj("3-Uusin", 30),
+                    obj("2-Keski", 20),
+                    obj("1-Vanha", 10),
+                    obj("3-Uusin", 25),
+                    TehtavapakettiObject("muu/note.txt", "muu/note.txt", 1, base.plusSeconds(99)),
+                ),
+            )
+
+        assertEquals(listOf("3-Uusin", "2-Keski", "1-Vanha"), result.keys.toList())
+        assertEquals(
+            listOf(base.plusSeconds(10), base.plusSeconds(5)),
+            result.getValue("1-Vanha").map { it.timestamp },
+        )
+    }
+
+    @Test
     fun `countTehtavapaketit laskee jokaisen S3-kansion vaikka courseid on sama`() {
         s3Client.putObject(
             { it.bucket(TEST_BUCKET).key("17-Kielitesti_esimerkki/2026-01-01T00:00:00-0.xml") },
