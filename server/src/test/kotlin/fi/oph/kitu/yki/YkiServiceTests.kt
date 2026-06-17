@@ -285,6 +285,86 @@ class YkiServiceTests(
     }
 
     @Test
+    fun `checkYkiAnomalies ei luo perustelu-poikkeamaa kun Solki palauttaa perustelun tyhjana`() {
+        val solkiId = 444444
+        tallennaTarkistusarvioituSuoritus(perusteluCell = """"Alkuperäinen perustelu"""", solkiId = solkiId)
+
+        val from = Instant.parse("2024-01-01T00:00:00Z")
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("suoritukset?m=2024-01-01T00:00:00Z"))
+            .andRespond(
+                withSuccess(
+                    tarkistusarvioituCsv(perusteluCell = "", solkiId = solkiId),
+                    MediaType.parseMediaType("text/csv"),
+                ),
+            )
+
+        ykiService().checkYkiAnomalies(from)
+
+        val poikkeamat = suoritusPoikkeamaRepository.findAll()
+        assertTrue(poikkeamat.none { it.kentta == "perustelu" })
+    }
+
+    @Test
+    fun `checkYkiAnomalies luo perustelu-poikkeaman kun Solki palauttaa eri perustelun`() {
+        val solkiId = 333333
+        tallennaTarkistusarvioituSuoritus(perusteluCell = """"Vanha perustelu"""", solkiId = solkiId)
+
+        val from = Instant.parse("2024-01-01T00:00:00Z")
+        val mockServer = MockRestServiceServer.bindTo(mockRestClientBuilder).build()
+        mockServer
+            .expect(requestTo("suoritukset?m=2024-01-01T00:00:00Z"))
+            .andRespond(
+                withSuccess(
+                    tarkistusarvioituCsv(perusteluCell = """"Uusi perustelu"""", solkiId = solkiId),
+                    MediaType.parseMediaType("text/csv"),
+                ),
+            )
+
+        ykiService().checkYkiAnomalies(from)
+
+        val perusteluPoikkeamat = suoritusPoikkeamaRepository.findAll().filter { it.kentta == "perustelu" }
+        assertEquals(1, perusteluPoikkeamat.size)
+        val poikkeama = perusteluPoikkeamat.first()
+        assertEquals(solkiId, poikkeama.solkiId)
+        assertEquals("Uusi perustelu", poikkeama.arvoSolkissa)
+        assertEquals("Vanha perustelu", poikkeama.arvoKitussa)
+    }
+
+    private fun ykiService() =
+        YkiService(
+            mockRestClientBuilder.build(),
+            ykiSuoritusRepository,
+            ykiSuoritusErrorService,
+            suoritusMapper,
+            ykiArvioijaRepository,
+            suoritusPoikkeamaRepository,
+            auditLogger,
+            parser,
+        )
+
+    private fun tallennaTarkistusarvioituSuoritus(
+        perusteluCell: String,
+        solkiId: Int,
+    ) {
+        val csv =
+            parser
+                .convertCsvToData<YkiSuoritusCsv>(tarkistusarvioituCsv(perusteluCell, solkiId))
+                .splitIntoValuesAndErrors()
+                .first
+        ykiSuoritusRepository.save(suoritusMapper.convertToEntityIterable(csv).first(), updateOnConflict = false)
+    }
+
+    private fun tarkistusarvioituCsv(
+        perusteluCell: String,
+        solkiId: Int,
+    ) = """"1.2.246.562.24.20281155246","010180-9026","N","Tarkistettu","Tiina Testi","FIN","Mäkitie 1","00100",""" +
+        """"Helsinki","tiina@example.fi",$solkiId,2024-06-01T10:00:00Z,2024-06-15,"fin","YT",""" +
+        """"1.2.246.562.10.14893989377","Jyväskylän yliopisto",2024-09-01,5,5,5,5,5,5,2024-12-14,""" +
+        """"OPH-5000-1234",1,1,$perusteluCell,2024-12-20"""
+
+    @Test
     fun `Arvointitila is updated correctly also on csv update`() {
         val expected =
             mapOf(
