@@ -116,7 +116,15 @@ class YkiService(
                     entity
                         .findDifferentProperties(existing, "SOLKICSV")
                         .ignoreEmptyValues()
-                        .map { (key, value) ->
+                        .filter { (key, diff) ->
+                            val (arvoSolkissa, arvoKitussa) = diff
+                            when (key) {
+                                // CSV-api palauttaa tämän tyhjänä, jos perustelua ei ole kirjoitettu
+                                "perustelu" -> arvoSolkissa?.toString()?.isNotBlank() ?: false
+
+                                else -> true
+                            }
+                        }.map { (key, value) ->
                             YkiSuoritusPoikkeama(
                                 solkiId = entity.solkiId,
                                 kentta = key,
