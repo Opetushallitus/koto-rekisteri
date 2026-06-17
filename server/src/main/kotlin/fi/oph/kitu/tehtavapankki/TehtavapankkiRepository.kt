@@ -174,14 +174,6 @@ class TehtavapankkiRepository(
     }
 
     @WithSpan
-    fun countDistinctPaketit(): Long =
-        jdbc.queryForObject(
-            "SELECT COUNT(*) FROM (SELECT DISTINCT lahdejarjestelma, lahde_id FROM tehtavapaketti) t",
-            emptyMap<String, Any>(),
-            Long::class.java,
-        ) ?: 0
-
-    @WithSpan
     fun findPakettiById(id: Int): TehtavapakettiEntity? =
         jdbc
             .query(
