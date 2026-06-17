@@ -148,11 +148,7 @@ class TehtavapankkiService(
     }
 
     @WithSpan
-    fun listTehtavapaketit(): Map<String, List<TehtavapakettiObject>> =
-        listAllObjects()
-            .filter { it.filename.lowercase().endsWith(".xml") }
-            .groupBy { it.filename.substringBefore("/") }
-            .mapValues { (_, v) -> v.sortedByDescending { it.timestamp } }
+    fun listTehtavapaketit(): Map<String, List<TehtavapakettiObject>> = groupTehtavapaketit(listAllObjects())
 
     @WithSpan
     fun countTehtavapaketit(): Long = listTehtavapaketit().size.toLong()
@@ -352,6 +348,15 @@ data class FailedAsset(
     val filename: String,
     val reason: String,
 )
+
+internal fun groupTehtavapaketit(objects: List<TehtavapakettiObject>): Map<String, List<TehtavapakettiObject>> =
+    objects
+        .filter { it.filename.lowercase().endsWith(".xml") }
+        .groupBy { it.filename.substringBefore("/") }
+        .mapValues { (_, versions) -> versions.sortedByDescending { it.timestamp } }
+        .entries
+        .sortedByDescending { (_, versions) -> versions.first().timestamp }
+        .associate { it.toPair() }
 
 // AWS palauttaa ETagin lainausmerkeissä; karsitaan ne ennen vertailua.
 private fun String.normalizeETag(): String = this.trim('"')
