@@ -21,26 +21,34 @@ data class YkiSuoritusFilter(
 
     private fun toSql() =
         SqlFilterBuilder().apply {
-            add(searchQuery(), "filter_search" to "%${search.orEmpty()}%")
+            searchTerms().forEachIndexed { i, term ->
+                val param = "filter_search_$i"
+                add(searchTermClause(param), param to "%$term%")
+            }
             add(alkupaiva?.let { "tutkintopaiva >= :filter_alkupaiva" }, "filter_alkupaiva" to alkupaiva)
             add(loppupaiva?.let { "tutkintopaiva <= :filter_loppupaiva" }, "filter_loppupaiva" to loppupaiva)
             add(tutkintokieli?.let { "tutkintokieli = :filter_kieli" }, "filter_kieli" to tutkintokieli?.name)
             add(tutkintotaso?.let { "tutkintotaso = :filter_taso" }, "filter_taso" to tutkintotaso?.name)
         }
 
-    private fun searchQuery(): String? =
-        search?.takeIf { it.isNotEmpty() }?.let {
-            """
-            suorittajan_oid ILIKE :filter_search
-            OR etunimet ILIKE :filter_search
-            OR sukunimi ILIKE :filter_search
-            OR email ILIKE :filter_search
-            OR hetu ILIKE :filter_search
-            OR jarjestajan_tunnus_oid ILIKE :filter_search
-            OR jarjestajan_nimi ILIKE :filter_search
-            OR yki_suoritus.solki_id::text ILIKE :filter_search
-            """.trimIndent()
-        }
+    private fun searchTerms(): List<String> =
+        search
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?.split(Regex("\\s+"))
+            .orEmpty()
+
+    private fun searchTermClause(param: String): String =
+        """
+        suorittajan_oid ILIKE :$param
+        OR etunimet ILIKE :$param
+        OR sukunimi ILIKE :$param
+        OR email ILIKE :$param
+        OR hetu ILIKE :$param
+        OR jarjestajan_tunnus_oid ILIKE :$param
+        OR jarjestajan_nimi ILIKE :$param
+        OR yki_suoritus.solki_id::text ILIKE :$param
+        """.trimIndent()
 }
 
 data class YkiSuoritusOrder(

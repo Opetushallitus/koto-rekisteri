@@ -152,6 +152,32 @@ class YkiSuoritusRepositoryTest(
     }
 
     @Test
+    fun `find suoritus with first name and surname search term`() {
+        val target =
+            generateRandomYkiSuoritusEntity().copy(
+                etunimet = "Matti",
+                sukunimi = "Virtanen",
+            )
+        val decoy =
+            generateRandomYkiSuoritusEntity().copy(
+                etunimet = "Matti",
+                sukunimi = "Korhonen",
+            )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(target, decoy))
+
+        val byFullName = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "Matti Virtanen"))
+        assertEquals(1, byFullName.count())
+        assertEquals(target, byFullName.first().copy(id = null))
+
+        val byReversedName = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "Virtanen Matti"))
+        assertEquals(1, byReversedName.count())
+        assertEquals(target, byReversedName.first().copy(id = null))
+
+        val byWrongCombo = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "Matti Lahtinen"))
+        assertEquals(0, byWrongCombo.count())
+    }
+
+    @Test
     fun `find suoritus with solki id search term`() {
         val target = generateRandomYkiSuoritusEntity().copy(solkiId = 314159)
         val other =
