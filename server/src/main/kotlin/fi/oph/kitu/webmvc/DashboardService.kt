@@ -1,9 +1,9 @@
 package fi.oph.kitu.webmvc
 
 import fi.oph.kitu.koski.KoskiErrorService
+import fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki.TehtavapankkiService
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.CustomKielitestiSuoritusRepository
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorRepository
-import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
 import fi.oph.kitu.util.cache.InMemoryCache
 import fi.oph.kitu.util.scheduling.SchedulerStatsRepository
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
@@ -13,6 +13,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.stereotype.Service
 import java.time.Instant
 import kotlin.time.Duration.Companion.seconds
@@ -27,7 +28,7 @@ class DashboardService(
     private val customVktSuoritusRepository: CustomVktSuoritusRepository,
     private val customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
     private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
-    private val tehtavapankkiRepository: TehtavapankkiRepository,
+    private val tehtavapankkiServiceProvider: ObjectProvider<TehtavapankkiService>,
     private val schedulerStatsRepository: SchedulerStatsRepository,
     private val koskiErrorService: KoskiErrorService,
 ) {
@@ -87,7 +88,7 @@ class DashboardService(
     private fun computeKoto(): KotoStats =
         KotoStats(
             suoritusCount = customKielitestiSuoritusRepository.countSuoritukset().toLong(),
-            tehtavapaketitCount = tehtavapankkiRepository.countDistinctPaketit(),
+            tehtavapaketitCount = tehtavapankkiServiceProvider.getIfAvailable()?.countTehtavapaketit() ?: 0L,
             latestReceivedAt = customKielitestiSuoritusRepository.findLatestLastModified(),
             importErrorCount = kielitestiSuoritusErrorRepository.count(),
         )

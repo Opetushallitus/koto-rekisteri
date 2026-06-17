@@ -514,6 +514,28 @@ class TehtavapankkiServiceTest(
     }
 
     @Test
+    fun `countTehtavapaketit laskee jokaisen S3-kansion vaikka courseid on sama`() {
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("17-Kielitesti_esimerkki/2026-01-01T00:00:00-0.xml") },
+            RequestBody.fromString("<questions/>"),
+        )
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key("17-Kielitesti_opettaja_pilotointi/2026-02-02T00:00:00-0.xml") },
+            RequestBody.fromString("<questions/>"),
+        )
+
+        assertEquals(
+            2,
+            tehtavapankkiService.countTehtavapaketit(),
+            "Saman courseid:n eri kansioiden pitäisi laskeutua erikseen, kuten listausnäkymässä",
+        )
+        assertEquals(
+            tehtavapankkiService.listTehtavapaketit().size.toLong(),
+            tehtavapankkiService.countTehtavapaketit(),
+        )
+    }
+
+    @Test
     fun `getTemporaryDownloadUrl palauttaa toimivan signed URL_n`() {
         val key = "42-Suomi_alkeet/2026-01-01T00:00:00-0.xml"
         val content = "<questions><q id=\"1\"/></questions>"

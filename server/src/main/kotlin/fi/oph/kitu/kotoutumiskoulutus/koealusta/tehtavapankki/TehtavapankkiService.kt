@@ -155,6 +155,9 @@ class TehtavapankkiService(
             .mapValues { (_, v) -> v.sortedByDescending { it.timestamp } }
 
     @WithSpan
+    fun countTehtavapaketit(): Long = listTehtavapaketit().size.toLong()
+
+    @WithSpan
     fun listAllObjects(): List<TehtavapakettiObject> =
         useS3 { bucket ->
             listAllObjects(bucket).map {
