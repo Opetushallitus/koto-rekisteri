@@ -1,6 +1,5 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
-import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.tehtavapankki.TehtavapankkiRepository
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -27,20 +26,16 @@ class TehtavapankkiViewController(
     @GetMapping("")
     fun listView(): ResponseEntity<String> {
         val tehtavapaketit = tehtavapankkiService.listTehtavapaketit()
-        val pakettiIdsByS3Avain =
-            tehtavapankkiRepository.findIdsByS3Avain(
-                tehtavapaketit.values.flatten().map { it.key },
-            )
-        // Hae viimeisin DB-paketti per S3-ryhmä (kansio). Ryhmän nimi on
-        // muotoa "{courseid}-{sanitized_coursename}", samaa logiikkaa kuin
-        // MoodleSourceIdentifiers käyttää avaimen jäsentämiseen.
-        val latestPakettiByGroup: Map<String, TehtavapakettiEntity?> =
-            tehtavapaketit.keys.associateWith { group ->
-                val courseId = group.substringBefore('-')
-                tehtavapankkiRepository.findLatestPakettiBySource(
-                    TehtavapankkiIngestService.LAHDEJARJESTELMA,
-                    courseId,
-                )
+        val paketitByS3Avain =
+            tehtavapankkiRepository
+                .findPaketitByS3Avaimet(tehtavapaketit.values.flatten().map { it.key })
+                .associateBy { it.s3Avain!! }
+        val pakettiIdsByS3Avain = paketitByS3Avain.mapValues { (_, paketti) -> paketti.id!! }
+        // Ryhmän tiivistelmä kuvaa juuri sen kansion uusinta versiota, jotta saman
+        // courseid:n eri kansiot eivät näytä samaa (väärää) lähdetietoa.
+        val latestPakettiByGroup =
+            tehtavapaketit.mapValues { (_, objects) ->
+                objects.firstNotNullOfOrNull { paketitByS3Avain[it.key] }
             }
         return ResponseEntity.ok(
             TehtavapankkiPage.render(tehtavapaketit, pakettiIdsByS3Avain, latestPakettiByGroup),
