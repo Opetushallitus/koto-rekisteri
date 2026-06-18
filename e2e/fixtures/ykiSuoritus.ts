@@ -24,13 +24,13 @@ export interface YkiSuoritus {
   tutkintotaso: string
   jarjestajanTunnusOid: string
   jarjestajanNimi: string
-  arviointipaiva: string
-  tekstinYmmartaminen: number
-  kirjoittaminen: number
-  rakenteetJaSanasto: number
-  puheenYmmartaminen: number
-  puhuminen: number
-  yleisarvosana: number
+  arviointipaiva: string | null
+  tekstinYmmartaminen: number | null
+  kirjoittaminen: number | null
+  rakenteetJaSanasto: number | null
+  puheenYmmartaminen: number | null
+  puhuminen: number | null
+  yleisarvosana: number | null
   tarkistusarvioinninSaapumisPvm: string | null
   tarkistusarvioinninAsiatunnus: string | null
   tarkistusarvioidutOsakokeet: string[] | null
@@ -257,9 +257,113 @@ export const fixtureData = {
     arviointitila: "TARKISTUSARVIOITU",
     todistuskieli: "ENG",
   }),
-  tanjaKeskeytetty: createYkiSuoritus("tanja", {
-    kansalaisuus: "EST",
-    suoritusId: 200001,
+  einoTarkistettu: createYkiSuoritus("eino", {
+    kansalaisuus: "FIN",
+    suoritusId: 192836,
+    lastModified: "2025-05-26T11:34:41Z",
+    tutkintopaiva: "2025-01-12",
+    tutkintokieli: "FIN",
+    tutkintotaso: "KT",
+    jarjestajanTunnusOid: "1.2.246.562.10.14893989377",
+    jarjestajanNimi:
+      "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+    arviointipaiva: "2025-05-04",
+    tekstinYmmartaminen: 3,
+    kirjoittaminen: 4,
+    rakenteetJaSanasto: 12,
+    puheenYmmartaminen: 1,
+    puhuminen: 2,
+    yleisarvosana: 12,
+    tarkistusarvioinninSaapumisPvm: "2024-10-01",
+    tarkistusarvioinninAsiatunnus: "OPH-14893989377-1",
+    tarkistusarvioidutOsakokeet: ["PU"],
+    arvosanaMuuttui: ["PU"],
+    perustelu: "Tarkistusarvioinnin testi",
+    tarkistusarvioinninKasittelyPvm: "2024-10-20",
+    arviointitila: "TARKISTUSARVIOITU",
+    todistuskieli: "FIN",
+  }),
+  fanniIlmoittautunut: createYkiSuoritus("fanni", {
+    kansalaisuus: "FIN",
+    suoritusId: 300001,
+    lastModified: "2024-09-15T13:53:56Z",
+    tutkintopaiva: "2024-09-01",
+    tutkintokieli: "FIN",
+    tutkintotaso: "YT",
+    jarjestajanTunnusOid: "1.2.246.562.10.14893989377",
+    jarjestajanNimi:
+      "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+    arviointipaiva: null,
+    tekstinYmmartaminen: null,
+    kirjoittaminen: null,
+    rakenteetJaSanasto: null,
+    puheenYmmartaminen: null,
+    puhuminen: null,
+    yleisarvosana: null,
+    tarkistusarvioinninSaapumisPvm: null,
+    tarkistusarvioinninAsiatunnus: null,
+    tarkistusarvioidutOsakokeet: null,
+    arvosanaMuuttui: null,
+    perustelu: null,
+    tarkistusarvioinninKasittelyPvm: null,
+    arviointitila: "ILMOITTAUTUNUT",
+    todistuskieli: "FIN",
+  }),
+  tanjaPeruttu: createYkiSuoritus("tanja", {
+    kansalaisuus: "FIN",
+    suoritusId: 300002,
+    lastModified: "2024-09-15T13:53:56Z",
+    tutkintopaiva: "2024-09-01",
+    tutkintokieli: "FIN",
+    tutkintotaso: "YT",
+    jarjestajanTunnusOid: "1.2.246.562.10.14893989377",
+    jarjestajanNimi:
+      "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+    arviointipaiva: null,
+    tekstinYmmartaminen: null,
+    kirjoittaminen: null,
+    rakenteetJaSanasto: null,
+    puheenYmmartaminen: null,
+    puhuminen: null,
+    yleisarvosana: null,
+    tarkistusarvioinninSaapumisPvm: null,
+    tarkistusarvioinninAsiatunnus: null,
+    tarkistusarvioidutOsakokeet: null,
+    arvosanaMuuttui: null,
+    perustelu: null,
+    tarkistusarvioinninKasittelyPvm: null,
+    arviointitila: "PERUTTU",
+    todistuskieli: "FIN",
+  }),
+  fanniEiSuoritusta: createYkiSuoritus("fanni", {
+    kansalaisuus: "FIN",
+    suoritusId: 300003,
+    lastModified: "2024-09-15T13:53:56Z",
+    tutkintopaiva: "2024-09-01",
+    tutkintokieli: "FIN",
+    tutkintotaso: "YT",
+    jarjestajanTunnusOid: "1.2.246.562.10.14893989377",
+    jarjestajanNimi:
+      "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+    arviointipaiva: null,
+    tekstinYmmartaminen: 12,
+    kirjoittaminen: 12,
+    rakenteetJaSanasto: 12,
+    puheenYmmartaminen: 12,
+    puhuminen: 12,
+    yleisarvosana: 12,
+    tarkistusarvioinninSaapumisPvm: null,
+    tarkistusarvioinninAsiatunnus: null,
+    tarkistusarvioidutOsakokeet: null,
+    arvosanaMuuttui: null,
+    perustelu: null,
+    tarkistusarvioinninKasittelyPvm: null,
+    arviointitila: "EI_SUORITUSTA",
+    todistuskieli: "FIN",
+  }),
+  tanjaKeskeytettyOsakoe: createYkiSuoritus("tanja", {
+    kansalaisuus: "FIN",
+    suoritusId: 300004,
     lastModified: "2024-09-15T13:53:56Z",
     tutkintopaiva: "2024-09-01",
     tutkintokieli: "FIN",
@@ -283,46 +387,71 @@ export const fixtureData = {
     arviointitila: "ARVIOITU",
     todistuskieli: "FIN",
   }),
-  einoTarkistettuJaHyvaksytty: createYkiSuoritus("eino", {
+  fanniArvioituIlmanOikeitaArvosanoja: createYkiSuoritus("fanni", {
     kansalaisuus: "FIN",
-    suoritusId: 192836,
-    lastModified: "2025-05-26T11:34:41Z",
-    tutkintopaiva: "2025-01-12",
+    suoritusId: 300005,
+    lastModified: "2024-09-15T13:53:56Z",
+    tutkintopaiva: "2024-09-01",
     tutkintokieli: "FIN",
-    tutkintotaso: "KT",
+    tutkintotaso: "YT",
     jarjestajanTunnusOid: "1.2.246.562.10.14893989377",
     jarjestajanNimi:
       "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-    arviointipaiva: "2025-05-04",
-    tekstinYmmartaminen: 3,
-    kirjoittaminen: 4,
+    arviointipaiva: "2024-11-14",
+    tekstinYmmartaminen: 12,
+    kirjoittaminen: 12,
     rakenteetJaSanasto: 12,
-    puheenYmmartaminen: 0,
-    puhuminen: 2,
+    puheenYmmartaminen: 12,
+    puhuminen: 12,
     yleisarvosana: 12,
-    tarkistusarvioinninSaapumisPvm: "2024-10-01",
-    tarkistusarvioinninAsiatunnus: "OPH-14893989377-1",
-    tarkistusarvioidutOsakokeet: ["PU"],
-    arvosanaMuuttui: ["PU"],
-    perustelu: "Tarkistusarvioinnin testi",
-    tarkistusarvioinninKasittelyPvm: "2024-10-20",
-    arviointitila: "TARKISTUSARVIOINTI_HYVAKSYTTY",
+    tarkistusarvioinninSaapumisPvm: null,
+    tarkistusarvioinninAsiatunnus: null,
+    tarkistusarvioidutOsakokeet: null,
+    arvosanaMuuttui: null,
+    perustelu: null,
+    tarkistusarvioinninKasittelyPvm: null,
+    arviointitila: "ARVIOITU",
+    todistuskieli: "FIN",
+  }),
+  tanjaIlmoittautunutArvosanalla: createYkiSuoritus("tanja", {
+    kansalaisuus: "FIN",
+    suoritusId: 300006,
+    lastModified: "2024-09-15T13:53:56Z",
+    tutkintopaiva: "2024-09-01",
+    tutkintokieli: "FIN",
+    tutkintotaso: "YT",
+    jarjestajanTunnusOid: "1.2.246.562.10.14893989377",
+    jarjestajanNimi:
+      "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
+    arviointipaiva: null,
+    tekstinYmmartaminen: null,
+    kirjoittaminen: null,
+    rakenteetJaSanasto: null,
+    puheenYmmartaminen: null,
+    puhuminen: 5,
+    yleisarvosana: null,
+    tarkistusarvioinninSaapumisPvm: null,
+    tarkistusarvioinninAsiatunnus: null,
+    tarkistusarvioidutOsakokeet: null,
+    arvosanaMuuttui: null,
+    perustelu: null,
+    tarkistusarvioinninKasittelyPvm: null,
+    arviointitila: "ILMOITTAUTUNUT",
     todistuskieli: "FIN",
   }),
 } as const
 
 export type YkiSuorittajaName = keyof typeof fixtureData
 
-export const insert = async (
-  oauth: OauthRequestContext,
-  suoritusName: YkiSuorittajaName,
-) => {
+const buildSuoritusBody = (suoritusName: YkiSuorittajaName) => {
   const data = fixtureData[suoritusName]
 
-  const osa = (tyyppi: string, arvosana?: number) =>
-    arvosana ? { tyyppi, arvosana } : undefined
+  const osa = (tyyppi: string, arvosana: number | null) => ({
+    tyyppi,
+    arvosana,
+  })
 
-  const suoritus = {
+  return {
     henkilo: {
       oid: data.suorittajanOid,
       etunimet: data.etunimet,
@@ -372,20 +501,52 @@ export const insert = async (
       },
     },
   }
+}
 
+const postSuoritus = async (
+  oauth: OauthRequestContext,
+  suoritusName: YkiSuorittajaName,
+) => {
   const authHeader = await oauth.getAuthorizationHeader("ROOT")
-
-  const response = await fetch(
-    new URL("/kielitutkinnot/yki/api/suoritus", oauth.baseUrl),
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader,
-      },
-      body: JSON.stringify(suoritus),
+  return fetch(new URL("/kielitutkinnot/yki/api/suoritus", oauth.baseUrl), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader,
     },
-  )
+    body: JSON.stringify(buildSuoritusBody(suoritusName)),
+  })
+}
 
+export const insert = async (
+  oauth: OauthRequestContext,
+  suoritusName: YkiSuorittajaName,
+) => {
+  const response = await postSuoritus(oauth, suoritusName)
   expect(response.status).toBe(200)
+}
+
+export const insertExpectingValidationError = async (
+  oauth: OauthRequestContext,
+  suoritusName: YkiSuorittajaName,
+): Promise<string[]> => {
+  const response = await postSuoritus(oauth, suoritusName)
+  expect(response.status).toBe(400)
+  const body = (await response.json()) as { errors: string[] }
+  return body.errors
+}
+
+// TARKISTUSARVIOINTI_HYVAKSYTTY on sisäinen tila, jota ei tuoda rajapinnan kautta.
+export const insertApprovedBeforeFeature = async (
+  oauth: OauthRequestContext,
+  db: TestDB,
+  suoritusName: YkiSuorittajaName,
+) => {
+  await insert(oauth, suoritusName)
+  const data = fixtureData[suoritusName]
+  await db.dbClient.query(SQL`
+      UPDATE yki_suoritus
+      SET arviointitila = 'TARKISTUSARVIOINTI_HYVAKSYTTY'
+      WHERE solki_id = ${data.suoritusId}
+  `)
 }

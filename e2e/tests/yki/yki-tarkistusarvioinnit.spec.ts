@@ -14,7 +14,11 @@ describe("YKI-tarkastusarvioinnit", () => {
       await ykiSuoritus.insert(oauth, "ranjaTarkistus")
       await ykiSuoritus.insert(oauth, "petro")
       await ykiSuoritus.insert(oauth, "magdalenaTarkistettu")
-      await ykiSuoritus.insert(oauth, "einoTarkistettuJaHyvaksytty")
+      await ykiSuoritus.insertApprovedBeforeFeature(
+        oauth,
+        db,
+        "einoTarkistettu",
+      )
       await basePage.login()
       await ykiTarkistusarvioinnitPage.open()
     },
