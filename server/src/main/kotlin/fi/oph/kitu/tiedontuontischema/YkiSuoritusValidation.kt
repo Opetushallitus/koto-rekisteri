@@ -23,6 +23,9 @@ class YkiSuoritusValidation(
     @param:Value($$"${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
     val todistuskielenSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
+    @Value($$"${kitu.yki.deprecatedArviointitilaEnrichment.enabled}")
+    val deprecatedArviointitilaEnabled: Boolean = false
+
     override fun ValidationRaise.validateBeforeEnrichment(value: YkiHenkilosuoritus) {
         accumulate {
             accumulating { validateHetu(value) }
@@ -30,10 +33,23 @@ class YkiSuoritusValidation(
             accumulating { validateTarkistusarviointi(value) }
             accumulating { validateKielikoodi(value) }
             accumulating { validateTodistuskieli(value) }
+            if (!deprecatedArviointitilaEnabled) {
+                accumulating { validateArviointitilaVastaaArvosanoja(value) }
+            }
         }
     }
 
-    override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus {
+    override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus =
+        if (deprecatedArviointitilaEnabled) {
+            deprecatedArviointitilaJaArvosanaEnrichment(value)
+        } else {
+            value
+        }
+
+    @Deprecated(
+        "Käytössä vain siirtymävaiheen ajan. Lopullisessa vaiheessa tätä validointia ei pysty kytkemään käyttöön.",
+    )
+    fun deprecatedArviointitilaJaArvosanaEnrichment(value: YkiHenkilosuoritus): YkiHenkilosuoritus {
         val arvosanaKeskeytetty =
             Koodisto.YkiArvosana.Keskeytetty.koodiarvo
                 .toInt()
@@ -53,6 +69,82 @@ class YkiSuoritusValidation(
                     arviointitila = arviointitila,
                 ),
         )
+    }
+
+    @Suppress("DEPRECATION")
+    private fun Raise<Validation.ValidationError>.validateArviointitilaVastaaArvosanoja(s: YkiHenkilosuoritus) {
+        val arvosanat = s.suoritus.osat.map { it.arvosana }
+        val tarkistusarviointi = s.suoritus.tarkistusarviointi
+        val yksikaanArvosanaEiAnnettu = arvosanat.all { it == null }
+        val jokinArvosanaPuuttuu = arvosanat.any { it == null }
+        val kaikkiArvosanatEiSuoritettuja = arvosanat.all { it != null && it >= 9 }
+        val jokinOikeaArvosana = arvosanat.any { it != null && it < 9 }
+
+        fun virhe(viesti: String) = Validation.ValidationError(listOf("suoritus", "arviointitila"), viesti)
+
+        when (s.suoritus.arviointitila) {
+            Arviointitila.ILMOITTAUTUNUT,
+            Arviointitila.PERUTTU,
+            -> {
+                ensure(yksikaanArvosanaEiAnnettu) {
+                    virhe(
+                        "Arviointitila '${s.suoritus.arviointitila}' edellyttää, " +
+                            "ettei millään osakokeella ole arvosanaa",
+                    )
+                }
+            }
+
+            Arviointitila.ARVIOITAVA -> {
+                ensure(jokinArvosanaPuuttuu) {
+                    virhe(
+                        "Arviointitila 'ARVIOITAVA' edellyttää, " +
+                            "että vähintään yhdeltä osakokeelta puuttuu arvosana",
+                    )
+                }
+            }
+
+            Arviointitila.EI_SUORITUSTA -> {
+                ensure(kaikkiArvosanatEiSuoritettuja) {
+                    virhe(
+                        "Arviointitila 'EI_SUORITUSTA' edellyttää, " +
+                            "että kaikilla osakokeilla on arvosana eikä yksikään ole oikea arvosana",
+                    )
+                }
+            }
+
+            Arviointitila.ARVIOITU -> {
+                ensure(jokinOikeaArvosana) {
+                    virhe(
+                        "Arviointitila 'ARVIOITU' edellyttää, " +
+                            "että vähintään yhdellä osakokeella on oikea arvosana",
+                    )
+                }
+            }
+
+            Arviointitila.TARKISTUSARVIOITAVA -> {
+                ensure(tarkistusarviointi != null && tarkistusarviointi.kasittelypaiva == null) {
+                    virhe(
+                        "Arviointitila 'TARKISTUSARVIOITAVA' edellyttää tarkistusarviointia, " +
+                            "jolla ei ole käsittelypäivää",
+                    )
+                }
+            }
+
+            Arviointitila.TARKISTUSARVIOITU -> {
+                ensure(tarkistusarviointi != null && tarkistusarviointi.kasittelypaiva != null) {
+                    virhe(
+                        "Arviointitila 'TARKISTUSARVIOITU' edellyttää tarkistusarviointia, " +
+                            "jolla on käsittelypäivä",
+                    )
+                }
+            }
+
+            Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
+            Arviointitila.KESKEYTETTY,
+            -> {
+                raise(virhe("Arviointitilaa '${s.suoritus.arviointitila}' ei voi tuoda"))
+            }
+        }
     }
 
     override fun ValidationRaise.validateAfterEnrichment(value: YkiHenkilosuoritus) {

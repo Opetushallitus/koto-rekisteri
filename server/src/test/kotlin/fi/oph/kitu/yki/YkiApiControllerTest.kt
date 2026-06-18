@@ -475,7 +475,7 @@ class YkiApiControllerTest(
     }
 
     @Test
-    fun `Suoritus jonka kaikilla osakokeilla on arvosana 12 (ei ilmoittautunut) aiheuttaa virheen`() {
+    fun `Suoritus jonka tila on ARVIOITU mutta jonka osakokeilla ei ole oikeita arvosanoja aiheuttaa virheen`() {
         val suoritus =
             Henkilosuoritus(
                 henkilo =
@@ -532,7 +532,10 @@ class YkiApiControllerTest(
             )
 
         postSuoritus(suoritus) {
-            isBadRequest("suoritus.osat: Suorituksella täytyy olla vähintään yksi osakoe, johon on ilmottauduttu")
+            isBadRequest(
+                "suoritus.arviointitila: Arviointitila 'ARVIOITU' edellyttää, " +
+                    "että vähintään yhdellä osakokeella on oikea arvosana",
+            )
         }
     }
 
@@ -632,7 +635,7 @@ class YkiApiControllerTest(
                             listOf(
                                 YkiOsa(
                                     tyyppi = TutkinnonOsa.puhuminen,
-                                    arvosana = 13,
+                                    arvosana = 5,
                                 ),
                                 YkiOsa(
                                     tyyppi = TutkinnonOsa.puheenYmmartaminen,
@@ -657,7 +660,7 @@ class YkiApiControllerTest(
 
         postSuoritus(suoritus) {
             isBadRequest(
-                "suoritus.osat.arvosana: Suoritus sisältää tutkintotasolle YT virheellisiä arvosanoja: 13, 666, 123",
+                "suoritus.osat.arvosana: Suoritus sisältää tutkintotasolle YT virheellisiä arvosanoja: 666, 123",
             )
         }
     }
