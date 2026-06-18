@@ -17,7 +17,7 @@ class JwtAuthenticationTokenConverter : Converter<Jwt, AbstractAuthenticationTok
 
     override fun convert(source: Jwt): AbstractAuthenticationToken {
         val authorities = extractRoles(source)
-        val convertedAuthorities = authoritiesConverter.convert(source) ?: emptyList()
+        val convertedAuthorities = authoritiesConverter.convert(source)
         return JwtAuthenticationToken(source, authorities + convertedAuthorities)
     }
 
