@@ -12,6 +12,7 @@ import fi.oph.kitu.tiedontuontischema.LahdejarjestelmanTunniste
 import fi.oph.kitu.tiedontuontischema.YkiJarjestaja
 import fi.oph.kitu.tiedontuontischema.YkiOsa
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
+import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.yki.Arviointitila
@@ -139,7 +140,15 @@ class ValidationServiceTest(
     @Test
     fun `Ei-arvioitua suoritusta ei voi siirtää, jos sillä on arviointipäivä`() {
         val suoritus =
-            validiYkiSuoritus.modifySuoritus { it.copy(arviointitila = Arviointitila.ARVIOITAVA) }
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    arviointitila = Arviointitila.ARVIOITAVA,
+                    osat =
+                        it.osat.mapIndexed { i, osa ->
+                            if (i == 1) osa.copy(arvosana = null) else osa
+                        },
+                )
+            }
 
         val result = validation.validateAndEnrich(suoritus)
 
@@ -283,6 +292,134 @@ class ValidationServiceTest(
         val result = validation.validateAndEnrich(suoritus)
         assertEquals(
             suoritus.copy(henkilo = suoritus.henkilo.copy(maa = "FIN")).right(),
+            result,
+        )
+    }
+
+    @Test
+    fun `Ilmoittautuneen suorituksen voi siirtää, kun yhdelläkään osakokeella ei ole arvosanaa`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    arviointitila = Arviointitila.ILMOITTAUTUNUT,
+                    arviointipaiva = null,
+                    osat = it.osat.map { osa -> osa.copy(arvosana = null) },
+                )
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(suoritus.right(), result)
+    }
+
+    @Test
+    fun `Ilmoittautunutta suoritusta ei voi siirtää, jos jollakin osakokeella on arvosana`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    arviointitila = Arviointitila.ILMOITTAUTUNUT,
+                    arviointipaiva = null,
+                    osat =
+                        it.osat.mapIndexed { i, osa ->
+                            if (i == 0) osa.copy(arvosana = 3) else osa.copy(arvosana = null)
+                        },
+                )
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            fail(
+                listOf("suoritus", "arviointitila"),
+                "Arviointitila 'ILMOITTAUTUNUT' edellyttää, ettei millään osakokeella ole arvosanaa",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Suorituksen, jonka osakokeilla ei ole oikeita arvosanoja, voi siirtää tilassa EI_SUORITUSTA`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    arviointitila = Arviointitila.EI_SUORITUSTA,
+                    arviointipaiva = null,
+                    osat = it.osat.map { osa -> osa.copy(arvosana = 12) },
+                )
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(suoritus.right(), result)
+    }
+
+    @Test
+    fun `Suoritusta, jonka osakokeilla ei ole oikeita arvosanoja, ei voi siirtää tilassa ARVIOITU`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(osat = it.osat.map { osa -> osa.copy(arvosana = 12) })
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            fail(
+                listOf("suoritus", "arviointitila"),
+                "Arviointitila 'ARVIOITU' edellyttää, että vähintään yhdellä osakokeella on oikea arvosana",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Tarkistusarvioitavan suorituksen voi siirtää, kun sillä on tarkistusarviointi ilman käsittelypäivää`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    arviointitila = Arviointitila.TARKISTUSARVIOITAVA,
+                    tarkistusarviointi =
+                        YkiTarkastusarviointi(
+                            saapumispaiva = LocalDate.of(2020, 2, 1),
+                            kasittelypaiva = null,
+                            asiatunnus = "123",
+                            tarkistusarvioidutOsakokeet = listOf(TutkinnonOsa.puhuminen),
+                            arvosanaMuuttui = null,
+                            perustelu = "",
+                        ),
+                )
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(suoritus.right(), result)
+    }
+
+    @Test
+    fun `Suoritusta ei voi siirtää tilassa TARKISTUSARVIOITAVA ilman tarkistusarviointia`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(arviointitila = Arviointitila.TARKISTUSARVIOITAVA)
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            fail(
+                listOf("suoritus", "arviointitila"),
+                "Arviointitila 'TARKISTUSARVIOITAVA' edellyttää tarkistusarviointia, jolla ei ole käsittelypäivää",
+            ),
+            result,
+        )
+    }
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun `Suoritusta ei voi siirtää tilassa KESKEYTETTY`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(arviointitila = Arviointitila.KESKEYTETTY, arviointipaiva = null)
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            fail(
+                listOf("suoritus", "arviointitila"),
+                "Arviointitilaa 'KESKEYTETTY' ei voi tuoda",
+            ),
             result,
         )
     }

@@ -103,9 +103,9 @@ class KoodistoEnumsTest {
 
     @Test
     fun `YkiArvosana validIntegersFor antaa kullekin tasolle sallitut numerot`() {
-        assertEquals(setOf(0, 1, 2, 9, 10, 11), Koodisto.YkiArvosana.validIntegersFor(Tutkintotaso.PT))
-        assertEquals(setOf(0, 1, 2, 3, 4, 9, 10, 11), Koodisto.YkiArvosana.validIntegersFor(Tutkintotaso.KT))
-        assertEquals(setOf(0, 1, 2, 3, 4, 5, 6, 9, 10, 11), Koodisto.YkiArvosana.validIntegersFor(Tutkintotaso.YT))
+        assertEquals(setOf(0, 1, 2, 9, 10, 11, 12), Koodisto.YkiArvosana.validIntegersFor(Tutkintotaso.PT))
+        assertEquals(setOf(0, 1, 2, 3, 4, 9, 10, 11, 12), Koodisto.YkiArvosana.validIntegersFor(Tutkintotaso.KT))
+        assertEquals(setOf(0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12), Koodisto.YkiArvosana.validIntegersFor(Tutkintotaso.YT))
     }
 
     @Test

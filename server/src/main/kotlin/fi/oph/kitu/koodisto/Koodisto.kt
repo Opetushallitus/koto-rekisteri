@@ -153,6 +153,7 @@ object Koodisto {
         EiVoiArvioida("9", "Ei voi arvioida"),
         Keskeytetty("10", "Keskeytetty"),
         Vilppi("11", "Vilppi"),
+        EiSuoritusta("12", "Ei suoritusta"),
         ;
 
         override val koodistoUri: String = "ykiarvosana"
@@ -171,6 +172,7 @@ object Koodisto {
                             9 -> EiVoiArvioida.right()
                             10 -> Keskeytetty.right()
                             11 -> Vilppi.right()
+                            12 -> EiSuoritusta.right()
                             else -> InvalidYkiArvosanaError(arvosana, tutkintotaso).left()
                         }
                     }
@@ -183,6 +185,7 @@ object Koodisto {
                             9 -> EiVoiArvioida.right()
                             10 -> Keskeytetty.right()
                             11 -> Vilppi.right()
+                            12 -> EiSuoritusta.right()
                             else -> InvalidYkiArvosanaError(arvosana, tutkintotaso).left()
                         }
                     }
@@ -195,6 +198,7 @@ object Koodisto {
                             9 -> EiVoiArvioida.right()
                             10 -> Keskeytetty.right()
                             11 -> Vilppi.right()
+                            12 -> EiSuoritusta.right()
                             else -> InvalidYkiArvosanaError(arvosana, tutkintotaso).left()
                         }
                     }
@@ -202,9 +206,9 @@ object Koodisto {
 
             fun validIntegersFor(tutkintotaso: Tutkintotaso): Set<Int> =
                 when (tutkintotaso) {
-                    Tutkintotaso.PT -> setOf(0, 1, 2, 9, 10, 11)
-                    Tutkintotaso.KT -> setOf(0, 1, 2, 3, 4, 9, 10, 11)
-                    Tutkintotaso.YT -> setOf(0, 1, 2, 3, 4, 5, 6, 9, 10, 11)
+                    Tutkintotaso.PT -> setOf(0, 1, 2, 9, 10, 11, 12)
+                    Tutkintotaso.KT -> setOf(0, 1, 2, 3, 4, 9, 10, 11, 12)
+                    Tutkintotaso.YT -> setOf(0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12)
                 }
         }
     }
