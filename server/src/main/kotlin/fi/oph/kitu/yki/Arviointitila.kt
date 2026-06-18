@@ -4,15 +4,17 @@ package fi.oph.kitu.yki
 enum class Arviointitila(
     val viewText: String,
 ) {
+    ILMOITTAUTUNUT("Ilmoittautunut"),
+    PERUTTU("Ilmoittautuminen peruttu"),
+    EI_SUORITUSTA("Ei suoritusta"),
     ARVIOITAVA("Suoritus arvioitavana"),
     ARVIOITU("Arviointi valmis"),
-
-    EI_SUORITUSTA("Ei suoritusta"),
-    KESKEYTETTY("Suoritus keskeytetty"),
-
     TARKISTUSARVIOITAVA("Suoritus tarkistusarvioitavana"),
     TARKISTUSARVIOITU("Tarkistusarviointi tehty"),
     TARKISTUSARVIOINTI_HYVAKSYTTY("Tarkistusarviointi hyväksytty"),
+
+    @Deprecated("Poistuu käytöstä uuden arviointitilamallin myötä")
+    KESKEYTETTY("Suoritus keskeytetty"),
     ;
 
     fun arvioitu() = listOf(ARVIOITU, TARKISTUSARVIOITAVA).contains(this) || tarkistusarvioitu()

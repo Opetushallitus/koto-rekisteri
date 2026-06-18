@@ -1,0 +1,2 @@
+ALTER TYPE yki_arviointitila ADD VALUE 'ILMOITTAUTUNUT';
+ALTER TYPE yki_arviointitila ADD VALUE 'PERUTTU';
