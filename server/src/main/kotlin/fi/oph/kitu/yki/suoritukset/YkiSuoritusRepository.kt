@@ -569,4 +569,67 @@ class YkiSuoritusRepository(
                 mapOf("tunnus" to tunnus),
                 YkiSuoritusEntity.fromRow,
             ).firstOrNull()
+
+    @WithSpan
+    fun findArviointitilanMigraatiorivit(): List<ArviointitilanMigraatiorivi> =
+        jdbcTemplate.query(
+            """
+            SELECT
+                s.id,
+                s.arviointitila,
+                coalesce(o.osakoe_count, 0)     AS osakoe_count,
+                coalesce(o.null_count, 0)       AS null_count,
+                coalesce(o.real_grade_count, 0) AS real_grade_count,
+                (ta.suoritus_id IS NOT NULL)    AS on_tarkistusarviointi,
+                ta.kasittelypaiva               AS tarkistuksen_kasittelypaiva
+            FROM yki_suoritus s
+                LEFT JOIN (
+                    SELECT suoritus_id,
+                           count(*)                                                      AS osakoe_count,
+                           count(*) FILTER (WHERE arvosana IS NULL)                      AS null_count,
+                           count(*) FILTER (WHERE arvosana IS NOT NULL AND arvosana < 9) AS real_grade_count
+                    FROM yki_osakoe
+                    GROUP BY suoritus_id
+                ) o ON o.suoritus_id = s.id
+                LEFT JOIN (
+                    SELECT osakoe.suoritus_id,
+                           max(tarkistusarviointi.kasittelypaiva) AS kasittelypaiva
+                    FROM yki_osakoe osakoe
+                        JOIN yki_osakoe_tarkistusarviointi ota ON ota.osakoe_id = osakoe.id
+                        JOIN yki_tarkistusarviointi tarkistusarviointi ON tarkistusarviointi.id = ota.tarkistusarviointi_id
+                    GROUP BY osakoe.suoritus_id
+                ) ta ON ta.suoritus_id = s.id
+            """.trimIndent(),
+        ) { rs, _ ->
+            ArviointitilanMigraatiorivi(
+                id = rs.getInt("id"),
+                nykyinenTila = Arviointitila.valueOf(rs.getString("arviointitila")),
+                osakoeCount = rs.getInt("osakoe_count"),
+                nullCount = rs.getInt("null_count"),
+                realGradeCount = rs.getInt("real_grade_count"),
+                onTarkistusarviointi = rs.getBoolean("on_tarkistusarviointi"),
+                tarkistuksenKasittelypaiva = rs.getDate("tarkistuksen_kasittelypaiva")?.toLocalDate(),
+            )
+        }
+
+    @Transactional
+    @WithSpan
+    fun paivitaArviointitilat(muutokset: List<Pair<Int, Arviointitila>>): Int {
+        if (muutokset.isEmpty()) return 0
+        jdbcTemplate.batchUpdate(
+            "UPDATE yki_suoritus SET arviointitila = ? WHERE id = ?",
+            muutokset.map { (id, tila) -> arrayOf<Any>(tila.name, id) },
+        )
+        return muutokset.size
+    }
 }
+
+data class ArviointitilanMigraatiorivi(
+    val id: Int,
+    val nykyinenTila: Arviointitila,
+    val osakoeCount: Int,
+    val nullCount: Int,
+    val realGradeCount: Int,
+    val onTarkistusarviointi: Boolean,
+    val tarkistuksenKasittelypaiva: LocalDate?,
+)
