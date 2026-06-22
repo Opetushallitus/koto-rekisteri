@@ -27,6 +27,10 @@ class KoskiYkiRequestMapper {
     @Value($$"${kitu.oids.yleisetkielitutkinnot}")
     lateinit var ykiOrganisaatioOid: String
 
+    private val keskeytetty = YkiArvosana.Keskeytetty.koodiarvo.toInt()
+    private val vilppi = YkiArvosana.Vilppi.koodiarvo.toInt()
+    private val eiSuoritusta = YkiArvosana.EiSuoritusta.koodiarvo.toInt()
+
     @WithSpan
     fun ykiSuoritusToKoskiRequest(ykiSuoritus: YkiSuoritusEntity): Either<KoskiYkiMappingError, KoskiRequest> =
         either {
@@ -34,6 +38,9 @@ class KoskiYkiRequestMapper {
             ensure(estonSyyt.isEmpty()) { KoskiYkiMappingError.EstoSyyt(estonSyyt) }
 
             val osasuoritukset = convertYkiSuoritusToKoskiOsasuoritukset(ykiSuoritus).bind()
+            ensure(osasuoritukset.isNotEmpty()) {
+                KoskiYkiMappingError.EstoSyyt(listOf("Suorituksella ei ole siirrettäviä osakokeita"))
+            }
             val yleisarvosana =
                 ykiSuoritus.yleisarvosana?.let {
                     YkiArvosana
@@ -118,16 +125,18 @@ class KoskiYkiRequestMapper {
                 Koodisto.YkiSuorituksenOsa.Puhuminen to suoritusEntity.puhuminen,
                 Koodisto.YkiSuorituksenOsa.RakenteetJaSanasto to suoritusEntity.rakenteetJaSanasto,
             ).mapNotNull { (suorituksenNimi, arvosana) ->
-                arvosana?.let {
-                    suoritusEntity.arviointipaiva?.let {
-                        yleisenKielitutkinnonOsa(
-                            suorituksenNimi,
-                            arvosana,
-                            suoritusEntity.tutkintotaso,
-                            suoritusEntity.arviointipaiva,
-                        ).bind()
+                arvosana
+                    ?.takeUnless { it == keskeytetty || it == eiSuoritusta }
+                    ?.let {
+                        suoritusEntity.arviointipaiva?.let {
+                            yleisenKielitutkinnonOsa(
+                                suorituksenNimi,
+                                arvosana,
+                                suoritusEntity.tutkintotaso,
+                                suoritusEntity.arviointipaiva,
+                            ).bind()
+                        }
                     }
-                }
             }
         }
 
@@ -145,9 +154,9 @@ class KoskiYkiRequestMapper {
                     suoritusEntity.puheenYmmartaminen,
                     suoritusEntity.puhuminen,
                     suoritusEntity.rakenteetJaSanasto,
-                ).any { it == 10 || it == 11 }
+                ).any { it == vilppi }
             ) {
-                "Suoritus sisältää arvosanan vilppi tai keskeytetty"
+                "Suoritus sisältää arvosanan vilppi"
             } else {
                 null
             },

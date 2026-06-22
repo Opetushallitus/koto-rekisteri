@@ -214,22 +214,7 @@ class KoskiRequestMapperTest(
     }
 
     @Test
-    fun `drop whole suoritus if even osakoe is vilppi`() {
-        val suoritus =
-            generateRandomYkiSuoritusEntity().copy(
-                tutkintokieli = Tutkintokieli.SME,
-                tutkintotaso = Tutkintotaso.YT,
-                tekstinYmmartaminen = 10,
-            )
-        val koskiSuoritus = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
-        assertEquals(
-            KoskiYkiMappingError.EstoSyyt(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")).left(),
-            koskiSuoritus,
-        )
-    }
-
-    @Test
-    fun `drop whole suoritus if even one osakoe is keskeytetty`() {
+    fun `vilppi estää koko suorituksen KOSKI-siirron`() {
         val suoritus =
             generateRandomYkiSuoritusEntity().copy(
                 tutkintokieli = Tutkintokieli.SME,
@@ -238,7 +223,86 @@ class KoskiRequestMapperTest(
             )
         val koskiSuoritus = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
         assertEquals(
-            KoskiYkiMappingError.EstoSyyt(listOf("Suoritus sisältää arvosanan vilppi tai keskeytetty")).left(),
+            KoskiYkiMappingError.EstoSyyt(listOf("Suoritus sisältää arvosanan vilppi")).left(),
+            koskiSuoritus,
+        )
+    }
+
+    @Test
+    fun `keskeytetty-osakoe pudotetaan KOSKI-siirrosta`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                tutkintokieli = Tutkintokieli.ENG,
+                tutkintotaso = Tutkintotaso.PT,
+                tekstinYmmartaminen = 10,
+                kirjoittaminen = 2,
+                puheenYmmartaminen = 2,
+                puhuminen = 2,
+                rakenteetJaSanasto = 2,
+                yleisarvosana = 2,
+            )
+        val osasuorituskoodit =
+            koskiYkiRequestMapper
+                .ykiSuoritusToKoskiRequest(suoritus)
+                .getOrThrow()
+                .opiskeluoikeudet
+                .first()
+                .suoritukset
+                .first()
+                .osasuoritukset
+                .map { it.koulutusmoduuli.tunniste.koodiarvo }
+                .toSet()
+        assertEquals(
+            setOf("kirjoittaminen", "puheenymmartaminen", "puhuminen", "rakenteetjasanasto"),
+            osasuorituskoodit,
+        )
+    }
+
+    @Test
+    fun `ei suoritusta -osakoe pudotetaan KOSKI-siirrosta`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                tutkintokieli = Tutkintokieli.ENG,
+                tutkintotaso = Tutkintotaso.PT,
+                tekstinYmmartaminen = 12,
+                kirjoittaminen = 2,
+                puheenYmmartaminen = 2,
+                puhuminen = 2,
+                rakenteetJaSanasto = 2,
+                yleisarvosana = 2,
+            )
+        val osasuorituskoodit =
+            koskiYkiRequestMapper
+                .ykiSuoritusToKoskiRequest(suoritus)
+                .getOrThrow()
+                .opiskeluoikeudet
+                .first()
+                .suoritukset
+                .first()
+                .osasuoritukset
+                .map { it.koulutusmoduuli.tunniste.koodiarvo }
+                .toSet()
+        assertEquals(
+            setOf("kirjoittaminen", "puheenymmartaminen", "puhuminen", "rakenteetjasanasto"),
+            osasuorituskoodit,
+        )
+    }
+
+    @Test
+    fun `suoritusta ei siirretä jos osakokeita ei jää siirrettäväksi`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                tutkintotaso = Tutkintotaso.PT,
+                tekstinYmmartaminen = 10,
+                kirjoittaminen = 10,
+                puheenYmmartaminen = 10,
+                puhuminen = 12,
+                rakenteetJaSanasto = 12,
+                yleisarvosana = 2,
+            )
+        val koskiSuoritus = koskiYkiRequestMapper.ykiSuoritusToKoskiRequest(suoritus)
+        assertEquals(
+            KoskiYkiMappingError.EstoSyyt(listOf("Suorituksella ei ole siirrettäviä osakokeita")).left(),
             koskiSuoritus,
         )
     }
