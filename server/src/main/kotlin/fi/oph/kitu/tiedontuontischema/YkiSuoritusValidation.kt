@@ -24,8 +24,8 @@ class YkiSuoritusValidation(
     @param:Value($$"${kitu.validaatiot.yki.todistuskielenSiirronRajapaiva}")
     val todistuskielenSiirronRajapaiva: LocalDate,
 ) : Validation<YkiHenkilosuoritus> {
-    @Value($$"${kitu.yki.deprecatedArviointitilaEnrichment.enabled}")
-    val deprecatedArviointitilaEnabled: Boolean = false
+    @Value($$"${kitu.yki.convertLegacyArviointitila.enabled}")
+    val convertLegacyArviointitila: Boolean = false
 
     override fun ValidationRaise.validateBeforeEnrichment(value: YkiHenkilosuoritus) {
         accumulate {
@@ -38,7 +38,7 @@ class YkiSuoritusValidation(
     }
 
     override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus =
-        if (deprecatedArviointitilaEnabled) {
+        if (convertLegacyArviointitila) {
             val arvosanat = value.suoritus.osat.map { it.arvosana }
             value.copy(
                 suoritus =
