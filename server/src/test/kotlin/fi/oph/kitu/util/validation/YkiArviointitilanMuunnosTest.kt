@@ -22,7 +22,7 @@ import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@SpringBootTest(properties = ["kitu.yki.deprecatedArviointitilaEnrichment.enabled=true"])
+@SpringBootTest(properties = ["kitu.yki.convertLegacyArviointitila.enabled=true"])
 @Import(DBContainerConfiguration::class)
 @Suppress("DEPRECATION")
 class YkiArviointitilanMuunnosTest(
