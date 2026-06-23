@@ -11,6 +11,13 @@
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["digest", "pinDigest"],
       "automerge": true
+    },
+    {
+      "matchPackageNames": [
+        "io.opentelemetry:**",
+        "io.opentelemetry.instrumentation:**"
+      ],
+      "groupName": "opentelemetry core + instrumentation"
     }
   ],
   "customManagers": [
