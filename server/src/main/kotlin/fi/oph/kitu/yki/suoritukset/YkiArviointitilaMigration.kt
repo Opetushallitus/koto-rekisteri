@@ -1,17 +1,12 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.yki.Arviointitila
+import fi.oph.kitu.yki.laskeArviointitila
 import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
 import org.springframework.stereotype.Component
 
 @Component
-@ConditionalOnBooleanProperty(
-    name = ["kitu.yki.deprecatedArviointitilaEnrichment.enabled"],
-    havingValue = false,
-)
 class YkiArviointitilaMigration(
     private val ykiSuoritusRepository: YkiSuoritusRepository,
 ) : ApplicationRunner {
@@ -27,31 +22,18 @@ class YkiArviointitilaMigration(
             ykiSuoritusRepository
                 .findArviointitilanMigraatiorivit()
                 .mapNotNull { rivi ->
-                    val uusi = laskeUusiArviointitila(rivi)
+                    val uusi =
+                        laskeArviointitila(
+                            nykyinen = rivi.nykyinenTila,
+                            osakoeCount = rivi.osakoeCount,
+                            arvosanaPuuttuu = rivi.nullCount,
+                            oikeitaArvosanoja = rivi.realGradeCount,
+                            onTarkistusarviointi = rivi.onTarkistusarviointi,
+                            tarkistuksenKasittelypaiva = rivi.tarkistuksenKasittelypaiva,
+                        )
                     if (uusi != rivi.nykyinenTila) rivi.id to uusi else null
                 }
 
         return ykiSuoritusRepository.paivitaArviointitilat(muutokset)
     }
 }
-
-internal fun laskeUusiArviointitila(rivi: ArviointitilanMigraatiorivi): Arviointitila =
-    when (rivi.nykyinenTila) {
-        Arviointitila.ILMOITTAUTUNUT,
-        Arviointitila.PERUTTU,
-        Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
-        -> {
-            rivi.nykyinenTila
-        }
-
-        else -> {
-            when {
-                rivi.onTarkistusarviointi && rivi.tarkistuksenKasittelypaiva != null -> Arviointitila.TARKISTUSARVIOITU
-                rivi.onTarkistusarviointi -> Arviointitila.TARKISTUSARVIOITAVA
-                rivi.osakoeCount == 0 -> rivi.nykyinenTila
-                rivi.nullCount > 0 -> Arviointitila.ARVIOITAVA
-                rivi.realGradeCount == 0 -> Arviointitila.EI_SUORITUSTA
-                else -> Arviointitila.ARVIOITU
-            }
-        }
-    }

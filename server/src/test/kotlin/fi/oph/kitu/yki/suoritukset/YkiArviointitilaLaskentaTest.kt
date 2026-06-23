@@ -1,25 +1,25 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.yki.Arviointitila
+import fi.oph.kitu.yki.laskeArviointitila
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @Suppress("DEPRECATION")
 class YkiArviointitilaLaskentaTest {
-    private fun rivi(
+    private fun laske(
         nykyinen: Arviointitila,
         osakoeCount: Int = 0,
-        nullCount: Int = 0,
-        realGradeCount: Int = 0,
+        arvosanaPuuttuu: Int = 0,
+        oikeitaArvosanoja: Int = 0,
         onTarkistusarviointi: Boolean = false,
         tarkistuksenKasittelypaiva: LocalDate? = null,
-    ) = ArviointitilanMigraatiorivi(
-        id = 1,
-        nykyinenTila = nykyinen,
+    ) = laskeArviointitila(
+        nykyinen = nykyinen,
         osakoeCount = osakoeCount,
-        nullCount = nullCount,
-        realGradeCount = realGradeCount,
+        arvosanaPuuttuu = arvosanaPuuttuu,
+        oikeitaArvosanoja = oikeitaArvosanoja,
         onTarkistusarviointi = onTarkistusarviointi,
         tarkistuksenKasittelypaiva = tarkistuksenKasittelypaiva,
     )
@@ -28,7 +28,7 @@ class YkiArviointitilaLaskentaTest {
     fun `KESKEYTETTY ilman oikeita arvosanoja muuttuu EI_SUORITUSTA-tilaan`() {
         assertEquals(
             Arviointitila.EI_SUORITUSTA,
-            laskeUusiArviointitila(rivi(Arviointitila.KESKEYTETTY, osakoeCount = 3, realGradeCount = 0)),
+            laske(Arviointitila.KESKEYTETTY, osakoeCount = 3, oikeitaArvosanoja = 0),
         )
     }
 
@@ -36,7 +36,7 @@ class YkiArviointitilaLaskentaTest {
     fun `KESKEYTETTY jossa on oikea arvosana muuttuu ARVIOITU-tilaan`() {
         assertEquals(
             Arviointitila.ARVIOITU,
-            laskeUusiArviointitila(rivi(Arviointitila.KESKEYTETTY, osakoeCount = 3, realGradeCount = 1)),
+            laske(Arviointitila.KESKEYTETTY, osakoeCount = 3, oikeitaArvosanoja = 1),
         )
     }
 
@@ -44,7 +44,7 @@ class YkiArviointitilaLaskentaTest {
     fun `ARVIOITU ilman oikeita arvosanoja muuttuu EI_SUORITUSTA-tilaan`() {
         assertEquals(
             Arviointitila.EI_SUORITUSTA,
-            laskeUusiArviointitila(rivi(Arviointitila.ARVIOITU, osakoeCount = 4, realGradeCount = 0)),
+            laske(Arviointitila.ARVIOITU, osakoeCount = 4, oikeitaArvosanoja = 0),
         )
     }
 
@@ -52,7 +52,7 @@ class YkiArviointitilaLaskentaTest {
     fun `ARVIOITU jossa on oikea arvosana sailyy`() {
         assertEquals(
             Arviointitila.ARVIOITU,
-            laskeUusiArviointitila(rivi(Arviointitila.ARVIOITU, osakoeCount = 4, realGradeCount = 2)),
+            laske(Arviointitila.ARVIOITU, osakoeCount = 4, oikeitaArvosanoja = 2),
         )
     }
 
@@ -60,7 +60,7 @@ class YkiArviointitilaLaskentaTest {
     fun `osakoe ilman arvosanaa tuottaa ARVIOITAVA-tilan`() {
         assertEquals(
             Arviointitila.ARVIOITAVA,
-            laskeUusiArviointitila(rivi(Arviointitila.ARVIOITU, osakoeCount = 4, nullCount = 1, realGradeCount = 2)),
+            laske(Arviointitila.ARVIOITU, osakoeCount = 4, arvosanaPuuttuu = 1, oikeitaArvosanoja = 2),
         )
     }
 
@@ -68,7 +68,7 @@ class YkiArviointitilaLaskentaTest {
     fun `ilman osakokeita tila sailyy ennallaan`() {
         assertEquals(
             Arviointitila.ARVIOITAVA,
-            laskeUusiArviointitila(rivi(Arviointitila.ARVIOITAVA, osakoeCount = 0)),
+            laske(Arviointitila.ARVIOITAVA, osakoeCount = 0),
         )
     }
 
@@ -76,9 +76,7 @@ class YkiArviointitilaLaskentaTest {
     fun `tarkistusarviointi ilman kasittelypaivaa tuottaa TARKISTUSARVIOITAVA-tilan`() {
         assertEquals(
             Arviointitila.TARKISTUSARVIOITAVA,
-            laskeUusiArviointitila(
-                rivi(Arviointitila.ARVIOITU, osakoeCount = 3, realGradeCount = 1, onTarkistusarviointi = true),
-            ),
+            laske(Arviointitila.ARVIOITU, osakoeCount = 3, oikeitaArvosanoja = 1, onTarkistusarviointi = true),
         )
     }
 
@@ -86,14 +84,12 @@ class YkiArviointitilaLaskentaTest {
     fun `tarkistusarviointi kasittelypaivalla tuottaa TARKISTUSARVIOITU-tilan`() {
         assertEquals(
             Arviointitila.TARKISTUSARVIOITU,
-            laskeUusiArviointitila(
-                rivi(
-                    Arviointitila.ARVIOITU,
-                    osakoeCount = 3,
-                    realGradeCount = 1,
-                    onTarkistusarviointi = true,
-                    tarkistuksenKasittelypaiva = LocalDate.of(2025, 1, 1),
-                ),
+            laske(
+                Arviointitila.ARVIOITU,
+                osakoeCount = 3,
+                oikeitaArvosanoja = 1,
+                onTarkistusarviointi = true,
+                tarkistuksenKasittelypaiva = LocalDate.of(2025, 1, 1),
             ),
         )
     }
@@ -102,7 +98,7 @@ class YkiArviointitilaLaskentaTest {
     fun `ILMOITTAUTUNUT sailyy vaikka osakokeilla ei ole arvosanaa`() {
         assertEquals(
             Arviointitila.ILMOITTAUTUNUT,
-            laskeUusiArviointitila(rivi(Arviointitila.ILMOITTAUTUNUT, osakoeCount = 3, nullCount = 3)),
+            laske(Arviointitila.ILMOITTAUTUNUT, osakoeCount = 3, arvosanaPuuttuu = 3),
         )
     }
 
@@ -110,7 +106,7 @@ class YkiArviointitilaLaskentaTest {
     fun `PERUTTU sailyy`() {
         assertEquals(
             Arviointitila.PERUTTU,
-            laskeUusiArviointitila(rivi(Arviointitila.PERUTTU, osakoeCount = 0)),
+            laske(Arviointitila.PERUTTU, osakoeCount = 0),
         )
     }
 
@@ -118,14 +114,12 @@ class YkiArviointitilaLaskentaTest {
     fun `TARKISTUSARVIOINTI_HYVAKSYTTY sailyy vaikka tarkistustietoja olisi`() {
         assertEquals(
             Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
-            laskeUusiArviointitila(
-                rivi(
-                    Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
-                    osakoeCount = 3,
-                    realGradeCount = 1,
-                    onTarkistusarviointi = true,
-                    tarkistuksenKasittelypaiva = LocalDate.of(2025, 1, 1),
-                ),
+            laske(
+                Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
+                osakoeCount = 3,
+                oikeitaArvosanoja = 1,
+                onTarkistusarviointi = true,
+                tarkistuksenKasittelypaiva = LocalDate.of(2025, 1, 1),
             ),
         )
     }

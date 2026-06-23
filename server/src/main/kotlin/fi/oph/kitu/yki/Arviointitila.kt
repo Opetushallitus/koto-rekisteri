@@ -1,5 +1,7 @@
 package fi.oph.kitu.yki
 
+import java.time.LocalDate
+
 // Solki-arviointitilat + Kielitutkintorekisterin omat tilat
 enum class Arviointitila(
     val viewText: String,
@@ -21,3 +23,31 @@ enum class Arviointitila(
 
     fun tarkistusarvioitu() = listOf(TARKISTUSARVIOITU, TARKISTUSARVIOINTI_HYVAKSYTTY).contains(this)
 }
+
+fun laskeArviointitila(
+    nykyinen: Arviointitila,
+    osakoeCount: Int,
+    arvosanaPuuttuu: Int,
+    oikeitaArvosanoja: Int,
+    onTarkistusarviointi: Boolean,
+    tarkistuksenKasittelypaiva: LocalDate?,
+): Arviointitila =
+    when (nykyinen) {
+        Arviointitila.ILMOITTAUTUNUT,
+        Arviointitila.PERUTTU,
+        Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
+        -> {
+            nykyinen
+        }
+
+        else -> {
+            when {
+                onTarkistusarviointi && tarkistuksenKasittelypaiva != null -> Arviointitila.TARKISTUSARVIOITU
+                onTarkistusarviointi -> Arviointitila.TARKISTUSARVIOITAVA
+                osakoeCount == 0 -> nykyinen
+                arvosanaPuuttuu > 0 -> Arviointitila.ARVIOITAVA
+                oikeitaArvosanoja == 0 -> Arviointitila.EI_SUORITUSTA
+                else -> Arviointitila.ARVIOITU
+            }
+        }
+    }

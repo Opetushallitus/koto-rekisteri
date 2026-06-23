@@ -11,6 +11,7 @@ import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.util.validation.ValidationRaise
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
+import fi.oph.kitu.yki.laskeArviointitila
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -33,43 +34,29 @@ class YkiSuoritusValidation(
             accumulating { validateTarkistusarviointi(value) }
             accumulating { validateKielikoodi(value) }
             accumulating { validateTodistuskieli(value) }
-            if (!deprecatedArviointitilaEnabled) {
-                accumulating { validateArviointitilaVastaaArvosanoja(value) }
-            }
         }
     }
 
     override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus =
         if (deprecatedArviointitilaEnabled) {
-            deprecatedArviointitilaJaArvosanaEnrichment(value)
+            val arvosanat = value.suoritus.osat.map { it.arvosana }
+            value.copy(
+                suoritus =
+                    value.suoritus.copy(
+                        arviointitila =
+                            laskeArviointitila(
+                                nykyinen = value.suoritus.arviointitila,
+                                osakoeCount = arvosanat.size,
+                                arvosanaPuuttuu = arvosanat.count { it == null },
+                                oikeitaArvosanoja = arvosanat.count { it != null && it < 9 },
+                                onTarkistusarviointi = value.suoritus.tarkistusarviointi != null,
+                                tarkistuksenKasittelypaiva = value.suoritus.tarkistusarviointi?.kasittelypaiva,
+                            ),
+                    ),
+            )
         } else {
             value
         }
-
-    @Deprecated(
-        "Käytössä vain siirtymävaiheen ajan. Lopullisessa vaiheessa tätä validointia ei pysty kytkemään käyttöön.",
-    )
-    fun deprecatedArviointitilaJaArvosanaEnrichment(value: YkiHenkilosuoritus): YkiHenkilosuoritus {
-        val arvosanaKeskeytetty =
-            Koodisto.YkiArvosana.Keskeytetty.koodiarvo
-                .toInt()
-
-        val osatIlmoittautuneista = value.suoritus.osat.filter { it.arvosana != 12 }
-        val arviointitila =
-            if (osatIlmoittautuneista.any { it.arvosana == arvosanaKeskeytetty }) {
-                Arviointitila.KESKEYTETTY
-            } else {
-                value.suoritus.arviointitila
-            }
-
-        return value.copy(
-            suoritus =
-                value.suoritus.copy(
-                    osat = osatIlmoittautuneista,
-                    arviointitila = arviointitila,
-                ),
-        )
-    }
 
     @Suppress("DEPRECATION")
     private fun Raise<Validation.ValidationError>.validateArviointitilaVastaaArvosanoja(s: YkiHenkilosuoritus) {
@@ -151,6 +138,7 @@ class YkiSuoritusValidation(
         accumulate {
             accumulating { validateOsakokeitaOnAtLeastOne(value) }
             accumulating { validateArvosanat(value) }
+            accumulating { validateArviointitilaVastaaArvosanoja(value) }
         }
     }
 
