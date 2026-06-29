@@ -11,7 +11,6 @@ import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.webmvc.Links
-import fi.oph.kitu.yki.Arviointitila
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
 import kotlinx.html.a
@@ -43,10 +42,7 @@ object YkiTarkistusarvioinnitPage {
             ykiTarkistusarviointiTable(
                 title = "Odottavat tutkintotoimikunnan hyväksyntää",
                 submitButtonText = "Merkitse hyväksyntä valituille",
-                suoritukset =
-                    suoritukset.filter {
-                        it.arviointitila == Arviointitila.TARKISTUSARVIOITU
-                    },
+                suoritukset = suoritukset,
                 testId = "odottaaHyvaksyntaa",
             )
         }
@@ -70,10 +66,7 @@ object YkiTarkistusarvioinnitPage {
             ykiTarkistusarviointiTable(
                 title = "Hyväksytyt tarkistusarvioinnit",
                 submitButtonText = "Korjaa hyväksymispäivämäärä valituille",
-                suoritukset =
-                    suoritukset.filter {
-                        it.arviointitila == Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY
-                    },
+                suoritukset = suoritukset,
                 testId = "hyvaksytty",
             )
         }
