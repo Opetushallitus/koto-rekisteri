@@ -25,6 +25,7 @@ data class YkiSuorituksetParams(
     var tutkintotaso: Tutkintotaso? = null,
     var piilotaHenkilotiedot: Boolean = false,
     val piilotaVanhentuneetTiedot: Boolean = false,
+    val arviointitila: Arviointitila? = null,
 ) {
     fun toMap(): Map<String, String?> =
         mapOf(
@@ -39,6 +40,7 @@ data class YkiSuorituksetParams(
             "tutkintotaso" to tutkintotaso?.toString(),
             "piilotaHenkilotiedot" to piilotaHenkilotiedot.toTrueOrNull(),
             "piilotaVanhentuneetTiedot" to piilotaVanhentuneetTiedot.toTrueOrNull(),
+            "arviointitila" to arviointitila?.toString(),
         )
 
     fun toFilter() =
@@ -48,6 +50,7 @@ data class YkiSuorituksetParams(
             loppupaiva = tutkintoloppu,
             tutkintokieli = tutkintokieli,
             tutkintotaso = tutkintotaso,
+            arviointitila = arviointitila,
         )
 
     fun toOrder() =

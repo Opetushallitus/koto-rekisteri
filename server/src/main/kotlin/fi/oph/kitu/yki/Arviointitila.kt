@@ -1,11 +1,13 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.html.DisplayEnum
+import fi.oph.kitu.html.table.HideInTableFilter
 import java.time.LocalDate
 
 // Solki-arviointitilat + Kielitutkintorekisterin omat tilat
 enum class Arviointitila(
     val viewText: String,
-) {
+) : DisplayEnum {
     ILMOITTAUTUNUT("Ilmoittautunut"),
     PERUTTU("Ilmoittautuminen peruttu"),
     EI_SUORITUSTA("Ei suoritusta"),
@@ -16,12 +18,15 @@ enum class Arviointitila(
     TARKISTUSARVIOINTI_HYVAKSYTTY("Tarkistusarviointi hyväksytty"),
 
     @Deprecated("Poistuu käytöstä uuden arviointitilamallin myötä")
+    @HideInTableFilter
     KESKEYTETTY("Suoritus keskeytetty"),
     ;
 
     fun arvioitu() = listOf(ARVIOITU, TARKISTUSARVIOITAVA).contains(this) || tarkistusarvioitu()
 
     fun tarkistusarvioitu() = listOf(TARKISTUSARVIOITU, TARKISTUSARVIOINTI_HYVAKSYTTY).contains(this)
+
+    override fun displayText(): String = viewText
 }
 
 fun laskeArviointitila(

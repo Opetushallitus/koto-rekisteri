@@ -20,6 +20,7 @@ import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.webmvc.Links
+import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.YkiSuorituksetParams
@@ -141,6 +142,9 @@ fun FlowContent.ykiSuoritusFilterButton(params: YkiSuorituksetParams) {
         }
         fieldSet {
             enumFilter<Tutkintotaso>("tutkintotaso", "Tutkintotaso", params.tutkintotaso)
+        }
+        fieldSet {
+            enumFilter<Arviointitila>("arviointitila", "Arviointitila", params.arviointitila)
         }
         fieldSet {
             toggleFilter("versionHistory", "Näytä versiohistoria", params.versionHistory)

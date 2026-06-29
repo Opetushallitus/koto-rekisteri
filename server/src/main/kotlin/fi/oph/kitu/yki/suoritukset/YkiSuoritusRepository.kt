@@ -226,11 +226,8 @@ class YkiSuoritusRepository(
                 )
             } else {
                 buildSql(
-                    if (distinct) {
-                        "SELECT COUNT(DISTINCT solki_id) FROM yki_suoritus"
-                    } else {
-                        "SELECT COUNT(*) FROM yki_suoritus"
-                    },
+                    withCtes("suoritus" to selectSuorituksetRoot(distinct)),
+                    "SELECT COUNT(*) FROM suoritus AS yki_suoritus",
                     filter.whereSql(),
                 )
             }
