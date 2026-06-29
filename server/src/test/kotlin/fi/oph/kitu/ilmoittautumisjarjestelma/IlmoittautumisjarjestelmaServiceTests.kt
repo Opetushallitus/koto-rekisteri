@@ -98,7 +98,7 @@ class IlmoittautumisjarjestelmaServiceTests(
             YkiArvioinninTilaRequest.of(entity.copy(arviointitila = Arviointitila.TARKISTUSARVIOITU)),
         )
 
-        val suoritus = suoritukset.findTarkistusarvoidutSuoritukset().first()
+        val suoritus = suoritukset.findTarkistusarvoidutSuoritukset(Arviointitila.TARKISTUSARVIOITU).first()
         ykiView.hyvaksyTarkistusArvioinnit(listOf(suoritus.solkiId))
 
         assertEquals(

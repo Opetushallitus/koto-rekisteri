@@ -135,13 +135,12 @@ class YkiSuoritusRepository(
         )
 
     @WithSpan
-    fun findTarkistusarvoidutSuoritukset(): Iterable<YkiSuoritusEntity> =
+    fun findTarkistusarvoidutSuoritukset(arviointitila: Arviointitila): Iterable<YkiSuoritusEntity> =
         jdbcTemplate
             .query(
-                selectSuorituksetFull(viimeisin = true, "WHERE arviointitila = ? OR arviointitila = ?"),
+                selectSuorituksetFull(viimeisin = true, "WHERE arviointitila = ?"),
                 YkiSuoritusEntity.fromRow,
-                Arviointitila.TARKISTUSARVIOITU.name,
-                Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY.name,
+                arviointitila.name,
             ).sortedWith(
                 compareByDescending(YkiSuoritusEntity::tarkistusarvioinninKasittelyPvm)
                     .thenByDescending { it.tarkistusarvioinninSaapumisPvm },

@@ -277,7 +277,7 @@ class YkiViewController(
 
     @GetMapping("/tarkistusarvioinnit", produces = ["text/html"])
     fun tarkistusArvioinnitView(viewMessage: ViewMessage? = null): ResponseEntity<String> =
-        ykiSuoritusRepository.findTarkistusarvoidutSuoritukset().let {
+        ykiSuoritusRepository.findTarkistusarvoidutSuoritukset(Arviointitila.TARKISTUSARVIOITU).let {
             ResponseEntity.ok(
                 YkiTarkistusarvioinnitPage.render(
                     suoritukset = it.toList(),
@@ -288,7 +288,7 @@ class YkiViewController(
 
     @GetMapping("/tarkistusarvioinnit/hyvaksytyt", produces = ["text/html"])
     fun hyvaksytytTarkistusArvioinnitView(viewMessage: ViewMessage? = null): ResponseEntity<String> =
-        ykiSuoritusRepository.findTarkistusarvoidutSuoritukset().let {
+        ykiSuoritusRepository.findTarkistusarvoidutSuoritukset(Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY).let {
             ResponseEntity.ok(
                 YkiTarkistusarvioinnitPage.renderHyvaksytyt(
                     suoritukset = it.toList(),
