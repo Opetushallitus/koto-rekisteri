@@ -286,12 +286,42 @@ class YkiViewController(
             )
         }
 
+    @GetMapping("/tarkistusarvioinnit/hyvaksytyt", produces = ["text/html"])
+    fun hyvaksytytTarkistusArvioinnitView(viewMessage: ViewMessage? = null): ResponseEntity<String> =
+        ykiSuoritusRepository.findTarkistusarvoidutSuoritukset().let {
+            ResponseEntity.ok(
+                YkiTarkistusarvioinnitPage.renderHyvaksytyt(
+                    suoritukset = it.toList(),
+                    message = viewMessage?.consume(),
+                ),
+            )
+        }
+
     @PostMapping("/tarkistusarvioinnit")
     fun hyvaksyTarkistusArvioinnit(
         @RequestParam suoritukset: List<Int>? = null,
         @RequestParam hyvaksyttyPvm: LocalDate? = null,
         viewMessage: ViewMessage? = null,
     ): RedirectView {
+        hyvaksyTarkistusarvioinnit(suoritukset, hyvaksyttyPvm, viewMessage)
+        return RedirectView(Links.Yki.tarkistusArvioinnit())
+    }
+
+    @PostMapping("/tarkistusarvioinnit/hyvaksytyt")
+    fun korjaaHyvaksytytTarkistusArvioinnit(
+        @RequestParam suoritukset: List<Int>? = null,
+        @RequestParam hyvaksyttyPvm: LocalDate? = null,
+        viewMessage: ViewMessage? = null,
+    ): RedirectView {
+        hyvaksyTarkistusarvioinnit(suoritukset, hyvaksyttyPvm, viewMessage)
+        return RedirectView(Links.Yki.hyvaksytytTarkistusArvioinnit())
+    }
+
+    private fun hyvaksyTarkistusarvioinnit(
+        suoritukset: List<Int>?,
+        hyvaksyttyPvm: LocalDate?,
+        viewMessage: ViewMessage?,
+    ) {
         suoritukset?.let {
             ykiSuoritusRepository
                 .hyvaksyTarkistusarvioinnit(
@@ -311,8 +341,6 @@ class YkiViewController(
                     },
                 )
         }
-
-        return RedirectView(Links.Yki.tarkistusArvioinnit())
     }
 
     // Väliaikainen rajapinta yki-import-ongelman selvittelyyn

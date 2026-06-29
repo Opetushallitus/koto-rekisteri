@@ -86,6 +86,9 @@ object Links {
         fun tarkistusArvioinnit(): String =
             linkTo(methodOn(YkiViewController::class.java).tarkistusArvioinnitView()).toString()
 
+        fun hyvaksytytTarkistusArvioinnit(): String =
+            linkTo(methodOn(YkiViewController::class.java).hyvaksytytTarkistusArvioinnitView()).toString()
+
         fun suorituksetVirheet(): String =
             linkTo(methodOn(YkiViewController::class.java).suorituksetVirheetView()).toString()
 
