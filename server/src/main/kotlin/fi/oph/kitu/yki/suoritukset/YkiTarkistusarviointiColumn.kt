@@ -5,6 +5,8 @@ import fi.oph.kitu.i18n.finnishDate
 import kotlinx.html.FlowContent
 import kotlinx.html.li
 import kotlinx.html.p
+import kotlinx.html.span
+import kotlinx.html.strong
 import kotlinx.html.ul
 
 enum class YkiTarkistusarviointiColumn(
@@ -38,29 +40,37 @@ enum class YkiTarkistusarviointiColumn(
         urlParam = "tutkintotaso",
         getValue = { it.tutkintotaso.name },
     ),
-    TutkintoPvm(
+    Paivamaara(
         entityName = "tutkintoPvm",
-        uiHeaderValue = "Tutkintopäivä",
+        uiHeaderValue = "Päivämäärä",
         urlParam = "tutkintoPvm",
         getValue = { it.tutkintopaiva.finnishDate() },
-    ),
-    SaapumisPvm(
-        entityName = "saapumispvm",
-        uiHeaderValue = "Saapunut",
-        urlParam = "saapumispvm",
-        getValue = { it.tarkistusarvioinninSaapumisPvm?.finnishDate().orEmpty() },
-    ),
-    KasittelyPvm(
-        entityName = "kasittelypvm",
-        uiHeaderValue = "Käsitelty",
-        urlParam = "kasittelypvm",
-        getValue = { it.tarkistusarvioinninKasittelyPvm?.finnishDate().orEmpty() },
-    ),
-    HyvaksyntaPvm(
-        entityName = "hyvaksyntapvm",
-        uiHeaderValue = "Hyväksytty",
-        urlParam = "hyvaksyntapvm",
-        getValue = { it.tarkistusarviointiHyvaksyttyViewText().orEmpty() },
+        renderHtml = {
+            ul(classes = "flat") {
+                li {
+                    strong { +"Tutkintopäivä: " }
+                    +it.tutkintopaiva.finnishDate()
+                }
+                it.tarkistusarvioinninSaapumisPvm?.let { pvm ->
+                    li {
+                        strong { +"Saapunut: " }
+                        +pvm.finnishDate()
+                    }
+                }
+                it.tarkistusarvioinninKasittelyPvm?.let { pvm ->
+                    li {
+                        strong { +"Käsitelty: " }
+                        +pvm.finnishDate()
+                    }
+                }
+                it.tarkistusarviointiHyvaksyttyPvm?.let { pvm ->
+                    li {
+                        strong { +"Hyväksytty: " }
+                        +pvm.finnishDate()
+                    }
+                }
+            }
+        },
     ),
     Asiatunnus(
         entityName = "asiatunnus",
@@ -74,15 +84,30 @@ enum class YkiTarkistusarviointiColumn(
         urlParam = "arviointi",
         getValue = { "Not implemented" },
         renderHtml = {
-            it.perustelu?.let { x -> p { +x } }
-            ul {
-                it.tarkistusarvioidutOsakokeet.orEmpty().forEach { osakoe ->
-                    li {
-                        +"${osakoe.viewText}: "
-                        if (it.arvosanaMuuttui?.contains(osakoe) == true) {
-                            +"Arvosana muuttui: ${it.arvosana(osakoe) ?: "-"}"
-                        } else {
-                            +"Arvosana ei muuttunut"
+            val arvosanaMuuttui = it.arvosanaMuuttui?.isNotEmpty() ?: false
+            it.perustelu?.let { x ->
+                p(classes = if (arvosanaMuuttui) null else "faded") {
+                    +(
+                        x.ifBlank {
+                            "Arvosana ei muuttunut (tarkistusarvioitu: ${
+                                it.tarkistusarvioidutOsakokeet
+                                    .orEmpty()
+                                    .joinToString(separator = ", ") { it.viewText }}"
+                        }
+                    )
+                }
+            }
+            if (arvosanaMuuttui) {
+                ul(classes = "flat") {
+                    it.tarkistusarvioidutOsakokeet.orEmpty().forEach { osakoe ->
+                        li {
+                            if (it.arvosanaMuuttui?.contains(osakoe) == true) {
+                                strong { +"${osakoe.viewText}: " }
+                                +"Arvosana muuttui: ${it.arvosana(osakoe) ?: "-"}"
+                            } else {
+                                +"${osakoe.viewText}: "
+                                +"Arvosana ei muuttunut"
+                            }
                         }
                     }
                 }

@@ -515,3 +515,16 @@ ul.dashboard-stats li.stat-row:first-child {
     animation: none;
   }
 }
+
+ul.flat {
+  margin: 0;
+  padding: 0;
+}
+
+ul.flat li {
+  list-style: none;
+}
+
+.faded {
+  opacity: 0.4;
+}
