@@ -8,9 +8,7 @@ export default class YkiTarkistusarvioinnitPage extends BasePage {
   odottaaDate: Locator
   odottaaSubmit: Locator
 
-  hyvaksytytTable: DisplayTable
-  hyvaksytytDate: Locator
-  hyvaksytytSubmit: Locator
+  hyvaksytytLink: Locator
 
   constructor(page: Page, config: Config) {
     super(page, config)
@@ -19,12 +17,14 @@ export default class YkiTarkistusarvioinnitPage extends BasePage {
     )
     this.odottaaDate = page.getByTestId("odottaaHyvaksyntaaDate")
     this.odottaaSubmit = page.getByTestId("odottaaHyvaksyntaaSubmit")
-    this.hyvaksytytTable = new DisplayTable(page.getByTestId("hyvaksyttyTable"))
-    this.hyvaksytytDate = page.getByTestId("hyvaksyttyDate")
-    this.hyvaksytytSubmit = page.getByTestId("hyvaksyttySubmit")
+    this.hyvaksytytLink = page.getByTestId("hyvaksytytLink")
   }
 
   async open() {
     await this.goto("yki/tarkistusarvioinnit")
+  }
+
+  async openHyvaksytyt() {
+    await this.hyvaksytytLink.click()
   }
 }

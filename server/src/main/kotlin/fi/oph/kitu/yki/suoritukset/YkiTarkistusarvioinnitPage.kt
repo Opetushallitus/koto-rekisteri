@@ -10,12 +10,15 @@ import fi.oph.kitu.html.table.CheckboxKey
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
+import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.Arviointitila
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
+import kotlinx.html.a
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.label
+import kotlinx.html.p
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
 import kotlin.enums.enumEntries
@@ -30,6 +33,13 @@ object YkiTarkistusarvioinnitPage {
 
             viewMessage(message)
 
+            p {
+                a(href = Links.Yki.hyvaksytytTarkistusArvioinnit()) {
+                    testId("hyvaksytytLink")
+                    +"Näytä hyväksytyt tarkistusarvioinnit"
+                }
+            }
+
             ykiTarkistusarviointiTable(
                 title = "Odottavat tutkintotoimikunnan hyväksyntää",
                 submitButtonText = "Merkitse hyväksyntä valituille",
@@ -39,6 +49,23 @@ object YkiTarkistusarvioinnitPage {
                     },
                 testId = "odottaaHyvaksyntaa",
             )
+        }
+
+    fun renderHyvaksytyt(
+        suoritukset: List<YkiSuoritusEntity>,
+        message: ViewMessageData?,
+    ): String =
+        Page.renderHtml(wideContent = true) {
+            h1 { +"Yleisen kielitutkinnon tarkistusarvioinnit" }
+
+            viewMessage(message)
+
+            p {
+                a(href = Links.Yki.tarkistusArvioinnit()) {
+                    testId("takaisinLink")
+                    +"Takaisin hyväksyntää odottaviin tarkistusarviointeihin"
+                }
+            }
 
             ykiTarkistusarviointiTable(
                 title = "Hyväksytyt tarkistusarvioinnit",

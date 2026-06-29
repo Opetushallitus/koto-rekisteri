@@ -26,6 +26,7 @@ describe("YKI-tarkastusarvioinnit", () => {
 
   test("Tarkistusarviointinäkymä näyttää vain tarkistusarvioitavan henkilön", async ({
     ykiTarkistusarvioinnitPage,
+    ykiHyvaksytytTarkistusarvioinnitPage,
   }) => {
     await expectToHaveTexts(
       ykiTarkistusarvioinnitPage.odottaaTable.getCellsOfColumn("etunimet"),
@@ -33,14 +34,31 @@ describe("YKI-tarkastusarvioinnit", () => {
       "Ranja Testi",
     )
 
+    await ykiHyvaksytytTarkistusarvioinnitPage.open()
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn("etunimet"),
+      ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn(
+        "etunimet",
+      ),
+      "Eino Testi",
+    )
+  })
+
+  test("Hyväksytyt-painike vie hyväksyttyjen tarkistusarviointien sivulle", async ({
+    ykiTarkistusarvioinnitPage,
+    ykiHyvaksytytTarkistusarvioinnitPage,
+  }) => {
+    await ykiTarkistusarvioinnitPage.openHyvaksytyt()
+    await expectToHaveTexts(
+      ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn(
+        "etunimet",
+      ),
       "Eino Testi",
     )
   })
 
   test("Tarkistusarvioinnin hyväksyminen siirtää sen seuraavaan taulukkoon", async ({
     ykiTarkistusarvioinnitPage,
+    ykiHyvaksytytTarkistusarvioinnitPage,
   }) => {
     await ykiTarkistusarvioinnitPage.odottaaTable.body
       .getByRole("row", { name: "Sallinen-Testi Magdalena" })
@@ -57,8 +75,11 @@ describe("YKI-tarkastusarvioinnit", () => {
       "Ranja Testi",
     )
 
+    await ykiHyvaksytytTarkistusarvioinnitPage.open()
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn("etunimet"),
+      ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn(
+        "etunimet",
+      ),
       "Magdalena Testi",
       "Eino Testi",
     )
@@ -80,28 +101,29 @@ describe("YKI-tarkastusarvioinnit", () => {
   })
 
   test("Jo hyväksyttyjä tarkistusarvioita voi päivittää", async ({
-    ykiTarkistusarvioinnitPage,
+    ykiHyvaksytytTarkistusarvioinnitPage,
   }) => {
+    await ykiHyvaksytytTarkistusarvioinnitPage.open()
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn(
+      ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn(
         "hyvaksyntapvm",
       ),
       "Ennen 14.11.2025",
     )
 
-    await ykiTarkistusarvioinnitPage.hyvaksytytTable.body
+    await ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytTable.body
       .getByRole("row")
       .first()
       .getByRole("checkbox")
       .setChecked(true)
-    await ykiTarkistusarvioinnitPage.hyvaksytytDate.fill("2025-11-20")
-    await ykiTarkistusarvioinnitPage.hyvaksytytSubmit.click()
-    await expect(ykiTarkistusarvioinnitPage.viewMessage).toHaveText(
+    await ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytDate.fill("2025-11-20")
+    await ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytSubmit.click()
+    await expect(ykiHyvaksytytTarkistusarvioinnitPage.viewMessage).toHaveText(
       "1 tarkistusarviointi merkitty hyväksytyksi",
     )
 
     await expectToHaveTexts(
-      ykiTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn(
+      ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytTable.getCellsOfColumn(
         "hyvaksyntapvm",
       ),
       "20.11.2025",
