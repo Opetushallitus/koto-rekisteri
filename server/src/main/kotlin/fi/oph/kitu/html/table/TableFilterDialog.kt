@@ -2,6 +2,7 @@
 
 package fi.oph.kitu.html.table
 
+import fi.oph.kitu.html.DisplayEnum
 import fi.oph.kitu.html.ModalCommand
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.modal
@@ -128,6 +129,7 @@ inline fun <reified E : Enum<E>> enumValueName(value: E?): String =
     when (value) {
         is Koodisto.KoodiviiteNimella -> value.nimi.toString()
         is Nimetty -> value.nimi.toString()
+        is DisplayEnum -> value.displayText()
         null -> "Kaikki"
         else -> value.name
     }

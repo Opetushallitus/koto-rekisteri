@@ -331,4 +331,53 @@ class YkiSuoritusRepositoryTest(
         assertEquals(found, count, "count ja find tuloksen koko poikkesivat alitauluhaarassa")
         assertEquals(2L, count)
     }
+
+    @Test
+    fun `count suoritukset arviointitila-filtterillä laskee vain viimeisimmän version`() {
+        val kasittelyPvm = LocalDate.of(2025, 6, 15)
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                arviointitila = Arviointitila.TARKISTUSARVIOITU,
+                tarkistusarvioinninKasittelyPvm = kasittelyPvm,
+            )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+        ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(
+            suoritusIds = listOf(suoritus.solkiId),
+            pvm = kasittelyPvm,
+        )
+
+        val tarkistusarvioituFilter = YkiSuoritusFilter(arviointitila = Arviointitila.TARKISTUSARVIOITU)
+        val hyvaksyttyFilter = YkiSuoritusFilter(arviointitila = Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY)
+
+        assertAll(
+            {
+                assertEquals(
+                    0L,
+                    ykiSuoritusRepository.countSuoritukset(tarkistusarvioituFilter),
+                    "vanhentunutta TARKISTUSARVIOITU-versiota ei pidä laskea mukaan",
+                )
+            },
+            {
+                assertEquals(
+                    ykiSuoritusRepository.find(tarkistusarvioituFilter).count().toLong(),
+                    ykiSuoritusRepository.countSuoritukset(tarkistusarvioituFilter),
+                    "count ja find poikkesivat TARKISTUSARVIOITU-suodatuksella",
+                )
+            },
+            {
+                assertEquals(
+                    1L,
+                    ykiSuoritusRepository.countSuoritukset(hyvaksyttyFilter),
+                    "viimeisimmän version TARKISTUSARVIOINTI_HYVAKSYTTY pitää tulla lasketuksi",
+                )
+            },
+            {
+                assertEquals(
+                    ykiSuoritusRepository.find(hyvaksyttyFilter).count().toLong(),
+                    ykiSuoritusRepository.countSuoritukset(hyvaksyttyFilter),
+                    "count ja find poikkesivat TARKISTUSARVIOINTI_HYVAKSYTTY-suodatuksella",
+                )
+            },
+        )
+    }
 }
