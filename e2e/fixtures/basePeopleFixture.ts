@@ -241,4 +241,19 @@ export const peopleFixture = {
       maa: "FIN",
     },
   }),
+  // Yksilöimätön oppija: oppijanumerorekisterin mock palauttaa oppijanumero === null.
+  vallu: createPerson({
+    hetu: "010100A900X",
+    sukupuoli: "M",
+    etunimet: "Vallu Testi",
+    sukunimi: "Vastaanottaja-Testi",
+    email: "devnull-16@oph.fi",
+    oppijanumero: "1.2.246.562.24.10691606777",
+    osoite: {
+      katuosoite: "Testitie 16",
+      postinumero: "40300",
+      postitoimipaikka: "Testilä",
+      maa: null,
+    },
+  }),
 } as const
