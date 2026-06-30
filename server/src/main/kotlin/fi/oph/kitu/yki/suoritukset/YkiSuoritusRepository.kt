@@ -9,6 +9,7 @@ import fi.oph.kitu.jdbc.ConflictHandler
 import fi.oph.kitu.jdbc.Constraint
 import fi.oph.kitu.jdbc.OnConflictDoNothing
 import fi.oph.kitu.jdbc.UpdateOnConflict
+import fi.oph.kitu.jdbc.sqlAll
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.equalsIgnoringAnnotated
 import fi.oph.kitu.yki.Arviointitila
@@ -343,8 +344,8 @@ class YkiSuoritusRepository(
                 buildSql(
                     selectSuorituksetFull(viimeisin = true),
                     """
-                    WHERE arviointitila_lahetetty IS NULL
-                       OR arviointitila_lahetetty < last_modified
+                    WHERE (arviointitila_lahetetty IS NULL OR arviointitila_lahetetty < last_modified)
+                      AND arviointitila <> ${Arviointitila.ilmoittautumistilat.sqlAll()}
                     """,
                 ),
                 YkiSuoritusEntity.fromRow,

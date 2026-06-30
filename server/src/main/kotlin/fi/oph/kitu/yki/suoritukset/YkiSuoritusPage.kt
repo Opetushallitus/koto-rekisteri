@@ -179,7 +179,13 @@ object YkiSuoritusPage {
                     suoritus.arviointitilaLahetetty?.let {
                         +"Arviointitila lähetetty "
                         finnishDateTime(it.toInstant())
-                    } ?: +"Arviointitilaa ei ole lähetetty"
+                    } ?: +(
+                        if (suoritus.arviointitila.pelkkäIlmoittautuminen()) {
+                            "Suoritusta edeltävää tila ei lähetetä"
+                        } else {
+                            "Arviointitilaa ei ole lähetetty"
+                        }
+                    )
                 )
             },
             suoritus.arviointitilanLahetysvirhe?.let {
