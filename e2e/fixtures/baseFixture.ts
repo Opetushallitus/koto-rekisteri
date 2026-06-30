@@ -2,6 +2,7 @@ import { test as baseTest } from "@playwright/test"
 import KielitestiSuorituksetPage from "../models/kotoutumiskoulutus/KielitestiSuorituksetPage"
 import IndexPage from "../models/IndexPage"
 import YkiSuorituksetPage from "../models/yki/YkiSuorituksetPage"
+import YkiSuorituksenTiedotPage from "../models/yki/YkiSuorituksenTiedotPage"
 import YkiSuorituksetErrorPage from "../models/yki/YkiSuorituksetErrorPage"
 import { createTestDatabase } from "../db/database"
 import * as kotoSuoritusFixture from "./kotoSuoritus"
@@ -24,6 +25,7 @@ import { OauthRequestContext } from "./oauthRequestContext"
 
 interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
+  ykiSuorituksenTiedotPage: YkiSuorituksenTiedotPage
   ykiArvioijatPage: YkiArvioijatPage
   ykiSuorituksetErrorPage: YkiSuorituksetErrorPage
   ykiTarkistusarvioinnitPage: YkiTarkistusarvioinnitPage
@@ -75,6 +77,10 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   ykiSuorituksetPage: async ({ page, config }, use) => {
     const ykiSuorituksetPage = new YkiSuorituksetPage(page, config)
     await use(ykiSuorituksetPage)
+  },
+  ykiSuorituksenTiedotPage: async ({ page, config }, use) => {
+    const ykiSuorituksenTiedotPage = new YkiSuorituksenTiedotPage(page, config)
+    await use(ykiSuorituksenTiedotPage)
   },
   ykiArvioijatPage: async ({ page, config }, use) => {
     const ykiArvioijatPage = new YkiArvioijatPage(page, config)

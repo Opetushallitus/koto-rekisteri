@@ -71,6 +71,13 @@ export default class YkiSuorituksetPage extends BasePage {
     await this.getContent().getByRole("button", { name: "Suodata" }).click()
   }
 
+  async openSuoritusDetails(rowIndex: number = 0) {
+    await this.getSuoritusRow()
+      .nth(rowIndex)
+      .getByRole("link", { name: "Näytä" })
+      .click()
+  }
+
   getSuoritusColumn(rowIndex: number, columnIndex: number) {
     const row = this.getSuoritusRow().nth(rowIndex)
     return row.getByRole("cell").nth(columnIndex)

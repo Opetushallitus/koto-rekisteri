@@ -530,9 +530,9 @@ ul.flat li {
 }
 
 a[role="button"].tight {
-    padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.75rem;
 }
 
 .float-right {
-    float: right;
+  float: right;
 }
