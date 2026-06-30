@@ -26,7 +26,13 @@ enum class Arviointitila(
 
     fun tarkistusarvioitu() = listOf(TARKISTUSARVIOITU, TARKISTUSARVIOINTI_HYVAKSYTTY).contains(this)
 
+    fun pelkkäIlmoittautuminen() = ilmoittautumistilat.contains(this)
+
     override fun displayText(): String = viewText
+
+    companion object {
+        val ilmoittautumistilat = listOf(ILMOITTAUTUNUT, PERUTTU)
+    }
 }
 
 fun laskeArviointitila(

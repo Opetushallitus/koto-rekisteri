@@ -283,6 +283,38 @@ class YkiSuoritusRepositoryTest(
     }
 
     @Test
+    fun `findSuorituksetWithUnsentArvioinninTila palauttaa lähettämättömän arvioidun suorituksen`() {
+        val arvioitu = generateRandomYkiSuoritusEntity().copy(arviointitila = Arviointitila.ARVIOITU)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(arvioitu))
+
+        val unsent = ykiSuoritusRepository.findSuorituksetWithUnsentArvioinninTila()
+
+        assertEquals(1, unsent.size)
+        assertEquals(arvioitu.solkiId, unsent.first().solkiId)
+    }
+
+    @Test
+    fun `findSuorituksetWithUnsentArvioinninTila ei palauta pelkkää ilmoittautumista tai peruutusta`() {
+        val ilmoittautunut = generateRandomYkiSuoritusEntity().copy(arviointitila = Arviointitila.ILMOITTAUTUNUT)
+        val peruttu = generateRandomYkiSuoritusEntity().copy(arviointitila = Arviointitila.PERUTTU)
+        val arvioitu = generateRandomYkiSuoritusEntity().copy(arviointitila = Arviointitila.ARVIOITU)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(ilmoittautunut, peruttu, arvioitu))
+
+        val unsentSolkiIds = ykiSuoritusRepository.findSuorituksetWithUnsentArvioinninTila().map { it.solkiId }
+
+        assertEquals(listOf(arvioitu.solkiId), unsentSolkiIds)
+    }
+
+    @Test
+    fun `findSuorituksetWithUnsentArvioinninTila ei palauta jo lähetettyä arvioinnin tilaa`() {
+        val arvioitu = generateRandomYkiSuoritusEntity().copy(arviointitila = Arviointitila.ARVIOITU)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(arvioitu))
+        ykiSuoritusRepository.setArvioinninTilaSent(arvioitu.solkiId)
+
+        assertTrue(ykiSuoritusRepository.findSuorituksetWithUnsentArvioinninTila().isEmpty())
+    }
+
+    @Test
     fun `count suoritukset`() {
         val suoritus = generateRandomYkiSuoritusEntity().copy(etunimet = "Ranja Testi")
         val suoritus2 = generateRandomYkiSuoritusEntity()
