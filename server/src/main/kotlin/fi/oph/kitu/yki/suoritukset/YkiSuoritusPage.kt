@@ -10,6 +10,7 @@ import fi.oph.kitu.html.warning
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.*
@@ -20,6 +21,7 @@ object YkiSuoritusPage {
         viimeisinSuoritus: YkiSuoritusEntity,
         koskiError: KoskiErrorEntity?,
         koskiSiirronEstonSyyt: List<String>?,
+        opiskeluoikeusOid: Oid?,
     ) = Page.renderHtml {
         h1 { +suoritus.kokoNimi() }
         h2 { +"Yleinen kielitutkinto" }
@@ -38,7 +40,7 @@ object YkiSuoritusPage {
         todistuksenPostitusosoite(suoritus)
         tutkintotiedot(suoritus)
         arviointi(suoritus)
-        integraatiot(suoritus, koskiError, koskiSiirronEstonSyyt)
+        integraatiot(suoritus, koskiError, koskiSiirronEstonSyyt, opiskeluoikeusOid)
     }
 
     fun FlowContent.henkilonTiedot(suoritus: YkiSuoritusEntity) {
@@ -147,6 +149,7 @@ object YkiSuoritusPage {
         suoritus: YkiSuoritusEntity,
         koskiError: KoskiErrorEntity?,
         koskiSiirronEstonSyyt: List<String>?,
+        opiskeluoikeusOid: Oid?,
     ) {
         h3 { +"Integraatiot" }
         infoTable(
@@ -166,11 +169,11 @@ object YkiSuoritusPage {
             koskiError?.errorJson()?.let {
                 "KOSKI-virheet" to { json(it) }
             },
-            suoritus.koskiOpiskeluoikeus?.let {
+            opiskeluoikeusOid?.let { oid ->
                 "Opiskeluoikeus-OID" to {
                     +"Opiskeluoikeuden OID: "
-                    a(href = "/koski/oppija/${suoritus.suorittajanOID}?opiskeluoikeudenTyyppi=kielitutkinto") {
-                        +it.toString()
+                    a(href = "/koski/oppija/$oid?opiskeluoikeudenTyyppi=kielitutkinto") {
+                        +oid.toString()
                     }
                 }
             },

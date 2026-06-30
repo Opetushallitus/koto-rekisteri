@@ -21,6 +21,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -312,6 +313,49 @@ class YkiSuoritusRepositoryTest(
         ykiSuoritusRepository.setArvioinninTilaSent(arvioitu.solkiId)
 
         assertTrue(ykiSuoritusRepository.findSuorituksetWithUnsentArvioinninTila().isEmpty())
+    }
+
+    @Test
+    fun `findOpiskeluoikeusOidBySolkiId palauttaa null kun suorituksia ei ole`() {
+        assertNull(ykiSuoritusRepository.findOpiskeluoikeusOidBySolkiId(123456))
+    }
+
+    @Test
+    fun `findOpiskeluoikeusOidBySolkiId palauttaa null kun suorituksella ei ole koski-opiskeluoikeutta`() {
+        val suoritus = generateRandomYkiSuoritusEntity().copy(koskiOpiskeluoikeus = null)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        assertNull(ykiSuoritusRepository.findOpiskeluoikeusOidBySolkiId(suoritus.solkiId))
+    }
+
+    @Test
+    fun `findOpiskeluoikeusOidBySolkiId palauttaa tallennetun opiskeluoikeus-oidin`() {
+        val opiskeluoikeus = createOid(OidClass.OPPIJA, 99999999991)
+        val suoritus = generateRandomYkiSuoritusEntity().copy(koskiOpiskeluoikeus = opiskeluoikeus)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        assertEquals(opiskeluoikeus, ykiSuoritusRepository.findOpiskeluoikeusOidBySolkiId(suoritus.solkiId))
+    }
+
+    @Test
+    fun `findOpiskeluoikeusOidBySolkiId palauttaa viimeisimpänä saapuneen version opiskeluoikeuden`() {
+        val vanhaOpiskeluoikeus = createOid(OidClass.OPPIJA, 99999999991)
+        val uusiOpiskeluoikeus = createOid(OidClass.OPPIJA, 99999999992)
+        val vanha =
+            generateRandomYkiSuoritusEntity().copy(
+                koskiOpiskeluoikeus = vanhaOpiskeluoikeus,
+                lastModified = Instant.parse("2025-01-01T10:00:00Z"),
+                receivedAt = Instant.parse("2025-01-01T10:00:00Z"),
+            )
+        val uusi =
+            vanha.copy(
+                koskiOpiskeluoikeus = uusiOpiskeluoikeus,
+                lastModified = Instant.parse("2025-02-01T10:00:00Z"),
+                receivedAt = Instant.parse("2025-02-01T10:00:00Z"),
+            )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(vanha, uusi))
+
+        assertEquals(uusiOpiskeluoikeus, ykiSuoritusRepository.findOpiskeluoikeusOidBySolkiId(vanha.solkiId))
     }
 
     @Test

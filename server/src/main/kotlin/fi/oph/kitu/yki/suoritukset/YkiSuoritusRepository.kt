@@ -272,6 +272,22 @@ class YkiSuoritusRepository(
             )
         }
 
+    @WithSpan
+    fun findOpiskeluoikeusOidBySolkiId(solkiId: Int): Oid? =
+        jdbcNamedParameterTemplate
+            .query(
+                """
+                SELECT koski_opiskeluoikeus
+                FROM yki_suoritus
+                WHERE solki_id = :solki_id AND koski_opiskeluoikeus IS NOT NULL
+                ORDER BY received_at DESC
+                LIMIT 1
+                """.trimIndent(),
+                mapOf("solki_id" to solkiId),
+                SingleColumnRowMapper(String::class.java),
+            ).firstOrNull()
+            ?.let { Oid.parse(it).getOrNull() }
+
     @Transactional
     @WithSpan
     fun save(
