@@ -2,8 +2,10 @@
 
 package fi.oph.kitu.yki.suoritukset
 
+import arrow.core.Either
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
+import fi.oph.kitu.html.error
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.json
 import fi.oph.kitu.html.warning
@@ -11,12 +13,15 @@ import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.*
 
 object YkiSuoritusPage {
     fun render(
+        henkilo: Either<OppijanumeroException, OppijanumerorekisteriHenkilo>,
         suoritus: YkiSuoritusEntity,
         viimeisinSuoritus: YkiSuoritusEntity,
         koskiError: KoskiErrorEntity?,
@@ -36,18 +41,36 @@ object YkiSuoritusPage {
             }
         }
 
-        henkilonTiedot(suoritus)
+        henkilonTiedot(henkilo, suoritus)
         todistuksenPostitusosoite(suoritus)
         tutkintotiedot(suoritus)
         arviointi(suoritus)
         integraatiot(suoritus, koskiError, koskiSiirronEstonSyyt, opiskeluoikeusOid)
     }
 
-    fun FlowContent.henkilonTiedot(suoritus: YkiSuoritusEntity) {
+    fun FlowContent.henkilonTiedot(
+        henkilo: Either<OppijanumeroException, OppijanumerorekisteriHenkilo>,
+        suoritus: YkiSuoritusEntity,
+    ) {
         h3 { +"Henkilötiedot" }
+        henkilo.onLeft { onrException ->
+            error(onrException.message ?: onrException.toString())
+        }
         card(compact = true) {
             infoTable(
-                "Oppijanumero" to { +suoritus.suorittajanOID.toString() },
+                henkilo.getOrNull()?.oppijanumero?.let { "Oppijanumero" to { +it } }
+                    ?: (
+                        "Henkilö-oid" to {
+                            +suoritus.suorittajanOID.toString()
+                            a(
+                                href = Links.Opintopolku.onr(suoritus.suorittajanOID),
+                                classes = "tight secondary float-right",
+                            ) {
+                                attributes["role"] = "button"
+                                +"Tee yksilöinti oppijanumerorekisterissä"
+                            }
+                        }
+                    ),
                 "Sukunimi" to { +suoritus.sukunimi },
                 "Etunimet" to { +suoritus.etunimet },
                 "Henkilötunnus" to { +suoritus.hetu.orDash() },
