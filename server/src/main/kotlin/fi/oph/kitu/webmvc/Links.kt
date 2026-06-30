@@ -5,6 +5,7 @@ import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiApiController
 import fi.oph.kitu.kotoutumiskoulutus.KielitestiViewController
 import fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki.TehtavapankkiViewController
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.vkt.VktApiController
 import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.yki.YkiApiController
@@ -136,5 +137,9 @@ object Links {
 
         fun download(s3Avain: String): String =
             linkTo(methodOn(TehtavapankkiViewController::class.java).downloadRedirect(s3Avain)).toString()
+    }
+
+    object Opintopolku {
+        fun onr(oid: Oid): String = "/henkilo-ui/oppija/$oid"
     }
 }

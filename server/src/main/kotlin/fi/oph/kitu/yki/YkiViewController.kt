@@ -12,6 +12,7 @@ import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiYkiMappingError
 import fi.oph.kitu.koski.KoskiYkiRequestMapper
 import fi.oph.kitu.koski.YkiMappingId
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.webmvc.rewriteAttribute
@@ -60,6 +61,7 @@ class YkiViewController(
     @param:Qualifier("koskiObjectMapper")
     private val koskiObjectMapper: JsonMapper,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
+    private val oppijanumeroService: OppijanumeroService,
 ) {
     @GetMapping("/suoritukset/{id}", produces = ["text/html"])
     fun suoritusView(
@@ -82,8 +84,10 @@ class YkiViewController(
                 } else {
                     Pair(null, null)
                 }
+            val henkilo = oppijanumeroService.getHenkilo(suoritus.suorittajanOID)
             ResponseEntity.ok(
                 YkiSuoritusPage.render(
+                    henkilo,
                     suoritus = it,
                     viimeisinSuoritus,
                     koskiError,

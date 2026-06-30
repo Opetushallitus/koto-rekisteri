@@ -528,3 +528,11 @@ ul.flat li {
 .faded {
   opacity: 0.4;
 }
+
+a[role="button"].tight {
+    padding: 0.25rem 0.75rem;
+}
+
+.float-right {
+    float: right;
+}
