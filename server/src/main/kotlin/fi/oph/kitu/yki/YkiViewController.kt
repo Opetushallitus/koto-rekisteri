@@ -68,7 +68,8 @@ class YkiViewController(
         val suoritus = ykiService.findSuoritusById(id)
         return suoritus?.let {
             val viimeisinSuoritus = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
-            val opiskeluoikeusOid = ykiSuoritusRepository.findOpiskeluoikeusOidBySolkiId(suoritus.solkiId)
+            val opiskeluoikeusOid =
+                ykiSuoritusRepository.findOpiskeluoikeusOidsBySolkiIds(listOf(suoritus.solkiId))[suoritus.solkiId]
             val (koskiError, koskiSiirronEstonSyyt) =
                 if (suoritus.id == viimeisinSuoritus.id) {
                     Pair(

@@ -166,6 +166,25 @@ class YkiService(
             }
 
     @WithSpan
+    fun allSuorituksetIncludingOpiskeluoikeusOid(
+        versionHistory: Boolean,
+        filter: YkiSuoritusFilter = YkiSuoritusFilter(),
+    ): List<YkiSuoritusEntity> {
+        val suoritukset = allSuoritukset(versionHistory, filter)
+        val opiskeluoikeusOidit =
+            suoritusRepository.findOpiskeluoikeusOidsBySolkiIds(
+                suoritukset.filter { it.koskiOpiskeluoikeus == null }.map { it.solkiId },
+            )
+        return suoritukset.map { suoritus ->
+            if (suoritus.koskiOpiskeluoikeus == null) {
+                suoritus.copy(koskiOpiskeluoikeus = opiskeluoikeusOidit[suoritus.solkiId])
+            } else {
+                suoritus
+            }
+        }
+    }
+
+    @WithSpan
     fun countSuoritukset(
         filter: YkiSuoritusFilter = YkiSuoritusFilter(),
         versionHistory: Boolean = false,

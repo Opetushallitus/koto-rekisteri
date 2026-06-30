@@ -2,7 +2,9 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TestTimeService
+import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.dev.mockdata.toInstant
+import fi.oph.kitu.html.table.DisplayTableCsvRenderer
 import fi.oph.kitu.isBadRequest
 import fi.oph.kitu.isOk
 import fi.oph.kitu.oid.Oid
@@ -21,8 +23,10 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -38,10 +42,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.postgresql.PostgreSQLContainer
 import tools.jackson.databind.JsonNode
+import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @SpringBootTest
 @Import(DBContainerConfiguration::class)
@@ -49,6 +56,8 @@ class YkiApiControllerTest(
     @param:Autowired val timeService: TestTimeService,
     @param:Autowired val arvioijaRepository: YkiArvioijaRepository,
     @param:Autowired val poikkeamaRepository: YkiSuoritusPoikkeamaRepository,
+    @param:Autowired val suoritusRepository: YkiSuoritusRepository,
+    @param:Autowired val ykiApiController: YkiApiController,
 ) {
     @Autowired
     private lateinit var context: WebApplicationContext
@@ -861,6 +870,49 @@ class YkiApiControllerTest(
                     .single { it.arvioijaOid.toString() == arvioijaOid }
             assertEquals(false, saved.arviointioikeudet.single().jatkorekisterointi)
         }
+    }
+
+    @Test
+    fun `CSV-vienti näyttää taustalta täydennetyn opiskeluoikeus-OIDin`() {
+        suoritusRepository.deleteAll()
+
+        val opiskeluoikeusOid = Oid.parse("1.2.246.562.15.00000000001").getOrThrow()
+        val vanhempiVersio =
+            generateRandomYkiSuoritusEntity().copy(
+                koskiOpiskeluoikeus = opiskeluoikeusOid,
+                lastModified = Instant.parse("2025-01-01T10:00:00Z"),
+                receivedAt = Instant.parse("2025-01-01T10:00:00Z"),
+            )
+        val viimeisinVersio =
+            vanhempiVersio.copy(
+                koskiOpiskeluoikeus = null,
+                lastModified = Instant.parse("2025-02-01T10:00:00Z"),
+                receivedAt = Instant.parse("2025-02-01T10:00:00Z"),
+            )
+        suoritusRepository.saveAllNewEntities(listOf(vanhempiVersio, viimeisinVersio))
+
+        assertNull(
+            suoritusRepository.findLatestBySolkiIds(listOf(viimeisinVersio.solkiId)).first().koskiOpiskeluoikeus,
+            "Viimeisimmällä versiolla ei saa olla opiskeluoikeus-OIDia, jotta testi mittaa nimenomaan täydennystä",
+        )
+
+        val response = ykiApiController.getSuorituksetAsCsv(YkiSuorituksetParams())
+        val csv =
+            ByteArrayOutputStream()
+                .also { response.body!!.writeTo(it) }
+                .toString(Charsets.UTF_8)
+
+        val rows = csv.trim().lines()
+        val oidColumnIndex =
+            rows
+                .first()
+                .split(DisplayTableCsvRenderer.SEPARATOR)
+                .indexOf(YkiSuoritusColumn.OpiskeluoikeusOid.uiHeaderValue)
+        assertContains(csv, opiskeluoikeusOid.toString())
+        assertEquals(
+            opiskeluoikeusOid.toString(),
+            rows.drop(1).single().split(DisplayTableCsvRenderer.SEPARATOR)[oidColumnIndex],
+        )
     }
 
     private fun postSuoritus(

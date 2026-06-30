@@ -273,20 +273,24 @@ class YkiSuoritusRepository(
         }
 
     @WithSpan
-    fun findOpiskeluoikeusOidBySolkiId(solkiId: Int): Oid? =
-        jdbcNamedParameterTemplate
-            .query(
-                """
-                SELECT koski_opiskeluoikeus
-                FROM yki_suoritus
-                WHERE solki_id = :solki_id AND koski_opiskeluoikeus IS NOT NULL
-                ORDER BY received_at DESC
-                LIMIT 1
-                """.trimIndent(),
-                mapOf("solki_id" to solkiId),
-                SingleColumnRowMapper(String::class.java),
-            ).firstOrNull()
-            ?.let { Oid.parse(it).getOrNull() }
+    fun findOpiskeluoikeusOidsBySolkiIds(solkiIds: List<Int>): Map<Int, Oid> =
+        if (solkiIds.isEmpty()) {
+            emptyMap()
+        } else {
+            jdbcNamedParameterTemplate
+                .query(
+                    """
+                    SELECT DISTINCT ON (solki_id) solki_id, koski_opiskeluoikeus
+                    FROM yki_suoritus
+                    WHERE solki_id IN (:solki_ids) AND koski_opiskeluoikeus IS NOT NULL
+                    ORDER BY solki_id, received_at DESC
+                    """.trimIndent(),
+                    mapOf("solki_ids" to solkiIds),
+                ) { rs, _ ->
+                    rs.getInt("solki_id") to Oid.parse(rs.getString("koski_opiskeluoikeus")).getOrNull()
+                }.mapNotNull { (solkiId, oid) -> oid?.let { solkiId to it } }
+                .toMap()
+        }
 
     @Transactional
     @WithSpan

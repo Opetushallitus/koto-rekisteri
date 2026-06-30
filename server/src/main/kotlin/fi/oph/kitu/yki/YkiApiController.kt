@@ -52,7 +52,7 @@ class YkiApiController(
     ): ResponseEntity<StreamingResponseBody> =
         csvAttachmentResponse<YkiSuoritusColumn, _>(
             filename = params.csvFileName(),
-            data = service.allSuoritukset(params.versionHistory, params.toFilter()),
+            data = service.allSuorituksetIncludingOpiskeluoikeusOid(params.versionHistory, params.toFilter()),
             excludeTags = params.excludeTags(),
         )
 
