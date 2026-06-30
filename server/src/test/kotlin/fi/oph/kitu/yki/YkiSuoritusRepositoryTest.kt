@@ -21,7 +21,6 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -316,29 +315,43 @@ class YkiSuoritusRepositoryTest(
     }
 
     @Test
-    fun `findOpiskeluoikeusOidBySolkiId palauttaa null kun suorituksia ei ole`() {
-        assertNull(ykiSuoritusRepository.findOpiskeluoikeusOidBySolkiId(123456))
+    fun `findOpiskeluoikeusOidsBySolkiIds palauttaa tyhjän mapin tyhjällä id-listalla`() {
+        assertEquals(emptyMap(), ykiSuoritusRepository.findOpiskeluoikeusOidsBySolkiIds(emptyList()))
     }
 
     @Test
-    fun `findOpiskeluoikeusOidBySolkiId palauttaa null kun suorituksella ei ole koski-opiskeluoikeutta`() {
-        val suoritus = generateRandomYkiSuoritusEntity().copy(koskiOpiskeluoikeus = null)
-        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+    fun `findOpiskeluoikeusOidsBySolkiIds palauttaa opiskeluoikeudet vain niille id_ille joilla se on`() {
+        val opiskeluoikeus1 = createOid(OidClass.OPPIJA, 99999999991)
+        val opiskeluoikeus2 = createOid(OidClass.OPPIJA, 99999999992)
+        val withOpiskeluoikeus1 = generateRandomYkiSuoritusEntity().copy(koskiOpiskeluoikeus = opiskeluoikeus1)
+        val withOpiskeluoikeus2 = generateRandomYkiSuoritusEntity().copy(koskiOpiskeluoikeus = opiskeluoikeus2)
+        val withoutOpiskeluoikeus = generateRandomYkiSuoritusEntity().copy(koskiOpiskeluoikeus = null)
+        ykiSuoritusRepository.saveAllNewEntities(
+            listOf(withOpiskeluoikeus1, withOpiskeluoikeus2, withoutOpiskeluoikeus),
+        )
 
-        assertNull(ykiSuoritusRepository.findOpiskeluoikeusOidBySolkiId(suoritus.solkiId))
+        val tuntematonSolkiId = 1
+        val result =
+            ykiSuoritusRepository.findOpiskeluoikeusOidsBySolkiIds(
+                listOf(
+                    withOpiskeluoikeus1.solkiId,
+                    withOpiskeluoikeus2.solkiId,
+                    withoutOpiskeluoikeus.solkiId,
+                    tuntematonSolkiId,
+                ),
+            )
+
+        assertEquals(
+            mapOf(
+                withOpiskeluoikeus1.solkiId to opiskeluoikeus1,
+                withOpiskeluoikeus2.solkiId to opiskeluoikeus2,
+            ),
+            result,
+        )
     }
 
     @Test
-    fun `findOpiskeluoikeusOidBySolkiId palauttaa tallennetun opiskeluoikeus-oidin`() {
-        val opiskeluoikeus = createOid(OidClass.OPPIJA, 99999999991)
-        val suoritus = generateRandomYkiSuoritusEntity().copy(koskiOpiskeluoikeus = opiskeluoikeus)
-        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
-
-        assertEquals(opiskeluoikeus, ykiSuoritusRepository.findOpiskeluoikeusOidBySolkiId(suoritus.solkiId))
-    }
-
-    @Test
-    fun `findOpiskeluoikeusOidBySolkiId palauttaa viimeisimpänä saapuneen version opiskeluoikeuden`() {
+    fun `findOpiskeluoikeusOidsBySolkiIds palauttaa viimeisimpänä saapuneen version opiskeluoikeuden`() {
         val vanhaOpiskeluoikeus = createOid(OidClass.OPPIJA, 99999999991)
         val uusiOpiskeluoikeus = createOid(OidClass.OPPIJA, 99999999992)
         val vanha =
@@ -355,7 +368,10 @@ class YkiSuoritusRepositoryTest(
             )
         ykiSuoritusRepository.saveAllNewEntities(listOf(vanha, uusi))
 
-        assertEquals(uusiOpiskeluoikeus, ykiSuoritusRepository.findOpiskeluoikeusOidBySolkiId(vanha.solkiId))
+        assertEquals(
+            mapOf(vanha.solkiId to uusiOpiskeluoikeus),
+            ykiSuoritusRepository.findOpiskeluoikeusOidsBySolkiIds(listOf(vanha.solkiId)),
+        )
     }
 
     @Test
