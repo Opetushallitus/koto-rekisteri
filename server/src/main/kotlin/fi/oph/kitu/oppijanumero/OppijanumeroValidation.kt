@@ -18,7 +18,7 @@ class OppijanumeroValidation(
                 onr.getHenkilo(oid)
             } catch (error: Throwable) {
                 raise(
-                    ValidationError(
+                    ValidationError.EnrichmentError(
                         path,
                         "Oppijanumeron tarkastus epäonnistui (${error::class.simpleName}). Yritä myöhemmin uudestaan.",
                     ),
@@ -35,7 +35,7 @@ class OppijanumeroValidation(
                     }
 
                     else -> {
-                        ValidationError(
+                        ValidationError.EnrichmentError(
                             path,
                             "Oppijanumeron tarkastus epäonnistui (${exception::class.simpleName}). " +
                                 "Yritä myöhemmin uudestaan.",

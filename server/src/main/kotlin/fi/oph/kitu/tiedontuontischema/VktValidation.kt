@@ -1,10 +1,12 @@
 package fi.oph.kitu.tiedontuontischema
 
+import arrow.core.raise.Raise
 import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.util.validation.EnrichmentRaise
 import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.util.validation.ValidationRaise
 import org.springframework.beans.factory.annotation.Value
@@ -15,7 +17,7 @@ class VktValidation : Validation<VktHenkilosuoritus> {
     @Value($$"${kitu.oids.palvelukayttaja}")
     lateinit var palvelukayttajaOid: String
 
-    override fun enrich(value: VktHenkilosuoritus): VktHenkilosuoritus =
+    override fun EnrichmentRaise.enrich(value: VktHenkilosuoritus): VktHenkilosuoritus =
         if (value.suoritus.taitotaso == Koodisto.VktTaitotaso.Erinomainen) {
             value.modifySuoritus {
                 it.copy(
