@@ -1,7 +1,10 @@
 package fi.oph.kitu.yki.suoritukset
 
+import fi.oph.kitu.dev.mockdata.OidClass
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.SqlFilterBuilder
+import fi.oph.kitu.oid.Oid.Companion.isOidOfClass
+import fi.oph.kitu.util.SearchTerms
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -23,9 +26,20 @@ data class YkiSuoritusFilter(
 
     private fun toSql() =
         SqlFilterBuilder().apply {
-            searchTerms().forEachIndexed { i, term ->
+            val terms = SearchTerms(search)
+
+            terms.texts()?.forEachIndexed { i, term ->
                 val param = "filter_search_$i"
                 add(searchTermClause(param), param to "%$term%")
+            }
+            terms.henkiloOids()?.let { oids ->
+                add("suorittajan_oid IN (:henkilo_oids)", "henkilo_oids" to oids)
+            }
+            terms.orgOids()?.let { oids ->
+                add("jarjestajan_tunnus_oid IN (:org_oids)", "org_oids" to oids)
+            }
+            terms.numbers()?.let { ids ->
+                add("yki_suoritus.solki_id IN (:solki_ids)", "solki_ids" to ids)
             }
             add(alkupaiva?.let { "tutkintopaiva >= :filter_alkupaiva" }, "filter_alkupaiva" to alkupaiva)
             add(loppupaiva?.let { "tutkintopaiva <= :filter_loppupaiva" }, "filter_loppupaiva" to loppupaiva)
@@ -37,13 +51,6 @@ data class YkiSuoritusFilter(
             )
         }
 
-    private fun searchTerms(): List<String> =
-        search
-            ?.trim()
-            ?.takeIf { it.isNotEmpty() }
-            ?.split(Regex("\\s+"))
-            .orEmpty()
-
     private fun searchTermClause(param: String): String =
         """
         suorittajan_oid ILIKE :$param
@@ -51,9 +58,7 @@ data class YkiSuoritusFilter(
         OR sukunimi ILIKE :$param
         OR email ILIKE :$param
         OR hetu ILIKE :$param
-        OR jarjestajan_tunnus_oid ILIKE :$param
         OR jarjestajan_nimi ILIKE :$param
-        OR yki_suoritus.solki_id::text ILIKE :$param
         """.trimIndent()
 }
 

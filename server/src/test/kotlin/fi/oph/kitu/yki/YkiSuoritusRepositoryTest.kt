@@ -194,8 +194,112 @@ class YkiSuoritusRepositoryTest(
         assertEquals(target.solkiId, exact.first().solkiId)
 
         val partial = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "3141"))
-        assertEquals(1, partial.count())
-        assertEquals(target.solkiId, partial.first().solkiId)
+        assertEquals(0, partial.count())
+    }
+
+    @Test
+    fun `find suoritus henkilö-oidilla palauttaa vain kyseisen suorittajan`() {
+        val oid1 = createOid(OidClass.OPPIJA, 11111111111)
+        val oid2 = createOid(OidClass.OPPIJA, 22222222222)
+        val target = generateRandomYkiSuoritusEntity().copy(solkiId = 100001, suorittajanOID = oid1)
+        val muu = generateRandomYkiSuoritusEntity().copy(solkiId = 100002, suorittajanOID = oid2)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(target, muu))
+
+        val tulos = ykiSuoritusRepository.find(YkiSuoritusFilter(search = oid1.toString()))
+
+        assertEquals(1, tulos.count())
+        assertEquals(oid1, tulos.first().suorittajanOID)
+    }
+
+    @Test
+    fun `find suoritukset usealla henkilö-oidilla palauttaa kaikki osumat`() {
+        val oid1 = createOid(OidClass.OPPIJA, 11111111111)
+        val oid2 = createOid(OidClass.OPPIJA, 22222222222)
+        val oid3 = createOid(OidClass.OPPIJA, 33333333333)
+        val a = generateRandomYkiSuoritusEntity().copy(solkiId = 100001, suorittajanOID = oid1)
+        val b = generateRandomYkiSuoritusEntity().copy(solkiId = 100002, suorittajanOID = oid2)
+        val c = generateRandomYkiSuoritusEntity().copy(solkiId = 100003, suorittajanOID = oid3)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(a, b, c))
+
+        val tulos = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "$oid1 $oid2"))
+
+        assertEquals(setOf(oid1, oid2), tulos.map { it.suorittajanOID }.toSet())
+    }
+
+    @Test
+    fun `find suoritus organisaatio-oidilla palauttaa vain kyseisen järjestäjän`() {
+        val org1 = createOid(OidClass.ORG, 11111111111)
+        val org2 = createOid(OidClass.ORG, 22222222222)
+        val target = generateRandomYkiSuoritusEntity().copy(solkiId = 100001, jarjestajanTunnusOid = org1)
+        val muu = generateRandomYkiSuoritusEntity().copy(solkiId = 100002, jarjestajanTunnusOid = org2)
+        ykiSuoritusRepository.saveAllNewEntities(listOf(target, muu))
+
+        val tulos = ykiSuoritusRepository.find(YkiSuoritusFilter(search = org1.toString()))
+
+        assertEquals(1, tulos.count())
+        assertEquals(org1, tulos.first().jarjestajanTunnusOid)
+    }
+
+    @Test
+    fun `find henkilö- ja organisaatio-oidilla vaatii molempien täsmäävän samalla rivillä`() {
+        val oppija = createOid(OidClass.OPPIJA, 11111111111)
+        val org = createOid(OidClass.ORG, 11111111111)
+        val target =
+            generateRandomYkiSuoritusEntity().copy(
+                solkiId = 100001,
+                suorittajanOID = oppija,
+                jarjestajanTunnusOid = org,
+            )
+        val eriJarjestaja =
+            generateRandomYkiSuoritusEntity().copy(
+                solkiId = 100002,
+                suorittajanOID = oppija,
+                jarjestajanTunnusOid = createOid(OidClass.ORG, 99999999999),
+            )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(target, eriJarjestaja))
+
+        val molemmat = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "$oppija $org"))
+
+        assertEquals(1, molemmat.count())
+        assertEquals(target.solkiId, molemmat.first().solkiId)
+    }
+
+    @Test
+    fun `countSuoritukset henkilö-oidilla tuottaa kelvollisen SQL_n ja saman määrän kuin find`() {
+        val oid1 = createOid(OidClass.OPPIJA, 11111111111)
+        val oid2 = createOid(OidClass.OPPIJA, 22222222222)
+        ykiSuoritusRepository.saveAllNewEntities(
+            listOf(
+                generateRandomYkiSuoritusEntity().copy(solkiId = 100001, suorittajanOID = oid1),
+                generateRandomYkiSuoritusEntity().copy(solkiId = 100002, suorittajanOID = oid2),
+            ),
+        )
+
+        val filter = YkiSuoritusFilter(search = oid1.toString())
+
+        assertEquals(1L, ykiSuoritusRepository.countSuoritukset(filter))
+        assertEquals(
+            ykiSuoritusRepository.find(filter).count().toLong(),
+            ykiSuoritusRepository.countSuoritukset(filter),
+        )
+    }
+
+    @Test
+    fun `countSuoritukset numerohaulla tuottaa kelvollisen SQL_n`() {
+        ykiSuoritusRepository.saveAllNewEntities(
+            listOf(
+                generateRandomYkiSuoritusEntity().copy(solkiId = 424242),
+                generateRandomYkiSuoritusEntity().copy(solkiId = 515151),
+            ),
+        )
+
+        val filter = YkiSuoritusFilter(search = "424242")
+
+        assertEquals(1L, ykiSuoritusRepository.countSuoritukset(filter))
+        assertEquals(
+            ykiSuoritusRepository.find(filter).count().toLong(),
+            ykiSuoritusRepository.countSuoritukset(filter),
+        )
     }
 
     @Test
