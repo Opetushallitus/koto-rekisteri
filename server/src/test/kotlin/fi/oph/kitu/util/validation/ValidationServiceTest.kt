@@ -19,6 +19,9 @@ import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.arvioijat.YkiArvioija
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
+import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -113,8 +116,64 @@ class ValidationServiceTest(
         val result = validation.validateAndEnrich(suoritus)
 
         assertEquals(
+            nonEmptyListOf<ValidationError>(
+                ValidationError.EnrichmentError(
+                    listOf("henkilo", "oid"),
+                    "Oppijanumeroa 1.2.246.562.24.20000000000 ei löydy Oppijanumerorekisteristä",
+                ),
+            ).left(),
+            result,
+        )
+    }
+
+    @Test
+    fun `Sisääntuleva henkilö-oid korvataan rikastuksessa master-oidilla (oppijanumerolla)`() {
+        val suoritus =
+            validiYkiSuoritus.copy(
+                henkilo = Henkilo(oid = Oid.parse("1.2.246.562.24.88888888888").getOrThrow(), hetu = "010180-9026"),
+            )
+
+        val result = validation.validateAndEnrich(suoritus)
+
+        assertEquals(
+            suoritus
+                .copy(henkilo = suoritus.henkilo.copy(oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow()))
+                .right(),
+            result,
+        )
+    }
+
+    @Test
+    fun `Yki-arvioijaa, jonka oidia ei löydy oppijanumerorekisteristä, ei voi siirtää`() {
+        val arvioija =
+            YkiArvioija(
+                arvioijaOid = Oid.parse("1.2.246.562.24.20000000000").getOrThrow(),
+                henkilotunnus = null,
+                sukunimi = "Kivinen-Testi",
+                etunimet = "Petro Testi",
+                sahkopostiosoite = "devnull-2@oph.fi",
+                katuosoite = "Haltin vanha autiotupa",
+                postinumero = "99490",
+                postitoimipaikka = "Enontekiö",
+                ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
+                arviointioikeudet =
+                    listOf(
+                        YkiArviointioikeus(
+                            kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                            kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                            jatkorekisterointi = false,
+                            tila = YkiArvioijaTila.AKTIIVINEN,
+                            kieli = Tutkintokieli.FIN,
+                            tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT, Tutkintotaso.YT),
+                        ),
+                    ),
+            )
+
+        val result = validation.validateAndEnrich(arvioija)
+
+        assertEquals(
             fail(
-                listOf("henkilo", "oid"),
+                listOf("arvioijaOid"),
                 "Oppijanumeroa 1.2.246.562.24.20000000000 ei löydy Oppijanumerorekisteristä",
             ),
             result,
