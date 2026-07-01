@@ -1,17 +1,24 @@
 package fi.oph.kitu.oppijanumero
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import fi.oph.kitu.assertLeftIsThrowable
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
 import org.springframework.web.client.RestClient
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class OppijanumeroServiceTests {
     @Test
@@ -145,4 +152,82 @@ class OppijanumeroServiceTests {
 
         assertEquals("1.2.246.562.98.89505889280", obj.oppijanumero)
     }
+
+    @Test
+    fun `getMasterOid palauttaa oppijanumeron, kun se on olemassa`() {
+        val service =
+            oppijanumeroServiceReturning(
+                henkilo(
+                    oppijanumero = "1.2.246.562.24.33342764709",
+                    oidHenkilo = "1.2.246.562.98.89505889280",
+                ),
+            )
+
+        val result = service.getMasterOid(Oid("1.2.246.562.98.89505889280"))
+
+        assertEquals("1.2.246.562.24.33342764709", result.getOrThrow().toString())
+    }
+
+    @Test
+    fun `getMasterOid palautuu oidHenkiloon, kun oppijanumeroa ei ole`() {
+        val service =
+            oppijanumeroServiceReturning(
+                henkilo(
+                    oppijanumero = null,
+                    oidHenkilo = "1.2.246.562.98.89505889280",
+                ),
+            )
+
+        val result = service.getMasterOid(Oid("1.2.246.562.98.89505889280"))
+
+        assertEquals("1.2.246.562.98.89505889280", result.getOrThrow().toString())
+    }
+
+    @Test
+    fun `getMasterOid propagoi getHenkilon virheen`() {
+        val error = OppijanumeroException.OppijaNotFoundException(EmptyRequest(), ResponseEntity.notFound().build())
+        val service = oppijanumeroServiceFailing(error)
+
+        val result = service.getMasterOid(Oid("1.2.246.562.98.89505889280"))
+
+        assertTrue(result.isLeft())
+        assertEquals(error, (result as Either.Left).value)
+    }
+
+    @Test
+    fun `getMasterOid palauttaa MalformedOppijanumero-virheen, kun oppijanumero ja oidHenkilo puuttuvat`() {
+        val service = oppijanumeroServiceReturning(henkilo(oppijanumero = null, oidHenkilo = null))
+
+        val result = service.getMasterOid(Oid("1.2.246.562.98.89505889280"))
+
+        assertTrue(result.isLeft())
+        assertIs<OppijanumeroException.MalformedOppijanumero>((result as Either.Left).value)
+    }
+
+    private fun henkilo(
+        oppijanumero: String?,
+        oidHenkilo: String?,
+    ): OppijanumerorekisteriHenkilo =
+        defaultObjectMapper.convertValue(
+            mapOf("oppijanumero" to oppijanumero, "oidHenkilo" to oidHenkilo),
+            OppijanumerorekisteriHenkilo::class.java,
+        )
+
+    private fun oppijanumeroServiceReturning(henkilo: OppijanumerorekisteriHenkilo): OppijanumeroService =
+        object : OppijanumeroService {
+            override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> =
+                throw NotImplementedError()
+
+            override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
+                henkilo.right()
+        }
+
+    private fun oppijanumeroServiceFailing(error: OppijanumeroException): OppijanumeroService =
+        object : OppijanumeroService {
+            override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> =
+                throw NotImplementedError()
+
+            override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
+                error.left()
+        }
 }

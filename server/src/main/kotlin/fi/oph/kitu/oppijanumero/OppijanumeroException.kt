@@ -62,7 +62,7 @@ sealed class OppijanumeroException(
     ) : OppijanumeroException(request, message, oppijanumeroServiceError, cause)
 
     class MalformedOppijanumero(
-        request: OppijanumerorekisteriRequest,
+        request: OppijanumerorekisteriRequest = EmptyRequest(),
         oppijanumero: String?,
         message: String = "Received a malformed oppijanumero \"$oppijanumero\" for $request",
         oppijanumeroServiceError: OppijanumeroServiceError? = null,
