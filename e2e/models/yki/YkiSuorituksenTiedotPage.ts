@@ -11,14 +11,23 @@ export default class YkiSuorituksenTiedotPage extends BasePage {
     return this.getPageContent().locator("table.info-table").first()
   }
 
+  private exactLabel(label: string): RegExp {
+    return new RegExp(`^${label}$`)
+  }
+
   getLabel(label: string): Locator {
-    return this.henkilotiedotTable().locator("th", { hasText: label })
+    return this.henkilotiedotTable().locator("th", {
+      hasText: this.exactLabel(label),
+    })
   }
 
   getValue(label: string): Locator {
     return this.henkilotiedotTable()
-      .locator("tr", { hasText: label })
-      .getByRole("cell")
+      .locator("tr")
+      .filter({
+        has: this.page.locator("th", { hasText: this.exactLabel(label) }),
+      })
+      .locator("td")
   }
 
   yksilointiLink(): Locator {

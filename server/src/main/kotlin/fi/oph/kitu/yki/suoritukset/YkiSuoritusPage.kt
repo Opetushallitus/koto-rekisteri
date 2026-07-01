@@ -57,8 +57,9 @@ object YkiSuoritusPage {
             error(onrException.message ?: onrException.toString())
         }
         card(compact = true) {
+            val hlo = henkilo.getOrNull()
             infoTable(
-                henkilo.getOrNull()?.oppijanumero?.let { "Oppijanumero" to { +it } }
+                hlo?.oppijanumero?.let { "Oppijanumero" to { +it } }
                     ?: (
                         "Henkilö-oid" to {
                             +suoritus.suorittajanOID.toString()
@@ -71,12 +72,28 @@ object YkiSuoritusPage {
                             }
                         }
                     ),
-                "Sukunimi" to { +suoritus.sukunimi },
-                "Etunimet" to { +suoritus.etunimet },
-                "Henkilötunnus" to { +suoritus.hetu.orDash() },
+                "Sukunimi" to { nimitieto(suoritus.sukunimi, hlo?.sukunimi) },
+                "Etunimet" to { nimitieto(suoritus.etunimet, hlo?.etunimet) },
+                "Henkilötunnus" to { nimitieto(suoritus.hetu.orDash(), hlo?.hetu) },
                 "Sukupuoli" to { +suoritus.sukupuoli.toString() },
                 "Kansalaisuus" to { +suoritus.kansalaisuus },
             )
+        }
+    }
+
+    fun FlowContent.nimitieto(
+        value: String,
+        onrValue: String?,
+    ) {
+        span { +value }
+        onrValue?.let {
+            if (onrValue != value) {
+                +" "
+                span(classes = "warning-pill") {
+                    +"Eri arvo oppijanumerorekisterissä: "
+                    strong { +onrValue }
+                }
+            }
         }
     }
 
