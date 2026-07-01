@@ -21,7 +21,9 @@ class YkiArvioijaValidation(
 ) : Validation<YkiArvioija> {
     override fun ValidationRaise.validateBeforeEnrichment(value: YkiArvioija) {
         accumulate {
-            accumulating { with(onr) { validateOppijanumero(value.arvioijaOid, listOf("arvioijaOid")) } }
+            accumulating {
+                onr.validateOppijanumeroInOnr(value.arvioijaOid, listOf("arvioijaOid")).bind()
+            }
             accumulating {
                 ensure(value.henkilotunnus == null || !lainmuutos2026Voimassa()) {
                     ValidationError(

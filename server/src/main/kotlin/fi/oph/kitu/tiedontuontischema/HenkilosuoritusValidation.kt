@@ -1,8 +1,8 @@
 package fi.oph.kitu.tiedontuontischema
 
 import arrow.core.NonEmptyList
-import arrow.core.raise.Raise
 import arrow.core.raise.accumulate
+import arrow.core.raise.either
 import arrow.core.raise.ensure
 import fi.oph.kitu.koodisto.KoodistoService
 import fi.oph.kitu.oppijanumero.OppijanumeroValidation
@@ -43,12 +43,19 @@ class HenkilosuoritusValidation(
                     )
                 }
             }
-            accumulating { with(onr) { validateOppijanumero(value.henkilo.oid, listOf("henkilo", "oid")) } }
         }
     }
 
     override fun EnrichmentRaise.enrich(value: Henkilosuoritus<*>): Henkilosuoritus<*> =
-        value.copy(henkilo = value.henkilo.copy(maa = value.henkilo.maa?.uppercase()))
+        value.copy(henkilo = enrichHenkilo(value.henkilo).bind())
+
+    private fun enrichHenkilo(henkilo: Henkilo) =
+        either {
+            henkilo.copy(
+                oid = onr.mapHenkiloOidToMasterOid(henkilo.oid, listOf("henkilo", "oid")).bind(),
+                maa = henkilo.maa?.uppercase(),
+            )
+        }
 
     override fun ValidationRaise.validateAfterEnrichment(value: Henkilosuoritus<*>) {
         accumulate {
