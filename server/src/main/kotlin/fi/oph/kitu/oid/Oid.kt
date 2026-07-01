@@ -3,6 +3,7 @@ package fi.oph.kitu.oid
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import fi.oph.kitu.dev.mockdata.OidClass
 import fi.oph.kitu.util.result.getOrThrow
 import io.swagger.v3.oas.annotations.media.Schema
 import org.ietf.jgss.GSSException
@@ -35,6 +36,8 @@ data class Oid private constructor(
     }
 
     companion object {
+        fun String.isOidOfClass(oidClass: OidClass): Boolean = startsWith("${oidClass.node}.") && parse(this).isRight()
+
         fun parse(source: String?): Either<MalformedOidError, Oid> =
             try {
                 Oid(org.ietf.jgss.Oid(source)).right()

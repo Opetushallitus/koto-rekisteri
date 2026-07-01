@@ -5,7 +5,7 @@ import fi.oph.kitu.util.result.getOrThrow
 import kotlin.random.Random
 
 enum class OidClass(
-    val classString: String,
+    val node: String,
 ) {
     OPPIJA("1.2.246.562.24"),
     USER("1.2.246.562.240"),
@@ -17,7 +17,7 @@ fun createOid(
     n: Long,
 ): Oid =
     Oid
-        .parse("${oidClass.classString}.${n.toString().padStart(11, '0')}")
+        .parse("${oidClass.node}.${n.toString().padStart(11, '0')}")
         .getOrThrow()
 
 fun generateOidOfClass(
