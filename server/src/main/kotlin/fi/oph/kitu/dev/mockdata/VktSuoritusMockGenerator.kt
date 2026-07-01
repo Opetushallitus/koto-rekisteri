@@ -1,5 +1,6 @@
 package fi.oph.kitu.dev.mockdata
 
+import arrow.core.raise.either
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.tiedontuontischema.Henkilo
@@ -31,7 +32,7 @@ class VktSuoritusMockGenerator(
         val suoritus = randomSuoritus(index)
         val henkilo = randomOppija(index)
         val henkilosuoritus = Henkilosuoritus(henkilo, suoritus)
-        val enriched = vktValidation.enrich(henkilosuoritus)
+        val enriched = either { with(vktValidation) { enrich(henkilosuoritus) } }.getOrThrow()
         return VktSuoritusEntity.from(enriched)
     }
 

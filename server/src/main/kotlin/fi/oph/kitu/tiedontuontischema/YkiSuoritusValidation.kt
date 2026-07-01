@@ -7,6 +7,7 @@ import arrow.core.raise.ensure
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.organisaatiot.OrganisaatioService
+import fi.oph.kitu.util.validation.EnrichmentRaise
 import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.util.validation.ValidationRaise
 import fi.oph.kitu.yki.Arviointitila
@@ -37,7 +38,7 @@ class YkiSuoritusValidation(
         }
     }
 
-    override fun enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus =
+    override fun EnrichmentRaise.enrich(value: YkiHenkilosuoritus): YkiHenkilosuoritus =
         if (convertLegacyArviointitila) {
             val arvosanat = value.suoritus.osat.map { it.arvosana }
             value.copy(

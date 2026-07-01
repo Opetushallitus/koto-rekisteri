@@ -1,10 +1,12 @@
 package fi.oph.kitu.tiedontuontischema
 
 import arrow.core.NonEmptyList
+import arrow.core.raise.Raise
 import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
 import fi.oph.kitu.koodisto.KoodistoService
 import fi.oph.kitu.oppijanumero.OppijanumeroValidation
+import fi.oph.kitu.util.validation.EnrichmentRaise
 import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.util.validation.ValidationRaise
@@ -45,7 +47,7 @@ class HenkilosuoritusValidation(
         }
     }
 
-    override fun enrich(value: Henkilosuoritus<*>): Henkilosuoritus<*> =
+    override fun EnrichmentRaise.enrich(value: Henkilosuoritus<*>): Henkilosuoritus<*> =
         value.copy(henkilo = value.henkilo.copy(maa = value.henkilo.maa?.uppercase()))
 
     override fun ValidationRaise.validateAfterEnrichment(value: Henkilosuoritus<*>) {
