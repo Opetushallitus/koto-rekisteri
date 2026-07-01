@@ -3,6 +3,7 @@ package fi.oph.kitu.oppijanumero
 import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.left
+import arrow.core.raise.either
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.retry.RetryOutboundIntegration
 import io.opentelemetry.api.trace.Span
@@ -14,6 +15,17 @@ interface OppijanumeroService {
     fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid>
 
     fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo>
+
+    fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
+        either {
+            val henkilo = getHenkilo(henkiloOid).bind()
+            parseOid(henkilo.oppijanumero ?: henkilo.oidHenkilo).bind()
+        }
+
+    fun parseOid(source: String?): Either<OppijanumeroException, Oid> =
+        Oid
+            .parse(source)
+            .mapLeft { OppijanumeroException.MalformedOppijanumero(oppijanumero = source) }
 }
 
 @Service
