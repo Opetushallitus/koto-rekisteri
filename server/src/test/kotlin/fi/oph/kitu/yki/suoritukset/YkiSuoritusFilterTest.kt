@@ -138,6 +138,8 @@ class YkiSuoritusFilterTest {
         return object : OppijanumeroService {
             override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> = throw NotImplementedError()
 
+            override fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> = throw NotImplementedError()
+
             override fun getHenkiloByMasterOid(
                 masterOid: Oid,
             ): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = throw NotImplementedError()
@@ -153,6 +155,8 @@ class YkiSuoritusFilterTest {
     private fun onrFailing(error: OppijanumeroException): OppijanumeroService =
         object : OppijanumeroService {
             override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> = throw NotImplementedError()
+
+            override fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> = throw NotImplementedError()
 
             override fun getHenkiloByMasterOid(
                 masterOid: Oid,

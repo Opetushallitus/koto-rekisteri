@@ -50,6 +50,9 @@ class MockOppijanumeroService : OppijanumeroService {
         }
     }
 
+    override fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
+        getLinkedOids(henkiloOid).map { it.first() }
+
     override fun getHenkiloByMasterOid(masterOid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
         try {
             val source =

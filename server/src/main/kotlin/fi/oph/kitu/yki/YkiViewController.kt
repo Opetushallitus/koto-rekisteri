@@ -86,7 +86,7 @@ class YkiViewController(
                 } else {
                     Pair(null, null)
                 }
-            val henkilo = oppijanumeroService.getHenkiloByMasterOid(suoritus.suorittajanOID)
+            val henkilo = oppijanumeroService.getHenkiloByHenkiloOid(suoritus.suorittajanOID)
             ResponseEntity.ok(
                 YkiSuoritusPage.render(
                     henkilo,
