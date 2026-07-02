@@ -1,7 +1,13 @@
 package fi.oph.kitu.yki.suoritukset
 
+import arrow.core.Either
+import arrow.core.raise.either
+import arrow.core.recover
+import arrow.core.toNonEmptySetOrNull
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.SqlFilterBuilder
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.SearchTerms
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
@@ -21,6 +27,25 @@ data class YkiSuoritusFilter(
     fun params(): Map<String, Any?> = toSql().params()
 
     fun requiresSubTables(): Boolean = tutkintokieli != null || tutkintotaso != null
+
+    fun extendHenkiloOids(onr: OppijanumeroService): Either<OppijanumeroException, YkiSuoritusFilter> =
+        either {
+            val currentSearch = search ?: return@either this@YkiSuoritusFilter
+            val oids = currentSearch.henkiloOids() ?: return@either this@YkiSuoritusFilter
+            val expanded =
+                oids
+                    .toList()
+                    .flatMap { term ->
+                        val oid = onr.parseOid(term).bind()
+                        onr
+                            .getLinkedOids(oid)
+                            .recover { error ->
+                                if (error is OppijanumeroException.OppijaNotFoundException) setOf(oid) else raise(error)
+                            }.bind()
+                    }.map { it.toString() }
+                    .toNonEmptySetOrNull() ?: oids
+            copy(search = currentSearch.withHenkiloOids(expanded))
+        }
 
     private fun toSql() =
         SqlFilterBuilder().apply {

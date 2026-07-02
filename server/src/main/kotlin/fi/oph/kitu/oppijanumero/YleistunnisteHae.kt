@@ -25,6 +25,17 @@ data class YleistunnisteHaeResponse(
     val oppijanumero: String?,
 )
 
+data class YleistunnisteOidResponse(
+    @param:JsonProperty("oid")
+    val oid: String,
+    @param:JsonProperty("oppijanumero")
+    val oppijanumero: String?,
+    @param:JsonProperty("passivoitu")
+    val passivoitu: Boolean = false,
+    @param:JsonProperty("linked")
+    val linked: Set<String> = emptySet(),
+)
+
 data class OppijanumeroServiceError(
     @param:JsonProperty("timestamp")
     val timestamp: Date,

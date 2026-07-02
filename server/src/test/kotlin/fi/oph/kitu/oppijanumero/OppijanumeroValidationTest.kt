@@ -25,6 +25,9 @@ class OppijanumeroValidationTest {
 
                 override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
                     henkilo()
+
+                override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> =
+                    throw NotImplementedError()
             },
         )
 
