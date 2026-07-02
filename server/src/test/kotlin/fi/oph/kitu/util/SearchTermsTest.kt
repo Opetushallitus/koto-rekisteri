@@ -1,5 +1,6 @@
 package fi.oph.kitu.util
 
+import arrow.core.nonEmptySetOf
 import fi.oph.kitu.util.SearchTerms.Companion.TermKind
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -35,7 +36,7 @@ class SearchTermsTest {
     fun `henkilö-oidit eritellään omaan ryhmäänsä`() {
         val terms = SearchTerms.from("$oppijaOid $oppijaOid2")
 
-        assertEquals(listOf(oppijaOid, oppijaOid2), terms.henkiloOids())
+        assertEquals(nonEmptySetOf(oppijaOid, oppijaOid2), terms.henkiloOids())
         assertNull(terms.orgOids())
         assertNull(terms.numbers())
         assertNull(terms.texts())
@@ -45,20 +46,20 @@ class SearchTermsTest {
     fun `organisaatio-oidit eritellään omaan ryhmäänsä`() {
         val terms = SearchTerms.from(orgOid)
 
-        assertEquals(listOf(orgOid), terms.orgOids())
+        assertEquals(nonEmptySetOf(orgOid), terms.orgOids())
         assertNull(terms.henkiloOids())
     }
 
     @Test
     fun `numerot eritellään ja muunnetaan kokonaisluvuiksi`() {
-        assertEquals(listOf(123, 456), SearchTerms.from("123 456").numbers())
+        assertEquals(nonEmptySetOf(123, 456), SearchTerms.from("123 456").numbers())
     }
 
     @Test
     fun `vapaasanatermit päätyvät text-ryhmään`() {
         val terms = SearchTerms.from("matti meikäläinen")
 
-        assertEquals(listOf("matti", "meikäläinen"), terms.texts())
+        assertEquals(nonEmptySetOf("matti", "meikäläinen"), terms.texts())
         assertNull(terms.numbers())
     }
 
@@ -66,10 +67,10 @@ class SearchTermsTest {
     fun `sekakysely eritellään lajeittain`() {
         val terms = SearchTerms.from("$oppijaOid $orgOid 42 matti")
 
-        assertEquals(listOf(oppijaOid), terms.henkiloOids())
-        assertEquals(listOf(orgOid), terms.orgOids())
-        assertEquals(listOf(42), terms.numbers())
-        assertEquals(listOf("matti"), terms.texts())
+        assertEquals(nonEmptySetOf(oppijaOid), terms.henkiloOids())
+        assertEquals(nonEmptySetOf(orgOid), terms.orgOids())
+        assertEquals(nonEmptySetOf(42), terms.numbers())
+        assertEquals(nonEmptySetOf("matti"), terms.texts())
     }
 
     @Test
