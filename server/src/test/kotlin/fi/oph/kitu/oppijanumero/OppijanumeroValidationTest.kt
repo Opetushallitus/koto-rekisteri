@@ -20,13 +20,14 @@ class OppijanumeroValidationTest {
     ): OppijanumeroValidation =
         OppijanumeroValidation(
             object : OppijanumeroService {
-                override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> =
+                override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> =
                     throw NotImplementedError()
 
-                override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
-                    henkilo()
+                override fun getHenkiloByMasterOid(
+                    masterOid: Oid,
+                ): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = henkilo()
 
-                override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> =
+                override fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>> =
                     throw NotImplementedError()
             },
         )

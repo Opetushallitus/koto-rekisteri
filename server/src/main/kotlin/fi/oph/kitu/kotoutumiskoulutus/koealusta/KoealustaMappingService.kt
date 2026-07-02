@@ -78,7 +78,7 @@ class KoealustaMappingService(
 
                 val oppijanumero =
                     oppija
-                        ?.let(oppijanumeroService::getOppijanumero)
+                        ?.let(oppijanumeroService::getMasterOid)
                         ?.mapLeft {
                             val response = if (it is OppijanumeroException.HasResponse) it.response else null
                             val debugInfo = OppijanumerorekisteriDebugInfo.from(it.request, response)

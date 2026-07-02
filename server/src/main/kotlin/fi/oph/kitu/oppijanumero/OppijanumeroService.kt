@@ -12,17 +12,13 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 interface OppijanumeroService {
-    fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid>
+    fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid>
 
-    fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo>
+    fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid>
 
-    fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>>
+    fun getHenkiloByMasterOid(masterOid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo>
 
-    fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
-        either {
-            val henkilo = getHenkilo(henkiloOid).bind()
-            parseOid(henkilo.oppijanumero ?: henkilo.oidHenkilo).bind()
-        }
+    fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>>
 
     fun parseOid(source: String?): Either<OppijanumeroException, Oid> =
         Oid
@@ -37,7 +33,7 @@ class OppijanumeroServiceImpl(
 ) : OppijanumeroService {
     @WithSpan
     @RetryOutboundIntegration
-    override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> {
+    override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> {
         require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
         require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
         require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
@@ -76,22 +72,31 @@ class OppijanumeroServiceImpl(
 
     @WithSpan
     @RetryOutboundIntegration
-    override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
-        client.onrGet("henkilo/$oid", OppijanumerorekisteriHenkilo::class.java)
+    override fun getHenkiloByMasterOid(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
+        either {
+            val masterOid = getMasterOid(oid).bind()
+            client.onrGet("henkilo/$masterOid", OppijanumerorekisteriHenkilo::class.java).bind()
+        }
 
     @WithSpan
     @RetryOutboundIntegration
-    override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> =
+    override fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>> =
         either {
-            val body =
-                client
-                    .onrGet("yleistunniste/hae/$oid", YleistunnisteOidResponse::class.java)
-                    .bind()
-
+            val body = getYleistunniste(henkiloOid).bind()
             Span.current().setAttribute("response.linkedCount", body.linked.size.toLong())
-
             (body.linked + body.oid)
                 .map { parseOid(it).bind() }
                 .toSet()
         }
+
+    @WithSpan
+    @RetryOutboundIntegration
+    override fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
+        either {
+            val body = getYleistunniste(henkiloOid).bind()
+            parseOid(body.oid).bind()
+        }
+
+    private fun getYleistunniste(oid: Oid): Either<OppijanumeroException, YleistunnisteOidResponse> =
+        client.onrGet("yleistunniste/hae/$oid", YleistunnisteOidResponse::class.java)
 }

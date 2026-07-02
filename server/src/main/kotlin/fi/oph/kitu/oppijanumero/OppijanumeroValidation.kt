@@ -47,7 +47,7 @@ class OppijanumeroValidation(
     ): Either<ValidationError, OppijanumerorekisteriHenkilo> {
         val result =
             try {
-                onr.getHenkilo(oid)
+                onr.getHenkiloByMasterOid(oid)
             } catch (error: Throwable) {
                 return ValidationError
                     .EnrichmentError(
