@@ -53,7 +53,7 @@ class OppijanumeroServiceTests {
 
         assertThrows<OppijanumeroException.OppijaNotFoundException> {
             oppijanumeroService
-                .getOppijanumero(
+                .getMasterOid(
                     Oppija(
                         "Magdalena Testi",
                         "010866-9260",
@@ -94,7 +94,7 @@ class OppijanumeroServiceTests {
                 ),
             )
         val result =
-            oppijanumeroService.getOppijanumero(
+            oppijanumeroService.getMasterOid(
                 Oppija(
                     "Magdalena Testi",
                     "Sallinen-Testi",
@@ -215,23 +215,25 @@ class OppijanumeroServiceTests {
 
     private fun oppijanumeroServiceReturning(henkilo: OppijanumerorekisteriHenkilo): OppijanumeroService =
         object : OppijanumeroService {
-            override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> =
+            override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> = throw NotImplementedError()
+
+            override fun getHenkiloByMasterOid(
+                masterOid: Oid,
+            ): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = henkilo.right()
+
+            override fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>> =
                 throw NotImplementedError()
-
-            override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
-                henkilo.right()
-
-            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> = throw NotImplementedError()
         }
 
     private fun oppijanumeroServiceFailing(error: OppijanumeroException): OppijanumeroService =
         object : OppijanumeroService {
-            override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> =
+            override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> = throw NotImplementedError()
+
+            override fun getHenkiloByMasterOid(
+                masterOid: Oid,
+            ): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = error.left()
+
+            override fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>> =
                 throw NotImplementedError()
-
-            override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
-                error.left()
-
-            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> = throw NotImplementedError()
         }
 }

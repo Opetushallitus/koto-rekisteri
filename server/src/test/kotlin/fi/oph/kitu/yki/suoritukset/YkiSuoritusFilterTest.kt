@@ -136,14 +136,14 @@ class YkiSuoritusFilterTest {
     private fun onrReturningLinked(vararg links: Pair<String, Set<String>>): OppijanumeroService {
         val linked = links.toMap()
         return object : OppijanumeroService {
-            override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> =
-                throw NotImplementedError()
+            override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> = throw NotImplementedError()
 
-            override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
-                throw NotImplementedError()
+            override fun getHenkiloByMasterOid(
+                masterOid: Oid,
+            ): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = throw NotImplementedError()
 
-            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> =
-                (linked[oid.toString()].orEmpty() + oid.toString())
+            override fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>> =
+                (linked[henkiloOid.toString()].orEmpty() + henkiloOid.toString())
                     .map { Oid.parse(it).getOrThrow() }
                     .toSet()
                     .right()
@@ -152,12 +152,12 @@ class YkiSuoritusFilterTest {
 
     private fun onrFailing(error: OppijanumeroException): OppijanumeroService =
         object : OppijanumeroService {
-            override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> =
-                throw NotImplementedError()
+            override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> = throw NotImplementedError()
 
-            override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
-                throw NotImplementedError()
+            override fun getHenkiloByMasterOid(
+                masterOid: Oid,
+            ): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = throw NotImplementedError()
 
-            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> = error.left()
+            override fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>> = error.left()
         }
 }

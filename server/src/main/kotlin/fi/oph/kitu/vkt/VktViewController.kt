@@ -98,7 +98,7 @@ class VktViewController(
         val id = CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso)
         val suoritus = vktSuoritukset.getOppijanSuoritukset(id) ?: throw VktSuoritusNotFoundError()
 
-        val henkilo = oppijanumeroService.getHenkilo(suoritus.henkilo.oid)
+        val henkilo = oppijanumeroService.getHenkiloByMasterOid(suoritus.henkilo.oid)
 
         val translations =
             localizationService

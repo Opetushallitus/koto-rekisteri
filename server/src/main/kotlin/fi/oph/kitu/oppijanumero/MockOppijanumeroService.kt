@@ -2,6 +2,7 @@ package fi.oph.kitu.oppijanumero
 
 import arrow.core.Either
 import arrow.core.left
+import arrow.core.nonEmptySetOf
 import arrow.core.right
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.defaultObjectMapper
@@ -15,7 +16,7 @@ import java.io.FileNotFoundException
 @Service
 @Profile("test | e2e | local-opintopolku")
 class MockOppijanumeroService : OppijanumeroService {
-    override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> {
+    override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> {
         require(oppija.etunimet.isNotEmpty()) { "etunimet cannot be empty" }
         require(oppija.hetu.isNotEmpty()) { "hetu cannot be empty" }
         require(oppija.sukunimi.isNotEmpty()) { "sukunimi cannot be empty" }
@@ -49,25 +50,28 @@ class MockOppijanumeroService : OppijanumeroService {
         }
     }
 
-    override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
+    override fun getHenkiloByMasterOid(masterOid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
         try {
-            val source = ClassPathResource("./opintopolku-mocks/oppijanumerorekisteri-service/henkilo/$oid.json").file
+            val source =
+                ClassPathResource(
+                    "./opintopolku-mocks/oppijanumerorekisteri-service/henkilo/$masterOid.json",
+                ).file
             defaultObjectMapper.readValue(source, OppijanumerorekisteriHenkilo::class.java).right()
         } catch (_: FileNotFoundException) {
             OppijanumeroException.OppijaNotFoundException(EmptyRequest(), ResponseEntity.notFound().build()).left()
         }
 
-    override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> =
-        (linkedOids[oid.toString()].orEmpty() + oid.toString())
-            .map { Oid.parse(it).getOrThrow() }
-            .toSet()
+    override fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>> =
+        linkedOids
+            .find { it.contains(henkiloOid) }
+            .orEmpty()
             .right()
 
     companion object {
-        val linkedOids: Map<String, Set<String>> =
-            mapOf(
-                "1.2.246.562.24.33342764709" to setOf("1.2.246.562.24.99988877766"),
-            )
+        val linkedOids: List<Set<Oid>> =
+            listOf(
+                nonEmptySetOf("1.2.246.562.24.33342764709", "1.2.246.562.24.99988877766"),
+            ).map { it.mapNotNull { Oid.parse(it).getOrNull() }.toSet() }
 
         val oppijaToOid =
             mapOf(
