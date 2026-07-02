@@ -1,14 +1,15 @@
 package fi.oph.kitu.oppijanumero
 
 import arrow.core.Either
+import arrow.core.flatMap
 import arrow.core.left
-import arrow.core.nonEmptySetOf
 import arrow.core.right
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.util.result.getOrThrow
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.io.FileNotFoundException
@@ -51,7 +52,9 @@ class MockOppijanumeroService : OppijanumeroService {
     }
 
     override fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
-        getLinkedOids(henkiloOid).map { it.first() }
+        getHenkiloByMasterOid(henkiloOid).flatMap { henkilo ->
+            parseOid(henkilo.oppijanumero ?: henkilo.oidHenkilo)
+        }
 
     override fun getHenkiloByMasterOid(masterOid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
         try {
@@ -71,10 +74,25 @@ class MockOppijanumeroService : OppijanumeroService {
             .right()
 
     companion object {
+        private const val HENKILO_FIXTURES =
+            "classpath*:opintopolku-mocks/oppijanumerorekisteri-service/henkilo/*.json"
+
         val linkedOids: List<Set<Oid>> =
-            listOf(
-                nonEmptySetOf("1.2.246.562.24.33342764709", "1.2.246.562.24.99988877766"),
-            ).map { it.mapNotNull { Oid.parse(it).getOrNull() }.toSet() }
+            PathMatchingResourcePatternResolver()
+                .getResources(HENKILO_FIXTURES)
+                .map { resource ->
+                    resource.inputStream.use {
+                        defaultObjectMapper.readValue(it, OppijanumerorekisteriHenkilo::class.java)
+                    }
+                }.mapNotNull { henkilo ->
+                    val oid = Oid.parse(henkilo.oidHenkilo).getOrNull() ?: return@mapNotNull null
+                    val master =
+                        Oid.parse(henkilo.oppijanumero ?: henkilo.oidHenkilo).getOrNull()
+                            ?: return@mapNotNull null
+                    master to oid
+                }.groupBy({ it.first }, { it.second })
+                .map { (master, oids) -> (oids + master).toSet() }
+                .filter { it.size > 1 }
 
         val oppijaToOid =
             mapOf(
