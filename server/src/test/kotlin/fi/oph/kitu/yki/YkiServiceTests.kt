@@ -191,7 +191,11 @@ class YkiServiceTests(
         ykiSuoritusRepository.save(entity.copy(lastModified = Instant.now().minusSeconds(1000)), false)
         ykiSuoritusRepository.save(entity.copy(lastModified = Instant.now()), false)
 
-        val suoritushistory = ykiSuoritusRepository.find(YkiSuoritusFilter(search = oppijanumero), distinct = false)
+        val suoritushistory =
+            ykiSuoritusRepository.find(
+                YkiSuoritusFilter.from(search = oppijanumero),
+                distinct = false,
+            )
         assertEquals(1, suoritushistory.count())
     }
 

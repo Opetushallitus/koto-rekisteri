@@ -3,6 +3,7 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.jdbc.SortDirection
+import fi.oph.kitu.util.SearchTerms
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusOrder
@@ -45,7 +46,7 @@ data class YkiSuorituksetParams(
 
     fun toFilter() =
         YkiSuoritusFilter(
-            search = search,
+            search = SearchTerms.from(search),
             alkupaiva = tutkintoalku,
             loppupaiva = tutkintoloppu,
             tutkintokieli = tutkintokieli,

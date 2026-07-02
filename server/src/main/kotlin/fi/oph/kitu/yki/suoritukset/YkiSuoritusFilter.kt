@@ -1,9 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 
-import fi.oph.kitu.dev.mockdata.OidClass
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.SqlFilterBuilder
-import fi.oph.kitu.oid.Oid.Companion.isOidOfClass
 import fi.oph.kitu.util.SearchTerms
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
@@ -11,7 +9,7 @@ import fi.oph.kitu.yki.Tutkintotaso
 import java.time.LocalDate
 
 data class YkiSuoritusFilter(
-    val search: String? = null,
+    val search: SearchTerms? = null,
     val alkupaiva: LocalDate? = null,
     val loppupaiva: LocalDate? = null,
     val tutkintokieli: Tutkintokieli? = null,
@@ -26,19 +24,17 @@ data class YkiSuoritusFilter(
 
     private fun toSql() =
         SqlFilterBuilder().apply {
-            val terms = SearchTerms(search)
-
-            terms.texts()?.forEachIndexed { i, term ->
+            search?.texts()?.forEachIndexed { i, term ->
                 val param = "filter_search_$i"
                 add(searchTermClause(param), param to "%$term%")
             }
-            terms.henkiloOids()?.let { oids ->
+            search?.henkiloOids()?.let { oids ->
                 add("suorittajan_oid IN (:henkilo_oids)", "henkilo_oids" to oids)
             }
-            terms.orgOids()?.let { oids ->
+            search?.orgOids()?.let { oids ->
                 add("jarjestajan_tunnus_oid IN (:org_oids)", "org_oids" to oids)
             }
-            terms.numbers()?.let { ids ->
+            search?.numbers()?.let { ids ->
                 add("yki_suoritus.solki_id IN (:solki_ids)", "solki_ids" to ids)
             }
             add(alkupaiva?.let { "tutkintopaiva >= :filter_alkupaiva" }, "filter_alkupaiva" to alkupaiva)
@@ -60,6 +56,10 @@ data class YkiSuoritusFilter(
         OR hetu ILIKE :$param
         OR jarjestajan_nimi ILIKE :$param
         """.trimIndent()
+
+    companion object {
+        fun from(search: String?) = YkiSuoritusFilter(search = SearchTerms.from(search))
+    }
 }
 
 data class YkiSuoritusOrder(

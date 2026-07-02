@@ -4,29 +4,37 @@ import fi.oph.kitu.dev.mockdata.OidClass
 import fi.oph.kitu.oid.Oid.Companion.isOidOfClass
 
 data class SearchTerms(
-    val query: String?,
+    val terms: Map<TermKind, List<String>>,
 ) {
-    val allTerms by lazy {
-        query
-            ?.trim()
-            ?.takeIf { it.isNotEmpty() }
-            ?.split(Regex("[\\s,;]+"))
-            .orEmpty()
-    }
+    val allTerms: List<String> by lazy { terms.values.flatten() }
 
-    val termsByKind: Map<TermKind, List<String>> by lazy {
-        allTerms.groupBy { TermKind.from(it) }
-    }
+    fun henkiloOids(): List<String>? = terms[TermKind.HenkiloOid]
 
-    fun henkiloOids(): List<String>? = termsByKind[TermKind.HenkiloOid]
+    fun orgOids(): List<String>? = terms[TermKind.OrgOid]
 
-    fun orgOids(): List<String>? = termsByKind[TermKind.OrgOid]
+    fun numbers(): List<Int>? = terms[TermKind.Number]?.map { it.toInt() }
 
-    fun numbers(): List<Int>? = termsByKind[TermKind.Number]?.map { it.toInt() }
-
-    fun texts(): List<String>? = termsByKind[TermKind.Text]
+    fun texts(): List<String>? = terms[TermKind.Text]
 
     companion object {
+        fun from(
+            query: String?,
+            extend: Map<TermKind, List<String>> = emptyMap(),
+        ): SearchTerms =
+            SearchTerms(
+                query
+                    ?.trim()
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.split(Regex("[\\s,;]+"))
+                    .orEmpty()
+                    .groupBy { TermKind.from(it) }
+                    .let { grouped ->
+                        (grouped.keys + extend.keys).associateWith { key ->
+                            (grouped[key].orEmpty() + extend[key].orEmpty())
+                        }
+                    },
+            )
+
         enum class TermKind {
             HenkiloOid,
             OrgOid,
