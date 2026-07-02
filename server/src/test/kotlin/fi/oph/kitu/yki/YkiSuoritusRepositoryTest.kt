@@ -143,11 +143,11 @@ class YkiSuoritusRepositoryTest(
         ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus, suoritus2))
 
         val searchStr = "ranja"
-        val suoritukset = ykiSuoritusRepository.find(YkiSuoritusFilter(search = searchStr))
+        val suoritukset = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = searchStr))
         assertEquals(1, suoritukset.count())
         assertEquals(suoritus, suoritukset.first().copy(id = null))
 
-        val anotherSuoritukset = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "testi"))
+        val anotherSuoritukset = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = "testi"))
         assertEquals(2, anotherSuoritukset.count())
     }
 
@@ -165,15 +165,15 @@ class YkiSuoritusRepositoryTest(
             )
         ykiSuoritusRepository.saveAllNewEntities(listOf(target, decoy))
 
-        val byFullName = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "Matti Virtanen"))
+        val byFullName = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = "Matti Virtanen"))
         assertEquals(1, byFullName.count())
         assertEquals(target, byFullName.first().copy(id = null))
 
-        val byReversedName = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "Virtanen Matti"))
+        val byReversedName = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = "Virtanen Matti"))
         assertEquals(1, byReversedName.count())
         assertEquals(target, byReversedName.first().copy(id = null))
 
-        val byWrongCombo = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "Matti Lahtinen"))
+        val byWrongCombo = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = "Matti Lahtinen"))
         assertEquals(0, byWrongCombo.count())
     }
 
@@ -189,11 +189,11 @@ class YkiSuoritusRepositoryTest(
             )
         ykiSuoritusRepository.saveAllNewEntities(listOf(target, other))
 
-        val exact = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "314159"))
+        val exact = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = "314159"))
         assertEquals(1, exact.count())
         assertEquals(target.solkiId, exact.first().solkiId)
 
-        val partial = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "3141"))
+        val partial = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = "3141"))
         assertEquals(0, partial.count())
     }
 
@@ -205,7 +205,7 @@ class YkiSuoritusRepositoryTest(
         val muu = generateRandomYkiSuoritusEntity().copy(solkiId = 100002, suorittajanOID = oid2)
         ykiSuoritusRepository.saveAllNewEntities(listOf(target, muu))
 
-        val tulos = ykiSuoritusRepository.find(YkiSuoritusFilter(search = oid1.toString()))
+        val tulos = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = oid1.toString()))
 
         assertEquals(1, tulos.count())
         assertEquals(oid1, tulos.first().suorittajanOID)
@@ -221,7 +221,7 @@ class YkiSuoritusRepositoryTest(
         val c = generateRandomYkiSuoritusEntity().copy(solkiId = 100003, suorittajanOID = oid3)
         ykiSuoritusRepository.saveAllNewEntities(listOf(a, b, c))
 
-        val tulos = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "$oid1 $oid2"))
+        val tulos = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = "$oid1 $oid2"))
 
         assertEquals(setOf(oid1, oid2), tulos.map { it.suorittajanOID }.toSet())
     }
@@ -234,7 +234,7 @@ class YkiSuoritusRepositoryTest(
         val muu = generateRandomYkiSuoritusEntity().copy(solkiId = 100002, jarjestajanTunnusOid = org2)
         ykiSuoritusRepository.saveAllNewEntities(listOf(target, muu))
 
-        val tulos = ykiSuoritusRepository.find(YkiSuoritusFilter(search = org1.toString()))
+        val tulos = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = org1.toString()))
 
         assertEquals(1, tulos.count())
         assertEquals(org1, tulos.first().jarjestajanTunnusOid)
@@ -258,7 +258,7 @@ class YkiSuoritusRepositoryTest(
             )
         ykiSuoritusRepository.saveAllNewEntities(listOf(target, eriJarjestaja))
 
-        val molemmat = ykiSuoritusRepository.find(YkiSuoritusFilter(search = "$oppija $org"))
+        val molemmat = ykiSuoritusRepository.find(YkiSuoritusFilter.from(search = "$oppija $org"))
 
         assertEquals(1, molemmat.count())
         assertEquals(target.solkiId, molemmat.first().solkiId)
@@ -275,7 +275,7 @@ class YkiSuoritusRepositoryTest(
             ),
         )
 
-        val filter = YkiSuoritusFilter(search = oid1.toString())
+        val filter = YkiSuoritusFilter.from(search = oid1.toString())
 
         assertEquals(1L, ykiSuoritusRepository.countSuoritukset(filter))
         assertEquals(
@@ -293,7 +293,7 @@ class YkiSuoritusRepositoryTest(
             ),
         )
 
-        val filter = YkiSuoritusFilter(search = "424242")
+        val filter = YkiSuoritusFilter.from(search = "424242")
 
         assertEquals(1L, ykiSuoritusRepository.countSuoritukset(filter))
         assertEquals(
@@ -503,11 +503,11 @@ class YkiSuoritusRepositoryTest(
         assertEquals(2L, countDistinct, "Assert failed for count distinct suoritukset")
         val countAll = ykiSuoritusRepository.countSuoritukset(distinct = false)
         assertEquals(3L, countAll, "Assert failed for count all suoritukset")
-        val countRanjaDistinct = ykiSuoritusRepository.countSuoritukset(YkiSuoritusFilter(search = "ranja"))
+        val countRanjaDistinct = ykiSuoritusRepository.countSuoritukset(YkiSuoritusFilter.from(search = "ranja"))
         assertEquals(1L, countRanjaDistinct, "Assert failed for count distinct suoritukset with a search term")
         val countRanjaAll =
             ykiSuoritusRepository.countSuoritukset(
-                YkiSuoritusFilter(search = "ranja"),
+                YkiSuoritusFilter.from(search = "ranja"),
                 distinct = false,
             )
         assertEquals(2L, countRanjaAll, "Assert failed for count all suoritukset with a search term")

@@ -12,7 +12,7 @@ class YkiSuoritusFilterTest {
 
     @Test
     fun `vapaasanahaku tuottaa ILIKE-ehdon parametrilla`() {
-        val filter = YkiSuoritusFilter(search = "matti")
+        val filter = YkiSuoritusFilter.from(search = "matti")
 
         assertTrue(filter.whereSql()!!.contains("filter_search_0"), "Got: ${filter.whereSql()}")
         assertEquals("%matti%", filter.params()["filter_search_0"])
@@ -20,7 +20,7 @@ class YkiSuoritusFilterTest {
 
     @Test
     fun `useampi vapaasanatermi saa omat parametrinsa`() {
-        val params = YkiSuoritusFilter(search = "matti meikäläinen").params()
+        val params = YkiSuoritusFilter.from(search = "matti meikäläinen").params()
 
         assertEquals("%matti%", params["filter_search_0"])
         assertEquals("%meikäläinen%", params["filter_search_1"])
@@ -28,7 +28,7 @@ class YkiSuoritusFilterTest {
 
     @Test
     fun `henkilö-oid tuottaa suorittajan_oid IN -ehdon eikä interpoloi oidia raakana`() {
-        val filter = YkiSuoritusFilter(search = oppijaOid)
+        val filter = YkiSuoritusFilter.from(search = oppijaOid)
         val where = filter.whereSql()!!
 
         assertTrue(where.contains("suorittajan_oid IN (:henkilo_oids)"), "Got: $where")
@@ -38,7 +38,7 @@ class YkiSuoritusFilterTest {
 
     @Test
     fun `organisaatio-oid tuottaa jarjestajan_tunnus_oid IN -ehdon`() {
-        val filter = YkiSuoritusFilter(search = orgOid)
+        val filter = YkiSuoritusFilter.from(search = orgOid)
         val where = filter.whereSql()!!
 
         assertTrue(where.contains("jarjestajan_tunnus_oid IN (:org_oids)"), "Got: $where")
@@ -47,7 +47,7 @@ class YkiSuoritusFilterTest {
 
     @Test
     fun `numero tuottaa solki_id-ehdon kokonaislukuparametrilla`() {
-        val filter = YkiSuoritusFilter(search = "12345")
+        val filter = YkiSuoritusFilter.from(search = "12345")
         val where = filter.whereSql()!!
 
         assertTrue(where.contains("yki_suoritus.solki_id IN (:solki_ids)"), "Got: $where")
@@ -56,7 +56,7 @@ class YkiSuoritusFilterTest {
 
     @Test
     fun `sekahaku tuottaa kaikki ehdot yhtä aikaa`() {
-        val filter = YkiSuoritusFilter(search = "$oppijaOid $orgOid 42 matti")
+        val filter = YkiSuoritusFilter.from(search = "$oppijaOid $orgOid 42 matti")
         val where = filter.whereSql()!!
         val params = filter.params()
 
@@ -73,6 +73,6 @@ class YkiSuoritusFilterTest {
     @Test
     fun `tyhjä haku ei tuota where-lausetta`() {
         assertNull(YkiSuoritusFilter().whereSql())
-        assertNull(YkiSuoritusFilter(search = "   ").whereSql())
+        assertNull(YkiSuoritusFilter.from(search = "   ").whereSql())
     }
 }

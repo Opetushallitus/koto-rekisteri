@@ -13,27 +13,27 @@ class SearchTermsTest {
 
     @Test
     fun `null-kysely tuottaa tyhjän termilistan`() {
-        assertTrue(SearchTerms(null).allTerms.isEmpty())
+        assertTrue(SearchTerms.from(null).allTerms.isEmpty())
     }
 
     @Test
     fun `pelkkiä välilyöntejä sisältävä kysely tuottaa tyhjän termilistan`() {
-        assertTrue(SearchTerms("   ").allTerms.isEmpty())
+        assertTrue(SearchTerms.from("   ").allTerms.isEmpty())
     }
 
     @Test
     fun `kysely pilkotaan välilyöntien, pilkkujen ja puolipisteiden kohdalta`() {
-        assertEquals(listOf("a", "b", "c", "d", "e"), SearchTerms("a b,c;d  e").allTerms)
+        assertEquals(listOf("a", "b", "c", "d", "e"), SearchTerms.from("a b,c;d  e").allTerms)
     }
 
     @Test
     fun `alku- ja loppuvälilyönnit siivotaan`() {
-        assertEquals(listOf("matti"), SearchTerms("  matti  ").allTerms)
+        assertEquals(listOf("matti"), SearchTerms.from("  matti  ").allTerms)
     }
 
     @Test
     fun `henkilö-oidit eritellään omaan ryhmäänsä`() {
-        val terms = SearchTerms("$oppijaOid $oppijaOid2")
+        val terms = SearchTerms.from("$oppijaOid $oppijaOid2")
 
         assertEquals(listOf(oppijaOid, oppijaOid2), terms.henkiloOids())
         assertNull(terms.orgOids())
@@ -43,7 +43,7 @@ class SearchTermsTest {
 
     @Test
     fun `organisaatio-oidit eritellään omaan ryhmäänsä`() {
-        val terms = SearchTerms(orgOid)
+        val terms = SearchTerms.from(orgOid)
 
         assertEquals(listOf(orgOid), terms.orgOids())
         assertNull(terms.henkiloOids())
@@ -51,12 +51,12 @@ class SearchTermsTest {
 
     @Test
     fun `numerot eritellään ja muunnetaan kokonaisluvuiksi`() {
-        assertEquals(listOf(123, 456), SearchTerms("123 456").numbers())
+        assertEquals(listOf(123, 456), SearchTerms.from("123 456").numbers())
     }
 
     @Test
     fun `vapaasanatermit päätyvät text-ryhmään`() {
-        val terms = SearchTerms("matti meikäläinen")
+        val terms = SearchTerms.from("matti meikäläinen")
 
         assertEquals(listOf("matti", "meikäläinen"), terms.texts())
         assertNull(terms.numbers())
@@ -64,7 +64,7 @@ class SearchTermsTest {
 
     @Test
     fun `sekakysely eritellään lajeittain`() {
-        val terms = SearchTerms("$oppijaOid $orgOid 42 matti")
+        val terms = SearchTerms.from("$oppijaOid $orgOid 42 matti")
 
         assertEquals(listOf(oppijaOid), terms.henkiloOids())
         assertEquals(listOf(orgOid), terms.orgOids())
