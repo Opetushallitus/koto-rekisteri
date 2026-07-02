@@ -100,7 +100,7 @@ class OppijanumeroServiceImpl(
     override fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
         either {
             val body = getYleistunniste(henkiloOid).bind()
-            parseOid(body.oid).bind()
+            parseOid(body.oppijanumero ?: body.oid).bind()
         }
 
     private fun getYleistunniste(oid: Oid): Either<OppijanumeroException, YleistunnisteOidResponse> =
