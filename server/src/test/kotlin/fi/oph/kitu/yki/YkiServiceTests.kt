@@ -6,6 +6,7 @@ import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oppijanumero.MockOppijanumeroService
 import fi.oph.kitu.tiedontuontischema.Henkilo
 import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
 import fi.oph.kitu.tiedontuontischema.Lahdejarjestelma
@@ -90,6 +91,7 @@ class YkiServiceTests(
                 suoritusPoikkeamaRepository,
                 auditLogger,
                 parser,
+                MockOppijanumeroService(),
             )
 
         service.checkYkiAnomalies(from)
@@ -226,6 +228,7 @@ class YkiServiceTests(
                 suoritusPoikkeamaRepository,
                 auditLogger,
                 parser,
+                MockOppijanumeroService(),
             )
 
         service.checkYkiAnomalies(from)
@@ -278,6 +281,7 @@ class YkiServiceTests(
                 suoritusPoikkeamaRepository,
                 auditLogger,
                 parser,
+                MockOppijanumeroService(),
             )
 
         service.checkYkiAnomalies(from)
@@ -346,6 +350,7 @@ class YkiServiceTests(
             suoritusPoikkeamaRepository,
             auditLogger,
             parser,
+            MockOppijanumeroService(),
         )
 
     private fun tallennaTarkistusarvioituSuoritus(

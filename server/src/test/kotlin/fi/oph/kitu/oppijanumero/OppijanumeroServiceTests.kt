@@ -221,8 +221,7 @@ class OppijanumeroServiceTests {
             override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
                 henkilo.right()
 
-            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> =
-                throw NotImplementedError()
+            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> = throw NotImplementedError()
         }
 
     private fun oppijanumeroServiceFailing(error: OppijanumeroException): OppijanumeroService =
@@ -233,7 +232,6 @@ class OppijanumeroServiceTests {
             override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
                 error.left()
 
-            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> =
-                throw NotImplementedError()
+            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> = throw NotImplementedError()
         }
 }

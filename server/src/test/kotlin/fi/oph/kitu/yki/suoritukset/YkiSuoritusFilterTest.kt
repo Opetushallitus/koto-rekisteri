@@ -1,6 +1,17 @@
 package fi.oph.kitu.yki.suoritukset
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
+import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oppijanumero.EmptyRequest
+import fi.oph.kitu.oppijanumero.Oppija
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
+import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.Test
+import org.springframework.http.ResponseEntity
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -33,7 +44,7 @@ class YkiSuoritusFilterTest {
 
         assertTrue(where.contains("suorittajan_oid IN (:henkilo_oids)"), "Got: $where")
         assertFalse(where.contains(oppijaOid), "OID must not appear inline in SQL: $where")
-        assertEquals(listOf(oppijaOid), filter.params()["henkilo_oids"])
+        assertEquals(setOf(oppijaOid), filter.params().collectionAt("henkilo_oids"))
     }
 
     @Test
@@ -42,7 +53,7 @@ class YkiSuoritusFilterTest {
         val where = filter.whereSql()!!
 
         assertTrue(where.contains("jarjestajan_tunnus_oid IN (:org_oids)"), "Got: $where")
-        assertEquals(listOf(orgOid), filter.params()["org_oids"])
+        assertEquals(setOf(orgOid), filter.params().collectionAt("org_oids"))
     }
 
     @Test
@@ -51,7 +62,7 @@ class YkiSuoritusFilterTest {
         val where = filter.whereSql()!!
 
         assertTrue(where.contains("yki_suoritus.solki_id IN (:solki_ids)"), "Got: $where")
-        assertEquals(listOf(12345), filter.params()["solki_ids"])
+        assertEquals(setOf(12345), filter.params().collectionAt("solki_ids"))
     }
 
     @Test
@@ -64,9 +75,9 @@ class YkiSuoritusFilterTest {
         assertTrue(where.contains("jarjestajan_tunnus_oid IN (:org_oids)"), "Got: $where")
         assertTrue(where.contains("yki_suoritus.solki_id IN (:solki_ids)"), "Got: $where")
         assertTrue(where.contains("filter_search_0"), "Got: $where")
-        assertEquals(listOf(oppijaOid), params["henkilo_oids"])
-        assertEquals(listOf(orgOid), params["org_oids"])
-        assertEquals(listOf(42), params["solki_ids"])
+        assertEquals(setOf(oppijaOid), params.collectionAt("henkilo_oids"))
+        assertEquals(setOf(orgOid), params.collectionAt("org_oids"))
+        assertEquals(setOf(42), params.collectionAt("solki_ids"))
         assertEquals("%matti%", params["filter_search_0"])
     }
 
@@ -75,4 +86,78 @@ class YkiSuoritusFilterTest {
         assertNull(YkiSuoritusFilter().whereSql())
         assertNull(YkiSuoritusFilter.from(search = "   ").whereSql())
     }
+
+    @Test
+    fun `extendHenkiloOids ilman henkilö-oideja palauttaa saman filtterin`() {
+        val filter = YkiSuoritusFilter.from(search = "matti")
+
+        val result = filter.extendHenkiloOids(onrFailing(unexpectedError()))
+
+        assertEquals(filter, result.getOrThrow())
+    }
+
+    @Test
+    fun `extendHenkiloOids laajentaa haun kaikilla linkitetyillä oideilla`() {
+        val slaveA = "1.2.246.562.24.99999999999"
+        val slaveB = "1.2.246.562.24.88888888888"
+        val filter = YkiSuoritusFilter.from(search = oppijaOid)
+
+        val extended = filter.extendHenkiloOids(onrReturningLinked(oppijaOid to setOf(slaveA, slaveB))).getOrThrow()
+
+        assertEquals(setOf(oppijaOid, slaveA, slaveB), extended.params().collectionAt("henkilo_oids"))
+    }
+
+    @Test
+    fun `extendHenkiloOids säilyttää alkuperäisen oidin kun oppijaa ei löydy`() {
+        val filter = YkiSuoritusFilter.from(search = oppijaOid)
+
+        val extended = filter.extendHenkiloOids(onrFailing(oppijaNotFound())).getOrThrow()
+
+        assertEquals(setOf(oppijaOid), extended.params().collectionAt("henkilo_oids"))
+    }
+
+    @Test
+    fun `extendHenkiloOids palauttaa virheen kun oppijanumeropalvelu ei vastaa`() {
+        val filter = YkiSuoritusFilter.from(search = oppijaOid)
+
+        val result = filter.extendHenkiloOids(onrFailing(unexpectedError()))
+
+        assertTrue(result.isLeft())
+    }
+
+    private fun Map<String, Any?>.collectionAt(key: String): Set<*> = (this[key] as Collection<*>).toSet()
+
+    private fun oppijaNotFound() =
+        OppijanumeroException.OppijaNotFoundException(EmptyRequest(), ResponseEntity.notFound().build())
+
+    private fun unexpectedError() =
+        OppijanumeroException.UnexpectedError(EmptyRequest(), ResponseEntity.internalServerError().build())
+
+    private fun onrReturningLinked(vararg links: Pair<String, Set<String>>): OppijanumeroService {
+        val linked = links.toMap()
+        return object : OppijanumeroService {
+            override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> =
+                throw NotImplementedError()
+
+            override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
+                throw NotImplementedError()
+
+            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> =
+                (linked[oid.toString()].orEmpty() + oid.toString())
+                    .map { Oid.parse(it).getOrThrow() }
+                    .toSet()
+                    .right()
+        }
+    }
+
+    private fun onrFailing(error: OppijanumeroException): OppijanumeroService =
+        object : OppijanumeroService {
+            override fun getOppijanumero(oppija: Oppija): Either<OppijanumeroException, Oid> =
+                throw NotImplementedError()
+
+            override fun getHenkilo(oid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
+                throw NotImplementedError()
+
+            override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> = error.left()
+        }
 }
