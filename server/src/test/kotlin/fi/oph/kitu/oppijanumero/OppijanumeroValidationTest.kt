@@ -15,20 +15,22 @@ class OppijanumeroValidationTest {
     private val oid = Oid("1.2.246.562.24.20281155246")
     private val path = listOf("henkilo", "oid")
 
-    private fun validationReturning(
-        henkilo: () -> Either<OppijanumeroException, OppijanumerorekisteriHenkilo>,
+    private fun validation(
+        masterOid: () -> Either<OppijanumeroException, Oid> = { throw NotImplementedError() },
+        henkiloByMasterOid: () -> Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = {
+            throw NotImplementedError()
+        },
     ): OppijanumeroValidation =
         OppijanumeroValidation(
             object : OppijanumeroService {
                 override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> =
                     throw NotImplementedError()
 
-                override fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
-                    throw NotImplementedError()
+                override fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> = masterOid()
 
                 override fun getHenkiloByMasterOid(
                     masterOid: Oid,
-                ): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = henkilo()
+                ): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = henkiloByMasterOid()
 
                 override fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>> =
                     throw NotImplementedError()
@@ -47,64 +49,20 @@ class OppijanumeroValidationTest {
     private fun oppijaNotFound(): OppijanumeroException.OppijaNotFoundException =
         OppijanumeroException.OppijaNotFoundException(EmptyRequest(), ResponseEntity.notFound().build())
 
-    // validateOppijanumeroInOnr
-
-    @Test
-    fun `validateOppijanumeroInOnr kääntää oppijanumeropalvelun poikkeuksen EnrichmentErroriksi`() {
-        val result = validationReturning { throw RuntimeException("boom") }.validateOppijanumeroInOnr(oid, path)
-
-        assertIs<ValidationError.EnrichmentError>((result as Either.Left).value)
-    }
-
-    @Test
-    fun `validateOppijanumeroInOnr kääntää odottamattoman oppijanumerovirheen EnrichmentErroriksi`() {
-        val result =
-            validationReturning { OppijanumeroException.NullResponse(EmptyRequest()).left() }
-                .validateOppijanumeroInOnr(oid, path)
-
-        assertIs<ValidationError.EnrichmentError>((result as Either.Left).value)
-    }
-
-    @Test
-    fun `validateOppijanumeroInOnr pitää puuttuvan oppijan tavallisena kenttävirheenä`() {
-        val result = validationReturning { oppijaNotFound().left() }.validateOppijanumeroInOnr(oid, path)
-
-        assertIs<ValidationError.FieldError>((result as Either.Left).value)
-    }
-
-    @Test
-    fun `validateOppijanumeroInOnr palauttaa löytyvän henkilön`() {
-        val henkilo = henkiloWith(oppijanumero = oid.toString(), oidHenkilo = oid.toString())
-
-        val result = validationReturning { henkilo.right() }.validateOppijanumeroInOnr(oid, path)
-
-        assertEquals(henkilo.right(), result)
-    }
-
     // mapHenkiloOidToMasterOid
 
     @Test
-    fun `mapHenkiloOidToMasterOid korvaa henkilö-oidin oppijanumerolla`() {
-        val master = "1.2.246.562.24.33342764709"
-        val henkilo = henkiloWith(oppijanumero = master, oidHenkilo = oid.toString())
+    fun `mapHenkiloOidToMasterOid palauttaa oppijanumerorekisterin master-oidin`() {
+        val master = Oid("1.2.246.562.24.33342764709")
 
-        val result = validationReturning { henkilo.right() }.mapHenkiloOidToMasterOid(oid, path)
+        val result = validation(masterOid = { master.right() }).mapHenkiloOidToMasterOid(oid, path)
 
-        assertEquals(Oid(master).right(), result)
-    }
-
-    @Test
-    fun `mapHenkiloOidToMasterOid käyttää oidHenkiloa kun oppijanumero puuttuu`() {
-        val henkilo = henkiloWith(oppijanumero = null, oidHenkilo = oid.toString())
-
-        val result = validationReturning { henkilo.right() }.mapHenkiloOidToMasterOid(oid, path)
-
-        assertEquals(oid.right(), result)
+        assertEquals(master.right(), result)
     }
 
     @Test
     fun `mapHenkiloOidToMasterOid tuottaa selkeän suomenkielisen virheen kun oppijaa ei löydy`() {
-        val result = validationReturning { oppijaNotFound().left() }.mapHenkiloOidToMasterOid(oid, path)
+        val result = validation(masterOid = { oppijaNotFound().left() }).mapHenkiloOidToMasterOid(oid, path)
 
         val error = assertIs<ValidationError.EnrichmentError>((result as Either.Left).value)
         assertEquals("Oppijanumeroa $oid ei löydy Oppijanumerorekisteristä", error.message)
@@ -112,7 +70,47 @@ class OppijanumeroValidationTest {
 
     @Test
     fun `mapHenkiloOidToMasterOid kääntää oppijanumeropalvelun poikkeuksen EnrichmentErroriksi`() {
-        val result = validationReturning { throw RuntimeException("boom") }.mapHenkiloOidToMasterOid(oid, path)
+        val result = validation(masterOid = { throw RuntimeException("boom") }).mapHenkiloOidToMasterOid(oid, path)
+
+        assertIs<ValidationError.EnrichmentError>((result as Either.Left).value)
+    }
+
+    // validateOppijanumeroInOnr
+
+    @Test
+    fun `validateOppijanumeroInOnr palauttaa löytyvän henkilön`() {
+        val henkilo = henkiloWith(oppijanumero = oid.toString(), oidHenkilo = oid.toString())
+
+        val result =
+            validation(
+                masterOid = { oid.right() },
+                henkiloByMasterOid = { henkilo.right() },
+            ).validateOppijanumeroInOnr(oid, path)
+
+        assertEquals(henkilo.right(), result)
+    }
+
+    @Test
+    fun `validateOppijanumeroInOnr pitää puuttuvan oppijan tavallisena kenttävirheenä`() {
+        val result = validation(masterOid = { oppijaNotFound().left() }).validateOppijanumeroInOnr(oid, path)
+
+        assertIs<ValidationError.FieldError>((result as Either.Left).value)
+    }
+
+    @Test
+    fun `validateOppijanumeroInOnr kääntää odottamattoman oppijanumerovirheen EnrichmentErroriksi`() {
+        val result =
+            validation(
+                masterOid = { oid.right() },
+                henkiloByMasterOid = { OppijanumeroException.NullResponse(EmptyRequest()).left() },
+            ).validateOppijanumeroInOnr(oid, path)
+
+        assertIs<ValidationError.EnrichmentError>((result as Either.Left).value)
+    }
+
+    @Test
+    fun `validateOppijanumeroInOnr kääntää oppijanumeropalvelun poikkeuksen EnrichmentErroriksi`() {
+        val result = validation(masterOid = { throw RuntimeException("boom") }).validateOppijanumeroInOnr(oid, path)
 
         assertIs<ValidationError.EnrichmentError>((result as Either.Left).value)
     }
