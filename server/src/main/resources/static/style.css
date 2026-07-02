@@ -134,13 +134,13 @@ article.error-text a {
 }
 
 article.warning-text {
-  color: var(--oph-blue1);
-  border: solid 2px var(--oph-blue2);
-  background: #e1ffff;
+  color: var(--oph-orange1);
+  border: solid 2px var(--oph-yellow1);
+  background: #fff8e1;
 }
 
 article.warning-text a {
-  color: var(--oph-blue2);
+  color: var(--oph-orange2);
 }
 
 article.success-text {
@@ -165,6 +165,7 @@ article.success-info a {
 
 article.success-text,
 article.info-text,
+article.warning-text,
 article.error-text {
   opacity: 0;
   animation: fadeIn 0.8s ease forwards;

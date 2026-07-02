@@ -4,6 +4,8 @@ import fi.oph.kitu.dev.mockdata.toInstant
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessage
+import fi.oph.kitu.html.ViewMessageData
+import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.html.errorTablePage
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
@@ -124,12 +126,13 @@ class YkiViewController(
         params: YkiSuorituksetParams,
         csrfToken: CsrfToken?,
     ): ResponseEntity<String> {
-        val totalSuoritukset = ykiService.countSuoritukset(params.toFilter(), params.versionHistory)
+        val extended = ykiService.extendFilterWithLinkedOids(params.toFilter())
+        val totalSuoritukset = ykiService.countSuoritukset(extended.filter, params.versionHistory)
         return ResponseEntity.ok(
             YkiSuorituksetPage.render(
                 suoritukset =
                     ykiService.findSuorituksetPaged(
-                        params.toFilter(),
+                        extended.filter,
                         params.toOrder(),
                         params.versionHistory,
                         params.limit,
@@ -148,6 +151,7 @@ class YkiViewController(
                 koskiErrorsCount = koskiErrorService.countByEntity("yki", false).toLong(),
                 poikkeamatCount = ykiSuoritusPoikkeamaRepository.count(),
                 csrfToken = csrfToken,
+                warning = if (extended.oppijanumeroUnavailable) ONR_UNAVAILABLE_WARNING else null,
             ),
         )
     }
@@ -368,6 +372,14 @@ class YkiViewController(
 
     companion object {
         const val YKI_SEARCH_KEY = "YkiSearch"
+
+        private val ONR_UNAVAILABLE_WARNING =
+            ViewMessageData(
+                "Oppijanumerorekisteriin ei juuri nyt saatu yhteyttä, joten haku tehtiin vain annetuilla " +
+                    "oideilla. Henkilön mahdollisiin muihin OID-tunnuksiin (esim. yhdistettyihin duplikaatteihin) " +
+                    "liittyvät suoritukset voivat puuttua tuloksista.",
+                ViewMessageType.WARNING,
+            )
     }
 }
 

@@ -65,6 +65,7 @@ enum class ViewMessageType(
 ) : Serializable {
     INFO("info-text"),
     SUCCESS("success-text"),
+    WARNING("warning-text"),
     ERROR("error-text"),
 }
 
@@ -81,6 +82,10 @@ class ViewMessage(
 
     fun showSuccess(text: String) {
         set(ViewMessageData(text, ViewMessageType.SUCCESS))
+    }
+
+    fun showWarning(text: String) {
+        set(ViewMessageData(text, ViewMessageType.WARNING))
     }
 
     fun showError(text: String) {

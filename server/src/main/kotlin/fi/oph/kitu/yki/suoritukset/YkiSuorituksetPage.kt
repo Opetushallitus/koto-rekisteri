@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.csvDownloadButton
 import fi.oph.kitu.html.errorsArticle
 import fi.oph.kitu.html.filterDescriptionList
@@ -19,6 +20,7 @@ import fi.oph.kitu.html.table.enumFilter
 import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
+import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
@@ -51,6 +53,7 @@ object YkiSuorituksetPage {
         koskiErrorsCount: Long,
         poikkeamatCount: Long,
         csrfToken: CsrfToken?,
+        warning: ViewMessageData? = null,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -62,6 +65,7 @@ object YkiSuorituksetPage {
             errorsArticle(errorsCount, Links.Yki.suorituksetVirheet())
             koskiErrorsArticle(koskiErrorsCount, Links.Yki.koskiVirheet())
             poikkeamatArticle(poikkeamatCount, Links.Yki.poikkeamat())
+            viewMessage(warning)
 
             section(classes = "grid center-vertically") {
                 formPost(action = "", csrfToken = csrfToken) {

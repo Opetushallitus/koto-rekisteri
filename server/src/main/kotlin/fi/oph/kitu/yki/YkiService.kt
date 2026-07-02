@@ -6,8 +6,10 @@ import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.CsvParser
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.jdbc.SortDirection
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.findDifferentProperties
 import fi.oph.kitu.util.ignoreEmptyValues
+import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
@@ -34,6 +36,11 @@ import org.springframework.web.client.toEntity
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 
+data class ExtendedFilter(
+    val filter: YkiSuoritusFilter,
+    val oppijanumeroUnavailable: Boolean,
+)
+
 @Service
 class YkiService(
     @param:Qualifier("solkiRestClient")
@@ -45,8 +52,23 @@ class YkiService(
     private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val auditLogger: AuditLogger,
     private val parser: CsvParser,
+    private val oppijanumeroService: OppijanumeroService,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
+
+    @WithSpan
+    fun extendFilterWithLinkedOids(filter: YkiSuoritusFilter): ExtendedFilter =
+        filter.extendHenkiloOids(oppijanumeroService).fold(
+            ifLeft = { error ->
+                logger.warn("Oppijanumeropalvelu ei vastannut, YKI-haku tehdään vain annetuilla oideilla", error)
+                ExtendedFilter(filter, oppijanumeroUnavailable = true)
+            },
+            ifRight = { extended -> ExtendedFilter(extended, oppijanumeroUnavailable = false) },
+        )
+
+    @WithSpan
+    fun extendFilterWithLinkedOidsOrThrow(filter: YkiSuoritusFilter): YkiSuoritusFilter =
+        filter.extendHenkiloOids(oppijanumeroService).getOrThrow()
 
     fun findSuoritusById(id: Int): YkiSuoritusEntity? =
         suoritusRepository.findById(id).also { suoritus ->
