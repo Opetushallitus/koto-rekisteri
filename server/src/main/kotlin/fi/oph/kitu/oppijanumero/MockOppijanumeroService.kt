@@ -57,7 +57,18 @@ class MockOppijanumeroService : OppijanumeroService {
             OppijanumeroException.OppijaNotFoundException(EmptyRequest(), ResponseEntity.notFound().build()).left()
         }
 
+    override fun getLinkedOids(oid: Oid): Either<OppijanumeroException, Set<Oid>> =
+        (linkedOids[oid.toString()].orEmpty() + oid.toString())
+            .map { Oid.parse(it).getOrThrow() }
+            .toSet()
+            .right()
+
     companion object {
+        val linkedOids: Map<String, Set<String>> =
+            mapOf(
+                "1.2.246.562.24.33342764709" to setOf("1.2.246.562.24.99988877766"),
+            )
+
         val oppijaToOid =
             mapOf(
                 Oppija(

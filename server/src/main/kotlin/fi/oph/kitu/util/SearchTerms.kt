@@ -12,6 +12,8 @@ data class SearchTerms(
 
     fun henkiloOids(): NonEmptySet<String>? = terms[TermKind.HenkiloOid]
 
+    fun withHenkiloOids(oids: NonEmptySet<String>): SearchTerms = copy(terms = terms + (TermKind.HenkiloOid to oids))
+
     fun orgOids(): NonEmptySet<String>? = terms[TermKind.OrgOid]
 
     fun numbers(): NonEmptySet<Int>? = terms[TermKind.Number]?.map { it.toInt() }?.toNonEmptySet()
