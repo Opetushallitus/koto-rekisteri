@@ -23,6 +23,9 @@ class OppijanumeroValidationTest {
                 override fun getMasterOid(oppija: Oppija): Either<OppijanumeroException, Oid> =
                     throw NotImplementedError()
 
+                override fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
+                    throw NotImplementedError()
+
                 override fun getHenkiloByMasterOid(
                     masterOid: Oid,
                 ): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> = henkilo()

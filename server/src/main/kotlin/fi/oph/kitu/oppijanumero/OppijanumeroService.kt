@@ -20,6 +20,12 @@ interface OppijanumeroService {
 
     fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>>
 
+    fun getHenkiloByHenkiloOid(henkiloOid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
+        either {
+            val masterOid = getMasterOid(henkiloOid).bind()
+            getHenkiloByMasterOid(masterOid).bind()
+        }
+
     fun parseOid(source: String?): Either<OppijanumeroException, Oid> =
         Oid
             .parse(source)

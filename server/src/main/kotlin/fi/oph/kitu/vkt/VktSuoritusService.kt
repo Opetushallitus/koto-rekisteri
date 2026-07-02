@@ -80,7 +80,7 @@ class VktSuoritusService(
                     .mapNotNull { it.suoritus.suorituksenVastaanottaja }
                     .toSet()
                     .associateBy({ it }, { oid ->
-                        oppijanumeroService.getHenkiloByMasterOid(oid).getOrNull()?.kokoNimi() ?: oid.toString()
+                        oppijanumeroService.getHenkiloByHenkiloOid(oid).getOrNull()?.kokoNimi() ?: oid.toString()
                     })
             } else {
                 mapOf()
@@ -110,7 +110,7 @@ class VktSuoritusService(
             suoritukset
                 .mapNotNull { it.suorituksenVastaanottajanOid }
                 .toSet()
-                .associateWith { oppijanumeroService.getHenkiloByMasterOid(it).getOrNull()?.kokoNimi() }
+                .associateWith { oppijanumeroService.getHenkiloByHenkiloOid(it).getOrNull()?.kokoNimi() }
 
         return suoritukset
             .map { suoritus ->
