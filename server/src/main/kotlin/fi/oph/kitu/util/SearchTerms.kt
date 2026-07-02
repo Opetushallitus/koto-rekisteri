@@ -1,26 +1,25 @@
 package fi.oph.kitu.util
 
+import arrow.core.NonEmptySet
+import arrow.core.toNonEmptySetOrNull
 import fi.oph.kitu.dev.mockdata.OidClass
 import fi.oph.kitu.oid.Oid.Companion.isOidOfClass
 
 data class SearchTerms(
-    val terms: Map<TermKind, List<String>>,
+    val terms: Map<TermKind, NonEmptySet<String>>,
 ) {
     val allTerms: List<String> by lazy { terms.values.flatten() }
 
-    fun henkiloOids(): List<String>? = terms[TermKind.HenkiloOid]
+    fun henkiloOids(): NonEmptySet<String>? = terms[TermKind.HenkiloOid]
 
-    fun orgOids(): List<String>? = terms[TermKind.OrgOid]
+    fun orgOids(): NonEmptySet<String>? = terms[TermKind.OrgOid]
 
-    fun numbers(): List<Int>? = terms[TermKind.Number]?.map { it.toInt() }
+    fun numbers(): NonEmptySet<Int>? = terms[TermKind.Number]?.map { it.toInt() }?.toNonEmptySet()
 
-    fun texts(): List<String>? = terms[TermKind.Text]
+    fun texts(): NonEmptySet<String>? = terms[TermKind.Text]
 
     companion object {
-        fun from(
-            query: String?,
-            extend: Map<TermKind, List<String>> = emptyMap(),
-        ): SearchTerms =
+        fun from(query: String?): SearchTerms =
             SearchTerms(
                 query
                     ?.trim()
@@ -28,11 +27,7 @@ data class SearchTerms(
                     ?.split(Regex("[\\s,;]+"))
                     .orEmpty()
                     .groupBy { TermKind.from(it) }
-                    .let { grouped ->
-                        (grouped.keys + extend.keys).associateWith { key ->
-                            (grouped[key].orEmpty() + extend[key].orEmpty())
-                        }
-                    },
+                    .mapValues { it.value.toNonEmptySetOrNull()!! },
             )
 
         enum class TermKind {
