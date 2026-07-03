@@ -1,0 +1,135 @@
+# YKI historia -migraatio — runbook
+
+Analyse a historical YKI suoritus CSV in S3 and migrate it into the register.
+Two scripts cover the flow:
+
+| Phase       | Script                            | Purpose                                              |
+| ----------- | --------------------------------- | ---------------------------------------------------- |
+| 1. Analysis | `scripts/duckdb_session.sh`       | Query the CSV in place with DuckDB (read-only).      |
+| 2. Migrate  | `scripts/migrate_yki_historia.py` | Map each row → JSON and POST to `/yki/api/suoritus`. |
+
+## Safety boundary (read first)
+
+The CSV is **sensitive personal data**. Keep it inside AWS end to end:
+
+- Run **both** scripts from **AWS CloudShell in the account that owns the bucket**
+  (prod = `515966535475`, profile `oph-ktr-prod`, `eu-west-1`). The data never
+  touches a laptop or any external service.
+- Analysis is read-only. Migration writes to prod — **take an Aurora snapshot first**,
+  and go dry-run → smoke test → full.
+- Keep the report / payload files in CloudShell; don't `aws s3 cp` them out.
+- Migration goes through the validated API (`POST /yki/api/suoritus`), never a raw DB
+  write — so validation, dedup, KOSKI forwarding and ilmoittautumisjärjestelmä
+  notification all run.
+
+## The data (as verified for the 2011–2020 export)
+
+- 76,848 rows, headerless, comma-separated, `"`-quoted, **30 columns** in
+  `YkiSuoritusCsv` order.
+- NULLs are the MySQL sentinel **`\N`** (from `SELECT … INTO OUTFILE`).
+- Enum encodings already valid (`M/N/E`, `fin/swe/eng/…`, `PT/KT/YT`); no legacy codes.
+- All dates well-formed once `\N`→NULL. **204 rows** carry a real tarkistusarviointi.
+- No duplicate Solki ids, no natural-key collisions → straight 1:1 load.
+
+If you point the tools at a **different** export, re-run the checks below before trusting
+the layout — the column names and `\N` handling are baked in on the assumption of this
+30-column Solki format.
+
+## Phase 1 — analysis
+
+```bash
+# fresh CloudShell: the launcher installs DuckDB, wires up S3, and builds a
+# `raw` view with the 30 named columns (\N mapped to NULL).
+./scripts/duckdb_session.sh s3://kitu-yki-historia-upload-prod/<key>.csv
+```
+
+Then write your own SQL against `raw`. Useful checks:
+
+```sql
+-- shape
+SELECT count(*) FROM raw;
+DESCRIBE raw;
+
+-- enum domains (expect only M/N/E ; PT/KT/YT ; fin/swe/eng/deu/fra/ita/rus/sme/spa)
+SELECT sukupuoli, count(*) FROM raw GROUP BY 1 ORDER BY 2 DESC;
+SELECT tutkintotaso, count(*) FROM raw GROUP BY 1 ORDER BY 2 DESC;
+SELECT tutkintokieli, count(*) FROM raw GROUP BY 1 ORDER BY 2 DESC;
+
+-- date parseability (non-zero = would be rejected on import)
+SELECT
+  count(*) FILTER (WHERE last_modified IS NOT NULL AND TRY_CAST(last_modified AS TIMESTAMPTZ) IS NULL) AS bad_last_modified,
+  count(*) FILTER (WHERE tutkintopaiva IS NOT NULL AND TRY_CAST(tutkintopaiva AS DATE) IS NULL)        AS bad_tutkintopaiva
+FROM raw;
+
+-- duplicates the app would collapse on upsert
+SELECT count(*) FROM (SELECT suoritus_id FROM raw GROUP BY 1 HAVING count(*) > 1);
+SELECT count(*) FROM (SELECT 1 FROM raw GROUP BY suorittajan_oid, tutkintopaiva, tutkintokieli, tutkintotaso HAVING count(*) > 1);
+```
+
+`.quit` to exit. See the script header for options (`AWS_REGION`, header/positional fallback).
+
+## Phase 2 — migration
+
+```bash
+# 1. Dry run: map + local-check all rows, POST nothing.
+./scripts/migrate_yki_historia.py --source s3://kitu-yki-historia-upload-prod/<key>.csv \
+    --dry-run --out report.jsonl --emit-payloads payloads.jsonl
+grep '"ok": false' report.jsonl        # rows that would be rejected, with reasons
+
+# 2. Smoke test: 5 real rows against prod → expect HTTP 200.
+./scripts/migrate_yki_historia.py --source s3://.../<key>.csv --env prod --confirm-prod \
+    --client-id "$CID" --client-secret "$CSECRET" --limit 5 --out report.jsonl
+
+# 3. Full run: resumable — re-running skips rows already recorded ok.
+./scripts/migrate_yki_historia.py --source s3://.../<key>.csv --env prod --confirm-prod \
+    --client-id "$CID" --client-secret "$CSECRET" --out report.jsonl
+```
+
+- Credentials: pass `--client-id/--client-secret` or set `KITU_CLIENT_ID` /
+  `KITU_CLIENT_SECRET`. This is the palvelukäyttäjä OAuth client allowed to POST YKI
+  suoritukset.
+- The report (`report.jsonl`) has one line per row: `{solki_id, ok, http, response|issues}`.
+  Re-running with the same `--out` skips rows already `ok` (idempotent anyway — the API
+  upserts on the Solki id).
+- Local pre-checks skip rows that would 400 (no osat, invalid arvosana for the taso,
+  `arvosanaMuuttui ⊄ tarkistetut`) so they're reported without a wasted POST.
+- `--sleep N` throttles between POSTs; `--limit N` caps the run.
+
+### Column → JSON mapping (reference)
+
+CSV row → `Henkilosuoritus<YkiSuoritus>`. Every field is trimmed of surrounding
+whitespace/tabs and `\N`/empty is mapped to null.
+
+- `henkilo`: suorittajan_oid→oid, plus hetu, sukupuoli, sukunimi, etunimet, kansalaisuus,
+  katuosoite, postinumero, postitoimipaikka, email. (`maa` omitted — not in the export.)
+- `suoritus`: tyyppi=`yleinenkielitutkinto`, tutkintotaso, kieli, todistuskieli=null,
+  jarjestaja{oid,nimi}, tutkintopaiva, arviointipaiva, lahdejarjestelmanId={id: suoritus_id,
+  lahde: `Solki`}.
+- `osat`: one `{tyyppi, arvosana}` per **non-null** grade column
+  (as_ty→TY, as_ki→KI, as_rs→RS, as_py→PY, as_pu→PU, as_yl→YL).
+- `arviointitila`: `ARVIOITU` when arviointipaiva present else `ARVIOITAVA`; prod
+  re-derives the real state (`convertLegacyArviointitila`).
+- `tarkistusarviointi` (only when tark_saapumis_pvm present): saapumispaiva, kasittelypaiva,
+  asiatunnus, perustelu, and the **bitmask** ints tark_osakokeet / arvosana_muuttui decoded
+  to osa-code lists (`PU=1, KI=2, TY=4, PY=8`; RS/YL cannot appear).
+
+## Open items / decisions
+
+- **Prod host + OAuth token URL are a best guess** in the script's `ENV_PRESETS`,
+  extrapolated from the dev/test values in `scripts/upload_yki_suoritus.sh`. Verify them,
+  or override with `--host` / `--token-url`. The script prints the resolved prod URLs and
+  refuses to POST to prod without `--confirm-prod`.
+- **The 204 tarkistus rows land as `TARKISTUSARVIOITU`, not `TARKISTUSARVIOINTI_HYVAKSYTTY`.**
+  The JSON import path cannot set the "approved" state. If these historical tarkistukset
+  should be `HYVAKSYTTY`, do a follow-up DB update after import or adjust the import — a
+  domain decision.
+
+## Troubleshooting
+
+- `glob('s3://…')` errors / boto3 `AccessDenied` → wrong account or expired session; check
+  you're in CloudShell in the bucket's account, or `aws sso login`.
+- Migration rows returning HTTP 400 → read `response` in the report; the field path in the
+  `TiedonsiirtoFailure` points at the offending value. HTTP 401 → wrong client credentials
+  or the palvelukäyttäjä lacks YKI rights.
+- DuckDB reads garbage / wrong column count → the file isn't the 30-column Solki layout;
+  re-read positionally (`header := false`, no `names`) and re-derive the mapping.
