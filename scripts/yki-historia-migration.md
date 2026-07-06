@@ -70,21 +70,27 @@ SELECT count(*) FROM (SELECT 1 FROM raw GROUP BY suorittajan_oid, tutkintopaiva,
 
 ## Phase 2 — migration
 
+This migration only loads records last modified before 2017, hence
+`--modified-before 2017-01-01` on every command.
+
 ```bash
 # 1. Dry run: map + local-check all rows, POST nothing.
 ./scripts/migrate_yki_historia.py --source s3://kitu-yki-historia-upload-prod/<key>.csv \
-    --dry-run --out report.jsonl --emit-payloads payloads.jsonl
+    --modified-before 2017-01-01 --dry-run --out report.jsonl --emit-payloads payloads.jsonl
 grep '"ok": false' report.jsonl        # rows that would be rejected, with reasons
 
 # 2. Smoke test: 5 real rows against prod → expect HTTP 200.
 ./scripts/migrate_yki_historia.py --source s3://.../<key>.csv --env prod --confirm-prod \
-    --client-id "$CID" --client-secret "$CSECRET" --limit 5 --out report.jsonl
+    --modified-before 2017-01-01 --client-id "$CID" --client-secret "$CSECRET" --limit 5 --out report.jsonl
 
 # 3. Full run: resumable — re-running skips rows already recorded ok.
 ./scripts/migrate_yki_historia.py --source s3://.../<key>.csv --env prod --confirm-prod \
-    --client-id "$CID" --client-secret "$CSECRET" --out report.jsonl
+    --modified-before 2017-01-01 --client-id "$CID" --client-secret "$CSECRET" --out report.jsonl
 ```
 
+- `--modified-before YYYY-MM-DD` migrates only rows whose `last_modified` is strictly
+  before that date (UTC); the rest are counted as `filtered` in the run summary. Omit it
+  to migrate every row.
 - Credentials: pass `--client-id/--client-secret` or set `KITU_CLIENT_ID` /
   `KITU_CLIENT_SECRET`. This is the palvelukäyttäjä OAuth client allowed to POST YKI
   suoritukset.
@@ -94,6 +100,10 @@ grep '"ok": false' report.jsonl        # rows that would be rejected, with reaso
 - Local pre-checks skip rows that would 400 (no osat, invalid arvosana for the taso,
   `arvosanaMuuttui ⊄ tarkistetut`) so they're reported without a wasted POST.
 - `--sleep N` throttles between POSTs; `--limit N` caps the run.
+
+> Note: `--limit N` caps the number of input rows read, before filtering — so with
+> `--modified-before`, a small `--limit` may migrate fewer than N rows if early rows are
+> filtered out.
 
 ### Column → JSON mapping (reference)
 
