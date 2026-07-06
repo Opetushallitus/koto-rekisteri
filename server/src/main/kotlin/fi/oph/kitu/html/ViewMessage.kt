@@ -2,7 +2,6 @@ package fi.oph.kitu.html
 
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
-import fi.oph.kitu.webmvc.rewriteAttribute
 import jakarta.servlet.http.HttpSession
 import kotlinx.html.FlowContent
 import kotlinx.html.article
@@ -73,7 +72,7 @@ class ViewMessage(
     private val session: HttpSession,
 ) {
     fun set(message: ViewMessageData) {
-        session.rewriteAttribute(KEY, message)
+        session.setAttribute(KEY, message)
     }
 
     fun showInfo(text: String) {

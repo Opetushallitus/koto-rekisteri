@@ -17,7 +17,6 @@ import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.webmvc.Links
-import fi.oph.kitu.webmvc.rewriteAttribute
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
@@ -118,7 +117,7 @@ class YkiViewController(
         csrfToken: CsrfToken? = KituRequest.currentCsrfToken(),
         session: HttpSession,
     ): ResponseEntity<String> {
-        session.rewriteAttribute(YKI_SEARCH_KEY, params.search)
+        session.setAttribute(YKI_SEARCH_KEY, params.search)
         return handleSuorituksetView(params, csrfToken)
     }
 
