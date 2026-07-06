@@ -36,6 +36,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
 
 # YkiSuoritusCsv @JsonPropertyOrder, renamed from the source export SQL.
 COLUMNS = [
@@ -46,6 +47,8 @@ COLUMNS = [
     "as_rs", "as_py", "as_pu", "as_yl", "tark_saapumis_pvm", "tark_asiatunnus",
     "tark_osakokeet", "arvosana_muuttui", "perustelu", "tark_kasittely_pvm",
 ]
+
+LAST_MODIFIED_IDX = COLUMNS.index("last_modified")
 
 # grade column -> TutkinnonOsa code
 OSA_COLUMNS = [
@@ -106,6 +109,28 @@ def decode_bitmask(value):
     if not n:
         return []
     return [code for code, bit in BITMASK if n & bit]
+
+
+LAST_MODIFIED_FORMATS = (
+    "%Y-%m-%dT%H:%M:%S%z",
+    "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%d %H:%M:%S%z",
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d",
+)
+
+
+def parse_last_modified(value):
+    value = to_null(value)
+    if value is None:
+        return None
+    for fmt in LAST_MODIFIED_FORMATS:
+        try:
+            dt = datetime.strptime(value, fmt)
+            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+    return None
 
 
 def build_payload(row):
@@ -260,7 +285,20 @@ def main():
     p.add_argument("--emit-payloads", help="dry-run: also write mapped payloads here (JSONL)")
     p.add_argument("--limit", type=int, help="process at most N rows")
     p.add_argument("--sleep", type=float, default=0.0, help="seconds to wait between POSTs")
+    p.add_argument(
+        "--modified-before", metavar="YYYY-MM-DD",
+        help="only migrate rows whose last_modified is strictly before this date (UTC)",
+    )
+    p.add_argument(
+        "--delimiter",
+        help="field delimiter: 'tab', 'comma', ';', '|', or a literal char (default: auto-detect)",
+    )
     args = p.parse_args()
+
+    cutoff = None
+    if args.modified_before:
+        cutoff = datetime.strptime(args.modified_before, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        log(f"filter: migrating only rows with last_modified before {cutoff.date()}")
 
     host, token_url = args.host, args.token_url
     if args.env:
@@ -298,7 +336,7 @@ def main():
     rows = csv.reader(io.StringIO(text), delimiter=delimiter, quotechar='"')
 
     payloads_fh = open(args.emit_payloads, "w", encoding="utf-8") if args.emit_payloads else None
-    counts = {"posted": 0, "skipped_issue": 0, "skipped_done": 0, "failed": 0, "dry": 0}
+    counts = {"posted": 0, "skipped_issue": 0, "skipped_done": 0, "failed": 0, "dry": 0, "filtered": 0}
 
     with open(args.out, "a", encoding="utf-8") as out:
         for i, row in enumerate(rows):
@@ -311,6 +349,17 @@ def main():
                 out.write(json.dumps(rec, ensure_ascii=False) + "\n")
                 counts["failed"] += 1
                 continue
+
+            if cutoff is not None:
+                lm = parse_last_modified(row[LAST_MODIFIED_IDX])
+                if lm is None:
+                    rec = {"row": i, "ok": False, "error": "last_modified ei jäsenny, ei voi suodattaa"}
+                    out.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                    counts["failed"] += 1
+                    continue
+                if lm >= cutoff:
+                    counts["filtered"] += 1
+                    continue
 
             payload = build_payload(row)
             solki_id = payload["suoritus"]["lahdejarjestelmanId"]["id"]
