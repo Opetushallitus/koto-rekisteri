@@ -34,6 +34,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter
 
 fun developmentProfileActive(environment: Environment): Boolean {
@@ -118,6 +119,7 @@ class WebSecurityConfig {
     ): SecurityFilterChain {
         http {
             csrf {
+                csrfTokenRepository = CookieCsrfTokenRepository()
                 // API-endpointit on tarkoitettu OAuth2-bearer-pohjaisille ulkoisille kutsujille
                 // (oauth2SecurityFilterChain käsittelee ne ja CSRF on siellä jo pois). Mitkään
                 // appin omat lomakkeet/JS eivät kutsu näitä, joten CSRF-suojaus ei tuo lisäarvoa
