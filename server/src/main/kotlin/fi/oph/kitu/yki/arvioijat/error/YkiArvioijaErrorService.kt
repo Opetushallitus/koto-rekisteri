@@ -2,12 +2,9 @@ package fi.oph.kitu.yki.arvioijat.error
 
 import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.csvparsing.CsvExportError
-import fi.oph.kitu.csvparsing.setSerializationErrorToAttributes
+import fi.oph.kitu.csvparsing.getCsvExportErrorsSorted
+import fi.oph.kitu.csvparsing.handleCsvExportErrors
 import fi.oph.kitu.jdbc.SortDirection
-import fi.oph.kitu.jdbc.findAllSorted
-import fi.oph.kitu.jdbc.replaceAll
-import fi.oph.kitu.observability.setAttribute
-import fi.oph.kitu.observability.use
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
@@ -23,28 +20,22 @@ class YkiArvioijaErrorService(
     fun countErrors(): Long = repository.count()
 
     fun handleErrors(errors: List<CsvExportError>): Boolean =
-        tracer
-            .spanBuilder("YkiArvioijaErrorService.handleErrors")
-            .startSpan()
-            .use { span ->
-                span.setSerializationErrorToAttributes(errors)
-                repository
-                    .replaceAll(mappingService.convertToEntityIterable(errors))
-                    .also { span.setAttribute("errors.addedSize", it.count()) }
-                    .let { it.count() > 0 }
-            }
+        handleCsvExportErrors(repository, tracer, "YkiArvioijaErrorService.handleErrors", errors) {
+            mappingService.convertToEntityIterable(it)
+        }
 
     @WithSpan
     fun getErrors(
         orderBy: YkiArvioijaErrorColumn = YkiArvioijaErrorColumn.VirheenLuontiaika,
         orderByDirection: SortDirection = SortDirection.ASC,
     ): List<YkiArvioijaErrorEntity> =
-        repository
-            .findAllSorted(orderBy.entityName, orderByDirection)
-            .toList()
-            .also {
-                auditLogger.logAllInternalOnly("Yki arvioija errors viewed", it) { error ->
-                    arrayOf("arvioija.error.id" to error.id)
-                }
-            }
+        getCsvExportErrorsSorted(
+            repository,
+            auditLogger,
+            "Yki arvioija errors viewed",
+            orderBy.entityName,
+            orderByDirection,
+        ) {
+            arrayOf("arvioija.error.id" to it.id)
+        }
 }
