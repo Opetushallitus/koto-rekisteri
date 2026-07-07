@@ -167,12 +167,6 @@ export class LogGroupsStack extends Stack {
     //     "TransactionSearchSpansPolicyResourcePolicy81B12951"
     //    ],
 
-    // Use the following for loop to print the IDs of the children of the L2 LogGroup construct.
-    // I guessed that the node with ID 'ResourcePolicy' is the one we want.
-    // for (const child of transactionSearchSpans.node.findAll()) {
-    //   console.info(child.node.id)
-    // }
-
     transactionSearchConfig.addDependency(
       // Note that findChild() only searches *direct* children, so we need to traverse the tree until we reach the resource policy.
       transactionSearchSpans.node
