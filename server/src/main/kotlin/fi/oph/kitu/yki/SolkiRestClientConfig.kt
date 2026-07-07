@@ -1,10 +1,10 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.restclient.withBasicAuth
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestClient
-import java.util.Base64
 
 @Configuration
 class SolkiRestClientConfig(
@@ -20,11 +20,9 @@ class SolkiRestClientConfig(
     private lateinit var password: String
 
     @Bean("solkiRestClient")
-    fun restClient(): RestClient {
-        val basicAuthToken = Base64.getEncoder().encodeToString("$user:$password".toByteArray())
-        return restClientBuilder
+    fun restClient(): RestClient =
+        restClientBuilder
             .baseUrl(baseUrl)
-            .defaultHeader("Authorization", "Basic $basicAuthToken")
+            .withBasicAuth(user, password)
             .build()
-    }
 }
