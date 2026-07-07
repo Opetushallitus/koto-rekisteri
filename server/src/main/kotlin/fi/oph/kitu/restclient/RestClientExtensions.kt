@@ -10,6 +10,15 @@ import org.springframework.web.client.RestClient
 import tools.jackson.core.StreamReadConstraints
 import tools.jackson.core.json.JsonFactory
 import tools.jackson.databind.json.JsonMapper
+import java.util.Base64
+
+fun RestClient.Builder.withBasicAuth(
+    username: String,
+    password: String,
+): RestClient.Builder {
+    val token = Base64.getEncoder().encodeToString("$username:$password".toByteArray())
+    return this.defaultHeader("Authorization", "Basic $token")
+}
 
 fun <T> RestClient.RequestBodySpec.nullableBody(body: T?): RestClient.RequestBodySpec =
     if (body == null) {

@@ -1,5 +1,6 @@
 package fi.oph.kitu.koski
 
+import fi.oph.kitu.restclient.withBasicAuth
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -7,7 +8,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.web.client.RestClient
 import tools.jackson.databind.json.JsonMapper
-import java.util.Base64
 
 @Configuration
 class KoskiRestClientConfig(
@@ -25,15 +25,13 @@ class KoskiRestClientConfig(
     @Bean("koskiRestClient")
     fun restClient(
         @Qualifier("koskiObjectMapper") koskiObjectMapper: JsonMapper,
-    ): RestClient {
-        val basicAuthToken = Base64.getEncoder().encodeToString("$user:$password".toByteArray())
-        return restClientBuilder
+    ): RestClient =
+        restClientBuilder
             .baseUrl(koskiBaseUrl)
-            .defaultHeader("Authorization", "Basic $basicAuthToken")
+            .withBasicAuth(user, password)
             .configureMessageConverters { cs ->
                 cs.registerDefaults().withJsonConverter(
                     JacksonJsonHttpMessageConverter(koskiObjectMapper),
                 )
             }.build()
-    }
 }
