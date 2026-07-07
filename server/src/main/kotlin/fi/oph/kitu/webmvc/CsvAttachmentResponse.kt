@@ -8,6 +8,15 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 
+fun buildCsvFilename(
+    prefix: String,
+    piilotaHenkilotiedot: Boolean,
+    vararg segments: String?,
+): String =
+    (listOf(prefix, if (piilotaHenkilotiedot) null else "henkilotiedot") + segments)
+        .filterNotNull()
+        .joinToString("_", postfix = ".csv")
+
 inline fun <reified C : Enum<C>, T> csvAttachmentResponse(
     filename: String,
     data: Iterable<T>,

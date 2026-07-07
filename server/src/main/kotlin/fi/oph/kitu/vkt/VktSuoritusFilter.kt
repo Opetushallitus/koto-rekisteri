@@ -3,13 +3,14 @@ package fi.oph.kitu.vkt
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.Nimetty
 import fi.oph.kitu.i18n.LocalizedString
-import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.aikarajausDescription
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
 import fi.oph.kitu.jdbc.PaginatedSortOrder
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.SqlFilterBuilder
 import fi.oph.kitu.jdbc.orderSql
 import fi.oph.kitu.koodisto.Koodisto
+import fi.oph.kitu.webmvc.buildCsvFilename
 import fi.oph.kitu.yki.toTrueOrNull
 import java.time.LocalDate
 
@@ -37,14 +38,7 @@ data class VktSuoritusFilter(
 
     fun filterDescriptions(): List<String> =
         listOfNotNull(
-            if (alkupaiva != null || loppupaiva != null) {
-                listOf(
-                    alkupaiva?.finnishDate().orEmpty(),
-                    loppupaiva?.finnishDate().orEmpty(),
-                ).joinToString("-", prefix = "Aikarajaus: ")
-            } else {
-                null
-            },
+            aikarajausDescription(alkupaiva, loppupaiva),
             tutkintokieli?.let { "Tutkintokieli: ${it.nimi}" },
             taitotaso?.let { "Taitotaso: ${it.nimi}" },
             arvioitu?.let { "Arvoinnin tila: ${it.nimi}" },
@@ -55,16 +49,16 @@ data class VktSuoritusFilter(
         )
 
     fun csvFileName() =
-        listOfNotNull(
+        buildCsvFilename(
             "vkt_suoritukset",
-            if (piilotaHenkilotiedot) null else "henkilotiedot",
+            piilotaHenkilotiedot,
             tutkintokieli?.toString(),
             taitotaso?.toString(),
             alkupaiva?.toString(),
             loppupaiva?.toString(),
             arvioitu?.name?.lowercase(),
             merkittyPoistettavaksi?.let { "merkitty_poistettavaksi" },
-        ).joinToString("_", postfix = ".csv")
+        )
 
     fun excludeTags(): Set<ColumnTag> =
         setOfNotNull(
