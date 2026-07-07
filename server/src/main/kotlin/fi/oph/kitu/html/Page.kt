@@ -6,6 +6,9 @@ import fi.oph.kitu.config.ApplicationProperties
 import fi.oph.kitu.config.isDeployedToOpintopolku
 import fi.oph.kitu.html.Navigation.flatten
 import fi.oph.kitu.html.Navigation.mainNavigation
+import fi.oph.kitu.i18n.CurrentLanguage
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
@@ -24,15 +27,13 @@ object Page {
     fun renderHtml(
         wideContent: Boolean = false,
         renderBody: SECTION.() -> Unit,
-    ): String {
-        val pageTitle = "Kielitutkintorekisteri"
-
-        return createHTML().html {
-            lang = "fi"
+    ): String =
+        createHTML().html {
+            lang = CurrentLanguage.get().name.lowercase()
             data("theme", "light")
 
             head {
-                title { +pageTitle }
+                title { +UiText.appTitle }
                 meta(name = "color-scheme", content = "light")
                 link(href = "${ApplicationProperties.kitu.appUrl}/pico.min.css", rel = "stylesheet")
                 link(href = "${ApplicationProperties.kitu.appUrl}/style.css", rel = "stylesheet")
@@ -51,7 +52,7 @@ object Page {
                                 ul(classes = "breadcrumbs") {
                                     testId("breadcrumbs")
                                     li {
-                                        a(href = Links.home()) { strong { +"Kielitutkintorekisteri" } }
+                                        a(href = Links.home()) { strong { +UiText.appTitle } }
                                     }
                                 }
                             }
@@ -72,5 +73,4 @@ object Page {
                 }
             }
         }
-    }
 }

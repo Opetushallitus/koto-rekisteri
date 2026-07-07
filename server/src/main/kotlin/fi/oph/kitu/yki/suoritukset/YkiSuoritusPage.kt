@@ -5,10 +5,11 @@ package fi.oph.kitu.yki.suoritukset
 import arrow.core.Either
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
-import fi.oph.kitu.html.error
+import fi.oph.kitu.html.errorMessage
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.json
-import fi.oph.kitu.html.warning
+import fi.oph.kitu.html.warningMessage
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
@@ -32,7 +33,11 @@ object YkiSuoritusPage {
         h2 { +"Yleinen kielitutkinto" }
 
         if (suoritus.id != viimeisinSuoritus.id) {
-            warning("Tämä on suorituksen vanhempi versio (${suoritus.lastModified.finnishDateTime()}). ") {
+            warningMessage(
+                LocalizedString(
+                    fi = "Tämä on suorituksen vanhempi versio (${suoritus.lastModified.finnishDateTime()}). ",
+                ),
+            ) {
                 a(href = Links.Yki.suoritus(viimeisinSuoritus.id!!)) {
                     +"Näytä uusin versio ("
                     finnishDateTime(viimeisinSuoritus.lastModified)
@@ -54,7 +59,7 @@ object YkiSuoritusPage {
     ) {
         h3 { +"Henkilötiedot" }
         henkilo.onLeft { onrException ->
-            error(onrException.message ?: onrException.toString())
+            errorMessage(LocalizedString(fi = onrException.message ?: onrException.toString()))
         }
         card(compact = true) {
             val hlo = henkilo.getOrNull()

@@ -1,5 +1,6 @@
 package fi.oph.kitu.html
 
+import fi.oph.kitu.i18n.unaryPlus
 import kotlinx.html.ARTICLE
 import kotlinx.html.FlowContent
 import kotlinx.html.article
