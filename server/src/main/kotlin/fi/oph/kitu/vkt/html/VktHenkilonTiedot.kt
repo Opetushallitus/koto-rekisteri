@@ -3,8 +3,9 @@ package fi.oph.kitu.vkt.html
 import arrow.core.Either
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
-import fi.oph.kitu.html.error
+import fi.oph.kitu.html.errorMessage
 import fi.oph.kitu.html.infoTable
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
@@ -39,16 +40,19 @@ fun FlowContent.vktHenkilonTiedot(
                     "Oppijanumero" to { +data.henkilo.oid.toString() },
                 )
                 cardContent {
-                    error(
-                        when (it) {
-                            is OppijanumeroException.OppijaNotFoundException -> {
-                                "Oppijasta ei löydy tietoja Oppijanumerorekisteristä"
-                            }
+                    errorMessage(
+                        LocalizedString(
+                            fi =
+                                when (it) {
+                                    is OppijanumeroException.OppijaNotFoundException -> {
+                                        "Oppijasta ei löydy tietoja Oppijanumerorekisteristä"
+                                    }
 
-                            else -> {
-                                "Oppijan tietojen haku Oppijanumerorekisteristä epäonnistui"
-                            }
-                        },
+                                    else -> {
+                                        "Oppijan tietojen haku Oppijanumerorekisteristä epäonnistui"
+                                    }
+                                },
+                        ),
                     )
                 }
             }

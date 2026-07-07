@@ -1,5 +1,7 @@
 package fi.oph.kitu.html
 
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.br
@@ -9,10 +11,10 @@ fun FlowContent.errorsArticle(
     errorPage: String,
 ) {
     if (errorsCount > 0) {
-        error("Järjestelmässä on $errorsCount virhettä.") {
+        errorMessage(UiText.Error.jarjestelmassaVirheita(errorsCount)) {
             br()
             a(errorPage) {
-                +"Katso virheet"
+                +UiText.Error.katsoVirheet
             }
         }
     }
@@ -23,10 +25,10 @@ fun FlowContent.koskiErrorsArticle(
     errorPage: String,
 ) {
     if (errorsCount > 0) {
-        error("$errorsCount siirtoa KOSKI-tietovarantoon on epäonnistunut") {
+        errorMessage(UiText.Error.koskiSiirtoEpaonnistunut(errorsCount)) {
             br()
             a(errorPage) {
-                +"Katso virheet"
+                +UiText.Error.katsoVirheet
             }
         }
     }
@@ -37,10 +39,10 @@ fun FlowContent.poikkeamatArticle(
     link: String,
 ) {
     if (count > 0) {
-        error("Solkin ja Kitu:n välillä on $count poikkeamaa.") {
+        errorMessage(UiText.Error.poikkeamat(count)) {
             br()
             a(link) {
-                +"Katso poikkeamat"
+                +UiText.Error.katsoPoikkeamat
             }
         }
     }

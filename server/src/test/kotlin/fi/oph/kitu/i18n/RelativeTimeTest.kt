@@ -44,4 +44,19 @@ class RelativeTimeTest {
         val formatted = formatRelativeTime(sevenDaysAgo, now)
         assertEquals(true, formatted.matches(Regex("""\d{1,2}\.\d{1,2}\.\d{4}""")), "Got: $formatted")
     }
+
+    @Test
+    fun `suhteellinen aika kaannetaan annetulle kielelle`() {
+        assertEquals("just nu", formatRelativeTime(now.minusSeconds(0), now, Language.SV))
+        assertEquals("1 min sedan", formatRelativeTime(now.minusSeconds(60), now, Language.SV))
+        assertEquals("1 h sedan", formatRelativeTime(now.minusSeconds(60 * 60), now, Language.SV))
+        assertEquals("igår", formatRelativeTime(now.minusSeconds(24 * 60 * 60), now, Language.SV))
+        assertEquals("2 dgr sedan", formatRelativeTime(now.minusSeconds(2 * 24 * 60 * 60), now, Language.SV))
+
+        assertEquals("just now", formatRelativeTime(now.minusSeconds(0), now, Language.EN))
+        assertEquals("1 min ago", formatRelativeTime(now.minusSeconds(60), now, Language.EN))
+        assertEquals("1 h ago", formatRelativeTime(now.minusSeconds(60 * 60), now, Language.EN))
+        assertEquals("yesterday", formatRelativeTime(now.minusSeconds(24 * 60 * 60), now, Language.EN))
+        assertEquals("2 days ago", formatRelativeTime(now.minusSeconds(2 * 24 * 60 * 60), now, Language.EN))
+    }
 }

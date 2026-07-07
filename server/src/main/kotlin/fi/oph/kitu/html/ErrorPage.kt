@@ -1,5 +1,7 @@
 package fi.oph.kitu.html
 
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.h1
@@ -21,7 +23,7 @@ object ErrorPage {
                     if (isLocal) {
                         +error.toString()
                     } else {
-                        +"Internal server error"
+                        +UiText.Error.internalServerError
                     }
                 }
 
@@ -40,7 +42,7 @@ object ErrorPage {
     ): ResponseEntity<String> =
         ResponseEntity(
             Page.renderHtml {
-                h1 { +"Sivua ei löydy" }
+                h1 { +UiText.Error.sivuaEiLoydy }
                 traceInfo(traceId, traceUrl)
             },
             HttpStatus.NOT_FOUND,
@@ -52,8 +54,8 @@ object ErrorPage {
     ): ResponseEntity<String> =
         ResponseEntity(
             Page.renderHtml {
-                h1 { +"Virheellinen pyyntö" }
-                p { +"Tarkista että esimerkiksi sivun osoitteen kaikki parametrit on kirjoitettu oikein." }
+                h1 { +UiText.Error.virheellinenPyynto }
+                p { +UiText.Error.virheellinenPyyntoOhje }
                 traceInfo(traceId, traceUrl)
             },
             HttpStatus.BAD_REQUEST,
@@ -65,7 +67,7 @@ object ErrorPage {
     ): ResponseEntity<String> =
         ResponseEntity(
             Page.renderHtml {
-                h1 { +"Ei tarvittavia käyttöoikeuksia" }
+                h1 { +UiText.Error.eiKayttooikeuksia }
                 traceInfo(traceId, traceUrl)
             },
             HttpStatus.FORBIDDEN,

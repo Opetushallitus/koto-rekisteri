@@ -5,6 +5,7 @@ import fi.oph.kitu.auditlogs.AuditLogOperation
 import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.table.httpParams
+import fi.oph.kitu.i18n.Language
 import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
 import fi.oph.kitu.jdbc.toMap
@@ -102,6 +103,7 @@ class VktSuoritusService(
         val translations =
             localizationService
                 .translationBuilder()
+                .language(Language.FI)
                 .koodistot("kunta")
                 .build()
         val suoritukset = customSuoritusRepository.find(filter, order).toList()
