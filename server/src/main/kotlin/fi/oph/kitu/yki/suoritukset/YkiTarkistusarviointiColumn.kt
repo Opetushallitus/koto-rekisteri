@@ -53,19 +53,19 @@ enum class YkiTarkistusarviointiColumn(
                 }
                 it.tarkistusarvioinninSaapumisPvm?.let { pvm ->
                     li {
-                        strong { +"Saapunut: " }
+                        strong { +"Pyyntö saapunut: " }
                         +pvm.finnishDate()
                     }
                 }
                 it.tarkistusarvioinninKasittelyPvm?.let { pvm ->
                     li {
-                        strong { +"Käsitelty: " }
+                        strong { +"Pyyntö käsitelty: " }
                         +pvm.finnishDate()
                     }
                 }
                 it.tarkistusarviointiHyvaksyttyPvm?.let { pvm ->
                     li {
-                        strong { +"Hyväksytty: " }
+                        strong { +"Tulos hyväksytty: " }
                         +pvm.finnishDate()
                     }
                 }

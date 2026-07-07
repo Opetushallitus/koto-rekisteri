@@ -107,8 +107,8 @@ describe("YKI-tarkastusarvioinnit", () => {
     const paivamaaraCell = ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytTable
       .getCellsOfColumn("tutkintoPvm")
       .first()
-    await expect(paivamaaraCell).toContainText("Käsitelty: 20.10.2024")
-    await expect(paivamaaraCell).not.toContainText("Hyväksytty:")
+    await expect(paivamaaraCell).toContainText("Pyyntö käsitelty: 20.10.2024")
+    await expect(paivamaaraCell).not.toContainText("Tulos hyväksytty:")
 
     await ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytTable.body
       .getByRole("row")
@@ -125,7 +125,7 @@ describe("YKI-tarkastusarvioinnit", () => {
       ykiHyvaksytytTarkistusarvioinnitPage.hyvaksytytTable
         .getCellsOfColumn("tutkintoPvm")
         .first(),
-    ).toContainText("Hyväksytty: 20.11.2025")
+    ).toContainText("Tulos hyväksytty: 20.11.2025")
   })
 
   test("Mitään ei tapahdu, jos rakseja ei ole valittu ja painaa submit", async ({
