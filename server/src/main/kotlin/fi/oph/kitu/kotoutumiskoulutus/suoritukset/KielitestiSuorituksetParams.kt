@@ -1,9 +1,10 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
 
 import fi.oph.kitu.html.table.ColumnTag
-import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.aikarajausDescription
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
 import fi.oph.kitu.jdbc.SortDirection
+import fi.oph.kitu.webmvc.buildCsvFilename
 import fi.oph.kitu.yki.toTrueOrNull
 import org.springframework.format.annotation.DateTimeFormat
 import java.time.LocalDate
@@ -54,24 +55,17 @@ data class KielitestiSuorituksetParams(
         )
 
     fun csvFileName() =
-        listOfNotNull(
+        buildCsvFilename(
             "koto",
-            if (piilotaHenkilotiedot) null else "henkilotiedot",
+            piilotaHenkilotiedot,
             testikieli?.toString(),
             suoritusalku?.toString(),
             suoritusloppu?.toString(),
-        ).joinToString("_", postfix = ".csv")
+        )
 
     fun filterDescriptions(): List<String> =
         listOfNotNull(
-            if (suoritusalku != null || suoritusloppu != null) {
-                listOf(
-                    suoritusalku?.finnishDate().orEmpty(),
-                    suoritusloppu?.finnishDate().orEmpty(),
-                ).joinToString("-", prefix = "Aikarajaus: ")
-            } else {
-                null
-            },
+            aikarajausDescription(suoritusalku, suoritusloppu),
             testikieli?.let { "Testikieli: $it" },
             if (piilotaHenkilotiedot) "Henkilötiedot piilotettu" else null,
         )

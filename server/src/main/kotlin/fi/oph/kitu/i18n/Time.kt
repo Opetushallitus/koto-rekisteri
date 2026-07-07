@@ -19,6 +19,17 @@ fun LocalDate.finnishDate(): String = format(finnishDateFormatter)
 
 fun LocalDate.isoDate(): String = format(isoDateFormatter)
 
+fun aikarajausDescription(
+    alku: LocalDate?,
+    loppu: LocalDate?,
+): String? =
+    if (alku != null || loppu != null) {
+        listOf(alku?.finnishDate().orEmpty(), loppu?.finnishDate().orEmpty())
+            .joinToString("-", prefix = "Aikarajaus: ")
+    } else {
+        null
+    }
+
 fun Instant.finnishDateTime(includeTimeZone: Boolean = true): String =
     (if (includeTimeZone) finnishDateTimeWithZoneFormatter else finnishDateTimeFormatter)
         .format(this.atZone(ZoneId.systemDefault()))

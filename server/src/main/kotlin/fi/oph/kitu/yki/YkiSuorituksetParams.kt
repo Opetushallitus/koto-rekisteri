@@ -1,9 +1,10 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.html.table.ColumnTag
-import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.aikarajausDescription
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.util.SearchTerms
+import fi.oph.kitu.webmvc.buildCsvFilename
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusOrder
@@ -68,25 +69,18 @@ data class YkiSuorituksetParams(
         )
 
     fun csvFileName() =
-        listOfNotNull(
+        buildCsvFilename(
             "yki_suoritukset",
-            if (piilotaHenkilotiedot) null else "henkilotiedot",
+            piilotaHenkilotiedot,
             tutkintokieli?.toString(),
             tutkintotaso?.toString(),
             tutkintoalku?.toString(),
             tutkintoloppu?.toString(),
-        ).joinToString("_", postfix = ".csv")
+        )
 
     fun filterDescriptions(): List<String> =
         listOfNotNull(
-            if (tutkintoalku != null || tutkintoloppu != null) {
-                listOf(
-                    tutkintoalku?.finnishDate().orEmpty(),
-                    tutkintoloppu?.finnishDate().orEmpty(),
-                ).joinToString("-", prefix = "Aikarajaus: ")
-            } else {
-                null
-            },
+            aikarajausDescription(tutkintoalku, tutkintoloppu),
             tutkintokieli?.let { "Tutkintokieli: $it" },
             tutkintotaso?.let { "Tutkintotaso: $it" },
             if (piilotaHenkilotiedot) "Henkilötiedot piilotettu" else null,
