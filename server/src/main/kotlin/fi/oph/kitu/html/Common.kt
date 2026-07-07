@@ -1,5 +1,7 @@
 package fi.oph.kitu.html
 
+import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.unaryPlus
 import kotlinx.html.FlowContent
 import kotlinx.html.FlowOrInteractiveOrPhrasingContent
 import kotlinx.html.INPUT
@@ -62,8 +64,8 @@ fun FlowOrInteractiveOrPhrasingContent.input(
     }
 }
 
-fun FlowContent.error(
-    message: String,
+fun FlowContent.errorMessage(
+    message: LocalizedString,
     block: () -> Unit = {},
 ) {
     article(classes = "error-text") {
@@ -72,8 +74,8 @@ fun FlowContent.error(
     }
 }
 
-fun FlowContent.warning(
-    message: String,
+fun FlowContent.warningMessage(
+    message: LocalizedString,
     block: () -> Unit = {},
 ) {
     article(classes = "warning-text") {

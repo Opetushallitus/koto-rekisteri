@@ -65,6 +65,14 @@ class HomeControllerTest(
     }
 
     @Test
+    fun `lang-parametri vaihtaa navigaation kielen ja html-lang-attribuutin`() {
+        val response = getHtml("/?lang=sv")
+
+        assertContains(response, """lang="sv"""")
+        assertContains(response, "Allmän språkexamen")
+    }
+
+    @Test
     fun `etusivulla on placeholderit ja loader-skripti mutta ei yki vkt koto statirivien sisaltoa`() {
         val response = getHtml("/")
 

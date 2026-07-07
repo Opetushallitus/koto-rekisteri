@@ -450,6 +450,7 @@
                     <args>
                         <arg>-Xjsr305=strict</arg>
                         <arg>-opt-in=arrow.core.raise.ExperimentalRaiseAccumulateApi</arg>
+                        <arg>-Xcontext-parameters</arg>
                     </args>
                     <compilerPlugins>
                         <plugin>spring</plugin>

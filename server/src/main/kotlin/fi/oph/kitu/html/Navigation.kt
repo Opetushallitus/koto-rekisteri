@@ -1,5 +1,7 @@
 package fi.oph.kitu.html
 
+import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.webmvc.Links
 
 object Navigation {
@@ -7,40 +9,46 @@ object Navigation {
         listOf(
             MenuItemGroup(
                 "yki",
-                "Yleinen kielitutkinto",
+                UiText.Nav.yki,
                 listOf(
-                    MenuItem("Suoritukset", Links.Yki.suoritukset()),
-                    MenuItem("Arvioijat", Links.Yki.arvioijat()),
-                    MenuItem("Tarkistusarvioinnit", Links.Yki.tarkistusArvioinnit()),
+                    MenuItem(UiText.Nav.suoritukset, Links.Yki.suoritukset()),
+                    MenuItem(UiText.Nav.arvioijat, Links.Yki.arvioijat()),
+                    MenuItem(UiText.Nav.tarkistusarvioinnit, Links.Yki.tarkistusArvioinnit()),
                 ),
             ),
             MenuItemGroup(
                 "koto-kielitesti",
-                "Kotoutumiskoulutuksen kielitaidon päättötesti",
+                UiText.Nav.kotoutumiskoulutuksenPaattotesti,
                 listOf(
-                    MenuItem("Suoritukset", Links.Kielitesti.suoritukset()),
-                    MenuItem("Tehtäväpaketit", Links.Tehtavapankki.list()),
+                    MenuItem(UiText.Nav.suoritukset, Links.Kielitesti.suoritukset()),
+                    MenuItem(UiText.Nav.tehtavapaketit, Links.Tehtavapankki.list()),
                 ),
             ),
             MenuItemGroup(
                 "vkt",
-                "Valtionhallinnon kielitutkinto",
+                UiText.Nav.vkt,
                 listOf(
-                    MenuItem("Kaikki suoritukset", Links.Vkt.suoritukset()),
-                    MenuItem("Erinomaisen taidon ilmoittautuneet", Links.Vkt.erinomaisenTaitotasonIlmoittautuneet()),
-                    MenuItem("Erinomaisen taidon suoritukset", Links.Vkt.erinomaisenTaitotasonArvioidutSuoritukset()),
+                    MenuItem(UiText.Nav.kaikkiSuoritukset, Links.Vkt.suoritukset()),
                     MenuItem(
-                        "Hyvän ja tyydyttävän taidon suoritukset",
+                        UiText.Nav.erinomaisenTaidonIlmoittautuneet,
+                        Links.Vkt.erinomaisenTaitotasonIlmoittautuneet(),
+                    ),
+                    MenuItem(
+                        UiText.Nav.erinomaisenTaidonSuoritukset,
+                        Links.Vkt.erinomaisenTaitotasonArvioidutSuoritukset(),
+                    ),
+                    MenuItem(
+                        UiText.Nav.hyvanJaTyydyttavanSuoritukset,
                         Links.Vkt.hyvanJaTyydyttavanTaitotasonSuoritukset(),
                     ),
                 ),
             ),
             MenuItemGroup(
                 "admin",
-                "Ylläpito",
+                UiText.Nav.yllapito,
                 listOf(
                     MenuItem(
-                        "Eräajojen hallinta",
+                        UiText.Nav.erajojenHallinta,
                         "/kielitutkinnot/db-scheduler",
                     ),
                 ),
@@ -49,15 +57,18 @@ object Navigation {
 
     data class MenuItemGroup(
         val id: String,
-        val name: String,
+        val name: LocalizedString,
         val children: List<MenuItem>,
     )
 
     data class MenuItem(
-        val title: String,
+        val title: LocalizedString,
         val ref: String?,
         val current: Boolean = false,
-    )
+    ) {
+        constructor(title: String, ref: String?, current: Boolean = false) :
+            this(LocalizedString(fi = title), ref, current)
+    }
 
     fun List<MenuItem>.setCurrentItem(ref: String?) =
         if (ref != null) {

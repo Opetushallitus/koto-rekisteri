@@ -18,7 +18,7 @@ class TranslationBuilder(
     private val koodistoService: KoodistoService,
     private val tracer: Tracer,
 ) {
-    private var language: Language = Language.FI
+    private var language: Language = CurrentLanguage.get()
     private var koodistoUris: MutableSet<String> = mutableSetOf()
 
     fun language(language: Language): TranslationBuilder =

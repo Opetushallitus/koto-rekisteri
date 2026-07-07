@@ -13,18 +13,15 @@ data class LocalizedString(
 ) {
     override fun toString(): String = fi ?: sv ?: en ?: "<invalid LocalizedString>"
 
-    fun get(lang: Language): String? =
+    fun get(lang: Language): String =
         when (lang) {
             Language.FI -> fi
             Language.SV -> sv
             Language.EN -> en
-        }
+        } ?: toString()
 
     fun contains(
         other: CharSequence,
         ignoreCase: Boolean = false,
-    ): Boolean =
-        (get(Language.FI)?.contains(other, ignoreCase) ?: false) ||
-            (get(Language.SV)?.contains(other, ignoreCase) ?: false) ||
-            (get(Language.EN)?.contains(other, ignoreCase) ?: false)
+    ): Boolean = listOfNotNull(fi, sv, en).any { it.contains(other, ignoreCase) }
 }
