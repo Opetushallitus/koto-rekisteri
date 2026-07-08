@@ -1,5 +1,4 @@
 package fi.oph.kitu.yki
-
 import fi.oph.kitu.dev.mockdata.toInstant
 import fi.oph.kitu.html.KituRequest
 import fi.oph.kitu.html.Pagination
@@ -8,6 +7,7 @@ import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.html.errorTablePage
 import fi.oph.kitu.html.table.httpParams
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.koski.KoskiErrorService
@@ -182,23 +182,25 @@ class YkiViewController(
         viewMessage?.let { msg ->
             when {
                 succeeded.isEmpty() && failed.isEmpty() -> {
-                    msg.showInfo("Yhtään poikkeamaa ei ollut valittuna.")
+                    msg.showInfo(UiText.Yki.poikkeamaEiValittuna.toString())
                 }
 
                 failed.isEmpty() -> {
-                    msg.showSuccess("${succeeded.size} poikkeamaa korjattu.")
+                    msg.showSuccess(UiText.Yki.poikkeamaaKorjattu(succeeded.size.toLong()).toString())
                 }
 
                 succeeded.isEmpty() -> {
                     msg.showError(
-                        "Yhtäkään poikkeamaa ei voitu korjata: " +
+                        UiText.Yki.poikkeamiaEiKorjattu.toString() + ": " +
                             failed.joinToString("; ") { "${it.key.solkiId}/${it.key.kentta}: ${it.message}" },
                     )
                 }
 
                 else -> {
                     msg.showInfo(
-                        "${succeeded.size} poikkeamaa korjattu, ${failed.size} epäonnistui: " +
+                        UiText.Yki
+                            .poikkeamiaKorjattuJaEpaonnistui(succeeded.size.toLong(), failed.size.toLong())
+                            .toString() + ": " +
                             failed.joinToString("; ") { "${it.key.solkiId}/${it.key.kentta}: ${it.message}" },
                     )
                 }
@@ -215,8 +217,8 @@ class YkiViewController(
     ): ResponseEntity<String> =
         ResponseEntity.ok(
             errorTablePage(
-                title = "Yleinen kielitutkinto",
-                subtitle = "Suoritusten tuonnin virheet",
+                title = UiText.Nav.yki.toString(),
+                subtitle = UiText.Yki.suoritustenTuonninVirheet.toString(),
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
                 rows = suoritusErrorService.getErrors(sortColumn, sortDirection),
@@ -244,8 +246,8 @@ class YkiViewController(
     ): ResponseEntity<String> =
         ResponseEntity.ok(
             errorTablePage(
-                title = "Yleinen kielitutkinto",
-                subtitle = "Arvioijien tuonnin virheet",
+                title = UiText.Nav.yki.toString(),
+                subtitle = UiText.Yki.arvioijienTuonninVirheet.toString(),
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
                 rows = arvioijaErrorService.getErrors(sortColumn, sortDirection),

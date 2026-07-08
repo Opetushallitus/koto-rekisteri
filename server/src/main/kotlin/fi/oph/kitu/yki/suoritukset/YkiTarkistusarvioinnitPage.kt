@@ -1,5 +1,4 @@
 package fi.oph.kitu.yki.suoritukset
-
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.card
@@ -10,6 +9,8 @@ import fi.oph.kitu.html.table.CheckboxKey
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.FlowContent
 import kotlinx.html.InputType
@@ -28,20 +29,20 @@ object YkiTarkistusarvioinnitPage {
         message: ViewMessageData?,
     ): String =
         Page.renderHtml(wideContent = true) {
-            h1 { +"Yleisen kielitutkinnon tarkistusarvioinnit" }
+            h1 { +UiText.Yki.tarkistusarvioinnit }
 
             viewMessage(message)
 
             p {
                 a(href = Links.Yki.hyvaksytytTarkistusArvioinnit()) {
                     testId("hyvaksytytLink")
-                    +"Näytä hyväksytyt tarkistusarvioinnit"
+                    +UiText.Yki.naytaHyvaksytyt
                 }
             }
 
             ykiTarkistusarviointiTable(
-                title = "Odottavat tutkintotoimikunnan hyväksyntää",
-                submitButtonText = "Merkitse hyväksyntä valituille",
+                title = UiText.Yki.odottavatHyvaksyntaa.toString(),
+                submitButtonText = UiText.Yki.merkitseHyvaksynta.toString(),
                 suoritukset = suoritukset,
                 testId = "odottaaHyvaksyntaa",
             )
@@ -52,20 +53,20 @@ object YkiTarkistusarvioinnitPage {
         message: ViewMessageData?,
     ): String =
         Page.renderHtml(wideContent = true) {
-            h1 { +"Yleisen kielitutkinnon tarkistusarvioinnit" }
+            h1 { +UiText.Yki.tarkistusarvioinnit }
 
             viewMessage(message)
 
             p {
                 a(href = Links.Yki.tarkistusArvioinnit()) {
                     testId("takaisinLink")
-                    +"Takaisin hyväksyntää odottaviin tarkistusarviointeihin"
+                    +UiText.Yki.takaisinOdottaviin
                 }
             }
 
             ykiTarkistusarviointiTable(
-                title = "Hyväksytyt tarkistusarvioinnit",
-                submitButtonText = "Korjaa hyväksymispäivämäärä valituille",
+                title = UiText.Yki.hyvaksytytTarkistusarvioinnit.toString(),
+                submitButtonText = UiText.Yki.korjaaHyvaksymispaiva.toString(),
                 suoritukset = suoritukset,
                 testId = "hyvaksytty",
             )
@@ -83,7 +84,7 @@ object YkiTarkistusarvioinnitPage {
 
                 label {
                     attributes["for"] = "hyvaksyttyPvm"
-                    +"Tutkintotoimikunnan kokouksen päivämäärä"
+                    +UiText.Yki.tutkintotoimikunnanKokous
                 }
                 horizontalGroup {
                     input(
