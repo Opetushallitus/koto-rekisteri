@@ -391,6 +391,34 @@ object UiText {
         val henkilotiedotPiilotettu: LocalizedString
             get() = tr("koto.henkilotiedotPiilotettu", fi = "Henkilötiedot piilotettu")
 
+        val tehtavapankki: LocalizedString get() = tr("koto.tehtavapankki", fi = "Kotoutumiskoulutuksen tehtäväpankki")
+        val eiTehtavapaketteja: LocalizedString get() = tr("koto.eiTehtavapaketteja", fi = "Ei tehtäväpaketteja.")
+        val siirretty: LocalizedString get() = tr("koto.siirretty", fi = "Siirretty")
+        val koko: LocalizedString get() = tr("koto.koko", fi = "Koko")
+        val sisalto: LocalizedString get() = tr("koto.sisalto", fi = "Sisältö")
+        val naytaSisalto: LocalizedString get() = tr("koto.naytaSisalto", fi = "Näytä sisältö")
+        val lataaXml: LocalizedString get() = tr("koto.lataaXml", fi = "Lataa XML")
+        val lataa: LocalizedString get() = tr("koto.lataa", fi = "Lataa")
+        val paketissaEiRyhmia: LocalizedString get() = tr("koto.paketissaEiRyhmia", fi = "Paketissa ei ole ryhmiä.")
+        val eiTehtavia: LocalizedString get() = tr("koto.eiTehtavia", fi = "Ei tehtäviä.")
+        val tehtavanTunniste: LocalizedString get() = tr("koto.tehtavanTunniste", fi = "Tehtävän tunniste")
+        val vastausvaihtoehdot: LocalizedString get() = tr("koto.vastausvaihtoehdot", fi = "Vastausvaihtoehdot")
+        val liitetiedostot: LocalizedString get() = tr("koto.liitetiedostot", fi = "Liitetiedostot")
+        val metadata: LocalizedString get() = tr("koto.metadata", fi = "Metadata")
+        val nimeton: LocalizedString get() = tr("koto.nimeton", fi = "(nimetön)")
+        val tyhjaNimi: LocalizedString get() = tr("koto.tyhjaNimi", fi = "(tyhjä nimi)")
+        val lahdejarjestelma: LocalizedString get() = tr("koto.lahdejarjestelma", fi = "Lähdejärjestelmä")
+        val lahdeId: LocalizedString get() = tr("koto.lahdeId", fi = "Lähde-id")
+        val versio: LocalizedString get() = tr("koto.versio", fi = "Versio")
+        val lahdeversio: LocalizedString get() = tr("koto.lahdeversio", fi = "Lähdeversio")
+        val kieli: LocalizedString get() = tr("koto.kieli", fi = "Kieli")
+        val kurssinAlku: LocalizedString get() = tr("koto.kurssinAlku", fi = "Kurssin alku")
+        val lahdeGeneroitu: LocalizedString get() = tr("koto.lahdeGeneroitu", fi = "Lähde generoitu")
+        val ladattu: LocalizedString get() = tr("koto.ladattu", fi = "Ladattu")
+        val xmlTiedosto: LocalizedString get() = tr("koto.xmlTiedosto", fi = "XML-tiedosto")
+        val versioLabel: LocalizedString get() = tr("koto.versioLabel", fi = "versio")
+        val generoituLabel: LocalizedString get() = tr("koto.generoituLabel", fi = "generoitu")
+
         object Sarake {
             val oppijanumero: LocalizedString get() = tr("koto.sarake.oppijanumero", fi = "Oppijanumero")
             val sukunimi: LocalizedString get() = tr("koto.sarake.sukunimi", fi = "Sukunimi")
@@ -424,6 +452,129 @@ object UiText {
                 get() = tr("koto.sarake.virheellinenKentta", fi = "Virheellinen kenttä")
             val virheellinenArvo: LocalizedString
                 get() = tr("koto.sarake.virheellinenArvo", fi = "Virheellinen arvo")
+        }
+
+        object Tehtavatyyppi {
+            val monivalinta: LocalizedString get() = tr("koto.tehtavatyyppi.monivalinta", fi = "Monivalinta")
+            val tosiEpatosi: LocalizedString get() = tr("koto.tehtavatyyppi.tosiEpatosi", fi = "Tosi/epätosi")
+            val lyhytVastaus: LocalizedString get() = tr("koto.tehtavatyyppi.lyhytVastaus", fi = "Lyhyt vastaus")
+            val numeerinenVastaus: LocalizedString
+                get() = tr("koto.tehtavatyyppi.numeerinenVastaus", fi = "Numeerinen vastaus")
+            val essee: LocalizedString get() = tr("koto.tehtavatyyppi.essee", fi = "Esseetehtävä")
+            val yhdistaminen: LocalizedString get() = tr("koto.tehtavatyyppi.yhdistaminen", fi = "Yhdistämistehtävä")
+            val cloze: LocalizedString
+                get() = tr("koto.tehtavatyyppi.cloze", fi = "Sulautetut vastaukset (Cloze)")
+            val lasku: LocalizedString get() = tr("koto.tehtavatyyppi.lasku", fi = "Laskutehtävä")
+            val monivalintaLasku: LocalizedString
+                get() = tr("koto.tehtavatyyppi.monivalintaLasku", fi = "Monivalinta-laskutehtävä")
+            val yksinkertainenLasku: LocalizedString
+                get() = tr("koto.tehtavatyyppi.yksinkertainenLasku", fi = "Yksinkertainen laskutehtävä")
+            val ohjeteksti: LocalizedString get() = tr("koto.tehtavatyyppi.ohjeteksti", fi = "Ohjeteksti")
+            val vetaPudotaTeksti: LocalizedString
+                get() = tr("koto.tehtavatyyppi.vetaPudotaTeksti", fi = "Vedä ja pudota tekstiin")
+            val vetaPudotaMerkit: LocalizedString
+                get() = tr("koto.tehtavatyyppi.vetaPudotaMerkit", fi = "Vedä ja pudota merkit")
+            val vetaPudotaKuva: LocalizedString
+                get() = tr("koto.tehtavatyyppi.vetaPudotaKuva", fi = "Vedä ja pudota kuvaan")
+            val valitsePuuttuvat: LocalizedString
+                get() = tr("koto.tehtavatyyppi.valitsePuuttuvat", fi = "Valitse puuttuvat sanat")
+            val satunnais: LocalizedString get() = tr("koto.tehtavatyyppi.satunnais", fi = "Satunnaistehtävä")
+            val satunnainenLyhytYhdistaminen: LocalizedString
+                get() = tr("koto.tehtavatyyppi.satunnainenLyhytYhdistaminen", fi = "Satunnainen lyhyt yhdistäminen")
+            val puuttuvaTyyppi: LocalizedString get() = tr("koto.tehtavatyyppi.puuttuvaTyyppi", fi = "Puuttuva tyyppi")
+            val aaninauhoitus: LocalizedString get() = tr("koto.tehtavatyyppi.aaninauhoitus", fi = "Ääninauhoitus")
+            val aaniVideonauhoitus: LocalizedString
+                get() = tr("koto.tehtavatyyppi.aaniVideonauhoitus", fi = "Ääni- tai videonauhoitus")
+            val hahmonsovitus: LocalizedString get() = tr("koto.tehtavatyyppi.hahmonsovitus", fi = "Hahmonsovitus")
+            val kemiallinenKaava: LocalizedString
+                get() = tr("koto.tehtavatyyppi.kemiallinenKaava", fi = "Kemiallisen kaavan sovitus")
+            val ohjelmointi: LocalizedString get() = tr("koto.tehtavatyyppi.ohjelmointi", fi = "Ohjelmointitehtävä")
+            val stack: LocalizedString
+                get() = tr("koto.tehtavatyyppi.stack", fi = "Matemaattinen tehtävä (STACK)")
+            val jarjestaminen: LocalizedString
+                get() = tr("koto.tehtavatyyppi.jarjestaminen", fi = "Järjestämistehtävä")
+            val yhdistelma: LocalizedString get() = tr("koto.tehtavatyyppi.yhdistelma", fi = "Yhdistelmätehtävä")
+            val kaava: LocalizedString get() = tr("koto.tehtavatyyppi.kaava", fi = "Kaavatehtävä")
+            val aukko: LocalizedString get() = tr("koto.tehtavatyyppi.aukko", fi = "Aukkotehtävä")
+            val saannollinenLauseke: LocalizedString
+                get() = tr("koto.tehtavatyyppi.saannollinenLauseke", fi = "Säännöllinen lauseke")
+            val puhetehtava: LocalizedString
+                get() = tr("koto.tehtavatyyppi.puhetehtava", fi = "Automaattisesti arvioitu puhetehtävä")
+            val ristikko: LocalizedString get() = tr("koto.tehtavatyyppi.ristikko", fi = "Ristikkotehtävä")
+            val piirto: LocalizedString get() = tr("koto.tehtavatyyppi.piirto", fi = "Piirtotehtävä")
+        }
+
+        object Kieli {
+            val fin: LocalizedString get() = tr("koto.kieli.fin", fi = "suomi")
+            val swe: LocalizedString get() = tr("koto.kieli.swe", fi = "ruotsi")
+            val eng: LocalizedString get() = tr("koto.kieli.eng", fi = "englanti")
+            val rus: LocalizedString get() = tr("koto.kieli.rus", fi = "venäjä")
+            val est: LocalizedString get() = tr("koto.kieli.est", fi = "viro")
+            val ara: LocalizedString get() = tr("koto.kieli.ara", fi = "arabia")
+            val fas: LocalizedString get() = tr("koto.kieli.fas", fi = "persia")
+            val som: LocalizedString get() = tr("koto.kieli.som", fi = "somali")
+            val ukr: LocalizedString get() = tr("koto.kieli.ukr", fi = "ukraina")
+        }
+
+        object Metatieto {
+            val piilotettu: LocalizedString get() = tr("koto.metatieto.piilotettu", fi = "Piilotettu")
+            val vainYksiVastaus: LocalizedString
+                get() = tr("koto.metatieto.vainYksiVastaus", fi = "Vain yksi vastaus")
+            val rangaistuskerroin: LocalizedString
+                get() = tr("koto.metatieto.rangaistuskerroin", fi = "Rangaistuskerroin")
+            val oletuspistemaara: LocalizedString
+                get() = tr("koto.metatieto.oletuspistemaara", fi = "Oletuspistemäärä")
+            val sekoitaVastaukset: LocalizedString
+                get() = tr("koto.metatieto.sekoitaVastaukset", fi = "Sekoita vastaukset")
+            val vastauksenNumeroiminen: LocalizedString
+                get() = tr("koto.metatieto.vastauksenNumeroiminen", fi = "Vastauksen numeroiminen")
+            val palauteOikeasta: LocalizedString
+                get() = tr("koto.metatieto.palauteOikeasta", fi = "Palaute oikeasta vastauksesta")
+            val yleispalaute: LocalizedString get() = tr("koto.metatieto.yleispalaute", fi = "Yleispalaute")
+            val palauteVaarasta: LocalizedString
+                get() = tr("koto.metatieto.palauteVaarasta", fi = "Palaute väärästä vastauksesta")
+            val naytaVakioOhje: LocalizedString get() = tr("koto.metatieto.naytaVakioOhje", fi = "Näytä vakio-ohje")
+            val palauteOsittain: LocalizedString
+                get() = tr("koto.metatieto.palauteOsittain", fi = "Palaute osittain oikeasta vastauksesta")
+            val vastausmuoto: LocalizedString get() = tr("koto.metatieto.vastausmuoto", fi = "Vastausmuoto")
+            val vastauskentanRivimaara: LocalizedString
+                get() = tr("koto.metatieto.vastauskentanRivimaara", fi = "Vastauskentän rivimäärä")
+            val vastausPakollinen: LocalizedString
+                get() = tr("koto.metatieto.vastausPakollinen", fi = "Vastaus pakollinen")
+            val vastauspohja: LocalizedString get() = tr("koto.metatieto.vastauspohja", fi = "Vastauspohja")
+            val sanamaaranEnimmais: LocalizedString
+                get() = tr("koto.metatieto.sanamaaranEnimmais", fi = "Sanamäärän enimmäisraja")
+            val sanamaaranVahimmais: LocalizedString
+                get() = tr("koto.metatieto.sanamaaranVahimmais", fi = "Sanamäärän vähimmäisraja")
+            val liitteidenMaara: LocalizedString
+                get() = tr("koto.metatieto.liitteidenMaara", fi = "Liitteiden sallittu määrä")
+            val vaadittavatLiitteet: LocalizedString
+                get() = tr("koto.metatieto.vaadittavatLiitteet", fi = "Vaadittavat liitteet")
+            val tiedostonEnimmaiskoko: LocalizedString
+                get() = tr("koto.metatieto.tiedostonEnimmaiskoko", fi = "Tiedoston enimmäiskoko")
+            val eiAanenSuodattimia: LocalizedString
+                get() = tr("koto.metatieto.eiAanenSuodattimia", fi = "Ei äänen suodattimia")
+            val litteroija: LocalizedString
+                get() = tr("koto.metatieto.litteroija", fi = "Puheentunnistus / litteroija")
+            val koodausMuunnos: LocalizedString get() = tr("koto.metatieto.koodausMuunnos", fi = "Koodaus / muunnos")
+            val aanisoittimenTeema: LocalizedString
+                get() = tr("koto.metatieto.aanisoittimenTeema", fi = "Äänisoittimen teema")
+            val videosoittimenTeema: LocalizedString
+                get() = tr("koto.metatieto.videosoittimenTeema", fi = "Videosoittimen teema")
+            val opiskelijanSoitin: LocalizedString
+                get() = tr("koto.metatieto.opiskelijanSoitin", fi = "Opiskelijan soitin")
+            val opettajanSoitin: LocalizedString
+                get() = tr("koto.metatieto.opettajanSoitin", fi = "Opettajan soitin")
+            val aikaraja: LocalizedString get() = tr("koto.metatieto.aikaraja", fi = "Aikaraja")
+            val vanhentumispaivat: LocalizedString
+                get() = tr("koto.metatieto.vanhentumispaivat", fi = "Vanhentumispäivät")
+            val tunnisteet: LocalizedString get() = tr("koto.metatieto.tunnisteet", fi = "Tunnisteet")
+            val turvallinenTallennus: LocalizedString
+                get() = tr("koto.metatieto.turvallinenTallennus", fi = "Turvallinen tallennus")
+            val kayttotarkoitus: LocalizedString
+                get() = tr("koto.metatieto.kayttotarkoitus", fi = "Käyttötarkoitus")
+            val arviointiohjeet: LocalizedString
+                get() = tr("koto.metatieto.arviointiohjeet", fi = "Arviointiohjeet")
         }
     }
 
