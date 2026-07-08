@@ -66,7 +66,7 @@ object UiText {
     }
 
     object Filter {
-        val aikarajausPrefix: LocalizedString get() = tr("filter.aikarajausPrefix", fi = "Aikarajaus: ")
+        val aikarajausPrefix: LocalizedString get() = tr("filter.aikarajausPrefix", fi = "Aikarajaus")
     }
 }
 
