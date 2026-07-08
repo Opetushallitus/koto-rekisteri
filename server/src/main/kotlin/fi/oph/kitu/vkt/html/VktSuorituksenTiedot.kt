@@ -1,11 +1,12 @@
 package fi.oph.kitu.vkt.html
-
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.i18n.Translations
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
 import kotlinx.html.FlowContent
 import kotlinx.html.a
@@ -25,25 +26,25 @@ fun FlowContent.vktSuorituksenTiedot(
             "Kieli" to { +t.get(data.suoritus.kieli) },
         )
     }
-    h3 { +"Integraatiot" }
+    h3 { +UiText.Vkt.integraatiot }
     card(compact = true) {
         infoTable(
             "KOSKI" to {
                 when (koskiTransferState.first) {
                     KoskiTransferState.NOT_READY -> {
-                        +"Tiedoissa puutteita tai virheitä, eivätkä ole valmiit siirrettäväksi KOSKI-tietovarantoon."
+                        +UiText.Vkt.tiedoissaPuutteita
                     }
 
                     KoskiTransferState.PENDING -> {
-                        +"Yritys tietojen siirrosta KOSKI-tietovarantoon ajastettu."
+                        +UiText.Vkt.siirtoAjastettu
                     }
 
                     KoskiTransferState.SUCCESS -> {
-                        +"Tiedot siirretty KOSKI-tietovarantoon."
+                        +UiText.Vkt.tiedotSiirretty
                     }
 
                     KoskiTransferState.INVALID -> {
-                        +"Tiedonsiirtotila on virheellinen."
+                        +UiText.Vkt.tiedonsiirtotilaVirheellinen
                     }
                 }
                 if (koskiTransferState.second.isNotEmpty()) {
@@ -52,7 +53,9 @@ fun FlowContent.vktSuorituksenTiedot(
                     }
                 }
                 if (data.suoritus.koskiOpiskeluoikeusOid != null) {
-                    +" Opiskeluoikeuden oid: "
+                    +" "
+                    +UiText.Vkt.opiskeluoikeudenOid
+                    +": "
                     a(href = "/koski/oppija/${data.henkilo.oid}?opiskeluoikeudenTyyppi=kielitutkinto") {
                         +data.suoritus.koskiOpiskeluoikeusOid.toString()
                     }

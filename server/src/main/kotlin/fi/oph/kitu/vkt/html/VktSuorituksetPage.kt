@@ -1,5 +1,4 @@
 package fi.oph.kitu.vkt.html
-
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessageData
@@ -20,6 +19,8 @@ import fi.oph.kitu.html.table.trueFalseOrAllFilter
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.vkt.VktSuoritusColumn
 import fi.oph.kitu.vkt.VktSuoritusFilter
 import fi.oph.kitu.vkt.VktSuoritusFlat
@@ -48,8 +49,8 @@ object VktSuorituksetPage {
         Page.renderHtml(
             wideContent = true,
         ) {
-            h1 { +"Valtionhallinnon kielitutkinto" }
-            h2 { +"Kaikki suoritukset" }
+            h1 { +UiText.Nav.vkt }
+            h2 { +UiText.Nav.kaikkiSuoritukset }
             messages.forEach { viewMessage(it) }
             vktSearch(filter)
             article {
@@ -57,7 +58,8 @@ object VktSuorituksetPage {
                     nav {
                         ul {
                             li {
-                                +"Yhteensä: "
+                                +UiText.Vkt.yhteensa
+                                +": "
                                 span {
                                     testId("numberOfRows")
                                     +pagination.numberOfItems.toString()

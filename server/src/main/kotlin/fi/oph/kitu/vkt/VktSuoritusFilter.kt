@@ -2,7 +2,9 @@ package fi.oph.kitu.vkt
 
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.Nimetty
+import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.aikarajausDescription
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
 import fi.oph.kitu.jdbc.PaginatedSortOrder
@@ -36,17 +38,19 @@ data class VktSuoritusFilter(
             "piilotaHenkilotiedot" to piilotaHenkilotiedot.toTrueOrNull(),
         ).filterValues { it != null }
 
-    fun filterDescriptions(): List<String> =
-        listOfNotNull(
+    fun filterDescriptions(): List<String> {
+        val lang = CurrentLanguage.get()
+        return listOfNotNull(
             aikarajausDescription(alkupaiva, loppupaiva),
-            tutkintokieli?.let { "Tutkintokieli: ${it.nimi}" },
-            taitotaso?.let { "Taitotaso: ${it.nimi}" },
-            arvioitu?.let { "Arvoinnin tila: ${it.nimi}" },
+            tutkintokieli?.let { "${UiText.Vkt.tutkintokieli.get(lang)}: ${it.nimi.get(lang)}" },
+            taitotaso?.let { "${UiText.Vkt.taitotaso.get(lang)}: ${it.nimi.get(lang)}" },
+            arvioitu?.let { "${UiText.Vkt.arvioinninTila.get(lang)}: ${it.nimi.get(lang)}" },
             merkittyPoistettavaksi?.let {
-                if (it) "Vain poistettavat suoritukset" else "Vain suoritukset, joita ei ole merkitty poistettavaksi"
+                if (it) UiText.Vkt.vainPoistettavat.get(lang) else UiText.Vkt.vainEiPoistettavat.get(lang)
             },
-            if (piilotaHenkilotiedot) "Henkilötiedot piilotettu" else null,
+            if (piilotaHenkilotiedot) UiText.Vkt.henkilotiedotPiilotettu.get(lang) else null,
         )
+    }
 
     fun csvFileName() =
         buildCsvFilename(
