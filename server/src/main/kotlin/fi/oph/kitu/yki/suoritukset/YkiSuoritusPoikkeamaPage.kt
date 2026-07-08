@@ -1,5 +1,4 @@
 package fi.oph.kitu.yki.suoritukset
-
 import fi.oph.kitu.html.CheckboxItem
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.ViewMessageData
@@ -10,8 +9,10 @@ import fi.oph.kitu.html.input
 import fi.oph.kitu.html.javascript
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.ButtonType
 import kotlinx.html.InputType
@@ -36,13 +37,13 @@ object YkiSuoritusPoikkeamaPage {
         message: ViewMessageData? = null,
     ): String =
         Page.renderHtml(wideContent = true) {
-            h1 { +"Yleinen kielitutkinto" }
-            h2 { +"Suoritusten poikkeamat" }
+            h1 { +UiText.Nav.yki }
+            h2 { +UiText.Yki.suoritustenPoikkeamat }
 
             viewMessage(message)
 
             if (poikkeamat.isEmpty()) {
-                p { +"Ei havaittuja poikkeamia." }
+                p { +UiText.Yki.eiPoikkeamia }
             } else {
                 val kentat = poikkeamat.map { it.kentta }.distinct().sorted()
                 val tutkintopaivat = poikkeamat.mapNotNull { it.tutkintopaiva }.distinct().sortedDescending()
@@ -56,7 +57,7 @@ object YkiSuoritusPoikkeamaPage {
                             attributes["disabled"] = ""
                             attributes["data-patch-button"] = ""
                             testId("tallenna-korjaukset")
-                            +"Tallenna korjaukset"
+                            +UiText.Yki.tallennaKorjaukset
                         }
                     }
 
@@ -64,11 +65,11 @@ object YkiSuoritusPoikkeamaPage {
                         table(classes = "striped") {
                             thead {
                                 tr {
-                                    th { +"Solki-ID" }
+                                    th { +UiText.Yki.Sarake.solkiId }
                                     th {
-                                        +"Tutkintopäivä"
+                                        +UiText.Yki.Sarake.tutkintopaiva
                                         checkboxDropdown(
-                                            title = "Suodata",
+                                            title = UiText.Yki.suodata.toString(),
                                             items =
                                                 tutkintopaivat.map {
                                                     CheckboxItem(
@@ -82,9 +83,9 @@ object YkiSuoritusPoikkeamaPage {
                                         )
                                     }
                                     th {
-                                        +"Kieli"
+                                        +UiText.Yki.Sarake.kieli
                                         checkboxDropdown(
-                                            title = "Suodata",
+                                            title = UiText.Yki.suodata.toString(),
                                             items =
                                                 tutkintokielet.map {
                                                     CheckboxItem(
@@ -98,9 +99,9 @@ object YkiSuoritusPoikkeamaPage {
                                         )
                                     }
                                     th {
-                                        +"Taso"
+                                        +UiText.Yki.Sarake.taso
                                         checkboxDropdown(
-                                            title = "Suodata",
+                                            title = UiText.Yki.suodata.toString(),
                                             items =
                                                 tutkintotasot.map {
                                                     CheckboxItem(
@@ -118,9 +119,9 @@ object YkiSuoritusPoikkeamaPage {
                                             attributes["data-select-all-visible"] = ""
                                             testId("valitse-nakyvat")
                                         }
-                                        +"Kenttä"
+                                        +UiText.Yki.Sarake.kentta
                                         checkboxDropdown(
-                                            title = "Suodata",
+                                            title = UiText.Yki.suodata.toString(),
                                             items =
                                                 kentat.map {
                                                     CheckboxItem(
@@ -133,9 +134,9 @@ object YkiSuoritusPoikkeamaPage {
                                             dataAttributes = mapOf("filter-key" to "kentta"),
                                         )
                                     }
-                                    th { +"Arvo Kitussa" }
-                                    th { +"Arvo Solkissa" }
-                                    th { +"Havaittu" }
+                                    th { +UiText.Yki.Sarake.arvoKitussa }
+                                    th { +UiText.Yki.Sarake.arvoSolkissa }
+                                    th { +UiText.Yki.Sarake.havaittu }
                                 }
                             }
                             tbody {

@@ -1,11 +1,12 @@
 package fi.oph.kitu.yki.arvioijat
-
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.errorsArticle
 import fi.oph.kitu.html.table.displayTableHeader
 import fi.oph.kitu.html.testId
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.article
@@ -28,8 +29,8 @@ object YkiArvioijaPage {
         Page.renderHtml(
             wideContent = true,
         ) {
-            h1 { +"Yleinen kielitutkinto" }
-            h2 { +"Arvioijat" }
+            h1 { +UiText.Nav.yki }
+            h2 { +UiText.Nav.arvioijat }
             this.errorsArticle(errorsCount, Links.Yki.arvioijatVirheet())
 
             article(classes = "overflow-auto") {

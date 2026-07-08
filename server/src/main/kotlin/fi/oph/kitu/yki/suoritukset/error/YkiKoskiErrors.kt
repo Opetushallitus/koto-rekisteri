@@ -8,6 +8,7 @@ import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.webmvc.Links
@@ -33,8 +34,8 @@ object YkiKoskiErrors {
                             ?.let { error.id to it }
                     }.toMap()
 
-            h1 { +"Yleinen kielitutkinto" }
-            h2 { +"KOSKI-tiedonsiirtovirheet" }
+            h1 { +UiText.Nav.yki }
+            h2 { +UiText.Yki.koskiTiedonsiirtovirheet }
 
             hiddenErrorsBanner(hiddenCount)
 
@@ -67,12 +68,12 @@ object YkiKoskiErrors {
                             Column.Virhe.withHtml { errorMessageDetails(it) },
                             Column.Request.withHtml { error ->
                                 a(href = Links.Yki.koskiRequestJson(error.id.toInt())) {
-                                    +"Näytä JSON"
+                                    +UiText.Yki.naytaJson
                                 }
                             },
                             Column.Hidden.withHtml { error ->
                                 hideErrorUrl(error, !error.hidden)?.let { url ->
-                                    a(href = url) { +if (error.hidden) "Palauta" else "Piilota" }
+                                    a(href = url) { if (error.hidden) +UiText.Yki.palauta else +UiText.Yki.piilota }
                                 }
                             },
                         ),

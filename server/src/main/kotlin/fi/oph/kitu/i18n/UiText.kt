@@ -178,6 +178,117 @@ object UiText {
     }
 
     object Yki {
+        val suodata: LocalizedString get() = tr("yki.suodata", fi = "Suodata")
+        val suorituksiaYhteensa: LocalizedString get() = tr("yki.suorituksiaYhteensa", fi = "Suorituksia yhteensä")
+        val tarkistusarvioinnit: LocalizedString
+            get() = tr("yki.tarkistusarvioinnit", fi = "Yleisen kielitutkinnon tarkistusarvioinnit")
+        val naytaHyvaksytyt: LocalizedString
+            get() = tr("yki.naytaHyvaksytyt", fi = "Näytä hyväksytyt tarkistusarvioinnit")
+        val takaisinOdottaviin: LocalizedString
+            get() = tr("yki.takaisinOdottaviin", fi = "Takaisin hyväksyntää odottaviin tarkistusarviointeihin")
+        val tutkintotoimikunnanKokous: LocalizedString
+            get() = tr("yki.tutkintotoimikunnanKokous", fi = "Tutkintotoimikunnan kokouksen päivämäärä")
+        val suoritustenPoikkeamat: LocalizedString
+            get() = tr("yki.suoritustenPoikkeamat", fi = "Suoritusten poikkeamat")
+        val eiPoikkeamia: LocalizedString get() = tr("yki.eiPoikkeamia", fi = "Ei havaittuja poikkeamia.")
+        val tallennaKorjaukset: LocalizedString get() = tr("yki.tallennaKorjaukset", fi = "Tallenna korjaukset")
+        val naytaUusinVersio: LocalizedString get() = tr("yki.naytaUusinVersio", fi = "Näytä uusin versio")
+        val henkilotiedot: LocalizedString get() = tr("yki.henkilotiedot", fi = "Henkilötiedot")
+        val teeYksilointi: LocalizedString
+            get() = tr("yki.teeYksilointi", fi = "Tee yksilöinti oppijanumerorekisterissä")
+        val eriArvoOnr: LocalizedString get() = tr("yki.eriArvoOnr", fi = "Eri arvo oppijanumerorekisterissä")
+        val todistuksenPostitusosoite: LocalizedString
+            get() = tr("yki.todistuksenPostitusosoite", fi = "Todistuksen postitusosoite ja kieli")
+        val tutkinnonTiedot: LocalizedString get() = tr("yki.tutkinnonTiedot", fi = "Tutkinnon tiedot")
+        val arviointi: LocalizedString get() = tr("yki.arviointi", fi = "Arviointi")
+        val integraatiot: LocalizedString get() = tr("yki.integraatiot", fi = "Integraatiot")
+        val siirrettyKoski: LocalizedString get() = tr("yki.siirrettyKoski", fi = "Siirretty KOSKI-tietovarantoon.")
+        val odottaaSiirtoa: LocalizedString
+            get() = tr("yki.odottaaSiirtoa", fi = "Odottaa siirtoa KOSKI-tietovarantoon.")
+        val opiskeluoikeudenOid: LocalizedString get() = tr("yki.opiskeluoikeudenOid", fi = "Opiskeluoikeuden OID")
+        val arviointitilaLahetetty: LocalizedString
+            get() = tr("yki.arviointitilaLahetetty", fi = "Arviointitila lähetetty")
+        val koskiTiedonsiirtovirheet: LocalizedString
+            get() = tr("yki.koskiTiedonsiirtovirheet", fi = "KOSKI-tiedonsiirtovirheet")
+        val naytaJson: LocalizedString get() = tr("yki.naytaJson", fi = "Näytä JSON")
+
+        val henkiloOid: LocalizedString get() = tr("yki.henkiloOid", fi = "Henkilö-oid")
+        val katuosoite: LocalizedString get() = tr("yki.katuosoite", fi = "Katuosoite")
+        val postinumero: LocalizedString get() = tr("yki.postinumero", fi = "Postinumero")
+        val postitoimipaikka: LocalizedString get() = tr("yki.postitoimipaikka", fi = "Postitoimipaikka")
+        val maa: LocalizedString get() = tr("yki.maa", fi = "Maa")
+        val todistuksenKieli: LocalizedString get() = tr("yki.todistuksenKieli", fi = "Todistuksen kieli")
+        val jarjestaja: LocalizedString get() = tr("yki.jarjestaja", fi = "Järjestäjä")
+        val arvioinninTila: LocalizedString get() = tr("yki.arvioinninTila", fi = "Arvioinnin tila")
+        val tarkistusarvioinninSaapumispaiva: LocalizedString
+            get() = tr("yki.tarkistusarvioinninSaapumispaiva", fi = "Tarkistusarvioinnin saapumispäivä")
+        val tarkistusarvioinninAsiatunnus: LocalizedString
+            get() = tr("yki.tarkistusarvioinninAsiatunnus", fi = "Tarkistusarvioinnin asiatunnus")
+        val tarkistusarvioinninKasittelypaiva: LocalizedString
+            get() = tr("yki.tarkistusarvioinninKasittelypaiva", fi = "Tarkistusarvioinnin käsittelypäivä")
+        val tarkistusarvioidutOsakokeet: LocalizedString
+            get() = tr("yki.tarkistusarvioidutOsakokeet", fi = "Tarkistusarvioidut osakokeet")
+        val perustelu: LocalizedString get() = tr("yki.perustelu", fi = "Perustelu")
+        val viimeksiMuokattu: LocalizedString get() = tr("yki.viimeksiMuokattu", fi = "Viimeksi muokattu")
+        val koski: LocalizedString get() = tr("yki.koski", fi = "KOSKI")
+        val koskiVirheet: LocalizedString get() = tr("yki.koskiVirheet", fi = "KOSKI-virheet")
+        val kios: LocalizedString get() = tr("yki.kios", fi = "KIOS")
+        val kiosVirhe: LocalizedString get() = tr("yki.kiosVirhe", fi = "KIOS-virhe")
+
+        val tutkintopaivaAlkaen: LocalizedString get() = tr("yki.tutkintopaivaAlkaen", fi = "Tutkintopäivä alkaen")
+        val tutkintopaivaPaattyen: LocalizedString
+            get() = tr("yki.tutkintopaivaPaattyen", fi = "Tutkintopäivä päättyen")
+        val naytaVersiohistoria: LocalizedString get() = tr("yki.naytaVersiohistoria", fi = "Näytä versiohistoria")
+        val piilotaHenkilotiedot: LocalizedString get() = tr("yki.piilotaHenkilotiedot", fi = "Piilota henkilötiedot")
+
+        val nayta: LocalizedString get() = tr("yki.nayta", fi = "Näytä")
+        val palauta: LocalizedString get() = tr("yki.palauta", fi = "Palauta")
+        val piilota: LocalizedString get() = tr("yki.piilota", fi = "Piilota")
+        val hakusana: LocalizedString
+            get() = tr("yki.hakusana", fi = "Oppijanumero, henkilötunnus, Solki-ID tai hakusana")
+        val henkilotiedotPiilotettu: LocalizedString
+            get() = tr("yki.henkilotiedotPiilotettu", fi = "Henkilötiedot piilotettu")
+        val vanhentuneetPiilotettu: LocalizedString
+            get() = tr("yki.vanhentuneetPiilotettu", fi = "Vanhentuneet tietokentät piilotettu")
+        val piilotaVanhentuneet: LocalizedString
+            get() = tr("yki.piilotaVanhentuneet", fi = "Piilota vanhentuneet tietokentät")
+        val odottavatHyvaksyntaa: LocalizedString
+            get() = tr("yki.odottavatHyvaksyntaa", fi = "Odottavat tutkintotoimikunnan hyväksyntää")
+        val merkitseHyvaksynta: LocalizedString
+            get() = tr("yki.merkitseHyvaksynta", fi = "Merkitse hyväksyntä valituille")
+        val hyvaksytytTarkistusarvioinnit: LocalizedString
+            get() = tr("yki.hyvaksytytTarkistusarvioinnit", fi = "Hyväksytyt tarkistusarvioinnit")
+        val korjaaHyvaksymispaiva: LocalizedString
+            get() = tr("yki.korjaaHyvaksymispaiva", fi = "Korjaa hyväksymispäivämäärä valituille")
+        val poikkeamaEiValittuna: LocalizedString
+            get() = tr("yki.poikkeamaEiValittuna", fi = "Yhtään poikkeamaa ei ollut valittuna.")
+        val poikkeamiaEiKorjattu: LocalizedString
+            get() = tr("yki.poikkeamiaEiKorjattu", fi = "Yhtäkään poikkeamaa ei voitu korjata")
+        val suoritustenTuonninVirheet: LocalizedString
+            get() = tr("yki.suoritustenTuonninVirheet", fi = "Suoritusten tuonnin virheet")
+        val arvioijienTuonninVirheet: LocalizedString
+            get() = tr("yki.arvioijienTuonninVirheet", fi = "Arvioijien tuonnin virheet")
+        val siirtoaEiTehda: LocalizedString get() = tr("yki.siirtoaEiTehda", fi = "Siirtoa ei tehdä")
+
+        fun poikkeamaaKorjattu(count: Long) =
+            tr("yki.poikkeamaaKorjattu", fi = "{count} poikkeamaa korjattu.").interpolate("count" to count)
+
+        fun poikkeamiaKorjattuJaEpaonnistui(
+            korjattu: Long,
+            epaonnistui: Long,
+        ) = tr("yki.poikkeamiaKorjattuJaEpaonnistui", fi = "{korjattu} poikkeamaa korjattu, {epaonnistui} epäonnistui")
+            .interpolate("korjattu" to korjattu, "epaonnistui" to epaonnistui)
+
+        val suoritustaEdeltavaEiLaheteta: LocalizedString
+            get() = tr("yki.suoritustaEdeltavaEiLaheteta", fi = "Suoritusta edeltävää tila ei lähetetä")
+        val arviointitilaaEiLahetetty: LocalizedString
+            get() = tr("yki.arviointitilaaEiLahetetty", fi = "Arviointitilaa ei ole lähetetty")
+        val saapunut: LocalizedString get() = tr("yki.saapunut", fi = "Pyyntö saapunut")
+        val kasitelty: LocalizedString get() = tr("yki.kasitelty", fi = "Pyyntö käsitelty")
+        val hyvaksytty: LocalizedString get() = tr("yki.hyvaksytty", fi = "Tulos hyväksytty")
+        val arvosanaMuuttui: LocalizedString get() = tr("yki.arvosanaMuuttui", fi = "Arvosana muuttui")
+        val arvosanaEiMuuttunut: LocalizedString get() = tr("yki.arvosanaEiMuuttunut", fi = "Arvosana ei muuttunut")
+
         object Sarake {
             val oppijanumero: LocalizedString get() = tr("yki.sarake.oppijanumero", fi = "Oppijanumero")
             val sukunimi: LocalizedString get() = tr("yki.sarake.sukunimi", fi = "Sukunimi")
