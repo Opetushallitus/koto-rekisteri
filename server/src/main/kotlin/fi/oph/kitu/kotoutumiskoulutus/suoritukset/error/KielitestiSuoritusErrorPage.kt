@@ -1,8 +1,9 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset.error
-
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.table.displayTableBody
 import fi.oph.kitu.html.table.displayTableHeader
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import fi.oph.kitu.webmvc.Links
@@ -27,19 +28,20 @@ object KielitestiSuoritusErrorPage {
         Page.renderHtml(
             wideContent = true,
         ) {
-            h1 { +"Kotoutumiskoulutuksen kielitaidon päättötesti" }
-            h2 { +"Suoritusten tuonnin virheet" }
+            h1 { +UiText.Nav.kotoutumiskoulutuksenPaattotesti }
+            h2 { +UiText.Koto.suoritustenTuonninVirheet }
             article(classes = "overflow-auto") {
                 header {
                     nav {
                         ul {
                             li {
-                                +"Virheitä yhteensä: ${errors.count()}"
+                                +UiText.Koto.virheitaYhteensa
+                                +": ${errors.count()}"
                             }
                             li {
                                 a(href = Links.Kielitesti.virheetCsv()) {
                                     attributes["download"] = ""
-                                    +"Lataa tiedot CSV:nä"
+                                    +UiText.Koto.lataaCsv
                                 }
                             }
                         }
