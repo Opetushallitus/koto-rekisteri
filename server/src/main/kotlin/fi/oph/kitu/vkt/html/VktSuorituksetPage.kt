@@ -113,38 +113,38 @@ fun FlowContent.vktSuoritusFilterButton(filter: VktSuoritusFilter) {
     tableFilterDialog("") {
         filter.search?.let { hiddenValue("search", filter.search) }
         fieldSet(classes = "grid") {
-            dateFilter("alkupaiva", UiText.Vkt.alkaen.get(CurrentLanguage.get()), filter.alkupaiva)
-            dateFilter("loppupaiva", UiText.Vkt.paattyen.get(CurrentLanguage.get()), filter.loppupaiva)
+            dateFilter("alkupaiva", UiText.Vkt.alkaen.toString(), filter.alkupaiva)
+            dateFilter("loppupaiva", UiText.Vkt.paattyen.toString(), filter.loppupaiva)
         }
         fieldSet {
-            enumFilter("tutkintokieli", UiText.Vkt.tutkintokieli.get(CurrentLanguage.get()), filter.tutkintokieli)
+            enumFilter("tutkintokieli", UiText.Vkt.tutkintokieli.toString(), filter.tutkintokieli)
         }
         fieldSet {
-            enumFilter("taitotaso", UiText.Vkt.taitotaso.get(CurrentLanguage.get()), filter.taitotaso)
+            enumFilter("taitotaso", UiText.Vkt.taitotaso.toString(), filter.taitotaso)
         }
         fieldSet {
             enumFilter(
                 "arvioitu",
-                UiText.Vkt.erinomaisenArvioinninTila.get(CurrentLanguage.get()),
+                UiText.Vkt.erinomaisenArvioinninTila.toString(),
                 filter.arvioitu,
             )
         }
         fieldSet {
             trueFalseOrAllFilter(
                 "merkittyPoistettavaksi",
-                UiText.Vkt.poistettavaksiMerkitty.get(CurrentLanguage.get()),
+                UiText.Vkt.poistettavaksiMerkitty.toString(),
                 filter.merkittyPoistettavaksi,
                 Triple(
-                    UiText.Vkt.naytaKaikki.get(CurrentLanguage.get()),
-                    UiText.Vkt.naytaVainPoistettavat.get(CurrentLanguage.get()),
-                    UiText.Vkt.piilotaPoistettavat.get(CurrentLanguage.get()),
+                    UiText.Vkt.naytaKaikki.toString(),
+                    UiText.Vkt.naytaVainPoistettavat.toString(),
+                    UiText.Vkt.piilotaPoistettavat.toString(),
                 ),
             )
         }
         fieldSet {
             toggleFilter(
                 "piilotaHenkilotiedot",
-                UiText.Vkt.piilotaHenkilotiedot.get(CurrentLanguage.get()),
+                UiText.Vkt.piilotaHenkilotiedot.toString(),
                 filter.piilotaHenkilotiedot,
             )
         }

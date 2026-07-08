@@ -38,19 +38,17 @@ data class VktSuoritusFilter(
             "piilotaHenkilotiedot" to piilotaHenkilotiedot.toTrueOrNull(),
         ).filterValues { it != null }
 
-    fun filterDescriptions(): List<String> {
-        val lang = CurrentLanguage.get()
-        return listOfNotNull(
+    fun filterDescriptions(): List<String> =
+        listOfNotNull(
             aikarajausDescription(alkupaiva, loppupaiva),
-            tutkintokieli?.let { "${UiText.Vkt.tutkintokieli.get(lang)}: ${it.nimi.get(lang)}" },
-            taitotaso?.let { "${UiText.Vkt.taitotaso.get(lang)}: ${it.nimi.get(lang)}" },
-            arvioitu?.let { "${UiText.Vkt.arvioinninTila.get(lang)}: ${it.nimi.get(lang)}" },
+            tutkintokieli?.let { "${UiText.Vkt.tutkintokieli}: ${it.nimi}" },
+            taitotaso?.let { "${UiText.Vkt.taitotaso}: ${it.nimi}" },
+            arvioitu?.let { "${UiText.Vkt.arvioinninTila}: ${it.nimi}" },
             merkittyPoistettavaksi?.let {
-                if (it) UiText.Vkt.vainPoistettavat.get(lang) else UiText.Vkt.vainEiPoistettavat.get(lang)
+                if (it) UiText.Vkt.vainPoistettavat.toString() else UiText.Vkt.vainEiPoistettavat.toString()
             },
-            if (piilotaHenkilotiedot) UiText.Vkt.henkilotiedotPiilotettu.get(lang) else null,
+            if (piilotaHenkilotiedot) UiText.Vkt.henkilotiedotPiilotettu.toString() else null,
         )
-    }
 
     fun csvFileName() =
         buildCsvFilename(

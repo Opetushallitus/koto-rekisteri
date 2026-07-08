@@ -104,18 +104,18 @@ fun FlowContent.vktErinomainenOsakoeTable(
     displayTable(
         osat.sortedWith(compareBy(VktOsakoe::tutkintopaiva, VktOsakoe::tyyppi).reversed()),
         listOf(
-            DisplayTableColumn(UiText.Vkt.osakoe.get(CurrentLanguage.get()), width = "20%", testId = "osakoe") {
+            DisplayTableColumn(UiText.Vkt.osakoe.toString(), width = "20%", testId = "osakoe") {
                 +t.get(it.tyyppi)
             },
             DisplayTableColumn(
                 UiText.Vkt.Sarake.tutkintopaiva
-                    .get(CurrentLanguage.get()),
+                    .toString(),
                 width = "20%",
                 testId = "tutkintopaiva",
             ) {
                 finnishDate(it.tutkintopaiva)
             },
-            DisplayTableColumn(UiText.Vkt.arvosana.get(CurrentLanguage.get()), width = "20%") {
+            DisplayTableColumn(UiText.Vkt.arvosana.toString(), width = "20%") {
                 hiddenValue("id", it.internalId?.toString().orEmpty())
                 itemSelect(
                     inputName = "arvosana",
@@ -125,7 +125,7 @@ fun FlowContent.vktErinomainenOsakoeTable(
                             Navigation.MenuItem(UiText.Vkt.erinomainen, Koodisto.VktArvosana.Erinomainen.name),
                             Navigation.MenuItem(UiText.Vkt.hylatty, Koodisto.VktArvosana.Hylätty.name),
                             Navigation.MenuItem(
-                                "${UiText.Vkt.eiSuoritusta.get(CurrentLanguage.get())} (poistetaan${
+                                "${UiText.Vkt.eiSuoritusta} (poistetaan${
                                     it.merkittyPoistettavaksi?.let { pvm ->
                                         " ${pvm.finnishDateTime()}"
                                     } ?: ""
@@ -144,12 +144,12 @@ fun FlowContent.vktErinomainenOsakoeTable(
                     testId = "arvosana",
                 )
             },
-            DisplayTableColumn(UiText.Vkt.arviointipaiva.get(CurrentLanguage.get()), width = "20%") {
+            DisplayTableColumn(UiText.Vkt.arviointipaiva.toString(), width = "20%") {
                 dateInput("arviointipaiva", it.arviointi?.paivamaara, testId = "arviointipaiva")
             },
             DisplayTableColumn(
                 UiText.Vkt.Sarake.suorituspaikkakunta
-                    .get(CurrentLanguage.get()),
+                    .toString(),
                 width = "20%",
             ) {
                 +t.getByKoodiviite("kunta", it.suorituspaikkakunta)

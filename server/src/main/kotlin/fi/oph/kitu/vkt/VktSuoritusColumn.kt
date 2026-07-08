@@ -78,7 +78,7 @@ enum class VktSuoritusColumn(
             Koodisto.VktTaitotaso
                 .valueOf(it.taitotaso)
                 .nimi
-                .get(CurrentLanguage.get())
+                .toString()
         },
     ),
 
@@ -91,7 +91,7 @@ enum class VktSuoritusColumn(
             Koodisto.Tutkintokieli
                 .valueOf(it.tutkintokieli)
                 .nimi
-                .get(CurrentLanguage.get())
+                .toString()
         },
     ),
 

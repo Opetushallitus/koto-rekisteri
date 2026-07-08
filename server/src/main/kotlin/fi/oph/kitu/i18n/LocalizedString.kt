@@ -11,14 +11,14 @@ data class LocalizedString(
     val sv: String? = null,
     val en: String? = null,
 ) {
-    override fun toString(): String = fi ?: sv ?: en ?: "<invalid LocalizedString>"
+    override fun toString(): String = get(CurrentLanguage.get())
 
     fun get(lang: Language): String =
         when (lang) {
             Language.FI -> fi
             Language.SV -> sv
             Language.EN -> en
-        } ?: toString()
+        } ?: fi ?: "<invalid LocalizedString>"
 
     fun contains(
         other: CharSequence,
