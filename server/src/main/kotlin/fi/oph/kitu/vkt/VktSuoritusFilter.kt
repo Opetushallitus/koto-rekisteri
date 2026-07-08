@@ -157,9 +157,15 @@ data class VktSuoritusOrder(
     override fun toString(): String = orderSql()
 }
 
-enum class VktArvioinninTila(
-    override val nimi: LocalizedString,
-) : Nimetty {
-    ArvioituOsittainTaiKokonaan(LocalizedString("Arvioitu osittain tai kokonaan")),
-    ArviointejaPuuttuu(LocalizedString("Arviointeja puuttuu")),
+enum class VktArvioinninTila : Nimetty {
+    ArvioituOsittainTaiKokonaan,
+    ArviointejaPuuttuu,
+    ;
+
+    override val nimi: LocalizedString
+        get() =
+            when (this) {
+                ArvioituOsittainTaiKokonaan -> UiText.Vkt.arvioituOsittain
+                ArviointejaPuuttuu -> UiText.Vkt.arviointejaPuuttuu
+            }
 }

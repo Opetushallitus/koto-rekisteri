@@ -288,6 +288,34 @@ object UiText {
         val hyvaksytty: LocalizedString get() = tr("yki.hyvaksytty", fi = "Tulos hyväksytty")
         val arvosanaMuuttui: LocalizedString get() = tr("yki.arvosanaMuuttui", fi = "Arvosana muuttui")
         val arvosanaEiMuuttunut: LocalizedString get() = tr("yki.arvosanaEiMuuttunut", fi = "Arvosana ei muuttunut")
+        val onrEiYhteytta: LocalizedString
+            get() =
+                tr(
+                    "yki.onrEiYhteytta",
+                    fi =
+                        "Oppijanumerorekisteriin ei juuri nyt saatu yhteyttä, joten haku tehtiin vain annetuilla " +
+                            "oideilla. Henkilön mahdollisiin muihin OID-tunnuksiin (esim. yhdistettyihin " +
+                            "duplikaatteihin) liittyvät suoritukset voivat puuttua tuloksista.",
+                )
+
+        object Arviointitila {
+            val ilmoittautunut: LocalizedString get() = tr("yki.arviointitila.ilmoittautunut", fi = "Ilmoittautunut")
+            val ilmoittautuminenPeruttu: LocalizedString
+                get() = tr("yki.arviointitila.ilmoittautuminenPeruttu", fi = "Ilmoittautuminen peruttu")
+            val eiSuoritusta: LocalizedString get() = tr("yki.arviointitila.eiSuoritusta", fi = "Ei suoritusta")
+            val suoritusArvioitavana: LocalizedString
+                get() = tr("yki.arviointitila.suoritusArvioitavana", fi = "Suoritus arvioitavana")
+            val arviointiValmis: LocalizedString
+                get() = tr("yki.arviointitila.arviointiValmis", fi = "Arviointi valmis")
+            val suoritusTarkistusarvioitavana: LocalizedString
+                get() = tr("yki.arviointitila.suoritusTarkistusarvioitavana", fi = "Suoritus tarkistusarvioitavana")
+            val tarkistusarviointiTehty: LocalizedString
+                get() = tr("yki.arviointitila.tarkistusarviointiTehty", fi = "Tarkistusarviointi tehty")
+            val tarkistusarviointiHyvaksytty: LocalizedString
+                get() = tr("yki.arviointitila.tarkistusarviointiHyvaksytty", fi = "Tarkistusarviointi hyväksytty")
+            val suoritusKeskeytetty: LocalizedString
+                get() = tr("yki.arviointitila.suoritusKeskeytetty", fi = "Suoritus keskeytetty")
+        }
 
         object Sarake {
             val oppijanumero: LocalizedString get() = tr("yki.sarake.oppijanumero", fi = "Oppijanumero")
