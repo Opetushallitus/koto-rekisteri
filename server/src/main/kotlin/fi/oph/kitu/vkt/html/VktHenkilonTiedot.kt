@@ -5,7 +5,7 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.errorMessage
 import fi.oph.kitu.html.infoTable
-import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
@@ -41,18 +41,11 @@ fun FlowContent.vktHenkilonTiedot(
                 )
                 cardContent {
                     errorMessage(
-                        LocalizedString(
-                            fi =
-                                when (it) {
-                                    is OppijanumeroException.OppijaNotFoundException -> {
-                                        "Oppijasta ei löydy tietoja Oppijanumerorekisteristä"
-                                    }
-
-                                    else -> {
-                                        "Oppijan tietojen haku Oppijanumerorekisteristä epäonnistui"
-                                    }
-                                },
-                        ),
+                        if (it is OppijanumeroException.OppijaNotFoundException) {
+                            UiText.Error.oppijaEiLoydyOnr
+                        } else {
+                            UiText.Error.oppijanHakuOnrEpaonnistui
+                        },
                     )
                 }
             }
