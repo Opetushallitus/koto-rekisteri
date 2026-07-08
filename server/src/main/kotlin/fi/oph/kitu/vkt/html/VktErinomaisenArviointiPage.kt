@@ -13,6 +13,7 @@ import fi.oph.kitu.html.submitButton
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.viewMessage
+import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
@@ -103,25 +104,32 @@ fun FlowContent.vktErinomainenOsakoeTable(
     displayTable(
         osat.sortedWith(compareBy(VktOsakoe::tutkintopaiva, VktOsakoe::tyyppi).reversed()),
         listOf(
-            DisplayTableColumn("Osakoe", width = "20%", testId = "osakoe") {
+            DisplayTableColumn(UiText.Vkt.osakoe.get(CurrentLanguage.get()), width = "20%", testId = "osakoe") {
                 +t.get(it.tyyppi)
             },
-            DisplayTableColumn("Tutkintopäivä", width = "20%", testId = "tutkintopaiva") {
+            DisplayTableColumn(
+                UiText.Vkt.Sarake.tutkintopaiva
+                    .get(CurrentLanguage.get()),
+                width = "20%",
+                testId = "tutkintopaiva",
+            ) {
                 finnishDate(it.tutkintopaiva)
             },
-            DisplayTableColumn("Arvosana", width = "20%") {
+            DisplayTableColumn(UiText.Vkt.arvosana.get(CurrentLanguage.get()), width = "20%") {
                 hiddenValue("id", it.internalId?.toString().orEmpty())
                 itemSelect(
                     inputName = "arvosana",
                     includeBlank = true,
                     items =
                         listOf(
-                            Navigation.MenuItem("Erinomainen", Koodisto.VktArvosana.Erinomainen.name),
-                            Navigation.MenuItem("Hylätty", Koodisto.VktArvosana.Hylätty.name),
+                            Navigation.MenuItem(UiText.Vkt.erinomainen, Koodisto.VktArvosana.Erinomainen.name),
+                            Navigation.MenuItem(UiText.Vkt.hylatty, Koodisto.VktArvosana.Hylätty.name),
                             Navigation.MenuItem(
-                                "Ei suoritusta (poistetaan${it.merkittyPoistettavaksi?.let { pvm ->
-                                    " ${pvm.finnishDateTime()}"
-                                } ?: ""})",
+                                "${UiText.Vkt.eiSuoritusta.get(CurrentLanguage.get())} (poistetaan${
+                                    it.merkittyPoistettavaksi?.let { pvm ->
+                                        " ${pvm.finnishDateTime()}"
+                                    } ?: ""
+                                })",
                                 Koodisto.VktArvosana.EiSuoritusta.name,
                             ),
                         ).setCurrentItem(
@@ -136,10 +144,14 @@ fun FlowContent.vktErinomainenOsakoeTable(
                     testId = "arvosana",
                 )
             },
-            DisplayTableColumn("Arviointipäivä", width = "20%") {
+            DisplayTableColumn(UiText.Vkt.arviointipaiva.get(CurrentLanguage.get()), width = "20%") {
                 dateInput("arviointipaiva", it.arviointi?.paivamaara, testId = "arviointipaiva")
             },
-            DisplayTableColumn("Suorituspaikkakunta", width = "20%") {
+            DisplayTableColumn(
+                UiText.Vkt.Sarake.suorituspaikkakunta
+                    .get(CurrentLanguage.get()),
+                width = "20%",
+            ) {
                 +t.getByKoodiviite("kunta", it.suorituspaikkakunta)
             },
         ),

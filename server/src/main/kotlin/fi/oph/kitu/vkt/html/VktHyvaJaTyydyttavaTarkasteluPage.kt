@@ -6,6 +6,7 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.viewMessage
+import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
@@ -53,22 +54,34 @@ fun FlowContent.vktHyvaJaTyydyttavaOsakoeTable(
     displayTable(
         osat.sortedBy { it.tutkintopaiva }.reversed(),
         listOf(
-            DisplayTableColumn("Osakoe", width = "20%") {
+            DisplayTableColumn(UiText.Vkt.osakoe.get(CurrentLanguage.get()), width = "20%") {
                 +t.get(it.tyyppi)
             },
-            DisplayTableColumn("Tutkintopäivä", width = "16%") {
+            DisplayTableColumn(
+                UiText.Vkt.Sarake.tutkintopaiva
+                    .get(CurrentLanguage.get()),
+                width = "16%",
+            ) {
                 finnishDate(it.tutkintopaiva)
             },
-            DisplayTableColumn("Arvosana", width = "16%") {
+            DisplayTableColumn(UiText.Vkt.arvosana.get(CurrentLanguage.get()), width = "16%") {
                 it.arviointi?.arvosana?.let { arvosana -> +t.get(arvosana) }
             },
-            DisplayTableColumn("Arviointipäivä", width = "16%") {
+            DisplayTableColumn(UiText.Vkt.arviointipaiva.get(CurrentLanguage.get()), width = "16%") {
                 it.arviointi?.paivamaara?.let { pvm -> finnishDate(pvm) }
             },
-            DisplayTableColumn("Suorituksen vastaanottaja", width = "16%") {
+            DisplayTableColumn(
+                UiText.Vkt.Sarake.vastaanottaja
+                    .get(CurrentLanguage.get()),
+                width = "16%",
+            ) {
                 +it.suorituksenVastaanottaja.toString()
             },
-            DisplayTableColumn("Suorituspaikkakunta", width = "16%") {
+            DisplayTableColumn(
+                UiText.Vkt.Sarake.suorituspaikkakunta
+                    .get(CurrentLanguage.get()),
+                width = "16%",
+            ) {
                 +t.getByKoodiviite("kunta", it.suorituspaikkakunta)
             },
         ),

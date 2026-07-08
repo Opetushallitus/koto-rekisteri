@@ -72,7 +72,7 @@ object VktKoskiErrors {
                             },
                             Column.Hidden.withHtml { error ->
                                 hideErrorUrl(error, !error.hidden)?.let { url ->
-                                    a(href = url) { +if (error.hidden) "Palauta" else "Piilota" }
+                                    a(href = url) { if (error.hidden) +UiText.Vkt.palauta else +UiText.Vkt.piilota }
                                 }
                             },
                         ),

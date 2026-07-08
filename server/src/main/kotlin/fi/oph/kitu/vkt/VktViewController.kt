@@ -4,7 +4,10 @@ import fi.oph.kitu.html.ViewMessage
 import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.html.table.httpParams
+import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.LocalizationService
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiErrorService
 import fi.oph.kitu.koski.KoskiVktRequestMapper
@@ -157,7 +160,7 @@ class VktViewController(
             }
         }
         vktSuoritukset.requestTransferToKoski(CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso))
-        viewMessage.showSuccess("Muutokset tallennettu onnistuneesti.")
+        viewMessage.showSuccess(UiText.Vkt.muutoksetTallennettu.get(CurrentLanguage.get()))
         return RedirectView(Links.Vkt.ilmoittautuneenArviointi(oppijanumero, kieli, taso))
     }
 
@@ -213,7 +216,7 @@ class VktViewController(
                     ViewMessageData.html(ViewMessageType.ERROR) {
                         +text
                         br()
-                        a(href = Links.Vkt.koskiVirheet()) { +"Näytä virheet" }
+                        a(href = Links.Vkt.koskiVirheet()) { +UiText.Vkt.naytaVirheet }
                     }
                 } else {
                     null
@@ -227,7 +230,7 @@ class VktViewController(
                 KoskiTransferState.SUCCESS to emptyList()
             } else {
                 KoskiTransferState.INVALID to
-                    listOf("Suoritus on merkitty käsitellyksi, mutta sille ei ole opiskeluoikeus-oidia.")
+                    listOf(UiText.Vkt.merkittyKasitellyksiEiOid.get(CurrentLanguage.get()))
             }
         } else {
             koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus).fold(
