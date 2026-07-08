@@ -162,9 +162,11 @@ Virkailijakäyttöliittymän tekstit ovat oletuksena suomeksi koodissa
 käännökset haetaan Tolgeesta OPH:n lokalisointipalvelun kautta sovelluksen käynnistyessä (ja
 ajoittain uudelleen) polusta `/lokalisointi/tolgee/kielitutkintorekisteri/{fi,sv,en}.json`.
 
-Haku on käytössä ympäristöissä, joissa `kitu.lokalisointi.slug` on asetettu (untuva, qa, tuotanto).
-Paikallisesti ja testeissä slug on tyhjä, jolloin käytetään koodin suomenkielisiä oletuksia eikä
-proxya kutsuta. Erillistä salaisuutta ei tarvita, koska proxy tarjoilee julkaistut
+Haku on käytössä ympäristöissä, joissa `kitu.lokalisointi.namespace` on asetettu (untuva, qa,
+tuotanto). Nimiavaruus (namespace) erottaa eri sovellusten käännökset jaetussa
+lokalisointipalvelussa; kitun nimiavaruus on `kielitutkintorekisteri` (vrt. KOSKIn `koski`).
+Paikallisesti ja testeissä nimiavaruus on tyhjä, jolloin käytetään koodin suomenkielisiä oletuksia
+eikä proxya kutsuta. Erillistä salaisuutta ei tarvita, koska proxy tarjoilee julkaistut
 käännöstiedostot.
 
 ### Tolgeen alustaminen ja täydentäminen
@@ -172,12 +174,12 @@ käännöstiedostot.
 Reitti `GET /kielitutkinnot/lokalisointi/puuttuvat-kaannokset` (virkailijakirjautuminen) palauttaa
 JSON-muodossa ne käännösavaimet, joita ei vielä löydy Tolgeesta, sekä niiden suomenkielisen
 oletustekstin. Kun Tolgee on tyhjä, reitti listaa kaikki avaimet; sitä mukaa kun avaimet lisätään
-Tolgeeseen, lista pienenee. Käytä sitä näin: hae reitin JSON (esim. untuvassa) ja tuo se Tolgeen
-projektiin `kielitutkintorekisteri` (Import, kieli `fi`, ei nimiavaruutta). Suomi säilyy kanonisena
+Tolgeeseen, lista pienenee. Käytä sitä näin: hae reitin JSON (esim. untuvassa) ja tuo se Tolgeehen
+nimiavaruuteen `kielitutkintorekisteri` (Import, kieli `fi`). Suomi säilyy kanonisena
 koodissa ([UiText.kt](server/src/main/kotlin/fi/oph/kitu/i18n/UiText.kt)); Tolgeehen tuodaan
 avaimet, joille kääntäjät lisäävät ruotsin ja englannin.
 
-Kun lokalisointi on käytössä (slug asetettu) ja avaimia puuttuu, etusivulla näytetään varoitus
+Kun lokalisointi on käytössä (nimiavaruus asetettu) ja avaimia puuttuu, etusivulla näytetään varoitus
 puuttuvien avainten lukumäärästä sekä latauslinkki edellä mainittuun JSONiin.
 
 ## Hyödyllisiä komentoja

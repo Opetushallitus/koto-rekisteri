@@ -13,13 +13,13 @@ import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 
 @Service
-@ConditionalOnNonEmptyProperty("kitu.lokalisointi.slug")
+@ConditionalOnNonEmptyProperty("kitu.lokalisointi.namespace")
 class LokalisointiClient(
     @param:Qualifier("lokalisointiRestClient")
     private val restClient: RestClient,
     private val tracer: Tracer,
-    @param:Value($$"${kitu.lokalisointi.slug}")
-    private val slug: String,
+    @param:Value($$"${kitu.lokalisointi.namespace}")
+    private val namespace: String,
 ) {
     @WithSpan
     @RetryOutboundIntegration
@@ -46,8 +46,13 @@ class LokalisointiClient(
                 span.setAttribute("locale", locale)
                 restClient
                     .get()
-                    .uri("/lokalisointi/tolgee/{slug}/{locale}.json", mapOf("slug" to slug, "locale" to locale))
-                    .accept(MediaType.APPLICATION_JSON)
+                    .uri(
+                        "/lokalisointi/tolgee/{namespace}/{locale}.json",
+                        mapOf(
+                            "namespace" to namespace,
+                            "locale" to locale,
+                        ),
+                    ).accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .toEntity<Map<String, String>>()
                     .body
