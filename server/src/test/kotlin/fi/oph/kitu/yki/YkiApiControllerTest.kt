@@ -907,7 +907,7 @@ class YkiApiControllerTest(
             rows
                 .first()
                 .split(DisplayTableCsvRenderer.SEPARATOR)
-                .indexOf(YkiSuoritusColumn.OpiskeluoikeusOid.uiHeaderValue)
+                .indexOf(YkiSuoritusColumn.OpiskeluoikeusOid.uiHeaderValue.toString())
         assertContains(csv, opiskeluoikeusOid.toString())
         assertEquals(
             opiskeluoikeusOid.toString(),

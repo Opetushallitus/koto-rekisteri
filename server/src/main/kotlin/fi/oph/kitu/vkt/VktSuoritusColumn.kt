@@ -1,8 +1,8 @@
 package fi.oph.kitu.vkt
-
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.ColumnTags
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.webmvc.Links
@@ -11,7 +11,7 @@ import kotlinx.html.a
 
 enum class VktSuoritusColumn(
     override val entityName: String,
-    override val uiHeaderValue: String,
+    override val uiHeaderValue: LocalizedString,
     override val urlParam: String,
     override val getValue: (value: VktSuoritusFlat) -> String,
     override val renderHtml: (FlowContent.(VktSuoritusFlat) -> Unit)? = null,
@@ -19,7 +19,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.LIST_VIEW, ColumnTag.PERSONAL_DATA)
     SuoritusId(
         "suoritus_id",
-        "",
+        LocalizedString(fi = ""),
         "id",
         { it.suoritusId.toString() },
         {
@@ -37,7 +37,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     IlmoittautumisenTunniste(
         "ilmoittautumisId",
-        "Ilmoittautumisen tunniste",
+        LocalizedString(fi = "Ilmoittautumisen tunniste"),
         "ilmoittautumisId",
         { it.ilmoittautumisenId },
     ),
@@ -45,7 +45,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Sukunimi(
         "sukunimi",
-        "Sukunimi",
+        LocalizedString(fi = "Sukunimi"),
         "sukunimi",
         { it.sukunimi },
     ),
@@ -53,7 +53,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Etunimet(
         "etunimet",
-        "Etunimet",
+        LocalizedString(fi = "Etunimet"),
         "etunimet",
         { it.etunimet },
     ),
@@ -61,7 +61,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     SuorittajanOid(
         "suorittajanOid",
-        "Oppijanumero",
+        LocalizedString(fi = "Oppijanumero"),
         "suorittajanOid",
         { it.suorittajanOid },
     ),
@@ -69,7 +69,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
     Taitotaso(
         "taitotaso",
-        "Taitotaso",
+        LocalizedString(fi = "Taitotaso"),
         "taitotaso",
         {
             Koodisto.VktTaitotaso
@@ -82,7 +82,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
     Tutkintokieli(
         "tutkintokieli",
-        "Tutkintokieli",
+        LocalizedString(fi = "Tutkintokieli"),
         "tutkintokieli",
         {
             Koodisto.Tutkintokieli
@@ -95,7 +95,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
     Tutkintopaiva(
         "tutkintopaiva",
-        "Tutkintopäivä",
+        LocalizedString(fi = "Tutkintopäivä"),
         "tutkintopaiva",
         { it.tutkintopaiva.finnishDate() },
     ),
@@ -103,7 +103,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Suorituspaikkakunta(
         "suorituspaikkakunta",
-        "Suorituspaikkakunta",
+        LocalizedString(fi = "Suorituspaikkakunta"),
         "suorituspaikkakunta",
         { it.suorituspaikkakunta },
     ),
@@ -111,7 +111,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     SuorituksenVastaanottajanOid(
         "suorituksenVastaanottajanOid",
-        "Suorituksen vastaanottajan OID",
+        LocalizedString(fi = "Suorituksen vastaanottajan OID"),
         "suorituksenVastaanottajanOid",
         { it.suorituksenVastaanottajanOid?.toString().orEmpty() },
     ),
@@ -119,7 +119,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     SuorituksenVastaanottaja(
         "suorituksenVastaanottaja",
-        "Suorituksen vastaanottaja",
+        LocalizedString(fi = "Suorituksen vastaanottaja"),
         "suorituksenVastaanottaja",
         { it.suorituksenVastaanottaja.orEmpty() },
     ),
@@ -127,7 +127,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Puhuminen(
         "puhuminen",
-        "Puhuminen",
+        LocalizedString(fi = "Puhuminen"),
         "puhuminen",
         { it.puhuminen.orEmpty() },
     ),
@@ -135,7 +135,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     PuheenYmmartaminen(
         "puheenYmmartaminen",
-        "Puheen ymmärtäminen",
+        LocalizedString(fi = "Puheen ymmärtäminen"),
         "puheenYmmartaminen",
         { it.puheenYmmartaminen.orEmpty() },
     ),
@@ -143,7 +143,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Kirjoittaminen(
         "kirjoittaminen",
-        "Kirjoittaminen",
+        LocalizedString(fi = "Kirjoittaminen"),
         "kirjoittaminen",
         { it.kirjoittaminen.orEmpty() },
     ),
@@ -151,7 +151,7 @@ enum class VktSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     TekstinYmmartaminen(
         "tekstinYmmartaminen",
-        "Tekstin ymmärtäminen",
+        LocalizedString(fi = "Tekstin ymmärtäminen"),
         "tekstinYmmartaminen",
         { it.tekstinYmmartaminen.orEmpty() },
     ),

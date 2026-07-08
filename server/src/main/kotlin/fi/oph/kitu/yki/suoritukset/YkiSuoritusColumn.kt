@@ -1,8 +1,8 @@
 package fi.oph.kitu.yki.suoritukset
-
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.ColumnTags
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koodisto.Koodisto
@@ -18,7 +18,7 @@ import kotlinx.html.span
  */
 enum class YkiSuoritusColumn(
     override val entityName: String,
-    override val uiHeaderValue: String,
+    override val uiHeaderValue: LocalizedString,
     override val urlParam: String,
     override val getValue: (value: YkiSuoritusEntity) -> String,
     override val renderHtml: (FlowContent.(YkiSuoritusEntity) -> Unit)? = null,
@@ -26,7 +26,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW)
     Id(
         entityName = "id",
-        uiHeaderValue = "",
+        uiHeaderValue = LocalizedString(fi = ""),
         urlParam = "id",
         getValue = { it.id?.toString().orEmpty() },
         renderHtml = {
@@ -39,7 +39,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     SuorittajanOid(
         entityName = "suorittajan_oid",
-        uiHeaderValue = "Oppijanumero",
+        uiHeaderValue = LocalizedString(fi = "Oppijanumero"),
         urlParam = "suorittajanoid",
         getValue = { it.suorittajanOID.toString() },
     ),
@@ -47,7 +47,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Sukunimi(
         entityName = "sukunimi",
-        uiHeaderValue = "Sukunimi",
+        uiHeaderValue = LocalizedString(fi = "Sukunimi"),
         urlParam = "sukunimi",
         getValue = { it.sukunimi },
     ),
@@ -55,7 +55,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Etunimet(
         entityName = "etunimet",
-        uiHeaderValue = "Etunimi",
+        uiHeaderValue = LocalizedString(fi = "Etunimi"),
         urlParam = "etunimet",
         getValue = { it.etunimet },
     ),
@@ -63,7 +63,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Sukupuoli(
         entityName = "sukupuoli",
-        uiHeaderValue = "Sukupuoli",
+        uiHeaderValue = LocalizedString(fi = "Sukupuoli"),
         urlParam = "sukupuoli",
         getValue = { it.sukupuoli.name },
     ),
@@ -71,7 +71,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Hetu(
         entityName = "hetu",
-        uiHeaderValue = "Henkilötunnus",
+        uiHeaderValue = LocalizedString(fi = "Henkilötunnus"),
         urlParam = "hetu",
         getValue = { it.hetu.orEmpty() },
     ),
@@ -79,7 +79,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Kansalaisuus(
         entityName = "kansalaisuus",
-        uiHeaderValue = "Kansalaisuus",
+        uiHeaderValue = LocalizedString(fi = "Kansalaisuus"),
         urlParam = "kansalaisuus",
         getValue = { it.kansalaisuus },
     ),
@@ -87,7 +87,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Katuosoite(
         entityName = "katuosoite",
-        uiHeaderValue = "Osoite",
+        uiHeaderValue = LocalizedString(fi = "Osoite"),
         urlParam = "katuosoite",
         getValue = { osoite(it.katuosoite, it.postinumero, it.postitoimipaikka, it.maa) },
     ),
@@ -95,7 +95,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Email(
         entityName = "email",
-        uiHeaderValue = "Sähköposti",
+        uiHeaderValue = LocalizedString(fi = "Sähköposti"),
         urlParam = "email",
         getValue = { it.email.orEmpty() },
     ),
@@ -103,7 +103,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.LIST_VIEW)
     Tutkintopaiva(
         entityName = "tutkintopaiva",
-        uiHeaderValue = "Tutkintopäivä",
+        uiHeaderValue = LocalizedString(fi = "Tutkintopäivä"),
         urlParam = "tutkintopaiva",
         getValue = { it.tutkintopaiva.finnishDate() },
     ),
@@ -111,7 +111,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.LIST_VIEW)
     Tutkintokieli(
         entityName = "tutkintokieli",
-        uiHeaderValue = "Tutkintokieli",
+        uiHeaderValue = LocalizedString(fi = "Tutkintokieli"),
         urlParam = "tutkintokieli",
         getValue = { it.tutkintokieli.name },
     ),
@@ -119,7 +119,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.LIST_VIEW)
     Tutkintotaso(
         entityName = "tutkintotaso",
-        uiHeaderValue = "Tutkintotaso",
+        uiHeaderValue = LocalizedString(fi = "Tutkintotaso"),
         urlParam = "tutkintotaso",
         getValue = { it.tutkintotaso.name },
     ),
@@ -127,7 +127,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     JarjestajanTunnusOid(
         entityName = "jarjestajan_tunnus_oid",
-        uiHeaderValue = "Järjestäjän OID",
+        uiHeaderValue = LocalizedString(fi = "Järjestäjän OID"),
         urlParam = "jarjestajantunnusoid",
         getValue = { it.jarjestajanTunnusOid.toString() },
     ),
@@ -135,7 +135,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     JarjestajanNimi(
         entityName = "jarjestajan_nimi",
-        uiHeaderValue = "Järjestäjän nimi",
+        uiHeaderValue = LocalizedString(fi = "Järjestäjän nimi"),
         urlParam = "jarjestajannimi",
         getValue = { it.jarjestajanNimi },
     ),
@@ -143,7 +143,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Arviointitila(
         entityName = "arviointitila",
-        uiHeaderValue = "Arviointitila",
+        uiHeaderValue = LocalizedString(fi = "Arviointitila"),
         urlParam = "arviointitila",
         getValue = { it.arviointitila.viewText },
     ),
@@ -151,7 +151,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Arviointipaiva(
         entityName = "arviointipaiva",
-        uiHeaderValue = "Arviointipäivä",
+        uiHeaderValue = LocalizedString(fi = "Arviointipäivä"),
         urlParam = "arviointipaiva",
         getValue = { it.arviointipaiva?.finnishDate().orEmpty() },
     ),
@@ -159,7 +159,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     TekstinYmmartaminen(
         entityName = "tekstin_ymmartaminen",
-        uiHeaderValue = "Tekstin ymmärtäminen",
+        uiHeaderValue = LocalizedString(fi = "Tekstin ymmärtäminen"),
         urlParam = "tekstinymmartaminen",
         getValue = { ykiArvosanaText(it.tekstinYmmartaminen, it.tutkintotaso) },
         renderHtml = { ykiArvosana(it.tekstinYmmartaminen, it.tutkintotaso) },
@@ -168,7 +168,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Kirjoittaminen(
         entityName = "kirjoittaminen",
-        uiHeaderValue = "Kirjoittaminen",
+        uiHeaderValue = LocalizedString(fi = "Kirjoittaminen"),
         urlParam = "kirjoittaminen",
         getValue = { ykiArvosanaText(it.kirjoittaminen, it.tutkintotaso) },
         renderHtml = { ykiArvosana(it.kirjoittaminen, it.tutkintotaso) },
@@ -177,7 +177,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     PuheenYmmartamainen(
         entityName = "puheen_ymmartaminen",
-        uiHeaderValue = "Puheen ymmärtäminen",
+        uiHeaderValue = LocalizedString(fi = "Puheen ymmärtäminen"),
         urlParam = "puheenymmartamainen",
         getValue = { ykiArvosanaText(it.puheenYmmartaminen, it.tutkintotaso) },
         renderHtml = { ykiArvosana(it.puheenYmmartaminen, it.tutkintotaso) },
@@ -186,7 +186,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Puhuminen(
         entityName = "puhuminen",
-        uiHeaderValue = "Puhuminen",
+        uiHeaderValue = LocalizedString(fi = "Puhuminen"),
         urlParam = "puhuminen",
         getValue = { ykiArvosanaText(it.puhuminen, it.tutkintotaso) },
         renderHtml = { ykiArvosana(it.puhuminen, it.tutkintotaso) },
@@ -195,7 +195,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.OBSOLETE)
     RakenteetJaSanasto(
         entityName = "rakenteet_ja_sanasto",
-        uiHeaderValue = "Rakenteet ja sanasto",
+        uiHeaderValue = LocalizedString(fi = "Rakenteet ja sanasto"),
         urlParam = "rakenteetjasanasto",
         getValue = { ykiArvosanaText(it.rakenteetJaSanasto, it.tutkintotaso) },
         renderHtml = { ykiArvosana(it.rakenteetJaSanasto, it.tutkintotaso) },
@@ -204,7 +204,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.OBSOLETE)
     Yleisarvosana(
         entityName = "yleisarvosana",
-        uiHeaderValue = "Yleisarvosana",
+        uiHeaderValue = LocalizedString(fi = "Yleisarvosana"),
         urlParam = "yleisarvosana",
         getValue = { ykiArvosanaText(it.yleisarvosana, it.tutkintotaso) },
         renderHtml = { ykiArvosana(it.yleisarvosana, it.tutkintotaso) },
@@ -213,7 +213,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Todistuskieli(
         entityName = "todistuskieli",
-        uiHeaderValue = "Todistuskieli",
+        uiHeaderValue = LocalizedString(fi = "Todistuskieli"),
         urlParam = "todistuskieli",
         getValue = { it.todistuskieli?.name.orEmpty() },
     ),
@@ -221,7 +221,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     ArviointitilaLahetetty(
         entityName = "arviointitila_lahetetty",
-        uiHeaderValue = "Tila lähetetty",
+        uiHeaderValue = LocalizedString(fi = "Tila lähetetty"),
         urlParam = "arviointitilalahetetty",
         getValue = { it.arviointitilanLahetysvirhe ?: it.arviointitilaLahetetty?.toString() ?: "" },
     ),
@@ -229,7 +229,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     OpiskeluoikeusOid(
         entityName = "opiskeluoikeus_oid",
-        uiHeaderValue = "Opiskeluoikeus-OID",
+        uiHeaderValue = LocalizedString(fi = "Opiskeluoikeus-OID"),
         urlParam = "opiskeluoikeus_oid",
         getValue = { it.koskiOpiskeluoikeus?.toString().orEmpty() },
     ),
@@ -237,7 +237,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA, ColumnTag.VERSION_HISTORY_ONLY)
     SolkiId(
         entityName = "solki_id",
-        uiHeaderValue = "Solki-tunniste",
+        uiHeaderValue = LocalizedString(fi = "Solki-tunniste"),
         urlParam = "solkiId",
         getValue = { it.solkiId.toString() },
     ),
@@ -245,7 +245,7 @@ enum class YkiSuoritusColumn(
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.VERSION_HISTORY_ONLY)
     Version(
         entityName = "last_modified",
-        uiHeaderValue = "Versio",
+        uiHeaderValue = LocalizedString(fi = "Versio"),
         urlParam = "version",
         getValue = { it.id?.toString().orEmpty() },
         renderHtml = { finnishDateTime(it.lastModified) },
