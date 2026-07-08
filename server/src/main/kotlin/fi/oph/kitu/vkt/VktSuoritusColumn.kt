@@ -6,6 +6,7 @@ import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.FlowContent
@@ -32,7 +33,7 @@ enum class VktSuoritusColumn(
                     taso = Koodisto.VktTaitotaso.valueOf(it.taitotaso),
                 )
 
-            a(href = url) { +"Näytä" }
+            a(href = url) { +UiText.Vkt.nayta }
         },
     ),
 

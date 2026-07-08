@@ -18,6 +18,7 @@ import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.html.table.trueFalseOrAllFilter
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
+import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.unaryPlus
@@ -112,32 +113,40 @@ fun FlowContent.vktSuoritusFilterButton(filter: VktSuoritusFilter) {
     tableFilterDialog("") {
         filter.search?.let { hiddenValue("search", filter.search) }
         fieldSet(classes = "grid") {
-            dateFilter("alkupaiva", "Alkaen", filter.alkupaiva)
-            dateFilter("loppupaiva", "Päättyen", filter.loppupaiva)
+            dateFilter("alkupaiva", UiText.Vkt.alkaen.get(CurrentLanguage.get()), filter.alkupaiva)
+            dateFilter("loppupaiva", UiText.Vkt.paattyen.get(CurrentLanguage.get()), filter.loppupaiva)
         }
         fieldSet {
-            enumFilter("tutkintokieli", "Tutkintokieli", filter.tutkintokieli)
+            enumFilter("tutkintokieli", UiText.Vkt.tutkintokieli.get(CurrentLanguage.get()), filter.tutkintokieli)
         }
         fieldSet {
-            enumFilter("taitotaso", "Taitotaso", filter.taitotaso)
+            enumFilter("taitotaso", UiText.Vkt.taitotaso.get(CurrentLanguage.get()), filter.taitotaso)
         }
         fieldSet {
             enumFilter(
                 "arvioitu",
-                "Erinomaisen tason suoritusten arvioinnin tila",
+                UiText.Vkt.erinomaisenArvioinninTila.get(CurrentLanguage.get()),
                 filter.arvioitu,
             )
         }
         fieldSet {
             trueFalseOrAllFilter(
                 "merkittyPoistettavaksi",
-                "Poistettavaksi merkitty erinomaisen tason suoritus",
+                UiText.Vkt.poistettavaksiMerkitty.get(CurrentLanguage.get()),
                 filter.merkittyPoistettavaksi,
-                Triple("Näytä kaikki", "Näytä vain poistettavat suoritukset", "Piilota poistettavat suoritukset"),
+                Triple(
+                    UiText.Vkt.naytaKaikki.get(CurrentLanguage.get()),
+                    UiText.Vkt.naytaVainPoistettavat.get(CurrentLanguage.get()),
+                    UiText.Vkt.piilotaPoistettavat.get(CurrentLanguage.get()),
+                ),
             )
         }
         fieldSet {
-            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", filter.piilotaHenkilotiedot)
+            toggleFilter(
+                "piilotaHenkilotiedot",
+                UiText.Vkt.piilotaHenkilotiedot.get(CurrentLanguage.get()),
+                filter.piilotaHenkilotiedot,
+            )
         }
     }
 }
