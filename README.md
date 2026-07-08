@@ -167,6 +167,16 @@ Paikallisesti ja testeissä slug on tyhjä, jolloin käytetään koodin suomenki
 proxya kutsuta. Erillistä salaisuutta ei tarvita, koska proxy tarjoilee julkaistut
 käännöstiedostot.
 
+### Tolgeen alustaminen ja täydentäminen
+
+Reitti `GET /kielitutkinnot/lokalisointi/puuttuvat-kaannokset` (virkailijakirjautuminen) palauttaa
+JSON-muodossa ne käännösavaimet, joita ei vielä löydy Tolgeesta, sekä niiden suomenkielisen
+oletustekstin. Kun Tolgee on tyhjä, reitti listaa kaikki avaimet; sitä mukaa kun avaimet lisätään
+Tolgeeseen, lista pienenee. Käytä sitä näin: hae reitin JSON (esim. untuvassa) ja tuo se Tolgeen
+projektiin `kielitutkintorekisteri` (Import, kieli `fi`, ei nimiavaruutta). Suomi säilyy kanonisena
+koodissa ([UiText.kt](server/src/main/kotlin/fi/oph/kitu/i18n/UiText.kt)); Tolgeehen tuodaan
+avaimet, joille kääntäjät lisäävät ruotsin ja englannin.
+
 ## Hyödyllisiä komentoja
 
 ```shell
