@@ -11,12 +11,12 @@ import java.time.Duration
 @RestController
 class HomeController(
     private val dashboardService: DashboardService,
-    @param:Value($$"${kitu.lokalisointi.slug:}")
-    private val lokalisointiSlug: String,
+    @param:Value($$"${kitu.lokalisointi.namespace:}")
+    private val lokalisointiNamespace: String,
 ) {
     @GetMapping("/", produces = ["text/html"])
     fun home(): ResponseEntity<String> {
-        val missingTranslationCount = if (lokalisointiSlug.isBlank()) 0 else missingUiTranslations().size
+        val missingTranslationCount = if (lokalisointiNamespace.isBlank()) 0 else missingUiTranslations().size
         return ResponseEntity.ok(HomePage.render(missingTranslationCount))
     }
 
