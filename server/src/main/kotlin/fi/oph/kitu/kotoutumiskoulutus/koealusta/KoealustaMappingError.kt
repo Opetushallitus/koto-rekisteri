@@ -55,18 +55,18 @@ sealed class KoealustaMappingError(
             val resultName: String,
         ) : Validation(
                 userId,
-                """Unexpectedly missing quiz grade "$resultName" on course "$courseName" for user "$userId"""",
+                """Puuttuva arvosana "$resultName" kurssilla "$courseName" käyttäjälle "$userId"""",
             )
 
         class MissingField(
             val field: String,
             userId: Int,
-        ) : Validation(userId, """Missing "$field" for user "$userId"""")
+        ) : Validation(userId, """Puuttuva kenttä "$field" käyttäjälle "$userId"""")
 
         class MalformedField(
             userId: Int,
             val field: String,
             val value: String,
-        ) : Validation(userId, """Malformed value "$value" in "$field" for user "$userId"""")
+        ) : Validation(userId, """Virheellinen arvo "$value" kentässä "$field" käyttäjälle "$userId"""")
     }
 }

@@ -566,7 +566,7 @@ class KoealustaServiceTests(
             fun() = assertEquals("puhuminen", missingPuhuminenError.virheellinenKentta),
             fun() =
                 assertEquals(
-                    "Unexpectedly missing quiz grade \"puhuminen\" on course \"Integraatio testaus\" for user \"1\"",
+                    "Puuttuva arvosana \"puhuminen\" kurssilla \"Integraatio testaus\" käyttäjälle \"1\"",
                     missingPuhuminenError.viesti,
                 ),
         )
@@ -648,7 +648,7 @@ class KoealustaServiceTests(
         assertAll(
             fun() = assertEquals("1.2.246.562.10.1234567890", oppijaValidationFailure.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", oppijaValidationFailure.teacherEmail),
-            fun() = assertEquals("Missing \"SSN\" for user \"1\"", oppijaValidationFailure.viesti),
+            fun() = assertEquals("Puuttuva kenttä \"SSN\" käyttäjälle \"1\"", oppijaValidationFailure.viesti),
             fun() = assertEquals("SSN", oppijaValidationFailure.virheellinenKentta),
         )
     }
@@ -989,22 +989,22 @@ class KoealustaServiceTests(
             fun() = assertEquals(4, errors.size),
             fun() =
                 assertEquals(
-                    "Malformed value \"B2\" in \"luetun ymmärtäminen\" for user \"1\"",
+                    "Virheellinen arvo \"B2\" kentässä \"luetun ymmärtäminen\" käyttäjälle \"1\"",
                     luetunYmmartaminenError?.viesti,
                 ),
             fun() =
                 assertEquals(
-                    "Malformed value \"B2\" in \"kuullun ymmärtäminen\" for user \"1\"",
+                    "Virheellinen arvo \"B2\" kentässä \"kuullun ymmärtäminen\" käyttäjälle \"1\"",
                     kuullunYmmartaminenError?.viesti,
                 ),
             fun() =
                 assertEquals(
-                    "Unexpectedly missing quiz grade \"puhuminen\" on course \"Integraatio testaus\" for user \"1\"",
+                    "Puuttuva arvosana \"puhuminen\" kurssilla \"Integraatio testaus\" käyttäjälle \"1\"",
                     puheError?.viesti,
                 ),
             fun() =
                 assertEquals(
-                    "Unexpectedly missing quiz grade \"kirjoittaminen\" on course \"Integraatio testaus\" for user \"1\"",
+                    "Puuttuva arvosana \"kirjoittaminen\" kurssilla \"Integraatio testaus\" käyttäjälle \"1\"",
                     kirjoittaminenError?.viesti,
                 ),
         )
@@ -1230,7 +1230,7 @@ class KoealustaServiceTests(
             fun() = assertEquals("lang", error.virheellinenKentta),
             fun() =
                 assertEquals(
-                    "Malformed value \"asdasd\" in \"lang\" for user \"1\"",
+                    "Virheellinen arvo \"asdasd\" kentässä \"lang\" käyttäjälle \"1\"",
                     error.viesti,
                 ),
         )
@@ -1321,7 +1321,7 @@ class KoealustaServiceTests(
             fun() = assertEquals("lang", error.virheellinenKentta),
             fun() =
                 assertEquals(
-                    "Missing \"lang\" for user \"1\"",
+                    "Puuttuva kenttä \"lang\" käyttäjälle \"1\"",
                     error.viesti,
                 ),
         )

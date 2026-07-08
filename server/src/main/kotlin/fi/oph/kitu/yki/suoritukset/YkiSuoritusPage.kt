@@ -10,6 +10,7 @@ import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.json
 import fi.oph.kitu.html.warningMessage
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
@@ -59,7 +60,13 @@ object YkiSuoritusPage {
     ) {
         h3 { +"Henkilötiedot" }
         henkilo.onLeft { onrException ->
-            errorMessage(LocalizedString(fi = onrException.message ?: onrException.toString()))
+            errorMessage(
+                if (onrException is OppijanumeroException.OppijaNotFoundException) {
+                    UiText.Error.oppijaEiLoydyOnr
+                } else {
+                    UiText.Error.oppijanHakuOnrEpaonnistui
+                },
+            )
         }
         card(compact = true) {
             val hlo = henkilo.getOrNull()

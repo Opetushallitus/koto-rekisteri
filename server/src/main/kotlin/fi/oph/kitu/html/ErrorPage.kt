@@ -79,7 +79,8 @@ object ErrorPage {
     ) {
         traceId?.let {
             p {
-                +"Trace ID: "
+                +UiText.Error.jaljitystunniste
+                +": "
                 if (traceUrl != null) {
                     a(href = traceUrl, target = "_blank") { +it }
                 } else {
