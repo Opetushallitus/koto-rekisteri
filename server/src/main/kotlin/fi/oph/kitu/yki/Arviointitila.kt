@@ -2,25 +2,39 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.html.DisplayEnum
 import fi.oph.kitu.html.table.HideInTableFilter
+import fi.oph.kitu.i18n.UiText
 import java.time.LocalDate
 
 // Solki-arviointitilat + Kielitutkintorekisterin omat tilat
-enum class Arviointitila(
-    val viewText: String,
-) : DisplayEnum {
-    ILMOITTAUTUNUT("Ilmoittautunut"),
-    PERUTTU("Ilmoittautuminen peruttu"),
-    EI_SUORITUSTA("Ei suoritusta"),
-    ARVIOITAVA("Suoritus arvioitavana"),
-    ARVIOITU("Arviointi valmis"),
-    TARKISTUSARVIOITAVA("Suoritus tarkistusarvioitavana"),
-    TARKISTUSARVIOITU("Tarkistusarviointi tehty"),
-    TARKISTUSARVIOINTI_HYVAKSYTTY("Tarkistusarviointi hyväksytty"),
+enum class Arviointitila : DisplayEnum {
+    ILMOITTAUTUNUT,
+    PERUTTU,
+    EI_SUORITUSTA,
+    ARVIOITAVA,
+    ARVIOITU,
+    TARKISTUSARVIOITAVA,
+    TARKISTUSARVIOITU,
+    TARKISTUSARVIOINTI_HYVAKSYTTY,
 
     @Deprecated("Poistuu käytöstä uuden arviointitilamallin myötä")
     @HideInTableFilter
-    KESKEYTETTY("Suoritus keskeytetty"),
+    KESKEYTETTY,
     ;
+
+    @Suppress("DEPRECATION")
+    val viewText: String
+        get() =
+            when (this) {
+                ILMOITTAUTUNUT -> UiText.Yki.Arviointitila.ilmoittautunut
+                PERUTTU -> UiText.Yki.Arviointitila.ilmoittautuminenPeruttu
+                EI_SUORITUSTA -> UiText.Yki.Arviointitila.eiSuoritusta
+                ARVIOITAVA -> UiText.Yki.Arviointitila.suoritusArvioitavana
+                ARVIOITU -> UiText.Yki.Arviointitila.arviointiValmis
+                TARKISTUSARVIOITAVA -> UiText.Yki.Arviointitila.suoritusTarkistusarvioitavana
+                TARKISTUSARVIOITU -> UiText.Yki.Arviointitila.tarkistusarviointiTehty
+                TARKISTUSARVIOINTI_HYVAKSYTTY -> UiText.Yki.Arviointitila.tarkistusarviointiHyvaksytty
+                KESKEYTETTY -> UiText.Yki.Arviointitila.suoritusKeskeytetty
+            }.toString()
 
     fun arvioitu() = listOf(ARVIOITU, TARKISTUSARVIOITAVA).contains(this) || tarkistusarvioitu()
 
