@@ -1,6 +1,7 @@
 package fi.oph.kitu.vkt.html
 import fi.oph.kitu.html.hiddenValues
 import fi.oph.kitu.html.testId
+import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.vkt.VktSuoritusFilter
@@ -25,7 +26,7 @@ fun FlowContent.vktSearch(filter: VktSuoritusFilter) {
                 type = InputType.search
                 name = "search"
                 value = filter.search.orEmpty()
-                placeholder = "Oppijanumero tai nimi"
+                placeholder = UiText.Vkt.oppijanumeroTaiNimi.get(CurrentLanguage.get())
             }
             button {
                 testId("search-button")

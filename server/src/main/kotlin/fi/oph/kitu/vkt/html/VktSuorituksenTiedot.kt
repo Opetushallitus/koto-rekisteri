@@ -3,6 +3,7 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTable
+import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
@@ -22,14 +23,14 @@ fun FlowContent.vktSuorituksenTiedot(
 ) {
     card(compact = true) {
         infoTable(
-            "Tutkinnon taso" to { +t.get(data.suoritus.taitotaso) },
-            "Kieli" to { +t.get(data.suoritus.kieli) },
+            UiText.Vkt.tutkinnonTaso.get(CurrentLanguage.get()) to { +t.get(data.suoritus.taitotaso) },
+            UiText.Vkt.kieli.get(CurrentLanguage.get()) to { +t.get(data.suoritus.kieli) },
         )
     }
     h3 { +UiText.Vkt.integraatiot }
     card(compact = true) {
         infoTable(
-            "KOSKI" to {
+            UiText.Vkt.koski.get(CurrentLanguage.get()) to {
                 when (koskiTransferState.first) {
                     KoskiTransferState.NOT_READY -> {
                         +UiText.Vkt.tiedoissaPuutteita
@@ -74,13 +75,26 @@ fun FlowContent.vktTutkinnot(
             rows = data.suoritus.tutkinnot,
             columns =
                 listOf(
-                    DisplayTableColumn("Tutkinto", width = "25%", testId = "tutkinto") {
+                    DisplayTableColumn(
+                        UiText.Vkt.tutkinto.get(CurrentLanguage.get()),
+                        width = "25%",
+                        testId = "tutkinto",
+                    ) {
                         +t.get(it.tyyppi)
                     },
-                    DisplayTableColumn("Tutkintopäivä", width = "25%", testId = "tutkintopaiva") { tutkinto ->
+                    DisplayTableColumn(
+                        UiText.Vkt.Sarake.tutkintopaiva
+                            .get(CurrentLanguage.get()),
+                        width = "25%",
+                        testId = "tutkintopaiva",
+                    ) { tutkinto ->
                         tutkinto.tutkintopaivaTodistuksella()?.let { finnishDate(it) }
                     },
-                    DisplayTableColumn("Arvosana", width = "50%", testId = "arvosana") {
+                    DisplayTableColumn(
+                        UiText.Vkt.arvosana.get(CurrentLanguage.get()),
+                        width = "50%",
+                        testId = "arvosana",
+                    ) {
                         val puuttuvatOsakokeet = it.puuttuvatOsakokeet()
                         val puuttuvatArvioinnit = it.puuttuvatArvioinnit()
 
@@ -89,9 +103,9 @@ fun FlowContent.vktTutkinnot(
                                 if (puuttuvatArvioinnit.isNotEmpty()) {
                                     val head =
                                         if (puuttuvatArvioinnit.size == 1) {
-                                            "Arviointi puuttuu"
+                                            UiText.Vkt.arviointiPuuttuu.get(CurrentLanguage.get())
                                         } else {
-                                            "Arvioinnit puuttuvat"
+                                            UiText.Vkt.arvioinnitPuuttuvat.get(CurrentLanguage.get())
                                         }
                                     val value = puuttuvatArvioinnit.joinToString(", ") { ok -> t.get(ok) }
                                     "$head: $value"
@@ -100,7 +114,7 @@ fun FlowContent.vktTutkinnot(
                                 },
                                 if (puuttuvatOsakokeet.isNotEmpty()) {
                                     val value = puuttuvatOsakokeet.joinToString(", ") { ok -> t.get(ok) }
-                                    "Osakoe puuttuu: $value"
+                                    "${UiText.Vkt.osakoePuuttuu.get(CurrentLanguage.get())}: $value"
                                 } else {
                                     null
                                 },
