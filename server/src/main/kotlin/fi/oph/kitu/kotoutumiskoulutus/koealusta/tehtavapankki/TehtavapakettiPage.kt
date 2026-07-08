@@ -5,7 +5,10 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.safeHtml
+import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.tehtavapankki.TehtavaEntity
 import fi.oph.kitu.tehtavapankki.TehtavaTiedostoEntity
 import fi.oph.kitu.tehtavapankki.TehtavaVastausEntity
@@ -57,7 +60,7 @@ object TehtavapakettiPage {
         Page.renderHtml {
             renderHeader(paketti)
             if (ryhmat.isEmpty()) {
-                p { +"Paketissa ei ole ryhmiä." }
+                p { +UiText.Koto.paketissaEiRyhmia }
             } else {
                 ryhmat.forEach { ryhma ->
                     renderRyhma(
@@ -75,27 +78,27 @@ object TehtavapakettiPage {
         h1 { +paketti.nimi.stripMoodlePrefix() }
         card(compact = true) {
             infoTable(
-                "Lähdejärjestelmä" to { +paketti.lahdejarjestelma },
-                "Lähde-id" to { +paketti.lahdeId },
-                "Versio" to {
+                UiText.Koto.lahdejarjestelma.toString() to { +paketti.lahdejarjestelma },
+                UiText.Koto.lahdeId.toString() to { +paketti.lahdeId },
+                UiText.Koto.versio.toString() to {
                     code { +paketti.versioHash.take(12) }
                 },
-                paketti.lahdeVersion?.let { v -> "Lähdeversio" to { code { +v } } },
-                paketti.lahdeLanguage?.let { lang -> "Kieli" to { +languageLabel(lang) } },
+                paketti.lahdeVersion?.let { v -> UiText.Koto.lahdeversio.toString() to { code { +v } } },
+                paketti.lahdeLanguage?.let { lang -> UiText.Koto.kieli.toString() to { +languageLabel(lang) } },
                 paketti.lahdePublished?.let { pub ->
-                    "Kurssin alku" to { finnishDateTime(pub.toInstant()) }
+                    UiText.Koto.kurssinAlku.toString() to { finnishDateTime(pub.toInstant()) }
                 },
                 paketti.lahdeFilegenerated?.let { gen ->
-                    "Lähde generoitu" to { finnishDateTime(gen.toInstant()) }
+                    UiText.Koto.lahdeGeneroitu.toString() to { finnishDateTime(gen.toInstant()) }
                 },
-                "Ladattu" to {
+                UiText.Koto.ladattu.toString() to {
                     paketti.luotu?.let { finnishDateTime(it.toInstant()) } ?: +"–"
                 },
                 paketti.s3Avain?.let { key ->
-                    "XML-tiedosto" to {
+                    UiText.Koto.xmlTiedosto.toString() to {
                         a(href = downloadUrl(key)) {
                             attributes["download"] = ""
-                            +"Lataa"
+                            +UiText.Koto.lataa
                         }
                     }
                 },
@@ -104,7 +107,8 @@ object TehtavapakettiPage {
     }
 
     private fun String.stripMoodlePrefix() =
-        this.replaceFirst(Regex("^\\$\\w+\\$/\\w+/?"), "").takeIf { it.isNotBlank() } ?: "(tyhjä nimi)"
+        this.replaceFirst(Regex("^\\$\\w+\\$/\\w+/?"), "").takeIf { it.isNotBlank() }
+            ?: UiText.Koto.tyhjaNimi.toString()
 
     private fun SECTION.renderRyhma(
         ryhma: TehtavaryhmaEntity,
@@ -117,7 +121,7 @@ object TehtavapakettiPage {
             h2 { +"${ryhma.jarjestys}. ${ryhma.nimi.stripMoodlePrefix()}" }
             card {
                 if (tehtavat.isEmpty()) {
-                    p { +"Ei tehtäviä." }
+                    p { +UiText.Koto.eiTehtavia }
                 } else {
                     tehtavat.forEach { tehtava ->
                         renderTehtava(
@@ -140,12 +144,15 @@ object TehtavapakettiPage {
     ) {
         article {
             h3("tehtava-otsikko") {
-                strong { +"${tehtava.jarjestys}. ${tehtava.nimi ?: "(nimetön)"}" }
+                strong { +"${tehtava.jarjestys}. ${tehtava.nimi ?: UiText.Koto.nimeton.toString()}" }
                 small { +moodleTehtavatyyppiNimi(tehtava.tyyppi) }
             }
             tehtava.lahdeId?.let {
                 p {
-                    b { +"Tehtävän tunniste:" }
+                    b {
+                        +UiText.Koto.tehtavanTunniste
+                        +":"
+                    }
                     +" $it"
                 }
             }
@@ -153,7 +160,7 @@ object TehtavapakettiPage {
                 renderRichText(tehtava.teksti, tehtava.tekstinFormaatti, assetPrefix)
             }
             if (vastaukset.isNotEmpty()) {
-                p("vaihtoehdot-otsikko") { strong { +"Vastausvaihtoehdot" } }
+                p("vaihtoehdot-otsikko") { strong { +UiText.Koto.vastausvaihtoehdot } }
                 ul("vaihtoehdot") {
                     vastaukset.forEach { vastaus ->
                         li {
@@ -223,7 +230,10 @@ object TehtavapakettiPage {
         }
         val muut = grouped[MediaKind.OTHER].orEmpty()
         if (muut.isNotEmpty()) {
-            strong { +"Liitetiedostot:" }
+            strong {
+                +UiText.Koto.liitetiedostot
+                +":"
+            }
             ul {
                 muut.forEach { tiedosto ->
                     li {
@@ -334,70 +344,100 @@ private fun decodePluginFileName(raw: String): String =
 // Moodlen tehtävätyyppien suomennokset. Kattaa Moodle 4.x:n vakio-tyypit ja
 // yleiset kontribuutio-tyypit (mm. Koealustan käyttämä cloudpoodll).
 // Tuntemattomalle tyypille palautetaan tyypin tekninen tunniste sellaisenaan.
-private val moodleTehtavatyyppiNimet =
-    mapOf(
+internal fun moodleTehtavatyyppiNimi(tyyppi: String): String =
+    when (tyyppi.lowercase()) {
         // Vakio-tyypit
-        "multichoice" to "Monivalinta",
-        "truefalse" to "Tosi/epätosi",
-        "shortanswer" to "Lyhyt vastaus",
-        "numerical" to "Numeerinen vastaus",
-        "essay" to "Esseetehtävä",
-        "match" to "Yhdistämistehtävä",
-        "multianswer" to "Sulautetut vastaukset (Cloze)",
-        "calculated" to "Laskutehtävä",
-        "calculatedmulti" to "Monivalinta-laskutehtävä",
-        "calculatedsimple" to "Yksinkertainen laskutehtävä",
-        "description" to "Ohjeteksti",
-        "ddwtos" to "Vedä ja pudota tekstiin",
-        "ddmarker" to "Vedä ja pudota merkit",
-        "ddimageortext" to "Vedä ja pudota kuvaan",
-        "gapselect" to "Valitse puuttuvat sanat",
-        "random" to "Satunnaistehtävä",
-        "randomsamatch" to "Satunnainen lyhyt yhdistäminen",
-        "missingtype" to "Puuttuva tyyppi",
-        // Yleiset kontribuutio-tyypit
-        "cloudpoodll" to "Ääninauhoitus",
-        "recordrtc" to "Ääni- tai videonauhoitus",
-        "pmatch" to "Hahmonsovitus",
-        "pmatchjme" to "Kemiallisen kaavan sovitus",
-        "coderunner" to "Ohjelmointitehtävä",
-        "stack" to "Matemaattinen tehtävä (STACK)",
-        "ordering" to "Järjestämistehtävä",
-        "combined" to "Yhdistelmätehtävä",
-        "formulas" to "Kaavatehtävä",
-        "gapfill" to "Aukkotehtävä",
-        "regexp" to "Säännöllinen lauseke",
-        "speakautograde" to "Automaattisesti arvioitu puhetehtävä",
-        "crossword" to "Ristikkotehtävä",
-        "drawing" to "Piirtotehtävä",
-    )
+        "multichoice" -> UiText.Koto.Tehtavatyyppi.monivalinta
 
-internal fun moodleTehtavatyyppiNimi(tyyppi: String): String = moodleTehtavatyyppiNimet[tyyppi.lowercase()] ?: tyyppi
+        "truefalse" -> UiText.Koto.Tehtavatyyppi.tosiEpatosi
+
+        "shortanswer" -> UiText.Koto.Tehtavatyyppi.lyhytVastaus
+
+        "numerical" -> UiText.Koto.Tehtavatyyppi.numeerinenVastaus
+
+        "essay" -> UiText.Koto.Tehtavatyyppi.essee
+
+        "match" -> UiText.Koto.Tehtavatyyppi.yhdistaminen
+
+        "multianswer" -> UiText.Koto.Tehtavatyyppi.cloze
+
+        "calculated" -> UiText.Koto.Tehtavatyyppi.lasku
+
+        "calculatedmulti" -> UiText.Koto.Tehtavatyyppi.monivalintaLasku
+
+        "calculatedsimple" -> UiText.Koto.Tehtavatyyppi.yksinkertainenLasku
+
+        "description" -> UiText.Koto.Tehtavatyyppi.ohjeteksti
+
+        "ddwtos" -> UiText.Koto.Tehtavatyyppi.vetaPudotaTeksti
+
+        "ddmarker" -> UiText.Koto.Tehtavatyyppi.vetaPudotaMerkit
+
+        "ddimageortext" -> UiText.Koto.Tehtavatyyppi.vetaPudotaKuva
+
+        "gapselect" -> UiText.Koto.Tehtavatyyppi.valitsePuuttuvat
+
+        "random" -> UiText.Koto.Tehtavatyyppi.satunnais
+
+        "randomsamatch" -> UiText.Koto.Tehtavatyyppi.satunnainenLyhytYhdistaminen
+
+        "missingtype" -> UiText.Koto.Tehtavatyyppi.puuttuvaTyyppi
+
+        // Yleiset kontribuutio-tyypit
+        "cloudpoodll" -> UiText.Koto.Tehtavatyyppi.aaninauhoitus
+
+        "recordrtc" -> UiText.Koto.Tehtavatyyppi.aaniVideonauhoitus
+
+        "pmatch" -> UiText.Koto.Tehtavatyyppi.hahmonsovitus
+
+        "pmatchjme" -> UiText.Koto.Tehtavatyyppi.kemiallinenKaava
+
+        "coderunner" -> UiText.Koto.Tehtavatyyppi.ohjelmointi
+
+        "stack" -> UiText.Koto.Tehtavatyyppi.stack
+
+        "ordering" -> UiText.Koto.Tehtavatyyppi.jarjestaminen
+
+        "combined" -> UiText.Koto.Tehtavatyyppi.yhdistelma
+
+        "formulas" -> UiText.Koto.Tehtavatyyppi.kaava
+
+        "gapfill" -> UiText.Koto.Tehtavatyyppi.aukko
+
+        "regexp" -> UiText.Koto.Tehtavatyyppi.saannollinenLauseke
+
+        "speakautograde" -> UiText.Koto.Tehtavatyyppi.puhetehtava
+
+        "crossword" -> UiText.Koto.Tehtavatyyppi.ristikko
+
+        "drawing" -> UiText.Koto.Tehtavatyyppi.piirto
+
+        else -> LocalizedString(fi = tyyppi)
+    }.toString()
 
 // Koealustan kielikoodit ovat tyypillisesti ISO 639-2 kolmikirjaimisia
 // (FIN/SWE/ENG). Esitetään virkailijalle suomeksi; tuntematon koodi
 // näytetään raakana, jotta uudet kielet eivät jää kokonaan piiloon.
-private val languageLabels =
-    mapOf(
-        "fin" to "suomi",
-        "swe" to "ruotsi",
-        "eng" to "englanti",
-        "rus" to "venäjä",
-        "est" to "viro",
-        "ara" to "arabia",
-        "fas" to "persia",
-        "som" to "somali",
-        "ukr" to "ukraina",
-    )
-
-internal fun languageLabel(code: String): String = languageLabels[code.lowercase()] ?: code
+internal fun languageLabel(code: String): String =
+    when (code.lowercase()) {
+        "fin" -> UiText.Koto.Kieli.fin
+        "swe" -> UiText.Koto.Kieli.swe
+        "eng" -> UiText.Koto.Kieli.eng
+        "rus" -> UiText.Koto.Kieli.rus
+        "est" -> UiText.Koto.Kieli.est
+        "ara" -> UiText.Koto.Kieli.ara
+        "fas" -> UiText.Koto.Kieli.fas
+        "som" -> UiText.Koto.Kieli.som
+        "ukr" -> UiText.Koto.Kieli.ukr
+        else -> LocalizedString(fi = code)
+    }.toString()
 
 private fun FlowContent.tehtavaMetadata(data: JsonNode) {
     if (!data.isEmpty) {
         card {
             cardContent {
                 details {
-                    summary { +"Metadata" }
+                    summary { +UiText.Koto.metadata }
                     tehtavaMetadataJson(data)
                 }
             }
@@ -458,46 +498,183 @@ private fun tehtavaMetadataProperty(
     value: JsonNode,
 ): Pair<String, JsonNode> =
     when (key) {
-        "hidden" -> "Piilotettu" to translateBoolean(value)
-        "single" -> "Vain yksi vastaus" to translateBoolean(value)
-        "penalty" -> "Rangaistuskerroin" to value
-        "defaultgrade" -> "Oletuspistemäärä" to value
-        "shuffleanswers" -> "Sekoita vastaukset" to translateBoolean(value)
-        "answernumbering" -> "Vastauksen numeroiminen" to value
-        "correctfeedback" -> "Palaute oikeasta vastauksesta" to value
-        "generalfeedback" -> "Yleispalaute" to value
-        "incorrectfeedback" -> "Palaute väärästä vastauksesta" to value
-        "showstandardinstruction" -> "Näytä vakio-ohje" to value
-        "partiallycorrectfeedback" -> "Palaute osittain oikeasta vastauksesta" to value
-        "responseformat" -> "Vastausmuoto" to value
-        "responsefieldlines" -> "Vastauskentän rivimäärä" to value
-        "responserequired" -> "Vastaus pakollinen" to translateBoolean(value)
-        "responsetemplate" -> "Vastauspohja" to value
-        "maxwordlimit" -> "Sanamäärän enimmäisraja" to value
-        "minwordlimit" -> "Sanamäärän vähimmäisraja" to value
-        "attachments" -> "Liitteiden sallittu määrä" to value
-        "attachmentsrequired" -> "Vaadittavat liitteet" to value
-        "maxbytes" -> "Tiedoston enimmäiskoko" to value
-        "noaudiofilters" -> "Ei äänen suodattimia" to translateBoolean(value)
-        "transcriber" -> "Puheentunnistus / litteroija" to translateBoolean(value)
-        "transcode" -> "Koodaus / muunnos" to translateBoolean(value)
-        "audioskin" -> "Äänisoittimen teema" to value
-        "videoskin" -> "Videosoittimen teema" to value
-        "studentplayer" -> "Opiskelijan soitin" to translateBoolean(value)
-        "teacherplayer" -> "Opettajan soitin" to translateBoolean(value)
-        "timelimit" -> "Aikaraja" to value
-        "expiredays" -> "Vanhentumispäivät" to value
-        "language" -> "Kieli" to value
-        "tags" -> "Tunnisteet" to value
-        "safesave" -> "Turvallinen tallennus" to translateBoolean(value)
-        "usecase" -> "Käyttötarkoitus" to value
-        "graderinfo" -> "Arviointiohjeet" to value
-        else -> key to value
+        "hidden" -> {
+            UiText.Koto.Metatieto.piilotettu
+                .toString() to translateBoolean(value)
+        }
+
+        "single" -> {
+            UiText.Koto.Metatieto.vainYksiVastaus
+                .toString() to translateBoolean(value)
+        }
+
+        "penalty" -> {
+            UiText.Koto.Metatieto.rangaistuskerroin
+                .toString() to value
+        }
+
+        "defaultgrade" -> {
+            UiText.Koto.Metatieto.oletuspistemaara
+                .toString() to value
+        }
+
+        "shuffleanswers" -> {
+            UiText.Koto.Metatieto.sekoitaVastaukset
+                .toString() to translateBoolean(value)
+        }
+
+        "answernumbering" -> {
+            UiText.Koto.Metatieto.vastauksenNumeroiminen
+                .toString() to value
+        }
+
+        "correctfeedback" -> {
+            UiText.Koto.Metatieto.palauteOikeasta
+                .toString() to value
+        }
+
+        "generalfeedback" -> {
+            UiText.Koto.Metatieto.yleispalaute
+                .toString() to value
+        }
+
+        "incorrectfeedback" -> {
+            UiText.Koto.Metatieto.palauteVaarasta
+                .toString() to value
+        }
+
+        "showstandardinstruction" -> {
+            UiText.Koto.Metatieto.naytaVakioOhje
+                .toString() to value
+        }
+
+        "partiallycorrectfeedback" -> {
+            UiText.Koto.Metatieto.palauteOsittain
+                .toString() to value
+        }
+
+        "responseformat" -> {
+            UiText.Koto.Metatieto.vastausmuoto
+                .toString() to value
+        }
+
+        "responsefieldlines" -> {
+            UiText.Koto.Metatieto.vastauskentanRivimaara
+                .toString() to value
+        }
+
+        "responserequired" -> {
+            UiText.Koto.Metatieto.vastausPakollinen
+                .toString() to translateBoolean(value)
+        }
+
+        "responsetemplate" -> {
+            UiText.Koto.Metatieto.vastauspohja
+                .toString() to value
+        }
+
+        "maxwordlimit" -> {
+            UiText.Koto.Metatieto.sanamaaranEnimmais
+                .toString() to value
+        }
+
+        "minwordlimit" -> {
+            UiText.Koto.Metatieto.sanamaaranVahimmais
+                .toString() to value
+        }
+
+        "attachments" -> {
+            UiText.Koto.Metatieto.liitteidenMaara
+                .toString() to value
+        }
+
+        "attachmentsrequired" -> {
+            UiText.Koto.Metatieto.vaadittavatLiitteet
+                .toString() to value
+        }
+
+        "maxbytes" -> {
+            UiText.Koto.Metatieto.tiedostonEnimmaiskoko
+                .toString() to value
+        }
+
+        "noaudiofilters" -> {
+            UiText.Koto.Metatieto.eiAanenSuodattimia
+                .toString() to translateBoolean(value)
+        }
+
+        "transcriber" -> {
+            UiText.Koto.Metatieto.litteroija
+                .toString() to translateBoolean(value)
+        }
+
+        "transcode" -> {
+            UiText.Koto.Metatieto.koodausMuunnos
+                .toString() to translateBoolean(value)
+        }
+
+        "audioskin" -> {
+            UiText.Koto.Metatieto.aanisoittimenTeema
+                .toString() to value
+        }
+
+        "videoskin" -> {
+            UiText.Koto.Metatieto.videosoittimenTeema
+                .toString() to value
+        }
+
+        "studentplayer" -> {
+            UiText.Koto.Metatieto.opiskelijanSoitin
+                .toString() to translateBoolean(value)
+        }
+
+        "teacherplayer" -> {
+            UiText.Koto.Metatieto.opettajanSoitin
+                .toString() to translateBoolean(value)
+        }
+
+        "timelimit" -> {
+            UiText.Koto.Metatieto.aikaraja
+                .toString() to value
+        }
+
+        "expiredays" -> {
+            UiText.Koto.Metatieto.vanhentumispaivat
+                .toString() to value
+        }
+
+        "language" -> {
+            UiText.Koto.kieli.toString() to value
+        }
+
+        "tags" -> {
+            UiText.Koto.Metatieto.tunnisteet
+                .toString() to value
+        }
+
+        "safesave" -> {
+            UiText.Koto.Metatieto.turvallinenTallennus
+                .toString() to translateBoolean(value)
+        }
+
+        "usecase" -> {
+            UiText.Koto.Metatieto.kayttotarkoitus
+                .toString() to value
+        }
+
+        "graderinfo" -> {
+            UiText.Koto.Metatieto.arviointiohjeet
+                .toString() to value
+        }
+
+        else -> {
+            key to value
+        }
     }
 
 private fun translateBoolean(node: JsonNode) =
     when (node.toString()) {
-        "0", "false" -> StringNode("Ei")
-        "1", "true" -> StringNode("Kyllä")
+        "0", "false" -> StringNode(UiText.Filter.ei.toString())
+        "1", "true" -> StringNode(UiText.Filter.kylla.toString())
         else -> node
     }
