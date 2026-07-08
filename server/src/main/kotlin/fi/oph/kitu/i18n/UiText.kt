@@ -366,6 +366,67 @@ object UiText {
         }
     }
 
+    object Koto {
+        val henkilotiedot: LocalizedString get() = tr("koto.henkilotiedot", fi = "Henkilötiedot")
+        val tutkinnonTiedot: LocalizedString get() = tr("koto.tutkinnonTiedot", fi = "Tutkinnon tiedot")
+        val arviointi: LocalizedString get() = tr("koto.arviointi", fi = "Arviointi")
+        val integraatiot: LocalizedString get() = tr("koto.integraatiot", fi = "Integraatiot")
+        val suodata: LocalizedString get() = tr("koto.suodata", fi = "Suodata")
+        val suoritustenTuonninVirheet: LocalizedString
+            get() = tr("koto.suoritustenTuonninVirheet", fi = "Suoritusten tuonnin virheet")
+        val lataaCsv: LocalizedString get() = tr("koto.lataaCsv", fi = "Lataa tiedot CSV:nä")
+        val suorituksiaYhteensa: LocalizedString get() = tr("koto.suorituksiaYhteensa", fi = "Suorituksia yhteensä")
+        val virheitaYhteensa: LocalizedString get() = tr("koto.virheitaYhteensa", fi = "Virheitä yhteensä")
+        val nayta: LocalizedString get() = tr("koto.nayta", fi = "Näytä")
+        val kesken: LocalizedString get() = tr("koto.kesken", fi = "Kesken")
+        val kurssi: LocalizedString get() = tr("koto.kurssi", fi = "Kurssi")
+        val jarjestaja: LocalizedString get() = tr("koto.jarjestaja", fi = "Järjestäjä")
+        val tehtavapaketti: LocalizedString get() = tr("koto.tehtavapaketti", fi = "Tehtäväpaketti")
+        val viimeksiMuokattu: LocalizedString get() = tr("koto.viimeksiMuokattu", fi = "Viimeksi muokattu")
+        val suoritusaikaAlkaen: LocalizedString get() = tr("koto.suoritusaikaAlkaen", fi = "Suoritusaika alkaen")
+        val suoritusaikaPaattyen: LocalizedString get() = tr("koto.suoritusaikaPaattyen", fi = "Suoritusaika päättyen")
+        val piilotaHenkilotiedot: LocalizedString get() = tr("koto.piilotaHenkilotiedot", fi = "Piilota henkilötiedot")
+        val hakusana: LocalizedString
+            get() = tr("koto.hakusana", fi = "Oppijanumero, nimi, oppilaitoksen nimi tai muu hakusana")
+        val henkilotiedotPiilotettu: LocalizedString
+            get() = tr("koto.henkilotiedotPiilotettu", fi = "Henkilötiedot piilotettu")
+
+        object Sarake {
+            val oppijanumero: LocalizedString get() = tr("koto.sarake.oppijanumero", fi = "Oppijanumero")
+            val sukunimi: LocalizedString get() = tr("koto.sarake.sukunimi", fi = "Sukunimi")
+            val etunimet: LocalizedString get() = tr("koto.sarake.etunimet", fi = "Etunimet")
+            val kutsumanimi: LocalizedString get() = tr("koto.sarake.kutsumanimi", fi = "Kutsumanimi")
+            val sahkoposti: LocalizedString get() = tr("koto.sarake.sahkoposti", fi = "Sähköposti")
+            val kurssinId: LocalizedString get() = tr("koto.sarake.kurssinId", fi = "Kurssin ID")
+            val kurssinNimi: LocalizedString get() = tr("koto.sarake.kurssinNimi", fi = "Kurssin nimi")
+            val testikieli: LocalizedString get() = tr("koto.sarake.testikieli", fi = "Testikieli")
+            val oppilaitosOid: LocalizedString get() = tr("koto.sarake.oppilaitosOid", fi = "Oppilaitos OID")
+            val oppilaitos: LocalizedString get() = tr("koto.sarake.oppilaitos", fi = "Oppilaitos")
+            val opettajanSahkoposti: LocalizedString
+                get() = tr("koto.sarake.opettajanSahkoposti", fi = "Opettajan sähköposti")
+            val suoritusaika: LocalizedString get() = tr("koto.sarake.suoritusaika", fi = "Suoritusaika")
+            val luetunYmmartaminen: LocalizedString
+                get() = tr("koto.sarake.luetunYmmartaminen", fi = "Luetun ymmärtäminen")
+            val kuullunYmmartaminen: LocalizedString
+                get() = tr("koto.sarake.kuullunYmmartaminen", fi = "Kuullun ymmärtäminen")
+            val puhe: LocalizedString get() = tr("koto.sarake.puhe", fi = "Puhe")
+            val kirjoittaminen: LocalizedString get() = tr("koto.sarake.kirjoittaminen", fi = "Kirjoittaminen")
+            val henkilotunnus: LocalizedString get() = tr("koto.sarake.henkilotunnus", fi = "Henkilötunnus")
+            val nimi: LocalizedString get() = tr("koto.sarake.nimi", fi = "Nimi")
+            val organisaatio: LocalizedString get() = tr("koto.sarake.organisaatio", fi = "Organisaatio")
+            val opettajanSahkopostiosoite: LocalizedString
+                get() = tr("koto.sarake.opettajanSahkopostiosoite", fi = "Opettajan sähköpostiosoite")
+            val virheenLuontiaika: LocalizedString
+                get() = tr("koto.sarake.virheenLuontiaika", fi = "Virheen luontiaika")
+            val virheviesti: LocalizedString get() = tr("koto.sarake.virheviesti", fi = "Virheviesti")
+            val ratkaisuehdotus: LocalizedString get() = tr("koto.sarake.ratkaisuehdotus", fi = "Ratkaisuehdotus")
+            val virheellinenKentta: LocalizedString
+                get() = tr("koto.sarake.virheellinenKentta", fi = "Virheellinen kenttä")
+            val virheellinenArvo: LocalizedString
+                get() = tr("koto.sarake.virheellinenArvo", fi = "Virheellinen arvo")
+        }
+    }
+
     object Time {
         val juuriNyt: LocalizedString get() = tr("time.juuriNyt", fi = "juuri nyt")
         val eilen: LocalizedString get() = tr("time.eilen", fi = "eilen")

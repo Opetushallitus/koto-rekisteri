@@ -1,9 +1,10 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
-
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.infoTable
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import kotlinx.html.FlowContent
 import kotlinx.html.h1
@@ -16,7 +17,7 @@ object KielitestiSuoritusPage {
         orgs: Organisaatiot,
     ) = Page.renderHtml {
         h1 { +"${suoritus.sukunimi} ${suoritus.etunimet}" }
-        h2 { +"Kotoutumiskoulutuksen kielitaidon päättötesti" }
+        h2 { +UiText.Nav.kotoutumiskoulutuksenPaattotesti }
         henkilonTiedot(suoritus)
         tutkintotiedot(suoritus, orgs)
         arviointi(suoritus)
@@ -24,14 +25,19 @@ object KielitestiSuoritusPage {
     }
 
     fun FlowContent.henkilonTiedot(suoritus: KielitestiSuoritus) {
-        h3 { +"Henkilötiedot" }
+        h3 { +UiText.Koto.henkilotiedot }
         card(compact = true) {
             infoTable(
-                "Oppijanumero" to { +(suoritus.oppijanumero?.toString() ?: "-") },
-                "Sukunimi" to { +suoritus.sukunimi },
-                "Etunimet" to { +suoritus.etunimet },
-                "Kutsumanimi" to { +suoritus.kutsumanimi },
-                "Sähköposti" to { +suoritus.email },
+                UiText.Koto.Sarake.oppijanumero
+                    .toString() to { +(suoritus.oppijanumero?.toString() ?: "-") },
+                UiText.Koto.Sarake.sukunimi
+                    .toString() to { +suoritus.sukunimi },
+                UiText.Koto.Sarake.etunimet
+                    .toString() to { +suoritus.etunimet },
+                UiText.Koto.Sarake.kutsumanimi
+                    .toString() to { +suoritus.kutsumanimi },
+                UiText.Koto.Sarake.sahkoposti
+                    .toString() to { +suoritus.email },
             )
         }
     }
@@ -40,36 +46,47 @@ object KielitestiSuoritusPage {
         suoritus: KielitestiSuoritus,
         orgs: Organisaatiot,
     ) {
-        h3 { +"Tutkinnon tiedot" }
+        h3 { +UiText.Koto.tutkinnonTiedot }
         card(compact = true) {
             infoTable(
-                "Kurssi" to { +"${suoritus.kurssi} (${suoritus.kurssiId})" },
-                "Järjestäjä" to { +"${orgs.nimet[suoritus.oppilaitosOid]} (${suoritus.oppilaitosOid})" },
-                "Opettajan sähköpostiosoite" to { +suoritus.opettajanEmail.orEmpty() },
-                "Suoritusaika" to { suoritus.suoritusaika?.let { finnishDateTime(it) } ?: +"-" },
-                "Testikieli" to { +(suoritus.testikieli?.toString() ?: "-") },
-                "Tehtäväpaketti" to { +suoritus.tehtavapaketti.orEmpty() },
+                UiText.Koto.kurssi.toString() to { +"${suoritus.kurssi} (${suoritus.kurssiId})" },
+                UiText.Koto.jarjestaja.toString() to
+                    { +"${orgs.nimet[suoritus.oppilaitosOid]} (${suoritus.oppilaitosOid})" },
+                UiText.Koto.Sarake.opettajanSahkopostiosoite
+                    .toString() to { +suoritus.opettajanEmail.orEmpty() },
+                UiText.Koto.Sarake.suoritusaika
+                    .toString() to
+                    { suoritus.suoritusaika?.let { finnishDateTime(it) } ?: +"-" },
+                UiText.Koto.Sarake.testikieli
+                    .toString() to { +(suoritus.testikieli?.toString() ?: "-") },
+                UiText.Koto.tehtavapaketti.toString() to { +suoritus.tehtavapaketti.orEmpty() },
             )
         }
     }
 
     fun FlowContent.arviointi(suoritus: KielitestiSuoritus) {
-        h3 { +"Arvionti" }
+        h3 { +UiText.Koto.arviointi }
         card(compact = true) {
             infoTable(
-                "Luetun ymmärtäminen" to { +(suoritus.luetunYmmartaminen?.toString() ?: "-") },
-                "Kuullun ymmärtäminen" to { +(suoritus.kuullunYmmartaminen?.toString() ?: "-") },
-                "Puhe" to { +(suoritus.puhe?.toString() ?: "-") },
-                "Kirjoittaminen" to { +(suoritus.kirjoittaminen?.toString() ?: "-") },
+                UiText.Koto.Sarake.luetunYmmartaminen
+                    .toString() to
+                    { +(suoritus.luetunYmmartaminen?.toString() ?: "-") },
+                UiText.Koto.Sarake.kuullunYmmartaminen
+                    .toString() to
+                    { +(suoritus.kuullunYmmartaminen?.toString() ?: "-") },
+                UiText.Koto.Sarake.puhe
+                    .toString() to { +(suoritus.puhe?.toString() ?: "-") },
+                UiText.Koto.Sarake.kirjoittaminen
+                    .toString() to { +(suoritus.kirjoittaminen?.toString() ?: "-") },
             )
         }
     }
 
     fun FlowContent.integraatiot(suoritus: KielitestiSuoritus) {
-        h3 { +"Integraatiot" }
+        h3 { +UiText.Koto.integraatiot }
         card(compact = true) {
             infoTable(
-                "Viimeksi muokattu" to { finnishDateTime(suoritus.lastModified) },
+                UiText.Koto.viimeksiMuokattu.toString() to { finnishDateTime(suoritus.lastModified) },
             )
         }
     }
