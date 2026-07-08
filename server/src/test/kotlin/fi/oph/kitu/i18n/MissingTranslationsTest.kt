@@ -6,8 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 class MissingTranslationsTest {
-    private val controller = LokalisointiController()
-
     @AfterEach
     fun clearTolgee() = TolgeeMessages.set(emptyMap())
 
@@ -17,7 +15,7 @@ class MissingTranslationsTest {
         UiTextRegistry.record("test.loytyy", "Oletusteksti B")
         TolgeeMessages.set(mapOf("test.loytyy" to LocalizedString(fi = "Oletusteksti B", sv = "Standardtext B")))
 
-        val missing = controller.missingTranslations()
+        val missing = missingUiTranslations()
 
         assertEquals("Oletusteksti A", missing["test.puuttuu"])
         assertFalse(missing.containsKey("test.loytyy"), "Tolgeessa jo oleva avain ei saa näkyä puuttuvissa")
