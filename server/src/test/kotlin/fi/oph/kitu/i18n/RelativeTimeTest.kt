@@ -1,11 +1,15 @@
 package fi.oph.kitu.i18n
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import kotlin.test.assertEquals
 
 class RelativeTimeTest {
     private val now: Instant = Instant.parse("2026-05-29T12:00:00Z")
+
+    @AfterEach
+    fun clearTolgee() = TolgeeMessages.set(emptyMap())
 
     @Test
     fun `null aika palauttaa viivan`() {
@@ -46,7 +50,17 @@ class RelativeTimeTest {
     }
 
     @Test
-    fun `suhteellinen aika kaannetaan annetulle kielelle`() {
+    fun `suhteellinen aika kaannetaan Tolgee-varastosta annetulle kielelle`() {
+        TolgeeMessages.set(
+            mapOf(
+                "time.juuriNyt" to LocalizedString(sv = "just nu", en = "just now"),
+                "time.minuuttiaSitten" to LocalizedString(sv = "{count} min sedan", en = "{count} min ago"),
+                "time.tuntiaSitten" to LocalizedString(sv = "{count} h sedan", en = "{count} h ago"),
+                "time.eilen" to LocalizedString(sv = "igår", en = "yesterday"),
+                "time.paivaaSitten" to LocalizedString(sv = "{count} dgr sedan", en = "{count} days ago"),
+            ),
+        )
+
         assertEquals("just nu", formatRelativeTime(now.minusSeconds(0), now, Language.SV))
         assertEquals("1 min sedan", formatRelativeTime(now.minusSeconds(60), now, Language.SV))
         assertEquals("1 h sedan", formatRelativeTime(now.minusSeconds(60 * 60), now, Language.SV))
@@ -58,5 +72,11 @@ class RelativeTimeTest {
         assertEquals("1 h ago", formatRelativeTime(now.minusSeconds(60 * 60), now, Language.EN))
         assertEquals("yesterday", formatRelativeTime(now.minusSeconds(24 * 60 * 60), now, Language.EN))
         assertEquals("2 days ago", formatRelativeTime(now.minusSeconds(2 * 24 * 60 * 60), now, Language.EN))
+    }
+
+    @Test
+    fun `ilman Tolgee-varastoa suhteellinen aika palautuu suomeen`() {
+        assertEquals("juuri nyt", formatRelativeTime(now.minusSeconds(0), now, Language.SV))
+        assertEquals("1 min sitten", formatRelativeTime(now.minusSeconds(60), now, Language.EN))
     }
 }

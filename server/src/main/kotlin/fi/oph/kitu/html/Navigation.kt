@@ -5,7 +5,7 @@ import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.webmvc.Links
 
 object Navigation {
-    val mainNavigation =
+    val mainNavigation get() =
         listOf(
             MenuItemGroup(
                 "yki",
