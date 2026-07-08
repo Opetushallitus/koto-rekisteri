@@ -6,10 +6,13 @@ import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.classes
 import fi.oph.kitu.html.javascript
 import fi.oph.kitu.html.testId
+import fi.oph.kitu.html.warningMessage
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.formatRelativeTime
 import kotlinx.html.FlowContent
 import kotlinx.html.UL
 import kotlinx.html.a
+import kotlinx.html.br
 import kotlinx.html.div
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -22,9 +25,10 @@ import java.time.Instant
 object HomePage {
     private const val SKELETON_ROW_COUNT = 5
 
-    fun render(): String =
+    fun render(missingTranslationCount: Int = 0): String =
         Page.renderHtml {
             h1 { +"Kielitutkintorekisteri" }
+            missingTranslationsWarning(missingTranslationCount)
             div(classes = "grid dashboard-grid") {
                 testId("dashboard")
                 lazyCard(groupId = "yki", contentKey = "yki", title = "Yleinen kielitutkinto")
@@ -222,5 +226,16 @@ object HomePage {
                     });
             });
             """.trimIndent()
+    }
+}
+
+internal fun FlowContent.missingTranslationsWarning(count: Int) {
+    if (count <= 0) return
+    warningMessage(LocalizedString(fi = "Tolgeesta puuttuu $count käännösavainta.")) {
+        br()
+        a(href = "/kielitutkinnot/lokalisointi/puuttuvat-kaannokset") {
+            attributes["download"] = "puuttuvat-kaannokset.json"
+            +"Lataa puuttuvat käännökset (JSON)"
+        }
     }
 }

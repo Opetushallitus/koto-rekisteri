@@ -1,5 +1,7 @@
 package fi.oph.kitu.webmvc
 
+import fi.oph.kitu.i18n.missingUiTranslations
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.CacheControl
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -9,9 +11,14 @@ import java.time.Duration
 @RestController
 class HomeController(
     private val dashboardService: DashboardService,
+    @param:Value($$"${kitu.lokalisointi.slug:}")
+    private val lokalisointiSlug: String,
 ) {
     @GetMapping("/", produces = ["text/html"])
-    fun home(): ResponseEntity<String> = ResponseEntity.ok(HomePage.render())
+    fun home(): ResponseEntity<String> {
+        val missingTranslationCount = if (lokalisointiSlug.isBlank()) 0 else missingUiTranslations().size
+        return ResponseEntity.ok(HomePage.render(missingTranslationCount))
+    }
 
     @GetMapping("/dashboard/yki", produces = ["text/html"])
     fun ykiCard(): ResponseEntity<String> =

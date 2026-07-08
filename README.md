@@ -177,6 +177,9 @@ projektiin `kielitutkintorekisteri` (Import, kieli `fi`, ei nimiavaruutta). Suom
 koodissa ([UiText.kt](server/src/main/kotlin/fi/oph/kitu/i18n/UiText.kt)); Tolgeehen tuodaan
 avaimet, joille kääntäjät lisäävät ruotsin ja englannin.
 
+Kun lokalisointi on käytössä (slug asetettu) ja avaimia puuttuu, etusivulla näytetään varoitus
+puuttuvien avainten lukumäärästä sekä latauslinkki edellä mainittuun JSONiin.
+
 ## Hyödyllisiä komentoja
 
 ```shell
