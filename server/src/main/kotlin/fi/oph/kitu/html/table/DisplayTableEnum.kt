@@ -1,5 +1,7 @@
 package fi.oph.kitu.html.table
 
+import fi.oph.kitu.i18n.CurrentLanguage
+import fi.oph.kitu.i18n.LocalizedString
 import kotlinx.html.FlowContent
 import java.io.OutputStream
 import kotlin.collections.filterIsInstance
@@ -7,7 +9,7 @@ import kotlin.collections.filterIsInstance
 interface DisplayTableEnum {
     val name: String
     val entityName: String?
-    val uiHeaderValue: String
+    val uiHeaderValue: LocalizedString
     val urlParam: String
 
     fun <T> withValue(
@@ -15,7 +17,7 @@ interface DisplayTableEnum {
         renderHtml: (FlowContent.(T) -> Unit)? = null,
     ): DisplayTableColumn<T> =
         DisplayTableColumn(
-            label = uiHeaderValue,
+            label = uiHeaderValue.get(CurrentLanguage.get()),
             sortKey = urlParam,
             getValue = getValue,
             renderHtml = renderHtml,
@@ -24,7 +26,7 @@ interface DisplayTableEnum {
 
     fun <T> withHtml(renderHtml: (FlowContent.(T) -> Unit)): DisplayTableColumn<T> =
         DisplayTableColumn(
-            label = uiHeaderValue,
+            label = uiHeaderValue.get(CurrentLanguage.get()),
             sortKey = urlParam,
             renderHtml = renderHtml,
             testId = entityName,
@@ -88,7 +90,7 @@ object DisplayTableCsvRenderer {
         val columns = RenderableDisplayTableEnum.getByTags<E, T>(setOf(ColumnTag.CSV_EXPORT), excludeTags)
         require(columns.isNotEmpty()) { "No columns with CSV_EXPORT tag found" }
 
-        val header = columns.joinToString(SEPARATOR) { col -> escape(col.uiHeaderValue) }
+        val header = columns.joinToString(SEPARATOR) { col -> escape(col.uiHeaderValue.get(CurrentLanguage.get())) }
         output.write("$header\n".toByteArray())
 
         data.forEach { row ->

@@ -4,6 +4,7 @@ import fi.oph.kitu.html.debugTrace
 import fi.oph.kitu.html.input
 import fi.oph.kitu.html.javascript
 import fi.oph.kitu.html.testId
+import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.reverse
 import fi.oph.kitu.jdbc.toSymbol
@@ -39,7 +40,7 @@ data class DisplayTableColumn<T>(
                 .getByTags<C, T>(includeTags, excludeTags)
                 .map {
                     DisplayTableColumn(
-                        label = it.uiHeaderValue,
+                        label = it.uiHeaderValue.get(CurrentLanguage.get()),
                         sortKey = it.urlParam,
                         testId = it.name,
                         getValue = it.getValue,

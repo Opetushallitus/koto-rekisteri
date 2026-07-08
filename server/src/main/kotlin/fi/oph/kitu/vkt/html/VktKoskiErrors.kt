@@ -1,11 +1,11 @@
 package fi.oph.kitu.vkt.html
-
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.errorMessageDetails
 import fi.oph.kitu.html.hiddenErrorsBanner
 import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.table.displayTable
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
@@ -93,14 +93,14 @@ object VktKoskiErrors {
 
     enum class Column(
         override val entityName: String?,
-        override val uiHeaderValue: String,
+        override val uiHeaderValue: LocalizedString,
         override val urlParam: String,
     ) : DisplayTableEnum {
-        Tutkintoryhma("id", "Oppijanumero / kieli / taitotaso", "id"),
-        Virhe("error", "Virhe", "error"),
-        Aikaleima("timestamp", "Aikaleima", "timestamp"),
-        Request("request", "Pyyntö", "request"),
-        Hidden("hidden", "Piilotus", "hidden"),
+        Tutkintoryhma("id", LocalizedString(fi = "Oppijanumero / kieli / taitotaso"), "id"),
+        Virhe("error", LocalizedString(fi = "Virhe"), "error"),
+        Aikaleima("timestamp", LocalizedString(fi = "Aikaleima"), "timestamp"),
+        Request("request", LocalizedString(fi = "Pyyntö"), "request"),
+        Hidden("hidden", LocalizedString(fi = "Piilotus"), "hidden"),
     }
 }
 
