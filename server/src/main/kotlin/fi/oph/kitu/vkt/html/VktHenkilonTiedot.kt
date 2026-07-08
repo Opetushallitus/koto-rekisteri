@@ -1,5 +1,4 @@
 package fi.oph.kitu.vkt.html
-
 import arrow.core.Either
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
@@ -7,6 +6,7 @@ import fi.oph.kitu.html.errorMessage
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
@@ -25,11 +25,11 @@ fun FlowContent.vktHenkilonTiedot(
                     "Syntymäaika" to { hlo.syntymaaika?.finnishDate()?.let { +it } },
                     "Yksilöinti" to {
                         if (hlo.yksiloityVTJ == true || hlo.yksiloity == true) {
-                            +"Yksilöity"
+                            +UiText.Vkt.yksiloity
                         } else if (hlo.yksilointiYritetty == true) {
-                            +"Yksilöintiä yritetty"
+                            +UiText.Vkt.yksilointiaYritetty
                         } else {
-                            +"Ei yksilöity"
+                            +UiText.Vkt.eiYksiloity
                         }
                     },
                 )

@@ -1,5 +1,4 @@
 package fi.oph.kitu.vkt.html
-
 import arrow.core.Either
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.ViewMessageData
@@ -8,7 +7,9 @@ import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.i18n.Translations
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.tiedontuontischema.VktHenkilosuoritus
@@ -28,17 +29,17 @@ object VktHyvaJaTyydyttavaTarkasteluPage {
     ): String =
         Page.renderHtml {
             h1 { +data.henkilo.kokoNimi() }
-            h2 { +"Valtionhallinnon kielitutkinto" }
+            h2 { +UiText.Nav.vkt }
 
             messages.forEach { viewMessage(it) }
 
             vktHenkilonTiedot(data, henkilo)
             vktSuorituksenTiedot(data, koskiTransferState, translations)
 
-            h3 { +"Tutkinnot" }
+            h3 { +UiText.Vkt.tutkinnot }
             vktTutkinnot(data, translations)
 
-            h3 { +"Osakokeet" }
+            h3 { +UiText.Vkt.osakokeet }
             card(overflowAuto = true) {
                 vktHyvaJaTyydyttavaOsakoeTable(data.suoritus.osat, translations)
             }

@@ -7,7 +7,9 @@ import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.Translations
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.VktMappingId
 import fi.oph.kitu.webmvc.Links
@@ -22,8 +24,8 @@ object VktKoskiErrors {
         t: Translations,
     ): String =
         Page.renderHtml {
-            h1 { +"Valtionhallinnon kielitutkinto" }
-            h2 { +"KOSKI-tiedonsiirtovirheet" }
+            h1 { +UiText.Nav.vkt }
+            h2 { +UiText.Vkt.koskiTiedonsiirtovirheet }
 
             hiddenErrorsBanner(hiddenCount)
 
@@ -64,7 +66,7 @@ object VktKoskiErrors {
                                                 id.ryhma.taitotaso,
                                             ),
                                     ) {
-                                        +"Näytä JSON"
+                                        +UiText.Vkt.naytaJson
                                     }
                                 }
                             },
@@ -96,11 +98,11 @@ object VktKoskiErrors {
         override val uiHeaderValue: LocalizedString,
         override val urlParam: String,
     ) : DisplayTableEnum {
-        Tutkintoryhma("id", LocalizedString(fi = "Oppijanumero / kieli / taitotaso"), "id"),
-        Virhe("error", LocalizedString(fi = "Virhe"), "error"),
-        Aikaleima("timestamp", LocalizedString(fi = "Aikaleima"), "timestamp"),
-        Request("request", LocalizedString(fi = "Pyyntö"), "request"),
-        Hidden("hidden", LocalizedString(fi = "Piilotus"), "hidden"),
+        Tutkintoryhma("id", UiText.Vkt.Sarake.tutkintoryhma, "id"),
+        Virhe("error", UiText.Vkt.Sarake.virhe, "error"),
+        Aikaleima("timestamp", UiText.Vkt.Sarake.aikaleima, "timestamp"),
+        Request("request", UiText.Vkt.Sarake.pyynto, "request"),
+        Hidden("hidden", UiText.Vkt.Sarake.piilotus, "hidden"),
     }
 }
 
