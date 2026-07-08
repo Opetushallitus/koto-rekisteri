@@ -55,7 +55,7 @@ class HomeControllerTest(
         assertContains(response, "Kielitutkintorekisteri")
         assertFalse(
             response.contains("Tolgeesta puuttuu"),
-            "Käännösvaroitusta ei näytetä kun lokalisointi ei ole käytössä (slug tyhjä)",
+            "Käännösvaroitusta ei näytetä kun lokalisointi ei ole käytössä (namespace tyhjä)",
         )
         assertContains(response, """data-testid="dashboard"""")
         assertContains(response, """data-testid="yki-links"""")

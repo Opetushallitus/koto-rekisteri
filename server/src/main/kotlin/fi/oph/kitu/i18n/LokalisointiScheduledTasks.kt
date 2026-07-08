@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @ConditionalOnBooleanProperty(name = ["kitu.lokalisointi.scheduling.enabled"])
-@ConditionalOnNonEmptyProperty("kitu.lokalisointi.slug")
+@ConditionalOnNonEmptyProperty("kitu.lokalisointi.namespace")
 class LokalisointiScheduledTasks(
     private val tracer: Tracer,
 ) {

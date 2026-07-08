@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestClient
 
 @Configuration
-@ConditionalOnNonEmptyProperty("kitu.lokalisointi.slug")
+@ConditionalOnNonEmptyProperty("kitu.lokalisointi.namespace")
 class LokalisointiRestClientConfig(
     private val restClientBuilder: RestClient.Builder,
 ) {

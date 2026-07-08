@@ -7,7 +7,7 @@ import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
 
 @Component
-@ConditionalOnNonEmptyProperty("kitu.lokalisointi.slug")
+@ConditionalOnNonEmptyProperty("kitu.lokalisointi.namespace")
 class LokalisointiLoader(
     private val lokalisointiClient: LokalisointiClient,
 ) : ApplicationRunner {
