@@ -6,6 +6,7 @@ import fi.oph.kitu.html.hiddenErrorsBanner
 import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.koski.YkiMappingId
@@ -84,12 +85,12 @@ object YkiKoskiErrors {
         override val uiHeaderValue: LocalizedString,
         override val urlParam: String,
     ) : DisplayTableEnum {
-        Oppijanumero("oppijanumero", LocalizedString(fi = "Oppijanumero"), "oppijanumero"),
-        SuorituksenTunniste("tunniste", LocalizedString(fi = "Suorituksen tunniste"), "tunniste"),
-        Virhe("error", LocalizedString(fi = "Virhe"), "error"),
-        Aikaleima("timestamp", LocalizedString(fi = "Aikaleima"), "timestamp"),
-        Request("request", LocalizedString(fi = "Pyyntö"), "request"),
-        Hidden("hidden", LocalizedString(fi = "Piilotus"), "hidden"),
+        Oppijanumero("oppijanumero", UiText.Yki.Sarake.oppijanumero, "oppijanumero"),
+        SuorituksenTunniste("tunniste", UiText.Yki.Sarake.suorituksenTunniste, "tunniste"),
+        Virhe("error", UiText.Yki.Sarake.virhe, "error"),
+        Aikaleima("timestamp", UiText.Yki.Sarake.aikaleima, "timestamp"),
+        Request("request", UiText.Yki.Sarake.pyynto, "request"),
+        Hidden("hidden", UiText.Yki.Sarake.piilotus, "hidden"),
     }
 
     fun hideErrorUrl(

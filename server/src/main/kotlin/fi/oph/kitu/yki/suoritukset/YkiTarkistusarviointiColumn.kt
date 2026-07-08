@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.suoritukset
 import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import kotlinx.html.FlowContent
 import kotlinx.html.li
@@ -18,31 +19,31 @@ enum class YkiTarkistusarviointiColumn(
 ) : DisplayTableEnum {
     Sukunimi(
         entityName = "sukunimi",
-        uiHeaderValue = LocalizedString(fi = "Sukunimi"),
+        uiHeaderValue = UiText.Yki.Sarake.sukunimi,
         urlParam = "sukunimi",
         getValue = { it.sukunimi },
     ),
     Etunimet(
         entityName = "etunimet",
-        uiHeaderValue = LocalizedString(fi = "Etunimet"),
+        uiHeaderValue = UiText.Yki.Sarake.etunimet,
         urlParam = "etunimet",
         getValue = { it.etunimet },
     ),
     Kieli(
         entityName = "kieli",
-        uiHeaderValue = LocalizedString(fi = "Kieli"),
+        uiHeaderValue = UiText.Yki.Sarake.kieli,
         urlParam = "kieli",
         getValue = { it.tutkintokieli.name },
     ),
     Tutkintotaso(
         entityName = "tutkintotaso",
-        uiHeaderValue = LocalizedString(fi = "Tutkintotaso"),
+        uiHeaderValue = UiText.Yki.Sarake.tutkintotaso,
         urlParam = "tutkintotaso",
         getValue = { it.tutkintotaso.name },
     ),
     Paivamaara(
         entityName = "tutkintoPvm",
-        uiHeaderValue = LocalizedString(fi = "Päivämäärä"),
+        uiHeaderValue = UiText.Yki.Sarake.paivamaara,
         urlParam = "tutkintoPvm",
         getValue = { it.tutkintopaiva.finnishDate() },
         renderHtml = {
@@ -74,13 +75,13 @@ enum class YkiTarkistusarviointiColumn(
     ),
     Asiatunnus(
         entityName = "asiatunnus",
-        uiHeaderValue = LocalizedString(fi = "Asiatunnus"),
+        uiHeaderValue = UiText.Yki.Sarake.asiatunnus,
         urlParam = "asiatunnus",
         getValue = { it.tarkistusarvioinninAsiatunnus.orEmpty() },
     ),
     Muutokset(
         entityName = "arviointi",
-        uiHeaderValue = LocalizedString(fi = "Tarkistusarviointi"),
+        uiHeaderValue = UiText.Yki.Sarake.tarkistusarviointi,
         urlParam = "arviointi",
         getValue = { "Not implemented" },
         renderHtml = {

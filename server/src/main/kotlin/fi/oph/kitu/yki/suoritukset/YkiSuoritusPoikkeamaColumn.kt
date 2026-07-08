@@ -3,6 +3,7 @@ import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.ColumnTags
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import kotlinx.html.FlowContent
@@ -17,7 +18,7 @@ enum class YkiSuoritusPoikkeamaColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Tutkintopaiva(
         entityName = "tutkintopaiva",
-        uiHeaderValue = LocalizedString(fi = "Tutkintopäivä"),
+        uiHeaderValue = UiText.Yki.Sarake.tutkintopaiva,
         urlParam = "tutkintopaiva",
         getValue = { it.tutkintopaiva?.finnishDate().orEmpty() },
     ),
@@ -25,7 +26,7 @@ enum class YkiSuoritusPoikkeamaColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Tutkintokieli(
         entityName = "tutkintokieli",
-        uiHeaderValue = LocalizedString(fi = "Kieli"),
+        uiHeaderValue = UiText.Yki.Sarake.kieli,
         urlParam = "tutkintokieli",
         getValue = { it.tutkintokieli?.name.orEmpty() },
     ),
@@ -33,7 +34,7 @@ enum class YkiSuoritusPoikkeamaColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Tutkintotaso(
         entityName = "tutkintotaso",
-        uiHeaderValue = LocalizedString(fi = "Taso"),
+        uiHeaderValue = UiText.Yki.Sarake.taso,
         urlParam = "tutkintotaso",
         getValue = { it.tutkintotaso?.name.orEmpty() },
     ),
@@ -41,7 +42,7 @@ enum class YkiSuoritusPoikkeamaColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     SolkiId(
         entityName = "solki_id",
-        uiHeaderValue = LocalizedString(fi = "Solki-ID"),
+        uiHeaderValue = UiText.Yki.Sarake.solkiId,
         urlParam = "solkiid",
         getValue = { it.solkiId.toString() },
     ),
@@ -49,7 +50,7 @@ enum class YkiSuoritusPoikkeamaColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Kentta(
         entityName = "kentta",
-        uiHeaderValue = LocalizedString(fi = "Kenttä"),
+        uiHeaderValue = UiText.Yki.Sarake.kentta,
         urlParam = "kentta",
         getValue = { it.kentta },
     ),
@@ -57,7 +58,7 @@ enum class YkiSuoritusPoikkeamaColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     ArvoKitussa(
         entityName = "arvo_kitussa",
-        uiHeaderValue = LocalizedString(fi = "Arvo Kitussa"),
+        uiHeaderValue = UiText.Yki.Sarake.arvoKitussa,
         urlParam = "arvokitussa",
         getValue = { it.arvoKitussa },
     ),
@@ -65,7 +66,7 @@ enum class YkiSuoritusPoikkeamaColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     ArvoSolkissa(
         entityName = "arvo_solkissa",
-        uiHeaderValue = LocalizedString(fi = "Arvo Solkissa"),
+        uiHeaderValue = UiText.Yki.Sarake.arvoSolkissa,
         urlParam = "arvosolkissa",
         getValue = { it.arvoSolkissa },
     ),
@@ -73,7 +74,7 @@ enum class YkiSuoritusPoikkeamaColumn(
     @ColumnTags(ColumnTag.CSV_EXPORT)
     Havaittu(
         entityName = "havaittu",
-        uiHeaderValue = LocalizedString(fi = "Havaittu"),
+        uiHeaderValue = UiText.Yki.Sarake.havaittu,
         urlParam = "havaittu",
         getValue = { it.havaittu.finnishDateTime() },
     ),
