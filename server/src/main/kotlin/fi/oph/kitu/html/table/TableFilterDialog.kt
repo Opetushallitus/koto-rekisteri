@@ -22,15 +22,15 @@ fun FlowContent.tableFilterDialog(
 ) {
     val modalId = "table-filter-dialog"
     modalCommandButton(modalId, ModalCommand.OPEN) {
-        +(buttonText ?: UiText.Filter.rajaaNaytettavat.get(CurrentLanguage.get()))
+        +(buttonText ?: UiText.Filter.rajaaNaytettavat.toString())
     }
-    modal(modalId, UiText.Filter.tiedonRajaus.get(CurrentLanguage.get())) {
+    modal(modalId, UiText.Filter.tiedonRajaus.toString()) {
         form(action = action, method = FormMethod.get) {
             block()
 
             footer {
                 fieldSet(classes = "grid") {
-                    submitButton(UiText.Filter.rajaa.get(CurrentLanguage.get()))
+                    submitButton(UiText.Filter.rajaa.toString())
                 }
             }
         }
@@ -65,9 +65,9 @@ fun FlowContent.trueFalseOrAllFilter(
     value: Boolean?,
     optionLabels: Triple<String, String, String> =
         Triple(
-            UiText.Filter.kaikki.get(CurrentLanguage.get()),
-            UiText.Filter.kylla.get(CurrentLanguage.get()),
-            UiText.Filter.ei.get(CurrentLanguage.get()),
+            UiText.Filter.kaikki.toString(),
+            UiText.Filter.kylla.toString(),
+            UiText.Filter.ei.toString(),
         ),
 ) {
     val options =
@@ -134,10 +134,10 @@ inline fun <reified E : Enum<E>> FlowContent.enumFilter(
 
 inline fun <reified E : Enum<E>> enumValueName(value: E?): String =
     when (value) {
-        is Koodisto.KoodiviiteNimella -> value.nimi.get(CurrentLanguage.get())
-        is Nimetty -> value.nimi.get(CurrentLanguage.get())
+        is Koodisto.KoodiviiteNimella -> value.nimi.toString()
+        is Nimetty -> value.nimi.toString()
         is DisplayEnum -> value.displayText()
-        null -> UiText.Filter.kaikki.get(CurrentLanguage.get())
+        null -> UiText.Filter.kaikki.toString()
         else -> value.name
     }
 

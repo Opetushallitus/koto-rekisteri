@@ -4,5 +4,5 @@ import kotlinx.html.Tag
 
 context(tag: Tag)
 operator fun LocalizedString.unaryPlus() {
-    tag.text(get(CurrentLanguage.get()))
+    tag.text(toString())
 }

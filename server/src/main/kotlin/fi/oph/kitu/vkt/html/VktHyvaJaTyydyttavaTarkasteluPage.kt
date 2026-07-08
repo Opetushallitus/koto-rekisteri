@@ -54,32 +54,32 @@ fun FlowContent.vktHyvaJaTyydyttavaOsakoeTable(
     displayTable(
         osat.sortedBy { it.tutkintopaiva }.reversed(),
         listOf(
-            DisplayTableColumn(UiText.Vkt.osakoe.get(CurrentLanguage.get()), width = "20%") {
+            DisplayTableColumn(UiText.Vkt.osakoe.toString(), width = "20%") {
                 +t.get(it.tyyppi)
             },
             DisplayTableColumn(
                 UiText.Vkt.Sarake.tutkintopaiva
-                    .get(CurrentLanguage.get()),
+                    .toString(),
                 width = "16%",
             ) {
                 finnishDate(it.tutkintopaiva)
             },
-            DisplayTableColumn(UiText.Vkt.arvosana.get(CurrentLanguage.get()), width = "16%") {
+            DisplayTableColumn(UiText.Vkt.arvosana.toString(), width = "16%") {
                 it.arviointi?.arvosana?.let { arvosana -> +t.get(arvosana) }
             },
-            DisplayTableColumn(UiText.Vkt.arviointipaiva.get(CurrentLanguage.get()), width = "16%") {
+            DisplayTableColumn(UiText.Vkt.arviointipaiva.toString(), width = "16%") {
                 it.arviointi?.paivamaara?.let { pvm -> finnishDate(pvm) }
             },
             DisplayTableColumn(
                 UiText.Vkt.Sarake.vastaanottaja
-                    .get(CurrentLanguage.get()),
+                    .toString(),
                 width = "16%",
             ) {
                 +it.suorituksenVastaanottaja.toString()
             },
             DisplayTableColumn(
                 UiText.Vkt.Sarake.suorituspaikkakunta
-                    .get(CurrentLanguage.get()),
+                    .toString(),
                 width = "16%",
             ) {
                 +t.getByKoodiviite("kunta", it.suorituspaikkakunta)

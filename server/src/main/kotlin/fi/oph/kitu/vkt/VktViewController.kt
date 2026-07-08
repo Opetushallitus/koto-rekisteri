@@ -160,7 +160,7 @@ class VktViewController(
             }
         }
         vktSuoritukset.requestTransferToKoski(CustomVktSuoritusRepository.Tutkintoryhma(oppijanumero, kieli, taso))
-        viewMessage.showSuccess(UiText.Vkt.muutoksetTallennettu.get(CurrentLanguage.get()))
+        viewMessage.showSuccess(UiText.Vkt.muutoksetTallennettu.toString())
         return RedirectView(Links.Vkt.ilmoittautuneenArviointi(oppijanumero, kieli, taso))
     }
 
@@ -230,7 +230,7 @@ class VktViewController(
                 KoskiTransferState.SUCCESS to emptyList()
             } else {
                 KoskiTransferState.INVALID to
-                    listOf(UiText.Vkt.merkittyKasitellyksiEiOid.get(CurrentLanguage.get()))
+                    listOf(UiText.Vkt.merkittyKasitellyksiEiOid.toString())
             }
         } else {
             koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus).fold(

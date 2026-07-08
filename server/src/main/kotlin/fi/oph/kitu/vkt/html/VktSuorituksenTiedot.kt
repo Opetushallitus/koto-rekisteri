@@ -23,14 +23,14 @@ fun FlowContent.vktSuorituksenTiedot(
 ) {
     card(compact = true) {
         infoTable(
-            UiText.Vkt.tutkinnonTaso.get(CurrentLanguage.get()) to { +t.get(data.suoritus.taitotaso) },
-            UiText.Vkt.kieli.get(CurrentLanguage.get()) to { +t.get(data.suoritus.kieli) },
+            UiText.Vkt.tutkinnonTaso.toString() to { +t.get(data.suoritus.taitotaso) },
+            UiText.Vkt.kieli.toString() to { +t.get(data.suoritus.kieli) },
         )
     }
     h3 { +UiText.Vkt.integraatiot }
     card(compact = true) {
         infoTable(
-            UiText.Vkt.koski.get(CurrentLanguage.get()) to {
+            UiText.Vkt.koski.toString() to {
                 when (koskiTransferState.first) {
                     KoskiTransferState.NOT_READY -> {
                         +UiText.Vkt.tiedoissaPuutteita
@@ -76,7 +76,7 @@ fun FlowContent.vktTutkinnot(
             columns =
                 listOf(
                     DisplayTableColumn(
-                        UiText.Vkt.tutkinto.get(CurrentLanguage.get()),
+                        UiText.Vkt.tutkinto.toString(),
                         width = "25%",
                         testId = "tutkinto",
                     ) {
@@ -84,14 +84,14 @@ fun FlowContent.vktTutkinnot(
                     },
                     DisplayTableColumn(
                         UiText.Vkt.Sarake.tutkintopaiva
-                            .get(CurrentLanguage.get()),
+                            .toString(),
                         width = "25%",
                         testId = "tutkintopaiva",
                     ) { tutkinto ->
                         tutkinto.tutkintopaivaTodistuksella()?.let { finnishDate(it) }
                     },
                     DisplayTableColumn(
-                        UiText.Vkt.arvosana.get(CurrentLanguage.get()),
+                        UiText.Vkt.arvosana.toString(),
                         width = "50%",
                         testId = "arvosana",
                     ) {
@@ -103,9 +103,9 @@ fun FlowContent.vktTutkinnot(
                                 if (puuttuvatArvioinnit.isNotEmpty()) {
                                     val head =
                                         if (puuttuvatArvioinnit.size == 1) {
-                                            UiText.Vkt.arviointiPuuttuu.get(CurrentLanguage.get())
+                                            UiText.Vkt.arviointiPuuttuu.toString()
                                         } else {
-                                            UiText.Vkt.arvioinnitPuuttuvat.get(CurrentLanguage.get())
+                                            UiText.Vkt.arvioinnitPuuttuvat.toString()
                                         }
                                     val value = puuttuvatArvioinnit.joinToString(", ") { ok -> t.get(ok) }
                                     "$head: $value"
@@ -114,7 +114,7 @@ fun FlowContent.vktTutkinnot(
                                 },
                                 if (puuttuvatOsakokeet.isNotEmpty()) {
                                     val value = puuttuvatOsakokeet.joinToString(", ") { ok -> t.get(ok) }
-                                    "${UiText.Vkt.osakoePuuttuu.get(CurrentLanguage.get())}: $value"
+                                    "${UiText.Vkt.osakoePuuttuu}: $value"
                                 } else {
                                     null
                                 },
