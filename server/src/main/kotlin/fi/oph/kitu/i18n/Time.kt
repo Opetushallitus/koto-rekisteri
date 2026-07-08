@@ -26,7 +26,7 @@ fun aikarajausDescription(
 ): String? =
     if (alku != null || loppu != null) {
         listOf(alku?.finnishDate().orEmpty(), loppu?.finnishDate().orEmpty())
-            .joinToString("-", prefix = UiText.Filter.aikarajausPrefix.get(lang))
+            .joinToString("-", prefix = UiText.Filter.aikarajausPrefix.get(lang) + ": ")
     } else {
         null
     }
