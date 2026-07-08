@@ -3,6 +3,7 @@ import fi.oph.kitu.html.json
 import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.organisaatiot.Organisaatiot
 import fi.oph.kitu.util.toJsonNode
@@ -21,19 +22,19 @@ enum class KielitestiSuoritusErrorColumn(
 ) : DisplayTableEnum {
     Henkilötunnus(
         entityName = "hetu",
-        uiHeaderValue = LocalizedString(fi = "Henkilötunnus"),
+        uiHeaderValue = UiText.Koto.Sarake.henkilotunnus,
         urlParam = "henkilötunnus",
         getValue = { { it.hetu.orEmpty() } },
     ),
     Nimi(
         entityName = "nimi",
-        uiHeaderValue = LocalizedString(fi = "Nimi"),
+        uiHeaderValue = UiText.Koto.Sarake.nimi,
         urlParam = "nimi",
         getValue = { { it.nimi } },
     ),
     SchoolOid(
         entityName = "schoolOid",
-        uiHeaderValue = LocalizedString(fi = "Organisaatio"),
+        uiHeaderValue = UiText.Koto.Sarake.organisaatio,
         urlParam = "schooloid",
         getValue = { orgs ->
             { it.schoolOid?.let { oid -> orgs.nimet[oid]?.toString() }.orEmpty() }
@@ -54,19 +55,19 @@ enum class KielitestiSuoritusErrorColumn(
     ),
     TeacherEmail(
         entityName = "teacherEmail",
-        uiHeaderValue = LocalizedString(fi = "Opettajan sähköpostiosoite"),
+        uiHeaderValue = UiText.Koto.Sarake.opettajanSahkopostiosoite,
         urlParam = "teacheremail",
         getValue = { { it.teacherEmail.orEmpty() } },
     ),
     VirheenLuontiaika(
         entityName = "virheenLuontiaika",
-        uiHeaderValue = LocalizedString(fi = "Virheen luontiaika"),
+        uiHeaderValue = UiText.Koto.Sarake.virheenLuontiaika,
         urlParam = "virheenluontiaika",
         getValue = { { it.virheenLuontiaika.finnishDateTime() } },
     ),
     Viesti(
         entityName = "viesti",
-        uiHeaderValue = LocalizedString(fi = "Virheviesti"),
+        uiHeaderValue = UiText.Koto.Sarake.virheviesti,
         urlParam = "viesti",
         getValue = { { it.viesti } },
         renderHtml = {
@@ -85,19 +86,19 @@ enum class KielitestiSuoritusErrorColumn(
     ),
     Ratkaisuehdotus(
         entityName = "onrLisatietoja",
-        uiHeaderValue = LocalizedString(fi = "Ratkaisuehdotus"),
+        uiHeaderValue = UiText.Koto.Sarake.ratkaisuehdotus,
         urlParam = "onrLisatietoja",
         getValue = { { it.onrLisatietoja.orEmpty() } },
     ),
     VirheellinenKentta(
         entityName = "virheellinenKentta",
-        uiHeaderValue = LocalizedString(fi = "Virheellinen kenttä"),
+        uiHeaderValue = UiText.Koto.Sarake.virheellinenKentta,
         urlParam = "virheellinenkentta",
         getValue = { { it.virheellinenKentta.orEmpty() } },
     ),
     VirheellinenArvo(
         entityName = "virheellinenArvo",
-        uiHeaderValue = LocalizedString(fi = "Virheellinen arvo"),
+        uiHeaderValue = UiText.Koto.Sarake.virheellinenArvo,
         urlParam = "virheellinenarvo",
         getValue = { { it.virheellinenArvo.orEmpty() } },
     ),

@@ -1,5 +1,4 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
-
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.csvDownloadButton
@@ -19,6 +18,8 @@ import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.html.testId
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
@@ -48,8 +49,8 @@ object KielitestiSuorituksetPage {
         Page.renderHtml(
             wideContent = true,
         ) {
-            h1 { +"Kotoutumiskoulutuksen kielitaidon päättötesti" }
-            h2 { +"Suoritukset" }
+            h1 { +UiText.Nav.kotoutumiskoulutuksenPaattotesti }
+            h2 { +UiText.Nav.suoritukset }
             errorsArticle(errorsCount, Links.Kielitesti.virheet())
 
             form(action = "", method = FormMethod.get, classes = "grid center-vertically") {
@@ -62,12 +63,12 @@ object KielitestiSuorituksetPage {
                         type = InputType.search
                         name = "search"
                         value = filterParams.search
-                        placeholder = "Oppijanumero, nimi, oppilaitoksen nimi tai muu hakusana"
+                        placeholder = UiText.Koto.hakusana.toString()
                     }
                     button {
                         testId("search-button")
                         type = ButtonType.submit
-                        +"Suodata"
+                        +UiText.Koto.suodata
                     }
                 }
             }
@@ -77,7 +78,8 @@ object KielitestiSuorituksetPage {
                     nav {
                         ul {
                             li {
-                                +"Suorituksia yhteensä: $numberOfSuoritukset"
+                                +UiText.Koto.suorituksiaYhteensa
+                                +": $numberOfSuoritukset"
                             }
                             li {
                                 csvDownloadButton(
@@ -122,14 +124,23 @@ fun FlowContent.kielitestiSuoritusFilterButton(params: KielitestiSuorituksetPara
     tableFilterDialog("suoritukset") {
         hiddenValue("search", params.search)
         fieldSet(classes = "grid") {
-            dateFilter("suoritusalku", "Suoritusaika alkaen", params.suoritusalku)
-            dateFilter("suoritusloppu", "Suoritusaika päättyen", params.suoritusloppu)
+            dateFilter("suoritusalku", UiText.Koto.suoritusaikaAlkaen.toString(), params.suoritusalku)
+            dateFilter("suoritusloppu", UiText.Koto.suoritusaikaPaattyen.toString(), params.suoritusloppu)
         }
         fieldSet {
-            enumFilter<Testikieli>("testikieli", "Testikieli", params.testikieli)
+            enumFilter<Testikieli>(
+                "testikieli",
+                UiText.Koto.Sarake.testikieli
+                    .toString(),
+                params.testikieli,
+            )
         }
         fieldSet {
-            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", params.piilotaHenkilotiedot)
+            toggleFilter(
+                "piilotaHenkilotiedot",
+                UiText.Koto.piilotaHenkilotiedot.toString(),
+                params.piilotaHenkilotiedot,
+            )
         }
     }
 }

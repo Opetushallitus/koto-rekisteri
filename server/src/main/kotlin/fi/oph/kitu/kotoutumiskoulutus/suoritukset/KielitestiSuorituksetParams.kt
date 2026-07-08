@@ -1,6 +1,6 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset
-
 import fi.oph.kitu.html.table.ColumnTag
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.aikarajausDescription
 import fi.oph.kitu.jdbc.PAGINATED_DEFAULT_PAGE_SIZE
 import fi.oph.kitu.jdbc.SortDirection
@@ -66,7 +66,7 @@ data class KielitestiSuorituksetParams(
     fun filterDescriptions(): List<String> =
         listOfNotNull(
             aikarajausDescription(suoritusalku, suoritusloppu),
-            testikieli?.let { "Testikieli: $it" },
-            if (piilotaHenkilotiedot) "Henkilötiedot piilotettu" else null,
+            testikieli?.let { "${UiText.Koto.Sarake.testikieli}: $it" },
+            if (piilotaHenkilotiedot) UiText.Koto.henkilotiedotPiilotettu.toString() else null,
         )
 }
