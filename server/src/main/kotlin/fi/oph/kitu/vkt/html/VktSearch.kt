@@ -1,7 +1,8 @@
 package fi.oph.kitu.vkt.html
-
 import fi.oph.kitu.html.hiddenValues
 import fi.oph.kitu.html.testId
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.vkt.VktSuoritusFilter
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
@@ -29,7 +30,7 @@ fun FlowContent.vktSearch(filter: VktSuoritusFilter) {
             button {
                 testId("search-button")
                 type = ButtonType.submit
-                +"Suodata"
+                +UiText.Vkt.suodata
             }
         }
     }
