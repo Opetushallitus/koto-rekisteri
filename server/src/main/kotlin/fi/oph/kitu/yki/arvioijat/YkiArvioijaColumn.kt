@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.arvioijat
 import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import kotlinx.html.FlowContent
 
 enum class YkiArvioijaColumn(
@@ -12,91 +13,91 @@ enum class YkiArvioijaColumn(
 ) : RenderableDisplayTableEnum<YkiArvioijaEntity> {
     Oppijanumero(
         entityName = "arvioija_oid",
-        uiHeaderValue = LocalizedString(fi = "Oppijanumero"),
+        uiHeaderValue = UiText.Yki.Sarake.oppijanumero,
         urlParam = "oppijanumero",
         getValue = { it.arvioijaOid.toString() },
     ),
 
     Hetu(
         entityName = "henkilotunnus",
-        uiHeaderValue = LocalizedString(fi = "Henkilötunnus"),
+        uiHeaderValue = UiText.Yki.Sarake.henkilotunnus,
         urlParam = "hetu",
         getValue = { it.henkilotunnus.orEmpty() },
     ),
 
     Sukunimi(
         entityName = "sukunimi",
-        uiHeaderValue = LocalizedString(fi = "Sukunimi"),
+        uiHeaderValue = UiText.Yki.Sarake.sukunimi,
         urlParam = "sukunimi",
         getValue = { it.sukunimi },
     ),
 
     Etunimet(
         entityName = "etunimet",
-        uiHeaderValue = LocalizedString(fi = "Etunimet"),
+        uiHeaderValue = UiText.Yki.Sarake.etunimet,
         urlParam = "etunimet",
         getValue = { it.etunimet },
     ),
 
     Email(
         entityName = "sahkopostiosoite",
-        uiHeaderValue = LocalizedString(fi = "Sähköposti"),
+        uiHeaderValue = UiText.Yki.Sarake.sahkoposti,
         urlParam = "email",
         getValue = { it.sahkopostiosoite.orEmpty() },
     ),
 
     Katuosoite(
         entityName = "katuosoite",
-        uiHeaderValue = LocalizedString(fi = "Osoite"),
+        uiHeaderValue = UiText.Yki.Sarake.osoite,
         urlParam = "katuosoite",
         getValue = { "${it.katuosoite}, ${it.postinumero} ${it.postitoimipaikka}" },
     ),
 
     Tila(
         entityName = "tila",
-        uiHeaderValue = LocalizedString(fi = "Tila"),
+        uiHeaderValue = UiText.Yki.Sarake.tila,
         urlParam = "tila",
         getValue = { "" },
     ),
 
     Kieli(
         entityName = "kieli",
-        uiHeaderValue = LocalizedString(fi = "Kieli"),
+        uiHeaderValue = UiText.Yki.Sarake.kieli,
         urlParam = "kieli",
         getValue = { "" },
     ),
 
     Tasot(
         entityName = "tasot",
-        uiHeaderValue = LocalizedString(fi = "Tasot"),
+        uiHeaderValue = UiText.Yki.Sarake.tasot,
         urlParam = "tasot",
         getValue = { "" },
     ),
 
     KaudenAlkupaiva(
         entityName = "kauden_alkupaiva",
-        uiHeaderValue = LocalizedString(fi = "Kauden alkupäivä"),
+        uiHeaderValue = UiText.Yki.Sarake.kaudenAlkupaiva,
         urlParam = "kaudenalkupaiva",
         getValue = { "" },
     ),
 
     KaudenPaattymispaiva(
         entityName = "kauden_paattymispaiva",
-        uiHeaderValue = LocalizedString(fi = "Kauden päättymispäivä"),
+        uiHeaderValue = UiText.Yki.Sarake.kaudenPaattymispaiva,
         urlParam = "kaudenpaattymispaiva",
         getValue = { "" },
     ),
 
     Jatkorekisterointi(
         entityName = "jatkorekisterointi",
-        uiHeaderValue = LocalizedString(fi = "Jatkorekisteröinti"),
+        uiHeaderValue = UiText.Yki.Sarake.jatkorekisterointi,
         urlParam = "jatkorekisterointi",
         getValue = { "" },
     ),
 
     Rekisteriintuontiaika(
         entityName = "rekisteriintuontiaika",
-        uiHeaderValue = LocalizedString(fi = "Rekisteriintuontiaika"),
+        uiHeaderValue = UiText.Yki.Sarake.rekisteriintuontiaika,
         urlParam = "rekisteriintuontiaika",
         getValue = { "" },
     ),

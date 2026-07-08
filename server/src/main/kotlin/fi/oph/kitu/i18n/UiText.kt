@@ -177,6 +177,84 @@ object UiText {
         }
     }
 
+    object Yki {
+        object Sarake {
+            val oppijanumero: LocalizedString get() = tr("yki.sarake.oppijanumero", fi = "Oppijanumero")
+            val sukunimi: LocalizedString get() = tr("yki.sarake.sukunimi", fi = "Sukunimi")
+            val etunimi: LocalizedString get() = tr("yki.sarake.etunimi", fi = "Etunimi")
+            val etunimet: LocalizedString get() = tr("yki.sarake.etunimet", fi = "Etunimet")
+            val sukupuoli: LocalizedString get() = tr("yki.sarake.sukupuoli", fi = "Sukupuoli")
+            val henkilotunnus: LocalizedString get() = tr("yki.sarake.henkilotunnus", fi = "Henkilötunnus")
+            val kansalaisuus: LocalizedString get() = tr("yki.sarake.kansalaisuus", fi = "Kansalaisuus")
+            val osoite: LocalizedString get() = tr("yki.sarake.osoite", fi = "Osoite")
+            val sahkoposti: LocalizedString get() = tr("yki.sarake.sahkoposti", fi = "Sähköposti")
+            val tutkintopaiva: LocalizedString get() = tr("yki.sarake.tutkintopaiva", fi = "Tutkintopäivä")
+            val tutkintokieli: LocalizedString get() = tr("yki.sarake.tutkintokieli", fi = "Tutkintokieli")
+            val tutkintotaso: LocalizedString get() = tr("yki.sarake.tutkintotaso", fi = "Tutkintotaso")
+            val kieli: LocalizedString get() = tr("yki.sarake.kieli", fi = "Kieli")
+            val taso: LocalizedString get() = tr("yki.sarake.taso", fi = "Taso")
+            val jarjestajanOid: LocalizedString get() = tr("yki.sarake.jarjestajanOid", fi = "Järjestäjän OID")
+            val jarjestajanNimi: LocalizedString get() = tr("yki.sarake.jarjestajanNimi", fi = "Järjestäjän nimi")
+            val arviointitila: LocalizedString get() = tr("yki.sarake.arviointitila", fi = "Arviointitila")
+            val arviointipaiva: LocalizedString get() = tr("yki.sarake.arviointipaiva", fi = "Arviointipäivä")
+            val tekstinYmmartaminen: LocalizedString
+                get() = tr("yki.sarake.tekstinYmmartaminen", fi = "Tekstin ymmärtäminen")
+            val kirjoittaminen: LocalizedString get() = tr("yki.sarake.kirjoittaminen", fi = "Kirjoittaminen")
+            val puheenYmmartaminen: LocalizedString
+                get() = tr("yki.sarake.puheenYmmartaminen", fi = "Puheen ymmärtäminen")
+            val puhuminen: LocalizedString get() = tr("yki.sarake.puhuminen", fi = "Puhuminen")
+            val rakenteetJaSanasto: LocalizedString
+                get() = tr("yki.sarake.rakenteetJaSanasto", fi = "Rakenteet ja sanasto")
+            val yleisarvosana: LocalizedString get() = tr("yki.sarake.yleisarvosana", fi = "Yleisarvosana")
+            val todistuskieli: LocalizedString get() = tr("yki.sarake.todistuskieli", fi = "Todistuskieli")
+            val tilaLahetetty: LocalizedString get() = tr("yki.sarake.tilaLahetetty", fi = "Tila lähetetty")
+            val opiskeluoikeusOid: LocalizedString get() = tr("yki.sarake.opiskeluoikeusOid", fi = "Opiskeluoikeus-OID")
+            val solkiTunniste: LocalizedString get() = tr("yki.sarake.solkiTunniste", fi = "Solki-tunniste")
+            val versio: LocalizedString get() = tr("yki.sarake.versio", fi = "Versio")
+            val tila: LocalizedString get() = tr("yki.sarake.tila", fi = "Tila")
+            val tasot: LocalizedString get() = tr("yki.sarake.tasot", fi = "Tasot")
+            val kaudenAlkupaiva: LocalizedString get() = tr("yki.sarake.kaudenAlkupaiva", fi = "Kauden alkupäivä")
+            val kaudenPaattymispaiva: LocalizedString
+                get() = tr("yki.sarake.kaudenPaattymispaiva", fi = "Kauden päättymispäivä")
+            val jatkorekisterointi: LocalizedString
+                get() = tr("yki.sarake.jatkorekisterointi", fi = "Jatkorekisteröinti")
+            val rekisteriintuontiaika: LocalizedString
+                get() = tr("yki.sarake.rekisteriintuontiaika", fi = "Rekisteriintuontiaika")
+            val solkiId: LocalizedString get() = tr("yki.sarake.solkiId", fi = "Solki-ID")
+            val kentta: LocalizedString get() = tr("yki.sarake.kentta", fi = "Kenttä")
+            val arvoKitussa: LocalizedString get() = tr("yki.sarake.arvoKitussa", fi = "Arvo Kitussa")
+            val arvoSolkissa: LocalizedString get() = tr("yki.sarake.arvoSolkissa", fi = "Arvo Solkissa")
+            val havaittu: LocalizedString get() = tr("yki.sarake.havaittu", fi = "Havaittu")
+            val paivamaara: LocalizedString get() = tr("yki.sarake.paivamaara", fi = "Päivämäärä")
+            val asiatunnus: LocalizedString get() = tr("yki.sarake.asiatunnus", fi = "Asiatunnus")
+            val tarkistusarviointi: LocalizedString
+                get() = tr("yki.sarake.tarkistusarviointi", fi = "Tarkistusarviointi")
+            val suorituksenTunniste: LocalizedString
+                get() = tr("yki.sarake.suorituksenTunniste", fi = "Suorituksen tunniste")
+            val virhe: LocalizedString get() = tr("yki.sarake.virhe", fi = "Virhe")
+            val aikaleima: LocalizedString get() = tr("yki.sarake.aikaleima", fi = "Aikaleima")
+            val pyynto: LocalizedString get() = tr("yki.sarake.pyynto", fi = "Pyyntö")
+            val piilotus: LocalizedString get() = tr("yki.sarake.piilotus", fi = "Piilotus")
+        }
+
+        object Virhesarake {
+            val oppijanumero: LocalizedString get() = tr("yki.virhesarake.oppijanumero", fi = "oppijanumero")
+            val hetu: LocalizedString get() = tr("yki.virhesarake.hetu", fi = "hetu")
+            val nimi: LocalizedString get() = tr("yki.virhesarake.nimi", fi = "nimi")
+            val virheellinenKentta: LocalizedString
+                get() = tr("yki.virhesarake.virheellinenKentta", fi = "virheellinen kenttä")
+            val virheellinenArvo: LocalizedString
+                get() = tr("yki.virhesarake.virheellinenArvo", fi = "virheellinen arvo")
+            val virheellinenRivi: LocalizedString
+                get() = tr("yki.virhesarake.virheellinenRivi", fi = "virheellinen rivi")
+            val virheenRivinumero: LocalizedString
+                get() = tr("yki.virhesarake.virheenRivinumero", fi = "virheen rivinumero")
+            val virheenLuontiaika: LocalizedString
+                get() = tr("yki.virhesarake.virheenLuontiaika", fi = "virheen luontiaika")
+            val lastModified: LocalizedString get() = tr("yki.virhesarake.lastModified", fi = "last modified")
+        }
+    }
+
     object Time {
         val juuriNyt: LocalizedString get() = tr("time.juuriNyt", fi = "juuri nyt")
         val eilen: LocalizedString get() = tr("time.eilen", fi = "eilen")
