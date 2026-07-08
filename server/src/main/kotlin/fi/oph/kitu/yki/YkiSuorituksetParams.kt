@@ -1,6 +1,6 @@
 package fi.oph.kitu.yki
-
 import fi.oph.kitu.html.table.ColumnTag
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.aikarajausDescription
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.util.SearchTerms
@@ -81,10 +81,10 @@ data class YkiSuorituksetParams(
     fun filterDescriptions(): List<String> =
         listOfNotNull(
             aikarajausDescription(tutkintoalku, tutkintoloppu),
-            tutkintokieli?.let { "Tutkintokieli: $it" },
-            tutkintotaso?.let { "Tutkintotaso: $it" },
-            if (piilotaHenkilotiedot) "Henkilötiedot piilotettu" else null,
-            if (piilotaVanhentuneetTiedot) "Vanhentuneet tietokentät piilotettu" else null,
-            if (versionHistory) "Näytä versiohistoria" else null,
+            tutkintokieli?.let { "${UiText.Yki.Sarake.tutkintokieli}: $it" },
+            tutkintotaso?.let { "${UiText.Yki.Sarake.tutkintotaso}: $it" },
+            if (piilotaHenkilotiedot) UiText.Yki.henkilotiedotPiilotettu.toString() else null,
+            if (piilotaVanhentuneetTiedot) UiText.Yki.vanhentuneetPiilotettu.toString() else null,
+            if (versionHistory) UiText.Yki.naytaVersiohistoria.toString() else null,
         )
 }

@@ -1,5 +1,4 @@
 package fi.oph.kitu.yki.suoritukset
-
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
 import fi.oph.kitu.html.ViewMessageData
@@ -21,6 +20,8 @@ import fi.oph.kitu.html.table.httpParams
 import fi.oph.kitu.html.table.tableFilterDialog
 import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.html.viewMessage
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.Tutkintokieli
@@ -60,8 +61,8 @@ object YkiSuorituksetPage {
         ) {
             val latestVersions = if (filterParams.versionHistory) suoritukset.latestVersions().map { it.id } else null
 
-            h1 { +"Yleinen kielitutkinto" }
-            h2 { +"Suoritukset" }
+            h1 { +UiText.Nav.yki }
+            h2 { +UiText.Nav.suoritukset }
             errorsArticle(errorsCount, Links.Yki.suorituksetVirheet())
             koskiErrorsArticle(koskiErrorsCount, Links.Yki.koskiVirheet())
             poikkeamatArticle(poikkeamatCount, Links.Yki.poikkeamat())
@@ -76,10 +77,10 @@ object YkiSuorituksetPage {
                             type = InputType.text,
                             name = "search",
                             value = filterParams.search,
-                            placeholder = "Oppijanumero, henkilötunnus, Solki-ID tai hakusana",
+                            placeholder = UiText.Yki.hakusana.toString(),
                         ) {
                             button(type = ButtonType.submit) {
-                                +"Suodata"
+                                +UiText.Yki.suodata
                             }
                         }
                     }
@@ -90,7 +91,10 @@ object YkiSuorituksetPage {
                 header {
                     nav {
                         ul {
-                            li { +"Suorituksia yhteensä: $totalSuoritukset" }
+                            li {
+                                +UiText.Yki.suorituksiaYhteensa
+                                +": $totalSuoritukset"
+                            }
                             li {
                                 csvDownloadButton(
                                     Links.Yki.suorituksetCsv() + httpParams(filterParams.toMap()),
@@ -138,28 +142,47 @@ fun FlowContent.ykiSuoritusFilterButton(params: YkiSuorituksetParams) {
     tableFilterDialog("suoritukset") {
         input(type = InputType.hidden, name = "recallSearch", value = "true")
         fieldSet(classes = "grid") {
-            dateFilter("tutkintoalku", "Tutkintopäivä alkaen", params.tutkintoalku)
-            dateFilter("tutkintoloppu", "Tutkintopäivä päättyen", params.tutkintoloppu)
+            dateFilter("tutkintoalku", UiText.Yki.tutkintopaivaAlkaen.toString(), params.tutkintoalku)
+            dateFilter("tutkintoloppu", UiText.Yki.tutkintopaivaPaattyen.toString(), params.tutkintoloppu)
         }
         fieldSet {
-            enumFilter<Tutkintokieli>("tutkintokieli", "Tutkintokieli", params.tutkintokieli)
+            enumFilter<Tutkintokieli>(
+                "tutkintokieli",
+                UiText.Yki.Sarake.tutkintokieli
+                    .toString(),
+                params.tutkintokieli,
+            )
         }
         fieldSet {
-            enumFilter<Tutkintotaso>("tutkintotaso", "Tutkintotaso", params.tutkintotaso)
+            enumFilter<Tutkintotaso>(
+                "tutkintotaso",
+                UiText.Yki.Sarake.tutkintotaso
+                    .toString(),
+                params.tutkintotaso,
+            )
         }
         fieldSet {
-            enumFilter<Arviointitila>("arviointitila", "Arviointitila", params.arviointitila)
+            enumFilter<Arviointitila>(
+                "arviointitila",
+                UiText.Yki.Sarake.arviointitila
+                    .toString(),
+                params.arviointitila,
+            )
         }
         fieldSet {
-            toggleFilter("versionHistory", "Näytä versiohistoria", params.versionHistory)
+            toggleFilter("versionHistory", UiText.Yki.naytaVersiohistoria.toString(), params.versionHistory)
         }
         fieldSet {
-            toggleFilter("piilotaHenkilotiedot", "Piilota henkilötiedot", params.piilotaHenkilotiedot)
+            toggleFilter(
+                "piilotaHenkilotiedot",
+                UiText.Yki.piilotaHenkilotiedot.toString(),
+                params.piilotaHenkilotiedot,
+            )
         }
         fieldSet {
             toggleFilter(
                 "piilotaVanhentuneetTiedot",
-                "Piilota vanhentuneet tietokentät",
+                UiText.Yki.piilotaVanhentuneet.toString(),
                 params.piilotaVanhentuneetTiedot,
             )
         }

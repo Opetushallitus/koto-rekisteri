@@ -3,10 +3,10 @@ import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
+import fi.oph.kitu.i18n.unaryPlus
 import kotlinx.html.FlowContent
 import kotlinx.html.li
 import kotlinx.html.p
-import kotlinx.html.span
 import kotlinx.html.strong
 import kotlinx.html.ul
 
@@ -49,24 +49,36 @@ enum class YkiTarkistusarviointiColumn(
         renderHtml = {
             ul(classes = "flat") {
                 li {
-                    strong { +"Tutkintopäivä: " }
+                    strong {
+                        +UiText.Yki.Sarake.tutkintopaiva
+                        +": "
+                    }
                     +it.tutkintopaiva.finnishDate()
                 }
                 it.tarkistusarvioinninSaapumisPvm?.let { pvm ->
                     li {
-                        strong { +"Pyyntö saapunut: " }
+                        strong {
+                            +UiText.Yki.saapunut
+                            +": "
+                        }
                         +pvm.finnishDate()
                     }
                 }
                 it.tarkistusarvioinninKasittelyPvm?.let { pvm ->
                     li {
-                        strong { +"Pyyntö käsitelty: " }
+                        strong {
+                            +UiText.Yki.kasitelty
+                            +": "
+                        }
                         +pvm.finnishDate()
                     }
                 }
                 it.tarkistusarviointiHyvaksyttyPvm?.let { pvm ->
                     li {
-                        strong { +"Tulos hyväksytty: " }
+                        strong {
+                            +UiText.Yki.hyvaksytty
+                            +": "
+                        }
                         +pvm.finnishDate()
                     }
                 }
@@ -102,12 +114,12 @@ enum class YkiTarkistusarviointiColumn(
                 ul(classes = "flat") {
                     it.tarkistusarvioidutOsakokeet.orEmpty().forEach { osakoe ->
                         li {
-                            if (it.arvosanaMuuttui?.contains(osakoe) == true) {
+                            if (it.arvosanaMuuttui.contains(osakoe) == true) {
                                 strong { +"${osakoe.viewText}: " }
-                                +"Arvosana muuttui: ${it.arvosana(osakoe) ?: "-"}"
+                                +"${UiText.Yki.arvosanaMuuttui}: ${it.arvosana(osakoe) ?: "-"}"
                             } else {
                                 +"${osakoe.viewText}: "
-                                +"Arvosana ei muuttunut"
+                                +UiText.Yki.arvosanaEiMuuttunut
                             }
                         }
                     }

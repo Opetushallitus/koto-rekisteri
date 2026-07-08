@@ -6,6 +6,7 @@ import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.Tutkintotaso
@@ -32,7 +33,7 @@ enum class YkiSuoritusColumn(
         getValue = { it.id?.toString().orEmpty() },
         renderHtml = {
             it.id?.let { id ->
-                a(href = Links.Yki.suoritus(id)) { +"Näytä" }
+                a(href = Links.Yki.suoritus(id)) { +UiText.Yki.nayta }
             }
         },
     ),
