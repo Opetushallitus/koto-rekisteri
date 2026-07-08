@@ -1,10 +1,13 @@
 package fi.oph.kitu.webmvc
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.TolgeeMessages
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.util.result.getOrThrow
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,6 +45,9 @@ class HomeControllerTest(
                 .build()
     }
 
+    @AfterEach
+    fun clearTolgee() = TolgeeMessages.set(emptyMap())
+
     @Test
     fun `etusivu renderoityy ja sisaltaa nelja sektiokorttia`() {
         val response = getHtml("/")
@@ -66,6 +72,8 @@ class HomeControllerTest(
 
     @Test
     fun `lang-parametri vaihtaa navigaation kielen ja html-lang-attribuutin`() {
+        TolgeeMessages.set(mapOf("nav.yki" to LocalizedString(sv = "Allmän språkexamen")))
+
         val response = getHtml("/?lang=sv")
 
         assertContains(response, """lang="sv"""")

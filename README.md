@@ -155,6 +155,18 @@ Seuraavat salaisuudet pitää luoda manuaalisesti AWS Secret Manageriin.
 - `oppijanumero-password`: Oppijanumeropalvelun salaisuus. Ks. [fi.oph.kitu.oppijanumero-paketti](server/src/main/kotlin/fi/oph/kitu/oppijanumero).
 - `kielitesti-token`: Koealustan salaisuus. Ks. [fi.oph.kitu.kielitesti-paketti](server/src/main/kotlin/fi/oph/kitu/kotoutumiskoulutus).
 
+## Käyttöliittymän käännökset (lokalisointi)
+
+Virkailijakäyttöliittymän tekstit ovat oletuksena suomeksi koodissa
+([UiText.kt](server/src/main/kotlin/fi/oph/kitu/i18n/UiText.kt)). Ruotsin- ja englanninkieliset
+käännökset haetaan Tolgeesta OPH:n lokalisointipalvelun kautta sovelluksen käynnistyessä (ja
+ajoittain uudelleen) polusta `/lokalisointi/tolgee/kielitutkintorekisteri/{fi,sv,en}.json`.
+
+Haku on käytössä ympäristöissä, joissa `kitu.lokalisointi.slug` on asetettu (untuva, qa, tuotanto).
+Paikallisesti ja testeissä slug on tyhjä, jolloin käytetään koodin suomenkielisiä oletuksia eikä
+proxya kutsuta. Erillistä salaisuutta ei tarvita, koska proxy tarjoilee julkaistut
+käännöstiedostot.
+
 ## Hyödyllisiä komentoja
 
 ```shell

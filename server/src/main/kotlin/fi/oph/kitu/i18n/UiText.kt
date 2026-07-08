@@ -1,203 +1,79 @@
 package fi.oph.kitu.i18n
 
 object UiText {
-    val appTitle =
-        LocalizedString(
-            fi = "Kielitutkintorekisteri",
-            sv = "Registret över språkexamina",
-            en = "Language Examination Register",
-        )
+    val appTitle: LocalizedString get() = tr("appTitle", fi = "Kielitutkintorekisteri")
 
     object Nav {
-        val yki =
-            LocalizedString(
-                fi = "Yleinen kielitutkinto",
-                sv = "Allmän språkexamen",
-                en = "National Certificate of Language Proficiency",
-            )
-        val kotoutumiskoulutuksenPaattotesti =
-            LocalizedString(
-                fi = "Kotoutumiskoulutuksen kielitaidon päättötesti",
-                sv = "Sluttest i språkkunskaper inom integrationsutbildningen",
-                en = "Final language proficiency test of integration training",
-            )
-        val vkt =
-            LocalizedString(
-                fi = "Valtionhallinnon kielitutkinto",
-                sv = "Statsförvaltningens språkexamen",
-                en = "Language examination for the state administration",
-            )
-        val yllapito =
-            LocalizedString(
-                fi = "Ylläpito",
-                sv = "Administration",
-                en = "Administration",
-            )
+        val yki: LocalizedString get() = tr("nav.yki", fi = "Yleinen kielitutkinto")
+        val kotoutumiskoulutuksenPaattotesti: LocalizedString
+            get() = tr("nav.kotoutumiskoulutuksenPaattotesti", fi = "Kotoutumiskoulutuksen kielitaidon päättötesti")
+        val vkt: LocalizedString get() = tr("nav.vkt", fi = "Valtionhallinnon kielitutkinto")
+        val yllapito: LocalizedString get() = tr("nav.yllapito", fi = "Ylläpito")
 
-        val suoritukset =
-            LocalizedString(
-                fi = "Suoritukset",
-                sv = "Prestationer",
-                en = "Performances",
-            )
-        val arvioijat =
-            LocalizedString(
-                fi = "Arvioijat",
-                sv = "Bedömare",
-                en = "Assessors",
-            )
-        val tarkistusarvioinnit =
-            LocalizedString(
-                fi = "Tarkistusarvioinnit",
-                sv = "Omprövningar",
-                en = "Re-assessments",
-            )
-        val tehtavapaketit =
-            LocalizedString(
-                fi = "Tehtäväpaketit",
-                sv = "Uppgiftspaket",
-                en = "Task packages",
-            )
-        val kaikkiSuoritukset =
-            LocalizedString(
-                fi = "Kaikki suoritukset",
-                sv = "Alla prestationer",
-                en = "All performances",
-            )
-        val erinomaisenTaidonIlmoittautuneet =
-            LocalizedString(
-                fi = "Erinomaisen taidon ilmoittautuneet",
-                sv = "Anmälda för utmärkta kunskaper",
-                en = "Registrants for excellent proficiency",
-            )
-        val erinomaisenTaidonSuoritukset =
-            LocalizedString(
-                fi = "Erinomaisen taidon suoritukset",
-                sv = "Prestationer för utmärkta kunskaper",
-                en = "Excellent proficiency performances",
-            )
-        val hyvanJaTyydyttavanSuoritukset =
-            LocalizedString(
-                fi = "Hyvän ja tyydyttävän taidon suoritukset",
-                sv = "Prestationer för goda och nöjaktiga kunskaper",
-                en = "Good and satisfactory proficiency performances",
-            )
-        val erajojenHallinta =
-            LocalizedString(
-                fi = "Eräajojen hallinta",
-                sv = "Hantering av batchkörningar",
-                en = "Batch job management",
-            )
+        val suoritukset: LocalizedString get() = tr("nav.suoritukset", fi = "Suoritukset")
+        val arvioijat: LocalizedString get() = tr("nav.arvioijat", fi = "Arvioijat")
+        val tarkistusarvioinnit: LocalizedString get() = tr("nav.tarkistusarvioinnit", fi = "Tarkistusarvioinnit")
+        val tehtavapaketit: LocalizedString get() = tr("nav.tehtavapaketit", fi = "Tehtäväpaketit")
+        val kaikkiSuoritukset: LocalizedString get() = tr("nav.kaikkiSuoritukset", fi = "Kaikki suoritukset")
+        val erinomaisenTaidonIlmoittautuneet: LocalizedString
+            get() = tr("nav.erinomaisenTaidonIlmoittautuneet", fi = "Erinomaisen taidon ilmoittautuneet")
+        val erinomaisenTaidonSuoritukset: LocalizedString
+            get() = tr("nav.erinomaisenTaidonSuoritukset", fi = "Erinomaisen taidon suoritukset")
+        val hyvanJaTyydyttavanSuoritukset: LocalizedString
+            get() = tr("nav.hyvanJaTyydyttavanSuoritukset", fi = "Hyvän ja tyydyttävän taidon suoritukset")
+        val erajojenHallinta: LocalizedString get() = tr("nav.erajojenHallinta", fi = "Eräajojen hallinta")
     }
 
     object Error {
-        val internalServerError =
-            LocalizedString(
-                fi = "Sisäinen palvelinvirhe",
-                sv = "Internt serverfel",
-                en = "Internal server error",
-            )
-        val sivuaEiLoydy =
-            LocalizedString(
-                fi = "Sivua ei löydy",
-                sv = "Sidan hittades inte",
-                en = "Page not found",
-            )
-        val virheellinenPyynto =
-            LocalizedString(
-                fi = "Virheellinen pyyntö",
-                sv = "Felaktig begäran",
-                en = "Bad request",
-            )
-        val virheellinenPyyntoOhje =
-            LocalizedString(
-                fi = "Tarkista että esimerkiksi sivun osoitteen kaikki parametrit on kirjoitettu oikein.",
-                sv = "Kontrollera till exempel att alla parametrar i sidans adress är korrekt skrivna.",
-                en = "Check that, for example, all parameters in the page address are written correctly.",
-            )
-        val eiKayttooikeuksia =
-            LocalizedString(
+        val internalServerError: LocalizedString get() = tr("error.internalServerError", fi = "Sisäinen palvelinvirhe")
+        val sivuaEiLoydy: LocalizedString get() = tr("error.sivuaEiLoydy", fi = "Sivua ei löydy")
+        val virheellinenPyynto: LocalizedString get() = tr("error.virheellinenPyynto", fi = "Virheellinen pyyntö")
+        val virheellinenPyyntoOhje: LocalizedString
+            get() =
+                tr(
+                    "error.virheellinenPyyntoOhje",
+                    fi = "Tarkista että esimerkiksi sivun osoitteen kaikki parametrit on kirjoitettu oikein.",
+                )
+        val eiKayttooikeuksia: LocalizedString get() =
+            tr(
+                "error.eiKayttooikeuksia",
                 fi = "Ei tarvittavia käyttöoikeuksia",
-                sv = "Saknar nödvändiga behörigheter",
-                en = "Insufficient access rights",
             )
-        val katsoVirheet =
-            LocalizedString(
-                fi = "Katso virheet",
-                sv = "Se felen",
-                en = "View errors",
-            )
-        val katsoPoikkeamat =
-            LocalizedString(
-                fi = "Katso poikkeamat",
-                sv = "Se avvikelserna",
-                en = "View discrepancies",
-            )
+        val katsoVirheet: LocalizedString get() = tr("error.katsoVirheet", fi = "Katso virheet")
+        val katsoPoikkeamat: LocalizedString get() = tr("error.katsoPoikkeamat", fi = "Katso poikkeamat")
 
         fun jarjestelmassaVirheita(count: Long) =
-            LocalizedString(
-                fi = "Järjestelmässä on $count virhettä.",
-                sv = "Det finns $count fel i systemet.",
-                en = "There are $count errors in the system.",
-            )
+            tr("error.jarjestelmassaVirheita", fi = "Järjestelmässä on {count} virhettä.").interpolate("count" to count)
 
         fun koskiSiirtoEpaonnistunut(count: Long) =
-            LocalizedString(
-                fi = "$count siirtoa KOSKI-tietovarantoon on epäonnistunut",
-                sv = "$count överföringar till KOSKI-datalagret har misslyckats",
-                en = "$count transfers to the KOSKI data repository have failed",
-            )
+            tr("error.koskiSiirtoEpaonnistunut", fi = "{count} siirtoa KOSKI-tietovarantoon on epäonnistunut")
+                .interpolate("count" to count)
 
         fun poikkeamat(count: Long) =
-            LocalizedString(
-                fi = "Solkin ja Kitu:n välillä on $count poikkeamaa.",
-                sv = "Det finns $count avvikelser mellan Solki och Kitu.",
-                en = "There are $count discrepancies between Solki and Kitu.",
-            )
+            tr("error.poikkeamat", fi = "Solkin ja Kitu:n välillä on {count} poikkeamaa.").interpolate("count" to count)
     }
 
     object Time {
-        val juuriNyt =
-            LocalizedString(
-                fi = "juuri nyt",
-                sv = "just nu",
-                en = "just now",
-            )
-        val eilen =
-            LocalizedString(
-                fi = "eilen",
-                sv = "igår",
-                en = "yesterday",
-            )
+        val juuriNyt: LocalizedString get() = tr("time.juuriNyt", fi = "juuri nyt")
+        val eilen: LocalizedString get() = tr("time.eilen", fi = "eilen")
 
         fun minuuttiaSitten(count: Long) =
-            LocalizedString(
-                fi = "$count min sitten",
-                sv = "$count min sedan",
-                en = "$count min ago",
-            )
+            tr("time.minuuttiaSitten", fi = "{count} min sitten").interpolate("count" to count)
 
-        fun tuntiaSitten(count: Long) =
-            LocalizedString(
-                fi = "$count t sitten",
-                sv = "$count h sedan",
-                en = "$count h ago",
-            )
+        fun tuntiaSitten(count: Long) = tr("time.tuntiaSitten", fi = "{count} t sitten").interpolate("count" to count)
 
-        fun paivaaSitten(count: Long) =
-            LocalizedString(
-                fi = "$count pv sitten",
-                sv = "$count dgr sedan",
-                en = "$count days ago",
-            )
+        fun paivaaSitten(count: Long) = tr("time.paivaaSitten", fi = "{count} pv sitten").interpolate("count" to count)
     }
 
     object Filter {
-        val aikarajausPrefix =
-            LocalizedString(
-                fi = "Aikarajaus: ",
-                sv = "Tidsavgränsning: ",
-                en = "Time range: ",
-            )
+        val aikarajausPrefix: LocalizedString get() = tr("filter.aikarajausPrefix", fi = "Aikarajaus: ")
     }
+}
+
+private fun tr(
+    key: String,
+    fi: String,
+): LocalizedString {
+    val tolgee = TolgeeMessages.get(key)
+    return LocalizedString(fi = fi, sv = tolgee?.sv, en = tolgee?.en)
 }

@@ -8,13 +8,12 @@ import kotlin.test.assertTrue
 
 class UiTextTest {
     @Test
-    fun `kaikilla UiText-merkkijonoilla on kaannos jokaisella kielella`() {
+    fun `kaikilla UiText-merkkijonoilla on suomenkielinen oletusteksti koodissa`() {
+        // Ruotsi ja englanti tulevat Tolgeesta ajonaikaisesti; koodissa on vain kanoninen suomi.
         val strings = collectLocalizedStrings(UiText, "UiText")
         assertTrue(strings.isNotEmpty(), "UiText-katalogista ei löytynyt yhtään LocalizedStringia")
         strings.forEach { (path, ls) ->
-            assertFalse(ls.fi.isNullOrBlank(), "$path: suomenkielinen käännös puuttuu")
-            assertFalse(ls.sv.isNullOrBlank(), "$path: ruotsinkielinen käännös puuttuu")
-            assertFalse(ls.en.isNullOrBlank(), "$path: englanninkielinen käännös puuttuu")
+            assertFalse(ls.fi.isNullOrBlank(), "$path: suomenkielinen oletusteksti puuttuu")
         }
     }
 
