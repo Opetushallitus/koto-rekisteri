@@ -73,6 +73,12 @@ object UiText {
 
     object Filter {
         val aikarajausPrefix: LocalizedString get() = tr("filter.aikarajausPrefix", fi = "Aikarajaus")
+        val rajaaNaytettavat: LocalizedString get() = tr("filter.rajaaNaytettavat", fi = "Rajaa näytettävät tiedot")
+        val tiedonRajaus: LocalizedString get() = tr("filter.tiedonRajaus", fi = "Tiedon rajaus")
+        val rajaa: LocalizedString get() = tr("filter.rajaa", fi = "Rajaa")
+        val kaikki: LocalizedString get() = tr("filter.kaikki", fi = "Kaikki")
+        val kylla: LocalizedString get() = tr("filter.kylla", fi = "Kyllä")
+        val ei: LocalizedString get() = tr("filter.ei", fi = "Ei")
     }
 }
 

@@ -8,7 +8,9 @@ import fi.oph.kitu.html.input
 import fi.oph.kitu.html.modal
 import fi.oph.kitu.html.modalCommandButton
 import fi.oph.kitu.html.submitButton
+import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.koodisto.Koodisto
 import kotlinx.html.*
 import java.time.LocalDate
@@ -20,15 +22,15 @@ fun FlowContent.tableFilterDialog(
 ) {
     val modalId = "table-filter-dialog"
     modalCommandButton(modalId, ModalCommand.OPEN) {
-        +(buttonText ?: "Rajaa näytettävät tiedot")
+        +(buttonText ?: UiText.Filter.rajaaNaytettavat.get(CurrentLanguage.get()))
     }
-    modal(modalId, "Tiedon rajaus") {
+    modal(modalId, UiText.Filter.tiedonRajaus.get(CurrentLanguage.get())) {
         form(action = action, method = FormMethod.get) {
             block()
 
             footer {
                 fieldSet(classes = "grid") {
-                    submitButton("Rajaa")
+                    submitButton(UiText.Filter.rajaa.get(CurrentLanguage.get()))
                 }
             }
         }
@@ -61,7 +63,12 @@ fun FlowContent.trueFalseOrAllFilter(
     id: String,
     labelText: String,
     value: Boolean?,
-    optionLabels: Triple<String, String, String> = Triple("Kaikki", "Kyllä", "Ei"),
+    optionLabels: Triple<String, String, String> =
+        Triple(
+            UiText.Filter.kaikki.get(CurrentLanguage.get()),
+            UiText.Filter.kylla.get(CurrentLanguage.get()),
+            UiText.Filter.ei.get(CurrentLanguage.get()),
+        ),
 ) {
     val options =
         mapOf(
@@ -127,10 +134,10 @@ inline fun <reified E : Enum<E>> FlowContent.enumFilter(
 
 inline fun <reified E : Enum<E>> enumValueName(value: E?): String =
     when (value) {
-        is Koodisto.KoodiviiteNimella -> value.nimi.toString()
-        is Nimetty -> value.nimi.toString()
+        is Koodisto.KoodiviiteNimella -> value.nimi.get(CurrentLanguage.get())
+        is Nimetty -> value.nimi.get(CurrentLanguage.get())
         is DisplayEnum -> value.displayText()
-        null -> "Kaikki"
+        null -> UiText.Filter.kaikki.get(CurrentLanguage.get())
         else -> value.name
     }
 
