@@ -2,8 +2,10 @@ package fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.tehtavapankki.TehtavapakettiEntity
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.a
@@ -34,9 +36,13 @@ object TehtavapankkiPage {
         val parts =
             buildList {
                 paketti.lahdeLanguage?.let { add(languageLabel(it)) }
-                paketti.lahdeVersion?.let { add("versio $it") }
+                paketti.lahdeVersion?.let { add("${UiText.Koto.versioLabel} $it") }
                 paketti.lahdeFilegenerated?.let {
-                    add("generoitu ${it.atZoneSameInstant(ZoneId.systemDefault()).toLocalDate().finnishDate()}")
+                    add(
+                        "${UiText.Koto.generoituLabel} ${it.atZoneSameInstant(
+                            ZoneId.systemDefault(),
+                        ).toLocalDate().finnishDate()}",
+                    )
                 }
             }
         return parts.takeIf { it.isNotEmpty() }?.joinToString(" · ")
@@ -48,10 +54,10 @@ object TehtavapankkiPage {
         latestPakettiByGroup: Map<String, TehtavapakettiEntity?> = emptyMap(),
     ): String =
         Page.renderHtml {
-            h1 { +"Kotoutumiskoulutuksen tehtäväpankki" }
+            h1 { +UiText.Koto.tehtavapankki }
 
             if (tehtavapaketit.isEmpty()) {
-                p { +"Ei tehtäväpaketteja." }
+                p { +UiText.Koto.eiTehtavapaketteja }
             } else {
                 tehtavapaketit.forEach { (group, tps) ->
                     h2 { +group }
@@ -64,9 +70,9 @@ object TehtavapankkiPage {
                         table(classes = "compact striped") {
                             thead {
                                 tr {
-                                    th { +"Siirretty" }
-                                    th { +"Koko" }
-                                    th { +"Sisältö" }
+                                    th { +UiText.Koto.siirretty }
+                                    th { +UiText.Koto.koko }
+                                    th { +UiText.Koto.sisalto }
                                 }
                             }
                             tbody {
@@ -78,12 +84,14 @@ object TehtavapankkiPage {
                                             val pakettiId = pakettiIdsByS3Avain[tp.key]
                                             if (pakettiId != null) {
                                                 // Paketti löytyy DB:stä — linkki näkymään, josta voi myös ladata XML:n.
-                                                a(href = Links.Tehtavapankki.paketti(pakettiId)) { +"Näytä sisältö" }
+                                                a(
+                                                    href = Links.Tehtavapankki.paketti(pakettiId),
+                                                ) { +UiText.Koto.naytaSisalto }
                                             } else {
                                                 // Ei selattavaa versiota — tarjotaan raaka XML.
                                                 a(href = Links.Tehtavapankki.download(tp.key)) {
                                                     attributes["download"] = ""
-                                                    +"Lataa XML"
+                                                    +UiText.Koto.lataaXml
                                                 }
                                             }
                                         }
