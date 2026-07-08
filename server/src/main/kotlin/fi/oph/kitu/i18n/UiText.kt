@@ -41,6 +41,12 @@ object UiText {
             )
         val katsoVirheet: LocalizedString get() = tr("error.katsoVirheet", fi = "Katso virheet")
         val katsoPoikkeamat: LocalizedString get() = tr("error.katsoPoikkeamat", fi = "Katso poikkeamat")
+        val jaljitystunniste: LocalizedString get() = tr("error.jaljitystunniste", fi = "Jäljitystunniste")
+        val oppijaEiLoydyOnr: LocalizedString
+            get() = tr("error.oppijaEiLoydyOnr", fi = "Oppijasta ei löydy tietoja Oppijanumerorekisteristä")
+        val oppijanHakuOnrEpaonnistui: LocalizedString
+            get() =
+                tr("error.oppijanHakuOnrEpaonnistui", fi = "Oppijan tietojen haku Oppijanumerorekisteristä epäonnistui")
 
         fun jarjestelmassaVirheita(count: Long) =
             tr("error.jarjestelmassaVirheita", fi = "Järjestelmässä on {count} virhettä.").interpolate("count" to count)

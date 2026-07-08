@@ -85,7 +85,7 @@ class KoskiService(
                 ?.oid
                 ?: return KoskiException(
                     YkiMappingId(ykiSuoritusEntity.solkiId),
-                    "KOSKI opiskeluoikeus OID missing from response",
+                    "KOSKI-opiskeluoikeuden OID puuttuu vastauksesta",
                 ).left()
 
         val suoritus =
