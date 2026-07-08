@@ -24,4 +24,10 @@ data class LocalizedString(
         other: CharSequence,
         ignoreCase: Boolean = false,
     ): Boolean = listOfNotNull(fi, sv, en).any { it.contains(other, ignoreCase) }
+
+    fun interpolate(vararg args: Pair<String, Any?>): LocalizedString {
+        fun substitute(text: String?): String? =
+            args.fold(text) { acc, (name, value) -> acc?.replace("{$name}", value.toString()) }
+        return LocalizedString(fi = substitute(fi), sv = substitute(sv), en = substitute(en))
+    }
 }
