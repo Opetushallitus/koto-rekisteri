@@ -71,6 +71,16 @@ class HomeControllerTest(
     }
 
     @Test
+    fun `puuttuvat-kaannokset -reitti listaa avaimet oletusteksteineen kun Tolgee on tyhja`() {
+        val json = getHtml("/lokalisointi/puuttuvat-kaannokset")
+
+        assertContains(json, "nav.yki")
+        assertContains(json, "Yleinen kielitutkinto")
+        assertContains(json, "error.jarjestelmassaVirheita")
+        assertContains(json, "{count} virhettä.")
+    }
+
+    @Test
     fun `lang-parametri vaihtaa navigaation kielen ja html-lang-attribuutin`() {
         TolgeeMessages.set(mapOf("nav.yki" to LocalizedString(sv = "Allmän språkexamen")))
 
