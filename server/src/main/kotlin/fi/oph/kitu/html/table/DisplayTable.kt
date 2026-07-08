@@ -40,7 +40,7 @@ data class DisplayTableColumn<T>(
                 .getByTags<C, T>(includeTags, excludeTags)
                 .map {
                     DisplayTableColumn(
-                        label = it.uiHeaderValue.get(CurrentLanguage.get()),
+                        label = it.uiHeaderValue.toString(),
                         sortKey = it.urlParam,
                         testId = it.name,
                         getValue = it.getValue,

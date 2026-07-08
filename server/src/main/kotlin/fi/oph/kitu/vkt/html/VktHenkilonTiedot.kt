@@ -21,12 +21,12 @@ fun FlowContent.vktHenkilonTiedot(
         .onRight { hlo ->
             card(compact = true) {
                 infoTable(
-                    UiText.Vkt.henkilotunnus.get(CurrentLanguage.get()) to { +hlo.hetut().joinToString(", ") },
-                    UiText.Vkt.henkiloOid.get(CurrentLanguage.get()) to { +data.henkilo.oid.toString() },
+                    UiText.Vkt.henkilotunnus.toString() to { +hlo.hetut().joinToString(", ") },
+                    UiText.Vkt.henkiloOid.toString() to { +data.henkilo.oid.toString() },
                     UiText.Vkt.syntymaaika.get(
                         CurrentLanguage.get(),
                     ) to { hlo.syntymaaika?.finnishDate()?.let { +it } },
-                    UiText.Vkt.yksilointi.get(CurrentLanguage.get()) to {
+                    UiText.Vkt.yksilointi.toString() to {
                         if (hlo.yksiloityVTJ == true || hlo.yksiloity == true) {
                             +UiText.Vkt.yksiloity
                         } else if (hlo.yksilointiYritetty == true) {
@@ -41,7 +41,7 @@ fun FlowContent.vktHenkilonTiedot(
             card(compact = true) {
                 infoTable(
                     UiText.Vkt.Sarake.oppijanumero
-                        .get(CurrentLanguage.get()) to { +data.henkilo.oid.toString() },
+                        .toString() to { +data.henkilo.oid.toString() },
                 )
                 cardContent {
                     errorMessage(

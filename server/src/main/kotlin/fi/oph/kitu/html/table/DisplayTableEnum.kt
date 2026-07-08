@@ -17,7 +17,7 @@ interface DisplayTableEnum {
         renderHtml: (FlowContent.(T) -> Unit)? = null,
     ): DisplayTableColumn<T> =
         DisplayTableColumn(
-            label = uiHeaderValue.get(CurrentLanguage.get()),
+            label = uiHeaderValue.toString(),
             sortKey = urlParam,
             getValue = getValue,
             renderHtml = renderHtml,
@@ -26,7 +26,7 @@ interface DisplayTableEnum {
 
     fun <T> withHtml(renderHtml: (FlowContent.(T) -> Unit)): DisplayTableColumn<T> =
         DisplayTableColumn(
-            label = uiHeaderValue.get(CurrentLanguage.get()),
+            label = uiHeaderValue.toString(),
             sortKey = urlParam,
             renderHtml = renderHtml,
             testId = entityName,
@@ -90,7 +90,7 @@ object DisplayTableCsvRenderer {
         val columns = RenderableDisplayTableEnum.getByTags<E, T>(setOf(ColumnTag.CSV_EXPORT), excludeTags)
         require(columns.isNotEmpty()) { "No columns with CSV_EXPORT tag found" }
 
-        val header = columns.joinToString(SEPARATOR) { col -> escape(col.uiHeaderValue.get(CurrentLanguage.get())) }
+        val header = columns.joinToString(SEPARATOR) { col -> escape(col.uiHeaderValue.toString()) }
         output.write("$header\n".toByteArray())
 
         data.forEach { row ->
