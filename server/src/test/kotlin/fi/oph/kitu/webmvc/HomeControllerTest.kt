@@ -53,6 +53,10 @@ class HomeControllerTest(
         val response = getHtml("/")
 
         assertContains(response, "Kielitutkintorekisteri")
+        assertFalse(
+            response.contains("Tolgeesta puuttuu"),
+            "Käännösvaroitusta ei näytetä kun lokalisointi ei ole käytössä (slug tyhjä)",
+        )
         assertContains(response, """data-testid="dashboard"""")
         assertContains(response, """data-testid="yki-links"""")
         assertContains(response, """data-testid="vkt-links"""")
