@@ -374,13 +374,8 @@ class YkiViewController(
     companion object {
         const val YKI_SEARCH_KEY = "YkiSearch"
 
-        private val ONR_UNAVAILABLE_WARNING =
-            ViewMessageData(
-                "Oppijanumerorekisteriin ei juuri nyt saatu yhteyttä, joten haku tehtiin vain annetuilla " +
-                    "oideilla. Henkilön mahdollisiin muihin OID-tunnuksiin (esim. yhdistettyihin duplikaatteihin) " +
-                    "liittyvät suoritukset voivat puuttua tuloksista.",
-                ViewMessageType.WARNING,
-            )
+        private val ONR_UNAVAILABLE_WARNING: ViewMessageData
+            get() = ViewMessageData(UiText.Yki.onrEiYhteytta.toString(), ViewMessageType.WARNING)
     }
 }
 

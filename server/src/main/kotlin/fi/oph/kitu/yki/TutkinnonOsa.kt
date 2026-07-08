@@ -1,16 +1,28 @@
 package fi.oph.kitu.yki
 
+import fi.oph.kitu.i18n.UiText
+
 enum class TutkinnonOsa(
     val bitmask: Int,
-    val viewText: String,
 ) {
-    PU(1, "Puhuminen"),
-    KI(2, "Kirjoittaminen"),
-    TY(4, "Tekstin ymmärtäminen"),
-    PY(8, "Puheen ymmärtäminen"),
-    RS(0, "Rakenteet ja sanasto"),
-    YL(0, "Yleisarvosana"),
+    PU(1),
+    KI(2),
+    TY(4),
+    PY(8),
+    RS(0),
+    YL(0),
     ;
+
+    val viewText: String
+        get() =
+            when (this) {
+                PU -> UiText.Yki.Sarake.puhuminen
+                KI -> UiText.Yki.Sarake.kirjoittaminen
+                TY -> UiText.Yki.Sarake.tekstinYmmartaminen
+                PY -> UiText.Yki.Sarake.puheenYmmartaminen
+                RS -> UiText.Yki.Sarake.rakenteetJaSanasto
+                YL -> UiText.Yki.Sarake.yleisarvosana
+            }.toString()
 
     companion object {
         // Solki-koodit avattuna:
