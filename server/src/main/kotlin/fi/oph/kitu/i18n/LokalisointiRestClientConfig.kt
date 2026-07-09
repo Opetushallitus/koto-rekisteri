@@ -1,6 +1,7 @@
 package fi.oph.kitu.i18n
 
 import fi.oph.kitu.config.ConditionalOnNonEmptyProperty
+import fi.oph.kitu.restclient.withOctetStreamJsonConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -18,5 +19,6 @@ class LokalisointiRestClientConfig(
     fun restClient(): RestClient =
         restClientBuilder
             .baseUrl("https://$opintopolkuHostname")
+            .withOctetStreamJsonConverter()
             .build()
 }

@@ -94,3 +94,15 @@ private fun createObjectMapperWithLargerBuffer(maxStringLen: Int): JsonMapper =
                         .build(),
                 ).build(),
         ).build()
+
+// The OPH lokalisointi proxy serves the published translation JSON with
+// Content-Type: application/octet-stream (nosniff), which the default Jackson
+// converter refuses to read. Claim octet-stream too so the body still parses as JSON.
+fun RestClient.Builder.withOctetStreamJsonConverter(): RestClient.Builder =
+    this.clone().configureMessageConverters { cs ->
+        cs.registerDefaults().withJsonConverter(
+            JacksonJsonHttpMessageConverter().apply {
+                supportedMediaTypes = supportedMediaTypes + MediaType.APPLICATION_OCTET_STREAM
+            },
+        )
+    }

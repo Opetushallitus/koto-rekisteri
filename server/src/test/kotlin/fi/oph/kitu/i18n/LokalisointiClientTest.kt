@@ -1,5 +1,6 @@
 package fi.oph.kitu.i18n
 
+import fi.oph.kitu.restclient.withOctetStreamJsonConverter
 import io.opentelemetry.api.OpenTelemetry
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
@@ -18,18 +19,18 @@ class LokalisointiClientTest {
 
     @Test
     fun `yhdistaa kielikohtaiset kaannokset LocalizedStringeiksi`() {
-        val builder = RestClient.builder().baseUrl(baseUrl)
+        val builder = RestClient.builder().baseUrl(baseUrl).withOctetStreamJsonConverter()
         val server = MockRestServiceServer.bindTo(builder).build()
 
         server
             .expect(requestTo("$baseUrl/lokalisointi/tolgee/kielitutkintorekisteri/fi.json"))
-            .andRespond(withSuccess("""{"nav.yki":"Yleinen kielitutkinto"}""", MediaType.APPLICATION_JSON))
+            .andRespond(withSuccess("""{"nav.yki":"Yleinen kielitutkinto"}""", MediaType.APPLICATION_OCTET_STREAM))
         server
             .expect(requestTo("$baseUrl/lokalisointi/tolgee/kielitutkintorekisteri/sv.json"))
-            .andRespond(withSuccess("""{"nav.yki":"Allmän språkexamen"}""", MediaType.APPLICATION_JSON))
+            .andRespond(withSuccess("""{"nav.yki":"Allmän språkexamen"}""", MediaType.APPLICATION_OCTET_STREAM))
         server
             .expect(requestTo("$baseUrl/lokalisointi/tolgee/kielitutkintorekisteri/en.json"))
-            .andRespond(withSuccess("""{"nav.arvioijat":"Assessors"}""", MediaType.APPLICATION_JSON))
+            .andRespond(withSuccess("""{"nav.arvioijat":"Assessors"}""", MediaType.APPLICATION_OCTET_STREAM))
 
         val client = LokalisointiClient(builder.build(), tracer, "kielitutkintorekisteri")
 
@@ -45,12 +46,12 @@ class LokalisointiClientTest {
 
     @Test
     fun `julkaisematon kieli (404) ei esta muiden kielten latausta`() {
-        val builder = RestClient.builder().baseUrl(baseUrl)
+        val builder = RestClient.builder().baseUrl(baseUrl).withOctetStreamJsonConverter()
         val server = MockRestServiceServer.bindTo(builder).build()
 
         server
             .expect(requestTo("$baseUrl/lokalisointi/tolgee/kielitutkintorekisteri/fi.json"))
-            .andRespond(withSuccess("""{"nav.yki":"Yleinen kielitutkinto"}""", MediaType.APPLICATION_JSON))
+            .andRespond(withSuccess("""{"nav.yki":"Yleinen kielitutkinto"}""", MediaType.APPLICATION_OCTET_STREAM))
         server
             .expect(requestTo("$baseUrl/lokalisointi/tolgee/kielitutkintorekisteri/sv.json"))
             .andRespond(withStatus(HttpStatus.NOT_FOUND))
