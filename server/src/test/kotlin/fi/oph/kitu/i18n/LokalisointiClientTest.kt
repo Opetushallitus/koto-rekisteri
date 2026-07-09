@@ -2,9 +2,11 @@ package fi.oph.kitu.i18n
 
 import io.opentelemetry.api.OpenTelemetry
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
+import org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 import org.springframework.web.client.RestClient
 import kotlin.test.assertEquals
@@ -38,6 +40,30 @@ class LokalisointiClientTest {
         assertNull(result["nav.yki"]?.en)
         assertEquals("Assessors", result["nav.arvioijat"]?.en)
         assertNull(result["nav.arvioijat"]?.fi)
+        server.verify()
+    }
+
+    @Test
+    fun `julkaisematon kieli (404) ei esta muiden kielten latausta`() {
+        val builder = RestClient.builder().baseUrl(baseUrl)
+        val server = MockRestServiceServer.bindTo(builder).build()
+
+        server
+            .expect(requestTo("$baseUrl/lokalisointi/tolgee/kielitutkintorekisteri/fi.json"))
+            .andRespond(withSuccess("""{"nav.yki":"Yleinen kielitutkinto"}""", MediaType.APPLICATION_JSON))
+        server
+            .expect(requestTo("$baseUrl/lokalisointi/tolgee/kielitutkintorekisteri/sv.json"))
+            .andRespond(withStatus(HttpStatus.NOT_FOUND))
+        server
+            .expect(requestTo("$baseUrl/lokalisointi/tolgee/kielitutkintorekisteri/en.json"))
+            .andRespond(withStatus(HttpStatus.NOT_FOUND))
+
+        val client = LokalisointiClient(builder.build(), tracer, "kielitutkintorekisteri")
+
+        val result = client.fetchAll()
+
+        assertEquals(mapOf("nav.yki" to "Yleinen kielitutkinto"), result.mapValues { it.value.fi })
+        assertNull(result["nav.yki"]?.sv)
         server.verify()
     }
 }
