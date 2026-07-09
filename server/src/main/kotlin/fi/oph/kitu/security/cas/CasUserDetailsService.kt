@@ -2,6 +2,7 @@ package fi.oph.kitu.security.cas
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.result.getOrThrow
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
@@ -18,7 +19,9 @@ import org.springframework.web.method.support.ModelAndViewContainer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Component
-class CasUserDetailsService : AuthenticationUserDetailsService<CasAssertionAuthenticationToken> {
+class CasUserDetailsService(
+    private val oppijanumeroService: OppijanumeroService,
+) : AuthenticationUserDetailsService<CasAssertionAuthenticationToken> {
     override fun loadUserDetails(token: CasAssertionAuthenticationToken): UserDetails {
         val attributes = token.assertion.principal.attributes
         val oid = Oid.parse(attributes["oidHenkilo"] as String).getOrThrow()
@@ -28,6 +31,11 @@ class CasUserDetailsService : AuthenticationUserDetailsService<CasAssertionAuthe
             oid,
             attributes["idpEntityId"] == "vetuma",
             attributes["kayttajaTyyppi"] as String?,
+            oppijanumeroService
+                .getHenkiloByHenkiloOid(oid)
+                .getOrNull()
+                ?.asiointiKieli
+                ?.kieliKoodi,
             (attributes["roles"] as List<*>).map { SimpleGrantedAuthority(it as String) },
         )
     }
@@ -38,6 +46,7 @@ data class CasUserDetails(
     val oid: Oid,
     val strongAuth: Boolean,
     val kayttajaTyyppi: String?,
+    val asiointikieli: String? = null,
     private val authorities: List<SimpleGrantedAuthority>,
 ) : UserDetails {
     override fun getAuthorities(): List<GrantedAuthority> = authorities

@@ -50,9 +50,10 @@ class CasConfig {
     fun casAuthenticationProvider(
         serviceProperties: ServiceProperties,
         ticketValidator: TicketValidator,
+        casUserDetailsService: CasUserDetailsService,
     ): AuthenticationProvider =
         CasAuthenticationProvider().apply {
-            setAuthenticationUserDetailsService(CasUserDetailsService())
+            setAuthenticationUserDetailsService(casUserDetailsService)
             setServiceProperties(serviceProperties)
             setTicketValidator(ticketValidator)
             setStatelessTicketCache(CasStatelessTicketCache())
