@@ -634,6 +634,5 @@ private fun tr(
     fi: String,
 ): LocalizedString {
     UiTextRegistry.record(key, fi)
-    val tolgee = TolgeeMessages.get(key)
-    return LocalizedString(fi = fi, sv = tolgee?.sv, en = tolgee?.en)
+    return LocalizedString.withTolgeeKey(key, fi)
 }
