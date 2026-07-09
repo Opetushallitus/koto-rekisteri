@@ -108,6 +108,38 @@ class HomeControllerTest(
     }
 
     @Test
+    fun `kayttajan asiointikieli ohjaa oletuskielen kun kielivalintaa ei ole tehty`() {
+        TolgeeMessages.set(mapOf("nav.yki" to LocalizedString(sv = "Allmän språkexamen")))
+
+        val response =
+            mockMvc
+                .perform(get("/").session(virkailijaSession(asiointikieli = "sv")))
+                .andExpect(status().isOk)
+                .andReturn()
+                .response.contentAsString
+
+        assertContains(response, """lang="sv"""")
+        assertContains(response, "Allmän språkexamen")
+    }
+
+    @Test
+    fun `nimenomainen lang-parametri ohittaa kayttajan asiointikielen`() {
+        TolgeeMessages.set(
+            mapOf("nav.yki" to LocalizedString(sv = "Allmän språkexamen", en = "General Language Examination")),
+        )
+
+        val response =
+            mockMvc
+                .perform(get("/?lang=en").session(virkailijaSession(asiointikieli = "sv")))
+                .andExpect(status().isOk)
+                .andReturn()
+                .response.contentAsString
+
+        assertContains(response, """lang="en"""")
+        assertContains(response, "General Language Examination")
+    }
+
+    @Test
     fun `etusivulla on placeholderit ja loader-skripti mutta ei yki vkt koto statirivien sisaltoa`() {
         val response = getHtml("/")
 
@@ -181,13 +213,14 @@ class HomeControllerTest(
             .andReturn()
             .response.contentAsString
 
-    private fun virkailijaSession(): MockHttpSession {
+    private fun virkailijaSession(asiointikieli: String? = null): MockHttpSession {
         val principal =
             CasUserDetails(
                 name = "test-virkailija",
                 oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
                 strongAuth = false,
                 kayttajaTyyppi = "VIRKAILIJA",
+                asiointikieli = asiointikieli,
                 authorities = listOf(SimpleGrantedAuthority(Authority.VIRKAILIJA.role())),
             )
         val authentication: Authentication =

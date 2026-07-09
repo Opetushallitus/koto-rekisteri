@@ -1,7 +1,9 @@
 package fi.oph.kitu.i18n
 
+import fi.oph.kitu.security.cas.CasUserDetails
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.servlet.LocaleResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -14,9 +16,9 @@ class LocalizationConfig : WebMvcConfigurer {
     @Bean
     fun localeResolver(): LocaleResolver =
         CookieLocaleResolver("kitu_lang").apply {
-            setDefaultLocale(Locale.of("fi"))
             setCookieHttpOnly(true)
             setCookieSameSite("Lax")
+            setDefaultLocaleFunction { authenticatedUserLocale() ?: Locale.of("fi") }
         }
 
     override fun addInterceptors(registry: InterceptorRegistry) {
@@ -28,3 +30,8 @@ class LocalizationConfig : WebMvcConfigurer {
         )
     }
 }
+
+private fun authenticatedUserLocale(): Locale? =
+    (SecurityContextHolder.getContext().authentication?.principal as? CasUserDetails)
+        ?.asiointikieli
+        ?.let { Locale.of(it.lowercase()) }
