@@ -11,6 +11,7 @@ import kotlinx.html.InputType
 import kotlinx.html.Tag
 import kotlinx.html.article
 import kotlinx.html.script
+import kotlinx.html.strong
 import kotlinx.html.unsafe
 import kotlinx.html.input as inputBase
 
@@ -112,3 +113,10 @@ fun classes(vararg conditionAndName: Pair<Boolean?, String>) =
     conditionAndName
         .filter { it.first == true }
         .joinToString(" ") { it.second }
+
+fun FlowContent.labelColon(label: LocalizedString) {
+    strong {
+        +label
+        +": "
+    }
+}

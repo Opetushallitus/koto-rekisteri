@@ -138,7 +138,7 @@ fun FlowContent.kielitestiSuoritusFilterButton(params: KielitestiSuorituksetPara
         fieldSet {
             toggleFilter(
                 "piilotaHenkilotiedot",
-                UiText.Koto.piilotaHenkilotiedot.toString(),
+                UiText.Filter.piilotaHenkilotiedot.toString(),
                 params.piilotaHenkilotiedot,
             )
         }

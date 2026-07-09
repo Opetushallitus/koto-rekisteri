@@ -117,10 +117,20 @@ fun FlowContent.vktSuoritusFilterButton(filter: VktSuoritusFilter) {
             dateFilter("loppupaiva", UiText.Vkt.paattyen.toString(), filter.loppupaiva)
         }
         fieldSet {
-            enumFilter("tutkintokieli", UiText.Vkt.tutkintokieli.toString(), filter.tutkintokieli)
+            enumFilter(
+                "tutkintokieli",
+                UiText.Vkt.Sarake.tutkintokieli
+                    .toString(),
+                filter.tutkintokieli,
+            )
         }
         fieldSet {
-            enumFilter("taitotaso", UiText.Vkt.taitotaso.toString(), filter.taitotaso)
+            enumFilter(
+                "taitotaso",
+                UiText.Vkt.Sarake.taitotaso
+                    .toString(),
+                filter.taitotaso,
+            )
         }
         fieldSet {
             enumFilter(
@@ -144,7 +154,7 @@ fun FlowContent.vktSuoritusFilterButton(filter: VktSuoritusFilter) {
         fieldSet {
             toggleFilter(
                 "piilotaHenkilotiedot",
-                UiText.Vkt.piilotaHenkilotiedot.toString(),
+                UiText.Filter.piilotaHenkilotiedot.toString(),
                 filter.piilotaHenkilotiedot,
             )
         }

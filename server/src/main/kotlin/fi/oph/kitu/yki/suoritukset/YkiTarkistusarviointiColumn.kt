@@ -1,4 +1,5 @@
 package fi.oph.kitu.yki.suoritukset
+import fi.oph.kitu.html.labelColon
 import fi.oph.kitu.html.table.DisplayTableEnum
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.UiText
@@ -49,36 +50,24 @@ enum class YkiTarkistusarviointiColumn(
         renderHtml = {
             ul(classes = "flat") {
                 li {
-                    strong {
-                        +UiText.Yki.Sarake.tutkintopaiva
-                        +": "
-                    }
+                    labelColon(UiText.Yki.Sarake.tutkintopaiva)
                     +it.tutkintopaiva.finnishDate()
                 }
                 it.tarkistusarvioinninSaapumisPvm?.let { pvm ->
                     li {
-                        strong {
-                            +UiText.Yki.saapunut
-                            +": "
-                        }
+                        labelColon(UiText.Yki.saapunut)
                         +pvm.finnishDate()
                     }
                 }
                 it.tarkistusarvioinninKasittelyPvm?.let { pvm ->
                     li {
-                        strong {
-                            +UiText.Yki.kasitelty
-                            +": "
-                        }
+                        labelColon(UiText.Yki.kasitelty)
                         +pvm.finnishDate()
                     }
                 }
                 it.tarkistusarviointiHyvaksyttyPvm?.let { pvm ->
                     li {
-                        strong {
-                            +UiText.Yki.hyvaksytty
-                            +": "
-                        }
+                        labelColon(UiText.Yki.hyvaksytty)
                         +pvm.finnishDate()
                     }
                 }

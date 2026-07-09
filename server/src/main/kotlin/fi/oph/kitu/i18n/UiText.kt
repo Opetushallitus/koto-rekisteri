@@ -85,20 +85,15 @@ object UiText {
         val eiYksiloity: LocalizedString get() = tr("vkt.eiYksiloity", fi = "Ei yksilöity")
         val suodata: LocalizedString get() = tr("vkt.suodata", fi = "Suodata")
 
-        val tutkintokieli: LocalizedString get() = tr("vkt.tutkintokieli", fi = "Tutkintokieli")
-        val taitotaso: LocalizedString get() = tr("vkt.taitotaso", fi = "Taitotaso")
         val arvioinninTila: LocalizedString get() = tr("vkt.arvioinninTila", fi = "Arvioinnin tila")
         val vainPoistettavat: LocalizedString get() = tr("vkt.vainPoistettavat", fi = "Vain poistettavat suoritukset")
         val vainEiPoistettavat: LocalizedString
             get() =
                 tr("vkt.vainEiPoistettavat", fi = "Vain suoritukset, joita ei ole merkitty poistettavaksi")
-        val henkilotiedotPiilotettu: LocalizedString
-            get() = tr("vkt.henkilotiedotPiilotettu", fi = "Henkilötiedot piilotettu")
         val arvioituOsittain: LocalizedString
             get() = tr("vkt.arvioituOsittain", fi = "Arvioitu osittain tai kokonaan")
         val arviointejaPuuttuu: LocalizedString get() = tr("vkt.arviointejaPuuttuu", fi = "Arviointeja puuttuu")
 
-        val nayta: LocalizedString get() = tr("vkt.nayta", fi = "Näytä")
         val alkaen: LocalizedString get() = tr("vkt.alkaen", fi = "Alkaen")
         val paattyen: LocalizedString get() = tr("vkt.paattyen", fi = "Päättyen")
         val erinomaisenArvioinninTila: LocalizedString
@@ -110,7 +105,6 @@ object UiText {
             get() = tr("vkt.naytaVainPoistettavat", fi = "Näytä vain poistettavat suoritukset")
         val piilotaPoistettavat: LocalizedString
             get() = tr("vkt.piilotaPoistettavat", fi = "Piilota poistettavat suoritukset")
-        val piilotaHenkilotiedot: LocalizedString get() = tr("vkt.piilotaHenkilotiedot", fi = "Piilota henkilötiedot")
         val oppijanumeroTaiNimi: LocalizedString get() = tr("vkt.oppijanumeroTaiNimi", fi = "Oppijanumero tai nimi")
         val tutkinnonTaso: LocalizedString get() = tr("vkt.tutkinnonTaso", fi = "Tutkinnon taso")
         val kieli: LocalizedString get() = tr("vkt.kieli", fi = "Kieli")
@@ -129,8 +123,6 @@ object UiText {
         val hylatty: LocalizedString get() = tr("vkt.hylatty", fi = "Hylätty")
         val eiSuoritusta: LocalizedString get() = tr("vkt.eiSuoritusta", fi = "Ei suoritusta")
         val osakoe: LocalizedString get() = tr("vkt.osakoe", fi = "Osakoe")
-        val palauta: LocalizedString get() = tr("vkt.palauta", fi = "Palauta")
-        val piilota: LocalizedString get() = tr("vkt.piilota", fi = "Piilota")
         val muutoksetTallennettu: LocalizedString
             get() = tr("vkt.muutoksetTallennettu", fi = "Muutokset tallennettu onnistuneesti.")
         val naytaVirheet: LocalizedString get() = tr("vkt.naytaVirheet", fi = "Näytä virheet")
@@ -239,15 +231,9 @@ object UiText {
         val tutkintopaivaPaattyen: LocalizedString
             get() = tr("yki.tutkintopaivaPaattyen", fi = "Tutkintopäivä päättyen")
         val naytaVersiohistoria: LocalizedString get() = tr("yki.naytaVersiohistoria", fi = "Näytä versiohistoria")
-        val piilotaHenkilotiedot: LocalizedString get() = tr("yki.piilotaHenkilotiedot", fi = "Piilota henkilötiedot")
 
-        val nayta: LocalizedString get() = tr("yki.nayta", fi = "Näytä")
-        val palauta: LocalizedString get() = tr("yki.palauta", fi = "Palauta")
-        val piilota: LocalizedString get() = tr("yki.piilota", fi = "Piilota")
         val hakusana: LocalizedString
             get() = tr("yki.hakusana", fi = "Oppijanumero, henkilötunnus, Solki-ID tai hakusana")
-        val henkilotiedotPiilotettu: LocalizedString
-            get() = tr("yki.henkilotiedotPiilotettu", fi = "Henkilötiedot piilotettu")
         val vanhentuneetPiilotettu: LocalizedString
             get() = tr("yki.vanhentuneetPiilotettu", fi = "Vanhentuneet tietokentät piilotettu")
         val piilotaVanhentuneet: LocalizedString
@@ -405,7 +391,6 @@ object UiText {
         val lataaCsv: LocalizedString get() = tr("koto.lataaCsv", fi = "Lataa tiedot CSV:nä")
         val suorituksiaYhteensa: LocalizedString get() = tr("koto.suorituksiaYhteensa", fi = "Suorituksia yhteensä")
         val virheitaYhteensa: LocalizedString get() = tr("koto.virheitaYhteensa", fi = "Virheitä yhteensä")
-        val nayta: LocalizedString get() = tr("koto.nayta", fi = "Näytä")
         val kesken: LocalizedString get() = tr("koto.kesken", fi = "Kesken")
         val kurssi: LocalizedString get() = tr("koto.kurssi", fi = "Kurssi")
         val jarjestaja: LocalizedString get() = tr("koto.jarjestaja", fi = "Järjestäjä")
@@ -413,11 +398,8 @@ object UiText {
         val viimeksiMuokattu: LocalizedString get() = tr("koto.viimeksiMuokattu", fi = "Viimeksi muokattu")
         val suoritusaikaAlkaen: LocalizedString get() = tr("koto.suoritusaikaAlkaen", fi = "Suoritusaika alkaen")
         val suoritusaikaPaattyen: LocalizedString get() = tr("koto.suoritusaikaPaattyen", fi = "Suoritusaika päättyen")
-        val piilotaHenkilotiedot: LocalizedString get() = tr("koto.piilotaHenkilotiedot", fi = "Piilota henkilötiedot")
         val hakusana: LocalizedString
             get() = tr("koto.hakusana", fi = "Oppijanumero, nimi, oppilaitoksen nimi tai muu hakusana")
-        val henkilotiedotPiilotettu: LocalizedString
-            get() = tr("koto.henkilotiedotPiilotettu", fi = "Henkilötiedot piilotettu")
 
         val tehtavapankki: LocalizedString get() = tr("koto.tehtavapankki", fi = "Kotoutumiskoulutuksen tehtäväpankki")
         val eiTehtavapaketteja: LocalizedString get() = tr("koto.eiTehtavapaketteja", fi = "Ei tehtäväpaketteja.")
@@ -626,6 +608,19 @@ object UiText {
         val kaikki: LocalizedString get() = tr("filter.kaikki", fi = "Kaikki")
         val kylla: LocalizedString get() = tr("filter.kylla", fi = "Kyllä")
         val ei: LocalizedString get() = tr("filter.ei", fi = "Ei")
+        val piilotaHenkilotiedot: LocalizedString get() =
+            tr(
+                "filter.piilotaHenkilotiedot",
+                fi = "Piilota henkilötiedot",
+            )
+        val henkilotiedotPiilotettu: LocalizedString
+            get() = tr("filter.henkilotiedotPiilotettu", fi = "Henkilötiedot piilotettu")
+    }
+
+    object Toiminto {
+        val nayta: LocalizedString get() = tr("toiminto.nayta", fi = "Näytä")
+        val palauta: LocalizedString get() = tr("toiminto.palauta", fi = "Palauta")
+        val piilota: LocalizedString get() = tr("toiminto.piilota", fi = "Piilota")
     }
 }
 

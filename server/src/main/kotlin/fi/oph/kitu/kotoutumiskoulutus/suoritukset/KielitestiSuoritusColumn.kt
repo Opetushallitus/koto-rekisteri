@@ -24,7 +24,7 @@ enum class KielitestiSuoritusColumn(
         getValue = { it.id?.toString().orEmpty() },
         renderHtml = {
             it.id?.let { id ->
-                a(href = Links.Kielitesti.suoritus(id)) { +UiText.Koto.nayta }
+                a(href = Links.Kielitesti.suoritus(id)) { +UiText.Toiminto.nayta }
             }
         },
     ),

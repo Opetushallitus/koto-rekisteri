@@ -412,8 +412,8 @@ internal fun moodleTehtavatyyppiNimi(tyyppi: String): String =
 
         "drawing" -> UiText.Koto.Tehtavatyyppi.piirto
 
-        else -> LocalizedString(fi = tyyppi)
-    }.toString()
+        else -> null
+    }?.toString() ?: tyyppi
 
 // Koealustan kielikoodit ovat tyypillisesti ISO 639-2 kolmikirjaimisia
 // (FIN/SWE/ENG). Esitetään virkailijalle suomeksi; tuntematon koodi
@@ -429,8 +429,8 @@ internal fun languageLabel(code: String): String =
         "fas" -> UiText.Koto.Kieli.fas
         "som" -> UiText.Koto.Kieli.som
         "ukr" -> UiText.Koto.Kieli.ukr
-        else -> LocalizedString(fi = code)
-    }.toString()
+        else -> null
+    }?.toString() ?: code
 
 private fun FlowContent.tehtavaMetadata(data: JsonNode) {
     if (!data.isEmpty) {
