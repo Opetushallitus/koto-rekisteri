@@ -1,5 +1,6 @@
 package fi.oph.kitu.i18n
 
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -11,6 +12,6 @@ fun missingUiTranslations(): Map<String, String> = UiTextRegistry.all().filterKe
 
 @RestController
 class LokalisointiController {
-    @GetMapping("/lokalisointi/puuttuvat-kaannokset")
+    @GetMapping("/lokalisointi/puuttuvat-kaannokset", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun puuttuvatKaannokset(): Map<String, String> = missingUiTranslations()
 }

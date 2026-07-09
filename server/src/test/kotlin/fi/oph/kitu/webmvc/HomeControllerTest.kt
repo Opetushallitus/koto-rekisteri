@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -22,6 +23,7 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -82,6 +84,17 @@ class HomeControllerTest(
         assertContains(json, "Yleinen kielitutkinto")
         assertContains(json, "error.jarjestelmassaVirheita")
         assertContains(json, "{count} virhettä.")
+    }
+
+    @Test
+    fun `puuttuvat-kaannokset -reitti palauttaa JSONia vaikka selain suosisi XMLaa`() {
+        mockMvc
+            .perform(
+                get("/lokalisointi/puuttuvat-kaannokset")
+                    .session(virkailijaSession())
+                    .accept(MediaType.APPLICATION_XML, MediaType.ALL),
+            ).andExpect(status().isOk)
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
     }
 
     @Test

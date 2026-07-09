@@ -23,8 +23,13 @@ class UiTextWarmup : ApplicationRunner {
         }
         obj::class
             .memberFunctions
-            .filter { it.parameters.size == 2 && it.parameters[1].type.classifier == Long::class }
-            .forEach { function -> runCatching { function.call(obj, 0L) } }
+            .filter { function ->
+                function.parameters.size > 1 &&
+                    function.parameters.drop(1).all { it.type.classifier == Long::class }
+            }.forEach { function ->
+                val longArgs = Array<Any?>(function.parameters.size - 1) { 0L }
+                runCatching { function.call(obj, *longArgs) }
+            }
         obj::class
             .nestedClasses
             .mapNotNull { it.objectInstance }
