@@ -15,4 +15,23 @@ object CurrentLanguage {
             "en" -> Language.EN
             else -> Language.FI
         }
+
+    inline fun <T> withLanguage(
+        language: Language,
+        block: () -> T,
+    ): T {
+        val locale =
+            when (language) {
+                Language.FI -> Locale.of("fi")
+                Language.SV -> Locale.of("sv")
+                Language.EN -> Locale.of("en")
+            }
+        val previous = LocaleContextHolder.getLocaleContext()
+        LocaleContextHolder.setLocale(locale)
+        return try {
+            block()
+        } finally {
+            LocaleContextHolder.setLocaleContext(previous)
+        }
+    }
 }
