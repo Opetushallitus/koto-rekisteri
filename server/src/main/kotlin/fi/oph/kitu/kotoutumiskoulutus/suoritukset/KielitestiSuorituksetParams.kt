@@ -67,6 +67,6 @@ data class KielitestiSuorituksetParams(
         listOfNotNull(
             aikarajausDescription(suoritusalku, suoritusloppu),
             testikieli?.let { "${UiText.Koto.Sarake.testikieli}: $it" },
-            if (piilotaHenkilotiedot) UiText.Koto.henkilotiedotPiilotettu.toString() else null,
+            if (piilotaHenkilotiedot) UiText.Filter.henkilotiedotPiilotettu.toString() else null,
         )
 }

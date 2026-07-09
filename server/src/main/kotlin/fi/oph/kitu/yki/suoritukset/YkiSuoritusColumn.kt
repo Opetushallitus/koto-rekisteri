@@ -33,7 +33,7 @@ enum class YkiSuoritusColumn(
         getValue = { it.id?.toString().orEmpty() },
         renderHtml = {
             it.id?.let { id ->
-                a(href = Links.Yki.suoritus(id)) { +UiText.Yki.nayta }
+                a(href = Links.Yki.suoritus(id)) { +UiText.Toiminto.nayta }
             }
         },
     ),

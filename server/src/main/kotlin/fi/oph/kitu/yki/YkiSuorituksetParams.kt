@@ -83,7 +83,7 @@ data class YkiSuorituksetParams(
             aikarajausDescription(tutkintoalku, tutkintoloppu),
             tutkintokieli?.let { "${UiText.Yki.Sarake.tutkintokieli}: $it" },
             tutkintotaso?.let { "${UiText.Yki.Sarake.tutkintotaso}: $it" },
-            if (piilotaHenkilotiedot) UiText.Yki.henkilotiedotPiilotettu.toString() else null,
+            if (piilotaHenkilotiedot) UiText.Filter.henkilotiedotPiilotettu.toString() else null,
             if (piilotaVanhentuneetTiedot) UiText.Yki.vanhentuneetPiilotettu.toString() else null,
             if (versionHistory) UiText.Yki.naytaVersiohistoria.toString() else null,
         )

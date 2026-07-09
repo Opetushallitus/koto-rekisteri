@@ -33,7 +33,7 @@ enum class VktSuoritusColumn(
                     taso = Koodisto.VktTaitotaso.valueOf(it.taitotaso),
                 )
 
-            a(href = url) { +UiText.Vkt.nayta }
+            a(href = url) { +UiText.Toiminto.nayta }
         },
     ),
 

@@ -41,13 +41,13 @@ data class VktSuoritusFilter(
     fun filterDescriptions(): List<String> =
         listOfNotNull(
             aikarajausDescription(alkupaiva, loppupaiva),
-            tutkintokieli?.let { "${UiText.Vkt.tutkintokieli}: ${it.nimi}" },
-            taitotaso?.let { "${UiText.Vkt.taitotaso}: ${it.nimi}" },
+            tutkintokieli?.let { "${UiText.Vkt.Sarake.tutkintokieli}: ${it.nimi}" },
+            taitotaso?.let { "${UiText.Vkt.Sarake.taitotaso}: ${it.nimi}" },
             arvioitu?.let { "${UiText.Vkt.arvioinninTila}: ${it.nimi}" },
             merkittyPoistettavaksi?.let {
                 if (it) UiText.Vkt.vainPoistettavat.toString() else UiText.Vkt.vainEiPoistettavat.toString()
             },
-            if (piilotaHenkilotiedot) UiText.Vkt.henkilotiedotPiilotettu.toString() else null,
+            if (piilotaHenkilotiedot) UiText.Filter.henkilotiedotPiilotettu.toString() else null,
         )
 
     fun csvFileName() =

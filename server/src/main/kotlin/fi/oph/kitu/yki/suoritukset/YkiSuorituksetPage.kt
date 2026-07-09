@@ -175,7 +175,7 @@ fun FlowContent.ykiSuoritusFilterButton(params: YkiSuorituksetParams) {
         fieldSet {
             toggleFilter(
                 "piilotaHenkilotiedot",
-                UiText.Yki.piilotaHenkilotiedot.toString(),
+                UiText.Filter.piilotaHenkilotiedot.toString(),
                 params.piilotaHenkilotiedot,
             )
         }
