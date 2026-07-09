@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.toEntity
 
@@ -44,18 +45,23 @@ class LokalisointiClient(
             .use { span ->
                 val locale = language.name.lowercase()
                 span.setAttribute("locale", locale)
-                restClient
-                    .get()
-                    .uri(
-                        "/lokalisointi/tolgee/{namespace}/{locale}.json",
-                        mapOf(
-                            "namespace" to namespace,
-                            "locale" to locale,
-                        ),
-                    ).accept(MediaType.APPLICATION_JSON)
-                    .retrieve()
-                    .toEntity<Map<String, String>>()
-                    .body
-                    ?: emptyMap()
+                try {
+                    restClient
+                        .get()
+                        .uri(
+                            "/lokalisointi/tolgee/{namespace}/{locale}.json",
+                            mapOf(
+                                "namespace" to namespace,
+                                "locale" to locale,
+                            ),
+                        ).accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .toEntity<Map<String, String>>()
+                        .body
+                        ?: emptyMap()
+                } catch (e: HttpClientErrorException.NotFound) {
+                    span.setAttribute("localeNotPublished", "$locale (${e.statusCode.value()})")
+                    emptyMap()
+                }
             }
 }
