@@ -9,6 +9,7 @@ import fi.oph.kitu.dev.MockUser
 import fi.oph.kitu.security.cas.CasConfig
 import fi.oph.kitu.security.oauth2.JwtAuthenticationTokenConverter
 import jakarta.servlet.http.HttpServletRequest
+import org.apereo.cas.client.session.SessionMappingStorage
 import org.apereo.cas.client.session.SingleSignOutFilter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -62,10 +63,12 @@ fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations(environment: Environm
 @EnableWebSecurity
 class WebSecurityConfig {
     @Bean
-    fun singleSignOutFilter(): SingleSignOutFilter =
-        SingleSignOutFilter().apply {
+    fun singleSignOutFilter(sessionMappingStorage: SessionMappingStorage): SingleSignOutFilter {
+        SingleSignOutFilter.setSessionMappingStorage(sessionMappingStorage)
+        return SingleSignOutFilter().apply {
             setIgnoreInitConfiguration(true)
         }
+    }
 
     @Bean
     @Order(1)
