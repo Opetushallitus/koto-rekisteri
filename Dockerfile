@@ -8,7 +8,7 @@ WORKDIR /kitu/server
 
 RUN mvn package -DskipTests
 
-FROM amazoncorretto:25.0.3-al2023
+FROM amazoncorretto:25.0.4-al2023
 
 # amazoncorretto:25.0.3-al2023 on minimaalinen AL2023 -image ilman
 # shadow-utils-pakettia, joten lisätään ei-root-käyttäjä suoraan
