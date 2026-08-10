@@ -45,7 +45,7 @@ class KoealustaServiceTests(
                   "courseid": 32,
                   "coursename": "Integraatio testaus",
                   "lang": "fi",
-                  "schoolOID": "1.2.246.562.10.1234567890",
+                  "schoolOID": "1.2.246.562.10.42923230015",
                   "results": [
                     {
                       "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -86,7 +86,7 @@ class KoealustaServiceTests(
               "courseid": 32,
               "coursename": "Integraatio testaus",
               "lang": "fi",
-              "schoolOID": "1.2.246.562.10.1234567890",
+              "schoolOID": "1.2.246.562.10.42923230015",
               "results": [
                 {
                   "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -165,7 +165,7 @@ class KoealustaServiceTests(
         checkNotNull(ranja)
         assertAll(
             fun () = assertEquals("Integraatio testaus", ranja.kurssi),
-            fun () = assertEquals(Oid.parse("1.2.246.562.10.1234567890").getOrThrow(), ranja.oppilaitosOid),
+            fun () = assertEquals(Oid.parse("1.2.246.562.10.42923230015").getOrThrow(), ranja.oppilaitosOid),
             fun () = assertEquals(Oid.parse("1.2.246.562.24.33342764709").getOrThrow(), ranja.oppijanumero),
             fun () = assertEquals("fi_tehtäväpaketti_suomi", ranja.tehtavapaketti),
             fun () = assertEquals(Testikieli.FIN, ranja.testikieli),
@@ -201,7 +201,7 @@ class KoealustaServiceTests(
                               "courseid": 32,
                               "coursename": "Integraatio testaus",
                               "lang": "fi",
-                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "schoolOID": "1.2.246.562.10.42923230015",
                               "results": [
                                 {
                                   "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -293,7 +293,7 @@ class KoealustaServiceTests(
                               "courseid": 32,
                               "coursename": "Integraatio testaus",
                               "lang": "fi",
-                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "schoolOID": "1.2.246.562.10.42923230015",
                               "results": [
                                 {
                                   "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -403,7 +403,7 @@ class KoealustaServiceTests(
                               "courseid": 32,
                               "coursename": "Integraatio testaus",
                               "lang": "fi",
-                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "schoolOID": "1.2.246.562.10.42923230015",
                               "results": [
                                 {
                                   "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -516,7 +516,7 @@ class KoealustaServiceTests(
                               "courseid": 32,
                               "coursename": "Integraatio testaus",
                               "lang": "fi",
-                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "schoolOID": "1.2.246.562.10.42923230015",
                               "results": [
                                 {
                                   "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -561,7 +561,7 @@ class KoealustaServiceTests(
             fun() = assertEquals("Öhman-Testi Ranja Testi", missingPuhuminenError.nimi),
             fun() = assertEquals("010180-9026", missingPuhuminenError.hetu),
             fun() = assertEquals("1.2.246.562.24.33342764709", missingPuhuminenError.suorittajanOid),
-            fun() = assertEquals("1.2.246.562.10.1234567890", missingPuhuminenError.schoolOid.toString()),
+            fun() = assertEquals("1.2.246.562.10.42923230015", missingPuhuminenError.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", missingPuhuminenError.teacherEmail),
             fun() = assertEquals("puhuminen", missingPuhuminenError.virheellinenKentta),
             fun() =
@@ -601,7 +601,7 @@ class KoealustaServiceTests(
                               "courseid": 32,
                               "coursename": "Integraatio testaus",
                               "lang": "fi",
-                              "schoolOID": "1.2.246.562.10.1234567890",
+                              "schoolOID": "1.2.246.562.10.42923230015",
                               "results": [
                                 {
                                   "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -646,7 +646,7 @@ class KoealustaServiceTests(
         val oppijaValidationFailure = errors.first()
 
         assertAll(
-            fun() = assertEquals("1.2.246.562.10.1234567890", oppijaValidationFailure.schoolOid.toString()),
+            fun() = assertEquals("1.2.246.562.10.42923230015", oppijaValidationFailure.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", oppijaValidationFailure.teacherEmail),
             fun() = assertEquals("Puuttuva kenttä \"SSN\" käyttäjälle \"1\"", oppijaValidationFailure.viesti),
             fun() = assertEquals("SSN", oppijaValidationFailure.virheellinenKentta),
@@ -711,7 +711,7 @@ class KoealustaServiceTests(
                     onrBadRequestFailure.onrLisatietoja,
                 ),
             fun() = assertEquals("Testi-Moikka Antero", onrBadRequestFailure.nimi),
-            fun() = assertEquals("1.2.246.562.10.1234567890", onrBadRequestFailure.schoolOid.toString()),
+            fun() = assertEquals("1.2.246.562.10.42923230015", onrBadRequestFailure.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", onrBadRequestFailure.teacherEmail),
         )
     }
@@ -841,7 +841,7 @@ class KoealustaServiceTests(
                       "courseid": 32,
                       "coursename": "Integraatio testaus",
                       "lang": "fi",
-                      "schoolOID": "1.2.246.562.10.1234567890",
+                      "schoolOID": "1.2.246.562.10.42923230015",
                       "results": [
                         {
                           "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -931,7 +931,7 @@ class KoealustaServiceTests(
                       "courseid": 123,
                       "coursename": "Integraatio testaus",
                       "lang": "fi",
-                      "schoolOID": "1.2.246.562.10.1234567890",
+                      "schoolOID": "1.2.246.562.10.42923230015",
                       "results": [
                         {
                           "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -1068,7 +1068,7 @@ class KoealustaServiceTests(
                       "courseid": 32,
                       "coursename": "Integraatio testaus",
                       "lang": "fi",
-                      "schoolOID": "1.2.246.562.10.1234567890",
+                      "schoolOID": "1.2.246.562.10.42923230015",
                       "results": [
                         {
                           "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -1165,7 +1165,7 @@ class KoealustaServiceTests(
                       "courseid": 32,
                       "coursename": "Integraatio testaus",
                       "lang": "asdasd",
-                      "schoolOID": "1.2.246.562.10.1234567890",
+                      "schoolOID": "1.2.246.562.10.42923230015",
                       "results": [
                         {
                           "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -1225,7 +1225,7 @@ class KoealustaServiceTests(
             fun() = assertEquals("Öhman-Testi Ranja Testi", error.nimi),
             fun() = assertEquals("010180-9026", error.hetu),
             fun() = assertEquals("1.2.246.562.24.33342764709", error.suorittajanOid),
-            fun() = assertEquals("1.2.246.562.10.1234567890", error.schoolOid.toString()),
+            fun() = assertEquals("1.2.246.562.10.42923230015", error.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", error.teacherEmail),
             fun() = assertEquals("lang", error.virheellinenKentta),
             fun() =
@@ -1256,7 +1256,7 @@ class KoealustaServiceTests(
                     {
                       "courseid": 32,
                       "coursename": "Integraatio testaus",
-                      "schoolOID": "1.2.246.562.10.1234567890",
+                      "schoolOID": "1.2.246.562.10.42923230015",
                       "results": [
                         {
                           "name": "luetun ymm\u00e4rt\u00e4minen",
@@ -1316,7 +1316,7 @@ class KoealustaServiceTests(
             fun() = assertEquals("Öhman-Testi Ranja Testi", error.nimi),
             fun() = assertEquals("010180-9026", error.hetu),
             fun() = assertEquals("1.2.246.562.24.33342764709", error.suorittajanOid),
-            fun() = assertEquals("1.2.246.562.10.1234567890", error.schoolOid.toString()),
+            fun() = assertEquals("1.2.246.562.10.42923230015", error.schoolOid.toString()),
             fun() = assertEquals("opettaja@testi.oph.fi", error.teacherEmail),
             fun() = assertEquals("lang", error.virheellinenKentta),
             fun() =
@@ -1343,7 +1343,7 @@ class KoealustaServiceTests(
             {
               "courseid": $courseid,
               "coursename": "$coursename",
-              "schoolOID": "1.2.246.562.10.1234567890",
+              "schoolOID": "1.2.246.562.10.42923230015",
               "teacheremail": "opettaja@testi.oph.fi"
             }
           ]
@@ -1403,7 +1403,7 @@ class KoealustaServiceTests(
             fun() = assertEquals("Kotoutumiskoulutus kesken", keskenerainen.kurssi),
             fun() = assertEquals("Kesken Testi", keskenerainen.etunimet),
             fun() = assertEquals("Kesken", keskenerainen.kutsumanimi),
-            fun() = assertEquals(Oid.parse("1.2.246.562.10.1234567890").getOrThrow(), keskenerainen.oppilaitosOid),
+            fun() = assertEquals(Oid.parse("1.2.246.562.10.42923230015").getOrThrow(), keskenerainen.oppilaitosOid),
         )
     }
 
@@ -1524,14 +1524,14 @@ class KoealustaServiceTests(
               "userid": 20,
               "firstnames": "Kesken Testi",
               "lastname": "Öhman-Testi",
-              "preferredname": "Kesken",
+              "preferredname": null,
               "SSN": "010180-9026",
               "email": "kesken.testi@oph.fi",
               "courses": [
                 {
                   "courseid": 60,
                   "coursename": "Kurssi virhe",
-                  "schoolOID": "INVALID_OID",
+                  "schoolOID": "1.2.246.562.10.42923230015",
                   "teacheremail": "opettaja@testi.oph.fi"
                 }
               ]
@@ -1584,9 +1584,131 @@ class KoealustaServiceTests(
         assertAll(
             fun() = assertEquals(2, errors.size, "Valmis and keskeneräinen errors should coexist"),
             fun() = assertEquals(1, errors.count { it.completed }),
-            fun() = assertEquals("schoolOID", keskenerainenError.virheellinenKentta),
-            fun() = assertEquals("INVALID_OID", keskenerainenError.virheellinenArvo),
+            fun() = assertEquals("preferredname", keskenerainenError.virheellinenKentta),
+            fun() = assertEquals(null, keskenerainenError.virheellinenArvo),
             fun() = assertEquals(0, customKielitestiSuoritusRepository.findAll().count()),
+        )
+    }
+
+    @Test
+    fun `import drops valmis suoritukset that reference testiaineisto`(
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        val testiaineistoSuoritus =
+            """
+            {
+                  "userid": 1,
+                  "firstnames": "Ranja Testi",
+                  "lastname": "Öhman-Testi",
+                  "preferredname": "Ranja",
+                  "SSN": "010180-9026",
+                  "email": "ranja.testi@oph.fi",
+                  "completions": [
+                    {
+                      "courseid": 32,
+                      "coursename": "Integraatio testaus",
+                      "lang": "fi",
+                      "schoolOID": "1.2.246.562.10.1234567890",
+                      "results": [
+                        { "name": "luetun ymmärtäminen", "quiz_grade": "A1" },
+                        { "name": "kuullun ymmärtäminen", "quiz_grade": "B1" },
+                        { "name": "puhuminen", "quiz_grade": "A2" },
+                        { "name": "kirjoittaminen", "quiz_grade": "B1" }
+                      ],
+                      "timecompleted": 1728969131,
+                      "teacheremail": "opettaja@testi.oph.fi"
+                    }
+                  ]
+            }
+            """.trimIndent()
+
+        val mockServer = MockRestServiceServer.bindTo(koealustaService.restClientBuilder).build()
+        mockServer
+            .expect(
+                requestTo(
+                    "https://localhost:8080/dev/koto/webservice/rest/server.php?wstoken=token&wsfunction=local_completion_export_get_completions&moodlewsrestformat=json&from=0",
+                ),
+            ).andRespond(
+                withSuccess(
+                    """
+                    {
+                      "users": [$testiaineistoSuoritus]
+                    }
+                    """.trimIndent(),
+                    MediaType.APPLICATION_JSON,
+                ),
+            )
+
+        koealustaService.koealustaToken = "token"
+        koealustaService.koealustaBaseUrl = "https://localhost:8080/dev/koto"
+
+        koealustaService.importValmiitSuoritukset(Instant.EPOCH)
+
+        mockServer.verify()
+
+        assertAll(
+            fun() = assertEquals(0, customKielitestiSuoritusRepository.findAll().count()),
+            fun() = assertEquals(emptyList(), kielitestiSuoritusErrorRepository.findAll()),
+        )
+    }
+
+    @Test
+    fun `keskeneräinen import drops users with no courses or testiaineisto`(
+        @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
+        @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
+        @Autowired koealustaService: KoealustaService,
+    ) {
+        val userWithoutCourses =
+            """
+            {
+              "userid": 30,
+              "firstnames": "Tyhjä Testi",
+              "lastname": "Öhman-Testi",
+              "preferredname": "Tyhjä",
+              "SSN": "010180-9026",
+              "email": "tyhja.testi@oph.fi",
+              "courses": []
+            }
+            """.trimIndent()
+        val testiaineistoUser =
+            """
+            {
+              "userid": 31,
+              "firstnames": "Kesken Testi",
+              "lastname": "Öhman-Testi",
+              "preferredname": "Kesken",
+              "SSN": "010180-9026",
+              "email": "kesken.testi@oph.fi",
+              "courses": [
+                {
+                  "courseid": 70,
+                  "coursename": "Testiaineisto",
+                  "schoolOID": "1.2.246.562.10.1234567890",
+                  "teacheremail": "opettaja@testi.oph.fi"
+                }
+              ]
+            }
+            """.trimIndent()
+
+        val mockServer =
+            expectKeskeneraisetRequest(
+                koealustaService,
+                """
+                {
+                  "users": [$userWithoutCourses, $testiaineistoUser]
+                }
+                """.trimIndent(),
+            )
+
+        koealustaService.importKeskeneraisetSuoritukset()
+
+        mockServer.verify()
+
+        assertAll(
+            fun() = assertEquals(0, customKielitestiSuoritusRepository.findAll().count()),
+            fun() = assertEquals(emptyList(), kielitestiSuoritusErrorRepository.findAll()),
         )
     }
 }
