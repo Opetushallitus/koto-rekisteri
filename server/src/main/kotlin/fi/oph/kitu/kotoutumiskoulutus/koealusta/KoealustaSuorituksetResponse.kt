@@ -1,6 +1,8 @@
 package fi.oph.kitu.kotoutumiskoulutus.koealusta
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.util.result.getOrThrow
 
 interface KoealustaOppija {
     val userid: Int
@@ -13,6 +15,11 @@ interface KoealustaOppija {
     fun schoolOID(): String?
 
     fun teacherEmail(): String?
+
+    fun isTestingData(): Boolean =
+        Oid.parse(schoolOID()).getOrNull().let { oid ->
+            invalidOrgOids.contains(oid)
+        }
 }
 
 interface KoealustaCourse {
@@ -83,5 +90,13 @@ data class KoealustaKeskeneraisetResponse(
             override val schoolOID: String?,
             override val teacheremail: String?,
         ) : KoealustaCourse
+
+        fun isEmpty(): Boolean = courses.isEmpty()
     }
 }
+
+val invalidOrgOids =
+    listOf(
+        null,
+        Oid.parse("1.2.246.562.10.1234567890").getOrThrow(),
+    )
