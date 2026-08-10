@@ -31,10 +31,11 @@ class KoealustaMappingService(
 
         val keskeneraiset =
             suorituksetResponse.users.flatMap { user ->
+                if (user.isEmpty() || user.isTestingData()) return@flatMap emptyList()
+
                 validator
                     .toOppija(user)
                     .onLeft(validationErrors::add)
-                    .getOrNull()
 
                 user.courses.mapNotNull { course ->
                     validator
@@ -70,6 +71,8 @@ class KoealustaMappingService(
 
         val suoritukset =
             suorituksetResponse.users.flatMap { user ->
+                if (user.isTestingData()) return@flatMap emptyList()
+
                 val oppija =
                     validator
                         .toOppija(user)
