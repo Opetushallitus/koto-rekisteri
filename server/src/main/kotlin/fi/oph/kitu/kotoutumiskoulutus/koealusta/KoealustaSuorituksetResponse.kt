@@ -16,10 +16,10 @@ interface KoealustaOppija {
 
     fun teacherEmail(): String?
 
-    fun isTestingData(): Boolean =
-        Oid.parse(schoolOID()).getOrNull().let { oid ->
-            invalidOrgOids.contains(oid)
-        }
+    fun mustBeSkipped(): Boolean = Oid.parse(schoolOID()).getOrNull().let { oid -> ignoredSchoolOids.contains(oid) }
+
+    fun isOnrValidateable(): Boolean =
+        listOf(firstnames, lastname, preferredname, ssn).all { it.orEmpty().isNotBlank() }
 }
 
 interface KoealustaCourse {
@@ -90,12 +90,10 @@ data class KoealustaKeskeneraisetResponse(
             override val schoolOID: String?,
             override val teacheremail: String?,
         ) : KoealustaCourse
-
-        fun isEmpty(): Boolean = courses.isEmpty()
     }
 }
 
-val invalidOrgOids =
+val ignoredSchoolOids =
     listOf(
         null,
         Oid.parse("1.2.246.562.10.1234567890").getOrThrow(),
