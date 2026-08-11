@@ -1,6 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Arvosana
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
@@ -8,9 +9,11 @@ import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusService
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.Testikieli
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiErrorService
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusError
+import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorColumn
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.error.KielitestiSuoritusErrorRepository
 import fi.oph.kitu.oid.Oid
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -89,4 +92,45 @@ class KielitestiCsvTest(
 
         assertEquals(expectedCsv, actualCsv.toString(Charsets.UTF_8))
     }
+
+    @Test
+    fun `virheet voi järjestää jokaisen sarakkeen mukaan`() {
+        kielitestiSuoritusErrorRepository.saveAll(
+            listOf(virhe(completed = true), virhe(completed = false)),
+        )
+
+        assertAll(
+            KielitestiSuoritusErrorColumn.entries.flatMap { column ->
+                SortDirection.entries.map { direction ->
+                    fun() {
+                        assertEquals(
+                            2,
+                            kielitestiErrorService.getErrors(column, direction).count(),
+                            "Järjestäminen sarakkeen ${column.name} mukaan ($direction) ei saa aiheuttaa virhettä",
+                        )
+                    }
+                }
+            },
+        )
+    }
+
+    private fun virhe(completed: Boolean) =
+        KielitestiSuoritusError(
+            id = null,
+            suorittajanOid = null,
+            hetu = "010180-9026",
+            nimi = "Testi Henkilö",
+            etunimet = "Testi",
+            sukunimi = "Henkilö",
+            kutsumanimi = "Testi",
+            schoolOid = Oid.parse("1.2.246.562.10.14893989377").getOrNull(),
+            teacherEmail = "testi@example.com",
+            virheenLuontiaika = Instant.parse("2024-11-22T10:49:49Z"),
+            viesti = "Virhe",
+            virheellinenKentta = null,
+            virheellinenArvo = null,
+            lisatietoja = null,
+            onrLisatietoja = null,
+            completed = completed,
+        )
 }
