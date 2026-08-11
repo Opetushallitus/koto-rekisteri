@@ -65,6 +65,12 @@ enum class KielitestiSuoritusErrorColumn(
         urlParam = "virheenluontiaika",
         getValue = { { it.virheenLuontiaika.finnishDateTime() } },
     ),
+    ValmisSuoritus(
+        entityName = "valmisSuoritus",
+        uiHeaderValue = UiText.Koto.Sarake.valmis,
+        urlParam = "valmisSuoritus",
+        getValue = { { if (it.completed) UiText.Filter.kylla.toString() else UiText.Filter.ei.toString() } },
+    ),
     Viesti(
         entityName = "viesti",
         uiHeaderValue = UiText.Koto.Sarake.virheviesti,

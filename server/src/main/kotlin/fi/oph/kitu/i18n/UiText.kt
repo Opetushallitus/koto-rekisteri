@@ -462,6 +462,7 @@ object UiText {
                 get() = tr("koto.sarake.virheellinenKentta", fi = "Virheellinen kenttä")
             val virheellinenArvo: LocalizedString
                 get() = tr("koto.sarake.virheellinenArvo", fi = "Virheellinen arvo")
+            val valmis: LocalizedString get() = tr("koto.sarake.valmis", fi = "Valmis")
         }
 
         object Tehtavatyyppi {
