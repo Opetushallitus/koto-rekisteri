@@ -142,5 +142,12 @@ fun FlowContent.kielitestiSuoritusFilterButton(params: KielitestiSuorituksetPara
                 params.piilotaHenkilotiedot,
             )
         }
+        fieldSet {
+            toggleFilter(
+                "naytaKeskeneraiset",
+                UiText.Filter.naytaKeskeneraiset.toString(),
+                params.naytaKeskeneraiset,
+            )
+        }
     }
 }

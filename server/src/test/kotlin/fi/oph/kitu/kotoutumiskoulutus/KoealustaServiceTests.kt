@@ -1513,12 +1513,12 @@ class KoealustaServiceTests(
     }
 
     @Test
-    fun `keskeneräinen import persists its validation errors without wiping valmis errors`(
+    fun `keskeneräinen import ignores non-verifiable users without wiping valmis errors`(
         @Autowired kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
         @Autowired customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
         @Autowired koealustaService: KoealustaService,
     ) {
-        val invalidKeskenerainen =
+        val nonVerifiableKeskenerainen =
             """
             {
               "userid": 20,
@@ -1563,7 +1563,7 @@ class KoealustaServiceTests(
                 withSuccess(
                     """
                     {
-                      "users": [$invalidKeskenerainen]
+                      "users": [$nonVerifiableKeskenerainen]
                     }
                     """.trimIndent(),
                     MediaType.APPLICATION_JSON,
@@ -1579,13 +1579,21 @@ class KoealustaServiceTests(
         mockServer.verify()
 
         val errors = kielitestiSuoritusErrorRepository.findAll().toList()
-        val keskenerainenError = errors.single { !it.completed }
 
         assertAll(
-            fun() = assertEquals(2, errors.size, "Valmis and keskeneräinen errors should coexist"),
+            fun() =
+                assertEquals(
+                    1,
+                    errors.size,
+                    "Non-verifiable keskeneräinen is ignored, so only the valmis error remains",
+                ),
             fun() = assertEquals(1, errors.count { it.completed }),
-            fun() = assertEquals("preferredname", keskenerainenError.virheellinenKentta),
-            fun() = assertEquals(null, keskenerainenError.virheellinenArvo),
+            fun() =
+                assertEquals(
+                    0,
+                    errors.count { !it.completed },
+                    "A keskeneräinen that cannot be verified against onr must not be persisted as an error",
+                ),
             fun() = assertEquals(0, customKielitestiSuoritusRepository.findAll().count()),
         )
     }

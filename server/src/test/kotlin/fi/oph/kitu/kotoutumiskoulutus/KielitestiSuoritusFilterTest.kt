@@ -31,7 +31,7 @@ class KielitestiSuoritusFilterTest {
 
     @Test
     fun `tyhjä organisaatio-OID-lista jättää suodattimen kokonaan pois`() {
-        val filter = KielitestiSuoritusFilter().withOrgOids(emptyList())
+        val filter = KielitestiSuoritusFilter(naytaKeskeneraiset = true).withOrgOids(emptyList())
 
         assertNull(filter.whereSql())
         assertFalse(filter.params().containsKey("filter_org_oids"))
@@ -41,9 +41,15 @@ class KielitestiSuoritusFilterTest {
     fun `yli yhdeksän organisaatio-OIDin lista pudottaa suodattimen pois (säilytetty käytös)`() {
         val tenOids =
             (0 until 10).map { Oid.parse("1.2.246.562.10.${1_000_000 + it}").getOrThrow() }
-        val filter = KielitestiSuoritusFilter().withOrgOids(tenOids)
+        val filter = KielitestiSuoritusFilter(naytaKeskeneraiset = true).withOrgOids(tenOids)
 
         assertNull(filter.whereSql())
         assertFalse(filter.params().containsKey("filter_org_oids"))
+    }
+
+    @Test
+    fun `oletuksena haetaan vain valmiit suoritukset`() {
+        val filter = KielitestiSuoritusFilter()
+        assertEquals("WHERE (completed)", filter.whereSql())
     }
 }

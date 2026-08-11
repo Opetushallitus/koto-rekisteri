@@ -615,6 +615,7 @@ object UiText {
             )
         val henkilotiedotPiilotettu: LocalizedString
             get() = tr("filter.henkilotiedotPiilotettu", fi = "Henkilötiedot piilotettu")
+        val naytaKeskeneraiset: LocalizedString get() = tr("filter.naytaKeskeneraiset", fi = "Näytä keskeneräiset")
     }
 
     object Toiminto {
