@@ -172,7 +172,7 @@ describe('"Koto Suoritukset" -page', () => {
       },
       {
         column: "Virheviesti",
-        tableColumnIndex: 5,
+        tableColumnIndex: 6,
         order: [
           'Unexpectedly missing quiz grade "puhuminen" on course "Integraatio testaus" for user "1"',
           "testiviesti, ei tekstiviesti",
@@ -181,17 +181,17 @@ describe('"Koto Suoritukset" -page', () => {
       },
       {
         column: "Ratkaisuehdotus",
-        tableColumnIndex: 6,
+        tableColumnIndex: 7,
         order: ["", ""],
       },
       {
         column: "Virheellinen kenttä",
-        tableColumnIndex: 7,
+        tableColumnIndex: 8,
         order: ["yksi niistä", "puhuminen", "kirjoittaminen"],
       },
       {
         column: "Virheellinen arvo",
-        tableColumnIndex: 8,
+        tableColumnIndex: 9,
         order: ["virheellinen arvosana", "tyhjää täynnä", "en kerro, arvaa!"],
       },
     ] as const
