@@ -286,10 +286,6 @@ td p {
   color: var(--oph-orange3);
 }
 
-tr.faded td {
-  opacity: 0.4;
-}
-
 .tehtava-otsikko {
   display: flex;
   justify-content: space-between;

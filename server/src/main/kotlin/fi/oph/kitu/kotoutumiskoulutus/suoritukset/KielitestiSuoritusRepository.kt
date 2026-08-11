@@ -146,6 +146,7 @@ data class KielitestiSuoritusFilter(
     val suoritusloppu: LocalDate? = null,
     val testikieli: Testikieli? = null,
     val orgOids: List<Oid> = emptyList(),
+    val naytaKeskeneraiset: Boolean = false,
 ) {
     fun withOrgOids(oids: List<Oid>): KielitestiSuoritusFilter = copy(orgOids = oids)
 
@@ -162,6 +163,7 @@ data class KielitestiSuoritusFilter(
                 suoritusloppu?.let { "suoritusaika <= :filter_loppupaiva" },
                 "filter_loppupaiva" to suoritusloppu?.plusDays(1),
             )
+            if (!naytaKeskeneraiset) add("completed")
         }
 
     private fun searchParams(): Map<String, String> =
