@@ -19,6 +19,7 @@ import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.webmvc.Links
+import fi.oph.kitu.yki.TutkinnonOsa
 import kotlinx.html.*
 
 object YkiSuoritusPage {
@@ -181,43 +182,27 @@ object YkiSuoritusPage {
         }
 
         card(compact = true) {
+            val osakokeet = suoritus.osakokeet().associateBy { it.tyyppi }
+
+            fun osakoeRivi(tyyppi: TutkinnonOsa): Pair<String, FlowContent.() -> Unit>? =
+                osakokeet[tyyppi]?.let { osakoe ->
+                    tyyppi.viewText to {
+                        val arvosana = osakoe.arvosana
+                        if (arvosana != null) {
+                            ykiArvosana(arvosana, suoritus.tutkintotaso)
+                        } else {
+                            +"–"
+                        }
+                    }
+                }
+
             infoTable(
-                suoritus.tekstinYmmartaminen?.let {
-                    UiText.Yki.Sarake.tekstinYmmartaminen
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.kirjoittaminen?.let {
-                    UiText.Yki.Sarake.kirjoittaminen
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.puheenYmmartaminen?.let {
-                    UiText.Yki.Sarake.puheenYmmartaminen
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.puhuminen?.let {
-                    UiText.Yki.Sarake.puhuminen
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.rakenteetJaSanasto?.let {
-                    UiText.Yki.Sarake.rakenteetJaSanasto
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.yleisarvosana?.let {
-                    UiText.Yki.Sarake.yleisarvosana
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
+                osakoeRivi(TutkinnonOsa.TY),
+                osakoeRivi(TutkinnonOsa.KI),
+                osakoeRivi(TutkinnonOsa.PY),
+                osakoeRivi(TutkinnonOsa.PU),
+                osakoeRivi(TutkinnonOsa.RS),
+                osakoeRivi(TutkinnonOsa.YL),
             )
         }
     }
