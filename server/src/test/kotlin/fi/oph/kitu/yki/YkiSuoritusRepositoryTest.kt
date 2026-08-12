@@ -21,6 +21,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -83,6 +84,50 @@ class YkiSuoritusRepositoryTest(
             )
         val savedSuoritukset = ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus)).toList()
         assertEquals(suoritus, savedSuoritukset[0].copy(id = null))
+    }
+
+    @Test
+    fun `ilmoittautunut suoritus tallentaa ja lukee arvostelemattomat osakokeet`() {
+        val ilmoittautunut =
+            generateRandomYkiSuoritusEntity()
+                .copy(
+                    arviointitila = Arviointitila.ILMOITTAUTUNUT,
+                    arviointipaiva = null,
+                    tekstinYmmartaminen = null,
+                    kirjoittaminen = null,
+                    rakenteetJaSanasto = null,
+                    puheenYmmartaminen = null,
+                    puhuminen = null,
+                    yleisarvosana = null,
+                    tarkistusarvioinninSaapumisPvm = null,
+                    tarkistusarvioinninAsiatunnus = null,
+                    tarkistusarvioidutOsakokeet = null,
+                    arvosanaMuuttui = null,
+                    perustelu = null,
+                    tarkistusarvioinninKasittelyPvm = null,
+                ).also {
+                    it.ilmoitetutOsakokeet = setOf(TutkinnonOsa.TY, TutkinnonOsa.KI, TutkinnonOsa.PU)
+                }
+        ykiSuoritusRepository.saveAllNewEntities(listOf(ilmoittautunut))
+
+        val stored = ykiSuoritusRepository.findLatestBySolkiIds(listOf(ilmoittautunut.solkiId)).first()
+
+        assertAll(
+            fun() =
+                assertEquals(
+                    setOf(TutkinnonOsa.PU, TutkinnonOsa.KI, TutkinnonOsa.TY),
+                    stored.ilmoitetutOsakokeet,
+                ),
+            fun() =
+                assertEquals(
+                    listOf(TutkinnonOsa.PU, TutkinnonOsa.KI, TutkinnonOsa.TY),
+                    stored.osakokeet().map { it.tyyppi },
+                ),
+            fun() = assertTrue(stored.osakokeet().all { it.arvosana == null }, "osakokeilla ei saa olla arvosanaa"),
+            fun() = assertNull(stored.yleisarvosana),
+            fun() = assertNull(stored.puhuminen),
+            fun() = assertEquals(Arviointitila.ILMOITTAUTUNUT, stored.arviointitila),
+        )
     }
 
     @Test
