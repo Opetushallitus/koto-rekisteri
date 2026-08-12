@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
@@ -49,16 +50,19 @@ class YkiApiController(
     @GetMapping("/suoritukset", "/suoritus", produces = ["text/csv"])
     fun getSuorituksetAsCsv(
         @ModelAttribute params: YkiSuorituksetParams = YkiSuorituksetParams(),
+        session: HttpSession? = null,
     ): ResponseEntity<StreamingResponseBody> =
-        csvAttachmentResponse<YkiSuoritusColumn, _>(
-            filename = params.csvFileName(),
-            data =
-                service.allSuorituksetIncludingOpiskeluoikeusOid(
-                    params.versionHistory,
-                    service.extendFilterWithLinkedOidsOrThrow(params.toFilter()),
-                ),
-            excludeTags = params.excludeTags(),
-        )
+        params.withRecalledSearch(session).let { withSearch ->
+            csvAttachmentResponse<YkiSuoritusColumn, _>(
+                filename = withSearch.csvFileName(),
+                data =
+                    service.allSuorituksetIncludingOpiskeluoikeusOid(
+                        withSearch.versionHistory,
+                        service.extendFilterWithLinkedOidsOrThrow(withSearch.toFilter()),
+                    ),
+                excludeTags = withSearch.excludeTags(),
+            )
+        }
 
     @GetMapping("/poikkeamat", produces = ["text/csv"])
     fun getPoikkeamatAsCsv(): ResponseEntity<StreamingResponseBody> =
