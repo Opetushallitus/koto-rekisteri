@@ -134,11 +134,12 @@ class YkiSuoritusRepositoryTest(
 
     @Test
     fun `find suoritus with search term`() {
-        val suoritus = generateRandomYkiSuoritusEntity().copy(etunimet = "Ranja Testi")
+        val suoritus = generateRandomYkiSuoritusEntity().copy(etunimet = "Ranja Testi", email = null)
         val suoritus2 =
             generateRandomYkiSuoritusEntity().copy(
                 etunimet = "Testi",
                 sukunimi = "Testilä",
+                email = null,
             )
         ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus, suoritus2))
 
@@ -157,11 +158,13 @@ class YkiSuoritusRepositoryTest(
             generateRandomYkiSuoritusEntity().copy(
                 etunimet = "Matti",
                 sukunimi = "Virtanen",
+                email = null,
             )
         val decoy =
             generateRandomYkiSuoritusEntity().copy(
                 etunimet = "Matti",
                 sukunimi = "Korhonen",
+                email = null,
             )
         ykiSuoritusRepository.saveAllNewEntities(listOf(target, decoy))
 
