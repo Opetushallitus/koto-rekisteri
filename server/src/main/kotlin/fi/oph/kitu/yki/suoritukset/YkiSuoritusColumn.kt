@@ -9,6 +9,7 @@ import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.webmvc.Links
+import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintotaso
 import kotlinx.html.FlowContent
 import kotlinx.html.a
@@ -159,6 +160,14 @@ enum class YkiSuoritusColumn(
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT)
+    ReceivedAt(
+        entityName = "received_at",
+        uiHeaderValue = UiText.Yki.Sarake.rekisteriintuontiaika,
+        urlParam = "receivedat",
+        getValue = { it.receivedAt.finnishDateTime() },
+    ),
+
+    @ColumnTags(ColumnTag.CSV_EXPORT)
     TekstinYmmartaminen(
         entityName = "tekstin_ymmartaminen",
         uiHeaderValue = UiText.Yki.Sarake.tekstinYmmartaminen,
@@ -221,6 +230,62 @@ enum class YkiSuoritusColumn(
     ),
 
     @ColumnTags(ColumnTag.CSV_EXPORT)
+    TarkistusarvioinninSaapumisPvm(
+        entityName = "tarkistusarvioinnin_saapumis_pvm",
+        uiHeaderValue = UiText.Yki.Sarake.tarkistusarvioinninSaapumispaiva,
+        urlParam = "tarkistusarvioinninsaapumispvm",
+        getValue = { it.tarkistusarvioinninSaapumisPvm?.finnishDate().orEmpty() },
+    ),
+
+    @ColumnTags(ColumnTag.CSV_EXPORT)
+    TarkistusarvioinninKasittelyPvm(
+        entityName = "tarkistusarvioinnin_kasittely_pvm",
+        uiHeaderValue = UiText.Yki.Sarake.tarkistusarvioinninKasittelypaiva,
+        urlParam = "tarkistusarvioinninkasittelypvm",
+        getValue = { it.tarkistusarvioinninKasittelyPvm?.finnishDate().orEmpty() },
+    ),
+
+    @ColumnTags(ColumnTag.CSV_EXPORT)
+    TarkistusarviointiHyvaksyttyPvm(
+        entityName = "tarkistusarviointi_hyvaksytty_pvm",
+        uiHeaderValue = UiText.Yki.Sarake.tarkistusarviointiHyvaksytty,
+        urlParam = "tarkistusarviointihyvaksyttypvm",
+        getValue = { it.tarkistusarviointiHyvaksyttyPvm?.finnishDate().orEmpty() },
+    ),
+
+    @ColumnTags(ColumnTag.CSV_EXPORT)
+    TarkistusarvioinninAsiatunnus(
+        entityName = "tarkistusarvioinnin_asiatunnus",
+        uiHeaderValue = UiText.Yki.Sarake.asiatunnus,
+        urlParam = "tarkistusarvioinninasiatunnus",
+        getValue = { it.tarkistusarvioinninAsiatunnus.orEmpty() },
+    ),
+
+    @ColumnTags(ColumnTag.CSV_EXPORT)
+    TarkistusarvioidutOsakokeet(
+        entityName = "tarkistusarvioidut_osakokeet",
+        uiHeaderValue = UiText.Yki.Sarake.tarkistusarvioidutOsakokeet,
+        urlParam = "tarkistusarvioidutosakokeet",
+        getValue = { osakoeLista(it.tarkistusarvioidutOsakokeet) },
+    ),
+
+    @ColumnTags(ColumnTag.CSV_EXPORT)
+    ArvosanaMuuttui(
+        entityName = "arvosana_muuttui",
+        uiHeaderValue = UiText.Yki.Sarake.arvosanaMuuttuiOsakokeet,
+        urlParam = "arvosanamuuttui",
+        getValue = { osakoeLista(it.arvosanaMuuttui) },
+    ),
+
+    @ColumnTags(ColumnTag.CSV_EXPORT)
+    TarkistusarvioinninPerustelu(
+        entityName = "perustelu",
+        uiHeaderValue = UiText.Yki.perustelu,
+        urlParam = "tarkistusarvioinninperustelu",
+        getValue = { it.perustelu.orEmpty() },
+    ),
+
+    @ColumnTags(ColumnTag.CSV_EXPORT)
     ArviointitilaLahetetty(
         entityName = "arviointitila_lahetetty",
         uiHeaderValue = UiText.Yki.Sarake.tilaLahetetty,
@@ -266,6 +331,12 @@ fun osoite(
 } else {
     "$katuosoite, $postinumero $postitoimipaikka, $maa"
 }
+
+fun osakoeLista(osakokeet: Set<TutkinnonOsa>?): String =
+    osakokeet
+        .orEmpty()
+        .sortedBy { it.ordinal }
+        .joinToString(", ") { it.viewText }
 
 fun ykiArvosanaText(
     arvosana: Int?,

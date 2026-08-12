@@ -4,7 +4,10 @@ import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.dev.mockdata.toInstant
+import fi.oph.kitu.html.table.ColumnTag
+import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.DisplayTableCsvRenderer
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.isBadRequest
 import fi.oph.kitu.isOk
 import fi.oph.kitu.oid.Oid
@@ -24,6 +27,7 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -940,6 +944,67 @@ class YkiApiControllerTest(
 
         assertContains(csv, "Zebrakalastaja")
         assertFalse(csv.contains("Muukalainen"), "CSV ei saa sisältää hakusanaan täsmäämättömiä suorituksia")
+    }
+
+    @Test
+    fun `CSV-vienti sisältää tarkistusarviointitiedot ja rekisteriintuontiajan`() {
+        suoritusRepository.deleteAll()
+
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                receivedAt = Instant.parse("2025-01-15T08:30:00Z"),
+                tarkistusarvioinninSaapumisPvm = LocalDate.of(2025, 3, 10),
+                tarkistusarvioinninKasittelyPvm = LocalDate.of(2025, 3, 20),
+                tarkistusarviointiHyvaksyttyPvm = LocalDate.of(2025, 4, 1),
+                tarkistusarvioinninAsiatunnus = "OPH-9999-2025",
+                tarkistusarvioidutOsakokeet = setOf(TutkinnonOsa.PU, TutkinnonOsa.KI),
+                arvosanaMuuttui = setOf(TutkinnonOsa.PU),
+                perustelu = "Testiperustelu",
+            )
+        suoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val response = ykiApiController.getSuorituksetAsCsv(YkiSuorituksetParams())
+        val csv =
+            ByteArrayOutputStream()
+                .also { response.body!!.writeTo(it) }
+                .toString(Charsets.UTF_8)
+
+        val rows = csv.trim().lines()
+        val header = rows.first().split(DisplayTableCsvRenderer.SEPARATOR)
+        val dataRow = rows.drop(1).single().split(DisplayTableCsvRenderer.SEPARATOR)
+
+        fun cell(column: YkiSuoritusColumn) = dataRow[header.indexOf(column.uiHeaderValue.toString())]
+
+        assertEquals("10.3.2025", cell(YkiSuoritusColumn.TarkistusarvioinninSaapumisPvm))
+        assertEquals("20.3.2025", cell(YkiSuoritusColumn.TarkistusarvioinninKasittelyPvm))
+        assertContains(header, YkiSuoritusColumn.TarkistusarviointiHyvaksyttyPvm.uiHeaderValue.toString())
+        assertEquals("OPH-9999-2025", cell(YkiSuoritusColumn.TarkistusarvioinninAsiatunnus))
+        assertEquals("Puhuminen, Kirjoittaminen", cell(YkiSuoritusColumn.TarkistusarvioidutOsakokeet))
+        assertEquals("Puhuminen", cell(YkiSuoritusColumn.ArvosanaMuuttui))
+        assertEquals("Testiperustelu", cell(YkiSuoritusColumn.TarkistusarvioinninPerustelu))
+        assertContains(
+            header,
+            UiText.Yki.Sarake.rekisteriintuontiaika
+                .toString(),
+        )
+
+        val listViewHeaders =
+            DisplayTableColumn
+                .of<YkiSuoritusColumn, YkiSuoritusEntity>(setOf(ColumnTag.LIST_VIEW))
+                .map { it.label }
+        assertFalse(
+            listViewHeaders.contains(
+                UiText.Yki.Sarake.asiatunnus
+                    .toString(),
+            ),
+            "Tarkistusarviointisarakkeet eivät saa näkyä HTML-listanäkymässä",
+        )
+        assertFalse(
+            listViewHeaders.contains(
+                UiText.Yki.Sarake.rekisteriintuontiaika
+                    .toString(),
+            ),
+        )
     }
 
     private fun postSuoritus(

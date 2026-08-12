@@ -354,6 +354,18 @@ object UiText {
             val asiatunnus: LocalizedString get() = tr("yki.sarake.asiatunnus", fi = "Asiatunnus")
             val tarkistusarviointi: LocalizedString
                 get() = tr("yki.sarake.tarkistusarviointi", fi = "Tarkistusarviointi")
+            val tarkistusarvioinninSaapumispaiva: LocalizedString
+                get() =
+                    tr("yki.sarake.tarkistusarvioinninSaapumispaiva", fi = "Tarkistusarvioinnin saapumispäivä")
+            val tarkistusarvioinninKasittelypaiva: LocalizedString
+                get() =
+                    tr("yki.sarake.tarkistusarvioinninKasittelypaiva", fi = "Tarkistusarvioinnin käsittelypäivä")
+            val tarkistusarviointiHyvaksytty: LocalizedString
+                get() = tr("yki.sarake.tarkistusarviointiHyvaksytty", fi = "Tarkistusarviointi hyväksytty")
+            val tarkistusarvioidutOsakokeet: LocalizedString
+                get() = tr("yki.sarake.tarkistusarvioidutOsakokeet", fi = "Tarkistusarvioidut osakokeet")
+            val arvosanaMuuttuiOsakokeet: LocalizedString
+                get() = tr("yki.sarake.arvosanaMuuttuiOsakokeet", fi = "Osakokeet joiden arvosana muuttui")
             val suorituksenTunniste: LocalizedString
                 get() = tr("yki.sarake.suorituksenTunniste", fi = "Suorituksen tunniste")
             val virhe: LocalizedString get() = tr("yki.sarake.virhe", fi = "Virhe")
