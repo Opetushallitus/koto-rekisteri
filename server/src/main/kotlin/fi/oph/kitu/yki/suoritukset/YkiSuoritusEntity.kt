@@ -88,6 +88,10 @@ data class YkiSuoritusEntity(
     val arviointitilanLahetysvirhe: String?,
     val lahdejarjestelmanTunnus: String = "yki.$solkiId",
 ) {
+    @IgnoreForEquality("SOLKICSV")
+    @IgnoreForEquality("DB")
+    var ilmoitetutOsakokeet: Set<TutkinnonOsa>? = null
+
     fun arvosana(osakoe: TutkinnonOsa): Int? =
         when (osakoe) {
             TutkinnonOsa.PU -> puhuminen
@@ -98,6 +102,13 @@ data class YkiSuoritusEntity(
             TutkinnonOsa.YL -> yleisarvosana
         }
 
+    fun osakokeet(): List<Osakoe> {
+        val tyypit = ilmoitetutOsakokeet ?: TutkinnonOsa.entries.filter { arvosana(it) != null }.toSet()
+        return TutkinnonOsa.entries
+            .filter { it in tyypit }
+            .map { Osakoe(it, arvosana(it), arviointipaiva) }
+    }
+
     fun isOphTesti(): Boolean = Lahdejarjestelma.ofTunnus(lahdejarjestelmanTunnus) == Lahdejarjestelma.OPHTesti
 
     fun tarkistusarviointiHyvaksyttyViewText(): String? =
@@ -107,16 +118,6 @@ data class YkiSuoritusEntity(
             } else {
                 null
             }
-
-    fun osakokeet(): List<Osakoe> =
-        listOfNotNull(
-            puhuminen?.let { Osakoe(TutkinnonOsa.PU, it, arviointipaiva) },
-            kirjoittaminen?.let { Osakoe(TutkinnonOsa.KI, it, arviointipaiva) },
-            tekstinYmmartaminen?.let { Osakoe(TutkinnonOsa.TY, it, arviointipaiva) },
-            puheenYmmartaminen?.let { Osakoe(TutkinnonOsa.PY, it, arviointipaiva) },
-            rakenteetJaSanasto?.let { Osakoe(TutkinnonOsa.RS, it, arviointipaiva) },
-            yleisarvosana?.let { Osakoe(TutkinnonOsa.YL, it, arviointipaiva) },
-        )
 
     fun kokoNimi() = "$sukunimi $etunimet"
 
@@ -166,6 +167,8 @@ data class YkiSuoritusEntity(
                     koskiSiirtoKasitelty = rs.getBoolean("koski_siirto_kasitelty"),
                     arviointitilaLahetetty = rs.getTimestamp("arviointitila_lahetetty"),
                     arviointitilanLahetysvirhe = rs.getString("arviointitilan_lahetysvirhe"),
+                    osakoeTyypit =
+                        rs.getTypedArrayOrNull("osakokeet_tyypit") { TutkinnonOsa.valueOf(it) }?.toList(),
                 )
             }
 
@@ -222,7 +225,7 @@ data class YkiSuoritusEntity(
                     arviointitilaLahetetty = null,
                     arviointitilanLahetysvirhe = null,
                     lahdejarjestelmanTunnus = lahdejarjestelmanId.toTunnus(),
-                )
+                ).also { it.ilmoitetutOsakokeet = osat.map { osa -> osa.tyyppi }.toSet() }
             }
         }
 
@@ -246,6 +249,7 @@ data class YkiSuoritusEntity(
             koskiSiirtoKasitelty: Boolean? = null,
             arviointitilaLahetetty: Timestamp? = null,
             arviointitilanLahetysvirhe: String? = null,
+            osakoeTyypit: List<TutkinnonOsa>? = null,
         ): YkiSuoritusEntity =
             YkiSuoritusEntity(
                 id = rs.getInt("id"),
@@ -289,7 +293,7 @@ data class YkiSuoritusEntity(
                 arviointitilaLahetetty = arviointitilaLahetetty,
                 arviointitilanLahetysvirhe = arviointitilanLahetysvirhe,
                 lahdejarjestelmanTunnus = rs.getString("lahdejarjestelmantunnus"),
-            )
+            ).also { it.ilmoitetutOsakokeet = osakoeTyypit?.toSet() }
     }
 }
 
