@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.mock.web.MockHttpSession
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MockMvcResultMatchersDsl
@@ -48,6 +49,7 @@ import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 @SpringBootTest
@@ -913,6 +915,31 @@ class YkiApiControllerTest(
             opiskeluoikeusOid.toString(),
             rows.drop(1).single().split(DisplayTableCsvRenderer.SEPARATOR)[oidColumnIndex],
         )
+    }
+
+    @Test
+    fun `CSV-vienti suodattaa istuntoon tallennetulla hakusanalla`() {
+        suoritusRepository.deleteAll()
+
+        val loydettava = generateRandomYkiSuoritusEntity().copy(sukunimi = "Zebrakalastaja")
+        val muu = generateRandomYkiSuoritusEntity().copy(sukunimi = "Muukalainen")
+        suoritusRepository.saveAllNewEntities(listOf(loydettava, muu))
+
+        val session = MockHttpSession()
+        session.setAttribute(YkiViewController.YKI_SEARCH_KEY, "Zebrakalastaja")
+
+        val response =
+            ykiApiController.getSuorituksetAsCsv(
+                YkiSuorituksetParams(recallSearch = true),
+                session,
+            )
+        val csv =
+            ByteArrayOutputStream()
+                .also { response.body!!.writeTo(it) }
+                .toString(Charsets.UTF_8)
+
+        assertContains(csv, "Zebrakalastaja")
+        assertFalse(csv.contains("Muukalainen"), "CSV ei saa sisältää hakusanaan täsmäämättömiä suorituksia")
     }
 
     private fun postSuoritus(

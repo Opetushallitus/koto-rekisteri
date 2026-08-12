@@ -103,13 +103,11 @@ class YkiViewController(
     fun suorituksetGetView(
         @ModelAttribute params: YkiSuorituksetParams = YkiSuorituksetParams(),
         session: HttpSession? = null,
-    ): ResponseEntity<String> {
-        val search = if (params.recallSearch) session?.getAttribute(YKI_SEARCH_KEY) as? String ?: "" else ""
-        return handleSuorituksetView(
-            params.copy(search = search),
+    ): ResponseEntity<String> =
+        handleSuorituksetView(
+            params.withRecalledSearch(session),
             KituRequest.currentCsrfToken(),
         )
-    }
 
     @PostMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetPostView(
@@ -380,3 +378,13 @@ class YkiViewController(
 }
 
 fun Boolean?.toTrueOrNull(): String? = if (this == true) "true" else null
+
+fun YkiSuorituksetParams.withRecalledSearch(session: HttpSession?): YkiSuorituksetParams =
+    copy(
+        search =
+            if (recallSearch) {
+                session?.getAttribute(YkiViewController.YKI_SEARCH_KEY) as? String ?: ""
+            } else {
+                ""
+            },
+    )
