@@ -71,7 +71,7 @@ enum class YkiSuoritusColumn(
         getValue = { it.sukupuoli.name },
     ),
 
-    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
+    @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Hetu(
         entityName = "hetu",
         uiHeaderValue = UiText.Yki.Sarake.henkilotunnus,
@@ -143,7 +143,7 @@ enum class YkiSuoritusColumn(
         getValue = { it.jarjestajanNimi },
     ),
 
-    @ColumnTags(ColumnTag.CSV_EXPORT)
+    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
     Arviointitila(
         entityName = "arviointitila",
         uiHeaderValue = UiText.Yki.Sarake.arviointitila,
