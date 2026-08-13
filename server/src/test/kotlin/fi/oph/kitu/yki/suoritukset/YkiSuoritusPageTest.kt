@@ -1,11 +1,14 @@
 package fi.oph.kitu.yki.suoritukset
 
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import kotlinx.html.div
 import kotlinx.html.stream.createHTML
 import org.junit.jupiter.api.Test
+import java.time.Instant
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -20,6 +23,11 @@ class YkiSuoritusPageTest {
     private fun renderArviointi(suoritus: YkiSuoritusEntity) =
         with(YkiSuoritusPage) {
             createHTML().div { arviointi(suoritus) }
+        }
+
+    private fun renderIntegraatiot(suoritus: YkiSuoritusEntity) =
+        with(YkiSuoritusPage) {
+            createHTML().div { integraatiot(suoritus, null, null, null) }
         }
 
     private fun ilmoittautunut(vararg osakokeet: TutkinnonOsa) =
@@ -55,6 +63,29 @@ class YkiSuoritusPageTest {
 
         assertTrue(html.contains(TutkinnonOsa.TY.viewText), "missing tekstin ymmärtäminen row:\n$html")
         assertFalse(html.contains(TutkinnonOsa.YL.viewText), "unregistered yleisarvosana should not render:\n$html")
+    }
+
+    @Test
+    fun `integraatiot renders rekisteriintuontiaika from receivedAt`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                lastModified = Instant.parse("2026-01-01T10:00:00Z"),
+                receivedAt = Instant.parse("2025-06-15T08:30:00Z"),
+            )
+
+        val html = renderIntegraatiot(suoritus)
+
+        assertTrue(
+            html.contains(
+                UiText.Yki.Sarake.rekisteriintuontiaika
+                    .toString(),
+            ),
+            "missing rekisteriintuontiaika header:\n$html",
+        )
+        assertTrue(
+            html.contains(suoritus.receivedAt.finnishDateTime(includeTimeZone = false)),
+            "missing receivedAt value:\n$html",
+        )
     }
 
     @Test

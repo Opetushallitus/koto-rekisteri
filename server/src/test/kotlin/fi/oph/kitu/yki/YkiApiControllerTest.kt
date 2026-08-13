@@ -999,11 +999,11 @@ class YkiApiControllerTest(
             ),
             "Tarkistusarviointisarakkeet eivät saa näkyä HTML-listanäkymässä",
         )
-        assertFalse(
-            listViewHeaders.contains(
-                UiText.Yki.Sarake.rekisteriintuontiaika
-                    .toString(),
-            ),
+        assertContains(
+            listViewHeaders,
+            UiText.Yki.Sarake.rekisteriintuontiaika
+                .toString(),
+            "Rekisteriintuontiaika näkyy myös HTML-listanäkymässä",
         )
     }
 

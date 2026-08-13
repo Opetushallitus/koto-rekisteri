@@ -292,7 +292,7 @@ describe('"YKI Suoritukset" -page', () => {
   })
 
   describe("Sorting with version history", () => {
-    const solkiColumnIndex = 8
+    const solkiColumnIndex = 9
 
     // With version history enabled, 4 rows are shown.
     // Solki IDs: petro=123123, magdalena=172836, ranja=183424, ranjaTarkistus=183424
@@ -343,7 +343,7 @@ describe('"YKI Suoritukset" -page', () => {
       // Verify Versio column is sortable by checking the sort link exists and
       // that sorting changes the row order. Fixtures are inserted in order:
       // ranja, ranjaTarkistus, petro, magdalena — so lastModified increases
-      // in that order. Verify via the Solki-tunniste column (index 8).
+      // in that order. Verify via the Solki-tunniste column (index 9).
       const sortByLink = page.getTableColumnHeaderLink("Versio")
       await sortByLink.click()
 

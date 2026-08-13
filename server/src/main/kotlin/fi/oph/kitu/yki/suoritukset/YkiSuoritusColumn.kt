@@ -159,7 +159,7 @@ enum class YkiSuoritusColumn(
         getValue = { it.arviointipaiva?.finnishDate().orEmpty() },
     ),
 
-    @ColumnTags(ColumnTag.CSV_EXPORT)
+    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
     ReceivedAt(
         entityName = "received_at",
         uiHeaderValue = UiText.Yki.Sarake.rekisteriintuontiaika,
