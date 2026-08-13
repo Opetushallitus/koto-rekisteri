@@ -9,6 +9,8 @@ import fi.oph.kitu.oppijanumero.OppijanumeroTroubleshootingService
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriDebugInfo
 import fi.oph.kitu.oppijanumero.YleistunnisteHaeRequest
 import fi.oph.kitu.oppijanumero.troubleshootOppijanumero
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -28,6 +30,17 @@ class KoealustaMappingService(
         suorituksetResponse: KoealustaKeskeneraisetResponse,
     ): Pair<List<KielitestiSuoritus>, ValidationFailure?> {
         val validationErrors = mutableListOf<KoealustaMappingError>()
+
+        val discardedZeroCourseUserIds =
+            suorituksetResponse.users
+                .filter { it.courses.isEmpty() }
+                .map { it.userid.toLong() }
+        Span
+            .current()
+            .setAttribute(
+                AttributeKey.longArrayKey("discardedZeroCourseUserIds"),
+                discardedZeroCourseUserIds,
+            )
 
         val keskeneraiset =
             suorituksetResponse.users.flatMap { user ->
