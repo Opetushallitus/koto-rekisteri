@@ -28,16 +28,11 @@ object KielitestiSuoritusPage {
         h3 { +UiText.Koto.henkilotiedot }
         card(compact = true) {
             infoTable(
-                UiText.Koto.Sarake.oppijanumero
-                    .toString() to { +(suoritus.oppijanumero?.toString() ?: "-") },
-                UiText.Koto.Sarake.sukunimi
-                    .toString() to { +suoritus.sukunimi },
-                UiText.Koto.Sarake.etunimet
-                    .toString() to { +suoritus.etunimet },
-                UiText.Koto.Sarake.kutsumanimi
-                    .toString() to { +suoritus.kutsumanimi },
-                UiText.Koto.Sarake.sahkoposti
-                    .toString() to { +suoritus.email },
+                UiText.Koto.Sarake.oppijanumero to { +(suoritus.oppijanumero?.toString() ?: "-") },
+                UiText.Koto.Sarake.sukunimi to { +suoritus.sukunimi },
+                UiText.Koto.Sarake.etunimet to { +suoritus.etunimet },
+                UiText.Koto.Sarake.kutsumanimi to { +suoritus.kutsumanimi },
+                UiText.Koto.Sarake.sahkoposti to { +suoritus.email },
             )
         }
     }
@@ -49,17 +44,14 @@ object KielitestiSuoritusPage {
         h3 { +UiText.Koto.tutkinnonTiedot }
         card(compact = true) {
             infoTable(
-                UiText.Koto.kurssi.toString() to { +"${suoritus.kurssi} (${suoritus.kurssiId})" },
-                UiText.Koto.jarjestaja.toString() to
+                UiText.Koto.kurssi to { +"${suoritus.kurssi} (${suoritus.kurssiId})" },
+                UiText.Koto.jarjestaja to
                     { +"${orgs.nimet[suoritus.oppilaitosOid]} (${suoritus.oppilaitosOid})" },
-                UiText.Koto.Sarake.opettajanSahkopostiosoite
-                    .toString() to { +suoritus.opettajanEmail.orEmpty() },
-                UiText.Koto.Sarake.suoritusaika
-                    .toString() to
+                UiText.Koto.Sarake.opettajanSahkopostiosoite to { +suoritus.opettajanEmail.orEmpty() },
+                UiText.Koto.Sarake.suoritusaika to
                     { suoritus.suoritusaika?.let { finnishDateTime(it) } ?: +"-" },
-                UiText.Koto.Sarake.testikieli
-                    .toString() to { +(suoritus.testikieli?.toString() ?: "-") },
-                UiText.Koto.tehtavapaketti.toString() to { +suoritus.tehtavapaketti.orEmpty() },
+                UiText.Koto.Sarake.testikieli to { +(suoritus.testikieli?.toString() ?: "-") },
+                UiText.Koto.tehtavapaketti to { +suoritus.tehtavapaketti.orEmpty() },
             )
         }
     }
@@ -68,16 +60,12 @@ object KielitestiSuoritusPage {
         h3 { +UiText.Koto.arviointi }
         card(compact = true) {
             infoTable(
-                UiText.Koto.Sarake.luetunYmmartaminen
-                    .toString() to
+                UiText.Koto.Sarake.luetunYmmartaminen to
                     { +(suoritus.luetunYmmartaminen?.toString() ?: "-") },
-                UiText.Koto.Sarake.kuullunYmmartaminen
-                    .toString() to
+                UiText.Koto.Sarake.kuullunYmmartaminen to
                     { +(suoritus.kuullunYmmartaminen?.toString() ?: "-") },
-                UiText.Koto.Sarake.puhe
-                    .toString() to { +(suoritus.puhe?.toString() ?: "-") },
-                UiText.Koto.Sarake.kirjoittaminen
-                    .toString() to { +(suoritus.kirjoittaminen?.toString() ?: "-") },
+                UiText.Koto.Sarake.puhe to { +(suoritus.puhe?.toString() ?: "-") },
+                UiText.Koto.Sarake.kirjoittaminen to { +(suoritus.kirjoittaminen?.toString() ?: "-") },
             )
         }
     }
@@ -86,7 +74,7 @@ object KielitestiSuoritusPage {
         h3 { +UiText.Koto.integraatiot }
         card(compact = true) {
             infoTable(
-                UiText.Koto.viimeksiMuokattu.toString() to { finnishDateTime(suoritus.lastModified) },
+                UiText.Koto.viimeksiMuokattu to { finnishDateTime(suoritus.lastModified) },
             )
         }
     }

@@ -74,11 +74,10 @@ object YkiSuoritusPage {
             val hlo = henkilo.getOrNull()
             infoTable(
                 hlo?.oppijanumero?.let {
-                    UiText.Yki.Sarake.oppijanumero
-                        .toString() to { +it }
+                    UiText.Yki.Sarake.oppijanumero to { +it }
                 }
                     ?: (
-                        UiText.Yki.henkiloOid.toString() to {
+                        UiText.Yki.henkiloOid to {
                             +suoritus.suorittajanOID.toString()
                             a(
                                 href = Links.Opintopolku.onr(suoritus.suorittajanOID),
@@ -89,16 +88,11 @@ object YkiSuoritusPage {
                             }
                         }
                     ),
-                UiText.Yki.Sarake.sukunimi
-                    .toString() to { nimitieto(suoritus.sukunimi, hlo?.sukunimi) },
-                UiText.Yki.Sarake.etunimet
-                    .toString() to { nimitieto(suoritus.etunimet, hlo?.etunimet) },
-                UiText.Yki.Sarake.henkilotunnus
-                    .toString() to { nimitieto(suoritus.hetu.orDash(), hlo?.hetu) },
-                UiText.Yki.Sarake.sukupuoli
-                    .toString() to { +suoritus.sukupuoli.toString() },
-                UiText.Yki.Sarake.kansalaisuus
-                    .toString() to { +suoritus.kansalaisuus },
+                UiText.Yki.Sarake.sukunimi to { nimitieto(suoritus.sukunimi, hlo?.sukunimi) },
+                UiText.Yki.Sarake.etunimet to { nimitieto(suoritus.etunimet, hlo?.etunimet) },
+                UiText.Yki.Sarake.henkilotunnus to { nimitieto(suoritus.hetu.orDash(), hlo?.hetu) },
+                UiText.Yki.Sarake.sukupuoli to { +suoritus.sukupuoli.toString() },
+                UiText.Yki.Sarake.kansalaisuus to { +suoritus.kansalaisuus },
             )
         }
     }
@@ -124,13 +118,12 @@ object YkiSuoritusPage {
         h3 { +UiText.Yki.todistuksenPostitusosoite }
         card(compact = true) {
             infoTable(
-                UiText.Yki.katuosoite.toString() to { +suoritus.katuosoite },
-                UiText.Yki.postinumero.toString() to { +suoritus.postinumero },
-                UiText.Yki.postitoimipaikka.toString() to { +suoritus.postitoimipaikka },
-                UiText.Yki.maa.toString() to { +suoritus.maa.orDash() },
-                UiText.Yki.Sarake.sahkoposti
-                    .toString() to { +suoritus.email.orDash() },
-                UiText.Yki.todistuksenKieli.toString() to { +suoritus.todistuskieli?.toString().orDash() },
+                UiText.Yki.katuosoite to { +suoritus.katuosoite },
+                UiText.Yki.postinumero to { +suoritus.postinumero },
+                UiText.Yki.postitoimipaikka to { +suoritus.postitoimipaikka },
+                UiText.Yki.maa to { +suoritus.maa.orDash() },
+                UiText.Yki.Sarake.sahkoposti to { +suoritus.email.orDash() },
+                UiText.Yki.todistuksenKieli to { +suoritus.todistuskieli?.toString().orDash() },
             )
         }
     }
@@ -139,14 +132,11 @@ object YkiSuoritusPage {
         h3 { +UiText.Yki.tutkinnonTiedot }
         card(compact = true) {
             infoTable(
-                UiText.Yki.jarjestaja.toString() to
+                UiText.Yki.jarjestaja to
                     { +"${suoritus.jarjestajanNimi} (${suoritus.jarjestajanTunnusOid})" },
-                UiText.Yki.Sarake.tutkintopaiva
-                    .toString() to { +suoritus.tutkintopaiva.finnishDate() },
-                UiText.Yki.Sarake.tutkintokieli
-                    .toString() to { +suoritus.tutkintokieli.toString() },
-                UiText.Yki.Sarake.tutkintotaso
-                    .toString() to { +suoritus.tutkintotaso.toString() },
+                UiText.Yki.Sarake.tutkintopaiva to { +suoritus.tutkintopaiva.finnishDate() },
+                UiText.Yki.Sarake.tutkintokieli to { +suoritus.tutkintokieli.toString() },
+                UiText.Yki.Sarake.tutkintotaso to { +suoritus.tutkintotaso.toString() },
             )
         }
     }
@@ -157,27 +147,26 @@ object YkiSuoritusPage {
         h3 { +UiText.Yki.arviointi }
         card(compact = true) {
             infoTable(
-                UiText.Yki.arvioinninTila.toString() to { +suoritus.arviointitila.viewText },
-                UiText.Yki.Sarake.arviointipaiva
-                    .toString() to { +suoritus.arviointipaiva?.finnishDate().orDash() },
+                UiText.Yki.arvioinninTila to { +suoritus.arviointitila.viewText },
+                UiText.Yki.Sarake.arviointipaiva to { +suoritus.arviointipaiva?.finnishDate().orDash() },
                 tarkistusarviointi?.let {
-                    UiText.Yki.tarkistusarvioinninSaapumispaiva.toString() to
+                    UiText.Yki.tarkistusarvioinninSaapumispaiva to
                         { +it.saapumispaiva.finnishDate() }
                 },
                 tarkistusarviointi?.let {
-                    UiText.Yki.tarkistusarvioinninKasittelypaiva.toString() to
+                    UiText.Yki.tarkistusarvioinninKasittelypaiva to
                         { +it.kasittelypaiva?.finnishDate().orDash() }
                 },
-                tarkistusarviointi?.let { UiText.Yki.tarkistusarvioinninAsiatunnus.toString() to { +it.asiatunnus } },
+                tarkistusarviointi?.let { UiText.Yki.tarkistusarvioinninAsiatunnus to { +it.asiatunnus } },
                 tarkistusarviointi?.let { arviointi ->
-                    UiText.Yki.tarkistusarvioidutOsakokeet.toString() to
+                    UiText.Yki.tarkistusarvioidutOsakokeet to
                         { +arviointi.tarkistusarvioidutOsakokeet?.joinToString(", ") { it.viewText }.orDash() }
                 },
                 tarkistusarviointi?.let { arviointi ->
-                    UiText.Yki.arvosanaMuuttui.toString() to
+                    UiText.Yki.arvosanaMuuttui to
                         { +arviointi.arvosanaMuuttui?.joinToString(", ") { it.viewText }.orDash() }
                 },
-                tarkistusarviointi?.let { UiText.Yki.perustelu.toString() to { +it.perustelu } },
+                tarkistusarviointi?.let { UiText.Yki.perustelu to { +it.perustelu } },
             )
         }
 
@@ -215,16 +204,14 @@ object YkiSuoritusPage {
     ) {
         h3 { +UiText.Yki.integraatiot }
         infoTable(
-            UiText.Yki.Sarake.solkiTunniste
-                .toString() to { +"${suoritus.solkiId}" },
-            UiText.Yki.viimeksiMuokattu.toString() to {
+            UiText.Yki.Sarake.solkiTunniste to { +"${suoritus.solkiId}" },
+            UiText.Yki.viimeksiMuokattu to {
                 finnishDateTime(suoritus.lastModified)
             },
-            UiText.Yki.Sarake.rekisteriintuontiaika
-                .toString() to {
+            UiText.Yki.Sarake.rekisteriintuontiaika to {
                 finnishDateTime(suoritus.receivedAt)
             },
-            UiText.Yki.koski.toString() to {
+            UiText.Yki.koski to {
                 if (koskiSiirronEstonSyyt?.isNotEmpty() == true) {
                     +("${UiText.Yki.siirtoaEiTehda}: ${koskiSiirronEstonSyyt.joinToString("; ")}")
                 } else if (suoritus.koskiSiirtoKasitelty == true) {
@@ -234,11 +221,10 @@ object YkiSuoritusPage {
                 }
             },
             koskiError?.errorJson()?.let {
-                UiText.Yki.koskiVirheet.toString() to { json(it) }
+                UiText.Yki.koskiVirheet to { json(it) }
             },
             opiskeluoikeusOid?.let { oid ->
-                UiText.Yki.Sarake.opiskeluoikeusOid
-                    .toString() to {
+                UiText.Yki.Sarake.opiskeluoikeusOid to {
                     +UiText.Yki.opiskeluoikeudenOid
                     +": "
                     a(href = "/koski/oppija/$oid?opiskeluoikeudenTyyppi=kielitutkinto") {
@@ -246,7 +232,7 @@ object YkiSuoritusPage {
                     }
                 }
             },
-            UiText.Yki.kios.toString() to {
+            UiText.Yki.kios to {
                 (
                     suoritus.arviointitilaLahetetty?.let {
                         +UiText.Yki.arviointitilaLahetetty
@@ -262,7 +248,7 @@ object YkiSuoritusPage {
                 )
             },
             suoritus.arviointitilanLahetysvirhe?.let {
-                UiText.Yki.kiosVirhe.toString() to { +it }
+                UiText.Yki.kiosVirhe to { +it }
             },
         )
     }
