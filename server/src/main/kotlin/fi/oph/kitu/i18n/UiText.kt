@@ -283,6 +283,12 @@ object UiText {
                             "oideilla. Henkilön mahdollisiin muihin OID-tunnuksiin (esim. yhdistettyihin " +
                             "duplikaatteihin) liittyvät suoritukset voivat puuttua tuloksista.",
                 )
+        val ilmoittautumisenTiedot: LocalizedString get() =
+            tr(
+                "yki.ilmoittautumisenTiedot",
+                fi = "Ilmoittautumisen tiedot",
+            )
+        val oppijanumerorekisteri: LocalizedString get() = tr("yki.oppijanumerorekisteri", fi = "Oppijanumerorekisteri")
 
         object Arviointitila {
             val ilmoittautunut: LocalizedString get() = tr("yki.arviointitila.ilmoittautunut", fi = "Ilmoittautunut")
@@ -635,6 +641,12 @@ object UiText {
         val nayta: LocalizedString get() = tr("toiminto.nayta", fi = "Näytä")
         val palauta: LocalizedString get() = tr("toiminto.palauta", fi = "Palauta")
         val piilota: LocalizedString get() = tr("toiminto.piilota", fi = "Piilota")
+    }
+
+    object Sukupuoli {
+        val mies: LocalizedString get() = tr("sukupuoli.mies", fi = "Mies")
+        val nainen: LocalizedString get() = tr("sukupuoli.nainen", fi = "Nainen")
+        val eiTiedossa: LocalizedString get() = tr("sukupuoli.eiTiedossa", fi = "Ei tiedossa")
     }
 }
 

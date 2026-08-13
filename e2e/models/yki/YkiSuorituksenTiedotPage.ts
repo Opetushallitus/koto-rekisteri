@@ -28,6 +28,7 @@ export default class YkiSuorituksenTiedotPage extends BasePage {
         has: this.page.locator("th", { hasText: this.exactLabel(label) }),
       })
       .locator("td")
+      .first()
   }
 
   yksilointiLink(): Locator {
