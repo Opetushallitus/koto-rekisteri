@@ -51,4 +51,13 @@ class YkiSuoritusColumnTest {
                 .toString(),
         )
     }
+
+    @Test
+    fun `rekisteriintuontiaika nakyy listanakymassa`() {
+        assertContains(
+            listViewHeaders,
+            UiText.Yki.Sarake.rekisteriintuontiaika
+                .toString(),
+        )
+    }
 }

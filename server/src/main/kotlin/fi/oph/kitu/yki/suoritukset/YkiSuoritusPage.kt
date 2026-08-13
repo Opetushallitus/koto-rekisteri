@@ -220,6 +220,10 @@ object YkiSuoritusPage {
             UiText.Yki.viimeksiMuokattu.toString() to {
                 finnishDateTime(suoritus.lastModified)
             },
+            UiText.Yki.Sarake.rekisteriintuontiaika
+                .toString() to {
+                finnishDateTime(suoritus.receivedAt)
+            },
             UiText.Yki.koski.toString() to {
                 if (koskiSiirronEstonSyyt?.isNotEmpty() == true) {
                     +("${UiText.Yki.siirtoaEiTehda}: ${koskiSiirronEstonSyyt.joinToString("; ")}")
