@@ -78,24 +78,24 @@ object TehtavapakettiPage {
         h1 { +paketti.nimi.stripMoodlePrefix() }
         card(compact = true) {
             infoTable(
-                UiText.Koto.lahdejarjestelma.toString() to { +paketti.lahdejarjestelma },
-                UiText.Koto.lahdeId.toString() to { +paketti.lahdeId },
-                UiText.Koto.versio.toString() to {
+                UiText.Koto.lahdejarjestelma to { +paketti.lahdejarjestelma },
+                UiText.Koto.lahdeId to { +paketti.lahdeId },
+                UiText.Koto.versio to {
                     code { +paketti.versioHash.take(12) }
                 },
-                paketti.lahdeVersion?.let { v -> UiText.Koto.lahdeversio.toString() to { code { +v } } },
-                paketti.lahdeLanguage?.let { lang -> UiText.Koto.kieli.toString() to { +languageLabel(lang) } },
+                paketti.lahdeVersion?.let { v -> UiText.Koto.lahdeversio to { code { +v } } },
+                paketti.lahdeLanguage?.let { lang -> UiText.Koto.kieli to { +languageLabel(lang) } },
                 paketti.lahdePublished?.let { pub ->
-                    UiText.Koto.kurssinAlku.toString() to { finnishDateTime(pub.toInstant()) }
+                    UiText.Koto.kurssinAlku to { finnishDateTime(pub.toInstant()) }
                 },
                 paketti.lahdeFilegenerated?.let { gen ->
-                    UiText.Koto.lahdeGeneroitu.toString() to { finnishDateTime(gen.toInstant()) }
+                    UiText.Koto.lahdeGeneroitu to { finnishDateTime(gen.toInstant()) }
                 },
-                UiText.Koto.ladattu.toString() to {
+                UiText.Koto.ladattu to {
                     paketti.luotu?.let { finnishDateTime(it.toInstant()) } ?: +"–"
                 },
                 paketti.s3Avain?.let { key ->
-                    UiText.Koto.xmlTiedosto.toString() to {
+                    UiText.Koto.xmlTiedosto to {
                         a(href = downloadUrl(key)) {
                             attributes["download"] = ""
                             +UiText.Koto.lataa

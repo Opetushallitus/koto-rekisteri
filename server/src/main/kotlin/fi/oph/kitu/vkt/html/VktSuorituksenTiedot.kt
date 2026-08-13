@@ -23,14 +23,14 @@ fun FlowContent.vktSuorituksenTiedot(
 ) {
     card(compact = true) {
         infoTable(
-            UiText.Vkt.tutkinnonTaso.toString() to { +t.get(data.suoritus.taitotaso) },
-            UiText.Vkt.kieli.toString() to { +t.get(data.suoritus.kieli) },
+            UiText.Vkt.tutkinnonTaso to { +t.get(data.suoritus.taitotaso) },
+            UiText.Vkt.kieli to { +t.get(data.suoritus.kieli) },
         )
     }
     h3 { +UiText.Vkt.integraatiot }
     card(compact = true) {
         infoTable(
-            UiText.Vkt.koski.toString() to {
+            UiText.Vkt.koski to {
                 when (koskiTransferState.first) {
                     KoskiTransferState.NOT_READY -> {
                         +UiText.Vkt.tiedoissaPuutteita
