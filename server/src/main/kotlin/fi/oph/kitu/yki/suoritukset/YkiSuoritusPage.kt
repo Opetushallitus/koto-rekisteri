@@ -4,15 +4,19 @@ package fi.oph.kitu.yki.suoritukset
 import arrow.core.Either
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
+import fi.oph.kitu.html.comparison
+import fi.oph.kitu.html.comparisonTable
 import fi.oph.kitu.html.errorMessage
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.json
 import fi.oph.kitu.html.warningMessage
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.i18n.unaryPlus
+import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroException
@@ -30,6 +34,7 @@ object YkiSuoritusPage {
         koskiError: KoskiErrorEntity?,
         koskiSiirronEstonSyyt: List<String>?,
         opiskeluoikeusOid: Oid?,
+        t: Translations,
     ) = Page.renderHtml {
         h1 { +suoritus.kokoNimi() }
         h2 { +UiText.Nav.yki }
@@ -49,7 +54,7 @@ object YkiSuoritusPage {
             }
         }
 
-        henkilonTiedot(henkilo, suoritus)
+        henkilonTiedot(henkilo, suoritus, t)
         todistuksenPostitusosoite(suoritus)
         tutkintotiedot(suoritus)
         arviointi(suoritus)
@@ -59,6 +64,7 @@ object YkiSuoritusPage {
     fun FlowContent.henkilonTiedot(
         henkilo: Either<OppijanumeroException, OppijanumerorekisteriHenkilo>,
         suoritus: YkiSuoritusEntity,
+        t: Translations,
     ) {
         h3 { +UiText.Yki.henkilotiedot }
         henkilo.onLeft { onrException ->
@@ -72,27 +78,44 @@ object YkiSuoritusPage {
         }
         card(compact = true) {
             val hlo = henkilo.getOrNull()
-            infoTable(
+            comparisonTable(
+                UiText.Yki.ilmoittautumisenTiedot,
+                UiText.Yki.oppijanumerorekisteri,
                 hlo?.oppijanumero?.let {
-                    UiText.Yki.Sarake.oppijanumero to { +it }
-                }
-                    ?: (
-                        UiText.Yki.henkiloOid to {
-                            +suoritus.suorittajanOID.toString()
-                            a(
-                                href = Links.Opintopolku.onr(suoritus.suorittajanOID),
-                                classes = "tight secondary float-right",
-                            ) {
-                                attributes["role"] = "button"
-                                +UiText.Yki.teeYksilointi
-                            }
+                    comparison(UiText.Yki.Sarake.oppijanumero, { +it }, { +hlo.oppijanumero })
+                } ?: comparison(UiText.Yki.henkiloOid, {
+                    +suoritus.suorittajanOID.toString()
+                }, {
+                    a(
+                        href = Links.Opintopolku.onr(suoritus.suorittajanOID),
+                        classes = "tight secondary float-right",
+                    ) {
+                        attributes["role"] = "button"
+                        +UiText.Yki.teeYksilointi
+                    }
+                }),
+                comparison(UiText.Yki.Sarake.sukunimi, suoritus.sukunimi, hlo?.sukunimi),
+                comparison(UiText.Yki.Sarake.etunimet, suoritus.etunimet, hlo?.etunimet),
+                comparison(UiText.Yki.Sarake.henkilotunnus, suoritus.hetu ?: hlo?.hetu.orDash(), hlo?.hetu),
+                comparison(
+                    UiText.Yki.Sarake.sukupuoli,
+                    suoritus.sukupuoli.text.toString(),
+                    hlo?.sukupuoli?.let {
+                        when (it) {
+                            "1" -> UiText.Sukupuoli.mies.toString()
+                            "2" -> UiText.Sukupuoli.nainen.toString()
+                            else -> it
                         }
-                    ),
-                UiText.Yki.Sarake.sukunimi to { nimitieto(suoritus.sukunimi, hlo?.sukunimi) },
-                UiText.Yki.Sarake.etunimet to { nimitieto(suoritus.etunimet, hlo?.etunimet) },
-                UiText.Yki.Sarake.henkilotunnus to { nimitieto(suoritus.hetu.orDash(), hlo?.hetu) },
-                UiText.Yki.Sarake.sukupuoli to { +suoritus.sukupuoli.toString() },
-                UiText.Yki.Sarake.kansalaisuus to { +suoritus.kansalaisuus },
+                    },
+                ),
+                comparison(
+                    UiText.Yki.Sarake.kansalaisuus,
+                    t.getByKoodiviite("maatjavaltiot1", suoritus.kansalaisuus),
+                    hlo
+                        ?.kansalaisuus
+                        ?.mapNotNull { it.kansalaisuusKoodi }
+                        ?.joinToString(", ") { t.getByKoodiviite("maatjavaltiot2", it) },
+                ),
             )
         }
     }

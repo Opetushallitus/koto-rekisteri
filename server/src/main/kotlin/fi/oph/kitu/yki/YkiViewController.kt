@@ -7,6 +7,7 @@ import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.html.errorTablePage
 import fi.oph.kitu.html.table.httpParams
+import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.jdbc.SortDirection
@@ -63,6 +64,7 @@ class YkiViewController(
     private val koskiObjectMapper: JsonMapper,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
     private val oppijanumeroService: OppijanumeroService,
+    private val localizationService: LocalizationService,
 ) {
     @GetMapping("/suoritukset/{id}", produces = ["text/html"])
     fun suoritusView(
@@ -86,6 +88,7 @@ class YkiViewController(
                     Pair(null, null)
                 }
             val henkilo = oppijanumeroService.getHenkiloByHenkiloOid(suoritus.suorittajanOID)
+            val t = localizationService.translationBuilder().koodistot("maatjavaltiot1", "maatjavaltiot2").build()
             ResponseEntity.ok(
                 YkiSuoritusPage.render(
                     henkilo,
@@ -94,6 +97,7 @@ class YkiViewController(
                     koskiError,
                     koskiSiirronEstonSyyt,
                     opiskeluoikeusOid,
+                    t,
                 ),
             )
         } ?: ResponseEntity.notFound().build()
