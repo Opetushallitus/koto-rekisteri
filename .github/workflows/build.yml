@@ -156,6 +156,22 @@ jobs:
           path: e2e/playwright-report/
           retention-days: 30
 
+  infra_lockfile:
+    name: Infra lockfile in sync
+    runs-on: ubuntu-24.04
+    needs: update_tools_cache
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Install tools
+        uses: jdx/mise-action@3c2e0cf82a5b2e5249f0d3635a4d83d0ae861518 # v4
+        with:
+          experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify infra/package-lock.json is in sync with package.json
+        run: npm ci
+        working-directory: infra
+
   lint:
     name: Check code formatting
     runs-on: ubuntu-24.04
