@@ -109,7 +109,7 @@ class YkiApiControllerTest(
                             ),
                         tutkintopaiva = LocalDate.of(2024, 9, 1),
                         arviointipaiva = LocalDate.of(2024, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
+                        arviointitila = Arviointitila.TARKISTUSARVIOITU,
                         osat =
                             listOf(
                                 YkiOsa(
@@ -285,7 +285,7 @@ class YkiApiControllerTest(
                             ),
                         tutkintopaiva = LocalDate.of(2026, 9, 1),
                         arviointipaiva = LocalDate.of(2026, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
+                        arviointitila = Arviointitila.TARKISTUSARVIOITU,
                         osat =
                             listOf(
                                 YkiOsa(
@@ -365,7 +365,7 @@ class YkiApiControllerTest(
                             ),
                         tutkintopaiva = LocalDate.of(2026, 9, 1),
                         arviointipaiva = LocalDate.of(2026, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
+                        arviointitila = Arviointitila.TARKISTUSARVIOITU,
                         osat =
                             listOf(
                                 YkiOsa(

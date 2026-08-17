@@ -135,11 +135,38 @@ class YkiSuoritusValidation(
         }
     }
 
+    @Suppress("DEPRECATION")
+    private fun Raise<Validation.ValidationError>.validateTarkistusarviointiSallittu(s: YkiHenkilosuoritus) {
+        val onTarkistusarviointi = s.suoritus.tarkistusarviointi != null
+        when (s.suoritus.arviointitila) {
+            Arviointitila.ILMOITTAUTUNUT,
+            Arviointitila.PERUTTU,
+            Arviointitila.EI_SUORITUSTA,
+            Arviointitila.ARVIOITAVA,
+            Arviointitila.ARVIOITU,
+            -> {
+                ensure(!onTarkistusarviointi) {
+                    Validation.ValidationError(
+                        listOf("suoritus", "tarkistusarviointi"),
+                        "Arviointitila '${s.suoritus.arviointitila}' ei salli tarkistusarviointia",
+                    )
+                }
+            }
+
+            Arviointitila.TARKISTUSARVIOITAVA,
+            Arviointitila.TARKISTUSARVIOITU,
+            Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
+            Arviointitila.KESKEYTETTY,
+            -> {}
+        }
+    }
+
     override fun ValidationRaise.validateAfterEnrichment(value: YkiHenkilosuoritus) {
         accumulate {
             accumulating { validateOsakokeitaOnAtLeastOne(value) }
             accumulating { validateArvosanat(value) }
             accumulating { validateArviointitilaVastaaArvosanoja(value) }
+            accumulating { validateTarkistusarviointiSallittu(value) }
         }
     }
 
