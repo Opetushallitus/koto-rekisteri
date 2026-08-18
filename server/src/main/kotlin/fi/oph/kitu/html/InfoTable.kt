@@ -29,7 +29,7 @@ fun FlowContent.infoTable(vararg rows: Pair<Any, FlowContent.() -> Unit>?) {
 fun FlowContent.comparisonTable(
     firstColumn: LocalizedString,
     secondColumn: LocalizedString,
-    vararg rows: Triple<Any, FlowContent.() -> Unit, (FlowContent.() -> Unit)?>?,
+    vararg rows: Comparison?,
 ) {
     table(classes = "info-table compact striped") {
         debugTrace()
@@ -41,11 +41,11 @@ fun FlowContent.comparisonTable(
             }
         }
         tbody {
-            rows.filterNotNull().forEach { (name, renderFirst, renderSecond) ->
-                val firstTd = createHTML().td { renderFirst() }
-                val secondTd = createHTML().td { renderSecond?.let { it() } }
-                tr(classes = if (firstTd != secondTd) "diff" else null) {
-                    th { +name.toString() }
+            rows.filterNotNull().forEach { cmp ->
+                val firstTd = createHTML().td { cmp.renderFirst(this) }
+                val secondTd = createHTML().td { cmp.renderSecond?.let { it() } }
+                tr(classes = if (!cmp.ignoreDiff && firstTd != secondTd) "diff" else null) {
+                    th { +cmp.name.toString() }
                     unsafe { raw(firstTd) }
                     unsafe { raw(secondTd) }
                 }
@@ -54,18 +54,23 @@ fun FlowContent.comparisonTable(
     }
 }
 
-fun comparison(
-    name: Any,
-    renderFirst: FlowContent.() -> Unit,
-    renderSecond: (FlowContent.() -> Unit)? = null,
-) = Triple(
-    name,
-    renderFirst,
-    renderSecond,
-)
-
-fun comparison(
-    name: Any,
-    first: String,
-    second: String? = null,
-) = comparison(name, { +first }, { +second.orDash() })
+data class Comparison(
+    val name: Any,
+    val renderFirst: FlowContent.() -> Unit,
+    val renderSecond: (FlowContent.() -> Unit)? = null,
+    val ignoreDiff: Boolean = false,
+) {
+    companion object {
+        fun of(
+            name: Any,
+            first: String?,
+            second: String?,
+            ignoreDiff: Boolean = false,
+        ) = Comparison(
+            name = name,
+            renderFirst = { +first.orDash() },
+            renderSecond = { +second.orDash() },
+            ignoreDiff = ignoreDiff,
+        )
+    }
+}
