@@ -37,7 +37,7 @@ fun generateRandomYkiSuoritusEntity(
     return YkiSuoritusEntity(
         id = null,
         suorittajanOID = randomPerson.oppijanumero,
-        hetu = randomPerson.hetu,
+        hetu = if (tutkintopaiva.isBefore(LocalDate.of(2026, 1, 1))) randomPerson.hetu else null,
         sukupuoli = randomPerson.sukupuoli,
         sukunimi = randomPerson.sukunimi,
         etunimet = randomPerson.etunimet,

@@ -624,4 +624,43 @@ class YkiSuoritusRepositoryTest(
             },
         )
     }
+
+    @Test
+    fun `hetua ei tallenneta suoritukselle, jonka tutkintopaiva on rajapaivana tai sen jalkeen`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity()
+                .copy(
+                    tutkintopaiva = LocalDate.of(2026, 1, 1),
+                    hetu = "010106A911C",
+                )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val stored = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+        assertNull(stored.hetu)
+    }
+
+    @Test
+    fun `hetu tallennetaan suoritukselle, jonka tutkintopaiva on ennen rajapaivaa`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity(maxDate = LocalDate.of(2025, 12, 31))
+                .copy(hetu = "010180-9026")
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val stored = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+        assertEquals("010180-9026", stored.hetu)
+    }
+
+    @Test
+    fun `hetullisen 2026-suorituksen uudelleensiirto ei luo uutta versiota`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity()
+                .copy(
+                    tutkintopaiva = LocalDate.of(2026, 3, 15),
+                    hetu = "010106A911C",
+                )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val uudelleensiirretty = ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+        assertEquals(0, uudelleensiirretty.count())
+    }
 }

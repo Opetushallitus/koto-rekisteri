@@ -24,6 +24,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectTarkistusarviointiAgg
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.withCtes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -37,6 +38,8 @@ import java.time.LocalDate
 class YkiSuoritusRepository(
     private val jdbcTemplate: JdbcTemplate,
     private val jdbcNamedParameterTemplate: NamedParameterJdbcTemplate,
+    @param:Value($$"${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
+    private val hetunSiirronRajapaiva: LocalDate,
 ) {
     @WithSpan
     @Transactional
@@ -298,11 +301,22 @@ class YkiSuoritusRepository(
         suoritus: YkiSuoritusEntity,
         updateOnConflict: Boolean,
         forceWrite: Boolean = false,
-    ): Int? =
-        if (forceWrite || !exists(suoritus)) {
-            insertSuoritusWithChildren(suoritus, updateOnConflict)
+    ): Int? {
+        val tallennettava = suoritus.withoutHetu()
+        return if (forceWrite || !exists(tallennettava)) {
+            insertSuoritusWithChildren(tallennettava, updateOnConflict)
         } else {
             null
+        }
+    }
+
+    // Hetua ei saa tallentaa rajapäivänä tai sen jälkeen järjestetylle tutkinnolle, tulipa
+    // suoritus mitä kirjoituspolkua tahansa pitkin.
+    private fun YkiSuoritusEntity.withoutHetu(): YkiSuoritusEntity =
+        if (hetu != null && !tutkintopaiva.isBefore(hetunSiirronRajapaiva)) {
+            copy(hetu = null).also { it.ilmoitetutOsakokeet = ilmoitetutOsakokeet }
+        } else {
+            this
         }
 
     private fun insertSuoritusWithChildren(
