@@ -2,9 +2,9 @@
 
 package fi.oph.kitu.yki.suoritukset
 import arrow.core.Either
+import fi.oph.kitu.html.Comparison
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
-import fi.oph.kitu.html.comparison
 import fi.oph.kitu.html.comparisonTable
 import fi.oph.kitu.html.errorMessage
 import fi.oph.kitu.html.infoTable
@@ -16,7 +16,6 @@ import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
 import fi.oph.kitu.i18n.unaryPlus
-import fi.oph.kitu.koodisto.Koodisto
 import fi.oph.kitu.koski.KoskiErrorEntity
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroException
@@ -24,7 +23,13 @@ import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.TutkinnonOsa
-import kotlinx.html.*
+import kotlinx.html.FlowContent
+import kotlinx.html.a
+import kotlinx.html.h1
+import kotlinx.html.h2
+import kotlinx.html.h3
+import kotlinx.html.span
+import kotlinx.html.strong
 
 object YkiSuoritusPage {
     fun render(
@@ -82,8 +87,8 @@ object YkiSuoritusPage {
                 UiText.Yki.ilmoittautumisenTiedot,
                 UiText.Yki.oppijanumerorekisteri,
                 hlo?.oppijanumero?.let {
-                    comparison(UiText.Yki.Sarake.oppijanumero, { +it }, { +hlo.oppijanumero })
-                } ?: comparison(UiText.Yki.henkiloOid, {
+                    Comparison(UiText.Yki.Sarake.oppijanumero, { +it }, { +hlo.oppijanumero })
+                } ?: Comparison(UiText.Yki.henkiloOid, {
                     +suoritus.suorittajanOID.toString()
                 }, {
                     a(
@@ -94,10 +99,23 @@ object YkiSuoritusPage {
                         +UiText.Yki.teeYksilointi
                     }
                 }),
-                comparison(UiText.Yki.Sarake.sukunimi, suoritus.sukunimi, hlo?.sukunimi),
-                comparison(UiText.Yki.Sarake.etunimet, suoritus.etunimet, hlo?.etunimet),
-                comparison(UiText.Yki.Sarake.henkilotunnus, suoritus.hetu ?: hlo?.hetu.orDash(), hlo?.hetu),
-                comparison(
+                Comparison.of(
+                    UiText.Yki.Sarake.sukunimi,
+                    suoritus.sukunimi,
+                    hlo?.sukunimi,
+                ),
+                Comparison.of(
+                    UiText.Yki.Sarake.etunimet,
+                    suoritus.etunimet,
+                    hlo?.etunimet,
+                ),
+                Comparison.of(
+                    UiText.Yki.Sarake.henkilotunnus,
+                    suoritus.hetu,
+                    hlo?.hetu,
+                    ignoreDiff = true,
+                ),
+                Comparison.of(
                     UiText.Yki.Sarake.sukupuoli,
                     suoritus.sukupuoli.text.toString(),
                     hlo?.sukupuoli?.let {
@@ -108,7 +126,7 @@ object YkiSuoritusPage {
                         }
                     },
                 ),
-                comparison(
+                Comparison.of(
                     UiText.Yki.Sarake.kansalaisuus,
                     t.getByKoodiviite("maatjavaltiot1", suoritus.kansalaisuus),
                     hlo
