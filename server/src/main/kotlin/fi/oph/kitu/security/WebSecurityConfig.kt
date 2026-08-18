@@ -49,6 +49,7 @@ fun AuthorizeHttpRequestsDsl.configureCommonAuthorizations(environment: Environm
     authorize(PUT, "/api/vkt/kios", hasAnyAuthority(*Authority.VKT_TALLENNUS.authStrings()))
     authorize(POST, "/yki/api/suoritus", hasAnyAuthority(*Authority.YKI_TALLENNUS.authStrings()))
     authorize(POST, "/yki/api/arvioija", hasAnyAuthority(*Authority.YKI_TALLENNUS.authStrings()))
+    authorize(POST, "/yki/api/oppijanumero-haku", hasAnyAuthority(*Authority.YKI_TALLENNUS.authStrings()))
     authorize(GET, "/yhteystiedot/api/**", hasAnyAuthority(*Authority.TODISTUS_YHTEYSTIEDOT_LUKEMINEN.authStrings()))
 
     authorize("/actuator/health", permitAll)

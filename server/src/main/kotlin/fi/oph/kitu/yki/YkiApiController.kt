@@ -1,6 +1,11 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
+import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oppijanumero.Oppija
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.oppijanumero.OppijanumeroTroubleshootingService
 import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
 import fi.oph.kitu.tiedontuontischema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedontuontischema.TiedonsiirtoSuccess
@@ -26,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpSession
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
@@ -46,6 +52,8 @@ class YkiApiController(
     private val ykiSuoritusRepository: YkiSuoritusRepository,
     private val ykiSuoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
+    private val oppijanumeroService: OppijanumeroService,
+    private val oppijanumeroTroubleshooting: OppijanumeroTroubleshootingService,
 ) {
     @GetMapping("/suoritukset", "/suoritus", produces = ["text/csv"])
     fun getSuorituksetAsCsv(
@@ -173,6 +181,76 @@ class YkiApiController(
         return TiedonsiirtoSuccess().toResponseEntity()
     }
 
+    @PostMapping("/oppijanumero-haku")
+    @Tag(name = "oauth2")
+    @Operation(
+        summary = "Oppijanumeron haku henkilötunnuksen ja nimien perusteella",
+        description =
+            "Palauttaa Oppijanumerorekisterin master-oppijanumeron henkilölle, joka tunnistetaan " +
+                "henkilötunnuksen ja nimien perusteella. Tarkoitettu historiadatan migraatioon " +
+                "riveille, joilta oppijanumero puuttuu.",
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "OK"),
+            ApiResponse(responseCode = "400", description = "Pakollinen kenttä puuttuu"),
+            ApiResponse(responseCode = "404", description = "Oppijaa ei löytynyt Oppijanumerorekisteristä"),
+            ApiResponse(responseCode = "502", description = "Oppijanumerorekisteri ei vastannut"),
+        ],
+    )
+    fun postOppijanumeroHaku(
+        @RequestBody haku: OppijanumeroHakuRequest,
+    ): ResponseEntity<*> {
+        if (haku.hetu.isBlank() || haku.etunimet.isBlank() || haku.sukunimi.isBlank()) {
+            return TiedonsiirtoFailure
+                .badRequest("hetu, etunimet ja sukunimi ovat pakollisia")
+                .toResponseEntity()
+        }
+        val oppija =
+            Oppija(
+                etunimet = haku.etunimet.trim(),
+                hetu = haku.hetu.trim(),
+                kutsumanimi =
+                    haku.kutsumanimi
+                        ?.trim()
+                        ?.takeIf { it.isNotEmpty() }
+                        ?: haku.etunimet
+                            .trim()
+                            .split(" ")
+                            .first(),
+                sukunimi = haku.sukunimi.trim(),
+            )
+        return oppijanumeroService.getMasterOid(oppija).fold(
+            ifLeft = { error ->
+                when (error) {
+                    is OppijanumeroException.OppijaNotIdentifiedException,
+                    is OppijanumeroException.OppijaNotFoundException,
+                    -> {
+                        oppijanumeroTroubleshooting
+                            .troubleshootOppijaNameCombinations(oppija)
+                            ?.let { oppijanumeroService.getMasterOid(it).getOrNull() }
+                            ?.let { oid -> ResponseEntity.ok(OppijanumeroHakuResponse(oid)) }
+                            ?: TiedonsiirtoFailure(
+                                HttpStatus.NOT_FOUND,
+                                listOf("Oppijaa ei löytynyt Oppijanumerorekisteristä"),
+                            ).toResponseEntity()
+                    }
+
+                    else -> {
+                        TiedonsiirtoFailure(
+                            HttpStatus.BAD_GATEWAY,
+                            listOf(
+                                "Oppijanumeron haku epäonnistui (${error::class.simpleName}). " +
+                                    "Yritä myöhemmin uudestaan.",
+                            ),
+                        ).toResponseEntity()
+                    }
+                }
+            },
+            ifRight = { oid -> ResponseEntity.ok(OppijanumeroHakuResponse(oid)) },
+        )
+    }
+
     @PostMapping("/arvioija")
     @Tag(name = "oauth2")
     @Operation(
@@ -239,3 +317,14 @@ class YkiApiController(
         return TiedonsiirtoSuccess().toResponseEntity()
     }
 }
+
+data class OppijanumeroHakuRequest(
+    val hetu: String,
+    val etunimet: String,
+    val sukunimi: String,
+    val kutsumanimi: String? = null,
+)
+
+data class OppijanumeroHakuResponse(
+    val oid: Oid,
+)

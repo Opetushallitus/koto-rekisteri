@@ -25,7 +25,8 @@ The CSV is **sensitive personal data**. Keep it inside AWS end to end:
 ## The data (as verified for the 2011–2020 export)
 
 - 76,848 rows, headerless, comma-separated, `"`-quoted, **30 columns** in
-  `YkiSuoritusCsv` order.
+  `YkiSuoritusCsv` order. (The migrate script auto-detects the delimiter —
+  tab/comma/`;`/`|` — by which one yields 30 fields; override with `--delimiter`.)
 - NULLs are the MySQL sentinel **`\N`** (from `SELECT … INTO OUTFILE`).
 - Enum encodings already valid (`M/N/E`, `fin/swe/eng/…`, `PT/KT/YT`); no legacy codes.
 - All dates well-formed once `\N`→NULL. **204 rows** carry a real tarkistusarviointi.
@@ -34,6 +35,50 @@ The CSV is **sensitive personal data**. Keep it inside AWS end to end:
 If you point the tools at a **different** export, re-run the checks below before trusting
 the layout — the column names and `\N` handling are baked in on the assumption of this
 30-column Solki format.
+
+## Source export completeness (rows the export SQL silently drops)
+
+The export was produced with
+`FROM suoritus s JOIN osallistuja o ON s.osallistuja = o.nro JOIN jarjestaja j ON s.jarjestaja = j.oid WHERE o.oid IS NOT NULL AND YEAR(s.pvm) BETWEEN 2011 AND 2020`.
+Four of its filters drop rows **without any error**:
+
+| Clause                      | Silently drops                                                  |
+| --------------------------- | --------------------------------------------------------------- |
+| `WHERE o.oid IS NOT NULL`   | all suoritukset of participants with no oppijanumero            |
+| inner join to `jarjestaja`  | suoritukset whose `jarjestaja` is NULL or unmatched             |
+| inner join to `osallistuja` | orphaned suoritukset with no matching participant row           |
+| `YEAR(s.pvm)`               | rows with NULL `pvm` (`YEAR(NULL)` is NULL, never in the range) |
+
+Quantify against the source MySQL before accepting an export as complete:
+
+```sql
+-- baseline, ignoring every join/filter
+SELECT COUNT(*) FROM suoritus s WHERE YEAR(s.pvm) BETWEEN 2011 AND 2020;
+
+-- dropped by the oid filter; the has_hetu split shows how many are recoverable via ONR
+SELECT COUNT(*)                                                    AS after_osallistuja_join,
+       SUM(o.oid IS NULL)                                          AS dropped_oid_null,
+       SUM(o.oid IS NULL AND o.hetu IS NOT NULL AND o.hetu <> '')  AS dropped_oid_null_but_has_hetu
+FROM suoritus s JOIN osallistuja o ON s.osallistuja = o.nro
+WHERE YEAR(s.pvm) BETWEEN 2011 AND 2020;
+
+-- dropped by the jarjestaja inner join
+SELECT COUNT(*) FROM suoritus s
+JOIN osallistuja o ON s.osallistuja = o.nro
+LEFT JOIN jarjestaja j ON s.jarjestaja = j.oid
+WHERE YEAR(s.pvm) BETWEEN 2011 AND 2020 AND o.oid IS NOT NULL AND j.oid IS NULL;
+
+-- orphaned suoritukset + NULL exam dates
+SELECT SUM(o.nro IS NULL) FROM suoritus s
+LEFT JOIN osallistuja o ON s.osallistuja = o.nro
+WHERE YEAR(s.pvm) BETWEEN 2011 AND 2020;
+SELECT COUNT(*) FROM suoritus WHERE pvm IS NULL;
+```
+
+Rows without an oppijanumero could not be POSTed as-is anyway — `henkilo.oid` is a
+required field of `POST /yki/api/suoritus`, and the suoritus API only verifies a given
+OID against ONR, it never resolves one from the hetu. Recovering those rows is what
+the OID backfill flow is for (see "OID backfill" under Phase 2).
 
 ## Phase 1 — analysis
 
@@ -64,6 +109,11 @@ FROM raw;
 -- duplicates the app would collapse on upsert
 SELECT count(*) FROM (SELECT suoritus_id FROM raw GROUP BY 1 HAVING count(*) > 1);
 SELECT count(*) FROM (SELECT 1 FROM raw GROUP BY suorittajan_oid, tutkintopaiva, tutkintokieli, tutkintotaso HAVING count(*) > 1);
+
+-- tarkistus rows the server would 400 (käsittelypäivä before saapumispäivä);
+-- the migrate script does NOT pre-check this locally
+SELECT count(*) FROM raw
+WHERE TRY_CAST(tark_kasittely_pvm AS DATE) < TRY_CAST(tark_saapumis_pvm AS DATE);
 ```
 
 `.quit` to exit. See the script header for options (`AWS_REGION`, header/positional fallback).
@@ -98,12 +148,59 @@ grep '"ok": false' report.jsonl        # rows that would be rejected, with reaso
   Re-running with the same `--out` skips rows already `ok` (idempotent anyway — the API
   upserts on the Solki id).
 - Local pre-checks skip rows that would 400 (no osat, invalid arvosana for the taso,
-  `arvosanaMuuttui ⊄ tarkistetut`) so they're reported without a wasted POST.
-- `--sleep N` throttles between POSTs; `--limit N` caps the run.
+  `arvosanaMuuttui ⊄ tarkistetut`) so they're reported without a wasted POST. They do
+  **not** cover everything the server checks — notably `tark_kasittely_pvm <
+tark_saapumis_pvm` is rejected server-side only (see the Phase 1 pre-check).
+- `--sleep N` throttles between POSTs; `--limit N` caps the run; `--delimiter` overrides
+  the auto-detected field delimiter (accepts `tab`, `comma`, `;`, `|`, or a literal char).
 
 > Note: `--limit N` caps the number of input rows read, before filtering — so with
 > `--modified-before`, a small `--limit` may migrate fewer than N rows if early rows are
 > filtered out.
+
+### OID backfill (rows without oppijanumero)
+
+For a source CSV that contains rows without `suorittajan_oid` (see "Source export
+completeness"), a pre-pass resolves OIDs from hetu + names through kitu's
+`POST /yki/api/oppijanumero-haku` (same `YKI_TALLENNUS` OAuth2 client as the suoritus
+POST; the endpoint queries ONR `yleistunniste/hae` and falls back to
+`OppijanumeroTroubleshootingService` name combinations — each etunimi as kutsumanimi,
+swapped etunimet/sukunimi). It is resolve-only: people ONR has never seen stay
+unresolved, since kitu has no ONR-create capability.
+
+```bash
+# Pre-pass: resolve OIDs for OID-less rows into a resumable map. POSTs no suoritukset.
+./scripts/migrate_yki_historia.py --source s3://.../<key>.csv --env prod --confirm-prod \
+    --client-id "$CID" --client-secret "$CSECRET" \
+    --backfill-oids --oid-map oid_map.jsonl --unresolved-out unresolved.csv --sleep 0.1
+
+# Migration run: --oid-map injects the resolved OIDs; rows still without an OID are
+# diverted to --unresolved-out and reported as action=unresolved, never POSTed.
+./scripts/migrate_yki_historia.py --source s3://.../<key>.csv --env prod --confirm-prod \
+    --client-id "$CID" --client-secret "$CSECRET" \
+    --oid-map oid_map.jsonl --unresolved-out unresolved.csv --out report.jsonl
+```
+
+- `--oid-map` (JSONL, one `{solki_id, oid, reason}` per attempted row) is resumable:
+  re-running the pre-pass skips already-attempted solki_ids. For a **later retry round**
+  use a **fresh** map file — the map records failed attempts too, so reusing it would
+  skip people who exist in ONR by now.
+- `--unresolved-out` accumulates the still-unresolved rows verbatim in the same
+  30-column headerless layout, deduplicated on solki_id, so the file is **directly
+  usable as `--source`** in a later round. It contains hetus, names and addresses —
+  same safety boundary as the source CSV, keep it in AWS.
+- The pre-pass respects `--modified-before` and `--limit`, so it only resolves rows the
+  migration would actually load.
+
+```bash
+# Later round, when ONR knows more people: feed the leftover file back in.
+./scripts/migrate_yki_historia.py --source unresolved.csv --env prod --confirm-prod \
+    --client-id "$CID" --client-secret "$CSECRET" \
+    --backfill-oids --oid-map oid_map_round2.jsonl --unresolved-out unresolved2.csv
+./scripts/migrate_yki_historia.py --source unresolved.csv --env prod --confirm-prod \
+    --client-id "$CID" --client-secret "$CSECRET" \
+    --oid-map oid_map_round2.jsonl --unresolved-out unresolved2.csv --out report2.jsonl
+```
 
 ### Column → JSON mapping (reference)
 
@@ -117,8 +214,12 @@ whitespace/tabs and `\N`/empty is mapped to null.
   lahde: `Solki`}.
 - `osat`: one `{tyyppi, arvosana}` per **non-null** grade column
   (as_ty→TY, as_ki→KI, as_rs→RS, as_py→PY, as_pu→PU, as_yl→YL).
-- `arviointitila`: `ARVIOITU` when arviointipaiva present else `ARVIOITAVA`; prod
-  re-derives the real state (`convertLegacyArviointitila`).
+- `arviointitila`: `ARVIOITU` when arviointipaiva present else `ARVIOITAVA`. Prod runs
+  `kitu.yki.convertLegacyArviointitila.enabled=true`, so enrichment re-derives the real
+  state (`laskeArviointitila`): tarkistusarviointi with käsittelypäivä →
+  `TARKISTUSARVIOITU`, without → `TARKISTUSARVIOITAVA`; otherwise all arvosanat ≥ 9 →
+  `EI_SUORITUSTA`, else `ARVIOITU`. The derived state always satisfies the
+  arviointitila↔arvosanat and tarkistusarviointi-sallittu validations.
 - `tarkistusarviointi` (only when tark_saapumis_pvm present): saapumispaiva, kasittelypaiva,
   asiatunnus, perustelu, and the **bitmask** ints tark_osakokeet / arvosana_muuttui decoded
   to osa-code lists (`PU=1, KI=2, TY=4, PY=8`; RS/YL cannot appear).
@@ -129,10 +230,21 @@ whitespace/tabs and `\N`/empty is mapped to null.
   extrapolated from the dev/test values in `scripts/upload_yki_suoritus.sh`. Verify them,
   or override with `--host` / `--token-url`. The script prints the resolved prod URLs and
   refuses to POST to prod without `--confirm-prod`.
-- **The 204 tarkistus rows land as `TARKISTUSARVIOITU`, not `TARKISTUSARVIOINTI_HYVAKSYTTY`.**
+- **The 204 tarkistus rows land as `TARKISTUSARVIOITU`** (those with a käsittelypäivä; any
+  without one land as `TARKISTUSARVIOITAVA`), **not `TARKISTUSARVIOINTI_HYVAKSYTTY`.**
   The JSON import path cannot set the "approved" state. If these historical tarkistukset
   should be `HYVAKSYTTY`, do a follow-up DB update after import or adjust the import — a
   domain decision.
+- **The current 2011–2020 export contains no OID-less rows** (`WHERE o.oid IS NOT NULL`
+  filtered them out at the source), so the OID backfill only matters once a re-export
+  without that filter is available — see "Source export completeness" for the queries
+  that quantify what it excluded.
+- **People ONR has never seen cannot be backfilled** — the haku endpoint is
+  resolve-only. Whether the final unresolved remainder should be created in ONR (a
+  capability kitu doesn't have) or documented as a permanent gap is a domain decision.
+- **The haku endpoint (`POST /yki/api/oppijanumero-haku`) is a bulk hetu→OID lookup**
+  kept at the same trust level as suoritus creation (`YKI_TALLENNUS`). Consider
+  removing it once the migration is complete.
 
 ## Troubleshooting
 
@@ -141,5 +253,8 @@ whitespace/tabs and `\N`/empty is mapped to null.
 - Migration rows returning HTTP 400 → read `response` in the report; the field path in the
   `TiedonsiirtoFailure` points at the offending value. HTTP 401 → wrong client credentials
   or the palvelukäyttäjä lacks YKI rights.
+- Migrate script errors `could not auto-detect a delimiter giving 30 columns` → it prints
+  the field counts per candidate delimiter; pass `--delimiter` explicitly, or the file
+  isn't the expected layout at all.
 - DuckDB reads garbage / wrong column count → the file isn't the 30-column Solki layout;
   re-read positionally (`header := false`, no `names`) and re-derive the mapping.
