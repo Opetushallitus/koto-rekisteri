@@ -93,7 +93,7 @@ object YkiSuoritusPage {
                 }, {
                     a(
                         href = Links.Opintopolku.onr(suoritus.suorittajanOID),
-                        classes = "tight secondary float-right",
+                        classes = "tight secondary",
                     ) {
                         attributes["role"] = "button"
                         +UiText.Yki.teeYksilointi
