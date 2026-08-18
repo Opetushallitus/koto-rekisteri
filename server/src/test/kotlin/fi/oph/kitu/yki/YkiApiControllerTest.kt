@@ -21,6 +21,7 @@ import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.util.result.getOrThrow
+import fi.oph.kitu.verboseContentJson
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
@@ -1005,6 +1006,48 @@ class YkiApiControllerTest(
                 .toString(),
             "Rekisteriintuontiaika näkyy myös HTML-listanäkymässä",
         )
+    }
+
+    @Test
+    fun `Oppijanumeron haku hetun ja nimien perusteella onnistuu`() {
+        post(
+            "/yki/api/oppijanumero-haku",
+            """{"hetu": "010180-9026", "etunimet": "Ranja Testi", "sukunimi": "Öhman-Testi"}""",
+        ) {
+            status { isOk() }
+            verboseContentJson(OppijanumeroHakuResponse(Oid.parse("1.2.246.562.24.33342764709").getOrThrow()))
+        }
+    }
+
+    @Test
+    fun `Oppijanumeron haku loytaa oppijan, jonka kutsumanimi ei ole ensimmainen etunimi`() {
+        post(
+            "/yki/api/oppijanumero-haku",
+            """{"hetu": "040265-9985", "etunimet": "Minerva Alli Aniitta", "sukunimi": "Marttila"}""",
+        ) {
+            status { isOk() }
+            verboseContentJson(OppijanumeroHakuResponse(Oid.parse("1.2.246.562.24.92472049678").getOrThrow()))
+        }
+    }
+
+    @Test
+    fun `Oppijanumeron haku palauttaa 404, kun oppijaa ei loydy`() {
+        post(
+            "/yki/api/oppijanumero-haku",
+            """{"hetu": "010101-999X", "etunimet": "Tuntematon", "sukunimi": "Testaaja"}""",
+        ) {
+            status { isNotFound() }
+        }
+    }
+
+    @Test
+    fun `Oppijanumeron haku palauttaa 400, kun pakollinen kentta on tyhja`() {
+        post(
+            "/yki/api/oppijanumero-haku",
+            """{"hetu": "", "etunimet": "Ranja Testi", "sukunimi": "Öhman-Testi"}""",
+        ) {
+            isBadRequest("hetu, etunimet ja sukunimi ovat pakollisia")
+        }
     }
 
     private fun postSuoritus(
