@@ -24,10 +24,6 @@ fun Environment.isProduction() = isProfile(AppProfile.Prod)
 
 fun Environment.isQA() = isProfile(AppProfile.QA)
 
-fun Environment.isUntuva() = isProfile(AppProfile.Untuva)
-
-fun Environment.isTest() = isProfile(AppProfile.Test)
-
 fun Environment.isE2ETest() = isProfile(AppProfile.E2ETest)
 
 fun Environment.isLocal() = isProfile(AppProfile.Local)

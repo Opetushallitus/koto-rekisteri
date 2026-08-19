@@ -99,36 +99,6 @@ class KoskiService(
 
     @WithSpan
     @RetryOutboundIntegration
-    fun sendYkiMitatointiToKoski(ykiSuoritusEntity: YkiSuoritusEntity): Either<KoskiException, Unit> {
-        if (ykiSuoritusEntity.koskiOpiskeluoikeus != null) {
-            koskiYkiRequestMapper
-                .ykiSuoritusToKoskiRequest(ykiSuoritusEntity)
-                .getOrNull()
-                ?.mitatoi()
-                ?.let { koskiRequest ->
-                    koskiRestClient
-                        .put()
-                        .uri("oppija")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .body(koskiRequest)
-                        .retrieve()
-                        .toEntity<KoskiResponse>()
-                }
-
-            val suoritus =
-                ykiSuoritusEntity.copy(
-                    koskiOpiskeluoikeus = null,
-                    koskiSiirtoKasitelty = false,
-                )
-            ykiSuoritusRepository.save(suoritus, true)
-        }
-
-        return Unit.right()
-    }
-
-    @WithSpan
-    @RetryOutboundIntegration
     fun sendVktSuoritusToKoski(suoritus: VktHenkilosuoritus): Either<KoskiException, Unit> {
         val id = CustomVktSuoritusRepository.Tutkintoryhma.from(suoritus)
         val koskiRequest = koskiVktRequestMapper.vktSuoritusToKoskiRequest(suoritus)
