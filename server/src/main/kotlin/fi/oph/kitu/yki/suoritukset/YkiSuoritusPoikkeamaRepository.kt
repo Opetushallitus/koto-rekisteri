@@ -44,18 +44,6 @@ class YkiSuoritusPoikkeamaRepository(
             YkiSuoritusPoikkeama.fromRow,
         )
 
-    fun findByKey(
-        solkiId: Int,
-        kentta: String,
-    ): YkiSuoritusPoikkeama? =
-        jdbcTemplate
-            .query(
-                "SELECT * FROM yki_suoritus_poikkeama WHERE solki_id = ? AND kentta = ?",
-                YkiSuoritusPoikkeama.fromRow,
-                solkiId,
-                kentta,
-            ).firstOrNull()
-
     fun findBySolkiIds(solkiIds: List<Int>): List<YkiSuoritusPoikkeama> {
         if (solkiIds.isEmpty()) return emptyList()
         val placeholders = solkiIds.joinToString(",") { "?" }

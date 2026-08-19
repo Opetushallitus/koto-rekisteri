@@ -94,14 +94,6 @@ data class YkiSuoritusEntity(
 
     fun isOphTesti(): Boolean = Lahdejarjestelma.ofTunnus(lahdejarjestelmanTunnus) == Lahdejarjestelma.OPHTesti
 
-    fun tarkistusarviointiHyvaksyttyViewText(): String? =
-        tarkistusarviointiHyvaksyttyPvm?.finnishDate()
-            ?: if (arviointitila == Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY) {
-                "Ennen 14.11.2025"
-            } else {
-                null
-            }
-
     fun kokoNimi() = "$sukunimi $etunimet"
 
     fun isVilppi() =

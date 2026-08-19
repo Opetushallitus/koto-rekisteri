@@ -82,27 +82,3 @@ fun equalsByProperties(
         propsEqual(p.get(a), p.get(b), context)
     }
 }
-
-inline fun <reified T : Any> T.findDifferentProperties(
-    other: T,
-    context: String,
-): Map<String, Pair<Any?, Any?>> {
-    if (this === other) return emptyMap()
-    val props = getProperties<T>(context)
-    return props
-        .flatMap { prop ->
-            val thisValue = prop.get(this)
-            val thatValue = prop.get(other)
-            if (propsEqual(thisValue, thatValue, context)) {
-                emptyList()
-            } else {
-                listOf(prop.name to (thisValue to thatValue))
-            }
-        }.toMap()
-}
-
-fun Map<String, Pair<Any?, Any?>>.ignoreEmptyValues(): Map<String, Pair<Any?, Any?>> =
-    filterValues { (thisValue, thatValue) ->
-        fun isEmpty(value: Any?): Boolean = value == null || value == "" || (value as? Collection<*>)?.isEmpty() == true
-        !isEmpty(thisValue) || !isEmpty(thatValue)
-    }
