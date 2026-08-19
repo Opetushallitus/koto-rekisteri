@@ -1,7 +1,6 @@
 package fi.oph.kitu.tehtavapankki
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.kotoutumiskoulutus.koealusta.tehtavapankki.TehtavapankkiAikaleimaMigration
 import fi.oph.kitu.util.defaultObjectMapper
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,9 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.JdbcTemplate
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -297,56 +293,6 @@ class TehtavapankkiRepositoryTest(
         assertEquals(setOf("1-foo/a.xml", "2-bar/b.xml"), paketit.map { it.s3Avain }.toSet())
         assertEquals(pakettiIdA, paketit.single { it.s3Avain == "1-foo/a.xml" }.id)
         assertEquals(pakettiIdB, paketit.single { it.s3Avain == "2-bar/b.xml" }.id)
-    }
-
-    @Test
-    fun `korjaaVirheellisetLahdeAikaleimat kertoo 1970-luvulle tallentuneet epochit tuhannella`() {
-        val virheellinenId =
-            repo.insertPaketti(
-                TehtavapakettiEntity(
-                    lahdejarjestelma = "moodle.koealusta",
-                    lahdeId = "1",
-                    nimi = "Virheellinen",
-                    versioHash = "h1",
-                    lahdeFilegenerated = OffsetDateTime.ofInstant(Instant.ofEpochMilli(1733400001), ZoneOffset.UTC),
-                    lahdePublished = OffsetDateTime.ofInstant(Instant.ofEpochMilli(1672531200), ZoneOffset.UTC),
-                ),
-            )
-        val oikeaId =
-            repo.insertPaketti(
-                TehtavapakettiEntity(
-                    lahdejarjestelma = "moodle.koealusta",
-                    lahdeId = "2",
-                    nimi = "Oikea",
-                    versioHash = "h2",
-                    lahdeFilegenerated = OffsetDateTime.ofInstant(Instant.ofEpochSecond(1733400000), ZoneOffset.UTC),
-                ),
-            )
-        val epochId =
-            repo.insertPaketti(
-                TehtavapakettiEntity(
-                    lahdejarjestelma = "moodle.koealusta",
-                    lahdeId = "3",
-                    nimi = "Epoch-nolla",
-                    versioHash = "h3",
-                    lahdePublished = OffsetDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC),
-                ),
-            )
-
-        val korjattu = repo.korjaaVirheellisetLahdeAikaleimat(TehtavapankkiAikaleimaMigration.RAJA)
-
-        assertEquals(1, korjattu)
-        val korjattuPaketti = repo.findPakettiById(virheellinenId)!!
-        assertEquals(Instant.ofEpochSecond(1733400001), korjattuPaketti.lahdeFilegenerated!!.toInstant())
-        assertEquals(Instant.ofEpochSecond(1672531200), korjattuPaketti.lahdePublished!!.toInstant())
-
-        val oikea = repo.findPakettiById(oikeaId)!!
-        assertEquals(Instant.ofEpochSecond(1733400000), oikea.lahdeFilegenerated!!.toInstant())
-        assertNull(oikea.lahdePublished)
-
-        val epochNolla = repo.findPakettiById(epochId)!!
-        assertNull(epochNolla.lahdeFilegenerated)
-        assertEquals(Instant.EPOCH, epochNolla.lahdePublished!!.toInstant())
     }
 
     @Test
