@@ -1,15 +1,11 @@
 package fi.oph.kitu.csvparsing
 
-import arrow.core.Either
-import arrow.core.left
 import fi.oph.kitu.observability.use
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oid.OidDeserializer
 import fi.oph.kitu.oid.OidSerializer
 import io.opentelemetry.api.trace.Tracer
 import org.springframework.stereotype.Service
-import tools.jackson.databind.MappingIterator
-import tools.jackson.databind.exc.InvalidFormatException
 import tools.jackson.databind.module.SimpleModule
 import tools.jackson.dataformat.csv.CsvMapper
 import tools.jackson.dataformat.csv.CsvSchema
@@ -17,7 +13,7 @@ import java.io.ByteArrayOutputStream
 import kotlin.reflect.full.findAnnotation
 
 @Service
-class CsvParser(
+class CsvGenerator(
     final val tracer: Tracer,
 ) {
     var columnSeparator: Char = ','
@@ -25,14 +21,14 @@ class CsvParser(
     var useHeader: Boolean = false
     val quoteChar: Char = '"'
 
-    fun withUseHeader(value: Boolean): CsvParser =
-        CsvParser(tracer).also {
+    fun withUseHeader(value: Boolean): CsvGenerator =
+        CsvGenerator(tracer).also {
             it.useHeader = value
             it.columnSeparator = columnSeparator
         }
 
-    fun withColumnSeparator(value: Char): CsvParser =
-        CsvParser(tracer).also {
+    fun withColumnSeparator(value: Char): CsvGenerator =
+        CsvGenerator(tracer).also {
             it.useHeader = useHeader
             it.columnSeparator = value
         }
@@ -109,68 +105,4 @@ class CsvParser(
             .with(schema)
             .writeValue(outputStream, data)
     }
-
-    /**
-     * Converts retrieved String response into a list that is the type of Body.
-     */
-    final inline fun <reified T> convertCsvToData(csvString: String): List<Either<CsvExportError, T>> =
-        tracer
-            .spanBuilder("CsvParser.convertCsvToData")
-            .startSpan()
-            .use { span ->
-                span.setAttribute("serialization.isEmptyList", csvString.isBlank())
-                if (csvString.isBlank()) {
-                    return@use emptyList()
-                }
-
-                val csvMapper = getCsvMapper<T>()
-                val schema = getSchema<T>(csvMapper)
-                val lineSeparator =
-                    onlyOrNull(schema.lineSeparator)
-                        ?: return@use listOf(
-                            SimpleCsvExportError(
-                                lineNumber = 0,
-                                context = null,
-                                exception =
-                                    IllegalStateException(
-                                        "Can't find only one line seperator from schema (${schema.lineSeparator}).",
-                                    ),
-                            ).left(),
-                        )
-
-                return@use csvMapper
-                    .readerFor(T::class.java)
-                    .with(schema)
-                    .readValues<T>(csvString)
-                    .toEithers { index, e ->
-                        val context = runCatching { csvString.split(lineSeparator)[index] }.getOrNull()
-
-                        when (e) {
-                            is InvalidFormatException -> InvalidFormatCsvExportError(index, context, e)
-                            else -> SimpleCsvExportError(index, context, e)
-                        }
-                    }
-            }
-}
-
-/** Returns the only element in the object or null */
-fun onlyOrNull(list: CharArray): Char? = if (list.isEmpty() || list.size != 1) null else list[0]
-
-fun <Value, Error> MappingIterator<Value>.toEithers(
-    mapFailure: (index: Int, exception: Throwable) -> Error,
-): List<Either<Error, Value>> {
-    val data = mutableListOf<Either<Error, Value>>()
-    var index = 0
-
-    while (this.hasNext()) {
-        val result =
-            Either
-                .catch { this.nextValue() }
-                .mapLeft { e -> mapFailure(index, e) }
-                .also { index++ }
-
-        data.add(result)
-    }
-
-    return data
 }

@@ -1,7 +1,7 @@
 package fi.oph.kitu.kotoutumiskoulutus.suoritukset.error
 
 import fi.oph.kitu.auditlogs.AuditLogger
-import fi.oph.kitu.csvparsing.CsvParser
+import fi.oph.kitu.csvparsing.CsvGenerator
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.findAllSorted
 import fi.oph.kitu.observability.setAttribute
@@ -16,7 +16,7 @@ class KielitestiErrorService(
     private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
     private val auditLogger: AuditLogger,
     private val tracer: Tracer,
-    private val csvParser: CsvParser,
+    private val csvGenerator: CsvGenerator,
 ) {
     @WithSpan
     fun getErrors(
@@ -41,7 +41,7 @@ class KielitestiErrorService(
                 val errors = getErrors(orderBy, orderByDirection)
                 span.setAttribute("dataCount", errors.count())
                 val outputStream = ByteArrayOutputStream()
-                csvParser
+                csvGenerator
                     .withUseHeader(true)
                     .withColumnSeparator(';')
                     .streamDataAsCsv(outputStream, errors)
