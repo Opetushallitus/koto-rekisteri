@@ -25,22 +25,6 @@ class YkiArviointitilaLaskentaTest {
     )
 
     @Test
-    fun `KESKEYTETTY ilman oikeita arvosanoja muuttuu EI_SUORITUSTA-tilaan`() {
-        assertEquals(
-            Arviointitila.EI_SUORITUSTA,
-            laske(Arviointitila.KESKEYTETTY, osakoeCount = 3, oikeitaArvosanoja = 0),
-        )
-    }
-
-    @Test
-    fun `KESKEYTETTY jossa on oikea arvosana muuttuu ARVIOITU-tilaan`() {
-        assertEquals(
-            Arviointitila.ARVIOITU,
-            laske(Arviointitila.KESKEYTETTY, osakoeCount = 3, oikeitaArvosanoja = 1),
-        )
-    }
-
-    @Test
     fun `ARVIOITU ilman oikeita arvosanoja muuttuu EI_SUORITUSTA-tilaan`() {
         assertEquals(
             Arviointitila.EI_SUORITUSTA,

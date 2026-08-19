@@ -305,8 +305,6 @@ object UiText {
                 get() = tr("yki.arviointitila.tarkistusarviointiTehty", fi = "Tarkistusarviointi tehty")
             val tarkistusarviointiHyvaksytty: LocalizedString
                 get() = tr("yki.arviointitila.tarkistusarviointiHyvaksytty", fi = "Tarkistusarviointi hyväksytty")
-            val suoritusKeskeytetty: LocalizedString
-                get() = tr("yki.arviointitila.suoritusKeskeytetty", fi = "Suoritus keskeytetty")
         }
 
         object Sarake {
