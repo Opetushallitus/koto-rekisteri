@@ -596,22 +596,4 @@ class ValidationServiceTest(
             result,
         )
     }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `Suoritusta ei voi siirtää tilassa KESKEYTETTY`() {
-        val suoritus =
-            validiYkiSuoritus.modifySuoritus {
-                it.copy(arviointitila = Arviointitila.KESKEYTETTY, arviointipaiva = null)
-            }
-
-        val result = validation.validateAndEnrich(suoritus)
-        assertEquals(
-            fail(
-                listOf("suoritus", "arviointitila"),
-                "Arviointitilaa 'KESKEYTETTY' ei voi tuoda",
-            ),
-            result,
-        )
-    }
 }

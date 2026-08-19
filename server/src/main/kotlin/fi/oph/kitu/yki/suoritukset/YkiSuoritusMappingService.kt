@@ -71,7 +71,7 @@ class YkiSuoritusMappingService(
                         csv.yleisarvosana,
                     ).any { it == 10 }
                 ) {
-                    Arviointitila.KESKEYTETTY
+                    Arviointitila.EI_SUORITUSTA
                 } else {
                     Arviointitila.ARVIOITU
                 }

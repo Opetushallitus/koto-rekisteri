@@ -127,9 +127,7 @@ class YkiSuoritusValidation(
                 }
             }
 
-            Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
-            Arviointitila.KESKEYTETTY,
-            -> {
+            Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY -> {
                 raise(virhe("Arviointitilaa '${s.suoritus.arviointitila}' ei voi tuoda"))
             }
         }
@@ -156,7 +154,6 @@ class YkiSuoritusValidation(
             Arviointitila.TARKISTUSARVIOITAVA,
             Arviointitila.TARKISTUSARVIOITU,
             Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
-            Arviointitila.KESKEYTETTY,
             -> {}
         }
     }

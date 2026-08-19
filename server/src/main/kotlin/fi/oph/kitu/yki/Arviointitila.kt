@@ -15,10 +15,6 @@ enum class Arviointitila : DisplayEnum {
     TARKISTUSARVIOITAVA,
     TARKISTUSARVIOITU,
     TARKISTUSARVIOINTI_HYVAKSYTTY,
-
-    @Deprecated("Poistuu käytöstä uuden arviointitilamallin myötä")
-    @HideInTableFilter
-    KESKEYTETTY,
     ;
 
     @Suppress("DEPRECATION")
@@ -33,7 +29,6 @@ enum class Arviointitila : DisplayEnum {
                 TARKISTUSARVIOITAVA -> UiText.Yki.Arviointitila.suoritusTarkistusarvioitavana
                 TARKISTUSARVIOITU -> UiText.Yki.Arviointitila.tarkistusarviointiTehty
                 TARKISTUSARVIOINTI_HYVAKSYTTY -> UiText.Yki.Arviointitila.tarkistusarviointiHyvaksytty
-                KESKEYTETTY -> UiText.Yki.Arviointitila.suoritusKeskeytetty
             }.toString()
 
     fun arvioitu() = listOf(ARVIOITU, TARKISTUSARVIOITAVA).contains(this) || tarkistusarvioitu()

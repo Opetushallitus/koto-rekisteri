@@ -79,14 +79,6 @@ class YkiArviointitilanMuunnosTest(
     }
 
     @Test
-    fun `KESKEYTETTY muunnetaan uuden mallin tilaan`() {
-        assertEquals(
-            Arviointitila.EI_SUORITUSTA,
-            muunnettuTila(suoritus(Arviointitila.KESKEYTETTY, listOf(10, 10), arviointipaiva = null)),
-        )
-    }
-
-    @Test
     fun `ILMOITTAUTUNUT säilyy kun osakokeilla ei ole arvosanaa`() {
         assertEquals(
             Arviointitila.ILMOITTAUTUNUT,
