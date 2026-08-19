@@ -219,8 +219,8 @@ class TehtavapankkiService(
         }
 
     /**
-     * Lukee XML:n S3:sta, parsii sen ja kirjoittaa sisällä olevat upotetut
-     * <file>-blobit erillisinä S3-objekteina. Avain muodostetaan XML:n sijainnista:
+     * Kirjoittaa XML:n sisällä olevat upotetut <file>-blobit erillisinä S3-objekteina.
+     * Avain muodostetaan XML:n sijainnista:
      * `{tehtäväpankki-kansio}/{xml-tiedoston basename} assets/{tiedoston nimi}`.
      * Esim. `42-Suomi/2026-01-01.xml` → `42-Suomi/2026-01-01 assets/audio.mp3`.
      *
@@ -228,12 +228,6 @@ class TehtavapankkiService(
      * synkassa. Yksittäisen tiedoston dekoodausvirhe ei keskeytä koko ajoa
      * vaan kirjataan tulokseen `failed`-listaan.
      */
-    @WithSpan
-    fun extractAndUploadAssets(xmlKey: String): Either<TehtavapankkiParseError, AssetExtractResult> {
-        Span.current().setAttribute("xml.key", xmlKey)
-        return fetchAndParseFromS3(xmlKey).map { quiz -> uploadAssets(xmlKey, quiz) }
-    }
-
     fun uploadAssets(
         xmlKey: String,
         quiz: TehtavapankkiQuiz,

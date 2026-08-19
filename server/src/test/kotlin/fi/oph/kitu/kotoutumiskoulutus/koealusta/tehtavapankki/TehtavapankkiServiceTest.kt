@@ -692,7 +692,7 @@ class TehtavapankkiServiceTest(
     }
 
     @Test
-    fun `extractAndUploadAssets purkaa upotetut tiedostot omiksi S3-objekteiksi`() {
+    fun `uploadAssets purkaa upotetut tiedostot omiksi S3-objekteiksi`() {
         val xmlBytes =
             ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml")
                 .inputStream
@@ -721,7 +721,10 @@ class TehtavapankkiServiceTest(
         assertTrue(expectedByName.keys.any { it.endsWith(".png") })
         assertTrue(expectedByName.keys.any { it.endsWith(".mp3") })
 
-        val result = tehtavapankkiService.extractAndUploadAssets(xmlKey)
+        val result =
+            tehtavapankkiService
+                .fetchAndParseFromS3(xmlKey)
+                .map { quiz -> tehtavapankkiService.uploadAssets(xmlKey, quiz) }
 
         assertIs<Either.Right<AssetExtractResult>>(result)
         assertEquals(emptyList(), result.value.failed)
@@ -746,15 +749,15 @@ class TehtavapankkiServiceTest(
     }
 
     @Test
-    fun `extractAndUploadAssets palauttaa NotFound-virheen tuntemattomalle xml-avaimelle`() {
-        val result = tehtavapankkiService.extractAndUploadAssets("ei-olemassa.xml")
+    fun `fetchAndParseFromS3 palauttaa NotFound-virheen tuntemattomalle xml-avaimelle`() {
+        val result = tehtavapankkiService.fetchAndParseFromS3("ei-olemassa.xml")
 
         assertIs<Either.Left<TehtavapankkiParseError>>(result)
         assertEquals(TehtavapankkiParseError.NotFound, result.value)
     }
 
     @Test
-    fun `extractAndUploadAssets ylikirjoittaa olemassaolevan asset-objektin`() {
+    fun `uploadAssets ylikirjoittaa olemassaolevan asset-objektin`() {
         val xmlBytes =
             ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml")
                 .inputStream
@@ -770,7 +773,10 @@ class TehtavapankkiServiceTest(
             RequestBody.fromString("vanhaa-roskaa"),
         )
 
-        val result = tehtavapankkiService.extractAndUploadAssets(xmlKey)
+        val result =
+            tehtavapankkiService
+                .fetchAndParseFromS3(xmlKey)
+                .map { quiz -> tehtavapankkiService.uploadAssets(xmlKey, quiz) }
 
         assertIs<Either.Right<AssetExtractResult>>(result)
         val downloaded =
