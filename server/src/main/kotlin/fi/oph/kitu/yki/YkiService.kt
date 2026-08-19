@@ -2,30 +2,16 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.auditlogs.AuditLogOperation
 import fi.oph.kitu.auditlogs.AuditLogger
-import fi.oph.kitu.csvparsing.CsvExportError
-import fi.oph.kitu.csvparsing.CsvParser
-import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.util.findDifferentProperties
-import fi.oph.kitu.util.ignoreEmptyValues
 import fi.oph.kitu.util.result.getOrThrow
-import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
-import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusOrder
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
-import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -46,12 +32,8 @@ class YkiService(
     @param:Qualifier("solkiRestClient")
     private val solkiRestClient: RestClient,
     private val suoritusRepository: YkiSuoritusRepository,
-    private val suoritusErrorService: YkiSuoritusErrorService,
-    private val suoritusMapper: YkiSuoritusMappingService,
     private val arvioijaRepository: YkiArvioijaRepository,
-    private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val auditLogger: AuditLogger,
-    private val parser: CsvParser,
     private val oppijanumeroService: OppijanumeroService,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -167,13 +149,4 @@ class YkiService(
                     arrayOf("arvioija.oppijanumero" to arvioija.arvioijanOppijanumero)
                 }
             }
-
-    sealed class Error(
-        message: String,
-    ) : Throwable(message) {
-        class CsvConversionError(
-            service: String,
-            errors: List<CsvExportError>,
-        ) : Error("service '$service' received ${errors.size} errors from csv conversion.")
-    }
 }

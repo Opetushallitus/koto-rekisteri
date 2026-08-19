@@ -1,8 +1,6 @@
 package fi.oph.kitu.dev.mockdata
 
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsvResponse
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorEntity
 import java.time.Instant
 import kotlin.reflect.full.memberProperties
@@ -10,11 +8,9 @@ import kotlin.reflect.full.memberProperties
 fun generateRandomYkiSuoritusErrorEntity(): YkiSuoritusErrorEntity {
     val lastModified = getRandomInstant(Instant.parse("2004-01-01T00:00:00Z"))
     val virheenLuontiaika = getRandomInstant(lastModified)
-    val virheellinenKentta = YkiSuoritusCsv::class.memberProperties.random().name
+    val virheellinenKentta = YkiSuoritusEntity::class.memberProperties.random().name
 
     val suoritusEntity = generateRandomYkiSuoritusEntity()
-
-    val csv = YkiSuoritusMappingService(null).convertToResponse(suoritusEntity).toCsvString()
 
     return YkiSuoritusErrorEntity(
         id = null,
@@ -24,69 +20,42 @@ fun generateRandomYkiSuoritusErrorEntity(): YkiSuoritusErrorEntity {
         lastModified = lastModified,
         virheellinenKentta = virheellinenKentta,
         virheellinenArvo = "virheellinen_arvo",
-        virheellinenRivi = csv,
+        virheellinenRivi = suoritusEntity.toCsvString(),
         virheenRivinumero = (0..1000).random(),
         virheenLuontiaika = virheenLuontiaika,
     )
 }
 
-fun YkiSuoritusCsvResponse.toCsvString(): String =
-    this.suorittajanOID.toString() +
-        "," +
-        this.hetu +
-        "," +
-        this.sukupuoli +
-        "," +
-        this.sukunimi +
-        "," +
-        this.etunimet +
-        "," +
-        this.kansalaisuus +
-        "," +
-        this.katuosoite +
-        "," +
-        this.postinumero +
-        "," +
-        this.postitoimipaikka +
-        "," +
-        this.email +
-        "," +
-        this.solkiTunniste +
-        "," +
-        this.lastModified +
-        "," +
-        this.tutkintopaiva +
-        "," +
-        this.tutkintokieli +
-        "," +
-        this.tutkintotaso +
-        "," +
-        this.jarjestajanOID +
-        "," +
-        this.jarjestajanNimi +
-        "," +
-        this.arviointipaiva +
-        "," +
-        this.tekstinYmmartaminen +
-        "," +
-        this.kirjoittaminen +
-        "," +
-        this.rakenteetJaSanasto +
-        "," +
-        this.puheenYmmartaminen +
-        "," +
-        this.puhuminen +
-        "," +
-        this.yleisarvosana +
-        "," +
-        this.tarkistusarvioinninSaapumisPvm +
-        "," +
-        this.tarkistusarvioinninAsiatunnus +
-        "," +
-        this.tarkistusarvioidutOsakokeet +
-        "," +
-        this.arvosanaMuuttui +
-        "," +
-        this.perustelu +
-        "," +
-        this.tarkistusarvioinninKasittelyPvm
+private fun YkiSuoritusEntity.toCsvString(): String =
+    listOf(
+        suorittajanOID,
+        hetu,
+        sukupuoli,
+        sukunimi,
+        etunimet,
+        kansalaisuus,
+        katuosoite,
+        postinumero,
+        postitoimipaikka,
+        email,
+        solkiId,
+        lastModified,
+        tutkintopaiva,
+        tutkintokieli,
+        tutkintotaso,
+        jarjestajanTunnusOid,
+        jarjestajanNimi,
+        arviointipaiva,
+        tekstinYmmartaminen,
+        kirjoittaminen,
+        rakenteetJaSanasto,
+        puheenYmmartaminen,
+        puhuminen,
+        yleisarvosana,
+        tarkistusarvioinninSaapumisPvm,
+        tarkistusarvioinninAsiatunnus,
+        tarkistusarvioidutOsakokeet?.joinToString(" "),
+        arvosanaMuuttui?.joinToString(" "),
+        perustelu,
+        tarkistusarvioinninKasittelyPvm,
+    ).joinToString(",") { it?.toString() ?: "" }

@@ -1,12 +1,8 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
-import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
-import fi.oph.kitu.csvparsing.CsvParser
-import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.oppijanumero.MockOppijanumeroService
 import fi.oph.kitu.tiedontuontischema.Henkilo
 import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
 import fi.oph.kitu.tiedontuontischema.Lahdejarjestelma
@@ -16,50 +12,29 @@ import fi.oph.kitu.tiedontuontischema.YkiOsa
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.util.result.getOrThrow
-import fi.oph.kitu.util.result.splitIntoValuesAndErrors
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
-import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusMappingService
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
-import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
-import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.http.MediaType
-import org.springframework.test.web.client.MockRestServiceServer
-import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
-import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
-import org.springframework.web.client.RestClient
-import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
 class YkiServiceTests(
     @param:Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
-    @param:Autowired private val ykiSuoritusErrorService: YkiSuoritusErrorService,
     @param:Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
-    @param:Autowired private val auditLogger: AuditLogger,
-    @param:Autowired private val parser: CsvParser,
-    @param:Autowired private val mockRestClientBuilder: RestClient.Builder,
     @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
     @param:Autowired private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
-    @param:Autowired private val suoritusMapper: YkiSuoritusMappingService,
 ) {
     @BeforeEach
     fun nukeDb() {
@@ -157,70 +132,5 @@ class YkiServiceTests(
                 distinct = false,
             )
         assertEquals(1, suoritushistory.count())
-    }
-
-    private fun ykiService() =
-        YkiService(
-            mockRestClientBuilder.build(),
-            ykiSuoritusRepository,
-            ykiSuoritusErrorService,
-            suoritusMapper,
-            ykiArvioijaRepository,
-            suoritusPoikkeamaRepository,
-            auditLogger,
-            parser,
-            MockOppijanumeroService(),
-        )
-
-    private fun tallennaTarkistusarvioituSuoritus(
-        perusteluCell: String,
-        solkiId: Int,
-    ) {
-        val csv =
-            parser
-                .convertCsvToData<YkiSuoritusCsv>(tarkistusarvioituCsv(perusteluCell, solkiId))
-                .splitIntoValuesAndErrors()
-                .first
-        ykiSuoritusRepository.save(suoritusMapper.convertToEntityIterable(csv).first(), updateOnConflict = false)
-    }
-
-    private fun tarkistusarvioituCsv(
-        perusteluCell: String,
-        solkiId: Int,
-    ) = """"1.2.246.562.24.20281155246","010180-9026","N","Tarkistettu","Tiina Testi","FIN","Mäkitie 1","00100",""" +
-        """"Helsinki","tiina@example.fi",$solkiId,2024-06-01T10:00:00Z,2024-06-15,"fin","YT",""" +
-        """"1.2.246.562.10.14893989377","Jyväskylän yliopisto",2024-09-01,5,5,5,5,5,5,2024-12-14,""" +
-        """"OPH-5000-1234",1,1,$perusteluCell,2024-12-20"""
-
-    @Test
-    fun `Arvointitila is updated correctly also on csv update`() {
-        val expected =
-            mapOf(
-                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",,,,,,,,,,0,0,,"""
-                    to Arviointitila.ARVIOITAVA,
-                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,,0,0,,"""
-                    to Arviointitila.ARVIOITU,
-                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,10,5,,5,5,,,,0,0,,"""
-                    to Arviointitila.EI_SUORITUSTA,
-                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,10,,,0,0,,"""
-                    to Arviointitila.EI_SUORITUSTA,
-                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,OPH-67,0,0,,"""
-                    to Arviointitila.TARKISTUSARVIOITAVA,
-                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,OPH-67,0,0,,2025-01-01"""
-                    to Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
-                """"1.2.246.562.24.20281155246","010180-9026","N","Öhman-Testi","Ranja Testi","EST","Testikuja 5","40100","Testilä","testi@testi.fi",183424,2024-10-30T13:53:56Z,2024-09-01,"fin","YT","1.2.246.562.10.14893989377","Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",2024-11-14,5,5,,5,5,,,OPH-67,0,0,,2026-01-01"""
-                    to Arviointitila.TARKISTUSARVIOITU,
-            ).mapKeys { (csv, _) ->
-                parser
-                    .convertCsvToData<YkiSuoritusCsv>(csv)
-                    .splitIntoValuesAndErrors()
-                    .first
-            }
-
-        val mapper = YkiSuoritusMappingService(ykiSuoritusRepository)
-        expected.forEach { (csv, expectedTila) ->
-            val entity = mapper.convertToEntityIterable(csv).first()
-            assertEquals(expectedTila, entity.arviointitila)
-        }
     }
 }
