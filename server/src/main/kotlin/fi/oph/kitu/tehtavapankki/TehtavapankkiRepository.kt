@@ -280,6 +280,30 @@ class TehtavapankkiRepository(
         )
 
     /**
+     * Korjaa lähdeaikaleimat, jotka tallentuivat epoch-sekunteina mutta
+     * millisekunneiksi tulkittuina ja päätyivät siksi vuodelle 1970:
+     * rajaa vanhemman aikaleiman epoch kerrotaan tuhannella.
+     */
+    @WithSpan
+    fun korjaaVirheellisetLahdeAikaleimat(raja: OffsetDateTime): Int =
+        jdbc.update(
+            """
+            UPDATE tehtavapaketti
+            SET lahde_filegenerated =
+                    CASE WHEN lahde_filegenerated > to_timestamp(0) AND lahde_filegenerated < :raja
+                         THEN to_timestamp(extract(epoch FROM lahde_filegenerated) * 1000)
+                         ELSE lahde_filegenerated END,
+                lahde_published =
+                    CASE WHEN lahde_published > to_timestamp(0) AND lahde_published < :raja
+                         THEN to_timestamp(extract(epoch FROM lahde_published) * 1000)
+                         ELSE lahde_published END
+            WHERE (lahde_filegenerated > to_timestamp(0) AND lahde_filegenerated < :raja)
+               OR (lahde_published > to_timestamp(0) AND lahde_published < :raja)
+            """.trimIndent(),
+            MapSqlParameterSource().addValue("raja", raja),
+        )
+
+    /**
      * Hakee annettuja S3-avaimia vastaavat tehtäväpaketit. Palautuvat vain ne
      * avaimet, joille löytyy rivi tietokannasta.
      */

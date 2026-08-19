@@ -105,8 +105,8 @@ class TehtavapankkiServiceTest(
                         QuestionBankMetadata(
                             courseId = 42,
                             courseName = "Suomi alkeet",
-                            published = Instant.ofEpochMilli(1672531200000),
-                            generated = Instant.ofEpochMilli(1733400000000),
+                            published = Instant.ofEpochSecond(1672531200),
+                            generated = Instant.ofEpochSecond(1733400000),
                             version = "test",
                             language = "FIN",
                             downloadUrl = "ignored",
@@ -126,8 +126,8 @@ class TehtavapankkiServiceTest(
             "Avaimen pitäisi olla courseid-coursename/-prefiksillä, oli: $key",
         )
         assertTrue(
-            key.contains("-fg1733400000000-"),
-            "Avaimessa pitäisi olla filegenerated epoch-ms, oli: $key",
+            key.contains("-fg1733400000-"),
+            "Avaimessa pitäisi olla filegenerated epoch-sekunteina, oli: $key",
         )
 
         val content =
@@ -138,7 +138,7 @@ class TehtavapankkiServiceTest(
         assertEquals("<questions><q id=\"1\"/></questions>", content)
 
         val head = s3Client.headObject { it.bucket(TEST_BUCKET).key(key) }
-        assertEquals("1672531200000", head.metadata()[TehtavapankkiService.S3_META_PUBLISHED_MS])
+        assertEquals("1672531200", head.metadata()[TehtavapankkiService.S3_META_PUBLISHED])
         assertEquals("test", head.metadata()[TehtavapankkiService.S3_META_VERSION])
         assertEquals("FIN", head.metadata()[TehtavapankkiService.S3_META_LANGUAGE])
     }
@@ -185,7 +185,7 @@ class TehtavapankkiServiceTest(
                 versioHash = "esim-hash",
                 s3Avain = null,
                 lahdeFilegenerated =
-                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(1733400000), ZoneOffset.UTC),
+                    OffsetDateTime.ofInstant(Instant.ofEpochSecond(1733400000), ZoneOffset.UTC),
             ),
         )
 
@@ -223,7 +223,7 @@ class TehtavapankkiServiceTest(
         )
         assertTrue(
             suomi3Key.contains("-fg1733400001-"),
-            "Avaimessa pitäisi olla filegenerated epoch-ms, oli: $suomi3Key",
+            "Avaimessa pitäisi olla filegenerated epoch-sekunteina, oli: $suomi3Key",
         )
 
         val suomi3Content =

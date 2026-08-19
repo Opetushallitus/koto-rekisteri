@@ -179,7 +179,7 @@ class TehtavapankkiIngestServiceTest(
 
     @Test
     fun `ingest tallentaa lahde_filegeneratedin S3-avaimen fg-suffiksista`() {
-        val xmlKey = "42-Suomi_alkeet/2026-01-01T00:00:00-fg1733400000000-0.xml"
+        val xmlKey = "42-Suomi_alkeet/2026-01-01T00:00:00-fg1733400000-0.xml"
         s3Client.putObject(
             { it.bucket(TEST_BUCKET).key(xmlKey) },
             RequestBody.fromBytes(xmlBytes),
@@ -187,7 +187,7 @@ class TehtavapankkiIngestServiceTest(
 
         val paketti = (ingestService.ingestFromS3(xmlKey) as Either.Right).value
         assertEquals(
-            Instant.ofEpochMilli(1733400000000).atOffset(ZoneOffset.UTC),
+            Instant.ofEpochSecond(1733400000).atOffset(ZoneOffset.UTC),
             paketti.lahdeFilegenerated,
         )
     }
@@ -214,7 +214,7 @@ class TehtavapankkiIngestServiceTest(
                     .key(xmlKey)
                     .metadata(
                         mapOf(
-                            TehtavapankkiService.S3_META_PUBLISHED_MS to "1672531200000",
+                            TehtavapankkiService.S3_META_PUBLISHED to "1672531200",
                             TehtavapankkiService.S3_META_VERSION to "v3",
                             TehtavapankkiService.S3_META_LANGUAGE to "FIN",
                         ),
@@ -225,7 +225,7 @@ class TehtavapankkiIngestServiceTest(
 
         val paketti = (ingestService.ingestFromS3(xmlKey) as Either.Right).value
         assertEquals(
-            Instant.ofEpochMilli(1672531200000).atOffset(ZoneOffset.UTC),
+            Instant.ofEpochSecond(1672531200).atOffset(ZoneOffset.UTC),
             paketti.lahdePublished,
         )
         assertEquals("v3", paketti.lahdeVersion)
@@ -241,14 +241,14 @@ class TehtavapankkiIngestServiceTest(
 
         val first = (ingestService.ingestFromS3(firstKey) as Either.Right).value
         assertEquals(
-            Instant.ofEpochMilli(1000).atOffset(ZoneOffset.UTC),
+            Instant.ofEpochSecond(1000).atOffset(ZoneOffset.UTC),
             first.lahdeFilegenerated,
         )
 
         val second = (ingestService.ingestFromS3(secondKey) as Either.Right).value
         assertEquals(first.id, second.id, "Sama hash → sama paketti (dedup)")
         assertEquals(
-            Instant.ofEpochMilli(2000).atOffset(ZoneOffset.UTC),
+            Instant.ofEpochSecond(2000).atOffset(ZoneOffset.UTC),
             second.lahdeFilegenerated,
             "Lähteen uusi filegenerated pitäisi tallentua myös dedup-haarassa",
         )
@@ -256,7 +256,7 @@ class TehtavapankkiIngestServiceTest(
         val persisted = repository.findPakettiById(first.id!!)
         assertNotNull(persisted)
         assertEquals(
-            Instant.ofEpochMilli(2000).atOffset(ZoneOffset.UTC),
+            Instant.ofEpochSecond(2000).atOffset(ZoneOffset.UTC),
             persisted.lahdeFilegenerated,
         )
     }
@@ -269,7 +269,7 @@ class TehtavapankkiIngestServiceTest(
             { req ->
                 req.bucket(TEST_BUCKET).key(firstKey).metadata(
                     mapOf(
-                        TehtavapankkiService.S3_META_PUBLISHED_MS to "1000000",
+                        TehtavapankkiService.S3_META_PUBLISHED to "1000000",
                         TehtavapankkiService.S3_META_VERSION to "v1",
                         TehtavapankkiService.S3_META_LANGUAGE to "FIN",
                     ),
@@ -281,7 +281,7 @@ class TehtavapankkiIngestServiceTest(
             { req ->
                 req.bucket(TEST_BUCKET).key(secondKey).metadata(
                     mapOf(
-                        TehtavapankkiService.S3_META_PUBLISHED_MS to "2000000",
+                        TehtavapankkiService.S3_META_PUBLISHED to "2000000",
                         TehtavapankkiService.S3_META_VERSION to "v2",
                         TehtavapankkiService.S3_META_LANGUAGE to "SWE",
                     ),
@@ -296,7 +296,7 @@ class TehtavapankkiIngestServiceTest(
         assertEquals("v2", second.lahdeVersion)
         assertEquals("SWE", second.lahdeLanguage)
         assertEquals(
-            Instant.ofEpochMilli(2000000).atOffset(ZoneOffset.UTC),
+            Instant.ofEpochSecond(2000000).atOffset(ZoneOffset.UTC),
             second.lahdePublished,
         )
 
