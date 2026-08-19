@@ -46,7 +46,9 @@ class TehtavapankkiService(
         // S3 user metadata -avaimet — tallennetaan x-amz-meta-* otsikoiksi.
         // AWS lower-case:ttaa avaimet header-tasolla, joten pidetään
         // pikkukirjaimisina jotta vertailu toimii ilman normalisointia.
-        const val S3_META_PUBLISHED_MS: String = "lahde-published-ms"
+        // Arvo on epoch-sekunteja; otsikon nimen -ms-pääte on historiallinen
+        // eikä sitä voi vaihtaa rikkomatta jo ladattujen objektien lukua.
+        const val S3_META_PUBLISHED: String = "lahde-published-ms"
         const val S3_META_VERSION: String = "lahde-version"
         const val S3_META_LANGUAGE: String = "lahde-language"
     }
@@ -69,17 +71,17 @@ class TehtavapankkiService(
             val meta = download.metadata
             val sanitizedCoursename = sanitizeFilename(meta.courseName)
             // Avain sisältää sekä lataushetken aikaleiman (lukukelpoinen) että
-            // Koealustan filegenerated epoch-ms:n (parsittava), jotta ingest
+            // Koealustan filegenerated epoch-sekunnit (parsittava), jotta ingest
             // voi tallentaa lähdejärjestelmän version per paketti.
             val filename =
-                "${meta.courseId}-$sanitizedCoursename/$now-fg${meta.generated.toEpochMilli()}-$index.xml"
+                "${meta.courseId}-$sanitizedCoursename/$now-fg${meta.generated.epochSecond}-$index.xml"
             // Lähdejärjestelmän muu metadata kulkee S3-objektin
             // user metadata -otsikoissa, jotta ingest näkee sen
             // tarvitsematta erillistä tilaa tai sidecar-tiedostoa.
             val objectMetadata =
                 ObjectMetadata
                     .builder()
-                    .metadata(S3_META_PUBLISHED_MS, meta.published.toEpochMilli().toString())
+                    .metadata(S3_META_PUBLISHED, meta.published.epochSecond.toString())
                     .metadata(S3_META_VERSION, meta.version)
                     .metadata(S3_META_LANGUAGE, meta.language)
                     .build()

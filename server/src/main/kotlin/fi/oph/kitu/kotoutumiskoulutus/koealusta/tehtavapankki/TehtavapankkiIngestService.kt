@@ -56,12 +56,12 @@ class TehtavapankkiIngestService(
         val versioHash = loaded.versioHash
         val source = MoodleSourceIdentifiers.fromS3Key(xmlKey)
         val lahdeFilegenerated =
-            source.filegeneratedMs?.let { OffsetDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneOffset.UTC) }
+            source.filegeneratedEpochSecond?.let { OffsetDateTime.ofInstant(Instant.ofEpochSecond(it), ZoneOffset.UTC) }
         val s3UserMetadata = tehtavapankkiService.fetchS3UserMetadata(xmlKey)
         val lahdePublished =
-            s3UserMetadata[TehtavapankkiService.S3_META_PUBLISHED_MS]
+            s3UserMetadata[TehtavapankkiService.S3_META_PUBLISHED]
                 ?.toLongOrNull()
-                ?.let { OffsetDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneOffset.UTC) }
+                ?.let { OffsetDateTime.ofInstant(Instant.ofEpochSecond(it), ZoneOffset.UTC) }
         val lahdeVersion = s3UserMetadata[TehtavapankkiService.S3_META_VERSION]?.takeIf { it.isNotBlank() }
         val lahdeLanguage = s3UserMetadata[TehtavapankkiService.S3_META_LANGUAGE]?.takeIf { it.isNotBlank() }
 
@@ -260,19 +260,19 @@ internal data class MoodleSourceIdentifiers(
     val nimi: String,
     val sanitizedCoursename: String,
     val courseidInt: Int?,
-    val filegeneratedMs: Long?,
+    val filegeneratedEpochSecond: Long?,
 ) {
     companion object {
-        // Tiedostonimessä Koealustan filegenerated upotetaan muodossa `-fg{epochMs}-`,
-        // esim. `2026-01-01T10:00:00-fg1733400000000-0.xml`.
+        // Tiedostonimessä Koealustan filegenerated upotetaan muodossa `-fg{epoch-sekunnit}-`,
+        // esim. `2026-01-01T10:00:00-fg1733400000-0.xml`.
         private val FILEGENERATED_REGEX = Regex("-fg(\\d+)-")
 
         /**
-         * S3-avain on muotoa `{courseid}-{sanitized_coursename}/{timestamp}-fg{filegeneratedMs}-{index}.xml`.
+         * S3-avain on muotoa `{courseid}-{sanitized_coursename}/{timestamp}-fg{epoch-sekunnit}-{index}.xml`.
          * Palautetaan courseid, paras-arvaus alkuperäisestä kurssin nimestä
          * (alaviivat takaisin välilyönneiksi) ja Koealustan filegenerated jos
          * avain sen sisältää. Vanhat (ennen optimointia ladatut) avaimet ovat
-         * ilman `-fg{ms}-` osaa, jolloin `filegeneratedMs` on null.
+         * ilman `-fg{s}-` osaa, jolloin `filegeneratedEpochSecond` on null.
          */
         fun fromS3Key(xmlKey: String): MoodleSourceIdentifiers {
             val folder = xmlKey.substringBefore('/')
@@ -285,7 +285,7 @@ internal data class MoodleSourceIdentifiers(
                     folder to ""
                 }
             val nimi = sanitized.replace('_', ' ').ifBlank { folder }
-            val filegeneratedMs =
+            val filegeneratedEpochSecond =
                 FILEGENERATED_REGEX
                     .find(basename)
                     ?.groupValues
@@ -296,7 +296,7 @@ internal data class MoodleSourceIdentifiers(
                 nimi = nimi,
                 sanitizedCoursename = sanitized,
                 courseidInt = courseidStr.toIntOrNull(),
-                filegeneratedMs = filegeneratedMs,
+                filegeneratedEpochSecond = filegeneratedEpochSecond,
             )
         }
     }

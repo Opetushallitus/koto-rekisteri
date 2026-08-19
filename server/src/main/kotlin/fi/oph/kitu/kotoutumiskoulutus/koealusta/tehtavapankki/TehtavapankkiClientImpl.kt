@@ -65,8 +65,8 @@ class TehtavapankkiClientImpl(
             QuestionBankMetadata(
                 courseId = qb.courseid,
                 courseName = qb.coursename,
-                published = Instant.ofEpochMilli(qb.coursestartdate.toLong()),
-                generated = Instant.ofEpochMilli(qb.filegenerated.toLong()),
+                published = Instant.ofEpochSecond(qb.coursestartdate),
+                generated = Instant.ofEpochSecond(qb.filegenerated),
                 version = qb.questionbankversion,
                 language = qb.language,
                 downloadUrl = qb.downloadurl,
@@ -166,7 +166,7 @@ class TehtavapankkiClientImpl(
         @param:JsonProperty("coursename")
         val coursename: String,
         @param:JsonProperty("coursestartdate")
-        val coursestartdate: Int,
+        val coursestartdate: Long,
         @param:JsonProperty("questionbankversion")
         val questionbankversion: String,
         @param:JsonProperty("language")
@@ -174,6 +174,6 @@ class TehtavapankkiClientImpl(
         @param:JsonProperty("downloadurl")
         val downloadurl: String,
         @param:JsonProperty("filegenerated")
-        val filegenerated: Int,
+        val filegenerated: Long,
     )
 }
