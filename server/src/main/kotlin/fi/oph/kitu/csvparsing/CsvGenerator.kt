@@ -35,7 +35,7 @@ class CsvGenerator(
 
     init {
         tracer
-            .spanBuilder("CsvParser.init")
+            .spanBuilder("CsvGenerator.init")
             .startSpan()
             .use { span ->
                 span.setAttribute("serialization.schema.args.columnSeparator", columnSeparator.toString())
@@ -47,7 +47,7 @@ class CsvGenerator(
 
     final inline fun <reified T> getSchema(csvMapper: CsvMapper): CsvSchema =
         tracer
-            .spanBuilder("CsvParser.getSchema")
+            .spanBuilder("CsvGenerator.getSchema")
             .startSpan()
             .use { span ->
                 span.setAttribute("serialization.schema.args.type", T::class.java.name)
