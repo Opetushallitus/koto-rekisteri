@@ -243,7 +243,7 @@ class YkiSuoritusRepository(
             ?: 0
     }
 
-    // received_at asetetaan vain ulkoisesta importista (YkiSuoritusEntity.from / YkiSuoritusMappingService) ja
+    // received_at asetetaan vain ulkoisesta importista (YkiSuoritusEntity.from) ja
     // säilyy ennallaan sisäisten versiokirjoitusten yli (data class .copy() preservoi sen
     // hyvaksyTarkistusarvioinnit-kutsussa). Siksi tämä kysely vastaa "Viimeisin saapunut suoritus"
     // -semantiikkaa eikä bumppaa virkailijatoiminnasta.
@@ -568,20 +568,6 @@ class YkiSuoritusRepository(
         val existing = findLatestBySolkiIds(listOf(yki.solkiId))
         return existing.isNotEmpty() && existing.first().equalsIgnoringAnnotated(yki, "DB")
     }
-
-    @WithSpan
-    fun tarkistusarvointiHyvaksytty(solkiId: Int): Boolean =
-        jdbcTemplate.queryForObject(
-            """
-            SELECT EXISTS (
-                SELECT tarkistusarviointi_hyvaksytty_pvm IS NOT NULL
-                FROM yki_suoritus_lisatieto
-                WHERE solki_id = ?
-            )
-            """.trimIndent(),
-            Boolean::class.java,
-            solkiId,
-        ) ?: false
 
     @WithSpan
     fun getLatestByOpiskeluoikeusOid(opiskeluoikeus: Oid): YkiSuoritusEntity? =
