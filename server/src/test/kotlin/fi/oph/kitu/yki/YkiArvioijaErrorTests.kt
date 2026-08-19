@@ -6,8 +6,7 @@ import fi.oph.kitu.csvparsing.CsvExportError
 import fi.oph.kitu.csvparsing.SimpleCsvExportError
 import fi.oph.kitu.dev.mockdata.generateRandomYkiArvioijaEntity
 import fi.oph.kitu.dev.mockdata.getRandomInstant
-import fi.oph.kitu.yki.arvioijat.SolkiArvioijaResponse
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaMappingService
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorEntity
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorRepository
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
@@ -209,15 +208,9 @@ class YkiArvioijaErrorTests(
 private fun generateRandomYkiArvioijaErrorEntity(): YkiArvioijaErrorEntity {
     val lastModified = getRandomInstant(Instant.parse("2004-01-01T00:00:00Z"))
     val virheenLuontiaika = getRandomInstant(lastModified)
-    val virheellinenKentta = SolkiArvioijaResponse::class.memberProperties.random().name
+    val virheellinenKentta = YkiArvioijaEntity::class.memberProperties.random().name
 
     val arvioijaEntity = generateRandomYkiArvioijaEntity()
-
-    val csv =
-        YkiArvioijaMappingService()
-            .convertToResponses(arvioijaEntity)
-            .first()
-            .toCsvString()
 
     return YkiArvioijaErrorEntity(
         id = null,
@@ -226,15 +219,16 @@ private fun generateRandomYkiArvioijaErrorEntity(): YkiArvioijaErrorEntity {
         nimi = "${arvioijaEntity.sukunimi} ${arvioijaEntity.etunimet}",
         virheellinenKentta = virheellinenKentta,
         virheellinenArvo = "virheellinen_arvo",
-        virheellinenRivi = csv,
+        virheellinenRivi = arvioijaEntity.toCsvString(),
         virheenRivinumero = (0..1000).random(),
         virheenLuontiaika = virheenLuontiaika,
     )
 }
 
-private fun SolkiArvioijaResponse.toCsvString(): String =
-    listOf(
-        arvioijanOppijanumero,
+private fun YkiArvioijaEntity.toCsvString(): String {
+    val oikeus = arviointioikeudet.first()
+    return listOf(
+        arvioijaOid,
         henkilotunnus,
         sukunimi,
         etunimet,
@@ -242,11 +236,12 @@ private fun SolkiArvioijaResponse.toCsvString(): String =
         katuosoite,
         postinumero,
         postitoimipaikka,
-        ensimmainenRekisterointipaiva,
-        kaudenAlkupaiva,
-        kaudenPaattymispaiva,
-        jatkorekisterointi,
-        tila,
-        kieli,
-        tasot,
+        oikeus.ensimmainenRekisterointipaiva,
+        oikeus.kaudenAlkupaiva,
+        oikeus.kaudenPaattymispaiva,
+        oikeus.jatkorekisterointi,
+        oikeus.tila.ordinal,
+        oikeus.kieli,
+        oikeus.tasot,
     ).joinToString(",") { it.toString() }
+}
