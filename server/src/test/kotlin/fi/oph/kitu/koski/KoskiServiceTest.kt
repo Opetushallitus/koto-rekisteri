@@ -350,7 +350,10 @@ class KoskiServiceTest(
         val lahetettyVersio = koskiService.sendYkiSuoritusToKoski(suoritusKoskeen).getOrThrow()
         assertEquals(viimeisinVersio.puhuminen, lahetettyVersio.puhuminen)
 
-        val lahetetyt = ykiSuoritusRepository.findSuorituksetWithKoskiopiskeluoikeus()
+        val lahetetyt =
+            ykiSuoritusRepository
+                .find(YkiSuoritusFilter(), distinct = true)
+                .filter { it.koskiOpiskeluoikeus != null }
         assertEquals(lahetetyt.map { it.solkiId }, listOf(viimeisinVersio.solkiId))
     }
 

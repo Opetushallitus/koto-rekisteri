@@ -188,7 +188,6 @@ object UiText {
         val henkilotiedot: LocalizedString get() = tr("yki.henkilotiedot", fi = "Henkilötiedot")
         val teeYksilointi: LocalizedString
             get() = tr("yki.teeYksilointi", fi = "Tee yksilöinti oppijanumerorekisterissä")
-        val eriArvoOnr: LocalizedString get() = tr("yki.eriArvoOnr", fi = "Eri arvo oppijanumerorekisterissä")
         val todistuksenPostitusosoite: LocalizedString
             get() = tr("yki.todistuksenPostitusosoite", fi = "Todistuksen postitusosoite ja kieli")
         val tutkinnonTiedot: LocalizedString get() = tr("yki.tutkinnonTiedot", fi = "Tutkinnon tiedot")

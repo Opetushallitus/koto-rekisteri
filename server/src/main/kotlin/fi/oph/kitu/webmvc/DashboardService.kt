@@ -51,15 +51,6 @@ class DashboardService(
     fun getAdminStats(): AdminStats =
         adminCache.get(Unit) ?: error("adminCache returned null; computeAdmin must yield non-null")
 
-    @WithSpan
-    fun getStats(): DashboardStats =
-        DashboardStats(
-            yki = getYkiStats(),
-            vkt = getVktStats(),
-            koto = getKotoStats(),
-            admin = getAdminStats(),
-        )
-
     private fun computeYki(): YkiStats =
         YkiStats(
             suoritusCount = ykiSuoritusRepository.countSuoritukset(),
@@ -99,13 +90,6 @@ class DashboardService(
             failingCount = schedulerStatsRepository.countCurrentlyFailing(),
         )
 }
-
-data class DashboardStats(
-    val yki: YkiStats,
-    val vkt: VktStats,
-    val koto: KotoStats,
-    val admin: AdminStats,
-)
 
 data class YkiStats(
     val suoritusCount: Long,

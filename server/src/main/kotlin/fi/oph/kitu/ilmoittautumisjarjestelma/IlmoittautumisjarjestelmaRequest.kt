@@ -92,21 +92,6 @@ data class IlmoittautumisjarjestelmaResponse(
         fun empty() = IlmoittautumisjarjestelmaResponse(0, null)
 
         fun ok(hyvaksytyt: Int) = IlmoittautumisjarjestelmaResponse(hyvaksytyt, null)
-
-        fun errorFor(
-            suoritus: YkiSuoritusEntity,
-            error: String,
-        ) = IlmoittautumisjarjestelmaResponse(
-            hyvaksytyt = 1,
-            virheet =
-                listOf(
-                    IlmoittautumisjarjestelmaResponseError(
-                        suoritus = YkiSuorituksenTunniste.of(suoritus),
-                        tila = suoritus.arviointitila,
-                        virhe = error,
-                    ),
-                ),
-        )
     }
 }
 

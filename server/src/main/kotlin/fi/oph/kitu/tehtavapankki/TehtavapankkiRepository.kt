@@ -272,13 +272,6 @@ class TehtavapankkiRepository(
         return rows.groupBy { it.tehtavaId }
     }
 
-    @WithSpan
-    fun deletePakettiById(id: Int): Int =
-        jdbc.update(
-            "DELETE FROM tehtavapaketti WHERE id = :id",
-            mapOf("id" to id),
-        )
-
     /**
      * Hakee annettuja S3-avaimia vastaavat tehtäväpaketit. Palautuvat vain ne
      * avaimet, joille löytyy rivi tietokannasta.

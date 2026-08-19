@@ -138,23 +138,6 @@ object YkiSuoritusPage {
         }
     }
 
-    fun FlowContent.nimitieto(
-        value: String,
-        onrValue: String?,
-    ) {
-        span { +value }
-        onrValue?.let {
-            if (onrValue != value) {
-                +" "
-                span(classes = "warning-pill") {
-                    +UiText.Yki.eriArvoOnr
-                    +": "
-                    strong { +onrValue }
-                }
-            }
-        }
-    }
-
     fun FlowContent.todistuksenPostitusosoite(suoritus: YkiSuoritusEntity) {
         h3 { +UiText.Yki.todistuksenPostitusosoite }
         card(compact = true) {

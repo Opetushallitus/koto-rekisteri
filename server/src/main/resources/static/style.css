@@ -537,12 +537,3 @@ a[role="button"].tight {
 .float-right {
   float: right;
 }
-
-.warning-pill {
-  background: var(--oph-yellow1);
-  border: 1px solid var(--oph-yellow2);
-  border-radius: 99999px;
-  padding: 0.25rem 0.75rem;
-  color: var(--oph-grey900);
-  font-size: 80%;
-}

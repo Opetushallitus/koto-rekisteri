@@ -132,13 +132,6 @@ class YkiSuoritusRepository(
         )
 
     @WithSpan
-    fun findSuorituksetWithKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> =
-        jdbcNamedParameterTemplate.query(
-            selectSuorituksetFull(viimeisin = true, "WHERE koski_opiskeluoikeus IS NOT NULL"),
-            YkiSuoritusEntity.fromRow,
-        )
-
-    @WithSpan
     fun findTarkistusarvoidutSuoritukset(arviointitila: Arviointitila): Iterable<YkiSuoritusEntity> =
         jdbcTemplate
             .query(
