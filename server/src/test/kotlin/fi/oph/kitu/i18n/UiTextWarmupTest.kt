@@ -6,7 +6,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-object TestTexts {
+private object TestTexts {
     val pelkkaProperty: LocalizedString get() = record("test.pelkkaProperty", "arvo")
 
     fun yksiParametri(count: Long) = record("test.yksiParametri", "count=$count")
