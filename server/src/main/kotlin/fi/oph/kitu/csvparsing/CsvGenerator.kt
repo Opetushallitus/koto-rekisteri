@@ -10,7 +10,6 @@ import tools.jackson.databind.module.SimpleModule
 import tools.jackson.dataformat.csv.CsvMapper
 import tools.jackson.dataformat.csv.CsvSchema
 import java.io.ByteArrayOutputStream
-import kotlin.reflect.full.findAnnotation
 
 @Service
 class CsvGenerator(
@@ -60,17 +59,6 @@ class CsvGenerator(
                     .withQuoteChar(quoteChar)
             }
 
-    final inline fun <reified T> CsvMapper.Builder.withFeatures(): CsvMapper.Builder {
-        val mapperFeatures = T::class.findAnnotation<MapperFeatures>()?.features
-        if (mapperFeatures != null) {
-            for (feature in mapperFeatures) {
-                this.enable(feature)
-            }
-        }
-
-        return this
-    }
-
     // Jackson 3 auto-registers java.time support; only app-specific modules go here.
     val oidModule: SimpleModule
         get() =
@@ -88,7 +76,6 @@ class CsvGenerator(
     final inline fun <reified T> getCsvMapper(): CsvMapper =
         CsvMapper
             .builder()
-            .withFeatures<T>()
             .addModule(oidModule)
             .addModule(csvFormulaSafeStringModule)
             .build()
