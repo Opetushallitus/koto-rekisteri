@@ -2,12 +2,11 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.auditlogs.OpenTelemetryTestConfig
-import fi.oph.kitu.csvparsing.CsvExportError
-import fi.oph.kitu.csvparsing.SimpleCsvExportError
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusErrorEntity
+import fi.oph.kitu.jdbc.SortDirection
+import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorColumn
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,11 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.testcontainers.postgresql.PostgreSQLContainer
-import java.lang.RuntimeException
 import java.time.Instant
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 @SpringBootTest
 @Import(OpenTelemetryTestConfig::class, DBContainerConfiguration::class)
@@ -35,168 +31,55 @@ class YkiSuoritusErrorTests(
         inMemorySpanExporter.reset()
     }
 
-    @Test
-    fun `no csv errors will truncate errors`() {
-        // Arrange
-        val errors = emptyList<CsvExportError>()
-        repository.save(
-            // Existing error
-            generateRandomYkiSuoritusErrorEntity().copy(
-                virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
-            ),
-        )
-
-        // Act
-        service.handleErrors(errors)
-
-        // Assert
-        // verify errors visible to user
-        val errorsInDatabase = repository.findAll()
-        assertEquals(0, errorsInDatabase.count())
-
-        val span =
-            inMemorySpanExporter
-                .finishedSpanItems
-                .find { it.name == "YkiSuoritusErrorService.handleErrors" }
-
-        val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
-
-        assertEquals(0, errorSize)
-
-        val truncate = span.attributes!!.get(AttributeKey.booleanKey("errors.truncate"))
-        assertEquals(true, truncate)
-
-        // verify serialization errors (technical errors)
-        val serializationErrors =
-            span.attributes
-                ?.asMap()
-                ?.filterKeys { at -> at.key.startsWith("serialization.error") }
-                .orEmpty()
-
-        assertEquals(0, serializationErrors.size)
-    }
-
-    @Test
-    fun `saving errors work correctly`() {
-        // Arrange
-        val errors =
-            listOf(
-                SimpleCsvExportError(
-                    lineNumber = 2,
-                    context =
-                        """
-                        ,\"010180-9026\",\"N\",\"Öhman-Testi\",\"Ranja Testi\",\"EST\",\"Testikuja 5\",\"40100\",\"Testilä\",\"testi@testi.fi\",183424,2024-10-30T13:53:56Z,2024-09-01,\"fin\",\"YT\",\"1.2.246.562.10.14893989377\",\"Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus\",2024-11-14,5,5,,5,5,,,,0,0,,
-                        """.trimIndent(),
-                    exception =
-                        RuntimeException(
-                            """
-                            Cannot construct instance of `fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv`, problem: Parameter specified as non-null is null: method fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv.<init>, parameter suorittajanOID
-                                at [Source: (StringReader); line: 3, column: 270]
-                            """.trimIndent(),
-                        ),
-                ),
-            )
-
-        // Act
-        repository.save(
-            // Existing error
-            generateRandomYkiSuoritusErrorEntity().copy(
-                virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
-            ),
-        )
-
-        // Assert
-        val errorsInDatabase = repository.findAll()
-        assertEquals(1, errorsInDatabase.count())
-
-        val spans = inMemorySpanExporter.finishedSpanItems
-        val span = spans.find { it.name == "CustomYkiSuoritusErrorRepositoryImpl.saveAll" }
-        assertNotNull(spans)
-    }
-
-    @Test
-    fun `arvioija handleErrors will replace old errors`() {
-        // Arrange
-        val errors =
-            listOf(
-                SimpleCsvExportError(
-                    lineNumber = 2,
-                    context =
-                        """
-                        ,\"010180-9026\",\"N\",\"Öhman-Testi\",\"Ranja Testi\",\"EST\",\"Testikuja 5\",\"40100\",\"Testilä\",\"testi@testi.fi\",183424,2024-10-30T13:53:56Z,2024-09-01,\"fin\",\"YT\",\"1.2.246.562.10.14893989377\",\"Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus\",2024-11-14,4,4,,4,4,,,,0,0,,
-                        """.trimIndent(),
-                    exception =
-                        RuntimeException(
-                            """
-                            Cannot construct instance of `fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv`, problem: Parameter specified as non-null is null: method fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv.<init>, parameter suorittajanOID
-                                at [Source: (StringReader); line: 2, column: 270]
-                            """.trimIndent(),
-                        ),
-                ),
-                SimpleCsvExportError(
-                    lineNumber = 3,
-                    context =
-                        """
-                        ,\"010180-9026\",\"N\",\"Öhman-Testi\",\"Ranja Testi\",\"EST\",\"Testikuja 5\",\"40100\",\"Testilä\",\"testi@testi.fi\",183424,2024-10-30T13:53:56Z,2024-09-01,\"fin\",\"YT\",\"1.2.246.562.10.14893989377\",\"Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus\",2024-11-14,5,5,,5,5,,,,0,0,,
-                        """.trimIndent(),
-                    exception =
-                        RuntimeException(
-                            """
-                            Cannot construct instance of `fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv`, problem: Parameter specified as non-null is null: method fi.oph.kitu.yki.suoritukset.YkiSuoritusCsv.<init>, parameter suorittajanOID
-                                at [Source: (StringReader); line: 3, column: 270]
-                            """.trimIndent(),
-                        ),
-                ),
-            )
+    private fun seedErrors() =
         repository.saveAllNewEntities(
-            // Existing error
-            (1..5).map {
+            listOf(
                 generateRandomYkiSuoritusErrorEntity().copy(
-                    virheenLuontiaika = Instant.parse("2025-03-06T10:50:00.00Z"),
-                )
-            },
+                    virheellinenRivi = "vanhin",
+                    virheenLuontiaika = Instant.parse("2025-03-06T10:50:00Z"),
+                ),
+                generateRandomYkiSuoritusErrorEntity().copy(
+                    virheellinenRivi = "keskimmainen",
+                    virheenLuontiaika = Instant.parse("2025-03-07T10:50:00Z"),
+                ),
+                generateRandomYkiSuoritusErrorEntity().copy(
+                    virheellinenRivi = "uusin",
+                    virheenLuontiaika = Instant.parse("2025-03-08T10:50:00Z"),
+                ),
+            ),
         )
 
-        // Act
-        service.handleErrors(errors)
+    @Test
+    fun `countErrors palauttaa tallennettujen virheiden lukumaaran`() {
+        assertEquals(0, service.countErrors())
 
-        // Assert
-        val errorsInDatabase = repository.findAll()
-        assertEquals(2, errorsInDatabase.count())
+        seedErrors()
 
-        val spans = inMemorySpanExporter.finishedSpanItems
+        assertEquals(3, service.countErrors())
+    }
 
-        val span = spans.find { it.name == "YkiSuoritusErrorService.handleErrors" }
-        assertNotNull(spans.find { it.name == "YkiSuoritusErrorMappingService.convertToEntityIterable" })
+    @Test
+    fun `getErrors palauttaa virheet luontiajan mukaan jarjestettyna`() {
+        seedErrors()
 
-        val errorSize = span?.attributes!!.get(AttributeKey.longKey("errors.size"))
-        assertEquals(2, errorSize)
+        val nousevasti = service.getErrors(YkiSuoritusErrorColumn.VirheenLuontiaika, SortDirection.ASC)
+        assertEquals(
+            listOf("vanhin", "keskimmainen", "uusin"),
+            nousevasti.map { it.virheellinenRivi },
+        )
 
-        val truncate = span.attributes!!.get(AttributeKey.booleanKey("errors.truncate"))
-        assertEquals(false, truncate)
+        val laskevasti = service.getErrors(YkiSuoritusErrorColumn.VirheenLuontiaika, SortDirection.DESC)
+        assertEquals(
+            listOf("uusin", "keskimmainen", "vanhin"),
+            laskevasti.map { it.virheellinenRivi },
+        )
+    }
 
-        val addedSize = span.attributes!!.get(AttributeKey.longKey("errors.addedSize"))
-        assertEquals(2, addedSize)
+    @Test
+    fun `saman virheellisen rivin tallennus uudelleen ei luo duplikaattia`() {
+        seedErrors()
+        seedErrors()
 
-        // verify serialization errors (technical errors)
-        val serializationErrors =
-            span.attributes
-                ?.asMap()
-                ?.filterKeys { at -> at.key.startsWith("serialization.error") }
-                .orEmpty()
-
-        assertEquals(6, serializationErrors.size)
-
-        val exception =
-            serializationErrors
-                //  Removes everything before last dot, from the keys.
-                // as a side effect disassociate keys with the values
-                .map { Pair(it.key.key.substringAfterLast("."), it.value) }
-                .filter { it.first == "exception" }
-                .map { it.second }
-                .first()
-                .toString()
-
-        assertTrue(exception.contains("suorittajanOID"))
+        assertEquals(3, service.countErrors())
     }
 }
