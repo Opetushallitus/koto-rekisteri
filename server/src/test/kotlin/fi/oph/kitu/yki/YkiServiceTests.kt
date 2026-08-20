@@ -16,7 +16,6 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter
 import org.junit.jupiter.api.BeforeEach
@@ -34,13 +33,11 @@ class YkiServiceTests(
     @param:Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
     @param:Autowired private val ykiArvioijaRepository: YkiArvioijaRepository,
     @param:Autowired private val inMemorySpanExporter: InMemorySpanExporter,
-    @param:Autowired private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
 ) {
     @BeforeEach
     fun nukeDb() {
         ykiArvioijaRepository.deleteAll()
         ykiSuoritusRepository.deleteAll()
-        suoritusPoikkeamaRepository.deleteAll()
         inMemorySpanExporter.reset()
     }
 

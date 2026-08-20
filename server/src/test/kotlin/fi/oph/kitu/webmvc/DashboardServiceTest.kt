@@ -27,7 +27,6 @@ class DashboardServiceTest(
         jdbc.execute("TRUNCATE TABLE yki_suoritus_lisatieto")
         jdbc.execute("TRUNCATE TABLE yki_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE yki_arvioija CASCADE")
-        jdbc.execute("TRUNCATE TABLE yki_suoritus_poikkeama")
         jdbc.execute("TRUNCATE TABLE koto_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE vkt_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE koski_error")
@@ -45,7 +44,6 @@ class DashboardServiceTest(
         assertEquals(0L, yki.suoritusImportErrorCount)
         assertEquals(0L, yki.arvioijaImportErrorCount)
         assertEquals(0L, yki.koskiErrorCount)
-        assertEquals(0L, yki.poikkeamatCount)
 
         val vkt = dashboardService.getVktStats()
         assertEquals(0L, vkt.suoritusCount)

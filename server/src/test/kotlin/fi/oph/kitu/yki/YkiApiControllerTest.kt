@@ -29,8 +29,6 @@ import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -62,7 +60,6 @@ import kotlin.test.assertNull
 class YkiApiControllerTest(
     @param:Autowired val timeService: TestTimeService,
     @param:Autowired val arvioijaRepository: YkiArvioijaRepository,
-    @param:Autowired val poikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     @param:Autowired val suoritusRepository: YkiSuoritusRepository,
     @param:Autowired val ykiApiController: YkiApiController,
 ) {
@@ -159,102 +156,6 @@ class YkiApiControllerTest(
         postSuoritus(suoritus) {
             isOk()
         }
-    }
-
-    @Test
-    fun `Suorituksen tallennus poistaa kaikki sen solki_idn poikkeamat`() {
-        val solkiId = 999991
-        val toinenSolkiId = 999992
-
-        poikkeamaRepository.save(
-            YkiSuoritusPoikkeama(
-                solkiId = solkiId,
-                kentta = YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA,
-                arvoKitussa = "",
-                arvoSolkissa = "Öhman-Testi Ranja Testi, YT, 2024-09-01",
-                havaittu = Instant.now(),
-                tutkintopaiva = LocalDate.of(2024, 9, 1),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-            ),
-        )
-        poikkeamaRepository.save(
-            YkiSuoritusPoikkeama(
-                solkiId = solkiId,
-                kentta = "sukunimi",
-                arvoKitussa = "Vanha",
-                arvoSolkissa = "Öhman-Testi",
-                havaittu = Instant.now(),
-                tutkintopaiva = LocalDate.of(2024, 9, 1),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-            ),
-        )
-        poikkeamaRepository.save(
-            YkiSuoritusPoikkeama(
-                solkiId = toinenSolkiId,
-                kentta = "sukunimi",
-                arvoKitussa = "Toinen",
-                arvoSolkissa = "Toisen Solki",
-                havaittu = Instant.now(),
-                tutkintopaiva = LocalDate.of(2024, 9, 1),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-            ),
-        )
-
-        val suoritus =
-            Henkilosuoritus(
-                henkilo =
-                    Henkilo(
-                        oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
-                        etunimet = "Ranja Testi",
-                        sukunimi = "Öhman-Testi",
-                        hetu = "010180-9026",
-                        sukupuoli = Sukupuoli.N,
-                        kansalaisuus = "EST",
-                        katuosoite = "Testikuja 5",
-                        postinumero = "40100",
-                        postitoimipaikka = "Testilä",
-                        email = "testi@testi.fi",
-                    ),
-                suoritus =
-                    YkiSuoritus(
-                        tutkintotaso = Tutkintotaso.YT,
-                        kieli = Tutkintokieli.FIN,
-                        todistuskieli = Todistuskieli.FIN,
-                        jarjestaja =
-                            YkiJarjestaja(
-                                oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
-                                nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                            ),
-                        tutkintopaiva = LocalDate.of(2024, 9, 1),
-                        arviointipaiva = LocalDate.of(2024, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
-                        osat =
-                            listOf(
-                                YkiOsa(tyyppi = TutkinnonOsa.puhuminen, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.puheenYmmartaminen, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.kirjoittaminen, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.tekstinYmmartaminen, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.rakenteetJaSanasto, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.yleisarvosana, arvosana = 5),
-                            ),
-                        lahdejarjestelmanId =
-                            LahdejarjestelmanTunniste(
-                                id = solkiId.toString(),
-                                lahde = Lahdejarjestelma.Solki,
-                            ),
-                    ),
-            )
-
-        postSuoritus(suoritus) {
-            isOk()
-        }
-
-        val jaljella = poikkeamaRepository.findAll()
-        assertEquals(emptyList(), jaljella.filter { it.solkiId == solkiId })
-        assertEquals(1, jaljella.count { it.solkiId == toinenSolkiId })
     }
 
     @Test

@@ -18,8 +18,6 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaColumn
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
@@ -50,7 +48,6 @@ class YkiApiController(
     private val validationService: ValidationService,
     private val ykiArvioijaRepository: YkiArvioijaRepository,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
-    private val ykiSuoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
     private val oppijanumeroService: OppijanumeroService,
     private val oppijanumeroTroubleshooting: OppijanumeroTroubleshootingService,
@@ -71,13 +68,6 @@ class YkiApiController(
                 excludeTags = withSearch.excludeTags(),
             )
         }
-
-    @GetMapping("/poikkeamat", produces = ["text/csv"])
-    fun getPoikkeamatAsCsv(): ResponseEntity<StreamingResponseBody> =
-        csvAttachmentResponse<YkiSuoritusPoikkeamaColumn, _>(
-            filename = "yki-poikkeamat.csv",
-            data = ykiSuoritusPoikkeamaRepository.findAll(),
-        )
 
     @PostMapping("/suoritus")
     @Tag(name = "oauth2")
@@ -176,7 +166,6 @@ class YkiApiController(
         )
 
         ykiSuoritusRepository.save(entity, false)
-        ykiSuoritusPoikkeamaRepository.deleteBySolkiId(entity.solkiId)
         ilmoittautumisjarjestelma.sendArvioinninTila(entity)
         return TiedonsiirtoSuccess().toResponseEntity()
     }

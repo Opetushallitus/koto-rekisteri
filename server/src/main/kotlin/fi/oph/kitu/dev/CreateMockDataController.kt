@@ -4,11 +4,9 @@ import fi.oph.kitu.config.isProduction
 import fi.oph.kitu.config.isQA
 import fi.oph.kitu.dev.mockdata.VktSuoritusMockGenerator
 import fi.oph.kitu.dev.mockdata.generateRandomKielitestiSuoritus
-import fi.oph.kitu.dev.mockdata.generateRandomMissingYkiSuoritusPoikkeama
 import fi.oph.kitu.dev.mockdata.generateRandomYkiArvioijaEntity
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusErrorEntity
-import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusPoikkeama
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritus
 import fi.oph.kitu.kotoutumiskoulutus.suoritukset.KielitestiSuoritusRepository
 import fi.oph.kitu.tiedontuontischema.VktValidation
@@ -17,8 +15,6 @@ import fi.oph.kitu.vkt.VktSuoritusRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorEntity
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorRepository
@@ -43,7 +39,6 @@ class CreateMockDataController(
     private val applicationContext: WebApplicationContext,
     private val suoritusRepository: YkiSuoritusRepository,
     private val suoritusErrorRepository: YkiSuoritusErrorRepository,
-    private val suoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val arvioijaRepository: YkiArvioijaRepository,
     private val kielitestiSuoritusRepository: KielitestiSuoritusRepository,
     private val vktSuoritusRepository: VktSuoritusRepository,
@@ -87,29 +82,6 @@ class CreateMockDataController(
                     generateRandomYkiSuoritusErrorEntity()
                 },
             )
-
-    // Yki
-    @GetMapping(
-        "/mockdata/yki/suoritus/poikkeamat",
-        "/mockdata/yki/suoritus/poikkeamat/{count}",
-    )
-    fun createYkiSuoritusPoikkeamatMockData(
-        @PathVariable count: Int?,
-    ): List<YkiSuoritusPoikkeama> {
-        val solkiIds = suoritusRepository.findAllSolkiIds()
-        if (solkiIds.isEmpty()) return emptyList()
-        return List(count ?: 10) {
-            // Joka neljäs poikkeama on "suoritus puuttuu Kitusta" -tyyppinen,
-            // jolloin käytetään synteettistä solki_id:tä jota ei ole Kitussa.
-            if (kotlin.random.Random.nextInt(4) == 0) {
-                generateRandomMissingYkiSuoritusPoikkeama(
-                    solkiId = kotlin.random.Random.nextInt(9_000_000, 9_999_999),
-                )
-            } else {
-                generateRandomYkiSuoritusPoikkeama(solkiId = solkiIds.random())
-            }
-        }.onEach { suoritusPoikkeamaRepository.save(it) }
-    }
 
     @GetMapping(
         "/mockdata/yki/arvioija/",

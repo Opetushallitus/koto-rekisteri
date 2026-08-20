@@ -354,39 +354,6 @@ article.overflow-auto:has(details.dropdown[open]) {
   overflow: visible;
 }
 
-tr.repeat-group td.group-cell {
-  visibility: hidden;
-}
-
-th input[type="checkbox"][data-select-all-visible],
-td input[type="checkbox"][data-poikkeama-checkbox] {
-  margin: 0 0.5em 0 0;
-  vertical-align: middle;
-}
-
-td.group-cell .select-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-}
-
-td.group-cell .select-group > input[type="checkbox"] {
-  margin: 0;
-  flex-shrink: 0;
-}
-
-.poikkeamat-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 1em;
-  margin-bottom: var(--pico-typography-spacing-vertical);
-}
-
-.poikkeamat-toolbar > button {
-  margin: 0;
-  width: auto;
-}
-
 .dashboard-grid {
   grid-template-columns: 1fr 1fr;
   align-items: stretch;
