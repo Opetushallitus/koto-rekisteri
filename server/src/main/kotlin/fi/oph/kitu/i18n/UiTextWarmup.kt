@@ -16,7 +16,7 @@ import kotlin.reflect.jvm.isAccessible
 class UiTextWarmup : ApplicationRunner {
     override fun run(args: ApplicationArguments) = warmUp(UiText)
 
-    private fun warmUp(obj: Any) {
+    internal fun warmUp(obj: Any) {
         obj::class.memberProperties.forEach { property ->
             property.isAccessible = true
             runCatching { property.getter.call(obj) }
