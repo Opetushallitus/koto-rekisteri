@@ -93,10 +93,6 @@ object Links {
         fun suorituksetVirheet(): String =
             linkTo(methodOn(YkiViewController::class.java).suorituksetVirheetView()).toString()
 
-        fun poikkeamat(): String = linkTo(methodOn(YkiViewController::class.java).poikkeamatView()).toString()
-
-        fun poikkeamatPatch(): String = "${poikkeamat()}/patch"
-
         fun arvioijatVirheet(): String =
             linkTo(methodOn(YkiViewController::class.java).arvioijatVirheetView()).toString()
 
@@ -111,8 +107,6 @@ object Links {
         ): String = linkTo(methodOn(YkiViewController::class.java).hideKoskiVirheet(suoritusId, hidden)).toString()
 
         fun suorituksetCsv(): String = linkTo(methodOn(YkiApiController::class.java).getSuorituksetAsCsv()).toString()
-
-        fun poikkeamatCsv(): String = linkTo(methodOn(YkiApiController::class.java).getPoikkeamatAsCsv()).toString()
     }
 
     object Kielitesti {

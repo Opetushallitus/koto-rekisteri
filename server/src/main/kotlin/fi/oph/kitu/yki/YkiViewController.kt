@@ -23,12 +23,8 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
 import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
-import fi.oph.kitu.yki.suoritukset.PoikkeamaKey
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPage
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaPage
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaPatchService
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
@@ -57,8 +53,6 @@ class YkiViewController(
     private val arvioijaErrorService: YkiArvioijaErrorService,
     private val koskiErrorService: KoskiErrorService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
-    private val ykiSuoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
-    private val ykiSuoritusPoikkeamaPatchService: YkiSuoritusPoikkeamaPatchService,
     private val koskiYkiRequestMapper: KoskiYkiRequestMapper,
     @param:Qualifier("koskiObjectMapper")
     private val koskiObjectMapper: JsonMapper,
@@ -150,66 +144,10 @@ class YkiViewController(
                     ),
                 errorsCount = suoritusErrorService.countErrors(),
                 koskiErrorsCount = koskiErrorService.countByEntity("yki", false).toLong(),
-                poikkeamatCount = ykiSuoritusPoikkeamaRepository.count(),
                 csrfToken = csrfToken,
                 warning = if (extended.oppijanumeroUnavailable) ONR_UNAVAILABLE_WARNING else null,
             ),
         )
-    }
-
-    @GetMapping("/poikkeamat", produces = ["text/html"])
-    fun poikkeamatView(viewMessage: ViewMessage? = null): ResponseEntity<String> {
-        val poikkeamat = ykiSuoritusPoikkeamaRepository.findAll()
-        val solkiIdToSuoritusId =
-            ykiSuoritusRepository
-                .findLatestBySolkiIds(poikkeamat.map { it.solkiId }.distinct())
-                .mapNotNull { s -> s.id?.let { s.solkiId to it } }
-                .toMap()
-        return ResponseEntity.ok(
-            YkiSuoritusPoikkeamaPage.render(poikkeamat, solkiIdToSuoritusId, viewMessage?.consume()),
-        )
-    }
-
-    @PostMapping("/poikkeamat/patch")
-    fun patchPoikkeamat(
-        @RequestParam(name = "poikkeama", required = false) poikkeamat: List<String>?,
-        viewMessage: ViewMessage?,
-    ): RedirectView {
-        val keys = (poikkeamat ?: emptyList()).mapNotNull(PoikkeamaKey::decode)
-        val (succeeded, failed) =
-            ykiSuoritusPoikkeamaPatchService
-                .patch(keys)
-                .splitIntoValuesAndErrors()
-
-        viewMessage?.let { msg ->
-            when {
-                succeeded.isEmpty() && failed.isEmpty() -> {
-                    msg.showInfo(UiText.Yki.poikkeamaEiValittuna.toString())
-                }
-
-                failed.isEmpty() -> {
-                    msg.showSuccess(UiText.Yki.poikkeamaaKorjattu(succeeded.size.toLong()).toString())
-                }
-
-                succeeded.isEmpty() -> {
-                    msg.showError(
-                        UiText.Yki.poikkeamiaEiKorjattu.toString() + ": " +
-                            failed.joinToString("; ") { "${it.key.solkiId}/${it.key.kentta}: ${it.message}" },
-                    )
-                }
-
-                else -> {
-                    msg.showInfo(
-                        UiText.Yki
-                            .poikkeamiaKorjattuJaEpaonnistui(succeeded.size.toLong(), failed.size.toLong())
-                            .toString() + ": " +
-                            failed.joinToString("; ") { "${it.key.solkiId}/${it.key.kentta}: ${it.message}" },
-                    )
-                }
-            }
-        }
-
-        return RedirectView(Links.Yki.poikkeamat())
     }
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])

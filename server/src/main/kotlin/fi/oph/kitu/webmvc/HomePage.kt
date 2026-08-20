@@ -85,12 +85,6 @@ object HomePage {
             href = Links.Yki.koskiVirheet(),
             errorIfNonZero = true,
         )
-        statRow(
-            label = "Poikkeamat",
-            value = s.poikkeamatCount,
-            href = Links.Yki.poikkeamat(),
-            warnIfNonZero = true,
-        )
         latestReceivedRow(s.latestReceivedAt, Links.Yki.suoritukset())
     }
 

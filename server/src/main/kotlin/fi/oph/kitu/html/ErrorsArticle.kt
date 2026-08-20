@@ -33,17 +33,3 @@ fun FlowContent.koskiErrorsArticle(
         }
     }
 }
-
-fun FlowContent.poikkeamatArticle(
-    count: Long,
-    link: String,
-) {
-    if (count > 0) {
-        errorMessage(UiText.Error.poikkeamat(count)) {
-            br()
-            a(link) {
-                +UiText.Error.katsoPoikkeamat
-            }
-        }
-    }
-}
