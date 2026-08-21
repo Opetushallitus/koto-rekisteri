@@ -62,7 +62,7 @@ Backend tests spin up PostgreSQL via Testcontainers — Docker must be running. 
 Each domain typically contains its own `*ApiController`, `*ViewController` (server-rendered HTML via `kotlinx.html`), `*Service`, `*Repository`, entities, and `*ScheduledTasks`:
 
 - `vkt/` — Valtionhallinnon kielitutkinnot
-- `yki/` — Yleiset kielitutkinnot (suoritukset + arvioijat, with a CSV import pipeline)
+- `yki/` — Yleiset kielitutkinnot (suoritukset + arvioijat). Records arrive from Solki as **JSON pushes** (`POST /yki/api/suoritus`, `POST /yki/api/arvioija`). The old Solki **CSV import pipeline was removed** (commits `279bd81f`, `d160c1f1`, `ff82bc5a`) — don't go looking for a parser: `csvparsing/` is now **export-only**.
 - `kotoutumiskoulutus/` — integrates with the Koealusta kielitesti service
 - `koski/` — outbound integration to KOSKI
 - `ilmoittautumisjarjestelma/` — outbound integration to the exam-registration system
