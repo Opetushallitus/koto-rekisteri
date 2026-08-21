@@ -61,6 +61,7 @@ data class YkiArvioijaParams(
 
     fun filterDescriptions(): List<String> =
         listOfNotNull(
+            search.trim().takeIf { it.isNotEmpty() }?.let { "${UiText.Yki.hakusanaArvioija}: $it" },
             tila?.let { "${UiText.Yki.Sarake.tila}: $it" },
             kieli?.let { "${UiText.Yki.Sarake.kieli}: ${it.solkiCode}" },
             taso?.let { "${UiText.Yki.Sarake.taso}: $it" },
@@ -69,22 +70,27 @@ data class YkiArvioijaParams(
             if (piilotaHenkilotiedot) UiText.Filter.henkilotiedotPiilotettu.toString() else null,
         )
 
+    private fun hakusanat(): List<String> = search.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+
     fun whereSql(): String? = toSql().whereClauseOrNull()
 
     fun sqlParams(): Map<String, Any?> = toSql().params()
 
     private fun toSql() =
         SqlFilterBuilder().apply {
-            search.trim().takeIf { it.isNotEmpty() }?.let { term ->
+            // Jokaisen hakusanan on osuttava johonkin kenttaan, jolloin "Ranja Ohman"
+            // loytaa henkilon vaikka termit ovat eri sarakkeissa.
+            hakusanat().forEachIndexed { i, term ->
+                val param = "hakusana_$i"
                 add(
                     """
-                    sukunimi ILIKE :hakusana
-                    OR etunimet ILIKE :hakusana
-                    OR arvioija_oid ILIKE :hakusana
-                    OR sahkopostiosoite ILIKE :hakusana
-                    OR asha_numero ILIKE :hakusana
+                    sukunimi ILIKE :$param
+                    OR etunimet ILIKE :$param
+                    OR arvioija_oid ILIKE :$param
+                    OR sahkopostiosoite ILIKE :$param
+                    OR asha_numero ILIKE :$param
                     """.trimIndent(),
-                    "hakusana" to "%$term%",
+                    param to "%$term%",
                 )
             }
             tila?.let { add("tila = :tila::yki_arvioija_tila", "tila" to it.name) }

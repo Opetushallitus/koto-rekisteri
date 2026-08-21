@@ -6,6 +6,8 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.csvDownloadButton
 import fi.oph.kitu.html.filterDescriptionList
 import fi.oph.kitu.html.hiddenValue
+import fi.oph.kitu.html.hiddenValues
+import fi.oph.kitu.html.input
 import fi.oph.kitu.html.pagination
 import fi.oph.kitu.html.table.ColumnTag
 import fi.oph.kitu.html.table.DisplayTableColumn
@@ -19,14 +21,20 @@ import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.webmvc.Links
+import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
+import kotlinx.html.FormMethod
+import kotlinx.html.InputType
 import kotlinx.html.article
+import kotlinx.html.button
 import kotlinx.html.fieldSet
+import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.header
 import kotlinx.html.li
 import kotlinx.html.nav
+import kotlinx.html.section
 import kotlinx.html.span
 import kotlinx.html.ul
 
@@ -41,6 +49,8 @@ object YkiArvioijaPage {
         ) {
             h1 { +UiText.Nav.yki }
             h2 { +UiText.Nav.arvioijat }
+
+            arvioijaSearch(params)
 
             article {
                 header {
@@ -138,6 +148,33 @@ fun FlowContent.arvioijaFilterButton(params: YkiArvioijaParams) {
                 UiText.Filter.piilotaHenkilotiedot.toString(),
                 params.piilotaHenkilotiedot,
             )
+        }
+    }
+}
+
+/**
+ * Haku on GET-lomake toisin kuin suoritusnakymassa: suodattimet, jarjestys ja sivutus
+ * kulkevat jo URL-parametreina, joten hakusanan on kuljettava samaa reittia. Muuten
+ * lajittelulinkin klikkaus pyyhkisi haun.
+ */
+fun FlowContent.arvioijaSearch(params: YkiArvioijaParams) {
+    section(classes = "grid center-vertically") {
+        form(action = Links.Yki.arvioijat(), method = FormMethod.get) {
+            // Sailyta suodattimet ja jarjestys, mutta palaa ensimmaiselle sivulle.
+            hiddenValues(params.toMap() - "search" - "page")
+            fieldSet {
+                attributes["role"] = "search"
+                input(
+                    id = "search",
+                    type = InputType.text,
+                    name = "search",
+                    value = params.search,
+                    placeholder = UiText.Yki.hakusanaArvioija.toString(),
+                ) {
+                    testId("arvioijaSearch")
+                    button(type = ButtonType.submit) { +UiText.Yki.suodata }
+                }
+            }
         }
     }
 }

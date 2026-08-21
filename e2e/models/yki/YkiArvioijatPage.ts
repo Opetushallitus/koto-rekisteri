@@ -20,6 +20,11 @@ export default class YkiArvioijatPage extends BasePage {
     await this.gotoFromMainNav("Arvioijat")
   }
 
+  async search(term: string) {
+    await this.page.getByTestId("arvioijaSearch").fill(term)
+    await this.page.getByTestId("arvioijaSearch").press("Enter")
+  }
+
   async expectContentToBeVisible() {
     const pageContent = this.getPageContent()
     await expect(pageContent).toBeVisible()
