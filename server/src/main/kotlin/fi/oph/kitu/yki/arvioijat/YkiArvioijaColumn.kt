@@ -40,7 +40,7 @@ enum class YkiArvioijaColumn(
         getValue = { it.etunimet },
     ),
 
-    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
+    @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Email(
         entityName = "sahkopostiosoite",
         uiHeaderValue = UiText.Yki.Sarake.sahkoposti,
@@ -48,7 +48,7 @@ enum class YkiArvioijaColumn(
         getValue = { it.sahkopostiosoite.orEmpty() },
     ),
 
-    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
+    @ColumnTags(ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Katuosoite(
         entityName = "katuosoite",
         uiHeaderValue = UiText.Yki.Sarake.osoite,
@@ -61,7 +61,7 @@ enum class YkiArvioijaColumn(
         entityName = "kieli",
         uiHeaderValue = UiText.Yki.Sarake.kieli,
         urlParam = "kieli",
-        getValue = { it.kieli.solkiCode },
+        getValue = { it.kieli.nimi.toString() },
     ),
 
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
@@ -69,7 +69,7 @@ enum class YkiArvioijaColumn(
         entityName = "tasot",
         uiHeaderValue = UiText.Yki.Sarake.tasot,
         urlParam = "tasot",
-        getValue = { row -> row.tasot.sortedBy { it.ordinal }.joinToString(", ") { it.name } },
+        getValue = { row -> row.tasot.sortedBy { it.ordinal }.joinToString(", ") { it.nimi.toString() } },
     ),
 
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
@@ -77,7 +77,7 @@ enum class YkiArvioijaColumn(
         entityName = "tila",
         uiHeaderValue = UiText.Yki.Sarake.tila,
         urlParam = "tila",
-        getValue = { it.tila.name },
+        getValue = { it.tila.nimi.toString() },
     ),
 
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
@@ -98,7 +98,7 @@ enum class YkiArvioijaColumn(
         renderHtml = { row -> row.kaudenPaattymispaiva?.let { finnishDate(it) } },
     ),
 
-    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
+    @ColumnTags(ColumnTag.CSV_EXPORT)
     Jatkorekisterointi(
         entityName = "jatkorekisterointi",
         uiHeaderValue = UiText.Yki.Sarake.jatkorekisterointi,
@@ -122,7 +122,7 @@ enum class YkiArvioijaColumn(
         getValue = { it.ashaNumero.orEmpty() },
     ),
 
-    @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT)
+    @ColumnTags(ColumnTag.CSV_EXPORT)
     SolkiTila(
         entityName = "solkiin_lahetetty",
         uiHeaderValue = UiText.Yki.Sarake.solkiTila,
