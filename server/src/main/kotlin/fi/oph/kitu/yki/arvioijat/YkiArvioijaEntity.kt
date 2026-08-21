@@ -3,6 +3,7 @@ package fi.oph.kitu.yki.arvioijat
 import fi.oph.kitu.jdbc.getTypedArray
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oid.getOid
+import fi.oph.kitu.oid.getOidOrNull
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import org.springframework.data.annotation.Id
@@ -24,6 +25,17 @@ data class YkiArvioijaEntity(
     val katuosoite: String,
     val postinumero: String,
     val postitoimipaikka: String,
+    val ashaNumero: String? = null,
+    val passivoitu: OffsetDateTime? = null,
+    val yksilointiKesken: Boolean = false,
+    val luotu: OffsetDateTime? = null,
+    val luojaOid: Oid? = null,
+    val muokattu: OffsetDateTime? = null,
+    val muokkaajaOid: Oid? = null,
+    val solkiinLahetetty: OffsetDateTime? = null,
+    val solkiLahetysvirhe: String? = null,
+    val solkiLahetysyritykset: Int = 0,
+    val solkiViimeisinLahetysyritys: OffsetDateTime? = null,
     @MappedCollection(keyColumn = "id", idColumn = "arvioija_id")
     val arviointioikeudet: List<YkiArviointioikeusEntity>,
 ) {
@@ -40,6 +52,18 @@ data class YkiArvioijaEntity(
                     katuosoite = rs.getString("katuosoite"),
                     postinumero = rs.getString("postinumero"),
                     postitoimipaikka = rs.getString("postitoimipaikka"),
+                    ashaNumero = rs.getString("asha_numero"),
+                    passivoitu = rs.getObject("passivoitu", OffsetDateTime::class.java),
+                    yksilointiKesken = rs.getBoolean("yksilointi_kesken"),
+                    luotu = rs.getObject("luotu", OffsetDateTime::class.java),
+                    luojaOid = rs.getOidOrNull("luoja_oid"),
+                    muokattu = rs.getObject("muokattu", OffsetDateTime::class.java),
+                    muokkaajaOid = rs.getOidOrNull("muokkaaja_oid"),
+                    solkiinLahetetty = rs.getObject("solkiin_lahetetty", OffsetDateTime::class.java),
+                    solkiLahetysvirhe = rs.getString("solki_lahetysvirhe"),
+                    solkiLahetysyritykset = rs.getInt("solki_lahetysyritykset"),
+                    solkiViimeisinLahetysyritys =
+                        rs.getObject("solki_viimeisin_lahetysyritys", OffsetDateTime::class.java),
                     arviointioikeudet = emptyList(),
                 )
             }
@@ -74,6 +98,43 @@ data class YkiArviointioikeusEntity(
                     jatkorekisterointi = rs.getBoolean("jatkorekisterointi"),
                     rekisteriintuontiaika = rs.getObject("rekisteriintuontiaika", OffsetDateTime::class.java),
                     ensimmainenRekisterointipaiva = rs.getDate("ensimmainen_rekisterointipaiva").toLocalDate(),
+                )
+            }
+    }
+}
+
+/**
+ * Yksi kirjattu rekisterointikausi. Append-only historia: voimassa oleva kausi elaa
+ * [YkiArviointioikeusEntity]-rivilla ja historiarivi kirjataan vain kun kausi muuttuu.
+ */
+@Table("yki_arvioija_kausi")
+data class YkiArvioijaKausiEntity(
+    @Id
+    val id: Number?,
+    val arvioijaId: Number?,
+    val kieli: Tutkintokieli,
+    val tasot: Set<Tutkintotaso>,
+    val tila: YkiArvioijaTila,
+    val kaudenAlkupaiva: LocalDate?,
+    val kaudenPaattymispaiva: LocalDate?,
+    val jatkorekisterointi: Boolean,
+    val kirjattu: OffsetDateTime?,
+    val kirjaajaOid: Oid?,
+) {
+    companion object {
+        val fromRow =
+            RowMapper { rs, _ ->
+                YkiArvioijaKausiEntity(
+                    id = rs.getInt("id"),
+                    arvioijaId = rs.getInt("arvioija_id"),
+                    kieli = Tutkintokieli.valueOf(rs.getString("kieli")),
+                    tasot = rs.getTypedArray("tasot") { taso -> Tutkintotaso.valueOf(taso) }.toSet(),
+                    tila = YkiArvioijaTila.valueOf(rs.getString("tila")),
+                    kaudenAlkupaiva = rs.getDate("kauden_alkupaiva")?.toLocalDate(),
+                    kaudenPaattymispaiva = rs.getDate("kauden_paattymispaiva")?.toLocalDate(),
+                    jatkorekisterointi = rs.getBoolean("jatkorekisterointi"),
+                    kirjattu = rs.getObject("kirjattu", OffsetDateTime::class.java),
+                    kirjaajaOid = rs.getOidOrNull("kirjaaja_oid"),
                 )
             }
     }

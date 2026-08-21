@@ -52,3 +52,5 @@ data class MalformedOidError(
 ) : Exception("Malformed Oid \"$source\"")
 
 fun ResultSet.getOid(columnLabel: String): Oid = Oid.parse(getString(columnLabel)).getOrThrow()
+
+fun ResultSet.getOidOrNull(columnLabel: String): Oid? = getString(columnLabel)?.let { Oid.parse(it).getOrThrow() }

@@ -302,7 +302,7 @@ class YkiApiController(
         @RequestBody arvioija: YkiArvioija,
     ): ResponseEntity<*> {
         val validatedArvioija = validationService.validateAndEnrich(arvioija).getOrThrow()
-        ykiArvioijaRepository.upsert(validatedArvioija.toEntity())
+        ykiArvioijaRepository.tallenna(validatedArvioija.toEntity())
         return TiedonsiirtoSuccess().toResponseEntity()
     }
 }
