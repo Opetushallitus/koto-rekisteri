@@ -42,6 +42,46 @@ describe("Yleinen kielitutkinto arvioijat page", () => {
     await expect(table.rows).toHaveCount(4)
   })
 
+  test("searching by name filters the list", async ({
+    indexPage,
+    ykiArvioijatPage,
+  }) => {
+    await indexPage.login()
+    await ykiArvioijatPage.openFromNavigation()
+    const table = ykiArvioijatPage.table
+
+    await ykiArvioijatPage.search("Kivinen")
+    await expect(table.rows).toHaveCount(1)
+    await expect(table.rows.first().getByTestId("Sukunimi")).toHaveText(
+      "Kivinen-Testi",
+    )
+
+    // Etu- ja sukunimi ovat eri sarakkeissa, joten monisanaisen haun on osuttava molempiin
+    await ykiArvioijatPage.search("Petro Kivinen")
+    await expect(table.rows).toHaveCount(1)
+
+    await ykiArvioijatPage.search("Kivinen Andersson")
+    await expect(table.rows).toHaveCount(0)
+  })
+
+  test("search is preserved when sorting", async ({
+    indexPage,
+    ykiArvioijatPage,
+  }) => {
+    await indexPage.login()
+    await ykiArvioijatPage.openFromNavigation()
+    const table = ykiArvioijatPage.table
+
+    await ykiArvioijatPage.search("Testi")
+    const rowsBefore = await table.rows.count()
+
+    await table.head.getByTestId("Sukunimi").getByRole("link").click()
+    await expect(table.rows).toHaveCount(rowsBefore)
+    await expect(
+      ykiArvioijatPage.page.getByTestId("arvioijaSearch"),
+    ).toHaveValue("Testi")
+  })
+
   test("sorting by sukunimi works", async ({ indexPage, ykiArvioijatPage }) => {
     await indexPage.login()
     await ykiArvioijatPage.openFromNavigation()
