@@ -74,12 +74,6 @@ object HomePage {
             errorIfNonZero = true,
         )
         statRow(
-            label = "Arvioijien tuonnin virheet",
-            value = s.arvioijaImportErrorCount,
-            href = Links.Yki.arvioijatVirheet(),
-            errorIfNonZero = true,
-        )
-        statRow(
             label = "Koski-siirron virheet",
             value = s.koskiErrorCount,
             href = Links.Yki.koskiVirheet(),

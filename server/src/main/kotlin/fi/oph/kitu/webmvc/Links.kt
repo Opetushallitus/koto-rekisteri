@@ -93,9 +93,6 @@ object Links {
         fun suorituksetVirheet(): String =
             linkTo(methodOn(YkiViewController::class.java).suorituksetVirheetView()).toString()
 
-        fun arvioijatVirheet(): String =
-            linkTo(methodOn(YkiViewController::class.java).arvioijatVirheetView()).toString()
-
         fun koskiVirheet(): String = linkTo(methodOn(YkiViewController::class.java).koskiVirheetView()).toString()
 
         fun koskiRequestJson(suoritusId: Int): String =
