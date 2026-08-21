@@ -10,8 +10,8 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.sql.PreparedStatement
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -19,7 +19,14 @@ import java.time.OffsetDateTime
 interface CustomYkiArvioijaRepository {
     fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int>
 
-    fun upsert(arvioija: YkiArvioijaEntity): Int
+    fun tallenna(
+        arvioija: YkiArvioijaEntity,
+        tekija: Oid? = null,
+    ): Int
+
+    fun findByArvioijaOid(arvioijaOid: Oid): YkiArvioijaEntity?
+
+    fun findKausihistoria(arvioijaId: Int): List<YkiArvioijaKausiEntity>
 
     fun allArviontioikeudet(
         orderBy: YkiArvioijaColumn = YkiArvioijaColumn.Sukunimi,
@@ -32,71 +39,121 @@ class CustomYkiArvioijaRepositoryImpl(
     val jdbcTemplate: JdbcTemplate,
 ) : CustomYkiArvioijaRepository {
     /**
-     * Override to allow handling duplicates/conflicts. The default implementation from CrudRepository fails
-     * due to the unique constraint. Overriding the implementation allows explicit handling of conflicts.
+     * Tallentaa arvioijan ja hanen arviointioikeutensa. Kitu on rekisterin master, joten
+     * payloadista puuttuvat arviointioikeudet poistetaan ja jokainen muuttunut kausi
+     * kirjataan kausihistoriaan.
      */
     @WithSpan
-    override fun upsert(arvioija: YkiArvioijaEntity): Int {
-        val savedArvioija =
-            jdbcTemplate
-                .query(
+    @Transactional
+    override fun tallenna(
+        arvioija: YkiArvioijaEntity,
+        tekija: Oid?,
+    ): Int {
+        val savedArvioija = upsertArvioija(arvioija, tekija)
+        val arvioijaId = savedArvioija.id!!.toInt()
+
+        poistaPuuttuvatArviointioikeudet(arvioijaId, arvioija.arviointioikeudet)
+        upsertArviointioikeudet(arvioijaId, arvioija.arviointioikeudet)
+        kirjaaKausihistoria(arvioijaId, arvioija.arviointioikeudet, tekija)
+
+        return arvioijaId
+    }
+
+    private fun upsertArvioija(
+        arvioija: YkiArvioijaEntity,
+        tekija: Oid?,
+    ): YkiArvioijaEntity =
+        jdbcTemplate
+            .query(
+                """
+                INSERT INTO yki_arvioija (
+                    arvioija_oid,
+                    henkilotunnus,
+                    sukunimi,
+                    etunimet,
+                    sahkopostiosoite,
+                    katuosoite,
+                    postinumero,
+                    postitoimipaikka,
+                    asha_numero,
+                    yksilointi_kesken,
+                    passivoitu,
+                    luotu,
+                    luoja_oid,
+                    muokattu,
+                    muokkaaja_oid,
+                    solkiin_lahetetty,
+                    solki_lahetysvirhe,
+                    solki_lahetysyritykset
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, now(), ?, NULL, NULL, 0)
+                ON CONFLICT (arvioija_oid) DO UPDATE
+                SET
+                    -- henkilotunnus paivitetaan EXCLUDED-arvosta, jotta validoinnin
+                    -- pakottama null paatyy myos tietokantaan eika jaa vanhaa arvoa
+                    -- lojumaan paivityksissa.
+                    henkilotunnus = EXCLUDED.henkilotunnus,
+                    sukunimi = EXCLUDED.sukunimi,
+                    etunimet = EXCLUDED.etunimet,
+                    sahkopostiosoite = EXCLUDED.sahkopostiosoite,
+                    katuosoite = EXCLUDED.katuosoite,
+                    postinumero = EXCLUDED.postinumero,
+                    postitoimipaikka = EXCLUDED.postitoimipaikka,
+                    asha_numero = EXCLUDED.asha_numero,
+                    yksilointi_kesken = EXCLUDED.yksilointi_kesken,
+                    passivoitu = EXCLUDED.passivoitu,
+                    -- luotu ja luoja_oid sailyvat ennallaan paivityksessa
+                    muokattu = now(),
+                    muokkaaja_oid = EXCLUDED.muokkaaja_oid,
+                    -- muutos on lahetettava Solkiin uudelleen
+                    solkiin_lahetetty = NULL,
+                    solki_lahetysvirhe = NULL,
+                    solki_lahetysyritykset = 0
+                RETURNING *
+                """.trimIndent(),
+                YkiArvioijaEntity.fromRow,
+                arvioija.arvioijaOid.toString(),
+                arvioija.henkilotunnus,
+                arvioija.sukunimi,
+                arvioija.etunimet,
+                arvioija.sahkopostiosoite,
+                arvioija.katuosoite,
+                arvioija.postinumero,
+                arvioija.postitoimipaikka,
+                arvioija.ashaNumero,
+                arvioija.yksilointiKesken,
+                arvioija.passivoitu,
+                tekija?.toString(),
+                tekija?.toString(),
+            ).first()
+
+    /**
+     * Masterina kitun on voitava myos perua arviointioikeus: payloadista puuttuva kieli
+     * poistetaan, jotta peruttu oikeus ei jaa roikkumaan eika paady Solkiin.
+     */
+    private fun poistaPuuttuvatArviointioikeudet(
+        arvioijaId: Int,
+        arviointioikeudet: List<YkiArviointioikeusEntity>,
+    ) {
+        val sailytettavat = arviointioikeudet.map { it.kieli.toString() }.toTypedArray()
+        jdbcTemplate.update({ connection ->
+            connection
+                .prepareStatement(
                     """
-                    INSERT INTO yki_arvioija (
-                        arvioija_oid,
-                        henkilotunnus,
-                        sukunimi,
-                        etunimet,
-                        sahkopostiosoite,
-                        katuosoite,
-                        postinumero,
-                        postitoimipaikka
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT (arvioija_oid) DO UPDATE
-                    SET
-                        -- henkilotunnus päivitetään EXCLUDED-arvosta, jotta validoinnin
-                        -- pakottama null päätyy myös tietokantaan eikä jää vanhaa arvoa
-                        -- lojumaan päivityksissä.
-                        henkilotunnus = EXCLUDED.henkilotunnus,
-                        sukunimi = EXCLUDED.sukunimi,
-                        etunimet = EXCLUDED.etunimet,
-                        sahkopostiosoite = EXCLUDED.sahkopostiosoite,
-                        katuosoite = EXCLUDED.katuosoite,
-                        postinumero = EXCLUDED.postinumero,
-                        postitoimipaikka = EXCLUDED.postitoimipaikka
-                    RETURNING *
+                    DELETE FROM yki_arviointioikeus
+                    WHERE arvioija_id = ? AND kieli::text <> ALL (?)
                     """.trimIndent(),
-                    YkiArvioijaEntity.fromRow,
-                    arvioija.arvioijaOid.toString(),
-                    arvioija.henkilotunnus,
-                    arvioija.sukunimi,
-                    arvioija.etunimet,
-                    arvioija.sahkopostiosoite,
-                    arvioija.katuosoite,
-                    arvioija.postinumero,
-                    arvioija.postitoimipaikka,
-                ).first()
-
-        val arviointioikeusBatchSetter =
-            object : BatchPreparedStatementSetter {
-                override fun setValues(
-                    ps: PreparedStatement,
-                    i: Int,
-                ) {
-                    arvioija.arviointioikeudet.elementAt(i).let {
-                        ps.setInt(1, savedArvioija.id!!.toInt())
-                        ps.setString(2, it.kieli.toString())
-                        ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.toTypedArray()))
-                        ps.setString(4, it.tila.toString())
-                        ps.setObject(5, it.kaudenAlkupaiva)
-                        ps.setObject(6, it.kaudenPaattymispaiva)
-                        ps.setBoolean(7, it.jatkorekisterointi)
-                        ps.setObject(8, it.ensimmainenRekisterointipaiva)
-                    }
+                ).apply {
+                    setInt(1, arvioijaId)
+                    setArray(2, connection.createArrayOf("text", sailytettavat))
                 }
+        })
+    }
 
-                override fun getBatchSize(): Int = arvioija.arviointioikeudet.count()
-            }
-
+    private fun upsertArviointioikeudet(
+        arvioijaId: Int,
+        arviointioikeudet: List<YkiArviointioikeusEntity>,
+    ) {
+        if (arviointioikeudet.isEmpty()) return
         jdbcTemplate.batchUpdate(
             """
             INSERT INTO yki_arviointioikeus(
@@ -116,16 +173,105 @@ class CustomYkiArvioijaRepositoryImpl(
                 kauden_paattymispaiva = EXCLUDED.kauden_paattymispaiva,
                 jatkorekisterointi = EXCLUDED.jatkorekisterointi,
                 ensimmainen_rekisterointipaiva = EXCLUDED.ensimmainen_rekisterointipaiva
-            RETURNING *
             """.trimIndent(),
-            arviointioikeusBatchSetter,
-        )
+            object : BatchPreparedStatementSetter {
+                override fun setValues(
+                    ps: PreparedStatement,
+                    i: Int,
+                ) {
+                    arviointioikeudet.elementAt(i).let {
+                        ps.setInt(1, arvioijaId)
+                        ps.setString(2, it.kieli.toString())
+                        ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.toTypedArray()))
+                        ps.setString(4, it.tila.toString())
+                        ps.setObject(5, it.kaudenAlkupaiva)
+                        ps.setObject(6, it.kaudenPaattymispaiva)
+                        ps.setBoolean(7, it.jatkorekisterointi)
+                        ps.setObject(8, it.ensimmainenRekisterointipaiva)
+                    }
+                }
 
-        return savedArvioija.id!!.toInt()
+                override fun getBatchSize(): Int = arviointioikeudet.count()
+            },
+        )
+    }
+
+    /**
+     * Kirjaa kauden historiaan. Uniikkiehto varmistaa, ettei muuttumaton kausi kasvata
+     * historiaa: pelkka yhteystiedon korjaus ei siis tuota uutta riviä.
+     */
+    private fun kirjaaKausihistoria(
+        arvioijaId: Int,
+        arviointioikeudet: List<YkiArviointioikeusEntity>,
+        tekija: Oid?,
+    ) {
+        if (arviointioikeudet.isEmpty()) return
+        jdbcTemplate.batchUpdate(
+            """
+            INSERT INTO yki_arvioija_kausi(
+                arvioija_id,
+                kieli,
+                tasot,
+                tila,
+                kauden_alkupaiva,
+                kauden_paattymispaiva,
+                jatkorekisterointi,
+                kirjaaja_oid
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT ON CONSTRAINT yki_arvioija_kausi_unique DO NOTHING
+            """.trimIndent(),
+            object : BatchPreparedStatementSetter {
+                override fun setValues(
+                    ps: PreparedStatement,
+                    i: Int,
+                ) {
+                    arviointioikeudet.elementAt(i).let {
+                        ps.setInt(1, arvioijaId)
+                        ps.setString(2, it.kieli.toString())
+                        ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.toTypedArray()))
+                        ps.setString(4, it.tila.toString())
+                        ps.setObject(5, it.kaudenAlkupaiva)
+                        ps.setObject(6, it.kaudenPaattymispaiva)
+                        ps.setBoolean(7, it.jatkorekisterointi)
+                        ps.setString(8, tekija?.toString())
+                    }
+                }
+
+                override fun getBatchSize(): Int = arviointioikeudet.count()
+            },
+        )
     }
 
     @WithSpan
-    override fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int> = arvioijat.map { upsert(it) }
+    override fun findByArvioijaOid(arvioijaOid: Oid): YkiArvioijaEntity? {
+        val arvioija =
+            jdbcTemplate
+                .query(
+                    "SELECT * FROM yki_arvioija WHERE arvioija_oid = ?",
+                    YkiArvioijaEntity.fromRow,
+                    arvioijaOid.toString(),
+                ).firstOrNull() ?: return null
+
+        val arviointioikeudet =
+            jdbcTemplate.query(
+                "SELECT * FROM yki_arviointioikeus WHERE arvioija_id = ? ORDER BY kieli",
+                YkiArviointioikeusEntity.fromRow,
+                arvioija.id!!.toInt(),
+            )
+
+        return arvioija.copy(arviointioikeudet = arviointioikeudet)
+    }
+
+    @WithSpan
+    override fun findKausihistoria(arvioijaId: Int): List<YkiArvioijaKausiEntity> =
+        jdbcTemplate.query(
+            "SELECT * FROM yki_arvioija_kausi WHERE arvioija_id = ? ORDER BY kirjattu DESC, id DESC",
+            YkiArvioijaKausiEntity.fromRow,
+            arvioijaId,
+        )
+
+    @WithSpan
+    override fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int> = arvioijat.map { tallenna(it) }
 
     @WithSpan
     override fun allArviontioikeudet(
