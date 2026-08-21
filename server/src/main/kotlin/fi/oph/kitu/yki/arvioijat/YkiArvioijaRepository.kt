@@ -1,6 +1,8 @@
 package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.jdbc.SortDirection
+import fi.oph.kitu.jdbc.orderSql
+import fi.oph.kitu.jdbc.pageSql
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -10,6 +12,7 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.sql.PreparedStatement
@@ -28,6 +31,10 @@ interface CustomYkiArvioijaRepository {
 
     fun findKausihistoria(arvioijaId: Int): List<YkiArvioijaKausiEntity>
 
+    fun findForListView(params: YkiArvioijaParams): List<YkiArvioijaListRow>
+
+    fun countForListView(params: YkiArvioijaParams): Int
+
     fun allArviontioikeudet(
         orderBy: YkiArvioijaColumn = YkiArvioijaColumn.Sukunimi,
         orderByDirection: SortDirection = SortDirection.ASC,
@@ -37,7 +44,29 @@ interface CustomYkiArvioijaRepository {
 @Repository
 class CustomYkiArvioijaRepositoryImpl(
     val jdbcTemplate: JdbcTemplate,
+    val namedJdbcTemplate: NamedParameterJdbcTemplate,
 ) : CustomYkiArvioijaRepository {
+    companion object {
+        /**
+         * arvioija_id valitaan eksplisiittisesti, koska molemmissa tauluissa on id-sarake
+         * eika SELECT * kertoisi kumpi voittaa.
+         */
+        private val LIST_VIEW_SELECT =
+            """
+            SELECT yki_arvioija.*,
+                   yki_arvioija.id AS arvioija_id,
+                   yki_arviointioikeus.kieli,
+                   yki_arviointioikeus.tasot,
+                   yki_arviointioikeus.tila,
+                   yki_arviointioikeus.kauden_alkupaiva,
+                   yki_arviointioikeus.kauden_paattymispaiva,
+                   yki_arviointioikeus.jatkorekisterointi,
+                   yki_arviointioikeus.ensimmainen_rekisterointipaiva
+            FROM yki_arvioija
+            JOIN yki_arviointioikeus ON yki_arvioija.id = yki_arviointioikeus.arvioija_id
+            """.trimIndent()
+    }
+
     /**
      * Tallentaa arvioijan ja hanen arviointioikeutensa. Kitu on rekisterin master, joten
      * payloadista puuttuvat arviointioikeudet poistetaan ja jokainen muuttunut kausi
@@ -269,6 +298,34 @@ class CustomYkiArvioijaRepositoryImpl(
             YkiArvioijaKausiEntity.fromRow,
             arvioijaId,
         )
+
+    @WithSpan
+    override fun findForListView(params: YkiArvioijaParams): List<YkiArvioijaListRow> {
+        val order = params.toOrder()
+        return namedJdbcTemplate.query(
+            """
+            $LIST_VIEW_SELECT
+            ${params.whereSql().orEmpty()}
+            ORDER BY ${order.orderSql()}, kieli
+            ${order.pageSql().orEmpty()}
+            """.trimIndent(),
+            params.sqlParams(),
+            YkiArvioijaListRow.fromRow,
+        )
+    }
+
+    @WithSpan
+    override fun countForListView(params: YkiArvioijaParams): Int =
+        namedJdbcTemplate.queryForObject(
+            """
+            SELECT count(*)
+            FROM yki_arvioija
+            JOIN yki_arviointioikeus ON yki_arvioija.id = yki_arviointioikeus.arvioija_id
+            ${params.whereSql().orEmpty()}
+            """.trimIndent(),
+            params.sqlParams(),
+            Int::class.java,
+        ) ?: 0
 
     @WithSpan
     override fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int> = arvioijat.map { tallenna(it) }
