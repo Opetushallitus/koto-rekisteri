@@ -15,7 +15,10 @@ import fi.oph.kitu.util.validation.getOrThrow
 import fi.oph.kitu.webmvc.csvAttachmentResponse
 import fi.oph.kitu.yki.Arviointitila.ARVIOITU
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaParams
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaService
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -51,6 +54,7 @@ class YkiApiController(
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
     private val oppijanumeroService: OppijanumeroService,
     private val oppijanumeroTroubleshooting: OppijanumeroTroubleshootingService,
+    private val arvioijaService: YkiArvioijaService,
 ) {
     @GetMapping("/suoritukset", "/suoritus", produces = ["text/csv"])
     fun getSuorituksetAsCsv(
@@ -68,6 +72,16 @@ class YkiApiController(
                 excludeTags = withSearch.excludeTags(),
             )
         }
+
+    @GetMapping("/arvioijat", produces = ["text/csv"])
+    fun getArvioijatCsv(
+        @ModelAttribute params: YkiArvioijaParams = YkiArvioijaParams(),
+    ): ResponseEntity<StreamingResponseBody> =
+        csvAttachmentResponse<YkiArvioijaColumn, _>(
+            filename = params.csvFileName(),
+            data = arvioijaService.haeKaikki(params),
+            excludeTags = params.excludeTags(),
+        )
 
     @PostMapping("/suoritus")
     @Tag(name = "oauth2")

@@ -167,6 +167,14 @@ object UiText {
 
     object Yki {
         val suodata: LocalizedString get() = tr("yki.suodata", fi = "Suodata")
+        val arvioijiaYhteensa: LocalizedString get() = tr("yki.arvioijiaYhteensa", fi = "Arvioijia yhteensä")
+        val lisaaArvioija: LocalizedString get() = tr("yki.lisaaArvioija", fi = "Lisää arvioija")
+        val odottaaLahetysta: LocalizedString get() = tr("yki.odottaaLahetysta", fi = "Odottaa lähetystä")
+        val solkiLahetysOnnistui: LocalizedString get() = tr("yki.solkiLahetysOnnistui", fi = "Lähetetty")
+        val solkiLahetysEpaonnistui: LocalizedString
+            get() = tr("yki.solkiLahetysEpaonnistui", fi = "Lähetys epäonnistui")
+        val solkiLahetystenVirheet: LocalizedString
+            get() = tr("yki.solkiLahetystenVirheet", fi = "Vain Solki-lähetyksen virheet")
         val suorituksiaYhteensa: LocalizedString get() = tr("yki.suorituksiaYhteensa", fi = "Suorituksia yhteensä")
         val tarkistusarvioinnit: LocalizedString
             get() = tr("yki.tarkistusarvioinnit", fi = "Yleisen kielitutkinnon tarkistusarvioinnit")
@@ -325,6 +333,11 @@ object UiText {
                 get() = tr("yki.sarake.jatkorekisterointi", fi = "Jatkorekisteröinti")
             val rekisteriintuontiaika: LocalizedString
                 get() = tr("yki.sarake.rekisteriintuontiaika", fi = "Rekisteriintuontiaika")
+            val ensimmainenRekisterointipaiva: LocalizedString
+                get() = tr("yki.sarake.ensimmainenRekisterointipaiva", fi = "Ensimmäinen rekisteröintipäivä")
+            val ashaNumero: LocalizedString get() = tr("yki.sarake.ashaNumero", fi = "Hallintopäätöksen ASHA-numero")
+            val solkiTila: LocalizedString get() = tr("yki.sarake.solkiTila", fi = "Solki-lähetys")
+            val muokattu: LocalizedString get() = tr("yki.sarake.muokattu", fi = "Muokattu")
             val solkiId: LocalizedString get() = tr("yki.sarake.solkiId", fi = "Solki-ID")
             val kentta: LocalizedString get() = tr("yki.sarake.kentta", fi = "Kenttä")
             val arvoKitussa: LocalizedString get() = tr("yki.sarake.arvoKitussa", fi = "Arvo Kitussa")

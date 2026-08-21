@@ -31,18 +31,17 @@ describe("Yleinen kielitutkinto arvioijat page", () => {
     await expectToHaveTexts(
       table.labels,
       "Oppijanumero",
-      "Henkilötunnus",
       "Sukunimi ▲",
       "Etunimet",
       "Sähköposti",
       "Osoite",
-      "Tila",
       "Kieli",
       "Tasot",
+      "Tila",
       "Kauden alkupäivä",
       "Kauden päättymispäivä",
       "Jatkorekisteröinti",
-      "Rekisteriintuontiaika",
+      "Solki-lähetys",
     )
     await expect(table.rows).toHaveCount(4)
   })
@@ -53,20 +52,20 @@ describe("Yleinen kielitutkinto arvioijat page", () => {
     const table = ykiArvioijatPage.table
 
     // ascending order
-    await expect(table.rows.first().getByTestId("sukunimi")).toHaveText(
+    await expect(table.rows.first().getByTestId("Sukunimi")).toHaveText(
       "Andersson-Testi",
     )
-    await expect(table.rows.last().getByTestId("sukunimi")).toHaveText(
+    await expect(table.rows.last().getByTestId("Sukunimi")).toHaveText(
       "Öhman-Testi",
     )
 
     // descending order
-    await table.head.getByTestId("sukunimi").getByRole("link").click()
+    await table.head.getByTestId("Sukunimi").getByRole("link").click()
 
-    await expect(table.rows.first().getByTestId("sukunimi")).toHaveText(
+    await expect(table.rows.first().getByTestId("Sukunimi")).toHaveText(
       "Öhman-Testi",
     )
-    await expect(table.rows.last().getByTestId("sukunimi")).toHaveText(
+    await expect(table.rows.last().getByTestId("Sukunimi")).toHaveText(
       "Andersson-Testi",
     )
   })

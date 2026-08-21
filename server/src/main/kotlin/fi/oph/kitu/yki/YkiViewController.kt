@@ -18,9 +18,6 @@ import fi.oph.kitu.koski.YkiMappingId
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.result.splitIntoValuesAndErrors
 import fi.oph.kitu.webmvc.Links
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -159,19 +156,6 @@ class YkiViewController(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
                 rows = suoritusErrorService.getErrors(sortColumn, sortDirection),
-            ),
-        )
-
-    @GetMapping("/arvioijat")
-    fun arvioijatView(
-        sortColumn: YkiArvioijaColumn = YkiArvioijaColumn.Sukunimi,
-        sortDirection: SortDirection = SortDirection.ASC,
-    ): ResponseEntity<String> =
-        ResponseEntity.ok(
-            YkiArvioijaPage.render(
-                sortColumn = sortColumn,
-                sortDirection = sortDirection,
-                arvioijat = ykiService.allArvioijat(sortColumn, sortDirection).group(),
             ),
         )
 
