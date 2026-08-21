@@ -21,8 +21,6 @@ import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
-import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
-import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
@@ -50,7 +48,6 @@ import java.time.LocalDate
 class YkiViewController(
     private val ykiService: YkiService,
     private val suoritusErrorService: YkiSuoritusErrorService,
-    private val arvioijaErrorService: YkiArvioijaErrorService,
     private val koskiErrorService: KoskiErrorService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
     private val koskiYkiRequestMapper: KoskiYkiRequestMapper,
@@ -175,22 +172,6 @@ class YkiViewController(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
                 arvioijat = ykiService.allArvioijat(sortColumn, sortDirection).group(),
-                errorsCount = arvioijaErrorService.countErrors(),
-            ),
-        )
-
-    @GetMapping("/arvioijat/virheet", produces = ["text/html"])
-    fun arvioijatVirheetView(
-        sortColumn: YkiArvioijaErrorColumn = YkiArvioijaErrorColumn.VirheenLuontiaika,
-        sortDirection: SortDirection = SortDirection.ASC,
-    ): ResponseEntity<String> =
-        ResponseEntity.ok(
-            errorTablePage(
-                title = UiText.Nav.yki.toString(),
-                subtitle = UiText.Yki.arvioijienTuonninVirheet.toString(),
-                sortColumn = sortColumn,
-                sortDirection = sortDirection,
-                rows = arvioijaErrorService.getErrors(sortColumn, sortDirection),
             ),
         )
 

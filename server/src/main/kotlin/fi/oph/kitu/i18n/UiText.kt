@@ -239,8 +239,6 @@ object UiText {
             get() = tr("yki.korjaaHyvaksymispaiva", fi = "Korjaa hyväksymispäivämäärä valituille")
         val suoritustenTuonninVirheet: LocalizedString
             get() = tr("yki.suoritustenTuonninVirheet", fi = "Suoritusten tuonnin virheet")
-        val arvioijienTuonninVirheet: LocalizedString
-            get() = tr("yki.arvioijienTuonninVirheet", fi = "Arvioijien tuonnin virheet")
         val siirtoaEiTehda: LocalizedString get() = tr("yki.siirtoaEiTehda", fi = "Siirtoa ei tehdä")
 
         val suoritustaEdeltavaEiLaheteta: LocalizedString
