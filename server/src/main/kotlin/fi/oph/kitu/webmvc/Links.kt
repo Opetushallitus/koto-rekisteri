@@ -10,6 +10,8 @@ import fi.oph.kitu.vkt.VktApiController
 import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaParams
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaViewController
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
@@ -82,7 +84,8 @@ object Links {
 
         fun suoritus(id: Int): String = "${ApplicationProperties.kitu.appUrl}/yki/suoritukset/$id"
 
-        fun arvioijat(): String = linkTo(methodOn(YkiViewController::class.java).arvioijatView()).toString()
+        fun arvioijat(): String =
+            linkTo(methodOn(YkiArvioijaViewController::class.java).arvioijatView(YkiArvioijaParams())).toString()
 
         fun tarkistusArvioinnit(): String =
             linkTo(methodOn(YkiViewController::class.java).tarkistusArvioinnitView()).toString()
@@ -92,6 +95,9 @@ object Links {
 
         fun suorituksetVirheet(): String =
             linkTo(methodOn(YkiViewController::class.java).suorituksetVirheetView()).toString()
+
+        fun arvioijatCsv(): String =
+            linkTo(methodOn(YkiApiController::class.java).getArvioijatCsv(YkiArvioijaParams())).toString()
 
         fun koskiVirheet(): String = linkTo(methodOn(YkiViewController::class.java).koskiVirheetView()).toString()
 
