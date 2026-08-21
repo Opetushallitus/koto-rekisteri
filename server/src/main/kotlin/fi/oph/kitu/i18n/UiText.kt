@@ -168,6 +168,8 @@ object UiText {
     object Yki {
         val suodata: LocalizedString get() = tr("yki.suodata", fi = "Suodata")
         val arvioijiaYhteensa: LocalizedString get() = tr("yki.arvioijiaYhteensa", fi = "Arvioijia yhteensä")
+        val hakusanaArvioija: LocalizedString
+            get() = tr("yki.hakusanaArvioija", fi = "Nimi, oppijanumero, sähköposti tai ASHA-numero")
         val lisaaArvioija: LocalizedString get() = tr("yki.lisaaArvioija", fi = "Lisää arvioija")
         val odottaaLahetysta: LocalizedString get() = tr("yki.odottaaLahetysta", fi = "Odottaa lähetystä")
         val solkiLahetysOnnistui: LocalizedString get() = tr("yki.solkiLahetysOnnistui", fi = "Lähetetty")

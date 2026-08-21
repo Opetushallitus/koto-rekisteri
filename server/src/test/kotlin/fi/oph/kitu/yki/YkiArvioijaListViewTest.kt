@@ -90,6 +90,30 @@ class YkiArvioijaListViewTest(
     }
 
     @Test
+    fun `monisanainen haku loytaa henkilon vaikka termit ovat eri sarakkeissa`() {
+        // Sukunimi ja etunimi ovat eri sarakkeissa, joten yksi ILIKE ei riittaisi.
+        assertEquals(
+            listOf("Kivinen-Testi"),
+            repository.findForListView(YkiArvioijaParams(search = "Kivinen Testi")).map { it.sukunimi },
+        )
+        // Jarjestyksella ei ole valia.
+        assertEquals(
+            listOf("Kivinen-Testi"),
+            repository.findForListView(YkiArvioijaParams(search = "Testi Kivinen")).map { it.sukunimi },
+        )
+        // Kaikkien termien on osuttava.
+        assertEquals(0, repository.findForListView(YkiArvioijaParams(search = "Kivinen Andersson")).size)
+        // Ylimaarainen valilyonti ei riko hakua.
+        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "  Kivinen   ")).size)
+    }
+
+    @Test
+    fun `haku ei ole kirjainkokoriippuvainen`() {
+        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "kivinen")).size)
+        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "KIVINEN")).size)
+    }
+
+    @Test
     fun `tila-, kieli- ja tasosuodattimet rajaavat tuloksia`() {
         assertEquals(
             listOf("Kivinen-Testi"),
