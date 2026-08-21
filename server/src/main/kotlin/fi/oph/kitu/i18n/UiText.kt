@@ -291,6 +291,33 @@ object UiText {
                 get() = tr("yki.arviointitila.tarkistusarviointiHyvaksytty", fi = "Tarkistusarviointi hyväksytty")
         }
 
+        object ArvioijaTila {
+            val aktiivinen: LocalizedString get() = tr("yki.arvioijaTila.aktiivinen", fi = "Aktiivinen")
+            val passivoitu: LocalizedString get() = tr("yki.arvioijaTila.passivoitu", fi = "Passivoitu")
+        }
+
+        object Taso {
+            val perustaso: LocalizedString get() = tr("yki.taso.perustaso", fi = "Perustaso")
+            val keskitaso: LocalizedString get() = tr("yki.taso.keskitaso", fi = "Keskitaso")
+            val ylinTaso: LocalizedString get() = tr("yki.taso.ylinTaso", fi = "Ylin taso")
+        }
+
+        object Kieli {
+            val suomi: LocalizedString get() = tr("yki.kieli.suomi", fi = "suomi")
+            val ruotsi: LocalizedString get() = tr("yki.kieli.ruotsi", fi = "ruotsi")
+            val englanti: LocalizedString get() = tr("yki.kieli.englanti", fi = "englanti")
+            val saksa: LocalizedString get() = tr("yki.kieli.saksa", fi = "saksa")
+            val ranska: LocalizedString get() = tr("yki.kieli.ranska", fi = "ranska")
+            val italia: LocalizedString get() = tr("yki.kieli.italia", fi = "italia")
+            val venaja: LocalizedString get() = tr("yki.kieli.venaja", fi = "venäjä")
+            val pohjoissaame: LocalizedString get() = tr("yki.kieli.pohjoissaame", fi = "pohjoissaame")
+            val espanja: LocalizedString get() = tr("yki.kieli.espanja", fi = "espanja")
+            val ruotsiVanha: LocalizedString get() = tr("yki.kieli.ruotsiVanha", fi = "ruotsi (vanha koodi)")
+            val kaupallinenEnglanti: LocalizedString
+                get() = tr("yki.kieli.kaupallinenEnglanti", fi = "kaupallinen englanti")
+            val tekninenEnglanti: LocalizedString get() = tr("yki.kieli.tekninenEnglanti", fi = "tekninen englanti")
+        }
+
         object Sarake {
             val oppijanumero: LocalizedString get() = tr("yki.sarake.oppijanumero", fi = "Oppijanumero")
             val sukunimi: LocalizedString get() = tr("yki.sarake.sukunimi", fi = "Sukunimi")

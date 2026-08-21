@@ -33,15 +33,11 @@ describe("Yleinen kielitutkinto arvioijat page", () => {
       "Oppijanumero",
       "Sukunimi ▲",
       "Etunimet",
-      "Sähköposti",
-      "Osoite",
       "Kieli",
       "Tasot",
       "Tila",
       "Kauden alkupäivä",
       "Kauden päättymispäivä",
-      "Jatkorekisteröinti",
-      "Solki-lähetys",
     )
     await expect(table.rows).toHaveCount(4)
   })
