@@ -201,7 +201,9 @@ function defineCasTests(
   user: MockUser,
   expectedStatusCodes: ExpectedStatusCodes,
 ) {
-  const statePath = `browserstate/securitytests-${user}.json`
+  // Jokaisella workerilla on oma palvelin ja oma sessio, mutta evasteet eivat erotu portin
+  // perusteella. Ilman worker-kohtaista tiedostoa workerit ylikirjoittaisivat toistensa tilat.
+  const statePath = `browserstate/securitytests-${user}-${process.env.TEST_PARALLEL_INDEX}.json`
 
   beforeAll(async ({ request, config }) => {
     const response = await request.get(config.baseUrl + `dev/mocklogin/${user}`)

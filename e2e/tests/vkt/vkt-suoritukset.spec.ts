@@ -79,7 +79,7 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
 
     // Testataan loputkin kentät
     await testSorting("Etunimet", "Aarni Eino", "Eero Hugo")
-    await testSorting("Tutkintopaiva", "27.2.2000", "29.12.2002")
+    await testSorting("Tutkintopaiva", "24.2.2000", "26.10.2002")
   })
 
   test("Details page shows correct information of hyvä ja tyydyttävä taso", async ({
@@ -287,8 +287,8 @@ describe("Valtionkielitutkinnon suoritukset page", () => {
     await expectToHaveTexts(
       tutkintojenArvosanat,
       "Arvioinnit puuttuvat: <vktosakoe:kirjoittaminen>, <vktosakoe:tekstinymmartaminen>",
-      "Arvioinnit puuttuvat: <vktosakoe:puhuminen>, <vktosakoe:puheenymmartaminen>",
-      "Arvioinnit puuttuvat: <vktosakoe:tekstinymmartaminen>, <vktosakoe:puheenymmartaminen>",
+      "Arvioinnit puuttuvat: <vktosakoe:puheenymmartaminen>, <vktosakoe:puhuminen>",
+      "Arvioinnit puuttuvat: <vktosakoe:puheenymmartaminen>, <vktosakoe:tekstinymmartaminen>",
     )
 
     // Ota talteen locatorit suullisen taidon osakokeiden riveille

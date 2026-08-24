@@ -318,7 +318,7 @@ class CustomYkiArvioijaRepositoryImpl(
             """
             $LIST_VIEW_SELECT
             ${params.whereSql().orEmpty()}
-            ORDER BY ${order.orderSql()}, kieli
+            ORDER BY ${order.orderSql()}, kieli, arvioija_id
             ${order.pageSql().orEmpty()}
             """.trimIndent(),
             params.sqlParams(),
