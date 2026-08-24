@@ -157,6 +157,7 @@ class WebSecurityConfig {
                 configureCommonAuthorizations(environment)
 
                 authorize(GET, "/yki/arvioijat/uusi", hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role()))
+                authorize(GET, "/yki/arvioijat/*/muokkaa", hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role()))
                 authorize(POST, "/yki/arvioijat/**", hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role()))
 
                 if (developmentProfileActive(environment)) {

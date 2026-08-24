@@ -70,6 +70,35 @@ class YkiArvioijaService(
                 repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
             }
 
+    @WithSpan
+    fun onOlemassa(id: Int): Boolean = repository.findArvioijaById(id) != null
+
+    @WithSpan
+    fun paivitaArvioija(
+        id: Int,
+        komento: TallennaArvioija,
+        tekija: Oid?,
+    ): Either<YkiArvioijaError, YkiArvioijaEntity> {
+        val olemassaoleva = repository.findArvioijaById(id) ?: return YkiArvioijaError.ArvioijaaEiLoydy.left()
+
+        // Polun id ratkaisee kenen tietoja muokataan, ei lomakkeen piilokentta.
+        val kohdistettu = komento.copy(arvioijaOid = olemassaoleva.arvioijaOid)
+
+        return validationService
+            .validateAndEnrich(kohdistettu)
+            .mapLeft { YkiArvioijaError.Validointivirheet(it) }
+            .flatMap { validoitu ->
+                val ensimmainenRekisterointipaiva =
+                    olemassaoleva.arviointioikeudet
+                        .minOfOrNull { it.ensimmainenRekisterointipaiva }
+                        ?: validoitu.kaudenAlkupaiva
+
+                repository.tallenna(validoitu.toEntity(ensimmainenRekisterointipaiva), tekija)
+                auditLogger.log(AuditLogOperation.YkiArvioijaUpdated, validoitu.arvioijaOid)
+                repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+            }
+    }
+
     private fun haeOid(haku: OnrHaku): Either<YkiArvioijaError, Oid> =
         when (haku.tapa) {
             ArvioijaHakutapa.OPPIJANUMERO -> haeOidOppijanumerolla(haku)

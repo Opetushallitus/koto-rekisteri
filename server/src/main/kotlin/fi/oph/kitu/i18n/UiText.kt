@@ -355,6 +355,14 @@ object UiText {
                     )
             val tutkintokieli: LocalizedString get() = tr("yki.arvioija.tutkintokieli", fi = "Tutkintokieli")
             val tallenna: LocalizedString get() = tr("yki.arvioija.tallenna", fi = "Tallenna arvioija")
+            val muokkaa: LocalizedString get() = tr("yki.arvioija.muokkaa", fi = "Muokkaa")
+            val muokkaaArvioijaa: LocalizedString
+                get() = tr("yki.arvioija.muokkaaArvioijaa", fi = "Muokkaa arvioijan tietoja")
+            val tallennaMuutokset: LocalizedString
+                get() = tr("yki.arvioija.tallennaMuutokset", fi = "Tallenna muutokset")
+            val muutoksetTallennettu: LocalizedString
+                get() = tr("yki.arvioija.muutoksetTallennettu", fi = "Arvioijan tiedot päivitettiin.")
+            val peruuta: LocalizedString get() = tr("yki.arvioija.peruuta", fi = "Peruuta")
             val tallennettu: LocalizedString
                 get() = tr("yki.arvioija.tallennettu", fi = "Arvioija tallennettiin rekisteriin.")
             val turvakielto: LocalizedString
