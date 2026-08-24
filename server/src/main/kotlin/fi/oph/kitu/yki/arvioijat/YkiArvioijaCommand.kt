@@ -57,6 +57,7 @@ data class TallennaArvioija(
 }
 
 data class OnrHaku(
+    val tapa: ArvioijaHakutapa = ArvioijaHakutapa.HETU,
     val hetu: String? = null,
     val etunimet: String? = null,
     val sukunimi: String? = null,

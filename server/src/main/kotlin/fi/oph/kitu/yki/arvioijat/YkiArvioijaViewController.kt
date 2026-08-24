@@ -50,8 +50,9 @@ class YkiArvioijaViewController(
     }
 
     @GetMapping("/uusi", produces = ["text/html"])
-    fun uusiArvioijaView(): ResponseEntity<String> =
-        ResponseEntity.ok(YkiArvioijaLomakePage.renderHaku(ArvioijaHakuFormData(), FormErrors.EMPTY))
+    fun uusiArvioijaView(
+        @ModelAttribute form: ArvioijaHakuFormData,
+    ): ResponseEntity<String> = ResponseEntity.ok(YkiArvioijaLomakePage.renderHaku(form, FormErrors.EMPTY))
 
     @PostMapping("/uusi/haku", produces = ["text/html"])
     fun arvioijaHaku(

@@ -302,13 +302,21 @@ object UiText {
             val uusiArvioija: LocalizedString get() = tr("yki.arvioija.uusiArvioija", fi = "Uusi arvioija")
             val haeHenkilonTiedot: LocalizedString
                 get() = tr("yki.arvioija.haeHenkilonTiedot", fi = "Hae henkilön tiedot")
-            val hakuOhje: LocalizedString
+            val hakutapaHetu: LocalizedString
+                get() = tr("yki.arvioija.hakutapaHetu", fi = "Henkilötunnuksella")
+            val hakutapaOppijanumero: LocalizedString
+                get() = tr("yki.arvioija.hakutapaOppijanumero", fi = "Oppijanumerolla")
+            val hakuOhjeHetu: LocalizedString
                 get() =
                     tr(
-                        "yki.arvioija.hakuOhje",
-                        fi =
-                            "Hae arvioijan tiedot oppijanumerorekisteristä henkilötunnuksella ja nimillä. " +
-                                "Voit vaihtoehtoisesti antaa oppijanumeron suoraan.",
+                        "yki.arvioija.hakuOhjeHetu",
+                        fi = "Hae arvioijan tiedot oppijanumerorekisteristä henkilötunnuksella ja nimillä.",
+                    )
+            val hakuOhjeOppijanumero: LocalizedString
+                get() =
+                    tr(
+                        "yki.arvioija.hakuOhjeOppijanumero",
+                        fi = "Hae arvioijan tiedot oppijanumerorekisteristä oppijanumerolla.",
                     )
             val henkilotunnus: LocalizedString get() = tr("yki.arvioija.henkilotunnus", fi = "Henkilötunnus")
             val sukunimi: LocalizedString get() = tr("yki.arvioija.sukunimi", fi = "Sukunimi")

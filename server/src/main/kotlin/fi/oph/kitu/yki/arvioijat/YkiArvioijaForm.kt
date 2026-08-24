@@ -5,7 +5,13 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import java.time.LocalDate
 
+enum class ArvioijaHakutapa {
+    HETU,
+    OPPIJANUMERO,
+}
+
 data class ArvioijaHakuFormData(
+    val tapa: ArvioijaHakutapa = ArvioijaHakutapa.HETU,
     val hetu: String? = null,
     val sukunimi: String? = null,
     val etunimet: String? = null,
@@ -14,6 +20,7 @@ data class ArvioijaHakuFormData(
 ) {
     fun toOnrHaku(): OnrHaku =
         OnrHaku(
+            tapa = tapa,
             hetu = hetu,
             etunimet = etunimet,
             sukunimi = sukunimi,
