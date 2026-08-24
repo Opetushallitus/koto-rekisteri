@@ -2,10 +2,8 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.oid.Oid
-import fi.oph.kitu.oppijanumero.Oppija
 import fi.oph.kitu.oppijanumero.OppijanumeroException
-import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.oppijanumero.OppijanumeroTroubleshootingService
+import fi.oph.kitu.oppijanumero.OppijanumeroHakuService
 import fi.oph.kitu.tiedontuontischema.Henkilosuoritus
 import fi.oph.kitu.tiedontuontischema.TiedonsiirtoFailure
 import fi.oph.kitu.tiedontuontischema.TiedonsiirtoSuccess
@@ -52,8 +50,7 @@ class YkiApiController(
     private val ykiArvioijaRepository: YkiArvioijaRepository,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
-    private val oppijanumeroService: OppijanumeroService,
-    private val oppijanumeroTroubleshooting: OppijanumeroTroubleshootingService,
+    private val oppijanumeroHaku: OppijanumeroHakuService,
     private val arvioijaService: YkiArvioijaService,
 ) {
     @GetMapping("/suoritukset", "/suoritus", produces = ["text/csv"])
@@ -210,33 +207,22 @@ class YkiApiController(
                 .toResponseEntity()
         }
         val oppija =
-            Oppija(
-                etunimet = haku.etunimet.trim(),
-                hetu = haku.hetu.trim(),
-                kutsumanimi =
-                    haku.kutsumanimi
-                        ?.trim()
-                        ?.takeIf { it.isNotEmpty() }
-                        ?: haku.etunimet
-                            .trim()
-                            .split(" ")
-                            .first(),
-                sukunimi = haku.sukunimi.trim(),
+            oppijanumeroHaku.oppijaOf(
+                hetu = haku.hetu,
+                etunimet = haku.etunimet,
+                sukunimi = haku.sukunimi,
+                kutsumanimi = haku.kutsumanimi,
             )
-        return oppijanumeroService.getMasterOid(oppija).fold(
+        return oppijanumeroHaku.haeMasterOid(oppija).fold(
             ifLeft = { error ->
                 when (error) {
                     is OppijanumeroException.OppijaNotIdentifiedException,
                     is OppijanumeroException.OppijaNotFoundException,
                     -> {
-                        oppijanumeroTroubleshooting
-                            .troubleshootOppijaNameCombinations(oppija)
-                            ?.let { oppijanumeroService.getMasterOid(it).getOrNull() }
-                            ?.let { oid -> ResponseEntity.ok(OppijanumeroHakuResponse(oid)) }
-                            ?: TiedonsiirtoFailure(
-                                HttpStatus.NOT_FOUND,
-                                listOf("Oppijaa ei löytynyt Oppijanumerorekisteristä"),
-                            ).toResponseEntity()
+                        TiedonsiirtoFailure(
+                            HttpStatus.NOT_FOUND,
+                            listOf("Oppijaa ei löytynyt Oppijanumerorekisteristä"),
+                        ).toResponseEntity()
                     }
 
                     else -> {

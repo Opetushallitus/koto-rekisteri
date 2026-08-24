@@ -1,12 +1,29 @@
 package fi.oph.kitu.yki.arvioijat
 
+import arrow.core.Either
+import arrow.core.flatMap
+import arrow.core.left
+import arrow.core.nonEmptyListOf
+import arrow.core.right
+import arrow.core.toNonEmptyListOrNull
+import fi.oph.kitu.auditlogs.AuditLogOperation
 import fi.oph.kitu.auditlogs.AuditLogger
+import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumeroHakuService
+import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
+import fi.oph.kitu.util.validation.Validation.ValidationError
+import fi.oph.kitu.util.validation.ValidationService
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 
 @Service
 class YkiArvioijaService(
     private val repository: YkiArvioijaRepository,
+    private val validationService: ValidationService,
+    private val oppijanumeroHaku: OppijanumeroHakuService,
+    private val oppijanumeroService: OppijanumeroService,
     private val auditLogger: AuditLogger,
 ) {
     @WithSpan
@@ -24,4 +41,98 @@ class YkiArvioijaService(
     @WithSpan
     fun haeKaikki(params: YkiArvioijaParams): List<YkiArvioijaListRow> =
         haeSivullinen(params.copy(page = 1, limit = Int.MAX_VALUE))
+
+    @WithSpan
+    fun haeArvioija(id: Int): YkiArvioijaEntity? =
+        repository.findArvioijaById(id)?.also {
+            auditLogger.log(AuditLogOperation.YkiArvioijaViewed, it.arvioijaOid)
+        }
+
+    @WithSpan
+    fun haeOnrHenkilo(oid: Oid): OppijanumerorekisteriHenkilo? =
+        oppijanumeroService.getHenkiloByMasterOid(oid).getOrNull()
+
+    @WithSpan
+    fun haeHenkilotiedot(haku: OnrHaku): Either<YkiArvioijaError, ArvioijanEsitaytto> =
+        haeOid(haku).flatMap { oid -> haeEsitaytto(oid) }
+
+    @WithSpan
+    fun luoArvioija(
+        komento: TallennaArvioija,
+        tekija: Oid?,
+    ): Either<YkiArvioijaError, YkiArvioijaEntity> =
+        validationService
+            .validateAndEnrich(komento)
+            .mapLeft { YkiArvioijaError.Validointivirheet(it) }
+            .flatMap { validoitu ->
+                val id = repository.tallenna(validoitu.toEntity(), tekija)
+                auditLogger.log(AuditLogOperation.YkiArvioijaCreated, validoitu.arvioijaOid)
+                repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+            }
+
+    private fun haeOid(haku: OnrHaku): Either<YkiArvioijaError, Oid> {
+        val oppijanumero = haku.oppijanumero?.trim()?.takeIf { it.isNotEmpty() }
+        if (oppijanumero != null) {
+            return Oid.parse(oppijanumero).mapLeft {
+                virhe("oppijanumero", "Oppijanumero on virheellinen")
+            }
+        }
+
+        puuttuvatHakukentat(haku)?.let { return YkiArvioijaError.Validointivirheet(it).left() }
+
+        val oppija =
+            oppijanumeroHaku.oppijaOf(
+                hetu = haku.hetu!!,
+                etunimet = haku.etunimet!!,
+                sukunimi = haku.sukunimi!!,
+                kutsumanimi = haku.kutsumanimi,
+            )
+
+        return oppijanumeroHaku.haeMasterOid(oppija).mapLeft { onrVirhe ->
+            when (onrVirhe) {
+                is OppijanumeroException.OppijaNotIdentifiedException -> YkiArvioijaError.OppijaaEiYksiloity(null)
+                else -> YkiArvioijaError.OppijanumeroaEiSaatu(onrVirhe)
+            }
+        }
+    }
+
+    private fun haeEsitaytto(oid: Oid): Either<YkiArvioijaError, ArvioijanEsitaytto> =
+        oppijanumeroService
+            .getHenkiloByMasterOid(oid)
+            .mapLeft { YkiArvioijaError.OppijanumeroaEiSaatu(it) }
+            .map { henkilo ->
+                val yhteystiedot =
+                    henkilo.yhteystiedotRyhma
+                        .orEmpty()
+                        .flatMap { it.yhteystieto.orEmpty() }
+
+                fun arvo(tyyppi: String): String? =
+                    yhteystiedot
+                        .firstOrNull { it.yhteystietoTyyppi == tyyppi && !it.yhteystietoArvo.isNullOrBlank() }
+                        ?.yhteystietoArvo
+
+                ArvioijanEsitaytto(
+                    arvioijaOid = oid,
+                    sukunimi = henkilo.sukunimi.orEmpty(),
+                    etunimet = henkilo.etunimet.orEmpty(),
+                    sahkopostiosoite = arvo("YHTEYSTIETO_SAHKOPOSTI"),
+                    katuosoite = arvo("YHTEYSTIETO_KATUOSOITE"),
+                    postinumero = arvo("YHTEYSTIETO_POSTINUMERO"),
+                    postitoimipaikka = arvo("YHTEYSTIETO_KAUPUNKI"),
+                    turvakielto = henkilo.turvakielto == true,
+                    jatkorekisterointi = repository.findByArvioijaOid(oid) != null,
+                )
+            }
+
+    private fun puuttuvatHakukentat(haku: OnrHaku) =
+        buildList {
+            if (haku.hetu.isNullOrBlank()) add(ValidationError(listOf("hetu"), "Henkilötunnus on pakollinen tieto"))
+            if (haku.etunimet.isNullOrBlank()) add(ValidationError(listOf("etunimet"), "Etunimet on pakollinen tieto"))
+            if (haku.sukunimi.isNullOrBlank()) add(ValidationError(listOf("sukunimi"), "Sukunimi on pakollinen tieto"))
+        }.toNonEmptyListOrNull()
+
+    private fun virhe(
+        kentta: String,
+        viesti: String,
+    ) = YkiArvioijaError.Validointivirheet(nonEmptyListOf(ValidationError(listOf(kentta), viesti)))
 }

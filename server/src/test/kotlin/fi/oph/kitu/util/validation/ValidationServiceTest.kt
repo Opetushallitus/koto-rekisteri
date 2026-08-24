@@ -19,6 +19,7 @@ import fi.oph.kitu.yki.Arviointitila
 import fi.oph.kitu.yki.TutkinnonOsa
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import fi.oph.kitu.yki.arvioijat.TallennaArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
@@ -592,6 +593,142 @@ class ValidationServiceTest(
             fail(
                 listOf("suoritus", "arviointitila"),
                 "Arviointitila 'TARKISTUSARVIOITU' edellyttää tarkistusarviointia, jolla on käsittelypäivä",
+            ),
+            result,
+        )
+    }
+
+    private val validiTallennaArvioija =
+        TallennaArvioija(
+            arvioijaOid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+            sukunimi = "Kivinen-Testi",
+            etunimet = "Petro Testi",
+            sahkopostiosoite = "devnull-2@oph.fi",
+            katuosoite = "Haltin vanha autiotupa",
+            postinumero = "99490",
+            postitoimipaikka = "Enontekiö",
+            kaudenAlkupaiva = LocalDate.of(2025, 12, 7),
+            jatkorekisterointi = false,
+            tila = YkiArvioijaTila.AKTIIVINEN,
+            ashaNumero = "OPH-1234-2025",
+            arviointioikeudet =
+                listOf(
+                    TallennaArvioija.Arviointioikeus(
+                        kieli = Tutkintokieli.FIN,
+                        tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT),
+                    ),
+                ),
+        )
+
+    @Test
+    fun `Arvioijan tallennuksen happy path`() {
+        assertEquals(validiTallennaArvioija.right(), validation.validateAndEnrich(validiTallennaArvioija))
+    }
+
+    @Test
+    fun `Arvioijan kauden paattymispaiva on viisi vuotta alkupaivasta`() {
+        assertEquals(LocalDate.of(2030, 12, 7), validiTallennaArvioija.kaudenPaattymispaiva)
+    }
+
+    @Test
+    fun `Arvioijalle on annettava postitoimipaikka`() {
+        val result = validation.validateAndEnrich(validiTallennaArvioija.copy(postitoimipaikka = " "))
+
+        assertEquals(fail(listOf("postitoimipaikka"), "Postitoimipaikka on pakollinen tieto"), result)
+    }
+
+    @Test
+    fun `Arvioijan postinumeron on oltava viisi numeroa`() {
+        val result = validation.validateAndEnrich(validiTallennaArvioija.copy(postinumero = "994"))
+
+        assertEquals(fail(listOf("postinumero"), "Postinumeron on oltava viisi numeroa"), result)
+    }
+
+    @Test
+    fun `Arvioijan sahkopostiosoitteen on oltava kelvollinen`() {
+        val result = validation.validateAndEnrich(validiTallennaArvioija.copy(sahkopostiosoite = "devnull-2"))
+
+        assertEquals(fail(listOf("sahkopostiosoite"), "Sähköpostiosoite on virheellinen"), result)
+    }
+
+    @Test
+    fun `Arvioijan sahkopostiosoite saa puuttua`() {
+        val arvioija = validiTallennaArvioija.copy(sahkopostiosoite = null)
+
+        assertEquals(arvioija.right(), validation.validateAndEnrich(arvioija))
+    }
+
+    @Test
+    fun `Arvioijalle on valittava vahintaan yksi arviointioikeus`() {
+        val result = validation.validateAndEnrich(validiTallennaArvioija.copy(arviointioikeudet = emptyList()))
+
+        assertEquals(
+            fail(listOf("arviointioikeus"), "Valitse vähintään yksi tutkintokieli ja tutkintotaso"),
+            result,
+        )
+    }
+
+    @Test
+    fun `Arvioijan jokaiselle kielelle on valittava vahintaan yksi taso`() {
+        val result =
+            validation.validateAndEnrich(
+                validiTallennaArvioija.copy(
+                    arviointioikeudet =
+                        listOf(TallennaArvioija.Arviointioikeus(Tutkintokieli.FIN, emptySet())),
+                ),
+            )
+
+        assertEquals(
+            fail(
+                listOf("arviointioikeus"),
+                "Valitse jokaiselle valitulle tutkintokielelle vähintään yksi tutkintotaso",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Samaa tutkintokielta ei voi valita kahdesti`() {
+        val result =
+            validation.validateAndEnrich(
+                validiTallennaArvioija.copy(
+                    arviointioikeudet =
+                        listOf(
+                            TallennaArvioija.Arviointioikeus(Tutkintokieli.FIN, setOf(Tutkintotaso.PT)),
+                            TallennaArvioija.Arviointioikeus(Tutkintokieli.FIN, setOf(Tutkintotaso.KT)),
+                        ),
+                ),
+            )
+
+        assertEquals(fail(listOf("arviointioikeus"), "Sama tutkintokieli on valittu useaan kertaan"), result)
+    }
+
+    @Test
+    fun `Arvioijan kausi ei voi alkaa yli vuoden paasta`() {
+        val result =
+            validation.validateAndEnrich(
+                validiTallennaArvioija.copy(kaudenAlkupaiva = LocalDate.now().plusYears(1).plusDays(1)),
+            )
+
+        assertEquals(
+            fail(listOf("kaudenAlkupaiva"), "Kauden alkupäivä ei voi olla yli vuotta tulevaisuudessa"),
+            result,
+        )
+    }
+
+    @Test
+    fun `Arvioijaa, jonka oidia ei loydy oppijanumerorekisterista, ei voi tallentaa`() {
+        val result =
+            validation.validateAndEnrich(
+                validiTallennaArvioija.copy(
+                    arvioijaOid = Oid.parse("1.2.246.562.24.20000000000").getOrThrow(),
+                ),
+            )
+
+        assertEquals(
+            fail(
+                listOf("arvioijaOid"),
+                "Oppijanumeroa 1.2.246.562.24.20000000000 ei löydy Oppijanumerorekisteristä",
             ),
             result,
         )
