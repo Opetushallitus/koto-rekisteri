@@ -7,7 +7,10 @@ import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
+import fi.oph.kitu.i18n.unaryPlus
+import fi.oph.kitu.webmvc.Links
 import kotlinx.html.FlowContent
+import kotlinx.html.a
 
 enum class YkiArvioijaColumn(
     override val entityName: String,
@@ -16,6 +19,17 @@ enum class YkiArvioijaColumn(
     override val getValue: (YkiArvioijaListRow) -> String,
     override val renderHtml: (FlowContent.(YkiArvioijaListRow) -> Unit)? = null,
 ) : RenderableDisplayTableEnum<YkiArvioijaListRow> {
+    @ColumnTags(ColumnTag.LIST_VIEW)
+    Linkki(
+        entityName = "arvioija_id",
+        uiHeaderValue = LocalizedString(fi = ""),
+        urlParam = "id",
+        getValue = { it.arvioijaId.toString() },
+        renderHtml = {
+            a(href = Links.Yki.arvioija(it.arvioijaId)) { +UiText.Toiminto.nayta }
+        },
+    ),
+
     @ColumnTags(ColumnTag.LIST_VIEW, ColumnTag.CSV_EXPORT, ColumnTag.PERSONAL_DATA)
     Oppijanumero(
         entityName = "arvioija_oid",

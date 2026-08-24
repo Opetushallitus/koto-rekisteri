@@ -120,6 +120,28 @@ class YkiArvioijaViewControllerTest(
     }
 
     @Test
+    fun `listarivilta on linkki arvioijan tietosivulle`() {
+        val id = arvioijanId("1.2.246.562.24.59267607404")
+
+        val html = getHtml("/yki/arvioijat")
+
+        assertContains(html, """data-testid="Linkki"""")
+        assertContains(html, """/yki/arvioijat/$id"""")
+    }
+
+    @Test
+    fun `rivilinkki sailyy kun henkilotiedot on piilotettu`() {
+        val id = arvioijanId("1.2.246.562.24.59267607404")
+
+        val html = getHtml("/yki/arvioijat", "piilotaHenkilotiedot" to "true")
+
+        assertContains(html, """/yki/arvioijat/$id"""")
+        assertFalse(html.contains("Kivinen-Testi"), "henkilotiedot on piilotettu")
+    }
+
+    private fun arvioijanId(oid: String): Int = repository.findByArvioijaOid(Oid.parse(oid).getOrThrow())!!.id!!.toInt()
+
+    @Test
     fun `hakusana sailyy lajittelulinkeissa`() {
         val html = getHtml("/yki/arvioijat", "search" to "Kivinen")
 

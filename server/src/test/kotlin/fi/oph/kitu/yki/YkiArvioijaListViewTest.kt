@@ -176,4 +176,24 @@ class YkiArvioijaListViewTest(
         assertTrue(listView.none { it == YkiArvioijaColumn.AshaNumero })
         assertTrue(csvIlmanHenkilotietoja.none { it == YkiArvioijaColumn.Oppijanumero })
     }
+
+    @Test
+    fun `linkkisarake nakyy listalla myos ilman henkilotietoja mutta ei CSV-viennissa`() {
+        val listView =
+            RenderableDisplayTableEnum.getByTags<YkiArvioijaColumn, YkiArvioijaListRow>(setOf(ColumnTag.LIST_VIEW))
+        val listViewIlmanHenkilotietoja =
+            RenderableDisplayTableEnum.getByTags<YkiArvioijaColumn, YkiArvioijaListRow>(
+                setOf(ColumnTag.LIST_VIEW),
+                setOf(ColumnTag.PERSONAL_DATA),
+            )
+        val csv =
+            RenderableDisplayTableEnum.getByTags<YkiArvioijaColumn, YkiArvioijaListRow>(setOf(ColumnTag.CSV_EXPORT))
+
+        assertTrue(listView.any { it == YkiArvioijaColumn.Linkki })
+        assertTrue(
+            listViewIlmanHenkilotietoja.any { it == YkiArvioijaColumn.Linkki },
+            "rivi on avattavissa myos kun henkilotiedot on piilotettu",
+        )
+        assertTrue(csv.none { it == YkiArvioijaColumn.Linkki }, "linkki ei kuulu CSV-vientiin")
+    }
 }
