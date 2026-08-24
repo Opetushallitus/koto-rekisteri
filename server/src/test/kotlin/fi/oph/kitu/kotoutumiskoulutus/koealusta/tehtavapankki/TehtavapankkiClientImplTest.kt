@@ -58,7 +58,8 @@ class TehtavapankkiClientImplTest {
         assertEquals(9, meta.courseId)
         assertEquals("Suomi 9", meta.courseName)
         assertEquals("fin", meta.language)
-        assertEquals(Instant.ofEpochMilli(1733400000), meta.generated)
+        assertEquals(Instant.ofEpochSecond(1733400000), meta.generated)
+        assertEquals(Instant.EPOCH, meta.published)
         assertEquals("https://example.test/koto/pluginfile.php/9/qb.xml", meta.downloadUrl)
     }
 

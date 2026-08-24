@@ -4,7 +4,10 @@ import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.dev.mockdata.toInstant
+import fi.oph.kitu.html.table.ColumnTag
+import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.DisplayTableCsvRenderer
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.isBadRequest
 import fi.oph.kitu.isOk
 import fi.oph.kitu.oid.Oid
@@ -18,14 +21,14 @@ import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.util.result.getOrThrow
+import fi.oph.kitu.verboseContentJson
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeus
 import fi.oph.kitu.yki.suoritukset.Todistuskieli
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusColumn
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeama
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,6 +37,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.mock.web.MockHttpSession
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MockMvcResultMatchersDsl
@@ -48,6 +52,7 @@ import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 @SpringBootTest
@@ -55,7 +60,6 @@ import kotlin.test.assertNull
 class YkiApiControllerTest(
     @param:Autowired val timeService: TestTimeService,
     @param:Autowired val arvioijaRepository: YkiArvioijaRepository,
-    @param:Autowired val poikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     @param:Autowired val suoritusRepository: YkiSuoritusRepository,
     @param:Autowired val ykiApiController: YkiApiController,
 ) {
@@ -103,7 +107,7 @@ class YkiApiControllerTest(
                             ),
                         tutkintopaiva = LocalDate.of(2024, 9, 1),
                         arviointipaiva = LocalDate.of(2024, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
+                        arviointitila = Arviointitila.TARKISTUSARVIOITU,
                         osat =
                             listOf(
                                 YkiOsa(
@@ -155,102 +159,6 @@ class YkiApiControllerTest(
     }
 
     @Test
-    fun `Suorituksen tallennus poistaa kaikki sen solki_idn poikkeamat`() {
-        val solkiId = 999991
-        val toinenSolkiId = 999992
-
-        poikkeamaRepository.save(
-            YkiSuoritusPoikkeama(
-                solkiId = solkiId,
-                kentta = YkiSuoritusPoikkeama.SUORITUS_PUUTTUU_KITUSTA,
-                arvoKitussa = "",
-                arvoSolkissa = "Öhman-Testi Ranja Testi, YT, 2024-09-01",
-                havaittu = Instant.now(),
-                tutkintopaiva = LocalDate.of(2024, 9, 1),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-            ),
-        )
-        poikkeamaRepository.save(
-            YkiSuoritusPoikkeama(
-                solkiId = solkiId,
-                kentta = "sukunimi",
-                arvoKitussa = "Vanha",
-                arvoSolkissa = "Öhman-Testi",
-                havaittu = Instant.now(),
-                tutkintopaiva = LocalDate.of(2024, 9, 1),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-            ),
-        )
-        poikkeamaRepository.save(
-            YkiSuoritusPoikkeama(
-                solkiId = toinenSolkiId,
-                kentta = "sukunimi",
-                arvoKitussa = "Toinen",
-                arvoSolkissa = "Toisen Solki",
-                havaittu = Instant.now(),
-                tutkintopaiva = LocalDate.of(2024, 9, 1),
-                tutkintokieli = Tutkintokieli.FIN,
-                tutkintotaso = Tutkintotaso.YT,
-            ),
-        )
-
-        val suoritus =
-            Henkilosuoritus(
-                henkilo =
-                    Henkilo(
-                        oid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
-                        etunimet = "Ranja Testi",
-                        sukunimi = "Öhman-Testi",
-                        hetu = "010180-9026",
-                        sukupuoli = Sukupuoli.N,
-                        kansalaisuus = "EST",
-                        katuosoite = "Testikuja 5",
-                        postinumero = "40100",
-                        postitoimipaikka = "Testilä",
-                        email = "testi@testi.fi",
-                    ),
-                suoritus =
-                    YkiSuoritus(
-                        tutkintotaso = Tutkintotaso.YT,
-                        kieli = Tutkintokieli.FIN,
-                        todistuskieli = Todistuskieli.FIN,
-                        jarjestaja =
-                            YkiJarjestaja(
-                                oid = Oid.parse("1.2.246.562.10.14893989377").getOrThrow(),
-                                nimi = "Jyväskylän yliopisto, Soveltavan kielentutkimuksen keskus",
-                            ),
-                        tutkintopaiva = LocalDate.of(2024, 9, 1),
-                        arviointipaiva = LocalDate.of(2024, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
-                        osat =
-                            listOf(
-                                YkiOsa(tyyppi = TutkinnonOsa.puhuminen, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.puheenYmmartaminen, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.kirjoittaminen, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.tekstinYmmartaminen, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.rakenteetJaSanasto, arvosana = 5),
-                                YkiOsa(tyyppi = TutkinnonOsa.yleisarvosana, arvosana = 5),
-                            ),
-                        lahdejarjestelmanId =
-                            LahdejarjestelmanTunniste(
-                                id = solkiId.toString(),
-                                lahde = Lahdejarjestelma.Solki,
-                            ),
-                    ),
-            )
-
-        postSuoritus(suoritus) {
-            isOk()
-        }
-
-        val jaljella = poikkeamaRepository.findAll()
-        assertEquals(emptyList(), jaljella.filter { it.solkiId == solkiId })
-        assertEquals(1, jaljella.count { it.solkiId == toinenSolkiId })
-    }
-
-    @Test
     fun `Validin yki-suorituksen tallennus rajapinnan kautta onnistuu 2026 alkaen, kunhan hetun jättää pois`() {
         val suoritus =
             Henkilosuoritus(
@@ -279,7 +187,7 @@ class YkiApiControllerTest(
                             ),
                         tutkintopaiva = LocalDate.of(2026, 9, 1),
                         arviointipaiva = LocalDate.of(2026, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
+                        arviointitila = Arviointitila.TARKISTUSARVIOITU,
                         osat =
                             listOf(
                                 YkiOsa(
@@ -359,7 +267,7 @@ class YkiApiControllerTest(
                             ),
                         tutkintopaiva = LocalDate.of(2026, 9, 1),
                         arviointipaiva = LocalDate.of(2026, 12, 13),
-                        arviointitila = Arviointitila.ARVIOITU,
+                        arviointitila = Arviointitila.TARKISTUSARVIOITU,
                         osat =
                             listOf(
                                 YkiOsa(
@@ -913,6 +821,134 @@ class YkiApiControllerTest(
             opiskeluoikeusOid.toString(),
             rows.drop(1).single().split(DisplayTableCsvRenderer.SEPARATOR)[oidColumnIndex],
         )
+    }
+
+    @Test
+    fun `CSV-vienti suodattaa istuntoon tallennetulla hakusanalla`() {
+        suoritusRepository.deleteAll()
+
+        val loydettava = generateRandomYkiSuoritusEntity().copy(sukunimi = "Zebrakalastaja")
+        val muu = generateRandomYkiSuoritusEntity().copy(sukunimi = "Muukalainen")
+        suoritusRepository.saveAllNewEntities(listOf(loydettava, muu))
+
+        val session = MockHttpSession()
+        session.setAttribute(YkiViewController.YKI_SEARCH_KEY, "Zebrakalastaja")
+
+        val response =
+            ykiApiController.getSuorituksetAsCsv(
+                YkiSuorituksetParams(recallSearch = true),
+                session,
+            )
+        val csv =
+            ByteArrayOutputStream()
+                .also { response.body!!.writeTo(it) }
+                .toString(Charsets.UTF_8)
+
+        assertContains(csv, "Zebrakalastaja")
+        assertFalse(csv.contains("Muukalainen"), "CSV ei saa sisältää hakusanaan täsmäämättömiä suorituksia")
+    }
+
+    @Test
+    fun `CSV-vienti sisältää tarkistusarviointitiedot ja rekisteriintuontiajan`() {
+        suoritusRepository.deleteAll()
+
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                receivedAt = Instant.parse("2025-01-15T08:30:00Z"),
+                tarkistusarvioinninSaapumisPvm = LocalDate.of(2025, 3, 10),
+                tarkistusarvioinninKasittelyPvm = LocalDate.of(2025, 3, 20),
+                tarkistusarviointiHyvaksyttyPvm = LocalDate.of(2025, 4, 1),
+                tarkistusarvioinninAsiatunnus = "OPH-9999-2025",
+                tarkistusarvioidutOsakokeet = setOf(TutkinnonOsa.PU, TutkinnonOsa.KI),
+                arvosanaMuuttui = setOf(TutkinnonOsa.PU),
+                perustelu = "Testiperustelu",
+            )
+        suoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val response = ykiApiController.getSuorituksetAsCsv(YkiSuorituksetParams())
+        val csv =
+            ByteArrayOutputStream()
+                .also { response.body!!.writeTo(it) }
+                .toString(Charsets.UTF_8)
+
+        val rows = csv.trim().lines()
+        val header = rows.first().split(DisplayTableCsvRenderer.SEPARATOR)
+        val dataRow = rows.drop(1).single().split(DisplayTableCsvRenderer.SEPARATOR)
+
+        fun cell(column: YkiSuoritusColumn) = dataRow[header.indexOf(column.uiHeaderValue.toString())]
+
+        assertEquals("10.3.2025", cell(YkiSuoritusColumn.TarkistusarvioinninSaapumisPvm))
+        assertEquals("20.3.2025", cell(YkiSuoritusColumn.TarkistusarvioinninKasittelyPvm))
+        assertContains(header, YkiSuoritusColumn.TarkistusarviointiHyvaksyttyPvm.uiHeaderValue.toString())
+        assertEquals("OPH-9999-2025", cell(YkiSuoritusColumn.TarkistusarvioinninAsiatunnus))
+        assertEquals("Puhuminen, Kirjoittaminen", cell(YkiSuoritusColumn.TarkistusarvioidutOsakokeet))
+        assertEquals("Puhuminen", cell(YkiSuoritusColumn.ArvosanaMuuttui))
+        assertEquals("Testiperustelu", cell(YkiSuoritusColumn.TarkistusarvioinninPerustelu))
+        assertContains(
+            header,
+            UiText.Yki.Sarake.rekisteriintuontiaika
+                .toString(),
+        )
+
+        val listViewHeaders =
+            DisplayTableColumn
+                .of<YkiSuoritusColumn, YkiSuoritusEntity>(setOf(ColumnTag.LIST_VIEW))
+                .map { it.label }
+        assertFalse(
+            listViewHeaders.contains(
+                UiText.Yki.Sarake.asiatunnus
+                    .toString(),
+            ),
+            "Tarkistusarviointisarakkeet eivät saa näkyä HTML-listanäkymässä",
+        )
+        assertContains(
+            listViewHeaders,
+            UiText.Yki.Sarake.rekisteriintuontiaika
+                .toString(),
+            "Rekisteriintuontiaika näkyy myös HTML-listanäkymässä",
+        )
+    }
+
+    @Test
+    fun `Oppijanumeron haku hetun ja nimien perusteella onnistuu`() {
+        post(
+            "/yki/api/oppijanumero-haku",
+            """{"hetu": "010180-9026", "etunimet": "Ranja Testi", "sukunimi": "Öhman-Testi"}""",
+        ) {
+            status { isOk() }
+            verboseContentJson(OppijanumeroHakuResponse(Oid.parse("1.2.246.562.24.33342764709").getOrThrow()))
+        }
+    }
+
+    @Test
+    fun `Oppijanumeron haku loytaa oppijan, jonka kutsumanimi ei ole ensimmainen etunimi`() {
+        post(
+            "/yki/api/oppijanumero-haku",
+            """{"hetu": "040265-9985", "etunimet": "Minerva Alli Aniitta", "sukunimi": "Marttila"}""",
+        ) {
+            status { isOk() }
+            verboseContentJson(OppijanumeroHakuResponse(Oid.parse("1.2.246.562.24.92472049678").getOrThrow()))
+        }
+    }
+
+    @Test
+    fun `Oppijanumeron haku palauttaa 404, kun oppijaa ei loydy`() {
+        post(
+            "/yki/api/oppijanumero-haku",
+            """{"hetu": "010101-999X", "etunimet": "Tuntematon", "sukunimi": "Testaaja"}""",
+        ) {
+            status { isNotFound() }
+        }
+    }
+
+    @Test
+    fun `Oppijanumeron haku palauttaa 400, kun pakollinen kentta on tyhja`() {
+        post(
+            "/yki/api/oppijanumero-haku",
+            """{"hetu": "", "etunimet": "Ranja Testi", "sukunimi": "Öhman-Testi"}""",
+        ) {
+            isBadRequest("hetu, etunimet ja sukunimi ovat pakollisia")
+        }
     }
 
     private fun postSuoritus(

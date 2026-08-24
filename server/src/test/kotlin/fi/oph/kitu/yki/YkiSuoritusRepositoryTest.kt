@@ -21,6 +21,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -86,6 +87,50 @@ class YkiSuoritusRepositoryTest(
     }
 
     @Test
+    fun `ilmoittautunut suoritus tallentaa ja lukee arvostelemattomat osakokeet`() {
+        val ilmoittautunut =
+            generateRandomYkiSuoritusEntity()
+                .copy(
+                    arviointitila = Arviointitila.ILMOITTAUTUNUT,
+                    arviointipaiva = null,
+                    tekstinYmmartaminen = null,
+                    kirjoittaminen = null,
+                    rakenteetJaSanasto = null,
+                    puheenYmmartaminen = null,
+                    puhuminen = null,
+                    yleisarvosana = null,
+                    tarkistusarvioinninSaapumisPvm = null,
+                    tarkistusarvioinninAsiatunnus = null,
+                    tarkistusarvioidutOsakokeet = null,
+                    arvosanaMuuttui = null,
+                    perustelu = null,
+                    tarkistusarvioinninKasittelyPvm = null,
+                ).also {
+                    it.ilmoitetutOsakokeet = setOf(TutkinnonOsa.TY, TutkinnonOsa.KI, TutkinnonOsa.PU)
+                }
+        ykiSuoritusRepository.saveAllNewEntities(listOf(ilmoittautunut))
+
+        val stored = ykiSuoritusRepository.findLatestBySolkiIds(listOf(ilmoittautunut.solkiId)).first()
+
+        assertAll(
+            fun() =
+                assertEquals(
+                    setOf(TutkinnonOsa.PU, TutkinnonOsa.KI, TutkinnonOsa.TY),
+                    stored.ilmoitetutOsakokeet,
+                ),
+            fun() =
+                assertEquals(
+                    listOf(TutkinnonOsa.PU, TutkinnonOsa.KI, TutkinnonOsa.TY),
+                    stored.osakokeet().map { it.tyyppi },
+                ),
+            fun() = assertTrue(stored.osakokeet().all { it.arvosana == null }, "osakokeilla ei saa olla arvosanaa"),
+            fun() = assertNull(stored.yleisarvosana),
+            fun() = assertNull(stored.puhuminen),
+            fun() = assertEquals(Arviointitila.ILMOITTAUTUNUT, stored.arviointitila),
+        )
+    }
+
+    @Test
     fun `finding distinct suoritukset returns the latest suoritus of same suoritusId`() {
         val suoritus = generateRandomYkiSuoritusEntity(maxDate = LocalDate.of(2024, 9, 1))
         val suoritus2 = generateRandomYkiSuoritusEntity(maxDate = LocalDate.of(2024, 9, 1))
@@ -134,11 +179,12 @@ class YkiSuoritusRepositoryTest(
 
     @Test
     fun `find suoritus with search term`() {
-        val suoritus = generateRandomYkiSuoritusEntity().copy(etunimet = "Ranja Testi")
+        val suoritus = generateRandomYkiSuoritusEntity().copy(etunimet = "Ranja Testi", email = null)
         val suoritus2 =
             generateRandomYkiSuoritusEntity().copy(
                 etunimet = "Testi",
                 sukunimi = "Testilä",
+                email = null,
             )
         ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus, suoritus2))
 
@@ -157,11 +203,13 @@ class YkiSuoritusRepositoryTest(
             generateRandomYkiSuoritusEntity().copy(
                 etunimet = "Matti",
                 sukunimi = "Virtanen",
+                email = null,
             )
         val decoy =
             generateRandomYkiSuoritusEntity().copy(
                 etunimet = "Matti",
                 sukunimi = "Korhonen",
+                email = null,
             )
         ykiSuoritusRepository.saveAllNewEntities(listOf(target, decoy))
 
@@ -575,5 +623,44 @@ class YkiSuoritusRepositoryTest(
                 )
             },
         )
+    }
+
+    @Test
+    fun `hetua ei tallenneta suoritukselle, jonka tutkintopaiva on rajapaivana tai sen jalkeen`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity()
+                .copy(
+                    tutkintopaiva = LocalDate.of(2026, 1, 1),
+                    hetu = "010106A911C",
+                )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val stored = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+        assertNull(stored.hetu)
+    }
+
+    @Test
+    fun `hetu tallennetaan suoritukselle, jonka tutkintopaiva on ennen rajapaivaa`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity(maxDate = LocalDate.of(2025, 12, 31))
+                .copy(hetu = "010180-9026")
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val stored = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+        assertEquals("010180-9026", stored.hetu)
+    }
+
+    @Test
+    fun `hetullisen 2026-suorituksen uudelleensiirto ei luo uutta versiota`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity()
+                .copy(
+                    tutkintopaiva = LocalDate.of(2026, 3, 15),
+                    hetu = "010106A911C",
+                )
+        ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+
+        val uudelleensiirretty = ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
+        assertEquals(0, uudelleensiirretty.count())
     }
 }

@@ -7,6 +7,7 @@ import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.ViewMessageType
 import fi.oph.kitu.html.errorTablePage
 import fi.oph.kitu.html.table.httpParams
+import fi.oph.kitu.i18n.LocalizationService
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.ilmoittautumisjarjestelma.IlmoittautumisjarjestelmaService
 import fi.oph.kitu.jdbc.SortDirection
@@ -20,14 +21,8 @@ import fi.oph.kitu.webmvc.Links
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus.Companion.group
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaPage
-import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorColumn
-import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
-import fi.oph.kitu.yki.suoritukset.PoikkeamaKey
 import fi.oph.kitu.yki.suoritukset.YkiSuorituksetPage
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusPage
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaPage
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaPatchService
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.YkiTarkistusarvioinnitPage
 import fi.oph.kitu.yki.suoritukset.error.YkiKoskiErrors
@@ -53,16 +48,14 @@ import java.time.LocalDate
 class YkiViewController(
     private val ykiService: YkiService,
     private val suoritusErrorService: YkiSuoritusErrorService,
-    private val arvioijaErrorService: YkiArvioijaErrorService,
     private val koskiErrorService: KoskiErrorService,
     private val ykiSuoritusRepository: YkiSuoritusRepository,
-    private val ykiSuoritusPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
-    private val ykiSuoritusPoikkeamaPatchService: YkiSuoritusPoikkeamaPatchService,
     private val koskiYkiRequestMapper: KoskiYkiRequestMapper,
     @param:Qualifier("koskiObjectMapper")
     private val koskiObjectMapper: JsonMapper,
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
     private val oppijanumeroService: OppijanumeroService,
+    private val localizationService: LocalizationService,
 ) {
     @GetMapping("/suoritukset/{id}", produces = ["text/html"])
     fun suoritusView(
@@ -86,6 +79,7 @@ class YkiViewController(
                     Pair(null, null)
                 }
             val henkilo = oppijanumeroService.getHenkiloByHenkiloOid(suoritus.suorittajanOID)
+            val t = localizationService.translationBuilder().koodistot("maatjavaltiot1", "maatjavaltiot2").build()
             ResponseEntity.ok(
                 YkiSuoritusPage.render(
                     henkilo,
@@ -94,6 +88,7 @@ class YkiViewController(
                     koskiError,
                     koskiSiirronEstonSyyt,
                     opiskeluoikeusOid,
+                    t,
                 ),
             )
         } ?: ResponseEntity.notFound().build()
@@ -103,13 +98,11 @@ class YkiViewController(
     fun suorituksetGetView(
         @ModelAttribute params: YkiSuorituksetParams = YkiSuorituksetParams(),
         session: HttpSession? = null,
-    ): ResponseEntity<String> {
-        val search = if (params.recallSearch) session?.getAttribute(YKI_SEARCH_KEY) as? String ?: "" else ""
-        return handleSuorituksetView(
-            params.copy(search = search),
+    ): ResponseEntity<String> =
+        handleSuorituksetView(
+            params.withRecalledSearch(session),
             KituRequest.currentCsrfToken(),
         )
-    }
 
     @PostMapping("/suoritukset", produces = ["text/html"])
     fun suorituksetPostView(
@@ -148,66 +141,10 @@ class YkiViewController(
                     ),
                 errorsCount = suoritusErrorService.countErrors(),
                 koskiErrorsCount = koskiErrorService.countByEntity("yki", false).toLong(),
-                poikkeamatCount = ykiSuoritusPoikkeamaRepository.count(),
                 csrfToken = csrfToken,
                 warning = if (extended.oppijanumeroUnavailable) ONR_UNAVAILABLE_WARNING else null,
             ),
         )
-    }
-
-    @GetMapping("/poikkeamat", produces = ["text/html"])
-    fun poikkeamatView(viewMessage: ViewMessage? = null): ResponseEntity<String> {
-        val poikkeamat = ykiSuoritusPoikkeamaRepository.findAll()
-        val solkiIdToSuoritusId =
-            ykiSuoritusRepository
-                .findLatestBySolkiIds(poikkeamat.map { it.solkiId }.distinct())
-                .mapNotNull { s -> s.id?.let { s.solkiId to it } }
-                .toMap()
-        return ResponseEntity.ok(
-            YkiSuoritusPoikkeamaPage.render(poikkeamat, solkiIdToSuoritusId, viewMessage?.consume()),
-        )
-    }
-
-    @PostMapping("/poikkeamat/patch")
-    fun patchPoikkeamat(
-        @RequestParam(name = "poikkeama", required = false) poikkeamat: List<String>?,
-        viewMessage: ViewMessage?,
-    ): RedirectView {
-        val keys = (poikkeamat ?: emptyList()).mapNotNull(PoikkeamaKey::decode)
-        val (succeeded, failed) =
-            ykiSuoritusPoikkeamaPatchService
-                .patch(keys)
-                .splitIntoValuesAndErrors()
-
-        viewMessage?.let { msg ->
-            when {
-                succeeded.isEmpty() && failed.isEmpty() -> {
-                    msg.showInfo(UiText.Yki.poikkeamaEiValittuna.toString())
-                }
-
-                failed.isEmpty() -> {
-                    msg.showSuccess(UiText.Yki.poikkeamaaKorjattu(succeeded.size.toLong()).toString())
-                }
-
-                succeeded.isEmpty() -> {
-                    msg.showError(
-                        UiText.Yki.poikkeamiaEiKorjattu.toString() + ": " +
-                            failed.joinToString("; ") { "${it.key.solkiId}/${it.key.kentta}: ${it.message}" },
-                    )
-                }
-
-                else -> {
-                    msg.showInfo(
-                        UiText.Yki
-                            .poikkeamiaKorjattuJaEpaonnistui(succeeded.size.toLong(), failed.size.toLong())
-                            .toString() + ": " +
-                            failed.joinToString("; ") { "${it.key.solkiId}/${it.key.kentta}: ${it.message}" },
-                    )
-                }
-            }
-        }
-
-        return RedirectView(Links.Yki.poikkeamat())
     }
 
     @GetMapping("/suoritukset/virheet", produces = ["text/html"])
@@ -235,22 +172,6 @@ class YkiViewController(
                 sortColumn = sortColumn,
                 sortDirection = sortDirection,
                 arvioijat = ykiService.allArvioijat(sortColumn, sortDirection).group(),
-                errorsCount = arvioijaErrorService.countErrors(),
-            ),
-        )
-
-    @GetMapping("/arvioijat/virheet", produces = ["text/html"])
-    fun arvioijatVirheetView(
-        sortColumn: YkiArvioijaErrorColumn = YkiArvioijaErrorColumn.VirheenLuontiaika,
-        sortDirection: SortDirection = SortDirection.ASC,
-    ): ResponseEntity<String> =
-        ResponseEntity.ok(
-            errorTablePage(
-                title = UiText.Nav.yki.toString(),
-                subtitle = UiText.Yki.arvioijienTuonninVirheet.toString(),
-                sortColumn = sortColumn,
-                sortDirection = sortDirection,
-                rows = arvioijaErrorService.getErrors(sortColumn, sortDirection),
             ),
         )
 
@@ -380,3 +301,13 @@ class YkiViewController(
 }
 
 fun Boolean?.toTrueOrNull(): String? = if (this == true) "true" else null
+
+fun YkiSuorituksetParams.withRecalledSearch(session: HttpSession?): YkiSuorituksetParams =
+    copy(
+        search =
+            if (recallSearch) {
+                session?.getAttribute(YkiViewController.YKI_SEARCH_KEY) as? String ?: ""
+            } else {
+                ""
+            },
+    )

@@ -51,7 +51,8 @@ object YkiSuoritusSql {
             max(arvosana) FILTER (WHERE tyyppi = 'TY') AS tekstin_ymmartaminen,
             max(arvosana) FILTER (WHERE tyyppi = 'PY') AS puheen_ymmartaminen,
             max(arvosana) FILTER (WHERE tyyppi = 'RS') AS rakenteet_ja_sanasto,
-            max(arvosana) FILTER (WHERE tyyppi = 'YL') AS yleisarvosana
+            max(arvosana) FILTER (WHERE tyyppi = 'YL') AS yleisarvosana,
+            array_agg(tyyppi ORDER BY tyyppi) AS osakokeet_tyypit
         FROM
             $ykiSuoritusTable AS yki_suoritus
             JOIN yki_osakoe ON yki_suoritus.id = yki_osakoe.suoritus_id

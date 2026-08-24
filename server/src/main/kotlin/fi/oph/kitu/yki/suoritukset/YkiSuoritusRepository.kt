@@ -24,6 +24,7 @@ import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.selectTarkistusarviointiAgg
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusSql.withCtes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.SingleColumnRowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -37,6 +38,8 @@ import java.time.LocalDate
 class YkiSuoritusRepository(
     private val jdbcTemplate: JdbcTemplate,
     private val jdbcNamedParameterTemplate: NamedParameterJdbcTemplate,
+    @param:Value($$"${kitu.validaatiot.yki.hetunSiirronRajapaiva}")
+    private val hetunSiirronRajapaiva: LocalDate,
 ) {
     @WithSpan
     @Transactional
@@ -125,13 +128,6 @@ class YkiSuoritusRepository(
     fun findKoskeenLahettamattomatSuoritukset(): Iterable<YkiSuoritusEntity> =
         jdbcNamedParameterTemplate.query(
             selectSuorituksetFull(viimeisin = true, "WHERE NOT koski_siirto_kasitelty"),
-            YkiSuoritusEntity.fromRow,
-        )
-
-    @WithSpan
-    fun findSuorituksetWithKoskiopiskeluoikeus(): Iterable<YkiSuoritusEntity> =
-        jdbcNamedParameterTemplate.query(
-            selectSuorituksetFull(viimeisin = true, "WHERE koski_opiskeluoikeus IS NOT NULL"),
             YkiSuoritusEntity.fromRow,
         )
 
@@ -240,7 +236,7 @@ class YkiSuoritusRepository(
             ?: 0
     }
 
-    // received_at asetetaan vain ulkoisesta importista (YkiSuoritusEntity.from / YkiSuoritusMappingService) ja
+    // received_at asetetaan vain ulkoisesta importista (YkiSuoritusEntity.from) ja
     // säilyy ennallaan sisäisten versiokirjoitusten yli (data class .copy() preservoi sen
     // hyvaksyTarkistusarvioinnit-kutsussa). Siksi tämä kysely vastaa "Viimeisin saapunut suoritus"
     // -semantiikkaa eikä bumppaa virkailijatoiminnasta.
@@ -251,14 +247,6 @@ class YkiSuoritusRepository(
                 "SELECT MAX(received_at) FROM yki_suoritus",
                 Timestamp::class.java,
             )?.toInstant()
-
-    @WithSpan
-    fun findAllSolkiIds(): List<Int> =
-        jdbcTemplate
-            .queryForList(
-                "SELECT DISTINCT solki_id FROM yki_suoritus",
-                Int::class.java,
-            ).filterNotNull()
 
     @WithSpan
     fun findLatestBySolkiIds(ids: List<Int>): List<YkiSuoritusEntity> =
@@ -298,11 +286,22 @@ class YkiSuoritusRepository(
         suoritus: YkiSuoritusEntity,
         updateOnConflict: Boolean,
         forceWrite: Boolean = false,
-    ): Int? =
-        if (forceWrite || !exists(suoritus)) {
-            insertSuoritusWithChildren(suoritus, updateOnConflict)
+    ): Int? {
+        val tallennettava = suoritus.withoutHetu()
+        return if (forceWrite || !exists(tallennettava)) {
+            insertSuoritusWithChildren(tallennettava, updateOnConflict)
         } else {
             null
+        }
+    }
+
+    // Hetua ei saa tallentaa rajapäivänä tai sen jälkeen järjestetylle tutkinnolle, tulipa
+    // suoritus mitä kirjoituspolkua tahansa pitkin.
+    private fun YkiSuoritusEntity.withoutHetu(): YkiSuoritusEntity =
+        if (hetu != null && !tutkintopaiva.isBefore(hetunSiirronRajapaiva)) {
+            copy(hetu = null).also { it.ilmoitetutOsakokeet = ilmoitetutOsakokeet }
+        } else {
+            this
         }
 
     private fun insertSuoritusWithChildren(
@@ -556,20 +555,6 @@ class YkiSuoritusRepository(
     }
 
     @WithSpan
-    fun tarkistusarvointiHyvaksytty(solkiId: Int): Boolean =
-        jdbcTemplate.queryForObject(
-            """
-            SELECT EXISTS (
-                SELECT tarkistusarviointi_hyvaksytty_pvm IS NOT NULL
-                FROM yki_suoritus_lisatieto
-                WHERE solki_id = ?
-            )
-            """.trimIndent(),
-            Boolean::class.java,
-            solkiId,
-        ) ?: false
-
-    @WithSpan
     fun getLatestByOpiskeluoikeusOid(opiskeluoikeus: Oid): YkiSuoritusEntity? =
         jdbcNamedParameterTemplate
             .query(
@@ -586,67 +571,4 @@ class YkiSuoritusRepository(
                 mapOf("tunnus" to tunnus),
                 YkiSuoritusEntity.fromRow,
             ).firstOrNull()
-
-    @WithSpan
-    fun findArviointitilanMigraatiorivit(): List<ArviointitilanMigraatiorivi> =
-        jdbcTemplate.query(
-            """
-            SELECT
-                s.id,
-                s.arviointitila,
-                coalesce(o.osakoe_count, 0)     AS osakoe_count,
-                coalesce(o.null_count, 0)       AS null_count,
-                coalesce(o.real_grade_count, 0) AS real_grade_count,
-                (ta.suoritus_id IS NOT NULL)    AS on_tarkistusarviointi,
-                ta.kasittelypaiva               AS tarkistuksen_kasittelypaiva
-            FROM yki_suoritus s
-                LEFT JOIN (
-                    SELECT suoritus_id,
-                           count(*)                                                      AS osakoe_count,
-                           count(*) FILTER (WHERE arvosana IS NULL)                      AS null_count,
-                           count(*) FILTER (WHERE arvosana IS NOT NULL AND arvosana < 9) AS real_grade_count
-                    FROM yki_osakoe
-                    GROUP BY suoritus_id
-                ) o ON o.suoritus_id = s.id
-                LEFT JOIN (
-                    SELECT osakoe.suoritus_id,
-                           max(tarkistusarviointi.kasittelypaiva) AS kasittelypaiva
-                    FROM yki_osakoe osakoe
-                        JOIN yki_osakoe_tarkistusarviointi ota ON ota.osakoe_id = osakoe.id
-                        JOIN yki_tarkistusarviointi tarkistusarviointi ON tarkistusarviointi.id = ota.tarkistusarviointi_id
-                    GROUP BY osakoe.suoritus_id
-                ) ta ON ta.suoritus_id = s.id
-            """.trimIndent(),
-        ) { rs, _ ->
-            ArviointitilanMigraatiorivi(
-                id = rs.getInt("id"),
-                nykyinenTila = Arviointitila.valueOf(rs.getString("arviointitila")),
-                osakoeCount = rs.getInt("osakoe_count"),
-                nullCount = rs.getInt("null_count"),
-                realGradeCount = rs.getInt("real_grade_count"),
-                onTarkistusarviointi = rs.getBoolean("on_tarkistusarviointi"),
-                tarkistuksenKasittelypaiva = rs.getDate("tarkistuksen_kasittelypaiva")?.toLocalDate(),
-            )
-        }
-
-    @Transactional
-    @WithSpan
-    fun paivitaArviointitilat(muutokset: List<Pair<Int, Arviointitila>>): Int {
-        if (muutokset.isEmpty()) return 0
-        jdbcTemplate.batchUpdate(
-            "UPDATE yki_suoritus SET arviointitila = ? WHERE id = ?",
-            muutokset.map { (id, tila) -> arrayOf<Any>(tila.name, id) },
-        )
-        return muutokset.size
-    }
 }
-
-data class ArviointitilanMigraatiorivi(
-    val id: Int,
-    val nykyinenTila: Arviointitila,
-    val osakoeCount: Int,
-    val nullCount: Int,
-    val realGradeCount: Int,
-    val onTarkistusarviointi: Boolean,
-    val tarkistuksenKasittelypaiva: LocalDate?,
-)

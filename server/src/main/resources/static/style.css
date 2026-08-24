@@ -225,6 +225,10 @@ table.info-table th {
   width: 25%;
 }
 
+table.info-table tr.diff td {
+  background: var(--oph-yellow1) !important;
+}
+
 table td select,
 table td input {
   margin-bottom: 0 !important;
@@ -348,39 +352,6 @@ th > details.dropdown label {
 
 article.overflow-auto:has(details.dropdown[open]) {
   overflow: visible;
-}
-
-tr.repeat-group td.group-cell {
-  visibility: hidden;
-}
-
-th input[type="checkbox"][data-select-all-visible],
-td input[type="checkbox"][data-poikkeama-checkbox] {
-  margin: 0 0.5em 0 0;
-  vertical-align: middle;
-}
-
-td.group-cell .select-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-}
-
-td.group-cell .select-group > input[type="checkbox"] {
-  margin: 0;
-  flex-shrink: 0;
-}
-
-.poikkeamat-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 1em;
-  margin-bottom: var(--pico-typography-spacing-vertical);
-}
-
-.poikkeamat-toolbar > button {
-  margin: 0;
-  width: auto;
 }
 
 .dashboard-grid {
@@ -532,13 +503,4 @@ a[role="button"].tight {
 
 .float-right {
   float: right;
-}
-
-.warning-pill {
-  background: var(--oph-yellow1);
-  border: 1px solid var(--oph-yellow2);
-  border-radius: 99999px;
-  padding: 0.25rem 0.75rem;
-  color: var(--oph-grey900);
-  font-size: 80%;
 }

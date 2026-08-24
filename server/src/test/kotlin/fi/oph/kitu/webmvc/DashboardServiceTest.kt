@@ -27,7 +27,6 @@ class DashboardServiceTest(
         jdbc.execute("TRUNCATE TABLE yki_suoritus_lisatieto")
         jdbc.execute("TRUNCATE TABLE yki_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE yki_arvioija CASCADE")
-        jdbc.execute("TRUNCATE TABLE yki_suoritus_poikkeama")
         jdbc.execute("TRUNCATE TABLE koto_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE vkt_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE koski_error")
@@ -37,28 +36,27 @@ class DashboardServiceTest(
 
     @Test
     fun `tyhjasta kannasta saadaan nollat ja null aikaleimat`() {
-        val stats = dashboardService.getStats()
+        val yki = dashboardService.getYkiStats()
+        assertEquals(0L, yki.suoritusCount)
+        assertEquals(0L, yki.arvioijaCount)
+        assertEquals(0L, yki.tarkistusarvioinnitOdottamassaCount)
+        assertEquals(null, yki.latestReceivedAt)
+        assertEquals(0L, yki.suoritusImportErrorCount)
+        assertEquals(0L, yki.koskiErrorCount)
 
-        assertEquals(0L, stats.yki.suoritusCount)
-        assertEquals(0L, stats.yki.arvioijaCount)
-        assertEquals(0L, stats.yki.tarkistusarvioinnitOdottamassaCount)
-        assertEquals(null, stats.yki.latestReceivedAt)
-        assertEquals(0L, stats.yki.suoritusImportErrorCount)
-        assertEquals(0L, stats.yki.arvioijaImportErrorCount)
-        assertEquals(0L, stats.yki.koskiErrorCount)
-        assertEquals(0L, stats.yki.poikkeamatCount)
+        val vkt = dashboardService.getVktStats()
+        assertEquals(0L, vkt.suoritusCount)
+        assertEquals(0L, vkt.ilmoittautuneetErinomaisenTaso)
+        assertEquals(0L, vkt.suorituksetErinomaisenTaso)
+        assertEquals(0L, vkt.suorituksetHyvaJaTyydyttavaTaso)
+        assertEquals(null, vkt.latestReceivedAt)
+        assertEquals(0L, vkt.koskiErrorCount)
 
-        assertEquals(0L, stats.vkt.suoritusCount)
-        assertEquals(0L, stats.vkt.ilmoittautuneetErinomaisenTaso)
-        assertEquals(0L, stats.vkt.suorituksetErinomaisenTaso)
-        assertEquals(0L, stats.vkt.suorituksetHyvaJaTyydyttavaTaso)
-        assertEquals(null, stats.vkt.latestReceivedAt)
-        assertEquals(0L, stats.vkt.koskiErrorCount)
-
-        assertEquals(0L, stats.koto.suoritusCount)
-        assertEquals(0L, stats.koto.tehtavapaketitCount)
-        assertEquals(null, stats.koto.latestReceivedAt)
-        assertEquals(0L, stats.koto.importErrorCount)
+        val koto = dashboardService.getKotoStats()
+        assertEquals(0L, koto.suoritusCount)
+        assertEquals(0L, koto.tehtavapaketitCount)
+        assertEquals(null, koto.latestReceivedAt)
+        assertEquals(0L, koto.importErrorCount)
     }
 
     @Test

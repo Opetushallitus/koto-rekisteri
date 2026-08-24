@@ -90,6 +90,20 @@ describe('"YKI Suoritukset" -page', () => {
     await expect(suoritukset).toHaveCount(2)
   })
 
+  test("henkilötunnus column is hidden and arviointitila is shown in the list", async ({
+    ykiSuorituksetPage,
+  }) => {
+    await ykiSuorituksetPage.open()
+
+    const table = ykiSuorituksetPage.getSuorituksetTable()
+    await expect(
+      table.getByRole("columnheader", { name: "Henkilötunnus" }),
+    ).toHaveCount(0)
+    await expect(
+      table.getByRole("columnheader", { name: "Arviointitila" }),
+    ).toBeVisible()
+  })
+
   test("should download yki suoritukset CSV and verify its content", async ({
     page,
     ykiSuorituksetPage,
@@ -114,6 +128,7 @@ describe('"YKI Suoritukset" -page', () => {
         "Järjestäjän nimi",
         "Arviointitila",
         "Arviointipäivä",
+        "Rekisteriintuontiaika",
         "Tekstin ymmärtäminen",
         "Kirjoittaminen",
         "Puheen ymmärtäminen",
@@ -121,6 +136,13 @@ describe('"YKI Suoritukset" -page', () => {
         "Rakenteet ja sanasto",
         "Yleisarvosana",
         "Todistuskieli",
+        "Tarkistusarvioinnin saapumispäivä",
+        "Tarkistusarvioinnin käsittelypäivä",
+        "Tarkistusarviointi hyväksytty",
+        "Asiatunnus",
+        "Tarkistusarvioidut osakokeet",
+        "Osakokeet joiden arvosana muuttui",
+        "Perustelu",
         "Tila lähetetty",
         "Opiskeluoikeus-OID",
       ].join(";"),
@@ -150,6 +172,7 @@ describe('"YKI Suoritukset" -page', () => {
         "Järjestäjän nimi",
         "Arviointitila",
         "Arviointipäivä",
+        "Rekisteriintuontiaika",
         "Tekstin ymmärtäminen",
         "Kirjoittaminen",
         "Puheen ymmärtäminen",
@@ -157,6 +180,13 @@ describe('"YKI Suoritukset" -page', () => {
         "Rakenteet ja sanasto",
         "Yleisarvosana",
         "Todistuskieli",
+        "Tarkistusarvioinnin saapumispäivä",
+        "Tarkistusarvioinnin käsittelypäivä",
+        "Tarkistusarviointi hyväksytty",
+        "Asiatunnus",
+        "Tarkistusarvioidut osakokeet",
+        "Osakokeet joiden arvosana muuttui",
+        "Perustelu",
         "Tila lähetetty",
       ].join(";"),
     ) // Validate headers
@@ -218,23 +248,18 @@ describe('"YKI Suoritukset" -page', () => {
         order: ["Ranja Testi", "Petro Testi", "Magdalena Testi"],
       },
       {
-        column: "Henkilötunnus",
-        tableColumnIndex: 4,
-        order: ["010866-9260", "010180-9026", "010116A9518"],
-      },
-      {
         column: "Tutkintopäivä",
-        tableColumnIndex: 5,
+        tableColumnIndex: 4,
         order: ["25.8.2024", "1.9.2024", "12.1.2025"],
       },
       {
         column: "Tutkintokieli",
-        tableColumnIndex: 6,
+        tableColumnIndex: 5,
         order: ["SWE", "FIN", "FIN"],
       },
       {
         column: "Tutkintotaso",
-        tableColumnIndex: 7,
+        tableColumnIndex: 6,
         order: ["YT", "YT", "PT"],
       },
     ] as const
@@ -267,7 +292,7 @@ describe('"YKI Suoritukset" -page', () => {
   })
 
   describe("Sorting with version history", () => {
-    const solkiColumnIndex = 8
+    const solkiColumnIndex = 9
 
     // With version history enabled, 4 rows are shown.
     // Solki IDs: petro=123123, magdalena=172836, ranja=183424, ranjaTarkistus=183424
@@ -318,7 +343,7 @@ describe('"YKI Suoritukset" -page', () => {
       // Verify Versio column is sortable by checking the sort link exists and
       // that sorting changes the row order. Fixtures are inserted in order:
       // ranja, ranjaTarkistus, petro, magdalena — so lastModified increases
-      // in that order. Verify via the Solki-tunniste column (index 8).
+      // in that order. Verify via the Solki-tunniste column (index 9).
       const sortByLink = page.getTableColumnHeaderLink("Versio")
       await sortByLink.click()
 

@@ -74,22 +74,10 @@ object HomePage {
             errorIfNonZero = true,
         )
         statRow(
-            label = "Arvioijien tuonnin virheet",
-            value = s.arvioijaImportErrorCount,
-            href = Links.Yki.arvioijatVirheet(),
-            errorIfNonZero = true,
-        )
-        statRow(
             label = "Koski-siirron virheet",
             value = s.koskiErrorCount,
             href = Links.Yki.koskiVirheet(),
             errorIfNonZero = true,
-        )
-        statRow(
-            label = "Poikkeamat",
-            value = s.poikkeamatCount,
-            href = Links.Yki.poikkeamat(),
-            warnIfNonZero = true,
         )
         latestReceivedRow(s.latestReceivedAt, Links.Yki.suoritukset())
     }

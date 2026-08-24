@@ -2,13 +2,16 @@
 
 package fi.oph.kitu.yki.suoritukset
 import arrow.core.Either
+import fi.oph.kitu.html.Comparison
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.card
+import fi.oph.kitu.html.comparisonTable
 import fi.oph.kitu.html.errorMessage
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.json
 import fi.oph.kitu.html.warningMessage
 import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.Translations
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
@@ -19,7 +22,14 @@ import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.tiedontuontischema.YkiTarkastusarviointi
 import fi.oph.kitu.webmvc.Links
-import kotlinx.html.*
+import fi.oph.kitu.yki.TutkinnonOsa
+import kotlinx.html.FlowContent
+import kotlinx.html.a
+import kotlinx.html.h1
+import kotlinx.html.h2
+import kotlinx.html.h3
+import kotlinx.html.span
+import kotlinx.html.strong
 
 object YkiSuoritusPage {
     fun render(
@@ -29,6 +39,7 @@ object YkiSuoritusPage {
         koskiError: KoskiErrorEntity?,
         koskiSiirronEstonSyyt: List<String>?,
         opiskeluoikeusOid: Oid?,
+        t: Translations,
     ) = Page.renderHtml {
         h1 { +suoritus.kokoNimi() }
         h2 { +UiText.Nav.yki }
@@ -48,7 +59,7 @@ object YkiSuoritusPage {
             }
         }
 
-        henkilonTiedot(henkilo, suoritus)
+        henkilonTiedot(henkilo, suoritus, t)
         todistuksenPostitusosoite(suoritus)
         tutkintotiedot(suoritus)
         arviointi(suoritus)
@@ -58,6 +69,7 @@ object YkiSuoritusPage {
     fun FlowContent.henkilonTiedot(
         henkilo: Either<OppijanumeroException, OppijanumerorekisteriHenkilo>,
         suoritus: YkiSuoritusEntity,
+        t: Translations,
     ) {
         h3 { +UiText.Yki.henkilotiedot }
         henkilo.onLeft { onrException ->
@@ -71,51 +83,58 @@ object YkiSuoritusPage {
         }
         card(compact = true) {
             val hlo = henkilo.getOrNull()
-            infoTable(
+            comparisonTable(
+                UiText.Yki.ilmoittautumisenTiedot,
+                UiText.Yki.oppijanumerorekisteri,
                 hlo?.oppijanumero?.let {
-                    UiText.Yki.Sarake.oppijanumero
-                        .toString() to { +it }
-                }
-                    ?: (
-                        UiText.Yki.henkiloOid.toString() to {
-                            +suoritus.suorittajanOID.toString()
-                            a(
-                                href = Links.Opintopolku.onr(suoritus.suorittajanOID),
-                                classes = "tight secondary float-right",
-                            ) {
-                                attributes["role"] = "button"
-                                +UiText.Yki.teeYksilointi
-                            }
+                    Comparison(UiText.Yki.Sarake.oppijanumero, { +it }, { +hlo.oppijanumero })
+                } ?: Comparison(UiText.Yki.henkiloOid, {
+                    +suoritus.suorittajanOID.toString()
+                }, {
+                    a(
+                        href = Links.Opintopolku.onr(suoritus.suorittajanOID),
+                        classes = "tight secondary",
+                    ) {
+                        attributes["role"] = "button"
+                        +UiText.Yki.teeYksilointi
+                    }
+                }),
+                Comparison.of(
+                    UiText.Yki.Sarake.sukunimi,
+                    suoritus.sukunimi,
+                    hlo?.sukunimi,
+                ),
+                Comparison.of(
+                    UiText.Yki.Sarake.etunimet,
+                    suoritus.etunimet,
+                    hlo?.etunimet,
+                ),
+                Comparison.of(
+                    UiText.Yki.Sarake.henkilotunnus,
+                    suoritus.hetu,
+                    hlo?.hetu,
+                    ignoreDiff = true,
+                ),
+                Comparison.of(
+                    UiText.Yki.Sarake.sukupuoli,
+                    suoritus.sukupuoli.text.toString(),
+                    hlo?.sukupuoli?.let {
+                        when (it) {
+                            "1" -> UiText.Sukupuoli.mies.toString()
+                            "2" -> UiText.Sukupuoli.nainen.toString()
+                            else -> it
                         }
-                    ),
-                UiText.Yki.Sarake.sukunimi
-                    .toString() to { nimitieto(suoritus.sukunimi, hlo?.sukunimi) },
-                UiText.Yki.Sarake.etunimet
-                    .toString() to { nimitieto(suoritus.etunimet, hlo?.etunimet) },
-                UiText.Yki.Sarake.henkilotunnus
-                    .toString() to { nimitieto(suoritus.hetu.orDash(), hlo?.hetu) },
-                UiText.Yki.Sarake.sukupuoli
-                    .toString() to { +suoritus.sukupuoli.toString() },
-                UiText.Yki.Sarake.kansalaisuus
-                    .toString() to { +suoritus.kansalaisuus },
+                    },
+                ),
+                Comparison.of(
+                    UiText.Yki.Sarake.kansalaisuus,
+                    t.getByKoodiviite("maatjavaltiot1", suoritus.kansalaisuus),
+                    hlo
+                        ?.kansalaisuus
+                        ?.mapNotNull { it.kansalaisuusKoodi }
+                        ?.joinToString(", ") { t.getByKoodiviite("maatjavaltiot2", it) },
+                ),
             )
-        }
-    }
-
-    fun FlowContent.nimitieto(
-        value: String,
-        onrValue: String?,
-    ) {
-        span { +value }
-        onrValue?.let {
-            if (onrValue != value) {
-                +" "
-                span(classes = "warning-pill") {
-                    +UiText.Yki.eriArvoOnr
-                    +": "
-                    strong { +onrValue }
-                }
-            }
         }
     }
 
@@ -123,13 +142,12 @@ object YkiSuoritusPage {
         h3 { +UiText.Yki.todistuksenPostitusosoite }
         card(compact = true) {
             infoTable(
-                UiText.Yki.katuosoite.toString() to { +suoritus.katuosoite },
-                UiText.Yki.postinumero.toString() to { +suoritus.postinumero },
-                UiText.Yki.postitoimipaikka.toString() to { +suoritus.postitoimipaikka },
-                UiText.Yki.maa.toString() to { +suoritus.maa.orDash() },
-                UiText.Yki.Sarake.sahkoposti
-                    .toString() to { +suoritus.email.orDash() },
-                UiText.Yki.todistuksenKieli.toString() to { +suoritus.todistuskieli?.toString().orDash() },
+                UiText.Yki.katuosoite to { +suoritus.katuosoite },
+                UiText.Yki.postinumero to { +suoritus.postinumero },
+                UiText.Yki.postitoimipaikka to { +suoritus.postitoimipaikka },
+                UiText.Yki.maa to { +suoritus.maa.orDash() },
+                UiText.Yki.Sarake.sahkoposti to { +suoritus.email.orDash() },
+                UiText.Yki.todistuksenKieli to { +suoritus.todistuskieli?.toString().orDash() },
             )
         }
     }
@@ -138,14 +156,11 @@ object YkiSuoritusPage {
         h3 { +UiText.Yki.tutkinnonTiedot }
         card(compact = true) {
             infoTable(
-                UiText.Yki.jarjestaja.toString() to
+                UiText.Yki.jarjestaja to
                     { +"${suoritus.jarjestajanNimi} (${suoritus.jarjestajanTunnusOid})" },
-                UiText.Yki.Sarake.tutkintopaiva
-                    .toString() to { +suoritus.tutkintopaiva.finnishDate() },
-                UiText.Yki.Sarake.tutkintokieli
-                    .toString() to { +suoritus.tutkintokieli.toString() },
-                UiText.Yki.Sarake.tutkintotaso
-                    .toString() to { +suoritus.tutkintotaso.toString() },
+                UiText.Yki.Sarake.tutkintopaiva to { +suoritus.tutkintopaiva.finnishDate() },
+                UiText.Yki.Sarake.tutkintokieli to { +suoritus.tutkintokieli.toString() },
+                UiText.Yki.Sarake.tutkintotaso to { +suoritus.tutkintotaso.toString() },
             )
         }
     }
@@ -156,68 +171,51 @@ object YkiSuoritusPage {
         h3 { +UiText.Yki.arviointi }
         card(compact = true) {
             infoTable(
-                UiText.Yki.arvioinninTila.toString() to { +suoritus.arviointitila.viewText },
-                UiText.Yki.Sarake.arviointipaiva
-                    .toString() to { +suoritus.arviointipaiva?.finnishDate().orDash() },
+                UiText.Yki.arvioinninTila to { +suoritus.arviointitila.viewText },
+                UiText.Yki.Sarake.arviointipaiva to { +suoritus.arviointipaiva?.finnishDate().orDash() },
                 tarkistusarviointi?.let {
-                    UiText.Yki.tarkistusarvioinninSaapumispaiva.toString() to
+                    UiText.Yki.tarkistusarvioinninSaapumispaiva to
                         { +it.saapumispaiva.finnishDate() }
                 },
                 tarkistusarviointi?.let {
-                    UiText.Yki.tarkistusarvioinninKasittelypaiva.toString() to
+                    UiText.Yki.tarkistusarvioinninKasittelypaiva to
                         { +it.kasittelypaiva?.finnishDate().orDash() }
                 },
-                tarkistusarviointi?.let { UiText.Yki.tarkistusarvioinninAsiatunnus.toString() to { +it.asiatunnus } },
+                tarkistusarviointi?.let { UiText.Yki.tarkistusarvioinninAsiatunnus to { +it.asiatunnus } },
                 tarkistusarviointi?.let { arviointi ->
-                    UiText.Yki.tarkistusarvioidutOsakokeet.toString() to
+                    UiText.Yki.tarkistusarvioidutOsakokeet to
                         { +arviointi.tarkistusarvioidutOsakokeet?.joinToString(", ") { it.viewText }.orDash() }
                 },
                 tarkistusarviointi?.let { arviointi ->
-                    UiText.Yki.arvosanaMuuttui.toString() to
+                    UiText.Yki.arvosanaMuuttui to
                         { +arviointi.arvosanaMuuttui?.joinToString(", ") { it.viewText }.orDash() }
                 },
-                tarkistusarviointi?.let { UiText.Yki.perustelu.toString() to { +it.perustelu } },
+                tarkistusarviointi?.let { UiText.Yki.perustelu to { +it.perustelu } },
             )
         }
 
         card(compact = true) {
+            val osakokeet = suoritus.osakokeet().associateBy { it.tyyppi }
+
+            fun osakoeRivi(tyyppi: TutkinnonOsa): Pair<String, FlowContent.() -> Unit>? =
+                osakokeet[tyyppi]?.let { osakoe ->
+                    tyyppi.viewText to {
+                        val arvosana = osakoe.arvosana
+                        if (arvosana != null) {
+                            ykiArvosana(arvosana, suoritus.tutkintotaso)
+                        } else {
+                            +"–"
+                        }
+                    }
+                }
+
             infoTable(
-                suoritus.tekstinYmmartaminen?.let {
-                    UiText.Yki.Sarake.tekstinYmmartaminen
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.kirjoittaminen?.let {
-                    UiText.Yki.Sarake.kirjoittaminen
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.puheenYmmartaminen?.let {
-                    UiText.Yki.Sarake.puheenYmmartaminen
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.puhuminen?.let {
-                    UiText.Yki.Sarake.puhuminen
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.rakenteetJaSanasto?.let {
-                    UiText.Yki.Sarake.rakenteetJaSanasto
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
-                suoritus.yleisarvosana?.let {
-                    UiText.Yki.Sarake.yleisarvosana
-                        .toString() to {
-                        ykiArvosana(it, suoritus.tutkintotaso)
-                    }
-                },
+                osakoeRivi(TutkinnonOsa.TY),
+                osakoeRivi(TutkinnonOsa.KI),
+                osakoeRivi(TutkinnonOsa.PY),
+                osakoeRivi(TutkinnonOsa.PU),
+                osakoeRivi(TutkinnonOsa.RS),
+                osakoeRivi(TutkinnonOsa.YL),
             )
         }
     }
@@ -230,12 +228,14 @@ object YkiSuoritusPage {
     ) {
         h3 { +UiText.Yki.integraatiot }
         infoTable(
-            UiText.Yki.Sarake.solkiTunniste
-                .toString() to { +"${suoritus.solkiId}" },
-            UiText.Yki.viimeksiMuokattu.toString() to {
+            UiText.Yki.Sarake.solkiTunniste to { +"${suoritus.solkiId}" },
+            UiText.Yki.viimeksiMuokattu to {
                 finnishDateTime(suoritus.lastModified)
             },
-            UiText.Yki.koski.toString() to {
+            UiText.Yki.Sarake.rekisteriintuontiaika to {
+                finnishDateTime(suoritus.receivedAt)
+            },
+            UiText.Yki.koski to {
                 if (koskiSiirronEstonSyyt?.isNotEmpty() == true) {
                     +("${UiText.Yki.siirtoaEiTehda}: ${koskiSiirronEstonSyyt.joinToString("; ")}")
                 } else if (suoritus.koskiSiirtoKasitelty == true) {
@@ -245,11 +245,10 @@ object YkiSuoritusPage {
                 }
             },
             koskiError?.errorJson()?.let {
-                UiText.Yki.koskiVirheet.toString() to { json(it) }
+                UiText.Yki.koskiVirheet to { json(it) }
             },
             opiskeluoikeusOid?.let { oid ->
-                UiText.Yki.Sarake.opiskeluoikeusOid
-                    .toString() to {
+                UiText.Yki.Sarake.opiskeluoikeusOid to {
                     +UiText.Yki.opiskeluoikeudenOid
                     +": "
                     a(href = "/koski/oppija/$oid?opiskeluoikeudenTyyppi=kielitutkinto") {
@@ -257,7 +256,7 @@ object YkiSuoritusPage {
                     }
                 }
             },
-            UiText.Yki.kios.toString() to {
+            UiText.Yki.kios to {
                 (
                     suoritus.arviointitilaLahetetty?.let {
                         +UiText.Yki.arviointitilaLahetetty
@@ -273,7 +272,7 @@ object YkiSuoritusPage {
                 )
             },
             suoritus.arviointitilanLahetysvirhe?.let {
-                UiText.Yki.kiosVirhe.toString() to { +it }
+                UiText.Yki.kiosVirhe to { +it }
             },
         )
     }

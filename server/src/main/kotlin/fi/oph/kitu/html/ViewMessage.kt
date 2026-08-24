@@ -83,10 +83,6 @@ class ViewMessage(
         set(ViewMessageData(text, ViewMessageType.SUCCESS))
     }
 
-    fun showWarning(text: String) {
-        set(ViewMessageData(text, ViewMessageType.WARNING))
-    }
-
     fun showError(text: String) {
         set(ViewMessageData(text, ViewMessageType.ERROR))
     }

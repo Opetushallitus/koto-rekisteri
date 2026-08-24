@@ -8,8 +8,6 @@ import fi.oph.kitu.util.cache.InMemoryCache
 import fi.oph.kitu.util.scheduling.SchedulerStatsRepository
 import fi.oph.kitu.vkt.CustomVktSuoritusRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
-import fi.oph.kitu.yki.arvioijat.error.YkiArvioijaErrorService
-import fi.oph.kitu.yki.suoritukset.YkiSuoritusPoikkeamaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import fi.oph.kitu.yki.suoritukset.error.YkiSuoritusErrorService
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -23,8 +21,6 @@ class DashboardService(
     private val ykiSuoritusRepository: YkiSuoritusRepository,
     private val ykiArvioijaRepository: YkiArvioijaRepository,
     private val ykiSuoritusErrorService: YkiSuoritusErrorService,
-    private val ykiArvioijaErrorService: YkiArvioijaErrorService,
-    private val ykiPoikkeamaRepository: YkiSuoritusPoikkeamaRepository,
     private val customVktSuoritusRepository: CustomVktSuoritusRepository,
     private val customKielitestiSuoritusRepository: CustomKielitestiSuoritusRepository,
     private val kielitestiSuoritusErrorRepository: KielitestiSuoritusErrorRepository,
@@ -51,15 +47,6 @@ class DashboardService(
     fun getAdminStats(): AdminStats =
         adminCache.get(Unit) ?: error("adminCache returned null; computeAdmin must yield non-null")
 
-    @WithSpan
-    fun getStats(): DashboardStats =
-        DashboardStats(
-            yki = getYkiStats(),
-            vkt = getVktStats(),
-            koto = getKotoStats(),
-            admin = getAdminStats(),
-        )
-
     private fun computeYki(): YkiStats =
         YkiStats(
             suoritusCount = ykiSuoritusRepository.countSuoritukset(),
@@ -68,9 +55,7 @@ class DashboardService(
                 ykiSuoritusRepository.countTarkistusarvioinnitOdottamassaHyvaksyntaa(),
             latestReceivedAt = ykiSuoritusRepository.findLatestReceivedAt(),
             suoritusImportErrorCount = ykiSuoritusErrorService.countErrors(),
-            arvioijaImportErrorCount = ykiArvioijaErrorService.countErrors(),
             koskiErrorCount = koskiErrorService.countByEntity("yki", hidden = false).toLong(),
-            poikkeamatCount = ykiPoikkeamaRepository.count(),
         )
 
     private fun computeVkt(): VktStats {
@@ -100,22 +85,13 @@ class DashboardService(
         )
 }
 
-data class DashboardStats(
-    val yki: YkiStats,
-    val vkt: VktStats,
-    val koto: KotoStats,
-    val admin: AdminStats,
-)
-
 data class YkiStats(
     val suoritusCount: Long,
     val arvioijaCount: Long,
     val tarkistusarvioinnitOdottamassaCount: Long,
     val latestReceivedAt: Instant?,
     val suoritusImportErrorCount: Long,
-    val arvioijaImportErrorCount: Long,
     val koskiErrorCount: Long,
-    val poikkeamatCount: Long,
 )
 
 data class VktStats(

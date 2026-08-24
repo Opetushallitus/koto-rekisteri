@@ -38,7 +38,7 @@ sisältää oman `*ApiController`-, `*ViewController`- (kotlinx.html-renderöint
 
 ### Läpileikkaavat paketit
 
-- **`csvparsing/`** — Jackson CSV-formaatin yli rakennettu apukerros
+- **`csvparsing/`** — Jackson CSV-formaatin yli rakennettu apukerros. Vain **vientiin** (listanäkymien CSV-lataukset); Solkin CSV-tuontiputki on poistettu, ja tiedot tulevat sisään JSON-rajapintojen kautta
 - **`tiedontuontischema/`** — Tietomallit ja validaatiot rajapinnoille, joilla tuodaan suorituksia
 - **`html/`** — kotlinx-html-pohjaiset sivupohjat ja komponentit
 - **`i18n/`** — Käännöstuki

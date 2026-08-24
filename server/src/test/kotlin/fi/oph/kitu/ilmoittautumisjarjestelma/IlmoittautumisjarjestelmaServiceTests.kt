@@ -110,7 +110,17 @@ class IlmoittautumisjarjestelmaServiceTests(
     @Test
     fun `Epäonnistunut kutsu #1 ei aiheuta poikkeusta rajapinnassa, mutta poikkeus tallennetaan virhetauluun`() {
         ilmoittautumisjarjestelmaClient.response =
-            IlmoittautumisjarjestelmaResponse.errorFor(entity, "SUORITUSTA_EI_LOYDY").right()
+            IlmoittautumisjarjestelmaResponse(
+                hyvaksytyt = 1,
+                virheet =
+                    listOf(
+                        IlmoittautumisjarjestelmaResponseError(
+                            suoritus = YkiSuorituksenTunniste.of(entity),
+                            tila = entity.arviointitila,
+                            virhe = "SUORITUSTA_EI_LOYDY",
+                        ),
+                    ),
+            ).right()
 
         assertDoesNotThrow {
             ykiApi.postHenkilosuoritus(suoritus)

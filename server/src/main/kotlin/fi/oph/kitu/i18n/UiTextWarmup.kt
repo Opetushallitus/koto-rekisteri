@@ -16,7 +16,7 @@ import kotlin.reflect.jvm.isAccessible
 class UiTextWarmup : ApplicationRunner {
     override fun run(args: ApplicationArguments) = warmUp(UiText)
 
-    private fun warmUp(obj: Any) {
+    internal fun warmUp(obj: Any) {
         obj::class.memberProperties.forEach { property ->
             property.isAccessible = true
             runCatching { property.getter.call(obj) }
@@ -27,6 +27,7 @@ class UiTextWarmup : ApplicationRunner {
                 function.parameters.size > 1 &&
                     function.parameters.drop(1).all { it.type.classifier == Long::class }
             }.forEach { function ->
+                function.isAccessible = true
                 val longArgs = Array<Any?>(function.parameters.size - 1) { 0L }
                 runCatching { function.call(obj, *longArgs) }
             }

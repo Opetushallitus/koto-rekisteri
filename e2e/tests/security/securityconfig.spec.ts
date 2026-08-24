@@ -15,7 +15,6 @@ const viewRoutes = [
   "GET /yki/suoritukset",
   "GET /yki/suoritukset/virheet",
   "GET /yki/arvioijat",
-  "GET /yki/arvioijat/virheet",
   "GET /yki/koski-virheet",
   "GET /yki/koski-virheet/piilota/1/true",
   "GET /yki/koski-request/1",

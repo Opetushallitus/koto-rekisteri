@@ -74,6 +74,16 @@ class ValidationServiceTest(
                 ),
         )
 
+    private val validiTarkistusarviointi =
+        YkiTarkastusarviointi(
+            saapumispaiva = LocalDate.of(2020, 2, 1),
+            kasittelypaiva = null,
+            asiatunnus = "123",
+            tarkistusarvioidutOsakokeet = null,
+            arvosanaMuuttui = null,
+            perustelu = "",
+        )
+
     private fun fail(
         path: List<String>,
         message: String,
@@ -465,19 +475,123 @@ class ValidationServiceTest(
         )
     }
 
-    @Suppress("DEPRECATION")
     @Test
-    fun `Suoritusta ei voi siirtää tilassa KESKEYTETTY`() {
+    fun `Suoritusta ei voi siirtää tilassa ILMOITTAUTUNUT, jos sillä on tarkistusarviointi`() {
         val suoritus =
             validiYkiSuoritus.modifySuoritus {
-                it.copy(arviointitila = Arviointitila.KESKEYTETTY, arviointipaiva = null)
+                it.copy(
+                    arviointitila = Arviointitila.ILMOITTAUTUNUT,
+                    arviointipaiva = null,
+                    osat = it.osat.map { osa -> osa.copy(arvosana = null) },
+                    tarkistusarviointi = validiTarkistusarviointi,
+                )
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            fail(
+                listOf("suoritus", "tarkistusarviointi"),
+                "Arviointitila 'ILMOITTAUTUNUT' ei salli tarkistusarviointia",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Suoritusta ei voi siirtää tilassa PERUTTU, jos sillä on tarkistusarviointi`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    arviointitila = Arviointitila.PERUTTU,
+                    arviointipaiva = null,
+                    osat = it.osat.map { osa -> osa.copy(arvosana = null) },
+                    tarkistusarviointi = validiTarkistusarviointi,
+                )
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            fail(
+                listOf("suoritus", "tarkistusarviointi"),
+                "Arviointitila 'PERUTTU' ei salli tarkistusarviointia",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Suoritusta ei voi siirtää tilassa ARVIOITAVA, jos sillä on tarkistusarviointi`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    arviointitila = Arviointitila.ARVIOITAVA,
+                    arviointipaiva = null,
+                    osat = it.osat.mapIndexed { i, osa -> if (i == 1) osa.copy(arvosana = null) else osa },
+                    tarkistusarviointi = validiTarkistusarviointi,
+                )
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            fail(
+                listOf("suoritus", "tarkistusarviointi"),
+                "Arviointitila 'ARVIOITAVA' ei salli tarkistusarviointia",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Suoritusta ei voi siirtää tilassa EI_SUORITUSTA, jos sillä on tarkistusarviointi`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(
+                    arviointitila = Arviointitila.EI_SUORITUSTA,
+                    arviointipaiva = null,
+                    osat = it.osat.map { osa -> osa.copy(arvosana = 12) },
+                    tarkistusarviointi = validiTarkistusarviointi,
+                )
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            fail(
+                listOf("suoritus", "tarkistusarviointi"),
+                "Arviointitila 'EI_SUORITUSTA' ei salli tarkistusarviointia",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Suoritusta ei voi siirtää tilassa ARVIOITU, jos sillä on tarkistusarviointi`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(tarkistusarviointi = validiTarkistusarviointi)
+            }
+
+        val result = validation.validateAndEnrich(suoritus)
+        assertEquals(
+            fail(
+                listOf("suoritus", "tarkistusarviointi"),
+                "Arviointitila 'ARVIOITU' ei salli tarkistusarviointia",
+            ),
+            result,
+        )
+    }
+
+    @Test
+    fun `Suoritusta ei voi siirtää tilassa TARKISTUSARVIOITU ilman tarkistusarviointia`() {
+        val suoritus =
+            validiYkiSuoritus.modifySuoritus {
+                it.copy(arviointitila = Arviointitila.TARKISTUSARVIOITU)
             }
 
         val result = validation.validateAndEnrich(suoritus)
         assertEquals(
             fail(
                 listOf("suoritus", "arviointitila"),
-                "Arviointitilaa 'KESKEYTETTY' ei voi tuoda",
+                "Arviointitila 'TARKISTUSARVIOITU' edellyttää tarkistusarviointia, jolla on käsittelypäivä",
             ),
             result,
         )

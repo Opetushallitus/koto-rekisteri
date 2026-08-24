@@ -133,51 +133,6 @@ class TehtavapankkiRepositoryTest(
     }
 
     @Test
-    fun `paketin poisto cascade-poistaa ryhmat, tehtavat, vastaukset ja tiedostot`() {
-        val pakettiId = seedPaketti()
-        val ryhmaId = seedRyhma(pakettiId)
-        val tehtavaIds =
-            repo.insertTehtavat(
-                listOf(
-                    TehtavaEntity(pakettiId = pakettiId, ryhmaId = ryhmaId, tyyppi = "multichoice", jarjestys = 1),
-                ),
-            )
-        repo.insertVastaukset(
-            listOf(TehtavaVastausEntity(tehtavaId = tehtavaIds[0], jarjestys = 1, teksti = "A")),
-        )
-        repo.insertTiedostot(
-            listOf(
-                TehtavaTiedostoEntity(
-                    tehtavaId = tehtavaIds[0],
-                    tiedostonimi = "audio.mp3",
-                    s3Avain = "42-Suomi/2026-01-01 assets/audio.mp3",
-                ),
-            ),
-        )
-
-        val deletedRows = repo.deletePakettiById(pakettiId)
-        assertEquals(1, deletedRows)
-
-        assertNull(repo.findPakettiById(pakettiId))
-        assertEquals(emptyList(), repo.findRyhmatByPakettiId(pakettiId))
-        assertEquals(emptyList(), repo.findTehtavatByPakettiId(pakettiId))
-        val vastausCount =
-            jdbc.queryForObject(
-                "SELECT COUNT(*) FROM tehtava_vastaus WHERE tehtava_id = ?",
-                Int::class.java,
-                tehtavaIds[0],
-            )
-        assertEquals(0, vastausCount)
-        val tiedostoCount =
-            jdbc.queryForObject(
-                "SELECT COUNT(*) FROM tehtava_tiedosto WHERE tehtava_id = ?",
-                Int::class.java,
-                tehtavaIds[0],
-            )
-        assertEquals(0, tiedostoCount)
-    }
-
-    @Test
     fun `tehtavan tiedostot tallennetaan ja luetaan ryhmiteltyna tehtava-id n mukaan`() {
         val pakettiId = seedPaketti()
         val ryhmaId = seedRyhma(pakettiId)

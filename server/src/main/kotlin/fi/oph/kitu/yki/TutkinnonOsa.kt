@@ -32,9 +32,5 @@ enum class TutkinnonOsa(
         val puheenYmmartaminen = PY
         val rakenteetJaSanasto = RS
         val yleisarvosana = YL
-
-        fun fromBits(bits: Int): Set<TutkinnonOsa> = entries.filter { bits and it.bitmask > 0 }.toSet()
-
-        fun Int.toTutkinnonOsaSet(): Set<TutkinnonOsa> = fromBits(this)
     }
 }

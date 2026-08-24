@@ -4,7 +4,6 @@ import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.errorMessage
 import fi.oph.kitu.html.infoTable
-import fi.oph.kitu.i18n.CurrentLanguage
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.unaryPlus
@@ -21,12 +20,10 @@ fun FlowContent.vktHenkilonTiedot(
         .onRight { hlo ->
             card(compact = true) {
                 infoTable(
-                    UiText.Vkt.henkilotunnus.toString() to { +hlo.hetut().joinToString(", ") },
-                    UiText.Vkt.henkiloOid.toString() to { +data.henkilo.oid.toString() },
-                    UiText.Vkt.syntymaaika.get(
-                        CurrentLanguage.get(),
-                    ) to { hlo.syntymaaika?.finnishDate()?.let { +it } },
-                    UiText.Vkt.yksilointi.toString() to {
+                    UiText.Vkt.henkilotunnus to { +hlo.hetut().joinToString(", ") },
+                    UiText.Vkt.henkiloOid to { +data.henkilo.oid.toString() },
+                    UiText.Vkt.syntymaaika to { hlo.syntymaaika?.finnishDate()?.let { +it } },
+                    UiText.Vkt.yksilointi to {
                         if (hlo.yksiloityVTJ == true || hlo.yksiloity == true) {
                             +UiText.Vkt.yksiloity
                         } else if (hlo.yksilointiYritetty == true) {
@@ -40,8 +37,7 @@ fun FlowContent.vktHenkilonTiedot(
         }.onLeft {
             card(compact = true) {
                 infoTable(
-                    UiText.Vkt.Sarake.oppijanumero
-                        .toString() to { +data.henkilo.oid.toString() },
+                    UiText.Vkt.Sarake.oppijanumero to { +data.henkilo.oid.toString() },
                 )
                 cardContent {
                     errorMessage(

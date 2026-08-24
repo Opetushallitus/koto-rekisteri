@@ -24,6 +24,18 @@ Typical use:
     # 3. Full run (resumable: re-running skips rows already recorded ok).
     ./migrate_yki_historia.py --source s3://.../<key>.csv --env prod --confirm-prod \\
         --client-id "$CID" --client-secret "$CSECRET" --out report.jsonl
+
+Rows without a suorittajan OID: a --backfill-oids pre-pass resolves them from hetu +
+names via kitu's POST /yki/api/oppijanumero-haku into a resumable --oid-map (JSONL),
+which the normal run then injects. Rows that still lack an OID are diverted to
+--unresolved-out as a 30-column CSV, directly reusable as --source in a later round:
+
+    ./migrate_yki_historia.py --source s3://.../<key>.csv --env prod --confirm-prod \\
+        --client-id "$CID" --client-secret "$CSECRET" \\
+        --backfill-oids --oid-map oid_map.jsonl --unresolved-out unresolved.csv
+    ./migrate_yki_historia.py --source s3://.../<key>.csv --env prod --confirm-prod \\
+        --client-id "$CID" --client-secret "$CSECRET" \\
+        --oid-map oid_map.jsonl --unresolved-out unresolved.csv --out report.jsonl
 """
 
 import argparse
@@ -49,6 +61,11 @@ COLUMNS = [
 ]
 
 LAST_MODIFIED_IDX = COLUMNS.index("last_modified")
+SUORITTAJAN_OID_IDX = COLUMNS.index("suorittajan_oid")
+HETU_IDX = COLUMNS.index("hetu")
+ETUNIMET_IDX = COLUMNS.index("etunimet")
+SUKUNIMI_IDX = COLUMNS.index("sukunimi")
+SUORITUS_ID_IDX = COLUMNS.index("suoritus_id")
 
 # grade column -> TutkinnonOsa code
 OSA_COLUMNS = [
@@ -257,6 +274,101 @@ def post_suoritus(host, token, payload):
         return e.code, e.read().decode()
 
 
+def resolve_oid(host, token, hetu, etunimet, sukunimi):
+    """Resolve an oppijanumero from hetu + names via kitu's ONR lookup endpoint.
+    Returns the OID, or None when ONR does not know the person (HTTP 404)."""
+    body = json.dumps({"hetu": hetu, "etunimet": etunimet, "sukunimi": sukunimi}).encode()
+    req = urllib.request.Request(
+        host + "/yki/api/oppijanumero-haku", data=body,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req) as r:
+            return json.load(r)["oid"]
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return None
+        raise
+
+
+def load_oid_map(path):
+    """{solki_id: oid_or_None}; a key's presence means the row was already attempted."""
+    oid_map = {}
+    if path and os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if "solki_id" in rec:
+                    oid_map[rec["solki_id"]] = rec.get("oid")
+    return oid_map
+
+
+def load_leftover_ids(path):
+    """solki_ids already written to the unresolved CSV, so re-runs don't duplicate rows."""
+    ids = set()
+    if path and os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        if text.strip():
+            delimiter = resolve_delimiter(text.split("\n", 1)[0], None) or "\t"
+            for row in csv.reader(io.StringIO(text), delimiter=delimiter, quotechar='"'):
+                if len(row) == len(COLUMNS):
+                    ids.add(to_null(row[SUORITUS_ID_IDX]))
+    return ids
+
+
+def backfill_oids(rows, host, token, map_path, capture_unresolved, limit, cutoff, sleep):
+    attempted = load_oid_map(map_path)
+    if attempted:
+        log(f"backfill resuming: {len(attempted)} rows already attempted will be skipped")
+    counts = {"resolved": 0, "unresolved": 0, "skipped_attempted": 0, "has_oid": 0, "filtered": 0, "failed": 0}
+    with open(map_path, "a", encoding="utf-8") as out:
+        for i, row in enumerate(rows):
+            if limit is not None and i >= limit:
+                break
+            if not row or len(row) != len(COLUMNS):
+                continue
+            if cutoff is not None:
+                lm = parse_last_modified(row[LAST_MODIFIED_IDX])
+                if lm is None or lm >= cutoff:
+                    counts["filtered"] += 1
+                    continue
+            if to_null(row[SUORITTAJAN_OID_IDX]):
+                counts["has_oid"] += 1
+                continue
+            solki_id = to_null(row[SUORITUS_ID_IDX])
+            if solki_id in attempted:
+                counts["skipped_attempted"] += 1
+                continue
+
+            hetu = to_null(row[HETU_IDX])
+            etunimet = to_null(row[ETUNIMET_IDX])
+            sukunimi = to_null(row[SUKUNIMI_IDX])
+            if not (hetu and etunimet and sukunimi):
+                rec = {"solki_id": solki_id, "oid": None, "reason": "hetu tai nimet puuttuu"}
+            else:
+                oid = resolve_oid(host, token, hetu, etunimet, sukunimi)
+                rec = {"solki_id": solki_id, "oid": oid,
+                       "reason": None if oid else "ei löytynyt oppijanumerorekisteristä"}
+
+            out.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            out.flush()
+            attempted[solki_id] = rec["oid"]
+            if rec["oid"] is None:
+                capture_unresolved(row, solki_id)
+            counts["resolved" if rec["oid"] else "unresolved"] += 1
+            if sleep:
+                time.sleep(sleep)
+
+            attempted_now = counts["resolved"] + counts["unresolved"]
+            if attempted_now % 100 == 0:
+                log(f"...{attempted_now} oid lookups done {counts}")
+    log(f"backfill done: {counts}")
+
+
 def load_done(out_path):
     done = set()
     if out_path and os.path.exists(out_path):
@@ -293,7 +405,28 @@ def main():
         "--delimiter",
         help="field delimiter: 'tab', 'comma', ';', '|', or a literal char (default: auto-detect)",
     )
+    p.add_argument(
+        "--backfill-oids", action="store_true",
+        help="pre-pass: resolve OIDs for rows without one via /yki/api/oppijanumero-haku "
+             "into --oid-map, POST no suoritukset",
+    )
+    p.add_argument(
+        "--oid-map", metavar="PATH",
+        help="JSONL map of solki_id → resolved oid; written by --backfill-oids, "
+             "read by the normal run to inject OIDs into OID-less rows",
+    )
+    p.add_argument(
+        "--unresolved-out", metavar="PATH",
+        help="write rows that still lack a resolvable oppijanumero to this CSV "
+             "(same 30-column headerless layout, reusable as --source later)",
+    )
     args = p.parse_args()
+
+    if args.backfill_oids:
+        if args.dry_run:
+            p.error("--backfill-oids calls the API and cannot be combined with --dry-run")
+        if not args.oid_map:
+            p.error("--backfill-oids needs --oid-map")
 
     cutoff = None
     if args.modified_before:
@@ -316,7 +449,7 @@ def main():
         if "opintopolku.fi" in host and "untuva" not in host and "testi" not in host:
             log(f"PROD TARGET: host={host} token_url={token_url} — verify these before continuing.")
 
-    done = load_done(args.out) if not args.dry_run else set()
+    done = load_done(args.out) if not (args.dry_run or args.backfill_oids) else set()
     if done:
         log(f"resuming: {len(done)} rows already recorded ok will be skipped")
 
@@ -335,8 +468,31 @@ def main():
     log(f"delimiter: {delimiter!r}")
     rows = csv.reader(io.StringIO(text), delimiter=delimiter, quotechar='"')
 
+    leftover_fh = open(args.unresolved_out, "a", encoding="utf-8", newline="") if args.unresolved_out else None
+    leftover_writer = csv.writer(leftover_fh, delimiter=delimiter, quotechar='"') if leftover_fh else None
+    leftover_seen = load_leftover_ids(args.unresolved_out) if args.unresolved_out else set()
+
+    def capture_unresolved(row, solki_id):
+        if leftover_writer is None or solki_id in leftover_seen:
+            return
+        leftover_writer.writerow(row)
+        leftover_fh.flush()
+        leftover_seen.add(solki_id)
+
+    if args.backfill_oids:
+        backfill_oids(rows, host, token, args.oid_map, capture_unresolved, args.limit, cutoff, args.sleep)
+        if leftover_fh:
+            leftover_fh.close()
+        return
+
+    oid_map = load_oid_map(args.oid_map) if args.oid_map else {}
+    if oid_map:
+        resolved = sum(1 for oid in oid_map.values() if oid)
+        log(f"oid map: {resolved} resolved of {len(oid_map)} attempted rows")
+
     payloads_fh = open(args.emit_payloads, "w", encoding="utf-8") if args.emit_payloads else None
-    counts = {"posted": 0, "skipped_issue": 0, "skipped_done": 0, "failed": 0, "dry": 0, "filtered": 0}
+    counts = {"posted": 0, "skipped_issue": 0, "skipped_done": 0, "failed": 0, "dry": 0, "filtered": 0,
+              "unresolved": 0}
 
     with open(args.out, "a", encoding="utf-8") as out:
         for i, row in enumerate(rows):
@@ -361,6 +517,12 @@ def main():
                     counts["filtered"] += 1
                     continue
 
+            if oid_map and not to_null(row[SUORITTAJAN_OID_IDX]):
+                backfilled = oid_map.get(to_null(row[SUORITUS_ID_IDX]))
+                if backfilled:
+                    row = list(row)
+                    row[SUORITTAJAN_OID_IDX] = backfilled
+
             payload = build_payload(row)
             solki_id = payload["suoritus"]["lahdejarjestelmanId"]["id"]
             issues = local_issues(payload)
@@ -370,6 +532,13 @@ def main():
 
             if solki_id in done:
                 counts["skipped_done"] += 1
+                continue
+
+            if not payload["henkilo"]["oid"]:
+                capture_unresolved(row, solki_id)
+                rec = {"solki_id": solki_id, "ok": False, "action": "unresolved", "reason": "ei oppijanumeroa"}
+                out.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                counts["unresolved"] += 1
                 continue
 
             if issues:
@@ -400,6 +569,8 @@ def main():
 
     if payloads_fh:
         payloads_fh.close()
+    if leftover_fh:
+        leftover_fh.close()
     log(f"done: {counts}")
 
 
