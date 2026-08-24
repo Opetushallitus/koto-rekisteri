@@ -1159,10 +1159,15 @@ outbox-kentät, kausihistoria, `passivoiPaattyneet`), `YkiApiControllerTest.kt` 
 
 ---
 
-## 10. Vaiheistus (PR-ehdotus)
+## 10. Vaiheistus (commitit yhdessä PR:ssä)
 
-Jokainen askel on itsenäisesti julkaisukelpoinen. Askeleet 1–9 eivät riipu Solkin rajapintasopimuksesta,
-joten työ ei jää odottamaan Jyväskylää.
+Toteutus tehdään **yhdessä haarassa `yki-arvioija-laajenna-taulut-masteriksi` ja yhdessä PR:ssä**
+([#3324](https://github.com/Opetushallitus/kielitutkintorekisteri/pull/3324)): kukin alla oleva askel on
+yksi tai useampi commit samassa PR:ssä, ei omaa PR:ää. Askeleet pysyvät silti itsenäisinä ja
+järjestyksessä katselmoitavina kokonaisuuksina — pidä commitit ehjinä, jotta PR:n voi lukea askel
+kerrallaan. Askeleet 1–9 eivät riipu Solkin rajapintasopimuksesta, joten työ ei jää odottamaan
+Jyväskylää. Askel 12 tehdään vasta tämän PR:n mergen jälkeen omana muutoksenaan, kun JYU on
+vahvistanut rajapinnan.
 
 | #   | Vaihe                                                    | Koko | Riippuu                 |
 | --- | -------------------------------------------------------- | ---- | ----------------------- |
@@ -1211,8 +1216,10 @@ joten työ ei jää odottamaan Jyväskylää.
 12. _(JYU:n vahvistuksen jälkeen)_ `enabled=true` untuvaan/QA:han/prodiin; 410-mapping kokonaan pois;
     säilytysajan poisto päälle; (tietosuojan luvalla) `henkilotunnus`-sarakkeen poisto.
 
-Muista jokaisen askeleen lopuksi `./scripts/format.sh` (ktlint + prettier). Infraan ei tule muutoksia,
-joten `infra/README.md` pysyy koskemattomana.
+Muista jokaisen askeleen lopuksi `./scripts/format.sh` (ktlint + prettier). Pidä pitkäikäinen haara
+ajan tasalla komennolla `git pull --rebase origin main` ja pushaa `--force-with-lease`illa. Älä avaa
+vaihekohtaisia haaroja tai pinottuja PR:iä. Infraan ei tule muutoksia, joten `infra/README.md` pysyy
+koskemattomana.
 
 ---
 
