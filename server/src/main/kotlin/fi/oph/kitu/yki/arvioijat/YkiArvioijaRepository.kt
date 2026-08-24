@@ -29,6 +29,8 @@ interface CustomYkiArvioijaRepository {
 
     fun findByArvioijaOid(arvioijaOid: Oid): YkiArvioijaEntity?
 
+    fun findArvioijaById(id: Int): YkiArvioijaEntity?
+
     fun findKausihistoria(arvioijaId: Int): List<YkiArvioijaKausiEntity>
 
     fun findForListView(params: YkiArvioijaParams): List<YkiArvioijaListRow>
@@ -272,24 +274,34 @@ class CustomYkiArvioijaRepositoryImpl(
     }
 
     @WithSpan
-    override fun findByArvioijaOid(arvioijaOid: Oid): YkiArvioijaEntity? {
-        val arvioija =
-            jdbcTemplate
-                .query(
-                    "SELECT * FROM yki_arvioija WHERE arvioija_oid = ?",
-                    YkiArvioijaEntity.fromRow,
-                    arvioijaOid.toString(),
-                ).firstOrNull() ?: return null
+    override fun findByArvioijaOid(arvioijaOid: Oid): YkiArvioijaEntity? =
+        jdbcTemplate
+            .query(
+                "SELECT * FROM yki_arvioija WHERE arvioija_oid = ?",
+                YkiArvioijaEntity.fromRow,
+                arvioijaOid.toString(),
+            ).firstOrNull()
+            ?.withArviointioikeudet()
 
-        val arviointioikeudet =
-            jdbcTemplate.query(
-                "SELECT * FROM yki_arviointioikeus WHERE arvioija_id = ? ORDER BY kieli",
-                YkiArviointioikeusEntity.fromRow,
-                arvioija.id!!.toInt(),
-            )
+    @WithSpan
+    override fun findArvioijaById(id: Int): YkiArvioijaEntity? =
+        jdbcTemplate
+            .query(
+                "SELECT * FROM yki_arvioija WHERE id = ?",
+                YkiArvioijaEntity.fromRow,
+                id,
+            ).firstOrNull()
+            ?.withArviointioikeudet()
 
-        return arvioija.copy(arviointioikeudet = arviointioikeudet)
-    }
+    private fun YkiArvioijaEntity.withArviointioikeudet(): YkiArvioijaEntity =
+        copy(
+            arviointioikeudet =
+                jdbcTemplate.query(
+                    "SELECT * FROM yki_arviointioikeus WHERE arvioija_id = ? ORDER BY kieli",
+                    YkiArviointioikeusEntity.fromRow,
+                    id!!.toInt(),
+                ),
+        )
 
     @WithSpan
     override fun findKausihistoria(arvioijaId: Int): List<YkiArvioijaKausiEntity> =
