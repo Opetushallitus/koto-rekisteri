@@ -156,6 +156,9 @@ class WebSecurityConfig {
             authorizeHttpRequests {
                 configureCommonAuthorizations(environment)
 
+                authorize(GET, "/yki/arvioijat/uusi", hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role()))
+                authorize(POST, "/yki/arvioijat/**", hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role()))
+
                 if (developmentProfileActive(environment)) {
                     println("Developer profile active, allowing access to /dev/**")
                     authorize("/dev/**", permitAll)

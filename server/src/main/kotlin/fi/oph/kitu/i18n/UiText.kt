@@ -653,6 +653,10 @@ object UiText {
         val naytaKeskeneraiset: LocalizedString get() = tr("filter.naytaKeskeneraiset", fi = "Näytä keskeneräiset")
     }
 
+    object Form {
+        val tarkistaTiedot: LocalizedString get() = tr("form.tarkistaTiedot", fi = "Tarkista lomakkeen tiedot")
+    }
+
     object Toiminto {
         val nayta: LocalizedString get() = tr("toiminto.nayta", fi = "Näytä")
         val palauta: LocalizedString get() = tr("toiminto.palauta", fi = "Palauta")
