@@ -17,7 +17,6 @@ fun FlowContent.formPost(
     content: FORM.() -> Unit,
 ) {
     form(action = action, method = FormMethod.post, classes = formClasses) {
-        // Attribuutit on asetettava ennen debugTracea, joka huuhtelee tagin alavirtaan.
         testId?.let { data("testid", it) }
         debugTrace()
         csrfToken?.let { hiddenValue(csrfToken.parameterName, csrfToken.token) }

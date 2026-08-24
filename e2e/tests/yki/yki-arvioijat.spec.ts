@@ -30,6 +30,8 @@ describe("Yleinen kielitutkinto arvioijat page", () => {
 
     await expectToHaveTexts(
       table.labels,
+      // Linkkisarakkeella ei ole otsikkoa
+      "",
       "Oppijanumero",
       "Sukunimi ▲",
       "Etunimet",
@@ -40,6 +42,46 @@ describe("Yleinen kielitutkinto arvioijat page", () => {
       "Kauden päättymispäivä",
     )
     await expect(table.rows).toHaveCount(4)
+  })
+
+  test("row links to the arvioija details page", async ({
+    indexPage,
+    ykiArvioijatPage,
+  }) => {
+    await indexPage.login()
+    await ykiArvioijatPage.openFromNavigation()
+
+    await ykiArvioijatPage.search("Kivinen")
+    await ykiArvioijatPage.table.rows
+      .first()
+      .getByTestId("Linkki")
+      .getByRole("link")
+      .click()
+
+    await expect(
+      ykiArvioijatPage
+        .getPageContent()
+        .getByRole("heading", { name: "Petro Testi Kivinen-Testi" }),
+    ).toBeVisible()
+    expect(ykiArvioijatPage.page.url()).toMatch(/\/yki\/arvioijat\/\d+$/)
+  })
+
+  test("row link stays available when personal data is hidden", async ({
+    indexPage,
+    ykiArvioijatPage,
+  }) => {
+    await indexPage.login()
+    await ykiArvioijatPage.open()
+    await ykiArvioijatPage.page.goto(
+      ykiArvioijatPage.page.url() + "?piilotaHenkilotiedot=true",
+    )
+
+    await expect(
+      ykiArvioijatPage.table.rows.first().getByTestId("Linkki"),
+    ).toBeVisible()
+    await expect(
+      ykiArvioijatPage.table.rows.first().getByTestId("Sukunimi"),
+    ).toHaveCount(0)
   })
 
   test("searching by name filters the list", async ({
