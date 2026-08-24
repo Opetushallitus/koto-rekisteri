@@ -7,12 +7,15 @@ import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTable
+import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.html.warningMessage
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
+import fi.oph.kitu.security.Authority
+import fi.oph.kitu.security.CurrentUser
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.a
 import kotlinx.html.h1
@@ -32,6 +35,16 @@ object YkiArvioijaTiedotPage {
 
             if (henkilo?.turvakielto == true) {
                 warningMessage(UiText.Yki.Arvioija.turvakielto)
+            }
+
+            if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
+                p {
+                    a(href = Links.Yki.muokkaaArvioijaa(arvioija.id!!.toInt())) {
+                        attributes["role"] = "button"
+                        testId("muokkaaArvioijaa")
+                        +UiText.Yki.Arvioija.muokkaa
+                    }
+                }
             }
 
             card {

@@ -99,6 +99,9 @@ object Links {
 
         fun uusiArvioija(tapa: ArvioijaHakutapa): String = "${uusiArvioija()}?tapa=${tapa.name}"
 
+        fun muokkaaArvioijaa(id: Int): String =
+            linkTo(methodOn(YkiArvioijaViewController::class.java).muokkaaArvioijaaView(id)).toString()
+
         fun arvioijaHaku(): String =
             linkTo(
                 methodOn(YkiArvioijaViewController::class.java).arvioijaHaku(ArvioijaHakuFormData()),

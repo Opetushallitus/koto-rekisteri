@@ -86,6 +86,31 @@ data class ArvioijaFormData(
                 turvakielto = esitaytto.turvakielto,
             )
 
+        fun of(
+            arvioija: YkiArvioijaEntity,
+            turvakielto: Boolean = false,
+        ): ArvioijaFormData {
+            val oikeudet = arvioija.arviointioikeudet
+            return ArvioijaFormData(
+                arvioijaOid = arvioija.arvioijaOid.toString(),
+                sukunimi = arvioija.sukunimi,
+                etunimet = arvioija.etunimet,
+                sahkopostiosoite = arvioija.sahkopostiosoite,
+                katuosoite = arvioija.katuosoite,
+                postinumero = arvioija.postinumero,
+                postitoimipaikka = arvioija.postitoimipaikka,
+                kaudenAlkupaiva = oikeudet.firstNotNullOfOrNull { it.kaudenAlkupaiva },
+                jatkorekisterointi = oikeudet.any { it.jatkorekisterointi },
+                tila = oikeudet.firstOrNull()?.tila ?: YkiArvioijaTila.AKTIIVINEN,
+                ashaNumero = arvioija.ashaNumero,
+                turvakielto = turvakielto,
+                arviointioikeus =
+                    oikeudet.flatMap { oikeus ->
+                        oikeus.tasot.map { taso -> valinta(oikeus.kieli, taso) }
+                    },
+            )
+        }
+
         fun valinta(
             kieli: Tutkintokieli,
             taso: Tutkintotaso,

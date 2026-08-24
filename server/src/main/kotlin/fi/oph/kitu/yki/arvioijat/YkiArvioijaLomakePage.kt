@@ -15,6 +15,7 @@ import fi.oph.kitu.html.input
 import fi.oph.kitu.html.tabs
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.warningMessage
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.unaryPlus
 import fi.oph.kitu.webmvc.Links
@@ -81,9 +82,13 @@ object YkiArvioijaLomakePage {
     fun renderLomake(
         form: ArvioijaFormData,
         errors: FormErrors,
+        otsikko: LocalizedString = UiText.Yki.Arvioija.uusiArvioija,
+        action: String = Links.Yki.uusiArvioija(),
+        tallennaTeksti: LocalizedString = UiText.Yki.Arvioija.tallenna,
+        peruutusLinkki: String? = null,
     ): String =
         Page.renderHtml {
-            h1 { +UiText.Yki.Arvioija.uusiArvioija }
+            h1 { +otsikko }
 
             if (form.turvakielto) {
                 warningMessage(UiText.Yki.Arvioija.turvakielto)
@@ -91,7 +96,7 @@ object YkiArvioijaLomakePage {
 
             formErrorSummary(errors)
 
-            formPost(Links.Yki.uusiArvioija()) {
+            formPost(action) {
                 hiddenValue("arvioijaOid", form.arvioijaOid.orEmpty())
                 hiddenValue("turvakielto", form.turvakielto.toString())
 
@@ -166,7 +171,13 @@ object YkiArvioijaLomakePage {
                     footer {
                         button(type = ButtonType.submit) {
                             testId("tallennaArvioija")
-                            +UiText.Yki.Arvioija.tallenna
+                            +tallennaTeksti
+                        }
+                        peruutusLinkki?.let { peruuta ->
+                            a(href = peruuta) {
+                                testId("peruutaMuokkaus")
+                                +UiText.Yki.Arvioija.peruuta
+                            }
                         }
                     }
                 }
@@ -216,7 +227,7 @@ private fun FlowContent.oppijanumeroHakuLomake(
 }
 
 fun FlowContent.tekstikentta(
-    label: fi.oph.kitu.i18n.LocalizedString,
+    label: LocalizedString,
     name: String,
     arvo: String?,
     errors: FormErrors,

@@ -107,6 +107,96 @@ class YkiArvioijaViewController(
         )
     }
 
+    @GetMapping("/{id}/muokkaa", produces = ["text/html"])
+    fun muokkaaArvioijaaView(
+        @PathVariable id: Int,
+    ): ResponseEntity<String> {
+        val arvioija =
+            arvioijaService.haeArvioija(id)
+                ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+
+        val turvakielto = arvioijaService.haeOnrHenkilo(arvioija.arvioijaOid)?.turvakielto == true
+
+        return ResponseEntity.ok(muokkausLomake(id, ArvioijaFormData.of(arvioija, turvakielto), FormErrors.EMPTY))
+    }
+
+    @PostMapping("/{id}", produces = ["text/html"])
+    fun tallennaMuutokset(
+        @PathVariable id: Int,
+        @ModelAttribute form: ArvioijaFormData,
+        viewMessage: ViewMessage? = null,
+    ): ResponseEntity<String> {
+        if (!arvioijaService.onOlemassa(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+        }
+
+        val alkupaiva =
+            form.kaudenAlkupaiva
+                ?: return ResponseEntity.ok(
+                    muokkausLomake(
+                        id,
+                        form,
+                        FormErrors.of(
+                            listOf(
+                                ValidationError(
+                                    listOf("kaudenAlkupaiva"),
+                                    "${UiText.Yki.Arvioija.kaudenAlkupaiva} on pakollinen tieto",
+                                ),
+                            ),
+                        ),
+                    ),
+                )
+
+        val lomakkeenOid =
+            Oid.parse(form.arvioijaOid).getOrNull()
+                ?: return ResponseEntity.ok(
+                    muokkausLomake(
+                        id,
+                        form,
+                        yleinen(
+                            UiText.Yki.Arvioija.eiLoydy
+                                .toString(),
+                        ),
+                    ),
+                )
+
+        return arvioijaService
+            .paivitaArvioija(id, form.toCommand(lomakkeenOid, alkupaiva), CurrentUser.oid())
+            .fold(
+                ifLeft = { virhe ->
+                    if (virhe == YkiArvioijaError.ArvioijaaEiLoydy) {
+                        ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+                    } else {
+                        ResponseEntity.ok(muokkausLomake(id, form, virheet(virhe)))
+                    }
+                },
+                ifRight = {
+                    viewMessage?.showSuccess(
+                        UiText.Yki.Arvioija.muutoksetTallennettu
+                            .toString(),
+                    )
+                    ResponseEntity
+                        .status(HttpStatus.SEE_OTHER)
+                        .location(URI.create(Links.Yki.arvioija(id)))
+                        .build()
+                },
+            )
+    }
+
+    private fun muokkausLomake(
+        id: Int,
+        form: ArvioijaFormData,
+        errors: FormErrors,
+    ): String =
+        YkiArvioijaLomakePage.renderLomake(
+            form = form,
+            errors = errors,
+            otsikko = UiText.Yki.Arvioija.muokkaaArvioijaa,
+            action = Links.Yki.arvioija(id),
+            tallennaTeksti = UiText.Yki.Arvioija.tallennaMuutokset,
+            peruutusLinkki = Links.Yki.arvioija(id),
+        )
+
     @GetMapping("/{id}", produces = ["text/html"])
     fun arvioijaView(
         @PathVariable id: Int,
