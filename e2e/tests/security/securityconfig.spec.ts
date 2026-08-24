@@ -105,9 +105,6 @@ describe("Käyttöoikeustestit", () => {
       defineCasTests("ROOT", {
         ...expectStatusCodeFor(allRoutes, 200),
         "GET /yki/koski-request/1": 404,
-        // Arvioijalomake toteutetaan vaiheessa 5; sääntö päästää läpi, käsittelijää ei vielä ole.
-        "GET /yki/arvioijat/uusi": 404,
-        "POST /yki/arvioijat/uusi": 404,
         "POST /yki/api/suoritus": 400,
         "POST /yki/api/arvioija": 400,
         "PUT /api/vkt/kios": 400,

@@ -17,6 +17,7 @@ import KielitestiErrorPage from "../models/kotoutumiskoulutus/KielitestiErrorPag
 import VktSuorituksetPage from "../models/vkt/VktSuorituksetPage"
 import VktSuorituksenTiedotPage from "../models/vkt/VktSuorituksenTiedotPage"
 import YkiArvioijatPage from "../models/yki/YkiArvioijatPage"
+import YkiArvioijaLomakePage from "../models/yki/YkiArvioijaLomakePage"
 import YkiTarkistusarvioinnitPage from "../models/yki/YkiTarkistusarvioinnitPage"
 import YkiHyvaksytytTarkistusarvioinnitPage from "../models/yki/YkiHyvaksytytTarkistusarvioinnitPage"
 import { OauthRequestContext } from "./oauthRequestContext"
@@ -25,6 +26,7 @@ interface Fixtures {
   ykiSuorituksetPage: YkiSuorituksetPage
   ykiSuorituksenTiedotPage: YkiSuorituksenTiedotPage
   ykiArvioijatPage: YkiArvioijatPage
+  ykiArvioijaLomakePage: YkiArvioijaLomakePage
   ykiSuorituksetErrorPage: YkiSuorituksetErrorPage
   ykiTarkistusarvioinnitPage: YkiTarkistusarvioinnitPage
   ykiHyvaksytytTarkistusarvioinnitPage: YkiHyvaksytytTarkistusarvioinnitPage
@@ -81,6 +83,10 @@ export const test = baseTest.extend<Fixtures, WorkerArgs>({
   ykiArvioijatPage: async ({ page, config }, use) => {
     const ykiArvioijatPage = new YkiArvioijatPage(page, config)
     await use(ykiArvioijatPage)
+  },
+  ykiArvioijaLomakePage: async ({ page, config }, use) => {
+    const ykiArvioijaLomakePage = new YkiArvioijaLomakePage(page, config)
+    await use(ykiArvioijaLomakePage)
   },
   ykiSuorituksetErrorPage: async ({ page, config }, use) => {
     const ykiSuorituksetErrorPage = new YkiSuorituksetErrorPage(page, config)

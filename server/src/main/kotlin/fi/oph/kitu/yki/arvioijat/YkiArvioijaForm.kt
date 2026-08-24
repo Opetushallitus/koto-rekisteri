@@ -1,0 +1,95 @@
+package fi.oph.kitu.yki.arvioijat
+
+import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.yki.Tutkintokieli
+import fi.oph.kitu.yki.Tutkintotaso
+import java.time.LocalDate
+
+data class ArvioijaHakuFormData(
+    val hetu: String? = null,
+    val sukunimi: String? = null,
+    val etunimet: String? = null,
+    val kutsumanimi: String? = null,
+    val oppijanumero: String? = null,
+) {
+    fun toOnrHaku(): OnrHaku =
+        OnrHaku(
+            hetu = hetu,
+            etunimet = etunimet,
+            sukunimi = sukunimi,
+            kutsumanimi = kutsumanimi,
+            oppijanumero = oppijanumero,
+        )
+}
+
+data class ArvioijaFormData(
+    val arvioijaOid: String? = null,
+    val sukunimi: String? = null,
+    val etunimet: String? = null,
+    val sahkopostiosoite: String? = null,
+    val katuosoite: String? = null,
+    val postinumero: String? = null,
+    val postitoimipaikka: String? = null,
+    val kaudenAlkupaiva: LocalDate? = null,
+    val jatkorekisterointi: Boolean = false,
+    val tila: YkiArvioijaTila = YkiArvioijaTila.AKTIIVINEN,
+    val ashaNumero: String? = null,
+    val turvakielto: Boolean = false,
+    val arviointioikeus: List<String>? = null,
+) {
+    fun laskettuPaattymispaiva(): LocalDate? = kaudenAlkupaiva?.let(Rekisterikausi::paattymispaiva)
+
+    fun arviointioikeudet(): List<TallennaArvioija.Arviointioikeus> =
+        arviointioikeus
+            .orEmpty()
+            .mapNotNull(::parseValinta)
+            .groupBy({ it.first }, { it.second })
+            .map { (kieli, tasot) -> TallennaArvioija.Arviointioikeus(kieli, tasot.toSet()) }
+
+    fun toCommand(
+        oid: Oid,
+        alkupaiva: LocalDate,
+    ): TallennaArvioija =
+        TallennaArvioija(
+            arvioijaOid = oid,
+            sukunimi = sukunimi.orEmpty().trim(),
+            etunimet = etunimet.orEmpty().trim(),
+            sahkopostiosoite = sahkopostiosoite?.trim()?.takeIf { it.isNotEmpty() },
+            katuosoite = katuosoite.orEmpty().trim(),
+            postinumero = postinumero.orEmpty().trim(),
+            postitoimipaikka = postitoimipaikka.orEmpty().trim(),
+            kaudenAlkupaiva = alkupaiva,
+            jatkorekisterointi = jatkorekisterointi,
+            tila = tila,
+            ashaNumero = ashaNumero?.trim()?.takeIf { it.isNotEmpty() },
+            arviointioikeudet = arviointioikeudet(),
+        )
+
+    companion object {
+        fun of(esitaytto: ArvioijanEsitaytto): ArvioijaFormData =
+            ArvioijaFormData(
+                arvioijaOid = esitaytto.arvioijaOid.toString(),
+                sukunimi = esitaytto.sukunimi,
+                etunimet = esitaytto.etunimet,
+                sahkopostiosoite = esitaytto.sahkopostiosoite,
+                katuosoite = esitaytto.katuosoite,
+                postinumero = esitaytto.postinumero,
+                postitoimipaikka = esitaytto.postitoimipaikka,
+                jatkorekisterointi = esitaytto.jatkorekisterointi,
+                turvakielto = esitaytto.turvakielto,
+            )
+
+        fun valinta(
+            kieli: Tutkintokieli,
+            taso: Tutkintotaso,
+        ): String = "${kieli.name}:${taso.name}"
+
+        private fun parseValinta(arvo: String): Pair<Tutkintokieli, Tutkintotaso>? {
+            val osat = arvo.split(":")
+            if (osat.size != 2) return null
+            val kieli = Tutkintokieli.entries.firstOrNull { it.name == osat[0] } ?: return null
+            val taso = Tutkintotaso.entries.firstOrNull { it.name == osat[1] } ?: return null
+            return kieli to taso
+        }
+    }
+}

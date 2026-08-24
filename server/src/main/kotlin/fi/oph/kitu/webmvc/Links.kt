@@ -10,6 +10,7 @@ import fi.oph.kitu.vkt.VktApiController
 import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
+import fi.oph.kitu.yki.arvioijat.ArvioijaHakuFormData
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaParams
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaViewController
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
@@ -86,6 +87,17 @@ object Links {
 
         fun arvioijat(): String =
             linkTo(methodOn(YkiArvioijaViewController::class.java).arvioijatView(YkiArvioijaParams())).toString()
+
+        fun arvioija(id: Int): String =
+            linkTo(methodOn(YkiArvioijaViewController::class.java).arvioijaView(id, null)).toString()
+
+        fun uusiArvioija(): String =
+            linkTo(methodOn(YkiArvioijaViewController::class.java).uusiArvioijaView()).toString()
+
+        fun arvioijaHaku(): String =
+            linkTo(
+                methodOn(YkiArvioijaViewController::class.java).arvioijaHaku(ArvioijaHakuFormData()),
+            ).toString()
 
         fun tarkistusArvioinnit(): String =
             linkTo(methodOn(YkiViewController::class.java).tarkistusArvioinnitView()).toString()

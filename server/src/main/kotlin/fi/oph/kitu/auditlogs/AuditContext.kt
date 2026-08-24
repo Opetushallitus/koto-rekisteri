@@ -51,7 +51,7 @@ data class AuditContext(
             // Used to set organization oid for the logged in user.
             val opetushallitusOrganisaatioOid = getOpetushallitusOrganizationOid()
 
-            val userAgent = request.getHeader("user-agent")
+            val userAgent = request.getHeader("user-agent").orEmpty()
             val ip = InetAddress.getByName(request.remoteAddr)
             val session = request.session.id
 
