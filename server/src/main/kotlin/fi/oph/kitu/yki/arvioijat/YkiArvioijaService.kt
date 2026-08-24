@@ -70,14 +70,23 @@ class YkiArvioijaService(
                 repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
             }
 
-    private fun haeOid(haku: OnrHaku): Either<YkiArvioijaError, Oid> {
-        val oppijanumero = haku.oppijanumero?.trim()?.takeIf { it.isNotEmpty() }
-        if (oppijanumero != null) {
-            return Oid.parse(oppijanumero).mapLeft {
-                virhe("oppijanumero", "Oppijanumero on virheellinen")
-            }
+    private fun haeOid(haku: OnrHaku): Either<YkiArvioijaError, Oid> =
+        when (haku.tapa) {
+            ArvioijaHakutapa.OPPIJANUMERO -> haeOidOppijanumerolla(haku)
+            ArvioijaHakutapa.HETU -> haeOidHetulla(haku)
         }
 
+    private fun haeOidOppijanumerolla(haku: OnrHaku): Either<YkiArvioijaError, Oid> {
+        val oppijanumero =
+            haku.oppijanumero?.trim()?.takeIf { it.isNotEmpty() }
+                ?: return virhe("oppijanumero", "Oppijanumero on pakollinen tieto").left()
+
+        return Oid.parse(oppijanumero).mapLeft {
+            virhe("oppijanumero", "Oppijanumero on virheellinen")
+        }
+    }
+
+    private fun haeOidHetulla(haku: OnrHaku): Either<YkiArvioijaError, Oid> {
         puuttuvatHakukentat(haku)?.let { return YkiArvioijaError.Validointivirheet(it).left() }
 
         val oppija =

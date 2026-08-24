@@ -84,6 +84,27 @@ describe("Yleisen kielitutkinnon arvioijan lisays", () => {
     ).toBeChecked()
   })
 
+  test("hakutapa valitaan valilehdilta ja lomakkeet ovat erilliset", async ({
+    indexPage,
+    ykiArvioijaLomakePage,
+  }) => {
+    await indexPage.login()
+    await ykiArvioijaLomakePage.open()
+
+    await expect(ykiArvioijaLomakePage.hetuLomake).toBeVisible()
+    await expect(ykiArvioijaLomakePage.oppijanumeroLomake).toHaveCount(0)
+
+    await ykiArvioijaLomakePage.valitseHakutapa("OPPIJANUMERO")
+
+    await expect(ykiArvioijaLomakePage.oppijanumeroLomake).toBeVisible()
+    await expect(ykiArvioijaLomakePage.hetuLomake).toHaveCount(0)
+
+    await ykiArvioijaLomakePage.valitseHakutapa("HETU")
+
+    await expect(ykiArvioijaLomakePage.hetuLomake).toBeVisible()
+    await expect(ykiArvioijaLomakePage.oppijanumeroLomake).toHaveCount(0)
+  })
+
   test("hetulla haettu henkilo esitaytetaan", async ({
     indexPage,
     ykiArvioijaLomakePage,

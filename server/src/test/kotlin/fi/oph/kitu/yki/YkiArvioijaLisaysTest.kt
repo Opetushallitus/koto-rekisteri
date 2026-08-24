@@ -19,7 +19,6 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -57,16 +56,52 @@ class YkiArvioijaLisaysTest(
     }
 
     @Test
-    fun `hakulomake renderoityy`() {
+    fun `hakulomake renderoityy hetuvalilehdella`() {
         val html = html(get("/yki/arvioijat/uusi").session(session()))
 
+        assertContains(html, """data-testid="hetuHakuLomake"""")
         assertContains(html, """data-testid="hetu"""")
         assertContains(html, """data-testid="haeHenkilonTiedot"""")
+        assertFalse(
+            html.contains("""data-testid="oppijanumeroHakuLomake""""),
+            "vain valittu valilehti saa renderoitya",
+        )
+    }
+
+    @Test
+    fun `oppijanumerovalilehti renderoi oman lomakkeensa`() {
+        val html = html(get("/yki/arvioijat/uusi").session(session()).param("tapa", "OPPIJANUMERO"))
+
+        assertContains(html, """data-testid="oppijanumeroHakuLomake"""")
+        assertContains(html, """data-testid="oppijanumero"""")
+        assertFalse(html.contains("""data-testid="hetuHakuLomake""""), "vain valittu valilehti saa renderoitya")
+        assertFalse(html.contains("""data-testid="hetu-input""""), "hetukentta kuuluu vain toiselle valilehdelle")
+    }
+
+    @Test
+    fun `valilehtilinkit kertovat kumpi on valittuna`() {
+        val html = html(get("/yki/arvioijat/uusi").session(session()).param("tapa", "OPPIJANUMERO"))
+
+        val valittu = Regex("""<a href="[^"]*tapa=OPPIJANUMERO"[^>]*aria-current="page"""")
+        assertTrue(valittu.containsMatchIn(html), "valittu valilehti on merkittava aria-currentilla:\n$html")
+        assertContains(html, """data-testid="hakutapa-HETU"""")
+    }
+
+    @Test
+    fun `tyhja oppijanumero palauttaa oman valilehtensa virheineen`() {
+        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to "")
+
+        assertContains(html, "Oppijanumero on pakollinen tieto")
+        assertContains(html, """data-testid="oppijanumeroHakuLomake"""")
+        assertFalse(
+            html.contains("Henkilötunnus on pakollinen tieto"),
+            "toisen valilehden kenttia ei saa validoida",
+        )
     }
 
     @Test
     fun `oppijanumerolla haettu henkilo esitaytetaan oppijanumerorekisterin tiedoilla`() {
-        val html = haku("oppijanumero" to petronOid)
+        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to petronOid)
 
         assertContains(html, """value="Kivinen-Testi"""")
         assertContains(html, """value="Petro Testi"""")
@@ -248,13 +283,11 @@ class YkiArvioijaLisaysTest(
             },
         )
 
-    private fun html(request: org.springframework.test.web.servlet.RequestBuilder): String =
-        mockMvc
-            .perform(request)
-            .andExpect(status().isOk)
-            .andReturn()
-            .let(MvcResult::getResponse)
-            .contentAsString
+    private fun html(request: org.springframework.test.web.servlet.RequestBuilder): String {
+        val result = mockMvc.perform(request).andReturn()
+        assertEquals(200, result.response.status, "poikkeus: ${result.resolvedException}")
+        return result.response.contentAsString
+    }
 
     private fun session(
         vararg authorities: Authority = arrayOf(Authority.VIRKAILIJA, Authority.YKI_ARVIOIJAREKISTERI),
