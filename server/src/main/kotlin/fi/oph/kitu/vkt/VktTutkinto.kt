@@ -61,7 +61,10 @@ interface VktTutkinto :
         return mahdollisetOsakokeidenTyypit().filterNot { tyypit.contains(it) }
     }
 
-    fun puuttuvatArvioinnit(): List<Koodisto.VktOsakoe> = osat.filter { it.arviointi == null }.map { it.tyyppi }
+    fun puuttuvatArvioinnit(): List<Koodisto.VktOsakoe> {
+        val puuttuvat = osat.filter { it.arviointi == null }.mapTo(mutableSetOf()) { it.tyyppi }
+        return mahdollisetOsakokeidenTyypit().filter { puuttuvat.contains(it) }
+    }
 
     companion object {
         fun from(

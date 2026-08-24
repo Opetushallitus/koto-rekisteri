@@ -87,11 +87,11 @@ class CustomVktSuoritusRepository(
                 ${filter.whereSql().orEmpty()}
             
                 GROUP BY vkt_suoritus.id, osakokeet.tutkintopaiva
-                ORDER BY vkt_suoritus.ilmoittautumisen_id, vkt_suoritus.created_at DESC
+                ORDER BY vkt_suoritus.ilmoittautumisen_id, vkt_suoritus.created_at DESC, osakokeet.tutkintopaiva
             )
             SELECT *
             FROM result
-            ORDER BY $order
+            ORDER BY $order, suoritus_id
             ${order.pageSql().orEmpty()}
             """.trimIndent()
 
