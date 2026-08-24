@@ -1067,6 +1067,11 @@ authorize(GET, "/yki/api/arvioijat/**", hasAnyAuthority(
     *Authority.YKI_ARVIOIJAREKISTERI.authStrings(), *Authority.YKI_TALLENNUS.authStrings()))
 ```
 
+> **Huom (vaihe 4):** luku-API:n sääntöä **ei** vielä lisätty. Vaihe 3 vei listanäkymän CSV-viennin
+> polkuun `GET /yki/api/arvioijat`, ja §7.1:n mukaan luvun pitää säilyä kaikilla virkailijoilla —
+> sääntö veisi CSV-viennin pelkiltä virkailijoilta. Ratkaistaan vaiheessa 5, kun §4.1:n JSON-luku-API
+> saa oman polkunsa.
+
 `GET /yki/arvioijat` ja `/yki/arvioijat/{id}` osuvat CAS-ketjun loppusääntöön `hasAuthority(VIRKAILIJA)`.
 CSRF: `/yki/arvioijat/**` **ei** ole `ignoringRequestMatchers`-listalla → lomakkeiden **on** käytettävä
 `formPost(...)`ia, joka injektoi tokenin; suora `form { }` epäonnistuu 403:lla.

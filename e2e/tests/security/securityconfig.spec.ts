@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from "../../fixtures/baseFixture"
 import { APIRequestContext } from "@playwright/test"
 import { Config } from "../../config"
 
-type MockUser = "ROOT" | "KIOS" | "SOLKI" | "KOSKI" | "NO_ROLES"
+type MockUser = "ROOT" | "VIRKAILIJA" | "KIOS" | "SOLKI" | "KOSKI" | "NO_ROLES"
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE"
 type ContentType = "application/x-www-form-urlencoded" | "application/json"
 type Route = `${HttpMethod} /${string}`
@@ -15,6 +15,8 @@ const viewRoutes = [
   "GET /yki/suoritukset",
   "GET /yki/suoritukset/virheet",
   "GET /yki/arvioijat",
+  "GET /yki/arvioijat/uusi",
+  "POST /yki/arvioijat/uusi",
   "GET /yki/koski-virheet",
   "GET /yki/koski-virheet/piilota/1/true",
   "GET /yki/koski-request/1",
@@ -40,6 +42,7 @@ const apiRoutes = [
   "GET /yki/api/suoritukset",
   "POST /yki/api/suoritus",
   "POST /yki/api/arvioija",
+  "GET /yki/api/arvioijat",
 
   // KielitestiApiController
   "GET /koto-kielitesti/api/suoritukset",
@@ -102,10 +105,28 @@ describe("Käyttöoikeustestit", () => {
       defineCasTests("ROOT", {
         ...expectStatusCodeFor(allRoutes, 200),
         "GET /yki/koski-request/1": 404,
+        // Arvioijalomake toteutetaan vaiheessa 5; sääntö päästää läpi, käsittelijää ei vielä ole.
+        "GET /yki/arvioijat/uusi": 404,
+        "POST /yki/arvioijat/uusi": 404,
         "POST /yki/api/suoritus": 400,
         "POST /yki/api/arvioija": 400,
         "PUT /api/vkt/kios": 400,
         "GET /yhteystiedot/api/opiskeluoikeus/1.2.246.562.24.00000000001": 404,
+      })
+    })
+
+    describe("Virkailija ilman arvioijarekisterin kirjoitusoikeutta", () => {
+      defineCasTests("VIRKAILIJA", {
+        ...expectStatusCodeFor(viewRoutes, 200),
+        ...expectStatusCodeFor(publicRoutes, 200),
+        "GET /yki/koski-request/1": 404,
+        "GET /yki/arvioijat/uusi": 403,
+        "POST /yki/arvioijat/uusi": 403,
+        "GET /yki/api/suoritukset": 200,
+        "GET /yki/api/arvioijat": 200,
+        "GET /koto-kielitesti/api/suoritukset": 200,
+        "GET /koto-kielitesti/api/suoritukset/virheet": 200,
+        "GET /api/vkt/suoritus": 200,
       })
     })
 
