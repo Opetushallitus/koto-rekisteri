@@ -20,11 +20,14 @@ import fi.oph.kitu.html.table.toggleFilter
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.unaryPlus
+import fi.oph.kitu.security.Authority
+import fi.oph.kitu.security.CurrentUser
 import fi.oph.kitu.webmvc.Links
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
+import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.button
 import kotlinx.html.fieldSet
@@ -66,6 +69,15 @@ object YkiArvioijaPage {
                             }
                             li { csvDownloadButton(Links.Yki.arvioijatCsv() + httpParams(params.toMap())) }
                             li { arvioijaFilterButton(params) }
+                            if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
+                                li {
+                                    a(href = Links.Yki.uusiArvioija()) {
+                                        attributes["role"] = "button"
+                                        testId("lisaaArvioija")
+                                        +UiText.Yki.lisaaArvioija
+                                    }
+                                }
+                            }
                         }
                     }
                 }

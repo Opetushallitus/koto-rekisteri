@@ -1,0 +1,230 @@
+package fi.oph.kitu.yki.arvioijat
+
+import fi.oph.kitu.html.FormErrors
+import fi.oph.kitu.html.Page
+import fi.oph.kitu.html.ariaInvalid
+import fi.oph.kitu.html.card
+import fi.oph.kitu.html.cardContent
+import fi.oph.kitu.html.dateInput
+import fi.oph.kitu.html.formErrorSummary
+import fi.oph.kitu.html.formField
+import fi.oph.kitu.html.formPost
+import fi.oph.kitu.html.hiddenValue
+import fi.oph.kitu.html.input
+import fi.oph.kitu.html.testId
+import fi.oph.kitu.html.warningMessage
+import fi.oph.kitu.i18n.UiText
+import fi.oph.kitu.i18n.unaryPlus
+import fi.oph.kitu.webmvc.Links
+import fi.oph.kitu.yki.Tutkintokieli
+import fi.oph.kitu.yki.Tutkintotaso
+import kotlinx.html.ButtonType
+import kotlinx.html.FlowContent
+import kotlinx.html.InputType
+import kotlinx.html.a
+import kotlinx.html.button
+import kotlinx.html.fieldSet
+import kotlinx.html.footer
+import kotlinx.html.h1
+import kotlinx.html.h2
+import kotlinx.html.label
+import kotlinx.html.p
+import kotlinx.html.small
+import kotlinx.html.table
+import kotlinx.html.tbody
+import kotlinx.html.td
+import kotlinx.html.th
+import kotlinx.html.thead
+import kotlinx.html.tr
+
+object YkiArvioijaLomakePage {
+    fun renderHaku(
+        form: ArvioijaHakuFormData,
+        errors: FormErrors,
+    ): String =
+        Page.renderHtml {
+            h1 { +UiText.Yki.Arvioija.uusiArvioija }
+
+            formErrorSummary(errors)
+
+            card {
+                cardContent {
+                    p { +UiText.Yki.Arvioija.hakuOhje }
+
+                    formPost(Links.Yki.arvioijaHaku()) {
+                        tekstikentta(UiText.Yki.Arvioija.henkilotunnus, "hetu", form.hetu, errors)
+                        tekstikentta(UiText.Yki.Arvioija.sukunimi, "sukunimi", form.sukunimi, errors)
+                        tekstikentta(UiText.Yki.Arvioija.etunimet, "etunimet", form.etunimet, errors)
+                        tekstikentta(UiText.Yki.Arvioija.kutsumanimi, "kutsumanimi", form.kutsumanimi, errors)
+                        tekstikentta(UiText.Yki.Arvioija.oppijanumero, "oppijanumero", form.oppijanumero, errors)
+
+                        footer {
+                            button(type = ButtonType.submit) {
+                                testId("haeHenkilonTiedot")
+                                +UiText.Yki.Arvioija.haeHenkilonTiedot
+                            }
+                        }
+                    }
+                }
+            }
+
+            p {
+                a(href = Links.Yki.arvioijat()) { +UiText.Yki.Arvioija.takaisinListaan }
+            }
+        }
+
+    fun renderLomake(
+        form: ArvioijaFormData,
+        errors: FormErrors,
+    ): String =
+        Page.renderHtml {
+            h1 { +UiText.Yki.Arvioija.uusiArvioija }
+
+            if (form.turvakielto) {
+                warningMessage(UiText.Yki.Arvioija.turvakielto)
+            }
+
+            formErrorSummary(errors)
+
+            formPost(Links.Yki.uusiArvioija()) {
+                hiddenValue("arvioijaOid", form.arvioijaOid.orEmpty())
+                hiddenValue("turvakielto", form.turvakielto.toString())
+
+                card {
+                    cardContent {
+                        h2 { +UiText.Yki.Arvioija.yhteystiedot }
+                        tekstikentta(UiText.Yki.Arvioija.sukunimi, "sukunimi", form.sukunimi, errors)
+                        tekstikentta(UiText.Yki.Arvioija.etunimet, "etunimet", form.etunimet, errors)
+                        tekstikentta(
+                            UiText.Yki.Arvioija.sahkopostiosoite,
+                            "sahkopostiosoite",
+                            form.sahkopostiosoite,
+                            errors,
+                        )
+                        tekstikentta(UiText.Yki.Arvioija.katuosoite, "katuosoite", form.katuosoite, errors)
+                        tekstikentta(UiText.Yki.Arvioija.postinumero, "postinumero", form.postinumero, errors)
+                        tekstikentta(
+                            UiText.Yki.Arvioija.postitoimipaikka,
+                            "postitoimipaikka",
+                            form.postitoimipaikka,
+                            errors,
+                        )
+                    }
+                }
+
+                card {
+                    cardContent {
+                        h2 { +UiText.Yki.Arvioija.rekisterimerkinta }
+
+                        formField(
+                            label = UiText.Yki.Arvioija.kaudenAlkupaiva,
+                            name = "kaudenAlkupaiva",
+                            errors = errors,
+                            testId = "kaudenAlkupaiva",
+                        ) { invalid ->
+                            dateInput("kaudenAlkupaiva", form.kaudenAlkupaiva, testId = "kaudenAlkupaiva-input")
+                            if (invalid) ariaInvalid(true)
+                        }
+
+                        label {
+                            +UiText.Yki.Arvioija.kaudenPaattymispaiva
+                            input(
+                                type = InputType.date,
+                                name = "kaudenPaattymispaivaEsikatselu",
+                                value = form.laskettuPaattymispaiva()?.toString().orEmpty(),
+                            ) {
+                                testId("kaudenPaattymispaiva")
+                                disabled = true
+                            }
+                            small { +UiText.Yki.Arvioija.kaudenPaattymispaivaOhje }
+                        }
+
+                        label {
+                            input(type = InputType.checkBox, name = "jatkorekisterointi", value = "true") {
+                                testId("jatkorekisterointi")
+                                checked = form.jatkorekisterointi
+                            }
+                            +UiText.Yki.Arvioija.jatkorekisterointi
+                        }
+
+                        tekstikentta(UiText.Yki.Arvioija.ashaNumero, "ashaNumero", form.ashaNumero, errors)
+                    }
+                }
+
+                card {
+                    cardContent {
+                        h2 { +UiText.Yki.Arvioija.arviointioikeudet }
+                        p { +UiText.Yki.Arvioija.arviointioikeudetOhje }
+                        arviointioikeusMatriisi(form.arviointioikeus.orEmpty(), errors)
+                    }
+
+                    footer {
+                        button(type = ButtonType.submit) {
+                            testId("tallennaArvioija")
+                            +UiText.Yki.Arvioija.tallenna
+                        }
+                    }
+                }
+            }
+        }
+}
+
+fun FlowContent.tekstikentta(
+    label: fi.oph.kitu.i18n.LocalizedString,
+    name: String,
+    arvo: String?,
+    errors: FormErrors,
+) {
+    formField(label = label, name = name, errors = errors, testId = name) { invalid ->
+        input(type = InputType.text, name = name, value = arvo.orEmpty()) {
+            testId("$name-input")
+            ariaInvalid(invalid)
+        }
+    }
+}
+
+fun FlowContent.arviointioikeusMatriisi(
+    valitut: List<String>,
+    errors: FormErrors,
+) {
+    val virheet = errors["arviointioikeus"]
+
+    fieldSet {
+        if (virheet.isNotEmpty()) ariaInvalid(true)
+
+        table(classes = "compact striped") {
+            testId("arviointioikeusMatriisi")
+            thead {
+                tr {
+                    th { +UiText.Yki.Arvioija.tutkintokieli }
+                    Tutkintotaso.entries.forEach { taso -> th { +taso.nimi } }
+                }
+            }
+            tbody {
+                Tutkintokieli.entries
+                    .filterNot { it.isLegacy() }
+                    .forEach { kieli ->
+                        tr {
+                            th { +kieli.nimi }
+                            Tutkintotaso.entries.forEach { taso ->
+                                td {
+                                    val arvo = ArvioijaFormData.valinta(kieli, taso)
+                                    input(type = InputType.checkBox, name = "arviointioikeus", value = arvo) {
+                                        testId("arviointioikeus-$arvo")
+                                        checked = arvo in valitut
+                                    }
+                                }
+                            }
+                        }
+                    }
+            }
+        }
+
+        if (virheet.isNotEmpty()) {
+            small {
+                testId("arviointioikeus-error")
+                +virheet.joinToString(" ")
+            }
+        }
+    }
+}

@@ -13,7 +13,7 @@ export default class YkiArvioijatPage extends BasePage {
   }
 
   async open() {
-    await this.goto("/yki/arvioijat")
+    await this.goto("yki/arvioijat")
   }
 
   async openFromNavigation() {
