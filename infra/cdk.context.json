@@ -26,5 +26,9 @@
     "Id": "/hostedzone/Z0178098NKPUAN6HMB78",
     "Name": "kios.opintopolku.fi."
   },
-  "acknowledged-issue-numbers": [34892, 37013]
+  "acknowledged-issue-numbers": [
+    34892,
+    37013,
+    37949
+  ]
 }
