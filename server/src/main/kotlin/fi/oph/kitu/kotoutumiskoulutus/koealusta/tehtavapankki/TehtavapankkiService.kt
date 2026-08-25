@@ -227,6 +227,10 @@ class TehtavapankkiService(
      * Olemassaolevat assetit ylikirjoitetaan, jotta XML ja sen assetit pysyvät
      * synkassa. Yksittäisen tiedoston dekoodausvirhe ei keskeytä koko ajoa
      * vaan kirjataan tulokseen `failed`-listaan.
+     *
+     * Huom: [quiz] mutatoituu — kunkin tiedoston base64-sisältö vapautetaan
+     * heti käsittelyn jälkeen, jottei koko mediamassa jää kekoon myös
+     * tietokantatallennuksen ajaksi.
      */
     fun uploadAssets(
         xmlKey: String,
@@ -238,17 +242,21 @@ class TehtavapankkiService(
         val decoder = Base64.getMimeDecoder()
 
         quiz.allEmbeddedFiles().forEach { file ->
-            if (file.name.isBlank()) return@forEach
-            val key = "$prefix${file.name}"
-            val bytes =
-                try {
-                    decoder.decode(file.content)
-                } catch (e: IllegalArgumentException) {
-                    failed += FailedAsset(file.name, e.message ?: "base64 decode failed")
-                    return@forEach
-                }
-            useS3 { bucket -> upload(bucket, key, ByteArrayInputStream(bytes)) }
-            uploaded += key
+            try {
+                if (file.name.isBlank()) return@forEach
+                val key = "$prefix${file.name}"
+                val bytes =
+                    try {
+                        decoder.decode(file.content)
+                    } catch (e: IllegalArgumentException) {
+                        failed += FailedAsset(file.name, e.message ?: "base64 decode failed")
+                        return@forEach
+                    }
+                useS3 { bucket -> upload(bucket, key, ByteArrayInputStream(bytes)) }
+                uploaded += key
+            } finally {
+                file.releaseContent()
+            }
         }
 
         Span.current().setAttribute("assets.uploaded", uploaded.size.toLong())
@@ -359,7 +367,7 @@ private fun String.normalizeETag(): String = this.trim('"')
 
 private fun QuestionBankMetadata.filename(): String = downloadUrl.substringBefore('?').substringAfterLast('/')
 
-private fun TehtavapankkiQuiz.allEmbeddedFiles(): List<EmbeddedFile> =
+internal fun TehtavapankkiQuiz.allEmbeddedFiles(): List<EmbeddedFile> =
     questions.flatMap { question ->
         when (question) {
             is DescriptionQuestion -> question.questiontext?.embeddedFiles.orEmpty()

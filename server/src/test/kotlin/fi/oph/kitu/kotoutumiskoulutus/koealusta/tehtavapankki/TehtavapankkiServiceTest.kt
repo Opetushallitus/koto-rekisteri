@@ -812,4 +812,30 @@ class TehtavapankkiServiceTest(
         assertEquals(2, result.scanned)
         assertEquals(emptyList(), result.deleted, "Eri kansioiden samansisältöisiä ei pitäisi poistaa")
     }
+
+    @Test
+    fun `uploadAssets vapauttaa upotettujen tiedostojen base64-sisallon`() {
+        val xmlBytes =
+            ClassPathResource("kotoutumiskoulutus/tehtavapankki/tehtavapankki-fixture.xml")
+                .inputStream
+                .use { it.readBytes() }
+        val quiz =
+            TehtavapankkiXmlParser()
+                .parse(xmlBytes.inputStream())
+                .let { (it as Either.Right).value }
+        val files = quiz.allEmbeddedFiles()
+        assertTrue(files.isNotEmpty(), "Fixturissa pitäisi olla upotettuja tiedostoja")
+        assertTrue(
+            files.all { it.content.isNotEmpty() },
+            "Parsitussa quizissa pitäisi olla base64-sisältö ennen vientiä",
+        )
+
+        val result = tehtavapankkiService.uploadAssets("42-Suomi/2026-01-01.xml", quiz)
+
+        assertEquals(emptyList(), result.failed)
+        assertTrue(
+            files.all { it.content.isEmpty() },
+            "Base64-sisällön pitäisi vapautua heti S3-viennin jälkeen",
+        )
+    }
 }
