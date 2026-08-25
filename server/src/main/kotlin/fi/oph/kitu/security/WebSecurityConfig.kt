@@ -8,6 +8,7 @@ import fi.oph.kitu.dev.MockLoginController.Companion.E2E_TEST_SECRET_KEY
 import fi.oph.kitu.dev.MockUser
 import fi.oph.kitu.security.cas.CasConfig
 import fi.oph.kitu.security.oauth2.JwtAuthenticationTokenConverter
+import fi.oph.kitu.yki.arvioijat.ArvioijarekisteriAsetukset
 import jakarta.servlet.http.HttpServletRequest
 import org.apereo.cas.client.session.SessionMappingStorage
 import org.apereo.cas.client.session.SingleSignOutFilter
@@ -25,6 +26,7 @@ import org.springframework.core.env.Environment
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
+import org.springframework.security.authorization.AuthorizationManager
 import org.springframework.security.cas.web.CasAuthenticationFilter
 import org.springframework.security.config.annotation.web.AuthorizeHttpRequestsDsl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -35,6 +37,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter
 
@@ -120,6 +123,7 @@ class WebSecurityConfig {
         authenticationEntryPoint: AuthenticationEntryPoint,
         casConfig: CasConfig,
         environment: Environment,
+        arvioijarekisteri: ArvioijarekisteriAsetukset,
     ): SecurityFilterChain {
         http {
             csrf {
@@ -156,9 +160,15 @@ class WebSecurityConfig {
             authorizeHttpRequests {
                 configureCommonAuthorizations(environment)
 
-                authorize(GET, "/yki/arvioijat/uusi", hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role()))
-                authorize(GET, "/yki/arvioijat/*/muokkaa", hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role()))
-                authorize(POST, "/yki/arvioijat/**", hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role()))
+                val arvioijarekisterinKirjoitus: AuthorizationManager<in RequestAuthorizationContext> =
+                    if (arvioijarekisteri.kirjoitusKaytossa) {
+                        hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role())
+                    } else {
+                        denyAll
+                    }
+                authorize(GET, "/yki/arvioijat/uusi", arvioijarekisterinKirjoitus)
+                authorize(GET, "/yki/arvioijat/*/muokkaa", arvioijarekisterinKirjoitus)
+                authorize(POST, "/yki/arvioijat/**", arvioijarekisterinKirjoitus)
 
                 if (developmentProfileActive(environment)) {
                     println("Developer profile active, allowing access to /dev/**")

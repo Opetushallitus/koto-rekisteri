@@ -24,6 +24,7 @@ import java.net.URI
 @RequestMapping("/yki/arvioijat")
 class YkiArvioijaViewController(
     private val arvioijaService: YkiArvioijaService,
+    private val asetukset: ArvioijarekisteriAsetukset,
 ) {
     @GetMapping("", produces = ["text/html"])
     fun arvioijatView(
@@ -45,6 +46,7 @@ class YkiArvioijaViewController(
                             Links.Yki.arvioijat() + httpParams(params.toMap() + ("page" to page.toString()))
                         },
                     ),
+                kirjoitusKaytossa = asetukset.kirjoitusKaytossa,
             ),
         )
     }
@@ -211,6 +213,7 @@ class YkiArvioijaViewController(
                 arvioija = arvioija,
                 henkilo = arvioijaService.haeOnrHenkilo(arvioija.arvioijaOid),
                 flash = viewMessage?.consume(),
+                kirjoitusKaytossa = asetukset.kirjoitusKaytossa,
             ),
         )
     }

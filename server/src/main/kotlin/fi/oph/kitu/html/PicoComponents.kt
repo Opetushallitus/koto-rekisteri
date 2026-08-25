@@ -1,8 +1,11 @@
 package fi.oph.kitu.html
 
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.unaryPlus
+import kotlinx.html.A
 import kotlinx.html.ARTICLE
 import kotlinx.html.FlowContent
+import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.fieldSet
 import kotlinx.html.option
@@ -55,5 +58,24 @@ fun FlowContent.horizontalGroup(f: FlowContent.() -> Unit) {
     fieldSet {
         attributes["role"] = "group"
         f()
+    }
+}
+
+// https://picocss.com/docs/button#usage-with-links
+fun FlowContent.buttonLink(
+    href: String,
+    enabled: Boolean = true,
+    testId: String? = null,
+    disabledTooltip: LocalizedString? = null,
+    content: A.() -> Unit,
+) {
+    a(href = href.takeIf { enabled }) {
+        attributes["role"] = "button"
+        testId(testId)
+        if (!enabled) {
+            attributes["aria-disabled"] = "true"
+            disabledTooltip?.let { data("tooltip", it.toString()) }
+        }
+        content()
     }
 }

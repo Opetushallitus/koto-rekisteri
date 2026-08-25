@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.Pagination
+import fi.oph.kitu.html.buttonLink
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.csvDownloadButton
 import fi.oph.kitu.html.filterDescriptionList
@@ -27,7 +28,6 @@ import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.FormMethod
 import kotlinx.html.InputType
-import kotlinx.html.a
 import kotlinx.html.article
 import kotlinx.html.button
 import kotlinx.html.fieldSet
@@ -46,6 +46,7 @@ object YkiArvioijaPage {
         arvioijat: List<YkiArvioijaListRow>,
         params: YkiArvioijaParams,
         pagination: Pagination,
+        kirjoitusKaytossa: Boolean,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -71,9 +72,12 @@ object YkiArvioijaPage {
                             li { arvioijaFilterButton(params) }
                             if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
                                 li {
-                                    a(href = Links.Yki.uusiArvioija()) {
-                                        attributes["role"] = "button"
-                                        testId("lisaaArvioija")
+                                    buttonLink(
+                                        href = Links.Yki.uusiArvioija(),
+                                        enabled = kirjoitusKaytossa,
+                                        testId = "lisaaArvioija",
+                                        disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
+                                    ) {
                                         +UiText.Yki.lisaaArvioija
                                     }
                                 }
