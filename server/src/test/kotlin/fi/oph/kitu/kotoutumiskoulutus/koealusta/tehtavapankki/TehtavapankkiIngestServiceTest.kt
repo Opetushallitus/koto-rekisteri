@@ -305,4 +305,40 @@ class TehtavapankkiIngestServiceTest(
         assertEquals("v2", persisted.lahdeVersion)
         assertEquals("SWE", persisted.lahdeLanguage)
     }
+
+    @Test
+    fun `muuttumattoman paketin ingest ei parsi XML aa eika vie assetteja uudelleen`() {
+        val xmlKey = "42-Suomi_alkeet/2026-01-01.xml"
+        s3Client.putObject(
+            { it.bucket(TEST_BUCKET).key(xmlKey) },
+            RequestBody.fromBytes(xmlBytes),
+        )
+        val assetPrefix = "42-Suomi_alkeet/2026-01-01 assets/"
+
+        ingestService.ingestFromS3(xmlKey)
+        assertTrue(
+            listKeys(assetPrefix).isNotEmpty(),
+            "Ensimmäisen ingestin pitäisi viedä assetit S3:een",
+        )
+
+        listKeys(assetPrefix).forEach { key ->
+            s3Client.deleteObject { it.bucket(TEST_BUCKET).key(key) }
+        }
+
+        ingestService.ingestFromS3(xmlKey)
+
+        assertEquals(
+            emptyList(),
+            listKeys(assetPrefix),
+            "Muuttumaton versio_hash pitäisi tunnistaa ennen parsintaa, jolloin " +
+                "assetteja ei viedä uudelleen",
+        )
+    }
+
+    private fun listKeys(prefix: String): List<String> =
+        s3Client
+            .listObjectsV2 { it.bucket(TEST_BUCKET).prefix(prefix) }
+            .contents()
+            .map { it.key() }
+            .sorted()
 }
