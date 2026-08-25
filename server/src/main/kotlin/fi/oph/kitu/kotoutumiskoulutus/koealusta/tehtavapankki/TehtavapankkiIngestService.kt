@@ -14,7 +14,7 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.node.ObjectNode
 import java.nio.file.Files
@@ -34,220 +34,246 @@ class TehtavapankkiIngestService(
     private val tehtavapankkiService: TehtavapankkiService,
     private val parser: TehtavapankkiXmlParser,
     private val repository: TehtavapankkiRepository,
+    private val transactionTemplate: TransactionTemplate,
 ) {
     /**
      * Lataa S3:sta löytyvän XML-tiedoston, parsii sen ja tallentaa yleiseen
      * tehtäväpankki-skeemaan (tehtavapaketti / tehtava / tehtava_vastaus /
-     * tehtava_tiedosto). Versio_hash lasketaan raakojen tavujen SHA-256:sta,
-     * joten saman sisällön uudelleentuonti on idempotentti — palauttaa silloin
-     * olemassa olevan paketin ilman uusia rivejä.
+     * tehtava_tiedosto).
+     *
+     * Versio_hash lasketaan raakojen tavujen SHA-256:sta väliaikaistiedostoa
+     * streamaten, eli ennen parsintaa. Muuttumaton paketti tunnistetaan siis
+     * lukematta XML:ää muistiin ja lataamatta assetteja uudelleen — parsinta
+     * materialisoi koko sisällön base64-medioineen kekoon, joten sitä ei tehdä
+     * turhaan.
+     *
+     * Transaktiossa ovat vain tietokantakirjoitukset: S3-lataus, parsinta ja
+     * assettien vienti tehdään sen ulkopuolella, jottei yhteys ole varattuna
+     * verkko- ja parsintatyön ajan.
      */
     @WithSpan
-    @Transactional
     fun ingestFromS3(xmlKey: String): Either<TehtavapankkiParseError, TehtavapakettiEntity> {
         Span.current().setAttribute("xml.key", xmlKey)
 
-        val loaded =
-            when (val r = loadAndUploadAssets(xmlKey)) {
-                is Either.Right -> r.value
-                is Either.Left -> return r.value.left()
-            }
-
-        val versioHash = loaded.versioHash
-        val source = MoodleSourceIdentifiers.fromS3Key(xmlKey)
-        val lahdeFilegenerated =
-            source.filegeneratedEpochSecond?.let { OffsetDateTime.ofInstant(Instant.ofEpochSecond(it), ZoneOffset.UTC) }
-        val s3UserMetadata = tehtavapankkiService.fetchS3UserMetadata(xmlKey)
-        val lahdePublished =
-            s3UserMetadata[TehtavapankkiService.S3_META_PUBLISHED]
-                ?.toLongOrNull()
-                ?.let { OffsetDateTime.ofInstant(Instant.ofEpochSecond(it), ZoneOffset.UTC) }
-        val lahdeVersion = s3UserMetadata[TehtavapankkiService.S3_META_VERSION]?.takeIf { it.isNotBlank() }
-        val lahdeLanguage = s3UserMetadata[TehtavapankkiService.S3_META_LANGUAGE]?.takeIf { it.isNotBlank() }
-
-        if (repository.existsByVersionHash(LAHDEJARJESTELMA, source.lahdeId, versioHash)) {
-            Span.current().setAttribute("ingest.dedup", true)
-            val latest = repository.findLatestPakettiBySource(LAHDEJARJESTELMA, source.lahdeId)!!
-            // Sama sisältö, mutta lähde voi olla bumpannut metadataa —
-            // päivitetään ne silti, jotta seuraava import skippaa latauksen
-            // ja näkymä esittää tuoreimmat lähde-arvot.
-            val changed =
-                (lahdeFilegenerated != null && latest.lahdeFilegenerated != lahdeFilegenerated) ||
-                    (lahdePublished != null && latest.lahdePublished != lahdePublished) ||
-                    (lahdeVersion != null && latest.lahdeVersion != lahdeVersion) ||
-                    (lahdeLanguage != null && latest.lahdeLanguage != lahdeLanguage)
-            if (changed) {
-                repository.updateLahdeMetadata(
-                    id = latest.id!!,
-                    lahdeFilegenerated = lahdeFilegenerated ?: latest.lahdeFilegenerated,
-                    lahdePublished = lahdePublished ?: latest.lahdePublished,
-                    lahdeVersion = lahdeVersion ?: latest.lahdeVersion,
-                    lahdeLanguage = lahdeLanguage ?: latest.lahdeLanguage,
-                )
-                return latest
-                    .copy(
-                        lahdeFilegenerated = lahdeFilegenerated ?: latest.lahdeFilegenerated,
-                        lahdePublished = lahdePublished ?: latest.lahdePublished,
-                        lahdeVersion = lahdeVersion ?: latest.lahdeVersion,
-                        lahdeLanguage = lahdeLanguage ?: latest.lahdeLanguage,
-                    ).right()
-            }
-            return latest.right()
-        }
-
-        val quiz = loaded.quiz
-
-        val pakettiId =
-            repository.insertPaketti(
-                TehtavapakettiEntity(
-                    lahdejarjestelma = LAHDEJARJESTELMA,
-                    lahdeId = source.lahdeId,
-                    nimi = source.nimi,
-                    versioHash = versioHash,
-                    s3Avain = xmlKey,
-                    metadata =
-                        defaultObjectMapper
-                            .createObjectNode()
-                            .put("courseid", source.courseidInt)
-                            .put("sanitizedCoursename", source.sanitizedCoursename),
-                    lahdeFilegenerated = lahdeFilegenerated,
-                    lahdePublished = lahdePublished,
-                    lahdeVersion = lahdeVersion,
-                    lahdeLanguage = lahdeLanguage,
-                ),
-            )
-
-        // Pass A: collect groups in source order. <question type="category">
-        // marks the start of a group. Questions appearing before any category
-        // get a synthetic default group prepended on demand.
-        val pendingRyhmat = mutableListOf<TehtavaryhmaEntity>()
-        val pendingTehtavat = mutableListOf<PendingTehtava>()
-        var currentRyhmaIdx: Int? = null
-        var skippedUnknownQuestions = 0
-        for (q in quiz.questions) {
-            when (q) {
-                is CategoryQuestion -> {
-                    pendingRyhmat +=
-                        TehtavaryhmaEntity(
-                            pakettiId = pakettiId,
-                            nimi = q.category?.text?.takeIf { it.isNotBlank() } ?: "(nimetön)",
-                            jarjestys = pendingRyhmat.size + 1,
-                            metadata = q.toRyhmaMetadata(),
-                        )
-                    currentRyhmaIdx = pendingRyhmat.lastIndex
-                }
-
-                is UnknownQuestion -> {
-                    // Tuntematonta question-tyyppiä ei voida tallentaa tehtava-tauluun;
-                    // ohitetaan se hiljaisesti mutta merkitään span-attribuuttiin näkyväksi.
-                    skippedUnknownQuestions++
-                }
-
-                is IngestableQuestion -> {
-                    if (currentRyhmaIdx == null) {
-                        pendingRyhmat +=
-                            TehtavaryhmaEntity(
-                                pakettiId = pakettiId,
-                                nimi = "(jaottelematta)",
-                                jarjestys = pendingRyhmat.size + 1,
-                            )
-                        currentRyhmaIdx = pendingRyhmat.lastIndex
-                    }
-                    pendingTehtavat +=
-                        PendingTehtava(
-                            question = q,
-                            ryhmaIdx = currentRyhmaIdx,
-                            jarjestys = pendingTehtavat.size + 1,
-                        )
-                }
-            }
-        }
-
-        val ryhmaIds = repository.insertRyhmat(pendingRyhmat)
-
-        val tehtavat =
-            pendingTehtavat.map { pending ->
-                pending.question.toTehtavaEntity(
-                    pakettiId = pakettiId,
-                    ryhmaId = ryhmaIds[pending.ryhmaIdx],
-                    jarjestys = pending.jarjestys,
-                )
-            }
-        val tehtavaIds = repository.insertTehtavat(tehtavat)
-
-        val vastaukset =
-            buildList {
-                pendingTehtavat.forEachIndexed { idx, pending ->
-                    addAll(pending.question.toVastausEntities(tehtavaIds[idx]))
-                }
-            }
-        repository.insertVastaukset(vastaukset)
-
-        val assetPrefix = "${xmlKey.removeSuffix(".xml")} assets/"
-        val tiedostot =
-            buildList {
-                pendingTehtavat.forEachIndexed { idx, pending ->
-                    pending.question.embeddedFiles().forEach { file ->
-                        if (file.name.isBlank()) return@forEach
-                        add(
-                            TehtavaTiedostoEntity(
-                                tehtavaId = tehtavaIds[idx],
-                                tiedostonimi = file.name,
-                                s3Avain = "$assetPrefix${file.name}",
-                            ),
-                        )
-                    }
-                }
-            }
-        repository.insertTiedostot(tiedostot)
-
-        Span.current().setAttribute("paketti.id", pakettiId.toLong())
-        Span.current().setAttribute("ryhmat.count", pendingRyhmat.size.toLong())
-        Span.current().setAttribute("tehtavat.count", tehtavat.size.toLong())
-        Span.current().setAttribute("vastaukset.count", vastaukset.size.toLong())
-        Span.current().setAttribute("tiedostot.count", tiedostot.size.toLong())
-        Span.current().setAttribute("skipped.unknown_question_count", skippedUnknownQuestions.toLong())
-
-        return repository.findPakettiById(pakettiId)!!.right()
-    }
-
-    /**
-     * Lataa XML:n S3:sta väliaikaistiedostoon, laskee versio_hashin ja parsii
-     * sisällön streamaten — koko tiedostoa ei materialisoida muistiin. Parsittua
-     * sisältöä käytetään sekä assettien purkuun että ingestiin (yksi parsinta).
-     */
-    private fun loadAndUploadAssets(xmlKey: String): Either<TehtavapankkiParseError, LoadedQuiz> {
         val tempFile =
             when (val r = tehtavapankkiService.fetchToTempFile(xmlKey)) {
                 is Either.Right -> r.value
                 is Either.Left -> return r.value.left()
             }
-        return try {
-            val versioHash = sha256(tempFile)
-            when (val r = Files.newInputStream(tempFile).use { parser.parse(it) }) {
-                is Either.Right -> {
-                    tehtavapankkiService.uploadAssets(xmlKey, r.value)
-                    LoadedQuiz(r.value, versioHash).right()
-                }
 
-                is Either.Left -> {
-                    r.value.left()
-                }
-            }
+        return try {
+            ingestTempFile(xmlKey, tempFile)
         } finally {
             Files.deleteIfExists(tempFile)
         }
     }
+
+    private fun ingestTempFile(
+        xmlKey: String,
+        tempFile: Path,
+    ): Either<TehtavapankkiParseError, TehtavapakettiEntity> {
+        val versioHash = sha256(tempFile)
+        val source = MoodleSourceIdentifiers.fromS3Key(xmlKey)
+        val lahde = readLahdeMetadata(xmlKey, source)
+
+        if (repository.existsByVersionHash(LAHDEJARJESTELMA, source.lahdeId, versioHash)) {
+            Span.current().setAttribute("ingest.dedup", true)
+            return refreshLahdeMetadata(source, lahde).right()
+        }
+
+        val quiz =
+            when (val r = Files.newInputStream(tempFile).use { parser.parse(it) }) {
+                is Either.Right -> r.value
+                is Either.Left -> return r.value.left()
+            }
+
+        tehtavapankkiService.uploadAssets(xmlKey, quiz)
+
+        return persistQuiz(xmlKey, source, lahde, versioHash, quiz).right()
+    }
+
+    private fun readLahdeMetadata(
+        xmlKey: String,
+        source: MoodleSourceIdentifiers,
+    ): LahdeMetadata {
+        val s3UserMetadata = tehtavapankkiService.fetchS3UserMetadata(xmlKey)
+        return LahdeMetadata(
+            filegenerated = source.filegeneratedEpochSecond?.let(::epochSecondToOffsetDateTime),
+            published =
+                s3UserMetadata[TehtavapankkiService.S3_META_PUBLISHED]
+                    ?.toLongOrNull()
+                    ?.let(::epochSecondToOffsetDateTime),
+            version = s3UserMetadata[TehtavapankkiService.S3_META_VERSION]?.takeIf { it.isNotBlank() },
+            language = s3UserMetadata[TehtavapankkiService.S3_META_LANGUAGE]?.takeIf { it.isNotBlank() },
+        )
+    }
+
+    // Sama sisältö, mutta lähde voi olla bumpannut metadataa — päivitetään ne
+    // silti, jotta seuraava import skippaa latauksen ja näkymä esittää
+    // tuoreimmat lähde-arvot.
+    private fun refreshLahdeMetadata(
+        source: MoodleSourceIdentifiers,
+        lahde: LahdeMetadata,
+    ): TehtavapakettiEntity =
+        transactionTemplate.execute {
+            val latest = repository.findLatestPakettiBySource(LAHDEJARJESTELMA, source.lahdeId)!!
+            val merged = lahde.mergeInto(latest)
+            if (merged != latest) {
+                repository.updateLahdeMetadata(
+                    id = latest.id!!,
+                    lahdeFilegenerated = merged.lahdeFilegenerated,
+                    lahdePublished = merged.lahdePublished,
+                    lahdeVersion = merged.lahdeVersion,
+                    lahdeLanguage = merged.lahdeLanguage,
+                )
+            }
+            merged
+        }!!
+
+    private fun persistQuiz(
+        xmlKey: String,
+        source: MoodleSourceIdentifiers,
+        lahde: LahdeMetadata,
+        versioHash: String,
+        quiz: TehtavapankkiQuiz,
+    ): TehtavapakettiEntity =
+        transactionTemplate.execute {
+            val pakettiId =
+                repository.insertPaketti(
+                    TehtavapakettiEntity(
+                        lahdejarjestelma = LAHDEJARJESTELMA,
+                        lahdeId = source.lahdeId,
+                        nimi = source.nimi,
+                        versioHash = versioHash,
+                        s3Avain = xmlKey,
+                        metadata =
+                            defaultObjectMapper
+                                .createObjectNode()
+                                .put("courseid", source.courseidInt)
+                                .put("sanitizedCoursename", source.sanitizedCoursename),
+                        lahdeFilegenerated = lahde.filegenerated,
+                        lahdePublished = lahde.published,
+                        lahdeVersion = lahde.version,
+                        lahdeLanguage = lahde.language,
+                    ),
+                )
+
+            // Pass A: collect groups in source order. <question type="category">
+            // marks the start of a group. Questions appearing before any category
+            // get a synthetic default group prepended on demand.
+            val pendingRyhmat = mutableListOf<TehtavaryhmaEntity>()
+            val pendingTehtavat = mutableListOf<PendingTehtava>()
+            var currentRyhmaIdx: Int? = null
+            var skippedUnknownQuestions = 0
+            for (q in quiz.questions) {
+                when (q) {
+                    is CategoryQuestion -> {
+                        pendingRyhmat +=
+                            TehtavaryhmaEntity(
+                                pakettiId = pakettiId,
+                                nimi = q.category?.text?.takeIf { it.isNotBlank() } ?: "(nimetön)",
+                                jarjestys = pendingRyhmat.size + 1,
+                                metadata = q.toRyhmaMetadata(),
+                            )
+                        currentRyhmaIdx = pendingRyhmat.lastIndex
+                    }
+
+                    is UnknownQuestion -> {
+                        // Tuntematonta question-tyyppiä ei voida tallentaa tehtava-tauluun;
+                        // ohitetaan se hiljaisesti mutta merkitään span-attribuuttiin näkyväksi.
+                        skippedUnknownQuestions++
+                    }
+
+                    is IngestableQuestion -> {
+                        if (currentRyhmaIdx == null) {
+                            pendingRyhmat +=
+                                TehtavaryhmaEntity(
+                                    pakettiId = pakettiId,
+                                    nimi = "(jaottelematta)",
+                                    jarjestys = pendingRyhmat.size + 1,
+                                )
+                            currentRyhmaIdx = pendingRyhmat.lastIndex
+                        }
+                        pendingTehtavat +=
+                            PendingTehtava(
+                                question = q,
+                                ryhmaIdx = currentRyhmaIdx,
+                                jarjestys = pendingTehtavat.size + 1,
+                            )
+                    }
+                }
+            }
+
+            val ryhmaIds = repository.insertRyhmat(pendingRyhmat)
+
+            val tehtavat =
+                pendingTehtavat.map { pending ->
+                    pending.question.toTehtavaEntity(
+                        pakettiId = pakettiId,
+                        ryhmaId = ryhmaIds[pending.ryhmaIdx],
+                        jarjestys = pending.jarjestys,
+                    )
+                }
+            val tehtavaIds = repository.insertTehtavat(tehtavat)
+
+            val vastaukset =
+                buildList {
+                    pendingTehtavat.forEachIndexed { idx, pending ->
+                        addAll(pending.question.toVastausEntities(tehtavaIds[idx]))
+                    }
+                }
+            repository.insertVastaukset(vastaukset)
+
+            val assetPrefix = "${xmlKey.removeSuffix(".xml")} assets/"
+            val tiedostot =
+                buildList {
+                    pendingTehtavat.forEachIndexed { idx, pending ->
+                        pending.question.embeddedFiles().forEach { file ->
+                            if (file.name.isBlank()) return@forEach
+                            add(
+                                TehtavaTiedostoEntity(
+                                    tehtavaId = tehtavaIds[idx],
+                                    tiedostonimi = file.name,
+                                    s3Avain = "$assetPrefix${file.name}",
+                                ),
+                            )
+                        }
+                    }
+                }
+            repository.insertTiedostot(tiedostot)
+
+            Span.current().setAttribute("paketti.id", pakettiId.toLong())
+            Span.current().setAttribute("ryhmat.count", pendingRyhmat.size.toLong())
+            Span.current().setAttribute("tehtavat.count", tehtavat.size.toLong())
+            Span.current().setAttribute("vastaukset.count", vastaukset.size.toLong())
+            Span.current().setAttribute("tiedostot.count", tiedostot.size.toLong())
+            Span.current().setAttribute("skipped.unknown_question_count", skippedUnknownQuestions.toLong())
+
+            repository.findPakettiById(pakettiId)!!
+        }!!
 
     companion object {
         const val LAHDEJARJESTELMA: String = "moodle.koealusta"
     }
 }
 
-private data class LoadedQuiz(
-    val quiz: TehtavapankkiQuiz,
-    val versioHash: String,
-)
+private data class LahdeMetadata(
+    val filegenerated: OffsetDateTime?,
+    val published: OffsetDateTime?,
+    val version: String?,
+    val language: String?,
+) {
+    fun mergeInto(paketti: TehtavapakettiEntity): TehtavapakettiEntity =
+        paketti.copy(
+            lahdeFilegenerated = filegenerated ?: paketti.lahdeFilegenerated,
+            lahdePublished = published ?: paketti.lahdePublished,
+            lahdeVersion = version ?: paketti.lahdeVersion,
+            lahdeLanguage = language ?: paketti.lahdeLanguage,
+        )
+}
+
+private fun epochSecondToOffsetDateTime(epochSecond: Long): OffsetDateTime =
+    OffsetDateTime.ofInstant(Instant.ofEpochSecond(epochSecond), ZoneOffset.UTC)
 
 private data class PendingTehtava(
     val question: IngestableQuestion,
