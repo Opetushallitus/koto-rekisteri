@@ -7,8 +7,10 @@ import java.nio.file.Path
 
 /**
  * XML-sisällön lähde, joka palauttaa sen tarvittaessa streaminä eikä
- * materialisoi koko sisältöä Java-merkkijonoksi. Mahdollistaa moniin
- * gigatavuihin yltävien tehtäväpankki-tiedostojen käsittelyn.
+ * materialisoi koko sisältöä Java-merkkijonoksi.
+ *
+ * Huom: vain lataus, hashays ja S3-vienti streamaavat. [TehtavapankkiXmlParser]
+ * lukee sisällön kokonaan muistiin, joten tiedoston koko rajoittaa yhä kekoa.
  */
 sealed interface XmlSource : AutoCloseable {
     fun openStream(): InputStream

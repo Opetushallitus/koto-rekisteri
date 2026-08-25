@@ -132,8 +132,15 @@ data class EmbeddedFile(
     val name: String = "",
     val path: String = "/",
     val encoding: String = "base64",
-    val content: String = "",
-)
+    // Base64-sisältö on tehtäväpankin ylivoimaisesti raskain osa. Se on
+    // muuttuva, jotta se voidaan vapauttaa heti S3-viennin jälkeen sen sijaan
+    // että se pysyisi keossa niin kauan kuin quiz on elossa.
+    var content: String = "",
+) {
+    fun releaseContent() {
+        content = ""
+    }
+}
 
 data class Answer(
     val fraction: Double = 0.0,
