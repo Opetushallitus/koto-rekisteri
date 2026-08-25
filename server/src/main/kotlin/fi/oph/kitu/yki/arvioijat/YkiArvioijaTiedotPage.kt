@@ -2,6 +2,7 @@ package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.ViewMessageData
+import fi.oph.kitu.html.buttonLink
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.infoTable
@@ -27,6 +28,7 @@ object YkiArvioijaTiedotPage {
         arvioija: YkiArvioijaEntity,
         henkilo: OppijanumerorekisteriHenkilo?,
         flash: ViewMessageData?,
+        kirjoitusKaytossa: Boolean,
     ): String =
         Page.renderHtml {
             h1 { +"${arvioija.etunimet} ${arvioija.sukunimi}" }
@@ -39,9 +41,12 @@ object YkiArvioijaTiedotPage {
 
             if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
                 p {
-                    a(href = Links.Yki.muokkaaArvioijaa(arvioija.id!!.toInt())) {
-                        attributes["role"] = "button"
-                        testId("muokkaaArvioijaa")
+                    buttonLink(
+                        href = Links.Yki.muokkaaArvioijaa(arvioija.id!!.toInt()),
+                        enabled = kirjoitusKaytossa,
+                        testId = "muokkaaArvioijaa",
+                        disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
+                    ) {
                         +UiText.Yki.Arvioija.muokkaa
                     }
                 }

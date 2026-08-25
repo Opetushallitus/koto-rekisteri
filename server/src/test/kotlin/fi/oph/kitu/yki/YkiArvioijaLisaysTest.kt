@@ -239,6 +239,10 @@ class YkiArvioijaLisaysTest(
     fun `lisaysnappi nakyy vain kirjoitusoikeudella`() {
         val kirjoittaja = html(get("/yki/arvioijat").session(session()))
         assertContains(kirjoittaja, """data-testid="lisaaArvioija"""")
+        assertFalse(
+            kirjoittaja.contains("""aria-disabled="true""""),
+            "kytkimen ollessa paalla lisaysnapin on oltava klikattavissa",
+        )
 
         val lukija = html(get("/yki/arvioijat").session(session(Authority.VIRKAILIJA)))
         assertFalse(lukija.contains("""data-testid="lisaaArvioija""""), "lukijalle ei saa nayttaa lisaysnappia")

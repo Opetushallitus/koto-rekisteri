@@ -1093,6 +1093,29 @@ object CurrentUser {
 `MockUser.VIRKAILIJA` (pelkkä `Authority.VIRKAILIJA`) e2e-oikeusmatriisiin todistamaan 200 luvulle /
 403 kirjoitukselle.
 
+### 7.5 Ominaisuuskytkin `kitu.yki.arvioijarekisteri.kirjoitus.enabled`
+
+Syöttökäyttöliittymä valmistuu vaiheittain, mutta `main` deployautuu suoraan prodiin asti. Kirjoitus
+on siksi oletuksena **pois päältä**: `ArvioijarekisteriAsetukset.kirjoitusKaytossa` lukee propertyn
+oletuksella `false`, eli **ilman propertya rekisteri toimii vain lukutilassa**. Päällä `local`-,
+`local-opintopolku`- ja `e2e`-profiileissa sekä backend-testeissä; untuva/QA/prod perivät
+`application.properties`:n `false`-arvon, kunnes vaiheen 12 kytkentä tehdään.
+
+Kaksi vaikutusta:
+
+1. **Palvelin torjuu kirjoituksen.** `WebSecurityConfig`in CAS-ketjussa `/yki/arvioijat/uusi`,
+   `/yki/arvioijat/*/muokkaa` ja `POST /yki/arvioijat/**` saavat `denyAll`in
+   `hasAuthority(YKI_ARVIOIJAREKISTERI)`:n sijaan → 403 myös suoralla URL:lla. Sääntö valitaan
+   kerran käynnistyksessä, joten kytkimen kääntäminen vaatii uudelleenkäynnistyksen.
+2. **Napit näkyvät, mutta eivät toimi.** "Lisää arvioija" ja "Muokkaa" renderöidään
+   `html/PicoComponents.kt`:n `buttonLink(enabled = …)`illa: kytkimen ollessa pois päältä `href`
+   jätetään pois ja tilalle tulee `aria-disabled="true"` + Picon `data-tooltip`
+   (`UiText.Yki.Arvioija.kirjoitusEiKaytossa`). Käyttöoikeustarkistus säilyy erillisenä: ilman
+   `YKI_ARVIOIJAREKISTERI`-oikeutta nappeja ei renderöidä lainkaan.
+
+E2E ajaa yhdellä profiililla, joten kytkin pois päältä -tila katetaan backend-testillä
+`YkiArvioijaKirjoituskytkinTest` (`@SpringBootTest(properties = [...=false])`).
+
 ---
 
 ## 8. Auditlokit
@@ -1218,8 +1241,9 @@ vahvistanut rajapinnan.
     `docs/technical/integraatiot.md`. Testit + e2e.
 11. **`Kavenna sisääntuleva arvioijarajapinta`** — `POST /yki/api/arvioija` → 410, tilalle kavennettu
     passivointi-endpoint (§4.2), DTO:t + schema-esimerkit + testit pois, e2e-matriisi.
-12. _(JYU:n vahvistuksen jälkeen)_ `enabled=true` untuvaan/QA:han/prodiin; 410-mapping kokonaan pois;
-    säilytysajan poisto päälle; (tietosuojan luvalla) `henkilotunnus`-sarakkeen poisto.
+12. _(JYU:n vahvistuksen jälkeen)_ `kitu.yki.arvioijarekisteri.kirjoitus.enabled=true` (§7.5) ja
+    Solki-lähetyksen `enabled=true` untuvaan/QA:han/prodiin; 410-mapping kokonaan pois; säilytysajan
+    poisto päälle; (tietosuojan luvalla) `henkilotunnus`-sarakkeen poisto.
 
 Muista jokaisen askeleen lopuksi `./scripts/format.sh` (ktlint + prettier). Pidä pitkäikäinen haara
 ajan tasalla komennolla `git pull --rebase origin main` ja pushaa `--force-with-lease`illa. Älä avaa
@@ -1294,7 +1318,7 @@ Nämä eivät estä toteutusta, mutta on syytä varmistaa ennen kyseisen vaiheen
 ./scripts/format.sh && ./scripts/check-formatting.sh
 
 # Backend-testit (Docker päällä — Testcontainers)
-cd server && ./mvnw test -Dtest='YkiArvioija*'
+cd server && ./mvnw test -Dtest='YkiArvioija*'   # sis. YkiArvioijaKirjoituskytkinTest
 cd server && ./mvnw test -Dtest='SolkiArvioija*'
 cd server && ./mvnw package            # koko sarja
 
@@ -1324,6 +1348,10 @@ Manuaalinen läpiajo paikallisesti (`http://localhost:8080/kielitutkinnot`):
 9. db-scheduler-UI: kaikki viisi uutta tehtävää näkyvät ja ovat käsin ajettavissa (passivointi,
    yksilöinnin täydennys, säilytysajan poisto sekä Solki-lähetyksen pikauusinta ja yöajo).
 10. Auditlokit: konsolista löytyvät `YkiArvioijaCreated` ja `YkiArvioijaUpdated`.
+11. Ominaisuuskytkin (§7.5): käynnistä
+    `SPRING_APPLICATION_JSON='{"kitu":{"yki":{"arvioijarekisteri":{"kirjoitus":{"enabled":false}}}}}'
+→ "Lisää arvioija" ja "Muokkaa" näkyvät harmaina eivätkä avaa mitään, ja `/yki/arvioijat/uusi`
+    vastaa 403:lla.
 
 ---
 

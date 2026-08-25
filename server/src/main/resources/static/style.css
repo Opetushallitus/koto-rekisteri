@@ -501,6 +501,10 @@ a[role="button"].tight {
   padding: 0.25rem 0.75rem;
 }
 
+a[role="button"][aria-disabled="true"] {
+  opacity: var(--pico-form-element-disabled-opacity);
+}
+
 .float-right {
   float: right;
 }
