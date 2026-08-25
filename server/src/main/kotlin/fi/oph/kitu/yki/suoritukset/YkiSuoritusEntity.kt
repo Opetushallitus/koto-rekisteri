@@ -64,11 +64,16 @@ data class YkiSuoritusEntity(
     val arvosanaMuuttui: Set<TutkinnonOsa>?,
     val perustelu: String?,
     val tarkistusarvioinninKasittelyPvm: LocalDate?,
+    @IgnoreForEquality("DB")
     val tarkistusarviointiHyvaksyttyPvm: LocalDate?,
+    @IgnoreForEquality("DB")
     val koskiOpiskeluoikeus: Oid?,
+    @IgnoreForEquality("DB")
     val koskiSiirtoKasitelty: Boolean?,
     val arviointitila: Arviointitila,
+    @IgnoreForEquality("DB")
     val arviointitilaLahetetty: Timestamp?,
+    @IgnoreForEquality("DB")
     val arviointitilanLahetysvirhe: String?,
     val lahdejarjestelmanTunnus: String = "yki.$solkiId",
 ) {
