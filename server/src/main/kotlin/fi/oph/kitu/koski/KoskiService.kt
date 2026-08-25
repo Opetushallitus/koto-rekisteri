@@ -51,7 +51,7 @@ class KoskiService(
                     when (val error = result.value) {
                         is KoskiYkiMappingError.EstoSyyt -> {
                             val suoritus = ykiSuoritusEntity.copy(koskiSiirtoKasitelty = true)
-                            ykiSuoritusRepository.save(suoritus, true)
+                            ykiSuoritusRepository.save(suoritus, updateOnConflict = true, forceWrite = true)
                             return suoritus.right()
                         }
 
@@ -93,7 +93,7 @@ class KoskiService(
                 koskiOpiskeluoikeus = Oid.parse(koskiOpiskeluoikeus).getOrThrow(),
                 koskiSiirtoKasitelty = true,
             )
-        ykiSuoritusRepository.save(suoritus, true)
+        ykiSuoritusRepository.save(suoritus, updateOnConflict = true, forceWrite = true)
         return suoritus.right()
     }
 

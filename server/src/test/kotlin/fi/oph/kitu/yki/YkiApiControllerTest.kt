@@ -794,6 +794,7 @@ class YkiApiControllerTest(
         val viimeisinVersio =
             vanhempiVersio.copy(
                 koskiOpiskeluoikeus = null,
+                katuosoite = "Uusi katu 1",
                 lastModified = Instant.parse("2025-02-01T10:00:00Z"),
                 receivedAt = Instant.parse("2025-02-01T10:00:00Z"),
             )

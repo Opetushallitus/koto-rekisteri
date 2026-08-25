@@ -6,6 +6,7 @@ import fi.oph.kitu.dev.mockdata.OidClass
 import fi.oph.kitu.dev.mockdata.createOid
 import fi.oph.kitu.dev.mockdata.generateRandomYkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.HyvaksyTarkistusarviointiError
+import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusRepository
 import org.junit.jupiter.api.BeforeEach
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.assertAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.jdbc.core.JdbcTemplate
 import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.Instant
 import java.time.LocalDate
@@ -21,6 +23,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -28,6 +31,7 @@ import kotlin.test.assertTrue
 @Import(DBContainerConfiguration::class)
 class YkiSuoritusRepositoryTest(
     @param:Autowired private val ykiSuoritusRepository: YkiSuoritusRepository,
+    @param:Autowired private val jdbcTemplate: JdbcTemplate,
     @param:Autowired private val postgres: PostgreSQLContainer,
 ) {
     @BeforeEach
@@ -515,6 +519,7 @@ class YkiSuoritusRepositoryTest(
         val uusi =
             vanha.copy(
                 koskiOpiskeluoikeus = uusiOpiskeluoikeus,
+                katuosoite = "Uusi katu 1",
                 lastModified = Instant.parse("2025-02-01T10:00:00Z"),
                 receivedAt = Instant.parse("2025-02-01T10:00:00Z"),
             )
@@ -662,5 +667,184 @@ class YkiSuoritusRepositoryTest(
 
         val uudelleensiirretty = ykiSuoritusRepository.saveAllNewEntities(listOf(suoritus))
         assertEquals(0, uudelleensiirretty.count())
+    }
+
+    private fun versioidenMaara(solkiId: Int): Int =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM yki_suoritus WHERE solki_id = ?",
+            Int::class.java,
+            solkiId,
+        )!!
+
+    private fun uudelleensiirto(suoritus: YkiSuoritusEntity): YkiSuoritusEntity =
+        suoritus
+            .copy(
+                id = null,
+                lastModified = Instant.now(),
+                receivedAt = Instant.now(),
+            ).also { it.ilmoitetutOsakokeet = suoritus.ilmoitetutOsakokeet }
+
+    @Test
+    fun `muuttumaton uudelleensiirto ei luo uutta versiota Koski-siirron jalkeen`() {
+        val suoritus = generateRandomYkiSuoritusEntity()
+        ykiSuoritusRepository.save(suoritus, false)
+        ykiSuoritusRepository.save(
+            suoritus.copy(
+                koskiOpiskeluoikeus = createOid(OidClass.OPPIJA, 99999999991),
+                koskiSiirtoKasitelty = true,
+            ),
+            updateOnConflict = true,
+            forceWrite = true,
+        )
+
+        assertNull(ykiSuoritusRepository.save(uudelleensiirto(suoritus), false))
+        assertEquals(1, versioidenMaara(suoritus.solkiId))
+    }
+
+    @Test
+    fun `Koski-siirron tulos tallentuu vaikka vain Kosken omat kentat muuttuvat`() {
+        val suoritus = generateRandomYkiSuoritusEntity()
+        ykiSuoritusRepository.save(suoritus, false)
+        val opiskeluoikeus = createOid(OidClass.OPPIJA, 99999999991)
+
+        ykiSuoritusRepository.save(
+            suoritus.copy(koskiOpiskeluoikeus = opiskeluoikeus, koskiSiirtoKasitelty = true),
+            updateOnConflict = true,
+            forceWrite = true,
+        )
+
+        val tallennettu = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+        assertEquals(opiskeluoikeus, tallennettu.koskiOpiskeluoikeus)
+        assertTrue(tallennettu.koskiSiirtoKasitelty == true)
+        assertEquals(1, versioidenMaara(suoritus.solkiId))
+    }
+
+    @Test
+    fun `muuttumaton uudelleensiirto ei luo uutta versiota arviointitilan lahetyksen jalkeen`() {
+        val suoritus = generateRandomYkiSuoritusEntity()
+        ykiSuoritusRepository.save(suoritus, false)
+        ykiSuoritusRepository.setArvioinninTilaSent(suoritus.solkiId)
+
+        assertNull(ykiSuoritusRepository.save(uudelleensiirto(suoritus), false))
+        assertEquals(1, versioidenMaara(suoritus.solkiId))
+    }
+
+    @Test
+    fun `muuttumaton uudelleensiirto ei luo uutta versiota arviointitilan lahetysvirheen jalkeen`() {
+        val suoritus = generateRandomYkiSuoritusEntity()
+        ykiSuoritusRepository.save(suoritus, false)
+        ykiSuoritusRepository.setArvioinninTilanLahetysvirhe(suoritus.solkiId, "SUORITUSTA_EI_LOYDY")
+
+        assertNull(ykiSuoritusRepository.save(uudelleensiirto(suoritus), false))
+        assertEquals(1, versioidenMaara(suoritus.solkiId))
+    }
+
+    @Test
+    fun `muuttumaton uudelleensiirto ei luo uutta versiota ilman tarkistusarvioituja osakokeita`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                tarkistusarvioidutOsakokeet = null,
+                arvosanaMuuttui = null,
+            )
+        ykiSuoritusRepository.save(suoritus, false)
+
+        assertNull(ykiSuoritusRepository.save(uudelleensiirto(suoritus), false))
+        assertEquals(1, versioidenMaara(suoritus.solkiId))
+    }
+
+    @Test
+    fun `muuttumaton uudelleensiirto ei luo uutta versiota tyhjalla arvosanaMuuttui-joukolla`() {
+        val suoritus = generateRandomYkiSuoritusEntity().copy(arvosanaMuuttui = emptySet())
+        ykiSuoritusRepository.save(suoritus, false)
+
+        assertNull(ykiSuoritusRepository.save(uudelleensiirto(suoritus), false))
+        assertEquals(1, versioidenMaara(suoritus.solkiId))
+    }
+
+    @Test
+    fun `muuttumaton uudelleensiirto ei luo uutta versiota kun tarkistusarvioitua osakoetta ei ole suorituksella`() {
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                tarkistusarvioidutOsakokeet = setOf(TutkinnonOsa.puhuminen, TutkinnonOsa.yleisarvosana),
+                arvosanaMuuttui = setOf(TutkinnonOsa.puhuminen),
+                yleisarvosana = null,
+            )
+        ykiSuoritusRepository.save(suoritus, false)
+
+        assertNull(ykiSuoritusRepository.save(uudelleensiirto(suoritus), false))
+        assertEquals(1, versioidenMaara(suoritus.solkiId))
+    }
+
+    @Test
+    fun `hyvaksytty tarkistusarviointi sailyy kun Solki lahettaa saman suorituksen uudelleen`() {
+        val kasittelyPvm = LocalDate.of(2025, 6, 15)
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                arviointitila = Arviointitila.TARKISTUSARVIOITU,
+                tarkistusarvioinninKasittelyPvm = kasittelyPvm,
+            )
+        ykiSuoritusRepository.save(suoritus, false)
+        ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(listOf(suoritus.solkiId), kasittelyPvm)
+
+        assertNull(ykiSuoritusRepository.save(uudelleensiirto(suoritus), false))
+        assertEquals(2, versioidenMaara(suoritus.solkiId), "vain hyvaksynta luo uuden version")
+        assertEquals(
+            Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY,
+            ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first().arviointitila,
+        )
+    }
+
+    @Test
+    fun `hyvaksytty tarkistusarviointi sailyy kun Solki lahettaa muuttuneen suorituksen`() {
+        val kasittelyPvm = LocalDate.of(2025, 6, 15)
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                arviointitila = Arviointitila.TARKISTUSARVIOITU,
+                tarkistusarvioinninKasittelyPvm = kasittelyPvm,
+            )
+        ykiSuoritusRepository.save(suoritus, false)
+        ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(listOf(suoritus.solkiId), kasittelyPvm)
+
+        val muuttunut = uudelleensiirto(suoritus).copy(katuosoite = "Uusi katu 1")
+        assertNotNull(ykiSuoritusRepository.save(muuttunut, false))
+
+        val viimeisin = ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first()
+        assertEquals(Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY, viimeisin.arviointitila)
+        assertEquals("Uusi katu 1", viimeisin.katuosoite)
+    }
+
+    @Test
+    fun `Solkin oma arviointitilan muutos tallentuu hyvaksynnan jalkeen`() {
+        val kasittelyPvm = LocalDate.of(2025, 6, 15)
+        val suoritus =
+            generateRandomYkiSuoritusEntity().copy(
+                arviointitila = Arviointitila.TARKISTUSARVIOITU,
+                tarkistusarvioinninKasittelyPvm = kasittelyPvm,
+            )
+        ykiSuoritusRepository.save(suoritus, false)
+        ykiSuoritusRepository.hyvaksyTarkistusarvioinnit(listOf(suoritus.solkiId), kasittelyPvm)
+
+        val uusiTarkistuskierros =
+            uudelleensiirto(suoritus).copy(
+                arviointitila = Arviointitila.TARKISTUSARVIOITAVA,
+                tarkistusarvioinninKasittelyPvm = null,
+            )
+        assertNotNull(ykiSuoritusRepository.save(uusiTarkistuskierros, false))
+
+        assertEquals(
+            Arviointitila.TARKISTUSARVIOITAVA,
+            ykiSuoritusRepository.findLatestBySolkiIds(listOf(suoritus.solkiId)).first().arviointitila,
+        )
+    }
+
+    @Test
+    fun `muuttunut suoritus luo edelleen uuden version`() {
+        val suoritus = generateRandomYkiSuoritusEntity()
+        ykiSuoritusRepository.save(suoritus, false)
+        ykiSuoritusRepository.setArvioinninTilaSent(suoritus.solkiId)
+
+        val muuttunut = uudelleensiirto(suoritus).copy(sukunimi = "Muuttunut")
+        assertNotNull(ykiSuoritusRepository.save(muuttunut, false))
+        assertEquals(2, versioidenMaara(suoritus.solkiId))
     }
 }

@@ -287,13 +287,49 @@ class YkiSuoritusRepository(
         updateOnConflict: Boolean,
         forceWrite: Boolean = false,
     ): Int? {
-        val tallennettava = suoritus.withoutHetu()
-        return if (forceWrite || !exists(tallennettava)) {
+        val viimeisin = if (forceWrite) null else findLatestBySolkiIds(listOf(suoritus.solkiId)).firstOrNull()
+        val tallennettava =
+            suoritus
+                .withoutHetu()
+                .withTallennettavaTarkistusarviointi()
+                .withHyvaksyttyTarkistusarviointi(viimeisin)
+
+        return if (viimeisin == null || !viimeisin.equalsIgnoringAnnotated(tallennettava, "DB")) {
             insertSuoritusWithChildren(tallennettava, updateOnConflict)
         } else {
             null
         }
     }
+
+    private fun YkiSuoritusEntity.withTallennettavaTarkistusarviointi(): YkiSuoritusEntity {
+        val tarkistusarvioidut =
+            tarkistusarvioidutOsakokeet
+                .orEmpty()
+                .intersect(osakokeet().map { it.tyyppi }.toSet())
+        val tallentuu = tarkistusarvioidut.isNotEmpty()
+
+        return copy(
+            tarkistusarvioidutOsakokeet = tarkistusarvioidut.takeIf { tallentuu },
+            arvosanaMuuttui =
+                arvosanaMuuttui
+                    ?.intersect(tarkistusarvioidut)
+                    ?.takeIf { tallentuu && it.isNotEmpty() },
+            tarkistusarvioinninAsiatunnus = tarkistusarvioinninAsiatunnus.takeIf { tallentuu },
+            tarkistusarvioinninSaapumisPvm = tarkistusarvioinninSaapumisPvm.takeIf { tallentuu },
+            tarkistusarvioinninKasittelyPvm = tarkistusarvioinninKasittelyPvm.takeIf { tallentuu },
+            perustelu = perustelu.takeIf { tallentuu },
+        ).also { it.ilmoitetutOsakokeet = ilmoitetutOsakokeet }
+    }
+
+    private fun YkiSuoritusEntity.withHyvaksyttyTarkistusarviointi(viimeisin: YkiSuoritusEntity?): YkiSuoritusEntity =
+        if (arviointitila == Arviointitila.TARKISTUSARVIOITU &&
+            viimeisin?.arviointitila == Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY
+        ) {
+            copy(arviointitila = Arviointitila.TARKISTUSARVIOINTI_HYVAKSYTTY)
+                .also { it.ilmoitetutOsakokeet = ilmoitetutOsakokeet }
+        } else {
+            this
+        }
 
     // Hetua ei saa tallentaa rajapäivänä tai sen jälkeen järjestetylle tutkinnolle, tulipa
     // suoritus mitä kirjoituspolkua tahansa pitkin.
@@ -546,12 +582,6 @@ class YkiSuoritusRepository(
                     *values.values.toTypedArray(),
                 ).firstOrNull()
         }
-    }
-
-    @WithSpan
-    fun exists(yki: YkiSuoritusEntity): Boolean {
-        val existing = findLatestBySolkiIds(listOf(yki.solkiId))
-        return existing.isNotEmpty() && existing.first().equalsIgnoringAnnotated(yki, "DB")
     }
 
     @WithSpan
