@@ -675,6 +675,17 @@ kuin `enumFilter`issa), sarakkeet = `PT`/`KT`/`YT`, solut
 `input type=checkbox name="arviointioikeus" value="FIN:PT"`. Nolla JS:ää, yksi kenttänimi, ja
 "sallitaan useita" toteutuu kirjaimellisesti. Jo tallennetut legacy-kielet näytetään read-only-rivinä.
 
+**Optimistinen lukitus.** Lomake on täyden tilan tilannekuva, joten kahdesta rinnakkaisesta
+muokkauksesta jälkimmäinen ylikirjoittaisi ensimmäisen hiljaisesti — ja yhteystietojen osalta
+menetystä ei voisi jäljittää, koska kausihistoria kattaa vain kaudet eikä auditlokiin talleteta
+kenttien arvoja. Lomake kantaa siksi piilokentässä rivin `muokattu`-leiman, ja `tallenna`n
+`odotettuMuokkaushetki` tekee päivityksestä compare-and-setin (`ON CONFLICT … DO UPDATE … WHERE
+yki_arvioija.muokattu = ?`). Kun ehto ei täsmää, mitään ei kirjoiteta, repository heittää
+`OptimisticLockingFailureException`in ja palvelu palauttaa `MuokattuSamanaikaisesti`-virheen, joka
+renderöityy lomakkeelle ohjeena ladata sivu uudelleen. Ilman tunnistetta (Solkin push, dev-työkalut)
+tarkistusta ei tehdä, joten vanha käytös säilyy. Jäljelle jää kapea rako: kaksi virkailijaa, jotka
+luovat saman **uuden** arvioijan yhtä aikaa, eivät kumpikaan kanna tunnistetta.
+
 **Turvakielto** kysytään ONR:stä joka renderöinnissä eikä sitä talleteta kituun. Kysely voi myös
 epäonnistua, ja se on eri asia kuin "ei turvakieltoa": `Turvakieltotieto`-enum erottaa `ON`/`EI`/
 `EI_TIEDOSSA`, ja viimeisestä renderöityy oma varoitus. Ilman erottelua ONR-katko näyttäisi

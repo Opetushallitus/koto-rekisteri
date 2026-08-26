@@ -371,6 +371,14 @@ object UiText {
                             "Arvioija on jo rekisterissä. Tiedot on esitäytetty nykyisestä " +
                                 "merkinnästä, ja tallennus päivittää sen.",
                     )
+            val muokattuSamanaikaisesti: LocalizedString
+                get() =
+                    tr(
+                        "yki.arvioija.muokattuSamanaikaisesti",
+                        fi =
+                            "Toinen käyttäjä ehti muokata arvioijan tietoja. Lataa sivu uudelleen " +
+                                "ja tee muutokset uudelleen.",
+                    )
             val kirjoitusEiKaytossa: LocalizedString
                 get() =
                     tr(

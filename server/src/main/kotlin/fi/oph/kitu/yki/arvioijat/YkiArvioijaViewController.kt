@@ -92,7 +92,7 @@ class YkiArvioijaViewController(
                     "${UiText.Yki.Arvioija.kaudenAlkupaiva} on pakollinen tieto",
                 )
 
-        return arvioijaService.luoArvioija(form.toCommand(oid, alkupaiva), CurrentUser.oid()).fold(
+        return arvioijaService.luoArvioija(form.toCommand(oid, alkupaiva), CurrentUser.oid(), form.muokattu).fold(
             ifLeft = { virhe ->
                 ResponseEntity.ok(YkiArvioijaLomakePage.renderLomake(form, virheet(virhe)))
             },
@@ -163,7 +163,7 @@ class YkiArvioijaViewController(
                 )
 
         return arvioijaService
-            .paivitaArvioija(id, form.toCommand(lomakkeenOid, alkupaiva), CurrentUser.oid())
+            .paivitaArvioija(id, form.toCommand(lomakkeenOid, alkupaiva), CurrentUser.oid(), form.muokattu)
             .fold(
                 ifLeft = { virhe ->
                     if (virhe == YkiArvioijaError.ArvioijaaEiLoydy) {
@@ -264,6 +264,13 @@ class YkiArvioijaViewController(
             YkiArvioijaError.ArvioijaaEiLoydy -> {
                 yleinen(
                     UiText.Yki.Arvioija.eiLoydy
+                        .toString(),
+                )
+            }
+
+            YkiArvioijaError.MuokattuSamanaikaisesti -> {
+                yleinen(
+                    UiText.Yki.Arvioija.muokattuSamanaikaisesti
                         .toString(),
                 )
             }

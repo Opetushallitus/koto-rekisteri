@@ -15,8 +15,10 @@ import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.util.validation.ValidationService
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 @Service
 class YkiArvioijaService(
@@ -64,6 +66,7 @@ class YkiArvioijaService(
     fun luoArvioija(
         komento: TallennaArvioija,
         tekija: Oid?,
+        odotettuMuokkaushetki: OffsetDateTime? = null,
     ): Either<YkiArvioijaError, YkiArvioijaEntity> =
         validationService
             .validateAndEnrich(komento)
@@ -72,20 +75,21 @@ class YkiArvioijaService(
                 // Lisayslomakkeelle voi paatya myos jo rekisterissa oleva arvioija (jatkokausi),
                 // jolloin tallennus paivittaa merkintaa eika aloita sita alusta.
                 val olemassaoleva = repository.findByArvioijaOid(validoitu.arvioijaOid)
-                val id =
-                    repository.tallenna(
-                        validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu)),
-                        tekija,
+                tallennaTaiKonflikti(
+                    validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu)),
+                    tekija,
+                    odotettuMuokkaushetki,
+                ).flatMap { id ->
+                    auditLogger.log(
+                        if (olemassaoleva == null) {
+                            AuditLogOperation.YkiArvioijaCreated
+                        } else {
+                            AuditLogOperation.YkiArvioijaUpdated
+                        },
+                        validoitu.arvioijaOid,
                     )
-                auditLogger.log(
-                    if (olemassaoleva == null) {
-                        AuditLogOperation.YkiArvioijaCreated
-                    } else {
-                        AuditLogOperation.YkiArvioijaUpdated
-                    },
-                    validoitu.arvioijaOid,
-                )
-                repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+                    repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+                }
             }
 
     @WithSpan
@@ -96,6 +100,7 @@ class YkiArvioijaService(
         id: Int,
         komento: TallennaArvioija,
         tekija: Oid?,
+        odotettuMuokkaushetki: OffsetDateTime? = null,
     ): Either<YkiArvioijaError, YkiArvioijaEntity> {
         val olemassaoleva = repository.findArvioijaById(id) ?: return YkiArvioijaError.ArvioijaaEiLoydy.left()
 
@@ -106,14 +111,27 @@ class YkiArvioijaService(
             .validateAndEnrich(kohdistettu)
             .mapLeft { YkiArvioijaError.Validointivirheet(it) }
             .flatMap { validoitu ->
-                repository.tallenna(
+                tallennaTaiKonflikti(
                     validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu)),
                     tekija,
-                )
-                auditLogger.log(AuditLogOperation.YkiArvioijaUpdated, validoitu.arvioijaOid)
-                repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+                    odotettuMuokkaushetki,
+                ).flatMap {
+                    auditLogger.log(AuditLogOperation.YkiArvioijaUpdated, validoitu.arvioijaOid)
+                    repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+                }
             }
     }
+
+    private fun tallennaTaiKonflikti(
+        arvioija: YkiArvioijaEntity,
+        tekija: Oid?,
+        odotettuMuokkaushetki: OffsetDateTime?,
+    ): Either<YkiArvioijaError, Int> =
+        try {
+            repository.tallenna(arvioija, tekija, odotettuMuokkaushetki = odotettuMuokkaushetki).right()
+        } catch (_: OptimisticLockingFailureException) {
+            YkiArvioijaError.MuokattuSamanaikaisesti.left()
+        }
 
     private fun ensimmainenRekisterointipaiva(
         olemassaoleva: YkiArvioijaEntity?,
