@@ -5,7 +5,10 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.util.result.getOrThrow
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
+import fi.oph.kitu.yki.arvioijat.YkiArviointioikeusEntity
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -247,6 +250,100 @@ class YkiArvioijaLisaysTest(
         val lukija = html(get("/yki/arvioijat").session(session(Authority.VIRKAILIJA)))
         assertFalse(lukija.contains("""data-testid="lisaaArvioija""""), "lukijalle ei saa nayttaa lisaysnappia")
     }
+
+    @Test
+    fun `jo rekisterissa olevan arvioijan lomake esitaytetaan rekisterin merkinnalla`() {
+        tallennaOlemassaolevaMerkinta()
+
+        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to petronOid)
+
+        assertContains(html, "Arvioija on jo rekisterissä")
+        assertContains(html, """value="OPH-9-2020"""")
+        assertTrue(valittuna(html, "FIN:PT"), "nykyisen merkinnan oikeudet on esitaytettava:\n$html")
+        assertTrue(valittuna(html, "SWE:YT"), "muunkielinen oikeus ei saa kadota lomakkeelta:\n$html")
+        assertFalse(valittuna(html, "ENG:YT"), "valitsematon oikeus ei saa nakya valittuna")
+    }
+
+    @Test
+    fun `lisayslomakkeelta tallennus sailyttaa ensimmaisen rekisterointipaivan`() {
+        tallennaOlemassaolevaMerkinta()
+
+        mockMvc
+            .perform(
+                post("/yki/arvioijat/uusi")
+                    .session(session())
+                    .with(csrf())
+                    .param("arvioijaOid", petronOid)
+                    .param("sukunimi", "Kivinen-Testi")
+                    .param("etunimet", "Petro Testi")
+                    .param("katuosoite", "Kivinenkatu 2 A 3")
+                    .param("postinumero", "00100")
+                    .param("postitoimipaikka", "HELSINKI")
+                    .param("kaudenAlkupaiva", "2026-03-01")
+                    .param("arviointioikeus", "FIN:PT")
+                    .param("arviointioikeus", "SWE:YT"),
+            ).andExpect(status().isSeeOther)
+
+        val tallennettu = repository.findByArvioijaOid(Oid.parse(petronOid).getOrThrow())!!
+        val oikeudet = tallennettu.arviointioikeudet.associateBy { it.kieli }
+
+        assertEquals(setOf(Tutkintokieli.FIN, Tutkintokieli.SWE), oikeudet.keys)
+        oikeudet.values.forEach { oikeus ->
+            assertEquals(LocalDate.of(2026, 3, 1), oikeus.kaudenAlkupaiva, "uusi kausi alkaa lomakkeen paivasta")
+            assertEquals(
+                LocalDate.of(2020, 1, 1),
+                oikeus.ensimmainenRekisterointipaiva,
+                "ensimmainen rekisterointipaiva on merkinnan historiaa, sita ei saa nollata",
+            )
+        }
+    }
+
+    private fun tallennaOlemassaolevaMerkinta() {
+        repository.tallenna(
+            YkiArvioijaEntity(
+                id = null,
+                arvioijaOid = Oid.parse(petronOid).getOrThrow(),
+                henkilotunnus = null,
+                sukunimi = "Kivinen-Testi",
+                etunimet = "Petro Testi",
+                sahkopostiosoite = "kivinen-testi@oph.fi",
+                katuosoite = "Kivinenkatu 2 A 3",
+                postinumero = "00100",
+                postitoimipaikka = "HELSINKI",
+                ashaNumero = "OPH-9-2020",
+                arviointioikeudet =
+                    listOf(
+                        arviointioikeus(Tutkintokieli.FIN, setOf(Tutkintotaso.PT, Tutkintotaso.KT)),
+                        arviointioikeus(Tutkintokieli.SWE, setOf(Tutkintotaso.YT)),
+                    ),
+            ),
+        )
+    }
+
+    private fun arviointioikeus(
+        kieli: Tutkintokieli,
+        tasot: Set<Tutkintotaso>,
+    ) = YkiArviointioikeusEntity(
+        id = null,
+        arvioijaId = null,
+        kieli = kieli,
+        tasot = tasot,
+        tila = YkiArvioijaTila.AKTIIVINEN,
+        kaudenAlkupaiva = LocalDate.of(2020, 1, 1),
+        kaudenPaattymispaiva = LocalDate.of(2025, 1, 1),
+        jatkorekisterointi = false,
+        ensimmainenRekisterointipaiva = LocalDate.of(2020, 1, 1),
+        rekisteriintuontiaika = null,
+    )
+
+    private fun valittuna(
+        html: String,
+        arvo: String,
+    ): Boolean =
+        Regex("""<input[^>]*data-testid="arviointioikeus-$arvo"[^>]*>""")
+            .find(html)
+            ?.value
+            ?.contains("checked") == true
 
     @Test
     fun `tietosivu nayttaa arvioijan tiedot`() {

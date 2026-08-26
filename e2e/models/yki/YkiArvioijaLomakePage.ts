@@ -37,8 +37,12 @@ export default class YkiArvioijaLomakePage extends BasePage {
     await this.page.getByTestId("haeHenkilonTiedot").click()
   }
 
+  arviointioikeus(kieli: string, taso: string) {
+    return this.page.getByTestId(`arviointioikeus-${kieli}:${taso}`)
+  }
+
   async valitseArviointioikeus(kieli: string, taso: string) {
-    await this.page.getByTestId(`arviointioikeus-${kieli}:${taso}`).check()
+    await this.arviointioikeus(kieli, taso).check()
   }
 
   async asetaKaudenAlkupaiva(paiva: string) {

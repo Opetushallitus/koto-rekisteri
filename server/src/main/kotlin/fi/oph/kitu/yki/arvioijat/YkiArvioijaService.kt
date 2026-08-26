@@ -17,6 +17,7 @@ import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.util.validation.ValidationService
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 @Service
 class YkiArvioijaService(
@@ -65,8 +66,22 @@ class YkiArvioijaService(
             .validateAndEnrich(komento)
             .mapLeft { YkiArvioijaError.Validointivirheet(it) }
             .flatMap { validoitu ->
-                val id = repository.tallenna(validoitu.toEntity(), tekija)
-                auditLogger.log(AuditLogOperation.YkiArvioijaCreated, validoitu.arvioijaOid)
+                // Lisayslomakkeelle voi paatya myos jo rekisterissa oleva arvioija (jatkokausi),
+                // jolloin tallennus paivittaa merkintaa eika aloita sita alusta.
+                val olemassaoleva = repository.findByArvioijaOid(validoitu.arvioijaOid)
+                val id =
+                    repository.tallenna(
+                        validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu)),
+                        tekija,
+                    )
+                auditLogger.log(
+                    if (olemassaoleva == null) {
+                        AuditLogOperation.YkiArvioijaCreated
+                    } else {
+                        AuditLogOperation.YkiArvioijaUpdated
+                    },
+                    validoitu.arvioijaOid,
+                )
                 repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
             }
 
@@ -88,16 +103,23 @@ class YkiArvioijaService(
             .validateAndEnrich(kohdistettu)
             .mapLeft { YkiArvioijaError.Validointivirheet(it) }
             .flatMap { validoitu ->
-                val ensimmainenRekisterointipaiva =
-                    olemassaoleva.arviointioikeudet
-                        .minOfOrNull { it.ensimmainenRekisterointipaiva }
-                        ?: validoitu.kaudenAlkupaiva
-
-                repository.tallenna(validoitu.toEntity(ensimmainenRekisterointipaiva), tekija)
+                repository.tallenna(
+                    validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu)),
+                    tekija,
+                )
                 auditLogger.log(AuditLogOperation.YkiArvioijaUpdated, validoitu.arvioijaOid)
                 repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
             }
     }
+
+    private fun ensimmainenRekisterointipaiva(
+        olemassaoleva: YkiArvioijaEntity?,
+        komento: TallennaArvioija,
+    ): LocalDate =
+        olemassaoleva
+            ?.arviointioikeudet
+            ?.minOfOrNull { it.ensimmainenRekisterointipaiva }
+            ?: komento.kaudenAlkupaiva
 
     private fun haeOid(haku: OnrHaku): Either<YkiArvioijaError, Oid> =
         when (haku.tapa) {
@@ -158,7 +180,7 @@ class YkiArvioijaService(
                     postinumero = arvo("YHTEYSTIETO_POSTINUMERO"),
                     postitoimipaikka = arvo("YHTEYSTIETO_KAUPUNKI"),
                     turvakielto = henkilo.turvakielto == true,
-                    jatkorekisterointi = repository.findByArvioijaOid(oid) != null,
+                    olemassaolevaMerkinta = repository.findByArvioijaOid(oid),
                 )
             }
 
