@@ -25,7 +25,7 @@ interface CustomYkiArvioijaRepository {
     fun tallenna(
         arvioija: YkiArvioijaEntity,
         tekija: Oid? = null,
-        poistaPuuttuvatOikeudet: Boolean = true,
+        lahde: Tallennuslahde = Tallennuslahde.KITU,
     ): Int
 
     fun findByArvioijaOid(arvioijaOid: Oid): YkiArvioijaEntity?
@@ -72,22 +72,23 @@ class CustomYkiArvioijaRepositoryImpl(
 
     /**
      * Tallentaa arvioijan ja hanen arviointioikeutensa ja kirjaa muuttuneen kauden
-     * kausihistoriaan. Kitun omissa tallennuksissa payloadista puuttuvat arviointioikeudet
-     * poistetaan, koska kitu on rekisterin master. Solkin sisaantulevalle pushille
-     * `poistaPuuttuvatOikeudet = false`: Solkin payloadin kattavuudesta ei ole sopimusta,
-     * joten osittainen push ei saa pyyhkia muita kielia.
+     * kausihistoriaan. [Tallennuslahde.KITU]lla payloadista puuttuvat arviointioikeudet
+     * poistetaan, koska kitu on rekisterin master, ja rivi jaa Solki-lahetysjonoon.
+     * [Tallennuslahde.SOLKI]lla kumpaakaan ei tehda: Solkin payloadin kattavuudesta ei ole
+     * sopimusta, joten osittainen push ei saa pyyhkia muita kielia, eika Solkin omaa dataa
+     * lahetata takaisin Solkiin.
      */
     @WithSpan
     @Transactional
     override fun tallenna(
         arvioija: YkiArvioijaEntity,
         tekija: Oid?,
-        poistaPuuttuvatOikeudet: Boolean,
+        lahde: Tallennuslahde,
     ): Int {
-        val savedArvioija = upsertArvioija(arvioija, tekija)
+        val savedArvioija = upsertArvioija(arvioija, tekija, lahde)
         val arvioijaId = savedArvioija.id!!.toInt()
 
-        if (poistaPuuttuvatOikeudet) {
+        if (lahde == Tallennuslahde.KITU) {
             poistaPuuttuvatArviointioikeudet(arvioijaId, arvioija.arviointioikeudet)
         }
         upsertArviointioikeudet(arvioijaId, arvioija.arviointioikeudet)
@@ -99,8 +100,14 @@ class CustomYkiArvioijaRepositoryImpl(
     private fun upsertArvioija(
         arvioija: YkiArvioijaEntity,
         tekija: Oid?,
-    ): YkiArvioijaEntity =
-        jdbcTemplate
+        lahde: Tallennuslahde,
+    ): YkiArvioijaEntity {
+        // Solkista tullut rivi leimataan lahetetyksi kannan omalla now()-arvolla, jotta se on
+        // tasmalleen sama kuin muokattu: pienikin ero jattaisi rivin lahetysjonoon (V117:n
+        // osittainen indeksi) ja lahettaisi Solkin oman datan takaisin Solkiin.
+        val lahetysleima = if (lahde == Tallennuslahde.SOLKI) "now()" else "NULL"
+
+        return jdbcTemplate
             .query(
                 """
                 INSERT INTO yki_arvioija (
@@ -122,7 +129,7 @@ class CustomYkiArvioijaRepositoryImpl(
                     solkiin_lahetetty,
                     solki_lahetysvirhe,
                     solki_lahetysyritykset
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, now(), ?, NULL, NULL, 0)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, now(), ?, $lahetysleima, NULL, 0)
                 ON CONFLICT (arvioija_oid) DO UPDATE
                 SET
                     -- henkilotunnus paivitetaan EXCLUDED-arvosta, jotta validoinnin
@@ -141,8 +148,8 @@ class CustomYkiArvioijaRepositoryImpl(
                     -- luotu ja luoja_oid sailyvat ennallaan paivityksessa
                     muokattu = now(),
                     muokkaaja_oid = EXCLUDED.muokkaaja_oid,
-                    -- muutos on lahetettava Solkiin uudelleen
-                    solkiin_lahetetty = NULL,
+                    -- kitun oma muutos on lahetettava Solkiin, Solkin push ei
+                    solkiin_lahetetty = $lahetysleima,
                     solki_lahetysvirhe = NULL,
                     solki_lahetysyritykset = 0
                 RETURNING *
@@ -162,6 +169,7 @@ class CustomYkiArvioijaRepositoryImpl(
                 tekija?.toString(),
                 tekija?.toString(),
             ).first()
+    }
 
     /**
      * Masterina kitun on voitava myos perua arviointioikeus: payloadista puuttuva kieli

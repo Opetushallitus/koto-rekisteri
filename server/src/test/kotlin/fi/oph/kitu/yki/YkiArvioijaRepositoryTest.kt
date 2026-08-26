@@ -3,6 +3,7 @@ package fi.oph.kitu.yki
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.result.getOrThrow
+import fi.oph.kitu.yki.arvioijat.Tallennuslahde
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
@@ -17,6 +18,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -114,12 +116,35 @@ class YkiArvioijaRepositoryTest(
         val eng = arviointioikeus(Tutkintokieli.ENG)
 
         arvioijaRepository.tallenna(arvioija(swe, eng))
-        arvioijaRepository.tallenna(arvioija(eng), poistaPuuttuvatOikeudet = false)
+        arvioijaRepository.tallenna(arvioija(eng), lahde = Tallennuslahde.SOLKI)
 
         val jaljella = arvioijaRepository.findByArvioijaOid(oid)?.arviointioikeudet.orEmpty()
         assertEquals(
             listOf(Tutkintokieli.ENG, Tutkintokieli.SWE),
             jaljella.map { it.kieli }.sortedBy { it.name },
+        )
+    }
+
+    @Test
+    fun `Solkin push ei jata rivia lahetysjonoon`() {
+        arvioijaRepository.tallenna(arvioija(arviointioikeus()), lahde = Tallennuslahde.SOLKI)
+
+        val tallennettu = arvioijaRepository.findByArvioijaOid(oid)
+        val lahetetty = tallennettu?.solkiinLahetetty
+        assertNotNull(lahetetty, "Solkista tullut rivi on leimattava lahetetyksi")
+        assertFalse(
+            lahetetty.isBefore(tallennettu.muokattu),
+            "leiman on oltava vahintaan muokkaushetki, muuten rivi jaa lahetysjonoon",
+        )
+    }
+
+    @Test
+    fun `Kitun oma tallennus jaa lahetysjonoon`() {
+        arvioijaRepository.tallenna(arvioija(arviointioikeus()))
+
+        assertNull(
+            arvioijaRepository.findByArvioijaOid(oid)?.solkiinLahetetty,
+            "kitussa tehty muutos on lahetettava Solkiin",
         )
     }
 
