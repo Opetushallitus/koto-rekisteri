@@ -377,6 +377,31 @@ class YkiArvioijaLisaysTest(
     }
 
     @Test
+    fun `piilokentan validointivirhe nakyy lomakkeella`() {
+        val html =
+            html(
+                post("/yki/arvioijat/uusi")
+                    .session(session())
+                    .with(csrf())
+                    .param("arvioijaOid", oidJotaEiOleOnrissa)
+                    .param("sukunimi", "Kivinen-Testi")
+                    .param("etunimet", "Petro Testi")
+                    .param("katuosoite", "Kivinenkatu 2 A 3")
+                    .param("postinumero", "00100")
+                    .param("postitoimipaikka", "HELSINKI")
+                    .param("kaudenAlkupaiva", "2026-01-01")
+                    .param("arviointioikeus", "FIN:PT"),
+            )
+
+        assertContains(
+            html,
+            "ei löydy Oppijanumerorekisteristä",
+            message = "arvioijaOid on vain piilokentta, joten virhe jaisi muuten renderoimatta",
+        )
+        assertContains(html, """data-testid="formErrorSummary"""")
+    }
+
+    @Test
     fun `duplikaattioppijanumerolla haettu ohjautuu master-oidin merkintaan`() {
         tallennaOlemassaolevaMerkinta(masterOid)
 
