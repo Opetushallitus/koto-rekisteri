@@ -94,15 +94,13 @@ object YkiArvioijaLomakePage {
                 warningMessage(UiText.Yki.Arvioija.jorekisterissa)
             }
 
-            if (form.turvakielto) {
-                warningMessage(UiText.Yki.Arvioija.turvakielto)
-            }
+            form.turvakielto.varoitus?.let { warningMessage(it) }
 
             formErrorSummary(errors)
 
             formPost(action) {
                 hiddenValue("arvioijaOid", form.arvioijaOid.orEmpty())
-                hiddenValue("turvakielto", form.turvakielto.toString())
+                hiddenValue("turvakielto", form.turvakielto.name)
                 hiddenValue("onOlemassa", form.onOlemassa.toString())
 
                 card {

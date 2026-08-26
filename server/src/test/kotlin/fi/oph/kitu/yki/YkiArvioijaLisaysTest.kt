@@ -48,6 +48,9 @@ class YkiArvioijaLisaysTest(
     /** Ainoa mock-ONR:n henkilo, jolla on osoite ja sahkoposti. */
     private val petronOid = "1.2.246.562.24.59267607404"
 
+    /** Mock-ONR:lla ei ole tata henkiloa, joten turvakieltokysely epaonnistuu. */
+    private val oidJotaEiOleOnrissa = "1.2.246.562.24.99999999999"
+
     @BeforeEach
     fun setup() {
         mockMvc =
@@ -298,11 +301,11 @@ class YkiArvioijaLisaysTest(
         }
     }
 
-    private fun tallennaOlemassaolevaMerkinta() {
+    private fun tallennaOlemassaolevaMerkinta(oid: String = petronOid): Int =
         repository.tallenna(
             YkiArvioijaEntity(
                 id = null,
-                arvioijaOid = Oid.parse(petronOid).getOrThrow(),
+                arvioijaOid = Oid.parse(oid).getOrThrow(),
                 henkilotunnus = null,
                 sukunimi = "Kivinen-Testi",
                 etunimet = "Petro Testi",
@@ -318,7 +321,6 @@ class YkiArvioijaLisaysTest(
                     ),
             ),
         )
-    }
 
     private fun arviointioikeus(
         kieli: Tutkintokieli,
@@ -368,6 +370,34 @@ class YkiArvioijaLisaysTest(
         assertContains(html, "Petro Testi Kivinen-Testi")
         assertContains(html, petronOid)
         assertContains(html, "Perustaso")
+    }
+
+    @Test
+    fun `tietosivu varoittaa kun turvakieltoa ei saada tarkistettua`() {
+        val id = tallennaOlemassaolevaMerkinta(oidJotaEiOleOnrissa)
+
+        val html = html(get("/yki/arvioijat/$id").session(session()))
+
+        assertContains(html, "Turvakieltoa ei voitu tarkistaa")
+    }
+
+    @Test
+    fun `muokkauslomake varoittaa kun turvakieltoa ei saada tarkistettua`() {
+        val id = tallennaOlemassaolevaMerkinta(oidJotaEiOleOnrissa)
+
+        val html = html(get("/yki/arvioijat/$id/muokkaa").session(session()))
+
+        assertContains(html, "Turvakieltoa ei voitu tarkistaa")
+    }
+
+    @Test
+    fun `tietosivu ei varoita kun oppijanumerorekisteri kertoo ettei turvakieltoa ole`() {
+        val id = tallennaOlemassaolevaMerkinta()
+
+        val html = html(get("/yki/arvioijat/$id").session(session()))
+
+        assertFalse(html.contains("Turvakieltoa ei voitu tarkistaa"), "ONR vastasi, joten tieto on olemassa")
+        assertFalse(html.contains("Henkilöllä on turvakielto"))
     }
 
     @Test

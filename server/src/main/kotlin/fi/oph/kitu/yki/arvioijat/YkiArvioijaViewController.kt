@@ -117,7 +117,7 @@ class YkiArvioijaViewController(
             arvioijaService.haeArvioija(id)
                 ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
-        val turvakielto = arvioijaService.haeOnrHenkilo(arvioija.arvioijaOid)?.turvakielto == true
+        val turvakielto = arvioijaService.haeTurvakielto(arvioija.arvioijaOid)
 
         return ResponseEntity.ok(muokkausLomake(id, ArvioijaFormData.of(arvioija, turvakielto), FormErrors.EMPTY))
     }
@@ -211,7 +211,7 @@ class YkiArvioijaViewController(
         return ResponseEntity.ok(
             YkiArvioijaTiedotPage.render(
                 arvioija = arvioija,
-                henkilo = arvioijaService.haeOnrHenkilo(arvioija.arvioijaOid),
+                turvakielto = arvioijaService.haeTurvakielto(arvioija.arvioijaOid),
                 flash = viewMessage?.consume(),
                 kirjoitusKaytossa = asetukset.kirjoitusKaytossa,
             ),

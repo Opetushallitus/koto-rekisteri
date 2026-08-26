@@ -385,6 +385,14 @@ object UiText {
                         "yki.arvioija.turvakielto",
                         fi = "Henkilöllä on turvakielto. Käsittele yhteystietoja huolellisesti.",
                     )
+            val turvakieltoEiTiedossa: LocalizedString
+                get() =
+                    tr(
+                        "yki.arvioija.turvakieltoEiTiedossa",
+                        fi =
+                            "Turvakieltoa ei voitu tarkistaa oppijanumerorekisteristä. " +
+                                "Käsittele yhteystietoja huolellisesti.",
+                    )
             val eiYksiloity: LocalizedString
                 get() =
                     tr(

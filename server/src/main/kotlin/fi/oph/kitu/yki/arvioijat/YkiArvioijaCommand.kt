@@ -78,6 +78,6 @@ data class ArvioijanEsitaytto(
     val katuosoite: String?,
     val postinumero: String?,
     val postitoimipaikka: String?,
-    val turvakielto: Boolean,
+    val turvakielto: Turvakieltotieto,
     val olemassaolevaMerkinta: YkiArvioijaEntity?,
 )

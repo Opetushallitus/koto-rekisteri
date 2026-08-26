@@ -41,7 +41,7 @@ data class ArvioijaFormData(
     val jatkorekisterointi: Boolean = false,
     val tila: YkiArvioijaTila = YkiArvioijaTila.AKTIIVINEN,
     val ashaNumero: String? = null,
-    val turvakielto: Boolean = false,
+    val turvakielto: Turvakieltotieto = Turvakieltotieto.EI,
     val onOlemassa: Boolean = false,
     val arviointioikeus: List<String>? = null,
 ) {
@@ -98,7 +98,7 @@ data class ArvioijaFormData(
 
         fun of(
             arvioija: YkiArvioijaEntity,
-            turvakielto: Boolean = false,
+            turvakielto: Turvakieltotieto = Turvakieltotieto.EI,
         ): ArvioijaFormData {
             val oikeudet = arvioija.arviointioikeudet
             return ArvioijaFormData(
