@@ -171,8 +171,17 @@ class YkiArvioijaService(
             haku.oppijanumero?.trim()?.takeIf { it.isNotEmpty() }
                 ?: return virhe("oppijanumero", "Oppijanumero on pakollinen tieto").left()
 
-        return Oid.parse(oppijanumero).mapLeft {
-            virhe("oppijanumero", "Oppijanumero on virheellinen")
+        val syotetty =
+            Oid.parse(oppijanumero).getOrNull()
+                ?: return virhe("oppijanumero", "Oppijanumero on virheellinen").left()
+
+        // Virkailija voi syottaa duplikaatin OIDin. Rekisteri avaimennetaan master-OIDilla, joten
+        // ilman ratkaisua sama henkilo saisi toisen merkinnan eika olemassa olevaa loydettaisi.
+        return oppijanumeroService.getMasterOid(syotetty).mapLeft { onrVirhe ->
+            when (onrVirhe) {
+                is OppijanumeroException.OppijaNotIdentifiedException -> YkiArvioijaError.OppijaaEiYksiloity(syotetty)
+                else -> YkiArvioijaError.OppijanumeroaEiSaatu(onrVirhe)
+            }
         }
     }
 

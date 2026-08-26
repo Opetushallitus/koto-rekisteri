@@ -51,6 +51,10 @@ class YkiArvioijaLisaysTest(
     /** Mock-ONR:lla ei ole tata henkiloa, joten turvakieltokysely epaonnistuu. */
     private val oidJotaEiOleOnrissa = "1.2.246.562.24.99999999999"
 
+    /** Mock-ONR:ssa taman henkilon master-oid on [masterOid]. */
+    private val duplikaattiOid = "1.2.246.562.24.88888888888"
+    private val masterOid = "1.2.246.562.24.20281155246"
+
     @BeforeEach
     fun setup() {
         mockMvc =
@@ -370,6 +374,17 @@ class YkiArvioijaLisaysTest(
         assertContains(html, "Petro Testi Kivinen-Testi")
         assertContains(html, petronOid)
         assertContains(html, "Perustaso")
+    }
+
+    @Test
+    fun `duplikaattioppijanumerolla haettu ohjautuu master-oidin merkintaan`() {
+        tallennaOlemassaolevaMerkinta(masterOid)
+
+        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to duplikaattiOid)
+
+        assertContains(html, """value="$masterOid"""", message = "merkinta avaimennetaan master-oidilla")
+        assertContains(html, "Arvioija on jo rekisterissä", message = "olemassa oleva merkinta on loydyttava")
+        assertFalse(html.contains("""value="$duplikaattiOid""""), "duplikaatti-oidia ei saa tallentaa")
     }
 
     @Test
