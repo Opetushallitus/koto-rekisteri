@@ -57,8 +57,15 @@ fun FlowContent.formField(
     }
 }
 
-fun FlowContent.formErrorSummary(errors: FormErrors) {
-    val yleiset = errors.yleiset
+/**
+ * @param piilokentat kentat joilla ei ole omaa syotetta lomakkeella. Ilman niita niiden
+ *   validointivirheet jaisivat renderoimatta kokonaan ja lomake palaisi ilman mitaan palautetta.
+ */
+fun FlowContent.formErrorSummary(
+    errors: FormErrors,
+    piilokentat: List<String> = emptyList(),
+) {
+    val yleiset = errors.yleiset + piilokentat.flatMap { errors[it] }
     if (yleiset.isEmpty()) return
 
     errorMessage(UiText.Form.tarkistaTiedot) {

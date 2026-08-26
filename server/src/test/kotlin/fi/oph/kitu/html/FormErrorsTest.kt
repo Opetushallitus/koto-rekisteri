@@ -111,4 +111,17 @@ class FormErrorsTest {
                 }
             }
         }
+
+    @Test
+    fun `piilokentan virhe voidaan nostaa yhteenvetoon`() {
+        val errors =
+            FormErrors.of(
+                listOf(
+                    Validation.ValidationError(listOf("arvioijaOid"), "Oppijanumeroa ei loydy"),
+                ),
+            )
+
+        assertEquals(emptyList(), errors.yleiset, "kentalle kohdistettu virhe ei ole yleinen")
+        assertEquals(listOf("Oppijanumeroa ei loydy"), errors["arvioijaOid"])
+    }
 }

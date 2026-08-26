@@ -96,7 +96,7 @@ object YkiArvioijaLomakePage {
 
             form.turvakielto.varoitus?.let { warningMessage(it) }
 
-            formErrorSummary(errors)
+            formErrorSummary(errors, piilokentat = listOf("arvioijaOid"))
 
             formPost(action) {
                 hiddenValue("arvioijaOid", form.arvioijaOid.orEmpty())
