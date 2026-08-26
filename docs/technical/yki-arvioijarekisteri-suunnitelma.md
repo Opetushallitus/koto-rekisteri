@@ -479,8 +479,9 @@ interface CustomYkiArvioijaRepository {
 Keskeiset SQL:t:
 
 ```sql
--- tallenna(): arviointioikeuksien TÄYSI korvaus. Nykyinen upsert ei poista koskaan mitään,
--- mikä masterina on virhe: peruttu kielioikeus jäisi roikkumaan ja lähtisi Solkiin.
+-- tallenna(poistaPuuttuvatOikeudet = true): arviointioikeuksien TÄYSI korvaus. Nykyinen upsert
+-- ei poista koskaan mitään, mikä masterina on virhe: peruttu kielioikeus jäisi roikkumaan ja
+-- lähtisi Solkiin. HUOM. sisääntuleva POST /yki/api/arvioija kutsuu tätä arvolla false, ks. §4.2.
 DELETE FROM yki_arviointioikeus
 WHERE arvioija_id = :id AND kieli <> ALL (:kielet::yki_tutkintokieli[]);
 
@@ -777,6 +778,15 @@ syyn ja päivämäärän. Näin master-vastuu ei vuoda takaisin Solkille: Solki 
 yhteystietoja eikä kausia, vain passivoida. Kavennettu rajapinta ei myöskään saa laukaista kitun omaa
 `PUT`-lähetystä takaisin Solkiin (kaikuvaara) — passivointi merkitään `solkiin_lahetetty`-kenttään heti
 lähetetyksi.
+
+**Kunnes kaventaminen tehdään, sisääntuleva push ei saa poistaa mitään.** Vaihe 2 vaihtoi
+endpointin tallennuksen `upsert`ista `tallenna`an, jolloin se alkoi poistaa payloadista puuttuvat
+arviointioikeudet — `origin/main`in `upsert`issa ei ole `DELETE`ä lainkaan. Solki on yhä master
+eikä sen payloadin kattavuudesta ole sopimusta (§11.1), joten osittainen push pyyhkisi muut kielet.
+Endpoint kutsuu siksi `tallenna(..., poistaPuuttuvatOikeudet = false)`; kitun oma
+syöttökäyttöliittymä käyttää edelleen oletusta `true`. Katettu testeillä
+`YkiArvioijaRepositoryTest` (`Sisaantulevassa pushissa puuttuvia arviointioikeuksia ei poisteta`) ja
+`YkiApiControllerTest` (`Solkin push ei poista arviointioikeuksia jotka puuttuvat payloadista`).
 
 Vanhan endpointin osalta edetään kaksivaiheisesti, koska JYU saattaa jo kutsua sitä:
 
