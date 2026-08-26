@@ -262,8 +262,12 @@ fun FlowContent.arviointioikeusMatriisi(
                 }
             }
             tbody {
-                Tutkintokieli.entries
-                    .filterNot { it.isLegacy() }
+                val legacyOikeudet =
+                    Tutkintokieli.entries.filter { kieli ->
+                        kieli.isLegacy() && Tutkintotaso.entries.any { ArvioijaFormData.valinta(kieli, it) in valitut }
+                    }
+
+                (Tutkintokieli.entries.filterNot { it.isLegacy() } + legacyOikeudet)
                     .forEach { kieli ->
                         tr {
                             th { +kieli.nimi }
@@ -273,6 +277,8 @@ fun FlowContent.arviointioikeusMatriisi(
                                     input(type = InputType.checkBox, name = "arviointioikeus", value = arvo) {
                                         testId("arviointioikeus-$arvo")
                                         checked = arvo in valitut
+                                        // Vanhentunutta tutkintokielta ei voi enaa myontaa eika perua.
+                                        disabled = kieli.isLegacy()
                                     }
                                 }
                             }

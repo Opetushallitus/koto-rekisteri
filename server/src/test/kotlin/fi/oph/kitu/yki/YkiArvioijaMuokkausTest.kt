@@ -33,6 +33,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -227,6 +228,54 @@ class YkiArvioijaMuokkausTest(
                 ?: throw AssertionError("piilokenttaa $name ei loytynyt lomakkeelta:\n$html")
         return Regex("""value="([^"]*)"""").find(kentta)?.groupValues?.get(1)
             ?: throw AssertionError("piilokentalla $name ei ole arvoa: $kentta")
+    }
+
+    @Test
+    fun `vanhentunut tutkintokieli sailyy vaikka lomake ei sita tunne`() {
+        val id = idOf(petro)
+        lisaaLegacyOikeus(id)
+
+        mockMvc
+            .perform(
+                muokkaus(id, petro)
+                    .param("postitoimipaikka", "TAMPERE")
+                    .param("arviointioikeus", "FIN:PT"),
+            ).andReturn()
+
+        val kielet = repository.findArvioijaById(id)!!.arviointioikeudet.map { it.kieli }
+        assertTrue(
+            kielet.contains(Tutkintokieli.SWE10),
+            "matriisi ei renderoi legacy-kielta, joten sita ei saa myoskaan poistaa: $kielet",
+        )
+    }
+
+    @Test
+    fun `vanhentunut tutkintokieli nakyy lomakkeella lukittuna`() {
+        val id = idOf(petro)
+        lisaaLegacyOikeus(id)
+
+        val lomake = html(get("/yki/arvioijat/$id/muokkaa").session(session()))
+        val kentta =
+            Regex("""<input[^>]*data-testid="arviointioikeus-SWE10:PT"[^>]*>""").find(lomake)?.value
+
+        assertNotNull(kentta, "legacy-oikeuden on nayttava lomakkeella:\n$lomake")
+        assertContains(kentta, "checked")
+        assertContains(kentta, "disabled")
+    }
+
+    private fun lisaaLegacyOikeus(id: Int) {
+        val arvioija = repository.findArvioijaById(id)!!
+        repository.tallenna(
+            arvioija.copy(
+                arviointioikeudet =
+                    arvioija.arviointioikeudet +
+                        arvioija.arviointioikeudet.first().copy(
+                            id = null,
+                            kieli = Tutkintokieli.SWE10,
+                            tasot = setOf(Tutkintotaso.PT),
+                        ),
+            ),
+        )
     }
 
     @Test

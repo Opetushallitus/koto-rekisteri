@@ -203,14 +203,18 @@ class CustomYkiArvioijaRepositoryImpl(
     }
 
     /**
-     * Masterina kitun on voitava myos perua arviointioikeus: payloadista puuttuva kieli
-     * poistetaan, jotta peruttu oikeus ei jaa roikkumaan eika paady Solkiin.
+     * Legacy-kielet sailytetaan aina: arviointioikeusmatriisi ei renderoi niita, joten ne
+     * puuttuvat lomakkeen payloadista eika niiden poistoa ole tarkoitettu.
      */
     private fun poistaPuuttuvatArviointioikeudet(
         arvioijaId: Int,
         arviointioikeudet: List<YkiArviointioikeusEntity>,
     ) {
-        val sailytettavat = arviointioikeudet.map { it.kieli.toString() }.toTypedArray()
+        val sailytettavat =
+            (arviointioikeudet.map { it.kieli } + Tutkintokieli.entries.filter { it.isLegacy() })
+                .distinct()
+                .map { it.toString() }
+                .toTypedArray()
         jdbcTemplate.update({ connection ->
             connection
                 .prepareStatement(
