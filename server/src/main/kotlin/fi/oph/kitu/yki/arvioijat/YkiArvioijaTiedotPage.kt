@@ -14,7 +14,6 @@ import fi.oph.kitu.html.warningMessage
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.unaryPlus
-import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.CurrentUser
 import fi.oph.kitu.webmvc.Links
@@ -26,7 +25,7 @@ import kotlinx.html.p
 object YkiArvioijaTiedotPage {
     fun render(
         arvioija: YkiArvioijaEntity,
-        henkilo: OppijanumerorekisteriHenkilo?,
+        turvakielto: Turvakieltotieto,
         flash: ViewMessageData?,
         kirjoitusKaytossa: Boolean,
     ): String =
@@ -35,9 +34,7 @@ object YkiArvioijaTiedotPage {
 
             viewMessage(flash)
 
-            if (henkilo?.turvakielto == true) {
-                warningMessage(UiText.Yki.Arvioija.turvakielto)
-            }
+            turvakielto.varoitus?.let { warningMessage(it) }
 
             if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
                 p {

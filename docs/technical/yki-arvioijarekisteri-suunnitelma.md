@@ -675,6 +675,11 @@ kuin `enumFilter`issa), sarakkeet = `PT`/`KT`/`YT`, solut
 `input type=checkbox name="arviointioikeus" value="FIN:PT"`. Nolla JS:ää, yksi kenttänimi, ja
 "sallitaan useita" toteutuu kirjaimellisesti. Jo tallennetut legacy-kielet näytetään read-only-rivinä.
 
+**Turvakielto** kysytään ONR:stä joka renderöinnissä eikä sitä talleteta kituun. Kysely voi myös
+epäonnistua, ja se on eri asia kuin "ei turvakieltoa": `Turvakieltotieto`-enum erottaa `ON`/`EI`/
+`EI_TIEDOSSA`, ja viimeisestä renderöityy oma varoitus. Ilman erottelua ONR-katko näyttäisi
+yhteystiedot ilman varoitusta — juuri silloin kun kukaan ei tiedä tarkistuksen epäonnistuneen.
+
 **Kauden päättymispäivä** on read-only (`disabled` input + selite "Järjestelmä laskee 5 vuotta
 alkupäivästä"). Lisätään `html/Common.kt`:n `javascript(...)`-tyylinen ~5 rivin inline-snippet, joka
 päivittää esikatseluarvon `change`-tapahtumassa — sama kuvio kuin `Forms.kt`:n `submitButton`.

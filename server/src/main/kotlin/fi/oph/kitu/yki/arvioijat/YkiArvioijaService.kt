@@ -12,7 +12,6 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroHakuService
 import fi.oph.kitu.oppijanumero.OppijanumeroService
-import fi.oph.kitu.oppijanumero.OppijanumerorekisteriHenkilo
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.util.validation.ValidationService
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -49,9 +48,13 @@ class YkiArvioijaService(
             auditLogger.log(AuditLogOperation.YkiArvioijaViewed, it.arvioijaOid)
         }
 
+    /** ONR-kyselyn epaonnistuminen on eri asia kuin "ei turvakieltoa", ks. [Turvakieltotieto]. */
     @WithSpan
-    fun haeOnrHenkilo(oid: Oid): OppijanumerorekisteriHenkilo? =
-        oppijanumeroService.getHenkiloByMasterOid(oid).getOrNull()
+    fun haeTurvakielto(oid: Oid): Turvakieltotieto =
+        oppijanumeroService.getHenkiloByMasterOid(oid).fold(
+            ifLeft = { Turvakieltotieto.EI_TIEDOSSA },
+            ifRight = { if (it.turvakielto == true) Turvakieltotieto.ON else Turvakieltotieto.EI },
+        )
 
     @WithSpan
     fun haeHenkilotiedot(haku: OnrHaku): Either<YkiArvioijaError, ArvioijanEsitaytto> =
@@ -179,7 +182,7 @@ class YkiArvioijaService(
                     katuosoite = arvo("YHTEYSTIETO_KATUOSOITE"),
                     postinumero = arvo("YHTEYSTIETO_POSTINUMERO"),
                     postitoimipaikka = arvo("YHTEYSTIETO_KAUPUNKI"),
-                    turvakielto = henkilo.turvakielto == true,
+                    turvakielto = if (henkilo.turvakielto == true) Turvakieltotieto.ON else Turvakieltotieto.EI,
                     olemassaolevaMerkinta = repository.findByArvioijaOid(oid),
                 )
             }
