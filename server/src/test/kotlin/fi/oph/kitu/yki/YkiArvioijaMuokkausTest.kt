@@ -230,6 +230,36 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
+    fun `passivoitu arvioija ei aktivoidu yhteystietojen korjauksesta`() {
+        val id = idOf(petro)
+        passivoi(id)
+
+        mockMvc
+            .perform(
+                muokkaus(id, petro)
+                    .param("postitoimipaikka", "TAMPERE")
+                    .param("arviointioikeus", "FIN:PT"),
+            ).andReturn()
+
+        val paivitetty = repository.findArvioijaById(id)!!
+        assertEquals("TAMPERE", paivitetty.postitoimipaikka, "muutoksen on tallennuttava")
+        assertEquals(
+            listOf(YkiArvioijaTila.PASSIVOITU),
+            paivitetty.arviointioikeudet.map { it.tila },
+            "lomake ei kanna tilaa, joten sen on sailyttava ennallaan",
+        )
+    }
+
+    private fun passivoi(id: Int) {
+        val arvioija = repository.findArvioijaById(id)!!
+        repository.tallenna(
+            arvioija.copy(
+                arviointioikeudet = arvioija.arviointioikeudet.map { it.copy(tila = YkiArvioijaTila.PASSIVOITU) },
+            ),
+        )
+    }
+
+    @Test
     fun `tuntemattoman arvioijan muokkaus palauttaa 404`() {
         mockMvc
             .perform(get("/yki/arvioijat/999999/muokkaa").session(session()))

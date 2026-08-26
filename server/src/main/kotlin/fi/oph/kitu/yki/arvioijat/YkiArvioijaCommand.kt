@@ -21,7 +21,14 @@ data class TallennaArvioija(
 ) {
     val kaudenPaattymispaiva: LocalDate get() = Rekisterikausi.paattymispaiva(kaudenAlkupaiva)
 
-    fun toEntity(ensimmainenRekisterointipaiva: LocalDate = kaudenAlkupaiva): YkiArvioijaEntity =
+    /**
+     * @param aiemmatTilat kielikohtainen tila ennestaan olevilta riveilta. Lomake ei kanna tilaa,
+     *   joten ilman tata muokkaus aktivoisi passivoidun merkinnan uudelleen.
+     */
+    fun toEntity(
+        ensimmainenRekisterointipaiva: LocalDate = kaudenAlkupaiva,
+        aiemmatTilat: Map<Tutkintokieli, YkiArvioijaTila> = emptyMap(),
+    ): YkiArvioijaEntity =
         YkiArvioijaEntity(
             id = null,
             arvioijaOid = arvioijaOid,
@@ -40,7 +47,7 @@ data class TallennaArvioija(
                         arvioijaId = null,
                         kieli = oikeus.kieli,
                         tasot = oikeus.tasot,
-                        tila = tila,
+                        tila = aiemmatTilat[oikeus.kieli] ?: tila,
                         kaudenAlkupaiva = kaudenAlkupaiva,
                         kaudenPaattymispaiva = kaudenPaattymispaiva,
                         jatkorekisterointi = jatkorekisterointi,

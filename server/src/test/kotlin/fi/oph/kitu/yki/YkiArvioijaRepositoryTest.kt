@@ -186,6 +186,25 @@ class YkiArvioijaRepositoryTest(
     }
 
     @Test
+    fun `Solkin push ei pyyhi kitussa syotettyja kenttia`() {
+        val kitunMerkinta =
+            arvioija(arviointioikeus(Tutkintokieli.SWE)).copy(
+                ashaNumero = "OPH-123-2026",
+                passivoitu = OffsetDateTime.parse("2026-02-01T00:00:00Z"),
+                yksilointiKesken = true,
+            )
+        arvioijaRepository.tallenna(kitunMerkinta)
+
+        // Solkin payload ei kanna naita kenttia lainkaan.
+        arvioijaRepository.tallenna(arvioija(arviointioikeus(Tutkintokieli.SWE)), lahde = Tallennuslahde.SOLKI)
+
+        val tallennettu = arvioijaRepository.findByArvioijaOid(oid)
+        assertEquals("OPH-123-2026", tallennettu?.ashaNumero, "hallintopaatoksen numero on kitun omaa dataa")
+        assertNotNull(tallennettu?.passivoitu, "passivointihetki on sailytysajan laskennan alkupiste")
+        assertTrue(tallennettu?.yksilointiKesken == true)
+    }
+
+    @Test
     fun `Duplikaatteja ei tallenneta`() {
         val arvioija = arvioija(arviointioikeus())
 

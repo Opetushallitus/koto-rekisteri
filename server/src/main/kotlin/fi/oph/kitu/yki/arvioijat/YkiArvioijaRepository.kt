@@ -118,6 +118,19 @@ class CustomYkiArvioijaRepositoryImpl(
         // tasmalleen sama kuin muokattu: pienikin ero jattaisi rivin lahetysjonoon (V117:n
         // osittainen indeksi) ja lahettaisi Solkin oman datan takaisin Solkiin.
         val lahetysleima = if (lahde == Tallennuslahde.SOLKI) "now()" else "NULL"
+
+        // ASHA-numero, passivointihetki ja yksilointitila syntyvat kitussa. Solkin payload ei
+        // kanna niita, joten EXCLUDED-arvo olisi aina tyhja ja pyyhkisi ne.
+        val kitunOmatKentat =
+            if (lahde == Tallennuslahde.KITU) {
+                """
+                asha_numero = EXCLUDED.asha_numero,
+                yksilointi_kesken = EXCLUDED.yksilointi_kesken,
+                passivoitu = EXCLUDED.passivoitu,
+                """.trimIndent()
+            } else {
+                ""
+            }
         val versioehto = odotettuMuokkaushetki?.let { "WHERE yki_arvioija.muokattu = ?" }.orEmpty()
 
         val parametrit =
@@ -173,9 +186,7 @@ class CustomYkiArvioijaRepositoryImpl(
                     katuosoite = EXCLUDED.katuosoite,
                     postinumero = EXCLUDED.postinumero,
                     postitoimipaikka = EXCLUDED.postitoimipaikka,
-                    asha_numero = EXCLUDED.asha_numero,
-                    yksilointi_kesken = EXCLUDED.yksilointi_kesken,
-                    passivoitu = EXCLUDED.passivoitu,
+                    $kitunOmatKentat
                     -- luotu ja luoja_oid sailyvat ennallaan paivityksessa
                     muokattu = now(),
                     muokkaaja_oid = EXCLUDED.muokkaaja_oid,

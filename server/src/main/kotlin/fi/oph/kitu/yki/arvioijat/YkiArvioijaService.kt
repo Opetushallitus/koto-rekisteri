@@ -76,7 +76,7 @@ class YkiArvioijaService(
                 // jolloin tallennus paivittaa merkintaa eika aloita sita alusta.
                 val olemassaoleva = repository.findByArvioijaOid(validoitu.arvioijaOid)
                 tallennaTaiKonflikti(
-                    validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu)),
+                    entiteetti(validoitu, olemassaoleva),
                     tekija,
                     odotettuMuokkaushetki,
                 ).flatMap { id ->
@@ -112,7 +112,7 @@ class YkiArvioijaService(
             .mapLeft { YkiArvioijaError.Validointivirheet(it) }
             .flatMap { validoitu ->
                 tallennaTaiKonflikti(
-                    validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu)),
+                    entiteetti(validoitu, olemassaoleva),
                     tekija,
                     odotettuMuokkaushetki,
                 ).flatMap {
@@ -121,6 +121,24 @@ class YkiArvioijaService(
                 }
             }
     }
+
+    /**
+     * Lomake kantaa vain virkailijan syottamat kentat. Merkinnan elinkaaritiedot — passivointihetki,
+     * yksilointitila ja kielikohtainen tila — kuuluvat muille kulkureiteille, joten ne poimitaan
+     * olemassa olevalta rivilta eivatka nollaudu tallennuksessa.
+     */
+    private fun entiteetti(
+        validoitu: TallennaArvioija,
+        olemassaoleva: YkiArvioijaEntity?,
+    ): YkiArvioijaEntity =
+        validoitu
+            .toEntity(
+                ensimmainenRekisterointipaiva(olemassaoleva, validoitu),
+                olemassaoleva?.arviointioikeudet?.associate { it.kieli to it.tila }.orEmpty(),
+            ).copy(
+                passivoitu = olemassaoleva?.passivoitu,
+                yksilointiKesken = olemassaoleva?.yksilointiKesken == true,
+            )
 
     private fun tallennaTaiKonflikti(
         arvioija: YkiArvioijaEntity,
