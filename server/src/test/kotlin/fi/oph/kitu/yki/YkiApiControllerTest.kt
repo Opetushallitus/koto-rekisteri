@@ -53,6 +53,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 @SpringBootTest
@@ -793,6 +794,10 @@ class YkiApiControllerTest(
             assertEquals(
                 listOf(Tutkintokieli.FIN, Tutkintokieli.SWE),
                 saved?.arviointioikeudet?.map { it.kieli }?.sortedBy { it.name },
+            )
+            assertNotNull(
+                saved?.solkiinLahetetty,
+                "Solkin omaa dataa ei lahetata takaisin Solkiin",
             )
         }
     }

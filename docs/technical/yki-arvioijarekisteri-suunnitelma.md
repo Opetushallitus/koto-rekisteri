@@ -479,9 +479,9 @@ interface CustomYkiArvioijaRepository {
 Keskeiset SQL:t:
 
 ```sql
--- tallenna(poistaPuuttuvatOikeudet = true): arviointioikeuksien TÄYSI korvaus. Nykyinen upsert
--- ei poista koskaan mitään, mikä masterina on virhe: peruttu kielioikeus jäisi roikkumaan ja
--- lähtisi Solkiin. HUOM. sisääntuleva POST /yki/api/arvioija kutsuu tätä arvolla false, ks. §4.2.
+-- tallenna(lahde = KITU): arviointioikeuksien TÄYSI korvaus. Nykyinen upsert ei poista koskaan
+-- mitään, mikä masterina on virhe: peruttu kielioikeus jäisi roikkumaan ja lähtisi Solkiin.
+-- HUOM. sisääntuleva POST /yki/api/arvioija kutsuu tätä lähteellä SOLKI, ks. §4.2.
 DELETE FROM yki_arviointioikeus
 WHERE arvioija_id = :id AND kieli <> ALL (:kielet::yki_tutkintokieli[]);
 
@@ -788,14 +788,22 @@ yhteystietoja eikä kausia, vain passivoida. Kavennettu rajapinta ei myöskään
 `PUT`-lähetystä takaisin Solkiin (kaikuvaara) — passivointi merkitään `solkiin_lahetetty`-kenttään heti
 lähetetyksi.
 
-**Kunnes kaventaminen tehdään, sisääntuleva push ei saa poistaa mitään.** Vaihe 2 vaihtoi
-endpointin tallennuksen `upsert`ista `tallenna`an, jolloin se alkoi poistaa payloadista puuttuvat
-arviointioikeudet — `origin/main`in `upsert`issa ei ole `DELETE`ä lainkaan. Solki on yhä master
-eikä sen payloadin kattavuudesta ole sopimusta (§11.1), joten osittainen push pyyhkisi muut kielet.
-Endpoint kutsuu siksi `tallenna(..., poistaPuuttuvatOikeudet = false)`; kitun oma
-syöttökäyttöliittymä käyttää edelleen oletusta `true`. Katettu testeillä
-`YkiArvioijaRepositoryTest` (`Sisaantulevassa pushissa puuttuvia arviointioikeuksia ei poisteta`) ja
-`YkiApiControllerTest` (`Solkin push ei poista arviointioikeuksia jotka puuttuvat payloadista`).
+**Kunnes kaventaminen tehdään, sisääntuleva push ei saa poistaa mitään eikä kaikua takaisin.**
+Vaihe 2 vaihtoi endpointin tallennuksen `upsert`ista `tallenna`an, jolloin se alkoi (a) poistaa
+payloadista puuttuvat arviointioikeudet ja (b) nollata `solkiin_lahetetty`n — `origin/main`in
+`upsert`issa ei ole `DELETE`ä eikä lähetyskenttiä lainkaan. Solki on yhä master eikä sen payloadin
+kattavuudesta ole sopimusta (§11.1), joten osittainen push pyyhkisi muut kielet, ja nollattu
+lähetysleima laittaisi Solkin oman datan §5:n lähetysjonoon — sama kaikuvaara jota V117:n
+`KRIITTINEN`-backfill torjuu historiariveillä.
+
+Tallennuksen lähde on siksi eksplisiittinen: `tallenna(..., lahde = Tallennuslahde.SOLKI)` jättää
+puuttuvat oikeudet rauhaan ja leimaa rivin lähetetyksi kannan omalla `now()`-arvolla (sama arvo kuin
+`muokattu`, jotta osittainen indeksi ei poimi riviä). Kitun oma syöttökäyttöliittymä käyttää oletusta
+`Tallennuslahde.KITU`: master-semantiikka ja rivi lähetysjonoon. Vaiheen 10 lähetin ei siis tarvitse
+erillistä suodatinta sisääntulleille riveille. Katettu testeillä `YkiArvioijaRepositoryTest`
+(`Sisaantulevassa pushissa puuttuvia arviointioikeuksia ei poisteta`, `Solkin push ei jata rivia
+lahetysjonoon`, `Kitun oma tallennus jaa lahetysjonoon`) ja `YkiApiControllerTest` (`Solkin push ei
+poista arviointioikeuksia jotka puuttuvat payloadista`).
 
 Vanhan endpointin osalta edetään kaksivaiheisesti, koska JYU saattaa jo kutsua sitä:
 

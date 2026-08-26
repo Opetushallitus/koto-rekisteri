@@ -12,6 +12,7 @@ import fi.oph.kitu.util.validation.ValidationService
 import fi.oph.kitu.util.validation.getOrThrow
 import fi.oph.kitu.webmvc.csvAttachmentResponse
 import fi.oph.kitu.yki.Arviointitila.ARVIOITU
+import fi.oph.kitu.yki.arvioijat.Tallennuslahde
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaParams
@@ -302,9 +303,9 @@ class YkiApiController(
         @RequestBody arvioija: YkiArvioija,
     ): ResponseEntity<*> {
         val validatedArvioija = validationService.validateAndEnrich(arvioija).getOrThrow()
-        // Solki on yha arvioijadatan master, eika sen payloadin kattavuudesta ole sopimusta:
-        // osittainen push ei saa pyyhkia muita kielia. Kavennetaan vasta vaiheessa 11.
-        ykiArvioijaRepository.tallenna(validatedArvioija.toEntity(), poistaPuuttuvatOikeudet = false)
+        // Solki on yha arvioijadatan master: osittainen push ei saa pyyhkia muita kielia
+        // eika Solkin omaa dataa lahetata takaisin Solkiin. Kavennetaan vasta vaiheessa 11.
+        ykiArvioijaRepository.tallenna(validatedArvioija.toEntity(), lahde = Tallennuslahde.SOLKI)
         return TiedonsiirtoSuccess().toResponseEntity()
     }
 }
