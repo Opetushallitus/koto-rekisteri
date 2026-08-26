@@ -627,6 +627,10 @@ näkymätön tagipohjaiselle `DisplayTableColumn.of`:lle) ja siirtyy tyypille `Y
 
 ### 3.4 Lisäys- ja muokkauslomake
 
+Oppijanumerolla haettaessa syötetty OID ratkaistaan ONR:n **master-OIDiksi** samoin kuin hetulla
+haettaessa: rekisteri avaimennetaan master-OIDilla, joten duplikaatti-OID loisi muuten samalle
+henkilölle toisen merkinnän eikä löytäisi olemassa olevaa.
+
 **Vaihe 1 (`GET /yki/arvioijat/uusi`)** — pieni kortti: `henkilotunnus`, `sukunimi`, `etunimet`,
 `kutsumanimi`, sekä vaihtoehtoinen `oppijanumero`-kenttä ohituspoluksi. Nappi "Hae henkilön tiedot"
 (`formPost(Links.Yki.arvioijaHaku())`).
@@ -669,11 +673,20 @@ data class ArvioijaFormData(
 }
 ```
 
+**Elinkaarikentät eivät kulje lomakkeen kautta.** Lomake tuntee vain virkailijan syöttämät kentät,
+joten `passivoitu`, `yksilointi_kesken` ja arviointioikeuksien `tila` poimitaan tallennuksessa
+olemassa olevalta riviltä. Ilman tätä pelkkä yhteystiedon korjaus aktivoisi passivoidun merkinnän
+uudelleen. Vastaavasti `arvioijaOid`-kentän validointivirheet nostetaan `formErrorSummary`n
+`piilokentat`-listalla näkyviin — kenttä renderöityy vain piilokenttänä, joten ilman tätä ONR-virhe
+palauttaisi lomakkeen ilman mitään palautetta.
+
 **Arviointioikeusmatriisi** (`FlowContent.arviointioikeusMatriisi(valitut, errors)`): taulukko, rivit =
 ei-legacy `Tutkintokieli`t (`@HideInTableFilter` suodattaa `SWE10`/`ENG11`/`ENG12` pois — sama annotaatio
 kuin `enumFilter`issa), sarakkeet = `PT`/`KT`/`YT`, solut
 `input type=checkbox name="arviointioikeus" value="FIN:PT"`. Nolla JS:ää, yksi kenttänimi, ja
-"sallitaan useita" toteutuu kirjaimellisesti. Jo tallennetut legacy-kielet näytetään read-only-rivinä.
+"sallitaan useita" toteutuu kirjaimellisesti. Jo tallennetut legacy-kielet näytetään read-only-rivinä (`disabled`), ja
+`poistaPuuttuvatArviointioikeudet` ohittaa legacy-kielet: koska matriisi ei renderöi niitä, ne
+puuttuvat payloadista eikä niitä ole tarkoitus poistaa.
 
 **Optimistinen lukitus.** Lomake on täyden tilan tilannekuva, joten kahdesta rinnakkaisesta
 muokkauksesta jälkimmäinen ylikirjoittaisi ensimmäisen hiljaisesti — ja yhteystietojen osalta
@@ -813,8 +826,11 @@ lähetysleima laittaisi Solkin oman datan §5:n lähetysjonoon — sama kaikuvaa
 `KRIITTINEN`-backfill torjuu historiariveillä.
 
 Tallennuksen lähde on siksi eksplisiittinen: `tallenna(..., lahde = Tallennuslahde.SOLKI)` jättää
-puuttuvat oikeudet rauhaan ja leimaa rivin lähetetyksi kannan omalla `now()`-arvolla (sama arvo kuin
-`muokattu`, jotta osittainen indeksi ei poimi riviä). Kitun oma syöttökäyttöliittymä käyttää oletusta
+puuttuvat oikeudet rauhaan, ei kirjoita kitun omia kenttiä (`asha_numero`, `passivoitu`,
+`yksilointi_kesken` — Solkin payload ei kanna niitä, joten `EXCLUDED`-arvo pyyhkisi ne) ja leimaa
+rivin lähetetyksi kannan omalla `now()`-arvolla (sama arvo kuin `muokattu`, jotta osittainen indeksi
+ei poimi riviä). Leimaa **ei** anneta, jos rivi oli jo lähetysjonossa: muuten Solkin push nielaisisi
+kitussa tehdyn, vielä lähettämättömän muutoksen. Kitun oma syöttökäyttöliittymä käyttää oletusta
 `Tallennuslahde.KITU`: master-semantiikka ja rivi lähetysjonoon. Vaiheen 10 lähetin ei siis tarvitse
 erillistä suodatinta sisääntulleille riveille. Katettu testeillä `YkiArvioijaRepositoryTest`
 (`Sisaantulevassa pushissa puuttuvia arviointioikeuksia ei poisteta`, `Solkin push ei jata rivia

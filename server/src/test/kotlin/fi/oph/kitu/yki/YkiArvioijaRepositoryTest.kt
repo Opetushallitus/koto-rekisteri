@@ -131,6 +131,8 @@ class YkiArvioijaRepositoryTest(
     @Test
     fun `Solkin push ei jata rivia lahetysjonoon`() {
         arvioijaRepository.tallenna(arvioija(arviointioikeus()), lahde = Tallennuslahde.SOLKI)
+        // Toinen push samaan riviin kayttaa ON CONFLICT -haaraa.
+        arvioijaRepository.tallenna(arvioija(arviointioikeus()), lahde = Tallennuslahde.SOLKI)
 
         val tallennettu = arvioijaRepository.findByArvioijaOid(oid)
         val lahetetty = tallennettu?.solkiinLahetetty
@@ -182,6 +184,19 @@ class YkiArvioijaRepositoryTest(
         assertEquals(
             listOf(Tutkintokieli.ENG),
             arvioijaRepository.findByArvioijaOid(oid)?.arviointioikeudet?.map { it.kieli },
+        )
+    }
+
+    @Test
+    fun `Solkin push ei siivoa kitun lahettamatonta muutosta jonosta`() {
+        // Kitun oma tallennus jattaa rivin lahetysjonoon (solkiin_lahetetty = NULL).
+        arvioijaRepository.tallenna(arvioija(arviointioikeus(Tutkintokieli.SWE)))
+
+        arvioijaRepository.tallenna(arvioija(arviointioikeus(Tutkintokieli.SWE)), lahde = Tallennuslahde.SOLKI)
+
+        assertNull(
+            arvioijaRepository.findByArvioijaOid(oid)?.solkiinLahetetty,
+            "jonossa ollut muutos on yha lahettamatta",
         )
     }
 
