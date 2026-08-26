@@ -3,7 +3,9 @@ package fi.oph.kitu.yki.arvioijat
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
+import org.springframework.format.annotation.DateTimeFormat
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 enum class ArvioijaHakutapa {
     HETU,
@@ -43,6 +45,9 @@ data class ArvioijaFormData(
     val ashaNumero: String? = null,
     val turvakielto: Turvakieltotieto = Turvakieltotieto.EI,
     val onOlemassa: Boolean = false,
+    /** Optimistisen lukituksen tunniste: mika rivin muokkaushetki oli lomaketta avattaessa. */
+    @param:DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    val muokattu: OffsetDateTime? = null,
     val arviointioikeus: List<String>? = null,
 ) {
     fun laskettuPaattymispaiva(): LocalDate? = kaudenAlkupaiva?.let(Rekisterikausi::paattymispaiva)
@@ -115,6 +120,7 @@ data class ArvioijaFormData(
                 ashaNumero = arvioija.ashaNumero,
                 turvakielto = turvakielto,
                 onOlemassa = true,
+                muokattu = arvioija.muokattu,
                 arviointioikeus =
                     oikeudet.flatMap { oikeus ->
                         oikeus.tasot.map { taso -> valinta(oikeus.kieli, taso) }

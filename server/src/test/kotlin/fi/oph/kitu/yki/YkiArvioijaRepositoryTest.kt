@@ -12,12 +12,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.dao.OptimisticLockingFailureException
 import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.jvm.optionals.getOrNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -145,6 +148,40 @@ class YkiArvioijaRepositoryTest(
         assertNull(
             arvioijaRepository.findByArvioijaOid(oid)?.solkiinLahetetty,
             "kitussa tehty muutos on lahetettava Solkiin",
+        )
+    }
+
+    @Test
+    fun `Vanhentunut muokkaushetki estaa tallennuksen`() {
+        arvioijaRepository.tallenna(arvioija(arviointioikeus(Tutkintokieli.SWE)))
+
+        assertFailsWith<OptimisticLockingFailureException> {
+            arvioijaRepository.tallenna(
+                arvioija(arviointioikeus(Tutkintokieli.ENG)),
+                odotettuMuokkaushetki = OffsetDateTime.parse("2020-01-01T00:00:00Z"),
+            )
+        }
+
+        assertEquals(
+            listOf(Tutkintokieli.SWE),
+            arvioijaRepository.findByArvioijaOid(oid)?.arviointioikeudet?.map { it.kieli },
+            "estetyn tallennuksen ei saa muuttaa mitaan",
+        )
+    }
+
+    @Test
+    fun `Ajantasainen muokkaushetki sallii tallennuksen`() {
+        arvioijaRepository.tallenna(arvioija(arviointioikeus(Tutkintokieli.SWE)))
+        val nykyinen = arvioijaRepository.findByArvioijaOid(oid)?.muokattu
+
+        arvioijaRepository.tallenna(
+            arvioija(arviointioikeus(Tutkintokieli.ENG)),
+            odotettuMuokkaushetki = nykyinen,
+        )
+
+        assertEquals(
+            listOf(Tutkintokieli.ENG),
+            arvioijaRepository.findByArvioijaOid(oid)?.arviointioikeudet?.map { it.kieli },
         )
     }
 

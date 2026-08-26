@@ -102,6 +102,7 @@ object YkiArvioijaLomakePage {
                 hiddenValue("arvioijaOid", form.arvioijaOid.orEmpty())
                 hiddenValue("turvakielto", form.turvakielto.name)
                 hiddenValue("onOlemassa", form.onOlemassa.toString())
+                form.muokattu?.let { hiddenValue("muokattu", it.toString()) }
 
                 card {
                     cardContent {

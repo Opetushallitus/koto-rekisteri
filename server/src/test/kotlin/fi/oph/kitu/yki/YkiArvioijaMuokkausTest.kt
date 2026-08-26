@@ -169,6 +169,67 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
+    fun `samanaikainen muokkaus ei ylikirjoita toisen muutoksia hiljaisesti`() {
+        val id = idOf(petro)
+        val lomake = html(get("/yki/arvioijat/$id/muokkaa").session(session()))
+        val tunniste = piilokentanArvo(lomake, "muokattu")
+
+        // Ensimmainen valilehti tallentaa ja siirtaa muokkaushetkea.
+        val ensimmainen =
+            mockMvc
+                .perform(
+                    post("/yki/arvioijat/$id")
+                        .session(session())
+                        .with(csrf())
+                        .param("arvioijaOid", petro)
+                        .param("muokattu", tunniste)
+                        .param("sukunimi", "Ensimmainen")
+                        .param("etunimet", "Petro Testi")
+                        .param("katuosoite", "Testikuja 5")
+                        .param("postinumero", "40100")
+                        .param("postitoimipaikka", "HELSINKI")
+                        .param("kaudenAlkupaiva", "2025-01-01")
+                        .param("arviointioikeus", "FIN:PT"),
+                ).andReturn()
+        assertEquals(303, ensimmainen.response.status, "poikkeus: ${ensimmainen.resolvedException}")
+
+        // Toinen valilehti tallentaa saman, nyt vanhentuneen tunnisteen kanssa.
+        val virhesivu =
+            html(
+                post("/yki/arvioijat/$id")
+                    .session(session())
+                    .with(csrf())
+                    .param("arvioijaOid", petro)
+                    .param("muokattu", tunniste)
+                    .param("sukunimi", "Toinen")
+                    .param("etunimet", "Petro Testi")
+                    .param("katuosoite", "Testikuja 5")
+                    .param("postinumero", "40100")
+                    .param("postitoimipaikka", "HELSINKI")
+                    .param("kaudenAlkupaiva", "2025-01-01")
+                    .param("arviointioikeus", "FIN:PT"),
+            )
+
+        assertContains(virhesivu, "Toinen käyttäjä ehti muokata")
+        assertEquals(
+            "Ensimmainen",
+            repository.findArvioijaById(id)?.sukunimi,
+            "ensimmaisen tallentajan muutos ei saa kadota",
+        )
+    }
+
+    private fun piilokentanArvo(
+        html: String,
+        name: String,
+    ): String {
+        val kentta =
+            Regex("""<input[^>]*name="$name"[^>]*>""").find(html)?.value
+                ?: throw AssertionError("piilokenttaa $name ei loytynyt lomakkeelta:\n$html")
+        return Regex("""value="([^"]*)"""").find(kentta)?.groupValues?.get(1)
+            ?: throw AssertionError("piilokentalla $name ei ole arvoa: $kentta")
+    }
+
+    @Test
     fun `tuntemattoman arvioijan muokkaus palauttaa 404`() {
         mockMvc
             .perform(get("/yki/arvioijat/999999/muokkaa").session(session()))

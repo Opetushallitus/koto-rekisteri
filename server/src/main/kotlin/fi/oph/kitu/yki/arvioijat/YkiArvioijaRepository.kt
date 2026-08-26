@@ -7,6 +7,7 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
@@ -22,10 +23,15 @@ import java.time.OffsetDateTime
 interface CustomYkiArvioijaRepository {
     fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int>
 
+    /**
+     * @param odotettuMuokkaushetki optimistinen lukitus: kun annettu, paivitys tehdaan vain jos
+     *   rivin `muokattu` on yha tama. Muuten heittaa [OptimisticLockingFailureException]in.
+     */
     fun tallenna(
         arvioija: YkiArvioijaEntity,
         tekija: Oid? = null,
         lahde: Tallennuslahde = Tallennuslahde.KITU,
+        odotettuMuokkaushetki: OffsetDateTime? = null,
     ): Int
 
     fun findByArvioijaOid(arvioijaOid: Oid): YkiArvioijaEntity?
@@ -84,8 +90,13 @@ class CustomYkiArvioijaRepositoryImpl(
         arvioija: YkiArvioijaEntity,
         tekija: Oid?,
         lahde: Tallennuslahde,
+        odotettuMuokkaushetki: OffsetDateTime?,
     ): Int {
-        val savedArvioija = upsertArvioija(arvioija, tekija, lahde)
+        val savedArvioija =
+            upsertArvioija(arvioija, tekija, lahde, odotettuMuokkaushetki)
+                ?: throw OptimisticLockingFailureException(
+                    "Arvioijan ${arvioija.arvioijaOid} tietoja on muokattu samanaikaisesti",
+                )
         val arvioijaId = savedArvioija.id!!.toInt()
 
         if (lahde == Tallennuslahde.KITU) {
@@ -101,11 +112,31 @@ class CustomYkiArvioijaRepositoryImpl(
         arvioija: YkiArvioijaEntity,
         tekija: Oid?,
         lahde: Tallennuslahde,
-    ): YkiArvioijaEntity {
+        odotettuMuokkaushetki: OffsetDateTime?,
+    ): YkiArvioijaEntity? {
         // Solkista tullut rivi leimataan lahetetyksi kannan omalla now()-arvolla, jotta se on
         // tasmalleen sama kuin muokattu: pienikin ero jattaisi rivin lahetysjonoon (V117:n
         // osittainen indeksi) ja lahettaisi Solkin oman datan takaisin Solkiin.
         val lahetysleima = if (lahde == Tallennuslahde.SOLKI) "now()" else "NULL"
+        val versioehto = odotettuMuokkaushetki?.let { "WHERE yki_arvioija.muokattu = ?" }.orEmpty()
+
+        val parametrit =
+            buildList<Any?> {
+                add(arvioija.arvioijaOid.toString())
+                add(arvioija.henkilotunnus)
+                add(arvioija.sukunimi)
+                add(arvioija.etunimet)
+                add(arvioija.sahkopostiosoite)
+                add(arvioija.katuosoite)
+                add(arvioija.postinumero)
+                add(arvioija.postitoimipaikka)
+                add(arvioija.ashaNumero)
+                add(arvioija.yksilointiKesken)
+                add(arvioija.passivoitu)
+                add(tekija?.toString())
+                add(tekija?.toString())
+                odotettuMuokkaushetki?.let { add(it) }
+            }
 
         return jdbcTemplate
             .query(
@@ -152,23 +183,12 @@ class CustomYkiArvioijaRepositoryImpl(
                     solkiin_lahetetty = $lahetysleima,
                     solki_lahetysvirhe = NULL,
                     solki_lahetysyritykset = 0
+                $versioehto
                 RETURNING *
                 """.trimIndent(),
                 YkiArvioijaEntity.fromRow,
-                arvioija.arvioijaOid.toString(),
-                arvioija.henkilotunnus,
-                arvioija.sukunimi,
-                arvioija.etunimet,
-                arvioija.sahkopostiosoite,
-                arvioija.katuosoite,
-                arvioija.postinumero,
-                arvioija.postitoimipaikka,
-                arvioija.ashaNumero,
-                arvioija.yksilointiKesken,
-                arvioija.passivoitu,
-                tekija?.toString(),
-                tekija?.toString(),
-            ).first()
+                *parametrit.toTypedArray(),
+            ).firstOrNull()
     }
 
     /**
