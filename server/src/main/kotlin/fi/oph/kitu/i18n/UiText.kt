@@ -363,6 +363,14 @@ object UiText {
             val muutoksetTallennettu: LocalizedString
                 get() = tr("yki.arvioija.muutoksetTallennettu", fi = "Arvioijan tiedot päivitettiin.")
             val peruuta: LocalizedString get() = tr("yki.arvioija.peruuta", fi = "Peruuta")
+            val jorekisterissa: LocalizedString
+                get() =
+                    tr(
+                        "yki.arvioija.joRekisterissa",
+                        fi =
+                            "Arvioija on jo rekisterissä. Tiedot on esitäytetty nykyisestä " +
+                                "merkinnästä, ja tallennus päivittää sen.",
+                    )
             val kirjoitusEiKaytossa: LocalizedString
                 get() =
                     tr(

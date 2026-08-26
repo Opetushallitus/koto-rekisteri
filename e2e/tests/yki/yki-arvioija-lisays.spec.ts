@@ -56,6 +56,38 @@ describe("Yleisen kielitutkinnon arvioijan lisays", () => {
     ).toHaveText("Kivinen-Testi")
   })
 
+  test("jo rekisterissa olevan arvioijan lomake esitaytetaan nykyisella merkinnalla", async ({
+    indexPage,
+    ykiArvioijaLomakePage,
+  }) => {
+    await indexPage.login()
+    await ykiArvioijaLomakePage.open()
+    await ykiArvioijaLomakePage.haeOppijanumerolla(PETRO)
+    await ykiArvioijaLomakePage.asetaKaudenAlkupaiva("2025-12-07")
+    await ykiArvioijaLomakePage.valitseArviointioikeus("FIN", "PT")
+    await ykiArvioijaLomakePage.valitseArviointioikeus("SWE", "YT")
+    await ykiArvioijaLomakePage.tallenna()
+
+    // Sama henkilo uudelleen lisayslomakkeella: ilman esitayttoa tallennus pyyhkisi
+    // toisen kielen arviointioikeuden.
+    await ykiArvioijaLomakePage.open()
+    await ykiArvioijaLomakePage.haeOppijanumerolla(PETRO)
+
+    await ykiArvioijaLomakePage.expectLomakeVisible()
+    await expect(ykiArvioijaLomakePage.getPageContent()).toContainText(
+      "Arvioija on jo rekisterissä",
+    )
+    await expect(
+      ykiArvioijaLomakePage.arviointioikeus("FIN", "PT"),
+    ).toBeChecked()
+    await expect(
+      ykiArvioijaLomakePage.arviointioikeus("SWE", "YT"),
+    ).toBeChecked()
+    await expect(
+      ykiArvioijaLomakePage.arviointioikeus("ENG", "YT"),
+    ).not.toBeChecked()
+  })
+
   test("puuttuva pakollinen tieto renderoi lomakkeen uudelleen eivatka syotteet katoa", async ({
     indexPage,
     ykiArvioijaLomakePage,

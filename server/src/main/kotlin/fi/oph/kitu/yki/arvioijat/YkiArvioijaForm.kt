@@ -42,6 +42,7 @@ data class ArvioijaFormData(
     val tila: YkiArvioijaTila = YkiArvioijaTila.AKTIIVINEN,
     val ashaNumero: String? = null,
     val turvakielto: Boolean = false,
+    val onOlemassa: Boolean = false,
     val arviointioikeus: List<String>? = null,
 ) {
     fun laskettuPaattymispaiva(): LocalDate? = kaudenAlkupaiva?.let(Rekisterikausi::paattymispaiva)
@@ -73,18 +74,27 @@ data class ArvioijaFormData(
         )
 
     companion object {
-        fun of(esitaytto: ArvioijanEsitaytto): ArvioijaFormData =
-            ArvioijaFormData(
+        fun of(esitaytto: ArvioijanEsitaytto): ArvioijaFormData {
+            val merkinta = esitaytto.olemassaolevaMerkinta
+            val pohja =
+                merkinta?.let { of(it, esitaytto.turvakielto) }
+                    ?: ArvioijaFormData(turvakielto = esitaytto.turvakielto)
+
+            // ONR omistaa henkilotiedot, mutta tyhja ONR-kentta ei saa pyyhkia rekisterin arvoa.
+            return pohja.copy(
                 arvioijaOid = esitaytto.arvioijaOid.toString(),
-                sukunimi = esitaytto.sukunimi,
-                etunimet = esitaytto.etunimet,
-                sahkopostiosoite = esitaytto.sahkopostiosoite,
-                katuosoite = esitaytto.katuosoite,
-                postinumero = esitaytto.postinumero,
-                postitoimipaikka = esitaytto.postitoimipaikka,
-                jatkorekisterointi = esitaytto.jatkorekisterointi,
-                turvakielto = esitaytto.turvakielto,
+                sukunimi = esitaytto.sukunimi.tai(pohja.sukunimi),
+                etunimet = esitaytto.etunimet.tai(pohja.etunimet),
+                sahkopostiosoite = esitaytto.sahkopostiosoite.tai(pohja.sahkopostiosoite),
+                katuosoite = esitaytto.katuosoite.tai(pohja.katuosoite),
+                postinumero = esitaytto.postinumero.tai(pohja.postinumero),
+                postitoimipaikka = esitaytto.postitoimipaikka.tai(pohja.postitoimipaikka),
+                jatkorekisterointi = merkinta != null,
+                onOlemassa = merkinta != null,
             )
+        }
+
+        private fun String?.tai(vara: String?): String? = this?.takeIf { it.isNotBlank() } ?: vara
 
         fun of(
             arvioija: YkiArvioijaEntity,
@@ -104,6 +114,7 @@ data class ArvioijaFormData(
                 tila = oikeudet.firstOrNull()?.tila ?: YkiArvioijaTila.AKTIIVINEN,
                 ashaNumero = arvioija.ashaNumero,
                 turvakielto = turvakielto,
+                onOlemassa = true,
                 arviointioikeus =
                     oikeudet.flatMap { oikeus ->
                         oikeus.tasot.map { taso -> valinta(oikeus.kieli, taso) }

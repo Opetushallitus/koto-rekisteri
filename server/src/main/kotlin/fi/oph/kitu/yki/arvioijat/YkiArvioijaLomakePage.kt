@@ -90,6 +90,10 @@ object YkiArvioijaLomakePage {
         Page.renderHtml {
             h1 { +otsikko }
 
+            if (form.onOlemassa) {
+                warningMessage(UiText.Yki.Arvioija.jorekisterissa)
+            }
+
             if (form.turvakielto) {
                 warningMessage(UiText.Yki.Arvioija.turvakielto)
             }
@@ -99,6 +103,7 @@ object YkiArvioijaLomakePage {
             formPost(action) {
                 hiddenValue("arvioijaOid", form.arvioijaOid.orEmpty())
                 hiddenValue("turvakielto", form.turvakielto.toString())
+                hiddenValue("onOlemassa", form.onOlemassa.toString())
 
                 card {
                     cardContent {

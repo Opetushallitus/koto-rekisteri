@@ -448,8 +448,8 @@ merkittävä virheelliseksi virkailijan ratkaistavaksi — **ei saa kaatua uniik
 
 ### 2.8 Jatkokauden päättely (OPH kys. 3)
 
-`jatkorekisterointi` päätellään `enrich`-vaiheessa: **`true`, jos arvioijalla on jo aiempi
-rekisteröintikausi** (`yki_arvioija_kausi`-taulussa on rivi tai merkintä on olemassa ennestään).
+`jatkorekisterointi` päätellään esitäytössä (ks. §3.4): **`true`, jos arvioijalla on jo aiempi
+rekisteröintikausi** (merkintä on olemassa ennestään).
 Virkailija voi ylikirjoittaa arvon lomakkeen valintaruudulla, joten kyseessä on esitäyttö, ei pakotus.
 Uudella arvioijalla oletus on `false`.
 
@@ -633,6 +633,15 @@ näkymätön tagipohjaiselle `DisplayTableColumn.of`:lle) ja siirtyy tyypille `Y
 
 **Vaihe 2** — sama sivufunktio, `esitaytto != null`: koko lomake esitäytettynä ONR:n tiedoilla.
 `arvioijaOid` piilokenttänä; **hetu ei kulje tallennuspyynnössä lainkaan**.
+
+**Jos henkilö on jo rekisterissä** (jatkokausi, §2.8), lomake esitäytetään ONR:n henkilötietojen
+_lisäksi_ hänen nykyisellä merkinnällään: arviointioikeusmatriisi, ASHA-numero ja kausi tulevat
+`ArvioijanEsitaytto.olemassaolevaMerkinta`sta, ja lomakkeen yläreunassa näkyy varoitus "Arvioija on jo
+rekisterissä…". Ilman tätä tallennus pyyhkisi muiden kielten arviointioikeudet ja ASHA-numeron, koska
+`tallenna` korvaa merkinnän kokonaan. Tyhjä ONR-kenttä ei ylikirjoita rekisterin arvoa. Samasta syystä
+`luoArvioija` säilyttää olemassa olevan `ensimmainen_rekisterointipaiva`n (sama logiikka kuin
+`paivitaArvioija`ssa) ja kirjaa auditlokiin `YkiArvioijaUpdated`in `YkiArvioijaCreated`in sijaan, kun
+merkintä oli jo olemassa.
 
 Puhdas palvelimen round-trip kahdella lomakkeella — ei fetchiä, ei uutta JS-buildia.
 

@@ -65,6 +65,11 @@ data class OnrHaku(
     val oppijanumero: String? = null,
 )
 
+/**
+ * Henkilotiedot tulevat ONR:sta, rekisterimerkinnan tiedot kitusta. Jos arvioija loytyy jo
+ * rekisterista, [olemassaolevaMerkinta] kantaa hanen nykyiset arviointioikeutensa, ASHA-numeronsa
+ * ja kautensa lomakkeelle — muuten tallennus pyyhkisi ne.
+ */
 data class ArvioijanEsitaytto(
     val arvioijaOid: Oid,
     val sukunimi: String,
@@ -74,5 +79,5 @@ data class ArvioijanEsitaytto(
     val postinumero: String?,
     val postitoimipaikka: String?,
     val turvakielto: Boolean,
-    val jatkorekisterointi: Boolean,
+    val olemassaolevaMerkinta: YkiArvioijaEntity?,
 )
