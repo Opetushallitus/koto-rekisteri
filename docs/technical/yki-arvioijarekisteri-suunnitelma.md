@@ -252,7 +252,7 @@ CREATE TABLE yki_arvioija_kausi (
     kirjattu               TIMESTAMPTZ        NOT NULL DEFAULT now(),
     kirjaaja_oid           henkilo_oid,
     CONSTRAINT yki_arvioija_kausi_unique UNIQUE NULLS NOT DISTINCT
-        (arvioija_id, kieli, kauden_alkupaiva, kauden_paattymispaiva, tila, jatkorekisterointi)
+        (arvioija_id, kieli, tasot, kauden_alkupaiva, kauden_paattymispaiva, tila, jatkorekisterointi)
 );
 
 CREATE INDEX yki_arvioija_kausi_arvioija_idx ON yki_arvioija_kausi (arvioija_id, kirjattu DESC);
@@ -485,7 +485,10 @@ Keskeiset SQL:t:
 DELETE FROM yki_arviointioikeus
 WHERE arvioija_id = :id AND kieli <> ALL (:kielet::yki_tutkintokieli[]);
 
--- tallenna(): kausihistorian kirjaus (vain aidosti muuttuneet)
+-- tallenna(): kausihistorian kirjaus (vain aidosti muuttuneet). Uniikkiehto sisaltaa myos tasot
+-- (V119), koska saman kauden sisalla myonnetty uusi tutkintotaso on hallintopaatoksen tulos ja
+-- kuuluu historiaan. Tasot normalisoidaan kirjoitettaessa aakkosjarjestykseen, koska taulukon
+-- jarjestys on osa sen identiteettia.
 INSERT INTO yki_arvioija_kausi
     (arvioija_id, kieli, tasot, tila, kauden_alkupaiva, kauden_paattymispaiva, jatkorekisterointi, kirjaaja_oid)
 VALUES (:id, :kieli, :tasot, :tila, :alku, :loppu, :jatko, :tekija)

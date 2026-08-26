@@ -45,6 +45,7 @@ class YkiArvioijaRepositoryTest(
         kaudenPaattymispaiva: LocalDate? = null,
         tila: YkiArvioijaTila = YkiArvioijaTila.AKTIIVINEN,
         jatkorekisterointi: Boolean = false,
+        tasot: Set<Tutkintotaso> = setOf(Tutkintotaso.YT),
     ) = YkiArviointioikeusEntity(
         id = null,
         arvioijaId = null,
@@ -53,7 +54,7 @@ class YkiArvioijaRepositoryTest(
         jatkorekisterointi = jatkorekisterointi,
         tila = tila,
         kieli = kieli,
-        tasot = setOf(Tutkintotaso.YT),
+        tasot = tasot,
         ensimmainenRekisterointipaiva = LocalDate.of(2020, 1, 1),
         rekisteriintuontiaika = null,
     )
@@ -218,6 +219,39 @@ class YkiArvioijaRepositoryTest(
         assertNotNull(tallennettu?.passivoitu, "passivointihetki on sailytysajan laskennan alkupiste")
         assertTrue(tallennettu?.yksilointiKesken == true)
     }
+
+    @Test
+    fun `Tasomuutos saman kauden sisalla kirjataan historiaan`() {
+        val arvioijaId = arvioijaRepository.tallenna(arvioija(arviointioikeus(tasot = setOf(Tutkintotaso.PT))))
+        assertEquals(1, kausihistorianTasot(arvioijaId).size)
+
+        arvioijaRepository.tallenna(
+            arvioija(arviointioikeus(tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT))),
+        )
+
+        assertEquals(
+            listOf(listOf("PT"), listOf("KT", "PT")),
+            kausihistorianTasot(arvioijaId).sortedBy { it.size },
+            "hallintopaatoksella myonnetyn tason on nayttava historiassa",
+        )
+    }
+
+    @Test
+    fun `Muuttumaton kausi ei kasvata historiaa vaikka tasot tulisivat eri jarjestyksessa`() {
+        val arvioijaId =
+            arvioijaRepository.tallenna(
+                arvioija(arviointioikeus(tasot = linkedSetOf(Tutkintotaso.PT, Tutkintotaso.KT))),
+            )
+
+        arvioijaRepository.tallenna(
+            arvioija(arviointioikeus(tasot = linkedSetOf(Tutkintotaso.KT, Tutkintotaso.PT))),
+        )
+
+        assertEquals(1, kausihistorianTasot(arvioijaId).size, "sama kausi, sama tasojoukko")
+    }
+
+    private fun kausihistorianTasot(arvioijaId: Int): List<List<String>> =
+        arvioijaRepository.findKausihistoria(arvioijaId).map { it.tasot.map { taso -> taso.name }.sorted() }
 
     @Test
     fun `Duplikaatteja ei tallenneta`() {

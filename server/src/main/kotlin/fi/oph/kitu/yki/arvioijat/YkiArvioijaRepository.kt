@@ -275,7 +275,7 @@ class CustomYkiArvioijaRepositoryImpl(
                     arviointioikeudet.elementAt(i).let {
                         ps.setInt(1, arvioijaId)
                         ps.setString(2, it.kieli.toString())
-                        ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.toTypedArray()))
+                        ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.normalisoitu()))
                         ps.setString(4, it.tila.toString())
                         ps.setObject(5, it.kaudenAlkupaiva)
                         ps.setObject(6, it.kaudenPaattymispaiva)
@@ -321,7 +321,7 @@ class CustomYkiArvioijaRepositoryImpl(
                     arviointioikeudet.elementAt(i).let {
                         ps.setInt(1, arvioijaId)
                         ps.setString(2, it.kieli.toString())
-                        ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.toTypedArray()))
+                        ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.normalisoitu()))
                         ps.setString(4, it.tila.toString())
                         ps.setObject(5, it.kaudenAlkupaiva)
                         ps.setObject(6, it.kaudenPaattymispaiva)
@@ -420,6 +420,12 @@ class CustomYkiArvioijaRepositoryImpl(
                 YkiArvioijaArviointioikeus.fromRow,
             ).filterNotNull()
 }
+
+/**
+ * Taulukon jarjestys on osa sen identiteettia kausihistorian uniikkiehdossa, joten tasot
+ * kirjoitetaan aina samassa jarjestyksessa riippumatta siita mista suunnasta ne tulivat.
+ */
+private fun Set<Tutkintotaso>.normalisoitu(): Array<String> = map { it.name }.sorted().toTypedArray()
 
 @Repository
 interface YkiArvioijaRepository :
