@@ -109,6 +109,21 @@ class YkiArvioijaRepositoryTest(
     }
 
     @Test
+    fun `Sisaantulevassa pushissa puuttuvia arviointioikeuksia ei poisteta`() {
+        val swe = arviointioikeus(Tutkintokieli.SWE)
+        val eng = arviointioikeus(Tutkintokieli.ENG)
+
+        arvioijaRepository.tallenna(arvioija(swe, eng))
+        arvioijaRepository.tallenna(arvioija(eng), poistaPuuttuvatOikeudet = false)
+
+        val jaljella = arvioijaRepository.findByArvioijaOid(oid)?.arviointioikeudet.orEmpty()
+        assertEquals(
+            listOf(Tutkintokieli.ENG, Tutkintokieli.SWE),
+            jaljella.map { it.kieli }.sortedBy { it.name },
+        )
+    }
+
+    @Test
     fun `Duplikaatteja ei tallenneta`() {
         val arvioija = arvioija(arviointioikeus())
 

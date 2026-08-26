@@ -25,6 +25,7 @@ interface CustomYkiArvioijaRepository {
     fun tallenna(
         arvioija: YkiArvioijaEntity,
         tekija: Oid? = null,
+        poistaPuuttuvatOikeudet: Boolean = true,
     ): Int
 
     fun findByArvioijaOid(arvioijaOid: Oid): YkiArvioijaEntity?
@@ -70,20 +71,25 @@ class CustomYkiArvioijaRepositoryImpl(
     }
 
     /**
-     * Tallentaa arvioijan ja hanen arviointioikeutensa. Kitu on rekisterin master, joten
-     * payloadista puuttuvat arviointioikeudet poistetaan ja jokainen muuttunut kausi
-     * kirjataan kausihistoriaan.
+     * Tallentaa arvioijan ja hanen arviointioikeutensa ja kirjaa muuttuneen kauden
+     * kausihistoriaan. Kitun omissa tallennuksissa payloadista puuttuvat arviointioikeudet
+     * poistetaan, koska kitu on rekisterin master. Solkin sisaantulevalle pushille
+     * `poistaPuuttuvatOikeudet = false`: Solkin payloadin kattavuudesta ei ole sopimusta,
+     * joten osittainen push ei saa pyyhkia muita kielia.
      */
     @WithSpan
     @Transactional
     override fun tallenna(
         arvioija: YkiArvioijaEntity,
         tekija: Oid?,
+        poistaPuuttuvatOikeudet: Boolean,
     ): Int {
         val savedArvioija = upsertArvioija(arvioija, tekija)
         val arvioijaId = savedArvioija.id!!.toInt()
 
-        poistaPuuttuvatArviointioikeudet(arvioijaId, arvioija.arviointioikeudet)
+        if (poistaPuuttuvatOikeudet) {
+            poistaPuuttuvatArviointioikeudet(arvioijaId, arvioija.arviointioikeudet)
+        }
         upsertArviointioikeudet(arvioijaId, arvioija.arviointioikeudet)
         kirjaaKausihistoria(arvioijaId, arvioija.arviointioikeudet, tekija)
 

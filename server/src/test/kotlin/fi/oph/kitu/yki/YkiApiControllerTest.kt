@@ -781,6 +781,48 @@ class YkiApiControllerTest(
     }
 
     @Test
+    fun `Solkin push ei poista arviointioikeuksia jotka puuttuvat payloadista`() {
+        arvioijaRepository.deleteAll()
+        timeService.runWithFixedClock(LocalDate.of(2026, 1, 1).toInstant()) {
+            val arvioijaOid = Oid.parse("1.2.246.562.24.59267607404").getOrThrow()
+
+            postArvioija(solkiArvioija(arvioijaOid, Tutkintokieli.FIN, Tutkintokieli.SWE)) { isOk() }
+            postArvioija(solkiArvioija(arvioijaOid, Tutkintokieli.SWE)) { isOk() }
+
+            val saved = arvioijaRepository.findByArvioijaOid(arvioijaOid)
+            assertEquals(
+                listOf(Tutkintokieli.FIN, Tutkintokieli.SWE),
+                saved?.arviointioikeudet?.map { it.kieli }?.sortedBy { it.name },
+            )
+        }
+    }
+
+    private fun solkiArvioija(
+        arvioijaOid: Oid,
+        vararg kielet: Tutkintokieli,
+    ) = YkiArvioija(
+        arvioijaOid = arvioijaOid,
+        sukunimi = "Kivinen-Testi",
+        etunimet = "Petro Testi",
+        sahkopostiosoite = "devnull-2@oph.fi",
+        katuosoite = "Haltin vanha autiotupa",
+        postinumero = "99490",
+        postitoimipaikka = "Enontekiö",
+        ensimmainenRekisterointipaiva = LocalDate.of(2005, 1, 21),
+        arviointioikeudet =
+            kielet.map { kieli ->
+                YkiArviointioikeus(
+                    kaudenAlkupaiva = LocalDate.of(2005, 12, 7),
+                    kaudenPaattymispaiva = LocalDate.of(2020, 12, 7),
+                    jatkorekisterointi = false,
+                    tila = YkiArvioijaTila.AKTIIVINEN,
+                    kieli = kieli,
+                    tasot = setOf(Tutkintotaso.PT),
+                )
+            },
+    )
+
+    @Test
     fun `CSV-vienti näyttää taustalta täydennetyn opiskeluoikeus-OIDin`() {
         suoritusRepository.deleteAll()
 

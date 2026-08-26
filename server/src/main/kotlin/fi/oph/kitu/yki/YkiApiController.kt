@@ -302,7 +302,9 @@ class YkiApiController(
         @RequestBody arvioija: YkiArvioija,
     ): ResponseEntity<*> {
         val validatedArvioija = validationService.validateAndEnrich(arvioija).getOrThrow()
-        ykiArvioijaRepository.tallenna(validatedArvioija.toEntity())
+        // Solki on yha arvioijadatan master, eika sen payloadin kattavuudesta ole sopimusta:
+        // osittainen push ei saa pyyhkia muita kielia. Kavennetaan vasta vaiheessa 11.
+        ykiArvioijaRepository.tallenna(validatedArvioija.toEntity(), poistaPuuttuvatOikeudet = false)
         return TiedonsiirtoSuccess().toResponseEntity()
     }
 }
