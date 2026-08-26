@@ -116,8 +116,21 @@ class CustomYkiArvioijaRepositoryImpl(
     ): YkiArvioijaEntity? {
         // Solkista tullut rivi leimataan lahetetyksi kannan omalla now()-arvolla, jotta se on
         // tasmalleen sama kuin muokattu: pienikin ero jattaisi rivin lahetysjonoon (V117:n
-        // osittainen indeksi) ja lahettaisi Solkin oman datan takaisin Solkiin.
-        val lahetysleima = if (lahde == Tallennuslahde.SOLKI) "now()" else "NULL"
+        // osittainen indeksi) ja lahettaisi Solkin oman datan takaisin Solkiin. Jos rivi oli jo
+        // jonossa, leimaa ei anneta: kitun lahettamaton muutos ei saa kadota jonosta.
+        val uudenRivinLahetysleima = if (lahde == Tallennuslahde.SOLKI) "now()" else "NULL"
+        val lahetysleima =
+            if (lahde == Tallennuslahde.SOLKI) {
+                """
+                CASE
+                    WHEN yki_arvioija.solkiin_lahetetty IS NULL
+                        OR yki_arvioija.solkiin_lahetetty < yki_arvioija.muokattu THEN NULL
+                    ELSE now()
+                END
+                """.trimIndent()
+            } else {
+                "NULL"
+            }
 
         // ASHA-numero, passivointihetki ja yksilointitila syntyvat kitussa. Solkin payload ei
         // kanna niita, joten EXCLUDED-arvo olisi aina tyhja ja pyyhkisi ne.
@@ -173,7 +186,7 @@ class CustomYkiArvioijaRepositoryImpl(
                     solkiin_lahetetty,
                     solki_lahetysvirhe,
                     solki_lahetysyritykset
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, now(), ?, $lahetysleima, NULL, 0)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, now(), ?, $uudenRivinLahetysleima, NULL, 0)
                 ON CONFLICT (arvioija_oid) DO UPDATE
                 SET
                     -- henkilotunnus paivitetaan EXCLUDED-arvosta, jotta validoinnin
