@@ -120,8 +120,8 @@ class YkiArvioijaService(
     }
 
     /**
-     * Lomake kantaa vain virkailijan syottamat kentat. Merkinnan elinkaaritiedot — passivointihetki,
-     * yksilointitila ja kielikohtainen tila — kuuluvat muille kulkureiteille, joten ne poimitaan
+     * Lomake kantaa vain virkailijan syottamat kentat. Merkinnan elinkaaritiedot —
+     * passivointihetki ja kielikohtainen tila — kuuluvat muille kulkureiteille, joten ne poimitaan
      * olemassa olevalta rivilta eivatka nollaudu tallennuksessa.
      */
     private fun entiteetti(
@@ -132,10 +132,7 @@ class YkiArvioijaService(
             .toEntity(
                 ensimmainenRekisterointipaiva(olemassaoleva, validoitu),
                 olemassaoleva?.arviointioikeudet?.associate { it.kieli to it.tila }.orEmpty(),
-            ).copy(
-                passivoitu = olemassaoleva?.passivoitu,
-                yksilointiKesken = olemassaoleva?.yksilointiKesken == true,
-            )
+            ).copy(passivoitu = olemassaoleva?.passivoitu)
 
     private fun tallennaTaiKonflikti(
         arvioija: YkiArvioijaEntity,

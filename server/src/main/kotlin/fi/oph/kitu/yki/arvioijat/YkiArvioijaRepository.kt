@@ -132,13 +132,12 @@ class CustomYkiArvioijaRepositoryImpl(
                 "NULL"
             }
 
-        // ASHA-numero, passivointihetki ja yksilointitila syntyvat kitussa. Solkin payload ei
-        // kanna niita, joten EXCLUDED-arvo olisi aina tyhja ja pyyhkisi ne.
+        // ASHA-numero ja passivointihetki syntyvat kitussa. Solkin payload ei kanna niita,
+        // joten EXCLUDED-arvo olisi aina tyhja ja pyyhkisi ne.
         val kitunOmatKentat =
             if (lahde == Tallennuslahde.KITU) {
                 """
                 asha_numero = EXCLUDED.asha_numero,
-                yksilointi_kesken = EXCLUDED.yksilointi_kesken,
                 passivoitu = EXCLUDED.passivoitu,
                 """.trimIndent()
             } else {
@@ -157,7 +156,6 @@ class CustomYkiArvioijaRepositoryImpl(
                 add(arvioija.postinumero)
                 add(arvioija.postitoimipaikka)
                 add(arvioija.ashaNumero)
-                add(arvioija.yksilointiKesken)
                 add(arvioija.passivoitu)
                 add(tekija?.toString())
                 add(tekija?.toString())
@@ -177,7 +175,6 @@ class CustomYkiArvioijaRepositoryImpl(
                     postinumero,
                     postitoimipaikka,
                     asha_numero,
-                    yksilointi_kesken,
                     passivoitu,
                     luotu,
                     luoja_oid,
@@ -186,7 +183,7 @@ class CustomYkiArvioijaRepositoryImpl(
                     solkiin_lahetetty,
                     solki_lahetysvirhe,
                     solki_lahetysyritykset
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, now(), ?, $uudenRivinLahetysleima, NULL, 0)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, now(), ?, $uudenRivinLahetysleima, NULL, 0)
                 ON CONFLICT (arvioija_oid) DO UPDATE
                 SET
                     -- henkilotunnus paivitetaan EXCLUDED-arvosta, jotta validoinnin
