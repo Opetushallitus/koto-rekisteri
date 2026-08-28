@@ -7,29 +7,9 @@ import org.springframework.format.annotation.DateTimeFormat
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
-enum class ArvioijaHakutapa {
-    HETU,
-    OPPIJANUMERO,
-}
-
 data class ArvioijaHakuFormData(
-    val tapa: ArvioijaHakutapa = ArvioijaHakutapa.HETU,
-    val hetu: String? = null,
-    val sukunimi: String? = null,
-    val etunimet: String? = null,
-    val kutsumanimi: String? = null,
     val oppijanumero: String? = null,
-) {
-    fun toOnrHaku(): OnrHaku =
-        OnrHaku(
-            tapa = tapa,
-            hetu = hetu,
-            etunimet = etunimet,
-            sukunimi = sukunimi,
-            kutsumanimi = kutsumanimi,
-            oppijanumero = oppijanumero,
-        )
-}
+)
 
 data class ArvioijaFormData(
     val arvioijaOid: String? = null,

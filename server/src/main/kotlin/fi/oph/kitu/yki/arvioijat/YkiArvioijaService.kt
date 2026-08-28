@@ -5,12 +5,10 @@ import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.nonEmptyListOf
 import arrow.core.right
-import arrow.core.toNonEmptyListOrNull
 import fi.oph.kitu.auditlogs.AuditLogOperation
 import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroException
-import fi.oph.kitu.oppijanumero.OppijanumeroHakuService
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.util.validation.ValidationService
@@ -24,7 +22,6 @@ import java.time.OffsetDateTime
 class YkiArvioijaService(
     private val repository: YkiArvioijaRepository,
     private val validationService: ValidationService,
-    private val oppijanumeroHaku: OppijanumeroHakuService,
     private val oppijanumeroService: OppijanumeroService,
     private val auditLogger: AuditLogger,
 ) {
@@ -59,8 +56,8 @@ class YkiArvioijaService(
         )
 
     @WithSpan
-    fun haeHenkilotiedot(haku: OnrHaku): Either<YkiArvioijaError, ArvioijanEsitaytto> =
-        haeOid(haku).flatMap { oid -> haeEsitaytto(oid) }
+    fun haeHenkilotiedot(oppijanumero: String?): Either<YkiArvioijaError, ArvioijanEsitaytto> =
+        haeOid(oppijanumero).flatMap { oid -> haeEsitaytto(oid) }
 
     @WithSpan
     fun luoArvioija(
@@ -160,19 +157,13 @@ class YkiArvioijaService(
             ?.minOfOrNull { it.ensimmainenRekisterointipaiva }
             ?: komento.kaudenAlkupaiva
 
-    private fun haeOid(haku: OnrHaku): Either<YkiArvioijaError, Oid> =
-        when (haku.tapa) {
-            ArvioijaHakutapa.OPPIJANUMERO -> haeOidOppijanumerolla(haku)
-            ArvioijaHakutapa.HETU -> haeOidHetulla(haku)
-        }
-
-    private fun haeOidOppijanumerolla(haku: OnrHaku): Either<YkiArvioijaError, Oid> {
-        val oppijanumero =
-            haku.oppijanumero?.trim()?.takeIf { it.isNotEmpty() }
+    private fun haeOid(oppijanumero: String?): Either<YkiArvioijaError, Oid> {
+        val syote =
+            oppijanumero?.trim()?.takeIf { it.isNotEmpty() }
                 ?: return virhe("oppijanumero", "Oppijanumero on pakollinen tieto").left()
 
         val syotetty =
-            Oid.parse(oppijanumero).getOrNull()
+            Oid.parse(syote).getOrNull()
                 ?: return virhe("oppijanumero", "Oppijanumero on virheellinen").left()
 
         // Virkailija voi syottaa duplikaatin OIDin. Rekisteri avaimennetaan master-OIDilla, joten
@@ -181,25 +172,6 @@ class YkiArvioijaService(
         return oppijanumeroService.getOppijanumero(syotetty).mapLeft { onrVirhe ->
             when (onrVirhe) {
                 is OppijanumeroException.OppijaNotIdentifiedException -> YkiArvioijaError.OppijaaEiYksiloity(syotetty)
-                else -> YkiArvioijaError.OppijanumeroaEiSaatu(onrVirhe)
-            }
-        }
-    }
-
-    private fun haeOidHetulla(haku: OnrHaku): Either<YkiArvioijaError, Oid> {
-        puuttuvatHakukentat(haku)?.let { return YkiArvioijaError.Validointivirheet(it).left() }
-
-        val oppija =
-            oppijanumeroHaku.oppijaOf(
-                hetu = haku.hetu!!,
-                etunimet = haku.etunimet!!,
-                sukunimi = haku.sukunimi!!,
-                kutsumanimi = haku.kutsumanimi,
-            )
-
-        return oppijanumeroHaku.haeMasterOid(oppija).mapLeft { onrVirhe ->
-            when (onrVirhe) {
-                is OppijanumeroException.OppijaNotIdentifiedException -> YkiArvioijaError.OppijaaEiYksiloity(null)
                 else -> YkiArvioijaError.OppijanumeroaEiSaatu(onrVirhe)
             }
         }
@@ -232,13 +204,6 @@ class YkiArvioijaService(
                     olemassaolevaMerkinta = repository.findByArvioijaOid(oid),
                 )
             }
-
-    private fun puuttuvatHakukentat(haku: OnrHaku) =
-        buildList {
-            if (haku.hetu.isNullOrBlank()) add(ValidationError(listOf("hetu"), "Henkilötunnus on pakollinen tieto"))
-            if (haku.etunimet.isNullOrBlank()) add(ValidationError(listOf("etunimet"), "Etunimet on pakollinen tieto"))
-            if (haku.sukunimi.isNullOrBlank()) add(ValidationError(listOf("sukunimi"), "Sukunimi on pakollinen tieto"))
-        }.toNonEmptyListOrNull()
 
     private fun virhe(
         kentta: String,

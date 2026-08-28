@@ -63,15 +63,6 @@ data class TallennaArvioija(
     )
 }
 
-data class OnrHaku(
-    val tapa: ArvioijaHakutapa = ArvioijaHakutapa.HETU,
-    val hetu: String? = null,
-    val etunimet: String? = null,
-    val sukunimi: String? = null,
-    val kutsumanimi: String? = null,
-    val oppijanumero: String? = null,
-)
-
 /**
  * Henkilotiedot tulevat ONR:sta, rekisterimerkinnan tiedot kitusta. Jos arvioija loytyy jo
  * rekisterista, [olemassaolevaMerkinta] kantaa hanen nykyiset arviointioikeutensa, ASHA-numeronsa
