@@ -14,7 +14,7 @@ syöttökäyttöliittymällä, ja kitu välittää tiedot rajapinnan yli Solkin 
 Kolme käyttötapausta:
 
 1. **Uuden arvioijan merkintä** — virkailija lisää arvioijan hallintopäätöksen perusteella. Järjestelmä
-   hakee oppijanumeron ONR:stä hetun ja nimen perusteella (ja luo henkilön ONR:ään jos ei löydy),
+   syöttää arvioijan oppijanumeron, jolla henkilötiedot haetaan ONR:stä esitäytöksi,
    laskee 5 vuoden voimassaoloajan automaattisesti ja lähettää tiedot Solkille.
 2. **Merkinnän muokkaus / uusi kausi** — virkailija syöttää uuden kauden alkupäivän, järjestelmä laskee
    päättymispäivän; myös yhteystietoja ja arviointioikeuksia voi muokata. Tiedot lähetetään Solkille.
@@ -59,31 +59,35 @@ uusi hlö ONR:ään 1 vk, muokkaus + passivointi 2 vk) + Solki-integraatio 1 vk.
 ### OPH:n vastaukset avoimiin kysymyksiin (21.8.2026)
 
 Kaikki 14 OPH:lle esitettyä kysymystä on vastattu 21.8.2026. Vastaukset on viety suunnitelmaan;
-**kuusi niistä muutti aiempaa ratkaisua** (merkitty ✱). Loput avoimet asiat ovat §11:ssä.
+**kuusi niistä muutti aiempaa ratkaisua** (merkitty ✱; kys. 4 on sittemmin kumottu). Loput avoimet asiat ovat §11:ssä.
 
-| #    | Kysymys                        | Päätös                                                                                    |
-| ---- | ------------------------------ | ----------------------------------------------------------------------------------------- |
-| 1    | Kauden päättymispäivä          | `alkupäivä + 5 v` samana päivänä                                                          |
-| 2    | Päättymispäivän inklusiivisuus | Inklusiivinen — passivointi vasta päivän jälkeen                                          |
-| 3 ✱  | Jatkokausi                     | **Järjestelmä päättelee automaattisesti `Kyllä`**, virkailija voi ylikirjoittaa           |
-| 4 ✱  | Yksilöimätön henkilö           | **Merkintä saa tallentua keskeneräisenä** ja täydentyy myöhemmin                          |
-| 5 ✱  | Turvakielto                    | **Ei rajoituksia tietoihin** — käyttöliittymässä näytetään varoitus virkailijalle         |
-| 6    | Merkinnän poisto               | Ei toteuteta; passivointi riittää                                                         |
-| 7    | Lukuoikeus                     | Säilyy kaikilla kitu-virkailijoilla                                                       |
-| 8    | Hetu-sarake                    | **Jää avoimeksi** — säilytetään toistaiseksi, tietosuojan päätös myöhemmin                |
-| 9    | Kausihistorian oikeusperuste   | Osa rekisterimerkinnän elinkaarta, sama 5 v säilytysaika                                  |
-| 10 ✱ | Säilytysajan alkuhetki         | **Passivointihetkestä**, ei kauden päättymispäivästä                                      |
-| 11 ✱ | Puhelinnumero                  | **Ei toteuteta** — tavoitetilan tietotaulukko pätee                                       |
-| 12 ✱ | Hallintopäätöksen ASHA-numero  | **Toteutetaan** vapaana tekstikenttänä, ei muotovalidointia                               |
-| 13   | Käyttöoikeus Otuvaan           | OPH perustaa; pyyntö tehdään heti, jotta läpimenoaika ei estä julkaisua                   |
-| 14   | Cutover                        | Syöttökäyttöliittymä julkaistaan ensin, Solkin kirjoitukset katkaistaan vasta sen jälkeen |
+| #    | Kysymys                        | Päätös                                                                                                                            |
+| ---- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Kauden päättymispäivä          | `alkupäivä + 5 v` samana päivänä                                                                                                  |
+| 2    | Päättymispäivän inklusiivisuus | Inklusiivinen — passivointi vasta päivän jälkeen                                                                                  |
+| 3 ✱  | Jatkokausi                     | **Järjestelmä päättelee automaattisesti `Kyllä`**, virkailija voi ylikirjoittaa                                                   |
+| 4 ✱  | Yksilöimätön henkilö           | ~~Merkintä saa tallentua keskeneräisenä~~ **Kumottu 28.8.2026**: arvioijalla on aina jo oppijanumero, joten yksilöimätön hylätään |
+| 5 ✱  | Turvakielto                    | **Ei rajoituksia tietoihin** — käyttöliittymässä näytetään varoitus virkailijalle                                                 |
+| 6    | Merkinnän poisto               | Ei toteuteta; passivointi riittää                                                                                                 |
+| 7    | Lukuoikeus                     | Säilyy kaikilla kitu-virkailijoilla                                                                                               |
+| 8    | Hetu-sarake                    | **Säilyy pysyvästi** — ennen 2026 alkaneiden kausien hetut on säilytettävä lain nojalla                                           |
+| 9    | Kausihistorian oikeusperuste   | Osa rekisterimerkinnän elinkaarta, sama 5 v säilytysaika                                                                          |
+| 10 ✱ | Säilytysajan alkuhetki         | **Passivointihetkestä**, ei kauden päättymispäivästä                                                                              |
+| 11 ✱ | Puhelinnumero                  | **Ei toteuteta** — tavoitetilan tietotaulukko pätee                                                                               |
+| 12 ✱ | Hallintopäätöksen ASHA-numero  | **Toteutetaan** vapaana tekstikenttänä, ei muotovalidointia                                                                       |
+| 13   | Käyttöoikeus Otuvaan           | OPH perustaa; pyyntö tehdään heti, jotta läpimenoaika ei estä julkaisua                                                           |
+| 14   | Cutover                        | Syöttökäyttöliittymä julkaistaan ensin, Solkin kirjoitukset katkaistaan vasta sen jälkeen                                         |
 
-Kaksi vastausta laajentaa toteutusta merkittävästi:
+Yksi vastaus laajentaa toteutusta merkittävästi:
 
-- **Keskeneräinen yksilöinti (kys. 4)** vaatii oman tilan, ajastetun täydennyksen ONR:stä ja
-  Solki-lähetyksen lykkäämisen siihen asti kunnes oppijanumero on olemassa (§2.7, §6.3).
 - **Säilytysaika passivointihetkestä (kys. 10)** vaatii uuden `passivoitu`-aikaleiman, jota kannassa ei
   tällä hetkellä ole (§1.1, §6.2).
+
+> **Muutos 28.8.2026 (kys. 4 kumottu).** Arvioijalla on aina jo oppijanumero ONR:ssä, kun hänet
+> lisätään rekisteriin. Hetuhaku ja koko keskeneräisen yksilöinnin käsittely on siksi poistettu:
+> lisäyslomake ottaa vastaan vain oppijanumeron, yksilöimätön henkilö hylätään kenttävirheellä
+> (`OppijanumeroService.getOppijanumero`, joka ei putoa takaisin henkilö-OIDiin), eikä
+> `yksilointi_kesken`-saraketta ole (V120 pudotti sen).
 
 ### Muut lähdedokumentit: prosessikuvaukset ja tallennettavat tiedot
 
@@ -179,7 +183,7 @@ ALTER TABLE yki_arvioija
     -- Sailytysaika lasketaan passivointihetkesta, joten se on tallennettava (OPH kys. 10)
     ADD COLUMN passivoitu                   TIMESTAMPTZ,
     -- Merkinta voi syntya ennen kuin ONR on yksiloinyt henkilon (OPH kys. 4)
-    ADD COLUMN yksilointi_kesken            BOOLEAN     NOT NULL DEFAULT FALSE;
+
 
 -- tila on Kotlinissa non-null mutta kannassa nullable
 UPDATE yki_arviointioikeus SET tila = 'AKTIIVINEN' WHERE tila IS NULL;
@@ -225,7 +229,6 @@ CREATE INDEX yki_arviointioikeus_passivointi_idx
 
 COMMENT ON COLUMN yki_arvioija.asha_numero IS 'Rekisterimerkintaa koskevan hallintopaatoksen ASHA-numero, esittelijan kirjaama';
 COMMENT ON COLUMN yki_arvioija.passivoitu IS 'Hetki jolloin merkinta passivoitiin; sailytysajan (5 v) laskennan alkupiste';
-COMMENT ON COLUMN yki_arvioija.yksilointi_kesken IS 'true = arvioija_oid on ONR:n henkilo-OID eika viela oppijanumero; taydennetaan ajastetusti';
 COMMENT ON COLUMN yki_arvioija.solkiin_lahetetty IS 'Milloin rivi on viimeksi onnistuneesti lähetetty Solkiin; NULL tai < muokattu = lähetys kesken';
 COMMENT ON COLUMN yki_arvioija.solki_lahetysvirhe IS 'Viimeisimmän epäonnistuneen Solki-lähetyksen virheteksti';
 COMMENT ON COLUMN yki_arvioija.solki_lahetysyritykset IS 'Peräkkäisten epäonnistuneiden lähetysyritysten määrä; nollataan onnistuneessa lähetyksessä';
@@ -339,7 +342,7 @@ data class TallennaArvioija(
 }
 ```
 
-**Ei `henkilotunnus`-kenttää** — hetu kulkee vain ONR-hakupyynnössä eikä koskaan päädy kantaan.
+**Ei `henkilotunnus`-kenttää** — hetua ei käsitellä missään vaiheessa; avain on oppijanumero.
 
 ### 2.3 `YkiArvioijaError.kt` — Either-vasemman puolen tyyppi
 
@@ -413,38 +416,14 @@ class YkiArvioijaService(
    Epäonnistuminen ei kaada tallennusta; rivi jää outboxiin.
 5. `Right(entity)` — controller lukee `solkiLahetysvirhe`-kentän flash-viestiä varten.
 
-**ONR-haku:** `YkiApiController.postOppijanumeroHaku`:n runko **erotetaan** uuteen
-`oppijanumero/OppijanumeroHakuService.kt`-palveluun, jota sekä API-kontrolleri että tämä käyttävät.
-`OppijanumeroService.getMasterOid(Oppija(etunimet, hetu, kutsumanimi, sukunimi))` POSTaa ONR:n
-`yleistunniste/hae`-endpointiin, joka **luo henkilön jos sitä ei ole** — PDF:n vaihtoehtoinen kulku
-"järjestelmä luo hänelle uuden oppijanumeron" toteutuu ilman lisäkoodia. Ainoa aito epäonnistuminen on
-yksilöimätön henkilö (`OppijaNotIdentifiedException`) → `OppijaaEiYksiloity`, jonka lomake renderöi
-virheeksi + ONR-linkiksi (sama kuvio kuin `YkiSuoritusPage.henkilonTiedot`).
+**ONR-haku:** virkailija syöttää oppijanumeron, ja `OppijanumeroService.getOppijanumero(oid)`
+ratkaisee sen ONR:n master-oppijanumeroksi. Metodi on `getMasterOid`in tiukka rinnakkaismuoto: se
+**ei** palauta henkilö-OIDia korvikkeena, joten yksilöimätön henkilö päätyy
+`OppijaNotIdentifiedException`in kautta `OppijaaEiYksiloity`-virheeksi, jonka lomake renderöi
+`oppijanumero`-kentän virheeksi. `getMasterOid`in fallbackia ei saa kiristää — siitä riippuvat
+virkailijan asiointikielen haku ja yksilöimättömien oppijoiden suoritusnäkymät.
 Esitäyttö `getHenkiloByMasterOid(oid)`:n `etunimet`/`kutsumanimi`/`sukunimi` +
 `yhteystiedotRyhma[].yhteystieto[]`-arvoista (sähköposti, osoite).
-
-### 2.7 Keskeneräinen yksilöinti (OPH kys. 4)
-
-OPH:n päätöksen mukaan merkintä **saa syntyä, vaikka ONR ei ole vielä yksilöinyt henkilöä**. ONR:n
-`yleistunniste/hae` palauttaa tällöin `oid`-kentän (henkilö-OID) mutta `oppijanumero` on `null`, jolloin
-nykyinen `getMasterOid(oppija)` päätyy `OppijaNotIdentifiedException`iin.
-
-Toimintamalli:
-
-1. Tallennuksessa käytetään ONR:n palauttamaa **henkilö-OID:ta** `arvioija_oid`-sarakkeessa
-   (`henkilo_oid`-domain hyväksyy sen) ja merkitään `yksilointi_kesken = true`.
-   Käyttöliittymä näyttää merkinnällä varoituksen "odottaa yksilöintiä".
-2. **Solki-lähetys ohitetaan** niin kauan kuin `yksilointi_kesken = true`: `findLahetettavat` suodattaa ne
-   pois. Tavoitetilakuvauksen mukaan Solki tunnistaa arvioijan OID-tunnisteella, joten vaillinaista
-   tunnistetta ei lähetetä.
-3. Ajastettu tehtävä (§6.3) yrittää uudelleen `oppijanumeroService.getMasterOid(henkiloOid)`. Onnistuessa
-   `arvioija_oid` päivitetään master-OID:ksi, `yksilointi_kesken` nollataan ja outbox likataan, jolloin
-   merkintä lähtee Solkiin normaalisti.
-
-**Varottava reunatapaus:** `arvioija_oid` on `UNIQUE`, joten yksilöinnin valmistuttua master-OID voi jo
-olla toisella rivillä (sama henkilö on ehditty lisätä kahdesti). Päivitys on siis tehtävä
-`ON CONFLICT`-tietoisesti: jos master-OID löytyy jo, rivit on yhdistettävä tai keskeneräinen merkintä
-merkittävä virheelliseksi virkailijan ratkaistavaksi — **ei saa kaatua uniikkirikkeeseen**.
 
 ### 2.8 Jatkokauden päättely (OPH kys. 3)
 
@@ -498,7 +477,6 @@ ON CONFLICT ON CONSTRAINT yki_arvioija_kausi_unique DO NOTHING;
 -- findLahetettavat(null) -> yöllinen kaikkien läpikäynti
 SELECT * FROM yki_arvioija
 WHERE (solkiin_lahetetty IS NULL OR solkiin_lahetetty < muokattu)
-  AND yksilointi_kesken = FALSE   -- vaillinaista tunnistetta ei lähetetä Solkiin
   -- AND solki_lahetysyritykset < :maxYritykset   (vain kun maxYritykset != null)
 ORDER BY muokattu;
 
@@ -583,7 +561,7 @@ Yksi paluutyyppi, ei `RedirectView`/`@ResponseBody`-sekamelskaa.
 | Metodi | Polku                                | Tarkoitus                                   |
 | ------ | ------------------------------------ | ------------------------------------------- |
 | GET    | `/yki/arvioijat`                     | lista (suodatus, järjestys, sivutus)        |
-| GET    | `/yki/arvioijat/uusi`                | lisäyslomake, vaihe 1 (hetu + nimet)        |
+| GET    | `/yki/arvioijat/uusi`                | lisäyslomake: oppijanumeron syöttö          |
 | POST   | `/yki/arvioijat/uusi/haku`           | ONR-haku → vaihe 2 esitäytettynä (200 HTML) |
 | POST   | `/yki/arvioijat/uusi`                | luonti → 303 `/yki/arvioijat/{id}`          |
 | GET    | `/yki/arvioijat/{id}`                | tiedot, kausihistoria + muokkauslomake      |
@@ -630,16 +608,14 @@ näkymätön tagipohjaiselle `DisplayTableColumn.of`:lle) ja siirtyy tyypille `Y
 
 ### 3.4 Lisäys- ja muokkauslomake
 
-Oppijanumerolla haettaessa syötetty OID ratkaistaan ONR:n **master-OIDiksi** samoin kuin hetulla
-haettaessa: rekisteri avaimennetaan master-OIDilla, joten duplikaatti-OID loisi muuten samalle
+Syötetty OID ratkaistaan ONR:n **master-OIDiksi**: rekisteri avaimennetaan master-OIDilla, joten duplikaatti-OID loisi muuten samalle
 henkilölle toisen merkinnän eikä löytäisi olemassa olevaa.
 
-**Vaihe 1 (`GET /yki/arvioijat/uusi`)** — pieni kortti: `henkilotunnus`, `sukunimi`, `etunimet`,
-`kutsumanimi`, sekä vaihtoehtoinen `oppijanumero`-kenttä ohituspoluksi. Nappi "Hae henkilön tiedot"
-(`formPost(Links.Yki.arvioijaHaku())`).
+**Vaihe 1 (`GET /yki/arvioijat/uusi`)** — pieni kortti, jossa on yksi kenttä: `oppijanumero`. Nappi
+"Hae henkilön tiedot" (`formPost(Links.Yki.arvioijaHaku())`).
 
 **Vaihe 2** — sama sivufunktio, `esitaytto != null`: koko lomake esitäytettynä ONR:n tiedoilla.
-`arvioijaOid` piilokenttänä; **hetu ei kulje tallennuspyynnössä lainkaan**.
+`arvioijaOid` piilokenttänä.
 
 **Jos henkilö on jo rekisterissä** (jatkokausi, §2.8), lomake esitäytetään ONR:n henkilötietojen
 _lisäksi_ hänen nykyisellä merkinnällään: arviointioikeusmatriisi, ASHA-numero ja kausi tulevat
@@ -677,7 +653,7 @@ data class ArvioijaFormData(
 ```
 
 **Elinkaarikentät eivät kulje lomakkeen kautta.** Lomake tuntee vain virkailijan syöttämät kentät,
-joten `passivoitu`, `yksilointi_kesken` ja arviointioikeuksien `tila` poimitaan tallennuksessa
+joten `passivoitu` ja arviointioikeuksien `tila` poimitaan tallennuksessa
 olemassa olevalta riviltä. Ilman tätä pelkkä yhteystiedon korjaus aktivoisi passivoidun merkinnän
 uudelleen. Vastaavasti `arvioijaOid`-kentän validointivirheet nostetaan `formErrorSummary`n
 `piilokentat`-listalla näkyviin — kenttä renderöityy vain piilokenttänä, joten ilman tätä ONR-virhe
@@ -720,7 +696,6 @@ päivittää esikatseluarvon `change`-tapahtumassa — sama kuvio kuin `Forms.kt
   `warningMessage(...)` virkailijalle. Tietoihin ei kohdisteta rajoituksia — osoite näkyy, viedään
   CSV:hen ja lähetetään Solkille normaalisti. Turvakieltoa **ei tallenneta kituun**, vaan se luetaan
   ONR:stä näyttöhetkellä.
-  Jos `yksilointi_kesken = true`, näytetään lisäksi varoitus "odottaa yksilöintiä".
 - **Rekisterimerkintä** — §3.4:n muokkauslomake ilman vaihetta 1, sisältäen **hallintopäätöksen
   ASHA-numeron** vapaana tekstikenttänä (OPH kys. 12) ja **jatkokausi**-valintaruudun, jonka arvon
   järjestelmä esitäyttää (§2.8)
@@ -751,7 +726,7 @@ Ei uutta taulua eikä `errorTablePage`-kutsua: sama `YkiArvioijaColumn`-taulukko
 `rekisterointikaudet`, `kausiLasketaanAutomaattisesti`, `haeHenkilonTiedot`, `arvioitavatTutkinnot`,
 `merkitsePassiiviseksi`, `passivointiVarmistus`, `arvioijaTallennettu`, `arvioijaPassivoitu`,
 `solkiLahetysOnnistui`, `solkiLahetysEpaonnistui`, `lahetaUudelleenSolkiin`, `solkiLahetystenVirheet`,
-`odottaaLahetysta`, `henkiloaEiYksiloity`.
+`odottaaLahetysta`, `eiYksiloity`.
 `object Sarake` uudet: `ensimmainenRekisterointipaiva`, `ashaNumero`, `solkiTila`, `solkiVirhe`,
 `lahetysyritykset`, `muokattu`, `kirjattu`.
 Poistuu: `arvioijienTuonninVirheet`.
@@ -830,11 +805,11 @@ lähetysleima laittaisi Solkin oman datan §5:n lähetysjonoon — sama kaikuvaa
 
 Tallennuksen lähde on siksi eksplisiittinen: `tallenna(..., lahde = Tallennuslahde.SOLKI)` jättää
 puuttuvat oikeudet rauhaan, ei kirjoita kitun omia kenttiä (`asha_numero`, `passivoitu`,
-`yksilointi_kesken` — Solkin payload ei kanna niitä, joten `EXCLUDED`-arvo pyyhkisi ne) ja leimaa
+— Solkin payload ei kanna niitä, joten `EXCLUDED`-arvo pyyhkisi ne) ja leimaa
 rivin lähetetyksi kannan omalla `now()`-arvolla (sama arvo kuin `muokattu`, jotta osittainen indeksi
 ei poimi riviä). Leimaa **ei** anneta, jos rivi oli jo lähetysjonossa: muuten Solkin push nielaisisi
 kitussa tehdyn, vielä lähettämättömän muutoksen. Kitun oma syöttökäyttöliittymä käyttää oletusta
-`Tallennuslahde.KITU`: master-semantiikka ja rivi lähetysjonoon. Vaiheen 10 lähetin ei siis tarvitse
+`Tallennuslahde.KITU`: master-semantiikka ja rivi lähetysjonoon. Vaiheen 9 lähetin ei siis tarvitse
 erillistä suodatinta sisääntulleille riveille. Katettu testeillä `YkiArvioijaRepositoryTest`
 (`Sisaantulevassa pushissa puuttuvia arviointioikeuksia ei poisteta`, `Solkin push ei jata rivia
 lahetysjonoon`, `Kitun oma tallennus jaa lahetysjonoon`) ja `YkiApiControllerTest` (`Solkin push ei
@@ -1077,26 +1052,6 @@ Huomioita:
 - Testattava erikseen, ettei poisto koske aktiivisia eikä `passivoitu IS NULL` -rivejä, ja että
   migraation sekä automaattipassivoinnin täyttämä `passivoitu` vastaa kauden päättymispäivää.
 
-### 6.3 Keskeneräisten yksilöintien täydennys
-
-```kotlin
-@Value($$"${kitu.yki.scheduling.taydennaYksiloimattomatArvioijat.schedule}")
-lateinit var yksilointiSchedule: String
-
-@WithSpan @Bean
-fun taydennaYksiloimattomatArvioijat(service: YkiArvioijaService): Task<Void> =
-    tracer.recurringTask("Täydennä yksilöimättömät YKI-arvioijat", yksilointiSchedule) {
-        service.taydennaYksiloinnit()
-    }
-```
-
-Hakee rivit joilla `yksilointi_kesken = true`, kutsuu kullekin
-`oppijanumeroService.getMasterOid(henkiloOid)` ja onnistuessa päivittää `arvioija_oid`:n, nollaa lipun ja
-likaa outboxin. Epäonnistuminen (yksilöinti yhä kesken) on **normaali tila**, ei virhe — ei kirjata
-lähetysvirheeksi eikä kasvateta yrityslaskuria, vain lokitetaan.
-Ajastus `kitu.yki.scheduling.taydennaYksiloimattomatArvioijat.schedule=DAILY|00:45`, eli ennen
-passivointia (01:15) ja Solki-lähetystä (02:15), jotta samana yönä yksilöityneet ehtivät mukaan.
-
 ---
 
 ## 7. Käyttöoikeudet
@@ -1161,7 +1116,7 @@ Syöttökäyttöliittymä valmistuu vaiheittain, mutta `main` deployautuu suoraa
 on siksi oletuksena **pois päältä**: `ArvioijarekisteriAsetukset.kirjoitusKaytossa` lukee propertyn
 oletuksella `false`, eli **ilman propertya rekisteri toimii vain lukutilassa**. Päällä `local`-,
 `local-opintopolku`- ja `e2e`-profiileissa sekä backend-testeissä; untuva/QA/prod perivät
-`application.properties`:n `false`-arvon, kunnes vaiheen 12 kytkentä tehdään.
+`application.properties`:n `false`-arvon, kunnes vaiheen 11 kytkentä tehdään.
 
 Kaksi vaikutusta:
 
@@ -1216,7 +1171,7 @@ Uudet:
 - `YkiArvioijaColumnTest.kt` — tagikattavuus, CSV-otsikot, `PERSONAL_DATA`-poissulku
   (mallina `YkiSuoritusColumnTest`).
 - `YkiArvioijaServiceTest.kt` — `@SpringBootTest` + Testcontainers + `MockOppijanumeroService`:
-  luonti ONR-haulla, yksilöimätön henkilö, päivitys laskee päättymispäivän uusiksi, kielen poisto,
+  luonti oppijanumerolla, päivitys laskee päättymispäivän uusiksi, kielen poisto,
   **kausihistoriarivin synty vain kun kausi muuttuu**, manuaalinen passivointi, `passivoiPaattyneetKaudet`.
 - `SolkiArvioijaClientTest.kt` — `MockRestServiceServer`. **Muista laiskan `RestClient`in ansa:**
   `@TestInstance(PER_CLASS)`, yksi `reset()`-palvelin, kaikki client-mock-testit samassa luokassa.
@@ -1238,8 +1193,8 @@ outbox-kentät, kausihistoria, `passivoiPaattyneet`), `YkiApiControllerTest.kt` 
 - `tests/yki/yki-arvioijat.spec.ts` — päivitetyt sarakeodotukset (hetu pois, Solki-tila mukaan),
   suodatus, sivutus, CSV.
 - Uusi `tests/yki/yki-arvioija-lisays.spec.ts` — ONR-haku → esitäyttö → tallennus → flash → rivi listalla;
-  yksilöimätön henkilö → virhe + ONR-linkki; puuttuva pakollinen kenttä → lomake re-renderöityy
-  `aria-invalid`illa eivätkä syötteet häviä; hetu **ei** tallennu kantaan.
+  yksilöimätön oppijanumero → kenttävirhe; puuttuva pakollinen kenttä → lomake re-renderöityy
+  `aria-invalid`illa eivätkä syötteet häviä.
 - Uusi `tests/yki/yki-arvioija-muokkaus.spec.ts` — uusi kauden alkupäivä laskee päättymispäivän ja
   **synnyttää kausihistoriarivin**, kielen lisäys/poisto, manuaalinen passivointi dialogin kautta.
 - Uusi `tests/yki/yki-arvioija-solki.spec.ts` — dev-stubi 500 → virhenäkymässä rivi + syy + laskuri;
@@ -1255,8 +1210,8 @@ Toteutus tehdään **yhdessä haarassa `yki-arvioija-laajenna-taulut-masteriksi`
 ([#3324](https://github.com/Opetushallitus/kielitutkintorekisteri/pull/3324)): kukin alla oleva askel on
 yksi tai useampi commit samassa PR:ssä, ei omaa PR:ää. Askeleet pysyvät silti itsenäisinä ja
 järjestyksessä katselmoitavina kokonaisuuksina — pidä commitit ehjinä, jotta PR:n voi lukea askel
-kerrallaan. Askeleet 1–9 eivät riipu Solkin rajapintasopimuksesta, joten työ ei jää odottamaan
-Jyväskylää. Askel 12 tehdään vasta tämän PR:n mergen jälkeen omana muutoksenaan, kun JYU on
+kerrallaan. Askeleet 1–8 eivät riipu Solkin rajapintasopimuksesta, joten työ ei jää odottamaan
+Jyväskylää. Askel 11 tehdään vasta tämän PR:n mergen jälkeen omana muutoksenaan, kun JYU on
 vahvistanut rajapinnan.
 
 | #   | Vaihe                                                    | Koko | Riippuu                 |
@@ -1266,13 +1221,12 @@ vahvistanut rajapinnan.
 | 3   | Uudista arvioijalistanäkymä                              | L    | 2                       |
 | 4   | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —                       |
 | 5   | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | 2, 4                    |
-| 6   | Keskeneräisen yksilöinnin käsittely                      | M    | 5                       |
-| 7   | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | 5                       |
-| 8   | Automaattinen passivointi (UC3)                          | M    | 7                       |
-| 9   | Säilytysajan valvonta (5 v)                              | M    | 8                       |
-| 10  | YKI-arvioijien Solki-lähetys                             | L    | 7, sopimus JYU:n kanssa |
-| 11  | Kavenna sisääntuleva rajapinta passivointi-endpointiksi  | M    | 10                      |
-| 12  | Käyttöönotto ja kytkimet                                 | S    | 10, 11                  |
+| 6   | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | 5                       |
+| 7   | Automaattinen passivointi (UC3)                          | M    | 6                       |
+| 8   | Säilytysajan valvonta (5 v)                              | M    | 7                       |
+| 9   | YKI-arvioijien Solki-lähetys                             | L    | 6, sopimus JYU:n kanssa |
+| 10  | Kavenna sisääntuleva rajapinta passivointi-endpointiksi  | M    | 9                       |
+| 11  | Käyttöönotto ja kytkimet                                 | S    | 9, 10                   |
 
 1. **`Poista kuollut arvioijien virhetuontikoneisto`** — `yki/arvioijat/error/`, `V118` DROP TABLE,
    `dev/YkiController` kuollut stubi, `DashboardService`/`HomePage`/`EnumFromUrlParamsParsingConfig`
@@ -1288,24 +1242,23 @@ vahvistanut rajapinnan.
    e2e-oikeusmatriisi.
 5. **`Lisää uuden YKI-arvioijan tallennus (UC1)`** — `Rekisterikausi`, `TallennaArvioija`,
    `YkiArvioijaError`, uusi `YkiArvioijaValidation` (sama kausi kaikille kielille), jatkokauden päättely,
-   `YkiArvioijaService.luoArvioija`, `OppijanumeroHakuService`-ekstraktio, kaksivaiheinen lomake,
+   `YkiArvioijaService.luoArvioija`, oppijanumerohaku + esitäytetty lomake,
    ASHA-numerokenttä, turvakieltovaroitus, audit-operaatiot, UiText. e2e.
-6. **`Käsittele keskeneräinen ONR-yksilöinti`** — `yksilointi_kesken`-tila, §6.3:n ajastettu täydennys,
-   Solki-lähetyksen suodatus, uniikkirikkeen käsittely yksilöinnin valmistuessa. e2e.
-7. **`Lisää arvioijan muokkaus, kausihistoria ja manuaalinen passivointi (UC2)`** — tietosivu +
+6. **`Lisää arvioijan muokkaus, kausihistoria ja manuaalinen passivointi (UC2)`** — tietosivu +
    kausihistoriataulukko + POST, `passivoiArvioija`, kielen lisäys perii voimassa olevan kauden. e2e.
-8. **`Lisää arvioijien automaattinen passivointi (UC3)`** — `YkiArvioijaScheduledTasks`,
+7. **`Lisää arvioijien automaattinen passivointi (UC3)`** — `YkiArvioijaScheduledTasks`,
    `passivoitu`-leima kauden päättymispäivästä, ajastukset.
-9. **`Lisää säilytysajan valvonta`** — §6.2:n poistotehtävä, oletuksena pois päältä, testit
+8. **`Lisää säilytysajan valvonta`** — §6.2:n poistotehtävä, oletuksena pois päältä, testit
    suojaehdoille. Ajettava ensin untuvassa ja tarkistettava poistuvien määrä.
-10. **`Lisää YKI-arvioijien Solki-lähetys`** — `solki/`-paketti, outbox-kirjoitukset, dev-stubi, propertyt
-    (`enabled=false`), virhenäkymä + "Lähetä uudelleen" + dashboard-laskuri,
-    `docs/technical/integraatiot.md`. Testit + e2e.
-11. **`Kavenna sisääntuleva arvioijarajapinta`** — `POST /yki/api/arvioija` → 410, tilalle kavennettu
+9. **`Lisää YKI-arvioijien Solki-lähetys`** — `solki/`-paketti, outbox-kirjoitukset, dev-stubi, propertyt
+   (`enabled=false`), virhenäkymä + "Lähetä uudelleen" + dashboard-laskuri,
+   `docs/technical/integraatiot.md`. Testit + e2e.
+10. **`Kavenna sisääntuleva arvioijarajapinta`** — `POST /yki/api/arvioija` → 410, tilalle kavennettu
     passivointi-endpoint (§4.2), DTO:t + schema-esimerkit + testit pois, e2e-matriisi.
-12. _(JYU:n vahvistuksen jälkeen)_ `kitu.yki.arvioijarekisteri.kirjoitus.enabled=true` (§7.5) ja
+11. _(JYU:n vahvistuksen jälkeen)_ `kitu.yki.arvioijarekisteri.kirjoitus.enabled=true` (§7.5) ja
     Solki-lähetyksen `enabled=true` untuvaan/QA:han/prodiin; 410-mapping kokonaan pois; säilytysajan
-    poisto päälle; (tietosuojan luvalla) `henkilotunnus`-sarakkeen poisto.
+    poisto päälle. `henkilotunnus`-saraketta **ei** poisteta: ennen 2026 alkaneiden kausien hetut on
+    säilytettävä lain nojalla.
 
 Muista jokaisen askeleen lopuksi `./scripts/format.sh` (ktlint + prettier). Pidä pitkäikäinen haara
 ajan tasalla komennolla `git pull --rebase origin main` ja pushaa `--force-with-lease`illa. Älä avaa
@@ -1337,11 +1290,8 @@ koskemattomana.
 
 **Jyväskylän yliopisto / Solki — OPH:n päätöksistä seuranneet uudet kysymykset**
 
-7. **Merkintä voi viivästyä, jos ONR-yksilöinti on kesken.** OPH:n päätöksen (kys. 4) mukaan merkintä saa
-   syntyä kituun ennen kuin henkilö on yksilöity ONR:ssä. Tällöin oppijanumeroa ei ole eikä merkintää voi
-   lähettää Solkille; kitu täydentää tunnisteen ajastetusti (§6.3) ja lähettää vasta sitten. Hallintopäätöksen
-   ja Solkiin saapumisen väliin voi siis tulla muutaman vuorokauden viive. Onko tämä Solkin prosessin
-   kannalta ongelma, ja pitääkö odottavasta merkinnästä ilmoittaa etukäteen?
+7. ~~**Merkintä voi viivästyä, jos ONR-yksilöinti on kesken.**~~ **Rauennut 28.8.2026:** arvioijalla on
+   aina jo oppijanumero ONR:ssä, joten keskeneräistä yksilöintiä ei enää synny eikä lähetys viivästy.
 8. **Kitu poistaa merkinnät 5 vuoden kuluttua passivoinnista** (§6.2). Poistoa **ei** ole tarkoitus välittää
    Solkille — oletus on, että Solkilla on oma säilytysaikansa ja oma kopionsa rekisteristä. Pitääkö tämä
    paikkansa? Huomattava myös, ettei kitu poiston jälkeen pysty vastaamaan kyseistä arvioijaa koskeviin
@@ -1354,20 +1304,21 @@ koskemattomana.
 
 **OPH — avoimet**
 
-OPH on vastannut kaikkiin 14 kysymykseen (ks. suunnitelman alun päätöstaulukko). Vain yksi jäi auki:
+OPH on vastannut kaikkiin 14 kysymykseen (ks. suunnitelman alun päätöstaulukko). Viimeinenkin avoin
+kohta on nyt ratkaistu:
 
-10. **Henkilötunnussarakkeen kohtalo.** Uusi kirjoituspolku ei kirjoita hetuja lainkaan, mutta
-    `yki_arvioija`-taulussa on yhä ennen 2026 tehtyjen merkintöjen hetut. OPH: _"säilytetään toistaiseksi,
-    päätös myöhemmin"_ — asia palautetaan tietosuojan käsittelyyn. Suunnitelma ei siis poista saraketta
-    eikä tyhjennä sitä; kirjoituspolku vain jättää sen koskematta.
+10. ~~**Henkilötunnussarakkeen kohtalo.**~~ **Ratkaistu 28.8.2026: sarake säilyy pysyvästi.** Ennen 2026
+    alkaneiden kausien hetut on säilytettävä lain nojalla, ja V100 tyhjensi hetun vain niiltä, joiden
+    arviointioikeus alkaa 1.1.2026 tai myöhemmin. Sarakkeen poistoa ei siis suunnitella. Huomaa, että
+    upsert kirjoittaa `henkilotunnus = EXCLUDED.henkilotunnus`: kumpikaan kirjoittaja ei kanna hetua,
+    joten kosketun rivin hetu tyhjenee — tämä on tarkoituksellista eikä sitä muuteta.
 
 **OPH — vastauksista seuraavat tarkennettavat kohdat**
 
 Nämä eivät estä toteutusta, mutta on syytä varmistaa ennen kyseisen vaiheen koodausta:
 
-11. **Kahteen kertaan lisätty henkilö.** Jos keskeneräisenä tallennettu merkintä yksilöityy OID:ksi, joka on
-    jo toisella rivillä, rivit on yhdistettävä. Kumpi tiedoista voittaa, ja saako yhdistämisen tehdä
-    automaattisesti vai pitääkö virkailijan ratkaista se?
+11. ~~**Kahteen kertaan lisätty henkilö.**~~ **Rauennut 28.8.2026:** merkintä avaimennetaan aina ONR:n
+    master-oppijanumerolla, joten keskeneräisestä yksilöinnistä johtuvaa kaksoisriviä ei voi syntyä.
 12. **ASHA-numeron muoto.** Toteutetaan vapaana tekstikenttänä ilman validointia. Jos numerolla on vakiintunut
     muoto (diaarinumero), validointi kannattaa lisätä myöhemmin.
 
@@ -1396,10 +1347,11 @@ Manuaalinen läpiajo paikallisesti (`http://localhost:8080/kielitutkinnot`):
 1. `/dev/mocklogin/ROOT` → kirjaudu.
 2. `/yki/arvioijat` → lista renderöityy, suodatin ja sivutus toimivat, CSV latautuu ja sarakkeet
    vastaavat `CSV_EXPORT`-tageja.
-3. "Lisää arvioija" → syötä hetu + nimi → ONR-haku (local-profiilissa `MockOppijanumeroService`) →
+3. "Lisää arvioija" → syötä oppijanumero → ONR-haku (`e2e`-profiilissa `MockOppijanumeroService`) →
    lomake esitäyttyy → tallenna tyhjällä pakollisella kentällä → **kenttäkohtainen virhe näkyy eikä
    syötteitä häviä** → korjaa → tallennus onnistuu, flash-viesti näkyy.
-   Tarkista: `select henkilotunnus from yki_arvioija where arvioija_oid = …` → **NULL**.
+   Tarkista: `select henkilotunnus from yki_arvioija where arvioija_oid = …` → **NULL** (uusi
+   merkintä ei koskaan tallenna hetua).
 4. Kauden päättymispäivä on täsmälleen 5 v alkupäivästä ja sama kaikilla valituilla kielillä.
 5. Muokkaa kauden alkupäivä → `select * from yki_arvioija_kausi where arvioija_id = …` sisältää nyt
    **kaksi** riviä; pelkkä sähköpostin muutos ei lisää kolmatta.
@@ -1407,8 +1359,8 @@ Manuaalinen läpiajo paikallisesti (`http://localhost:8080/kielitutkinnot`):
 7. Passivoi manuaalisesti → tila päivittyy, `solkiin_lahetetty` nollautuu, historiaan tulee rivi.
 8. Solki-stubi päälle → tallennus lähettää heti; stubi palauttamaan 500 → `/yki/arvioijat/virheet`
    näyttää rivin syineen ja yrityslaskureineen, ja "Lähetä uudelleen" tyhjentää virheen.
-9. db-scheduler-UI: kaikki viisi uutta tehtävää näkyvät ja ovat käsin ajettavissa (passivointi,
-   yksilöinnin täydennys, säilytysajan poisto sekä Solki-lähetyksen pikauusinta ja yöajo).
+9. db-scheduler-UI: kaikki neljä uutta tehtävää näkyvät ja ovat käsin ajettavissa (passivointi,
+   säilytysajan poisto sekä Solki-lähetyksen pikauusinta ja yöajo).
 10. Auditlokit: konsolista löytyvät `YkiArvioijaCreated` ja `YkiArvioijaUpdated`.
 11. Ominaisuuskytkin (§7.5): käynnistä
     `SPRING_APPLICATION_JSON='{"kitu":{"yki":{"arvioijarekisteri":{"kirjoitus":{"enabled":false}}}}}'
@@ -1421,41 +1373,40 @@ Manuaalinen läpiajo paikallisesti (`http://localhost:8080/kielitutkinnot`):
 
 Suunnitelman §10 vaiheistus korttimuodossa. Koot ovat suhteellisia: **S** ≈ 1–2 pv, **M** ≈ 3–5 pv,
 **L** ≈ 1–2 vk. Kokonaisuus on jonkin verran käyttötapauskuvauksen ~6 viikon arviota suurempi, koska
-laajuus kasvoi säilytysajalla, keskeneräisen yksilöinnin käsittelyllä ja listanäkymän uudistuksella.
+laajuus kasvoi säilytysajalla ja listanäkymän uudistuksella.
 
 ### Ei-tekniset kortit
 
 Nämä kannattaa aloittaa ensimmäisenä: kummassakin on ulkoisen tahon läpimenoaikaa, eikä kumpikaan etene
 tiimin omalla työllä.
 
-| Kortti    | Sisältö                                                                                                                      | Estää                    |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| **KTR-A** | Sovi Solki-rajapintasopimus Jyväskylän kanssa (§5.1, §11 kysymykset 1–9)                                                     | KTR-10, KTR-11, KTR-12   |
-| **KTR-B** | Pyydä käyttöoikeus `YKI_ARVIOIJAREKISTERI_KIRJOITUS` Otuvaan, liitettäväksi ryhmään "Kielitutkintorekisteri-oph-pääkäyttäjä" | julkaisun (ei kehitystä) |
-| **KTR-C** | Tietosuojan päätös `henkilotunnus`-sarakkeesta (§11 kysymys 10)                                                              | — (jää odottamaan)       |
+| Kortti        | Sisältö                                                                                                                      | Estää                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **KTR-A**     | Sovi Solki-rajapintasopimus Jyväskylän kanssa (§5.1, §11 kysymykset 1–9)                                                     | KTR-9, KTR-10, KTR-11    |
+| **KTR-B**     | Pyydä käyttöoikeus `YKI_ARVIOIJAREKISTERI_KIRJOITUS` Otuvaan, liitettäväksi ryhmään "Kielitutkintorekisteri-oph-pääkäyttäjä" | julkaisun (ei kehitystä) |
+| ~~**KTR-C**~~ | ~~Tietosuojan päätös `henkilotunnus`-sarakkeesta~~ — ratkaistu: sarake säilyy pysyvästi (§11 kys. 10)                        | —                        |
 
 ### Kehityskortit
 
-| Kortti | Otsikko                                                  | Koko | Riippuu        |
-| ------ | -------------------------------------------------------- | ---- | -------------- |
-| KTR-1  | Poista kuollut arvioijien virhetuontikoneisto            | S    | —              |
-| KTR-2  | Laajenna arvioijataulut masteriksi                       | L    | KTR-1          |
-| KTR-3  | Uudista arvioijalistanäkymä                              | L    | KTR-2          |
-| KTR-4  | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —              |
-| KTR-5  | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | KTR-2, KTR-4   |
-| KTR-6  | Keskeneräisen ONR-yksilöinnin käsittely                  | M    | KTR-5          |
-| KTR-7  | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | KTR-5          |
-| KTR-8  | Automaattinen passivointi (UC3)                          | M    | KTR-7          |
-| KTR-9  | Säilytysajan valvonta (5 v)                              | M    | KTR-8          |
-| KTR-10 | YKI-arvioijien Solki-lähetys                             | L    | KTR-7, KTR-A   |
-| KTR-11 | Kavenna sisääntuleva arvioijarajapinta                   | M    | KTR-10         |
-| KTR-12 | Käyttöönotto ja kytkimet                                 | S    | KTR-10, KTR-11 |
+| Kortti | Otsikko                                                  | Koko | Riippuu       |
+| ------ | -------------------------------------------------------- | ---- | ------------- |
+| KTR-1  | Poista kuollut arvioijien virhetuontikoneisto            | S    | —             |
+| KTR-2  | Laajenna arvioijataulut masteriksi                       | L    | KTR-1         |
+| KTR-3  | Uudista arvioijalistanäkymä                              | L    | KTR-2         |
+| KTR-4  | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —             |
+| KTR-5  | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | KTR-2, KTR-4  |
+| KTR-6  | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | KTR-5         |
+| KTR-7  | Automaattinen passivointi (UC3)                          | M    | KTR-6         |
+| KTR-8  | Säilytysajan valvonta (5 v)                              | M    | KTR-7         |
+| KTR-9  | YKI-arvioijien Solki-lähetys                             | L    | KTR-6, KTR-A  |
+| KTR-10 | Kavenna sisääntuleva arvioijarajapinta                   | M    | KTR-9         |
+| KTR-11 | Käyttöönotto ja kytkimet                                 | S    | KTR-9, KTR-10 |
 
 **KTR-4 on rinnakkaistettavissa** — se ei riipu tietokantatyöstä, joten kaksi tekijää voi edetä yhtä
 aikaa (KTR-2 → KTR-3 ja KTR-4). Muuten ketju on käytännössä lineaarinen.
 
-**KTR-6 ja KTR-9 ovat laajuuden kasvua**, eivät alkuperäistä sisältöä: molemmat seurasivat OPH:n
-vastauksista (keskeneräinen yksilöinti sallitaan, säilytysaika 5 vuotta). Ne on syytä nostaa esiin, jos
+**KTR-8 on laajuuden kasvua**, ei alkuperäistä sisältöä: se seurasi OPH:n vastauksesta (säilytysaika
+5 vuotta). Se on syytä nostaa esiin, jos
 työmääräarviota verrataan käyttötapauskuvauksen alkuperäiseen arvioon.
 
 ### Korttien sisältö ja valmiin määritelmä
@@ -1468,7 +1419,7 @@ _Valmis kun:_ `/yki/arvioijat/virheet` ja dashboard-laskuri on poistettu tai ohj
 
 **KTR-2 · Laajenna arvioijataulut masteriksi** — L
 `V116` (uudet sarakkeet, `asha_numero`, `passivoitu` + backfill kauden päättymispäivästä,
-`yksilointi_kesken`, outbox-sarakkeet, `solkiin_lahetetty`-backfill) ja `V117` (`yki_arvioija_kausi`).
+outbox-sarakkeet, `solkiin_lahetetty`-backfill) ja `V117` (`yki_arvioija_kausi`).
 Entiteetit, `RowMapper`it ja `YkiArvioijaRepository.tallenna`.
 _Valmis kun:_ arviointioikeuksien poisto toimii upsertissä, kausihistoriarivi syntyy vain kauden
 muuttuessa, migraatio ei laukaise massalähetystä Solkiin, repository-testit läpi.
@@ -1487,41 +1438,36 @@ e2e-oikeusmatriisi kattaa sekä 403:n että 200:n.
 
 **KTR-5 · Uuden arvioijan tallennus + ONR (UC1)** — L
 `Rekisterikausi`, `TallennaArvioija`, `YkiArvioijaValidation`, jatkokauden päättely,
-`OppijanumeroHakuService`-ekstraktio, kaksivaiheinen lomake, arviointioikeusmatriisi, ASHA-numerokenttä,
+oppijanumerohaku, esitäytetty lomake, arviointioikeusmatriisi, ASHA-numerokenttä,
 turvakieltovaroitus, auditlokit, UiText.
-_Valmis kun:_ kausi on alkupäivä + 5 v ja sama kaikilla kielillä, **hetu ei tallennu kantaan**, e2e vihreä.
+_Valmis kun:_ kausi on alkupäivä + 5 v ja sama kaikilla kielillä, **yksilöimätön oppijanumero hylätään**, e2e vihreä.
 
-**KTR-6 · Keskeneräisen ONR-yksilöinnin käsittely** — M
-`yksilointi_kesken`-tila, §6.3:n ajastettu täydennys, Solki-lähetyksen suodatus.
-_Valmis kun:_ merkintä tallentuu ilman oppijanumeroa ja täydentyy ajossa, **eikä kaadu
-uniikkirikkeeseen**, jos master-OID on jo toisella rivillä (§11 kysymys 11).
-
-**KTR-7 · Muokkaus, kausihistoria ja manuaalinen passivointi (UC2)** — L
+**KTR-6 · Muokkaus, kausihistoria ja manuaalinen passivointi (UC2)** — L
 Tietosivu + kausihistoriataulukko + POST, `passivoiArvioija`.
 _Valmis kun:_ uusi kauden alkupäivä synnyttää historiarivin mutta pelkkä yhteystiedon muutos ei; kielen
 lisäys kesken kauden perii voimassa olevan kauden.
 
-**KTR-8 · Automaattinen passivointi (UC3)** — M
+**KTR-7 · Automaattinen passivointi (UC3)** — M
 `YkiArvioijaScheduledTasks`, `passivoitu`-leima kauden päättymispäivästä (ei `now()`), outboxin likaus.
 _Valmis kun:_ päättyneet kaudet passivoituvat, `passivoitu` vastaa kauden päättymispäivää, tehtävä näkyy
 db-scheduler-UI:ssa ja on ajettavissa käsin.
 
-**KTR-9 · Säilytysajan valvonta (5 v)** — M
+**KTR-8 · Säilytysajan valvonta (5 v)** — M
 §6.2:n poistotehtävä, oletuksena pois päältä.
 _Valmis kun:_ poisto ei koske aktiivisia eikä `passivoitu IS NULL` -rivejä, ja tehtävä on **ajettu
 untuvassa ja poistuvien rivien määrä tarkistettu** ennen kuin tuotantoon ottamista harkitaan.
 
-**KTR-10 · YKI-arvioijien Solki-lähetys** — L
+**KTR-9 · YKI-arvioijien Solki-lähetys** — L
 `solki/`-paketti, outbox-kirjoitukset, dev-stubi, propertyt (`enabled=false`), virhenäkymä +
 "Lähetä uudelleen" + dashboard-laskuri, `docs/technical/integraatiot.md`.
 _Valmis kun:_ 3 yritystä ja yöajo toimivat, virhe näkyy syineen,
 `.withLenientStringConverter()` on mukana ja `debugString()` ei vuoda henkilötietoja lokiin.
 
-**KTR-11 · Kavenna sisääntuleva arvioijarajapinta** — M
+**KTR-10 · Kavenna sisääntuleva arvioijarajapinta** — M
 `POST /yki/api/arvioija` → 410, tilalle kavennettu passivointi-endpoint (§4.2).
 _Valmis kun:_ Solki voi passivoida muttei kirjoittaa nimiä tai kausia, ja **inbound-passivointi ei
 laukaise kaikuvaa PUT-lähetystä takaisin Solkiin**.
 
-**KTR-12 · Käyttöönotto ja kytkimet** — S
+**KTR-11 · Käyttöönotto ja kytkimet** — S
 `enabled=true` untuvaan, QA:han ja prodiin, 410-mapping pois, cutover sovitusti.
 _Valmis kun:_ cutover-päivä on sovittu JYU:n kanssa ja datan täsmäävyys tarkistettu ennen kytkintä.
