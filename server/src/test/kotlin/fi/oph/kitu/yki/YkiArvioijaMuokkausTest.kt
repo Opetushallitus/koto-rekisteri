@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.RequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
@@ -309,12 +310,129 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
+    fun `tietosivu nayttaa kausihistorian`() {
+        val id = idOf(petro)
+
+        // Uusi kausi synnyttaa historiarivin alkuperaisen rinnalle. Lomake rakennetaan tassa itse,
+        // koska muokkaus()-apuri asettaa jo oman kaudenAlkupaivansa ja Spring sitoo ensimmaisen arvon.
+        mockMvc
+            .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
+            .andExpect(status().isSeeOther)
+
+        val tietosivu = html(get("/yki/arvioijat/$id").session(session()))
+
+        assertContains(tietosivu, """data-testid="kausihistoria"""")
+        assertContains(tietosivu, "1.1.2021", message = "alkuperainen kausi sailyy historiassa")
+        assertContains(tietosivu, "1.5.2026", message = "uusi kausi kirjautuu historiaan")
+    }
+
+    @Test
+    fun `passivointi merkitsee kaikki arviointioikeudet passiivisiksi`() {
+        val id = idOf(petro)
+
+        mockMvc
+            .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
+            .andExpect(status().isSeeOther)
+
+        val passivoitu = repository.findArvioijaById(id)!!
+        assertEquals(
+            listOf(YkiArvioijaTila.PASSIVOITU),
+            passivoitu.arviointioikeudet.map { it.tila }.distinct(),
+        )
+        assertNotNull(passivoitu.passivoitu, "sailytysajan laskenta alkaa passivointihetkesta")
+        assertTrue(
+            repository.findKausihistoria(id).any { it.tila == YkiArvioijaTila.PASSIVOITU },
+            "passivointi kuuluu kausihistoriaan",
+        )
+    }
+
+    @Test
+    fun `toinen passivointi ei siirra sailytysajan alkuhetkea`() {
+        val id = idOf(petro)
+        val passivoi = post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf())
+
+        mockMvc.perform(passivoi).andExpect(status().isSeeOther)
+        val ensimmainen = repository.findArvioijaById(id)!!.passivoitu
+
+        mockMvc.perform(passivoi).andExpect(status().isSeeOther)
+
+        assertEquals(ensimmainen, repository.findArvioijaById(id)!!.passivoitu)
+    }
+
+    @Test
+    fun `passivointinappi katoaa kun arvioija on jo passivoitu`() {
+        val id = idOf(petro)
+        assertContains(html(get("/yki/arvioijat/$id").session(session())), """data-testid="passivoiArvioija"""")
+
+        mockMvc
+            .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
+            .andExpect(status().isSeeOther)
+
+        assertFalse(
+            html(get("/yki/arvioijat/$id").session(session())).contains("""data-testid="passivoiArvioija""""),
+            "passivoidulle ei tarjota passivointia uudelleen",
+        )
+    }
+
+    @Test
+    fun `tuntemattoman arvioijan passivointi palauttaa 404`() {
+        mockMvc
+            .perform(post("/yki/arvioijat/999999/passivoi").session(session()).with(csrf()))
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `kielen lisays perii voimassa olevan kauden`() {
+        val id = idOf(petro)
+        val voimassaolevaKausi =
+            repository
+                .findArvioijaById(id)!!
+                .arviointioikeudet
+                .first()
+                .kaudenAlkupaiva
+
+        mockMvc
+            .perform(
+                lomake(
+                    id,
+                    kaudenAlkupaiva = voimassaolevaKausi.toString(),
+                    oikeudet = listOf("FIN:PT", "SWE:YT"),
+                ),
+            ).andExpect(status().isSeeOther)
+
+        val oikeudet = repository.findArvioijaById(id)!!.arviointioikeudet
+        assertEquals(setOf(Tutkintokieli.FIN, Tutkintokieli.SWE), oikeudet.map { it.kieli }.toSet())
+        assertEquals(
+            1,
+            oikeudet.map { it.kaudenAlkupaiva to it.kaudenPaattymispaiva }.distinct().size,
+            "lisatty kieli perii saman kauden, ei aloita uutta",
+        )
+    }
+
+    @Test
     fun `tuntemattoman arvioijan muokkaus palauttaa 404`() {
         mockMvc
             .perform(get("/yki/arvioijat/999999/muokkaa").session(session()))
             .andReturn()
             .let { assertEquals(404, it.response.status) }
     }
+
+    /** Muokkauslomake tunnetuilla arvoilla — toisin kuin [muokkaus], ei aseta kenttia valmiiksi. */
+    private fun lomake(
+        id: Int,
+        kaudenAlkupaiva: String,
+        oikeudet: List<String>,
+    ) = post("/yki/arvioijat/$id")
+        .session(session())
+        .with(csrf())
+        .param("arvioijaOid", petro)
+        .param("sukunimi", "Kivinen-Testi")
+        .param("etunimet", "Petro Testi")
+        .param("katuosoite", "Testikuja 5")
+        .param("postinumero", "40100")
+        .param("postitoimipaikka", "HELSINKI")
+        .param("kaudenAlkupaiva", kaudenAlkupaiva)
+        .apply { oikeudet.forEach { param("arviointioikeus", it) } }
 
     private fun muokkaus(
         id: Int,

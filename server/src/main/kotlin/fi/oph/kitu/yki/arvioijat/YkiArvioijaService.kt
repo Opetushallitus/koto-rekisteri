@@ -10,6 +10,7 @@ import fi.oph.kitu.auditlogs.AuditLogger
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.oppijanumero.OppijanumeroService
+import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.util.validation.ValidationService
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -17,6 +18,7 @@ import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 @Service
 class YkiArvioijaService(
@@ -24,6 +26,7 @@ class YkiArvioijaService(
     private val validationService: ValidationService,
     private val oppijanumeroService: OppijanumeroService,
     private val auditLogger: AuditLogger,
+    private val timeService: TimeService,
 ) {
     @WithSpan
     fun haeSivullinen(params: YkiArvioijaParams): List<YkiArvioijaListRow> =
@@ -88,6 +91,34 @@ class YkiArvioijaService(
                     repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
                 }
             }
+
+    @WithSpan
+    fun haeKausihistoria(id: Int): List<YkiArvioijaKausiEntity> = repository.findKausihistoria(id)
+
+    /**
+     * Passivointi ei kulje lomakkeen kautta, joten se rakentaa entiteetin suoraan olemassa olevasta
+     * rivista. Sailytysajan laskenta alkaa passivointihetkesta, joten aiemmin passivoidun leimaa ei
+     * siirreta eteenpain.
+     */
+    @WithSpan
+    fun passivoiArvioija(
+        id: Int,
+        tekija: Oid?,
+    ): Either<YkiArvioijaError, YkiArvioijaEntity> {
+        val olemassaoleva = repository.findArvioijaById(id) ?: return YkiArvioijaError.ArvioijaaEiLoydy.left()
+
+        val passivoitu =
+            olemassaoleva.copy(
+                passivoitu = olemassaoleva.passivoitu ?: timeService.now().atOffset(ZoneOffset.UTC),
+                arviointioikeudet =
+                    olemassaoleva.arviointioikeudet.map { it.copy(tila = YkiArvioijaTila.PASSIVOITU) },
+            )
+
+        repository.tallenna(passivoitu, tekija)
+        auditLogger.log(AuditLogOperation.YkiArvioijaPassivated, olemassaoleva.arvioijaOid)
+
+        return repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+    }
 
     @WithSpan
     fun onOlemassa(id: Int): Boolean = repository.findArvioijaById(id) != null

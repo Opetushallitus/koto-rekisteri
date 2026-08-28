@@ -199,6 +199,25 @@ class YkiArvioijaViewController(
             peruutusLinkki = Links.Yki.arvioija(id),
         )
 
+    @PostMapping("/{id}/passivoi", produces = ["text/html"])
+    fun passivoiArvioija(
+        @PathVariable id: Int,
+        viewMessage: ViewMessage? = null,
+    ): ResponseEntity<String> =
+        arvioijaService.passivoiArvioija(id, CurrentUser.oid()).fold(
+            ifLeft = { ResponseEntity.status(HttpStatus.NOT_FOUND).build() },
+            ifRight = {
+                viewMessage?.showSuccess(
+                    UiText.Yki.Arvioija.passivoitu
+                        .toString(),
+                )
+                ResponseEntity
+                    .status(HttpStatus.SEE_OTHER)
+                    .location(URI.create(Links.Yki.arvioija(id)))
+                    .build()
+            },
+        )
+
     @GetMapping("/{id}", produces = ["text/html"])
     fun arvioijaView(
         @PathVariable id: Int,
@@ -211,6 +230,7 @@ class YkiArvioijaViewController(
         return ResponseEntity.ok(
             YkiArvioijaTiedotPage.render(
                 arvioija = arvioija,
+                kausihistoria = arvioijaService.haeKausihistoria(id),
                 turvakielto = arvioijaService.haeTurvakielto(arvioija.arvioijaOid),
                 flash = viewMessage?.consume(),
                 kirjoitusKaytossa = asetukset.kirjoitusKaytossa,

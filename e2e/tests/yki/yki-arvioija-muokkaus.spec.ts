@@ -52,6 +52,40 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     )
   })
 
+  test("kausihistoria kirjaa uuden kauden ja passivointi paattaa merkinnan", async ({
+    indexPage,
+    ykiArvioijaLomakePage,
+  }) => {
+    const page = ykiArvioijaLomakePage.page
+    await indexPage.login()
+
+    await ykiArvioijaLomakePage.open()
+    await ykiArvioijaLomakePage.haeOppijanumerolla(PETRO)
+    await ykiArvioijaLomakePage.asetaKaudenAlkupaiva("2025-12-07")
+    await ykiArvioijaLomakePage.valitseArviointioikeus("FIN", "PT")
+    await ykiArvioijaLomakePage.tallenna()
+
+    await expect(page.getByTestId("kausihistoria")).toContainText("7.12.2025")
+
+    // Uusi kausi kirjautuu historiaan alkuperaisen rinnalle
+    await page.getByTestId("muokkaaArvioijaa").click()
+    await ykiArvioijaLomakePage.asetaKaudenAlkupaiva("2026-06-01")
+    await ykiArvioijaLomakePage.tallenna()
+
+    const historia = page.getByTestId("kausihistoria")
+    await expect(historia).toContainText("7.12.2025")
+    await expect(historia).toContainText("1.6.2026")
+
+    // Passivointi vaatii vahvistuksen dialogissa
+    await page.getByTestId("passivoiArvioija").click()
+    await expect(page.getByTestId("passivoiArvioijaDialog")).toBeVisible()
+    await page.getByTestId("vahvistaPassivointi").click()
+
+    await expect(ykiArvioijaLomakePage.viewMessage).toContainText("passiivise")
+    await expect(historia).toContainText("Passivoitu")
+    await expect(page.getByTestId("passivoiArvioija")).toHaveCount(0)
+  })
+
   test("muokkauksen voi peruuttaa palaamatta tallentamiseen", async ({
     indexPage,
     ykiArvioijaLomakePage,
