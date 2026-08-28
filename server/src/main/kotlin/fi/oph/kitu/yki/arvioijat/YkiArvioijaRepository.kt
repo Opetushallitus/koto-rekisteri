@@ -40,9 +40,15 @@ interface CustomYkiArvioijaRepository {
 
     fun findKausihistoria(arvioijaId: Int): List<YkiArvioijaKausiEntity>
 
-    fun findForListView(params: YkiArvioijaParams): List<YkiArvioijaListRow>
+    fun findForListView(
+        params: YkiArvioijaParams,
+        tanaan: LocalDate,
+    ): List<YkiArvioijaListRow>
 
-    fun countForListView(params: YkiArvioijaParams): Int
+    fun countForListView(
+        params: YkiArvioijaParams,
+        tanaan: LocalDate,
+    ): Int
 
     fun allArviontioikeudet(
         orderBy: YkiArvioijaColumn = YkiArvioijaColumn.Sukunimi,
@@ -66,7 +72,7 @@ class CustomYkiArvioijaRepositoryImpl(
                    yki_arvioija.id AS arvioija_id,
                    yki_arviointioikeus.kieli,
                    yki_arviointioikeus.tasot,
-                   yki_arviointioikeus.tila,
+                   ${Rekisterointitila.SQL} AS tila,
                    yki_arviointioikeus.kauden_alkupaiva,
                    yki_arviointioikeus.kauden_paattymispaiva,
                    yki_arviointioikeus.jatkorekisterointi,
@@ -273,7 +279,7 @@ class CustomYkiArvioijaRepositoryImpl(
                         ps.setInt(1, arvioijaId)
                         ps.setString(2, it.kieli.toString())
                         ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.normalisoitu()))
-                        ps.setString(4, it.tila.toString())
+                        ps.setString(4, it.tila?.toString())
                         ps.setObject(5, it.kaudenAlkupaiva)
                         ps.setObject(6, it.kaudenPaattymispaiva)
                         ps.setBoolean(7, it.jatkorekisterointi)
@@ -319,7 +325,7 @@ class CustomYkiArvioijaRepositoryImpl(
                         ps.setInt(1, arvioijaId)
                         ps.setString(2, it.kieli.toString())
                         ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.normalisoitu()))
-                        ps.setString(4, it.tila.toString())
+                        ps.setString(4, it.tila?.toString())
                         ps.setObject(5, it.kaudenAlkupaiva)
                         ps.setObject(6, it.kaudenPaattymispaiva)
                         ps.setBoolean(7, it.jatkorekisterointi)
@@ -371,30 +377,34 @@ class CustomYkiArvioijaRepositoryImpl(
         )
 
     @WithSpan
-    override fun findForListView(params: YkiArvioijaParams): List<YkiArvioijaListRow> {
+    override fun findForListView(
+        params: YkiArvioijaParams,
+        tanaan: LocalDate,
+    ): List<YkiArvioijaListRow> {
         val order = params.toOrder()
         return namedJdbcTemplate.query(
             """
-            $LIST_VIEW_SELECT
+            SELECT * FROM ($LIST_VIEW_SELECT) arvioijarivi
             ${params.whereSql().orEmpty()}
             ORDER BY ${order.orderSql()}, kieli, arvioija_id
             ${order.pageSql().orEmpty()}
             """.trimIndent(),
-            params.sqlParams(),
+            params.sqlParams() + ("tanaan" to tanaan),
             YkiArvioijaListRow.fromRow,
         )
     }
 
     @WithSpan
-    override fun countForListView(params: YkiArvioijaParams): Int =
+    override fun countForListView(
+        params: YkiArvioijaParams,
+        tanaan: LocalDate,
+    ): Int =
         namedJdbcTemplate.queryForObject(
             """
-            SELECT count(*)
-            FROM yki_arvioija
-            JOIN yki_arviointioikeus ON yki_arvioija.id = yki_arviointioikeus.arvioija_id
+            SELECT count(*) FROM ($LIST_VIEW_SELECT) arvioijarivi
             ${params.whereSql().orEmpty()}
             """.trimIndent(),
-            params.sqlParams(),
+            params.sqlParams() + ("tanaan" to tanaan),
             Int::class.java,
         ) ?: 0
 
@@ -441,7 +451,7 @@ data class YkiArvioijaArviointioikeus(
     val postitoimipaikka: String,
     val kieli: Tutkintokieli,
     val tasot: Set<Tutkintotaso>,
-    val tila: YkiArvioijaTila,
+    val tila: YkiArvioijaTila?,
     val kaudenAlkupaiva: LocalDate?,
     val kaudenPaattymispaiva: LocalDate?,
     val jatkorekisterointi: Boolean,

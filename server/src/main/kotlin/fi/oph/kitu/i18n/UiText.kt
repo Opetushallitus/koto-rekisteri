@@ -296,6 +296,8 @@ object UiText {
         object ArvioijaTila {
             val aktiivinen: LocalizedString get() = tr("yki.arvioijaTila.aktiivinen", fi = "Aktiivinen")
             val passivoitu: LocalizedString get() = tr("yki.arvioijaTila.passivoitu", fi = "Passivoitu")
+            val tulevaisuudessa: LocalizedString
+                get() = tr("yki.arvioijaTila.tulevaisuudessa", fi = "Alkaa myöhemmin")
         }
 
         object Arvioija {

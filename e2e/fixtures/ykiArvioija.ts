@@ -24,7 +24,8 @@ export interface YkiArvioija {
 export interface YkiArviointioikeus {
   kieli: string
   tasot: Set<string>
-  tila: string
+  /** Vanhentunut sarake: tila lasketaan kauden päivistä, ks. Rekisterointitila. */
+  tila: string | null
   kaudenAlkupaiva: string | null
   kaudenPaattymispaiva: string | null
   jatkorekisterointi: boolean
@@ -38,9 +39,9 @@ const createArvioija = (
     rekisteriintuontiaika = null,
     ensimmainenRekisterointipaiva = "2024-09-01",
     kaudenAlkupaiva = "2024-09-01",
-    kaudenPaattymispaiva = null,
+    kaudenPaattymispaiva = "2029-09-01",
     jatkorekisterointi = false,
-    tila = "AKTIIVINEN",
+    tila = null,
     kieli = "FIN",
     tasot = new Set(["PT", "KT", "YT"]),
   }: Partial<YkiArviointioikeus>,

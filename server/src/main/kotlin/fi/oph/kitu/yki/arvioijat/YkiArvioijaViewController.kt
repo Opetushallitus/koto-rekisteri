@@ -8,6 +8,7 @@ import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oppijanumero.OppijanumeroException
 import fi.oph.kitu.security.CurrentUser
+import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.webmvc.Links
 import org.springframework.http.HttpStatus
@@ -25,6 +26,7 @@ import java.net.URI
 class YkiArvioijaViewController(
     private val arvioijaService: YkiArvioijaService,
     private val asetukset: ArvioijarekisteriAsetukset,
+    private val timeService: TimeService,
 ) {
     @GetMapping("", produces = ["text/html"])
     fun arvioijatView(
@@ -234,6 +236,7 @@ class YkiArvioijaViewController(
                 turvakielto = arvioijaService.haeTurvakielto(arvioija.arvioijaOid),
                 flash = viewMessage?.consume(),
                 kirjoitusKaytossa = asetukset.kirjoitusKaytossa,
+                tanaan = timeService.today(),
             ),
         )
     }

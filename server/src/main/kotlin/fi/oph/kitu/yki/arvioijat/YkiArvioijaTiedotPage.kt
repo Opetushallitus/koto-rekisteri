@@ -30,6 +30,7 @@ import kotlinx.html.footer
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.p
+import java.time.LocalDate
 
 object YkiArvioijaTiedotPage {
     fun render(
@@ -38,6 +39,7 @@ object YkiArvioijaTiedotPage {
         turvakielto: Turvakieltotieto,
         flash: ViewMessageData?,
         kirjoitusKaytossa: Boolean,
+        tanaan: LocalDate,
     ): String =
         Page.renderHtml {
             h1 { +"${arvioija.etunimet} ${arvioija.sukunimi}" }
@@ -57,7 +59,9 @@ object YkiArvioijaTiedotPage {
                         +UiText.Yki.Arvioija.muokkaa
                     }
 
-                    if (arvioija.arviointioikeudet.any { it.tila == YkiArvioijaTila.AKTIIVINEN }) {
+                    // Myos luonnollisesti paattynyt merkinta tarvitsee passivoinnin: se on ainoa
+                    // tapa asettaa sailytysajan alkuhetki.
+                    if (arvioija.passivoitu == null) {
                         passivointiNappi(arvioija.id!!.toInt(), kirjoitusKaytossa)
                     }
                 }
@@ -102,6 +106,13 @@ object YkiArvioijaTiedotPage {
                                 +oikeus.tasot.sorted().joinToString(", ") { it.nimi.toString() }
                             },
                             DisplayTableColumn(
+                                UiText.Yki.Sarake.tila
+                                    .toString(),
+                                testId = "arviointioikeusTila",
+                            ) { oikeus ->
+                                +Rekisterointitila.laske(oikeus, tanaan).nimi
+                            },
+                            DisplayTableColumn(
                                 UiText.Yki.Arvioija.kaudenAlkupaiva
                                     .toString(),
                                 testId = "kaudenAlkupaiva",
@@ -133,7 +144,7 @@ object YkiArvioijaTiedotPage {
                     if (kausihistoria.isEmpty()) {
                         p { +UiText.Yki.Arvioija.eiKausihistoriaa }
                     } else {
-                        kausihistoriaTaulukko(kausihistoria)
+                        kausihistoriaTaulukko(kausihistoria, tanaan)
                     }
                 }
             }
@@ -187,7 +198,10 @@ private fun FlowContent.passivointiNappi(
 
 private const val PASSIVOINTI_MODAL = "passivoiArvioijaDialog"
 
-private fun FlowContent.kausihistoriaTaulukko(kausihistoria: List<YkiArvioijaKausiEntity>) {
+private fun FlowContent.kausihistoriaTaulukko(
+    kausihistoria: List<YkiArvioijaKausiEntity>,
+    tanaan: LocalDate,
+) {
     displayTable(
         kausihistoria,
         listOf(
@@ -209,7 +223,7 @@ private fun FlowContent.kausihistoriaTaulukko(kausihistoria: List<YkiArvioijaKau
                 UiText.Yki.Sarake.tila
                     .toString(),
                 testId = "kausiTila",
-            ) { +it.tila.nimi },
+            ) { +Rekisterointitila.laske(it, tanaan).nimi },
             DisplayTableColumn(
                 UiText.Yki.Arvioija.kaudenAlkupaiva
                     .toString(),

@@ -30,14 +30,14 @@ class YkiArvioijaService(
 ) {
     @WithSpan
     fun haeSivullinen(params: YkiArvioijaParams): List<YkiArvioijaListRow> =
-        repository.findForListView(params).also { rows ->
+        repository.findForListView(params, timeService.today()).also { rows ->
             auditLogger.logAllInternalOnly("Yki arvioija viewed", rows) {
                 arrayOf("arvioija.oid" to it.arvioijaOid.toString())
             }
         }
 
     @WithSpan
-    fun laske(params: YkiArvioijaParams): Int = repository.countForListView(params)
+    fun laske(params: YkiArvioijaParams): Int = repository.countForListView(params, timeService.today())
 
     /** CSV-vientiin: koko suodatettu joukko ilman sivutusta. */
     @WithSpan
@@ -97,8 +97,11 @@ class YkiArvioijaService(
 
     /**
      * Passivointi ei kulje lomakkeen kautta, joten se rakentaa entiteetin suoraan olemassa olevasta
-     * rivista. Sailytysajan laskenta alkaa passivointihetkesta, joten aiemmin passivoidun leimaa ei
-     * siirreta eteenpain.
+     * rivista. Tila lasketaan kaudesta, joten passivointi paattaa kauden tahan paivaan — mutta vain
+     * kiristaen: nappi tarjotaan myos luonnollisesti paattyneelle merkinnalle, ja ilman kiristysta
+     * klikkaus pidentaisi vanhentuneen arviointioikeuden tahan paivaan asti ja kirjaisi
+     * kausihistoriaan hallintopaatoksen jota ei tehty. Sailytysajan laskenta alkaa
+     * passivointihetkesta, joten aiemmin passivoidun leimaa ei siirreta eteenpain.
      */
     @WithSpan
     fun passivoiArvioija(
@@ -106,12 +109,19 @@ class YkiArvioijaService(
         tekija: Oid?,
     ): Either<YkiArvioijaError, YkiArvioijaEntity> {
         val olemassaoleva = repository.findArvioijaById(id) ?: return YkiArvioijaError.ArvioijaaEiLoydy.left()
+        val tanaan = timeService.today()
 
         val passivoitu =
             olemassaoleva.copy(
                 passivoitu = olemassaoleva.passivoitu ?: timeService.now().atOffset(ZoneOffset.UTC),
                 arviointioikeudet =
-                    olemassaoleva.arviointioikeudet.map { it.copy(tila = YkiArvioijaTila.PASSIVOITU) },
+                    olemassaoleva.arviointioikeudet.map { oikeus ->
+                        oikeus.copy(
+                            tila = null,
+                            kaudenAlkupaiva = oikeus.kaudenAlkupaiva?.let { minOf(it, tanaan) },
+                            kaudenPaattymispaiva = minOf(oikeus.kaudenPaattymispaiva ?: tanaan, tanaan),
+                        )
+                    },
             )
 
         repository.tallenna(passivoitu, tekija)
@@ -151,19 +161,54 @@ class YkiArvioijaService(
     }
 
     /**
-     * Lomake kantaa vain virkailijan syottamat kentat. Merkinnan elinkaaritiedot —
-     * passivointihetki ja kielikohtainen tila — kuuluvat muille kulkureiteille, joten ne poimitaan
-     * olemassa olevalta rivilta eivatka nollaudu tallennuksessa.
+     * Lomake kantaa vain virkailijan syottamat kentat; tila lasketaan kaudesta. Passivointihetki
+     * on voimassa vain niin kauan kuin kausi ei ole voimassa, joten uusi kausi paattaa myos
+     * sailytysajan laskennan.
      */
     private fun entiteetti(
         validoitu: TallennaArvioija,
         olemassaoleva: YkiArvioijaEntity?,
-    ): YkiArvioijaEntity =
-        validoitu
-            .toEntity(
-                ensimmainenRekisterointipaiva(olemassaoleva, validoitu),
-                olemassaoleva?.arviointioikeudet?.associate { it.kieli to it.tila }.orEmpty(),
-            ).copy(passivoitu = olemassaoleva?.passivoitu)
+    ): YkiArvioijaEntity {
+        val tanaan = timeService.today()
+        val tallennettava = validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu))
+
+        return tallennettava.copy(
+            passivoitu = olemassaoleva?.passivoitu?.takeUnless { validoitu.kaudenPaattymispaiva >= tanaan },
+            arviointioikeudet =
+                tallennettava.arviointioikeudet.map { oikeus ->
+                    paataMuuttumatonPassivoitu(oikeus, olemassaoleva, tanaan)
+                },
+        )
+    }
+
+    /**
+     * Tallennettu PASSIVOITU on ainoa merkitseva tallennettu tila, ja tallennus nollaa sen. Jos
+     * kausi sailyy ennallaan — esimerkiksi yhteystietoa korjatessa — kannanotto kaannetaan uuteen
+     * esitystapaan paattamalla kausi, jottei korjaus elvyta passivoitua merkintaa. Uusi kausi sen
+     * sijaan on uusi rekisterointi ja saa aktivoida merkinnan.
+     */
+    private fun paataMuuttumatonPassivoitu(
+        oikeus: YkiArviointioikeusEntity,
+        olemassaoleva: YkiArvioijaEntity?,
+        tanaan: LocalDate,
+    ): YkiArviointioikeusEntity {
+        val aiempi =
+            olemassaoleva
+                ?.arviointioikeudet
+                ?.firstOrNull { it.kieli == oikeus.kieli }
+                ?.takeIf { it.tila == YkiArvioijaTila.PASSIVOITU }
+                ?: return oikeus
+
+        val kausiEnnallaan =
+            aiempi.kaudenAlkupaiva == oikeus.kaudenAlkupaiva &&
+                aiempi.kaudenPaattymispaiva == oikeus.kaudenPaattymispaiva
+
+        return if (kausiEnnallaan) {
+            oikeus.copy(kaudenPaattymispaiva = minOf(oikeus.kaudenPaattymispaiva ?: tanaan, tanaan.minusDays(1)))
+        } else {
+            oikeus
+        }
+    }
 
     private fun tallennaTaiKonflikti(
         arvioija: YkiArvioijaEntity,
