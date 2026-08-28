@@ -116,40 +116,21 @@ describe("Yleisen kielitutkinnon arvioijan lisays", () => {
     ).toBeChecked()
   })
 
-  test("hakutapa valitaan valilehdilta ja lomakkeet ovat erilliset", async ({
+  test("yksiloimattoman oppijan oppijanumeroa ei hyvaksyta", async ({
     indexPage,
     ykiArvioijaLomakePage,
   }) => {
     await indexPage.login()
     await ykiArvioijaLomakePage.open()
+    // Mock-ONR palauttaa talle henkilolle oppijanumero === null.
+    await ykiArvioijaLomakePage.haeOppijanumerolla("1.2.246.562.24.10691606777")
 
-    await expect(ykiArvioijaLomakePage.hetuLomake).toBeVisible()
-    await expect(ykiArvioijaLomakePage.oppijanumeroLomake).toHaveCount(0)
-
-    await ykiArvioijaLomakePage.valitseHakutapa("OPPIJANUMERO")
-
-    await expect(ykiArvioijaLomakePage.oppijanumeroLomake).toBeVisible()
-    await expect(ykiArvioijaLomakePage.hetuLomake).toHaveCount(0)
-
-    await ykiArvioijaLomakePage.valitseHakutapa("HETU")
-
-    await expect(ykiArvioijaLomakePage.hetuLomake).toBeVisible()
-    await expect(ykiArvioijaLomakePage.oppijanumeroLomake).toHaveCount(0)
-  })
-
-  test("hetulla haettu henkilo esitaytetaan", async ({
-    indexPage,
-    ykiArvioijaLomakePage,
-  }) => {
-    await indexPage.login()
-    await ykiArvioijaLomakePage.open()
-    await ykiArvioijaLomakePage.haeHetulla(
-      "010180-9026",
-      "Ranja Testi",
-      "Öhman-Testi",
-    )
-
-    await ykiArvioijaLomakePage.expectLomakeVisible()
+    await expect(
+      ykiArvioijaLomakePage.fieldError("oppijanumero"),
+    ).toContainText("yksilöity")
+    await expect(
+      ykiArvioijaLomakePage.getPageContent().getByTestId("tallennaArvioija"),
+    ).toHaveCount(0)
   })
 
   test("virkailija ilman kirjoitusoikeutta ei nae lisaysnappia", async ({

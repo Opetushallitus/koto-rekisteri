@@ -302,26 +302,14 @@ object UiText {
             val uusiArvioija: LocalizedString get() = tr("yki.arvioija.uusiArvioija", fi = "Uusi arvioija")
             val haeHenkilonTiedot: LocalizedString
                 get() = tr("yki.arvioija.haeHenkilonTiedot", fi = "Hae henkilön tiedot")
-            val hakutapaHetu: LocalizedString
-                get() = tr("yki.arvioija.hakutapaHetu", fi = "Henkilötunnuksella")
-            val hakutapaOppijanumero: LocalizedString
-                get() = tr("yki.arvioija.hakutapaOppijanumero", fi = "Oppijanumerolla")
-            val hakuOhjeHetu: LocalizedString
-                get() =
-                    tr(
-                        "yki.arvioija.hakuOhjeHetu",
-                        fi = "Hae arvioijan tiedot oppijanumerorekisteristä henkilötunnuksella ja nimillä.",
-                    )
             val hakuOhjeOppijanumero: LocalizedString
                 get() =
                     tr(
                         "yki.arvioija.hakuOhjeOppijanumero",
                         fi = "Hae arvioijan tiedot oppijanumerorekisteristä oppijanumerolla.",
                     )
-            val henkilotunnus: LocalizedString get() = tr("yki.arvioija.henkilotunnus", fi = "Henkilötunnus")
             val sukunimi: LocalizedString get() = tr("yki.arvioija.sukunimi", fi = "Sukunimi")
             val etunimet: LocalizedString get() = tr("yki.arvioija.etunimet", fi = "Etunimet")
-            val kutsumanimi: LocalizedString get() = tr("yki.arvioija.kutsumanimi", fi = "Kutsumanimi")
             val oppijanumero: LocalizedString get() = tr("yki.arvioija.oppijanumero", fi = "Oppijanumero")
             val sahkopostiosoite: LocalizedString
                 get() = tr("yki.arvioija.sahkopostiosoite", fi = "Sähköpostiosoite")
@@ -420,7 +408,7 @@ object UiText {
                 get() =
                     tr(
                         "yki.arvioija.eiLoytynytOnrista",
-                        fi = "Henkilöä ei löytynyt oppijanumerorekisteristä. Tarkista henkilötunnus ja nimet.",
+                        fi = "Henkilöä ei löytynyt oppijanumerorekisteristä. Tarkista oppijanumero.",
                     )
             val takaisinListaan: LocalizedString
                 get() = tr("yki.arvioija.takaisinListaan", fi = "Takaisin arvioijalistaan")

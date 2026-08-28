@@ -508,34 +508,3 @@ a[role="button"][aria-disabled="true"] {
 .float-right {
   float: right;
 }
-
-nav.tabs ul {
-  display: flex;
-  padding: 0;
-  gap: 0;
-  border-bottom: 1px solid var(--pico-muted-border-color);
-}
-
-nav.tabs li {
-  padding: 0;
-  list-style: none;
-}
-
-nav.tabs a {
-  display: block;
-  padding: calc(var(--pico-block-spacing-vertical) * 0.5)
-    var(--pico-block-spacing-horizontal);
-  border-bottom: 3px solid transparent;
-  color: var(--oph-grey800);
-  text-decoration: none;
-}
-
-nav.tabs a:hover {
-  background: var(--pico-card-sectioning-background-color);
-}
-
-nav.tabs a[aria-current="page"] {
-  border-bottom-color: var(--pico-primary);
-  color: var(--pico-primary);
-  font-weight: 500;
-}

@@ -60,7 +60,7 @@ class YkiArvioijaViewController(
     fun arvioijaHaku(
         @ModelAttribute form: ArvioijaHakuFormData,
     ): ResponseEntity<String> =
-        arvioijaService.haeHenkilotiedot(form.toOnrHaku()).fold(
+        arvioijaService.haeHenkilotiedot(form.oppijanumero).fold(
             ifLeft = { virhe ->
                 ResponseEntity.ok(YkiArvioijaLomakePage.renderHaku(form, virheet(virhe)))
             },

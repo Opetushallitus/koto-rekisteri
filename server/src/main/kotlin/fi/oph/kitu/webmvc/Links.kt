@@ -11,7 +11,6 @@ import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.arvioijat.ArvioijaHakuFormData
-import fi.oph.kitu.yki.arvioijat.ArvioijaHakutapa
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaParams
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaViewController
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
@@ -96,8 +95,6 @@ object Links {
             linkTo(
                 methodOn(YkiArvioijaViewController::class.java).uusiArvioijaView(ArvioijaHakuFormData()),
             ).toString()
-
-        fun uusiArvioija(tapa: ArvioijaHakutapa): String = "${uusiArvioija()}?tapa=${tapa.name}"
 
         fun muokkaaArvioijaa(id: Int): String =
             linkTo(methodOn(YkiArvioijaViewController::class.java).muokkaaArvioijaaView(id)).toString()

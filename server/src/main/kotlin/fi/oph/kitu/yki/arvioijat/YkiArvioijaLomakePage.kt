@@ -2,7 +2,6 @@ package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.html.FormErrors
 import fi.oph.kitu.html.Page
-import fi.oph.kitu.html.TabItem
 import fi.oph.kitu.html.ariaInvalid
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
@@ -12,7 +11,6 @@ import fi.oph.kitu.html.formField
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.hiddenValue
 import fi.oph.kitu.html.input
-import fi.oph.kitu.html.tabs
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.warningMessage
 import fi.oph.kitu.i18n.LocalizedString
@@ -50,27 +48,9 @@ object YkiArvioijaLomakePage {
 
             formErrorSummary(errors)
 
-            tabs(
-                TabItem(
-                    label = UiText.Yki.Arvioija.hakutapaHetu,
-                    href = Links.Yki.uusiArvioija(ArvioijaHakutapa.HETU),
-                    selected = form.tapa == ArvioijaHakutapa.HETU,
-                    testId = "hakutapa-HETU",
-                ),
-                TabItem(
-                    label = UiText.Yki.Arvioija.hakutapaOppijanumero,
-                    href = Links.Yki.uusiArvioija(ArvioijaHakutapa.OPPIJANUMERO),
-                    selected = form.tapa == ArvioijaHakutapa.OPPIJANUMERO,
-                    testId = "hakutapa-OPPIJANUMERO",
-                ),
-            )
-
             card {
                 cardContent {
-                    when (form.tapa) {
-                        ArvioijaHakutapa.HETU -> hetuHakuLomake(form, errors)
-                        ArvioijaHakutapa.OPPIJANUMERO -> oppijanumeroHakuLomake(form, errors)
-                    }
+                    oppijanumeroHakuLomake(form, errors)
                 }
             }
 
@@ -189,28 +169,6 @@ object YkiArvioijaLomakePage {
         }
 }
 
-private fun FlowContent.hetuHakuLomake(
-    form: ArvioijaHakuFormData,
-    errors: FormErrors,
-) {
-    p { +UiText.Yki.Arvioija.hakuOhjeHetu }
-
-    formPost(Links.Yki.arvioijaHaku(), testId = "hetuHakuLomake") {
-        hiddenValue("tapa", ArvioijaHakutapa.HETU.name)
-        tekstikentta(UiText.Yki.Arvioija.henkilotunnus, "hetu", form.hetu, errors)
-        tekstikentta(UiText.Yki.Arvioija.sukunimi, "sukunimi", form.sukunimi, errors)
-        tekstikentta(UiText.Yki.Arvioija.etunimet, "etunimet", form.etunimet, errors)
-        tekstikentta(UiText.Yki.Arvioija.kutsumanimi, "kutsumanimi", form.kutsumanimi, errors)
-
-        footer {
-            button(type = ButtonType.submit) {
-                testId("haeHenkilonTiedot")
-                +UiText.Yki.Arvioija.haeHenkilonTiedot
-            }
-        }
-    }
-}
-
 private fun FlowContent.oppijanumeroHakuLomake(
     form: ArvioijaHakuFormData,
     errors: FormErrors,
@@ -218,7 +176,6 @@ private fun FlowContent.oppijanumeroHakuLomake(
     p { +UiText.Yki.Arvioija.hakuOhjeOppijanumero }
 
     formPost(Links.Yki.arvioijaHaku(), testId = "oppijanumeroHakuLomake") {
-        hiddenValue("tapa", ArvioijaHakutapa.OPPIJANUMERO.name)
         tekstikentta(UiText.Yki.Arvioija.oppijanumero, "oppijanumero", form.oppijanumero, errors)
 
         footer {

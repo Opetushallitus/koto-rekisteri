@@ -69,52 +69,24 @@ class YkiArvioijaLisaysTest(
     }
 
     @Test
-    fun `hakulomake renderoityy hetuvalilehdella`() {
+    fun `hakulomake renderoi oppijanumerokentan`() {
         val html = html(get("/yki/arvioijat/uusi").session(session()))
-
-        assertContains(html, """data-testid="hetuHakuLomake"""")
-        assertContains(html, """data-testid="hetu"""")
-        assertContains(html, """data-testid="haeHenkilonTiedot"""")
-        assertFalse(
-            html.contains("""data-testid="oppijanumeroHakuLomake""""),
-            "vain valittu valilehti saa renderoitya",
-        )
-    }
-
-    @Test
-    fun `oppijanumerovalilehti renderoi oman lomakkeensa`() {
-        val html = html(get("/yki/arvioijat/uusi").session(session()).param("tapa", "OPPIJANUMERO"))
 
         assertContains(html, """data-testid="oppijanumeroHakuLomake"""")
         assertContains(html, """data-testid="oppijanumero"""")
-        assertFalse(html.contains("""data-testid="hetuHakuLomake""""), "vain valittu valilehti saa renderoitya")
-        assertFalse(html.contains("""data-testid="hetu-input""""), "hetukentta kuuluu vain toiselle valilehdelle")
     }
 
     @Test
-    fun `valilehtilinkit kertovat kumpi on valittuna`() {
-        val html = html(get("/yki/arvioijat/uusi").session(session()).param("tapa", "OPPIJANUMERO"))
-
-        val valittu = Regex("""<a href="[^"]*tapa=OPPIJANUMERO"[^>]*aria-current="page"""")
-        assertTrue(valittu.containsMatchIn(html), "valittu valilehti on merkittava aria-currentilla:\n$html")
-        assertContains(html, """data-testid="hakutapa-HETU"""")
-    }
-
-    @Test
-    fun `tyhja oppijanumero palauttaa oman valilehtensa virheineen`() {
-        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to "")
+    fun `tyhja oppijanumero palauttaa hakulomakkeen virheineen`() {
+        val html = haku("oppijanumero" to "")
 
         assertContains(html, "Oppijanumero on pakollinen tieto")
         assertContains(html, """data-testid="oppijanumeroHakuLomake"""")
-        assertFalse(
-            html.contains("Henkilötunnus on pakollinen tieto"),
-            "toisen valilehden kenttia ei saa validoida",
-        )
     }
 
     @Test
     fun `oppijanumerolla haettu henkilo esitaytetaan oppijanumerorekisterin tiedoilla`() {
-        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to petronOid)
+        val html = haku("oppijanumero" to petronOid)
 
         assertContains(html, """value="Kivinen-Testi"""")
         assertContains(html, """value="Petro Testi"""")
@@ -126,38 +98,8 @@ class YkiArvioijaLisaysTest(
     }
 
     @Test
-    fun `hetulla ja nimilla haettu henkilo esitaytetaan`() {
-        val html =
-            haku(
-                "hetu" to "010180-9026",
-                "etunimet" to "Ranja Testi",
-                "sukunimi" to "Öhman-Testi",
-                "kutsumanimi" to "Ranja",
-            )
-
-        assertContains(html, """data-testid="tallennaArvioija"""")
-        assertContains(html, "1.2.246.562.24.33342764709")
-    }
-
-    @Test
-    fun `puuttuvat hakukentat palauttavat hakulomakkeen virheineen`() {
-        val html = haku("hetu" to "")
-
-        assertContains(html, "Henkilötunnus on pakollinen tieto")
-        assertContains(html, "Etunimet on pakollinen tieto")
-        assertContains(html, "Sukunimi on pakollinen tieto")
-        assertContains(html, """aria-invalid="true"""")
-        assertFalse(html.contains("""data-testid="tallennaArvioija""""), "ei saa edeta lomakkeen vaiheeseen 2")
-    }
-
-    @Test
-    fun `tuntematon henkilo nayttaa yleisen virheen`() {
-        val html =
-            haku(
-                "hetu" to "121280-123A",
-                "etunimet" to "Tuntematon",
-                "sukunimi" to "Testaaja",
-            )
+    fun `tuntematon oppijanumero nayttaa virheen`() {
+        val html = haku("oppijanumero" to oidJotaEiOleOnrissa)
 
         assertContains(html, "oppijanumerorekisteristä")
     }
@@ -265,7 +207,7 @@ class YkiArvioijaLisaysTest(
     fun `jo rekisterissa olevan arvioijan lomake esitaytetaan rekisterin merkinnalla`() {
         tallennaOlemassaolevaMerkinta()
 
-        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to petronOid)
+        val html = haku("oppijanumero" to petronOid)
 
         assertContains(html, "Arvioija on jo rekisterissä")
         assertContains(html, """value="OPH-9-2020"""")
@@ -406,7 +348,7 @@ class YkiArvioijaLisaysTest(
 
     @Test
     fun `yksiloimattoman henkilon oppijanumero hylataan eika mitaan tallenneta`() {
-        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to yksiloimatonOid)
+        val html = haku("oppijanumero" to yksiloimatonOid)
 
         assertContains(html, """data-testid="oppijanumero-error"""", message = "virheen on osuttava kenttaan")
         assertContains(html, "ei ole yksilöity")
@@ -421,7 +363,7 @@ class YkiArvioijaLisaysTest(
     fun `duplikaattioppijanumerolla haettu ohjautuu master-oidin merkintaan`() {
         tallennaOlemassaolevaMerkinta(masterOid)
 
-        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to duplikaattiOid)
+        val html = haku("oppijanumero" to duplikaattiOid)
 
         assertContains(html, """value="$masterOid"""", message = "merkinta avaimennetaan master-oidilla")
         assertContains(html, "Arvioija on jo rekisterissä", message = "olemassa oleva merkinta on loydyttava")

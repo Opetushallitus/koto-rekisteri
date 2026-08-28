@@ -8,10 +8,6 @@ export default class YkiArvioijaLomakePage extends BasePage {
     super(page, config)
   }
 
-  get hetuLomake() {
-    return this.page.getByTestId("hetuHakuLomake")
-  }
-
   get oppijanumeroLomake() {
     return this.page.getByTestId("oppijanumeroHakuLomake")
   }
@@ -20,20 +16,8 @@ export default class YkiArvioijaLomakePage extends BasePage {
     await this.goto("yki/arvioijat/uusi")
   }
 
-  async valitseHakutapa(tapa: "HETU" | "OPPIJANUMERO") {
-    await this.page.getByTestId(`hakutapa-${tapa}`).click()
-  }
-
   async haeOppijanumerolla(oppijanumero: string) {
-    await this.valitseHakutapa("OPPIJANUMERO")
     await this.page.getByTestId("oppijanumero-input").fill(oppijanumero)
-    await this.page.getByTestId("haeHenkilonTiedot").click()
-  }
-
-  async haeHetulla(hetu: string, etunimet: string, sukunimi: string) {
-    await this.page.getByTestId("hetu-input").fill(hetu)
-    await this.page.getByTestId("etunimet-input").fill(etunimet)
-    await this.page.getByTestId("sukunimi-input").fill(sukunimi)
     await this.page.getByTestId("haeHenkilonTiedot").click()
   }
 
