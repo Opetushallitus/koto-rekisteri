@@ -16,6 +16,13 @@ interface OppijanumeroService {
 
     fun getMasterOid(henkiloOid: Oid): Either<OppijanumeroException, Oid>
 
+    /**
+     * Kuten [getMasterOid], mutta yksiloimaton henkilo on virhe: henkilo-OID ei kelpaa
+     * oppijanumeron korvikkeeksi. Tarkoituksella ilman oletustoteutusta, jotta unohtunut
+     * ylikirjoitus ei palauta [getMasterOid]in fallbackia hiljaa takaisin.
+     */
+    fun getOppijanumero(henkiloOid: Oid): Either<OppijanumeroException, Oid>
+
     fun getHenkiloByMasterOid(masterOid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo>
 
     fun getLinkedOids(henkiloOid: Oid): Either<OppijanumeroException, Set<Oid>>
@@ -101,6 +108,17 @@ class OppijanumeroServiceImpl(
         either {
             val body = getYleistunniste(henkiloOid).bind()
             parseOid(body.oppijanumero ?: body.oid).bind()
+        }
+
+    @WithSpan
+    @RetryOutboundIntegration
+    override fun getOppijanumero(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
+        either {
+            val body = getYleistunniste(henkiloOid).bind()
+            val oppijanumero =
+                body.oppijanumero?.takeIf { it.isNotEmpty() }
+                    ?: raise(OppijanumeroException.OppijaNotIdentifiedException(EmptyRequest()))
+            parseOid(oppijanumero).bind()
         }
 
     private fun getYleistunniste(oid: Oid): Either<OppijanumeroException, YleistunnisteOidResponse> =

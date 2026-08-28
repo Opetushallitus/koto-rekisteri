@@ -177,7 +177,8 @@ class YkiArvioijaService(
 
         // Virkailija voi syottaa duplikaatin OIDin. Rekisteri avaimennetaan master-OIDilla, joten
         // ilman ratkaisua sama henkilo saisi toisen merkinnan eika olemassa olevaa loydettaisi.
-        return oppijanumeroService.getMasterOid(syotetty).mapLeft { onrVirhe ->
+        // getOppijanumero ei putoa takaisin henkilo-OIDiin, joten yksiloimaton henkilo hylataan.
+        return oppijanumeroService.getOppijanumero(syotetty).mapLeft { onrVirhe ->
             when (onrVirhe) {
                 is OppijanumeroException.OppijaNotIdentifiedException -> YkiArvioijaError.OppijaaEiYksiloity(syotetty)
                 else -> YkiArvioijaError.OppijanumeroaEiSaatu(onrVirhe)

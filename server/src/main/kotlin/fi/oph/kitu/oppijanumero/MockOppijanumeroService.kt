@@ -56,6 +56,12 @@ class MockOppijanumeroService : OppijanumeroService {
             parseOid(henkilo.oppijanumero ?: henkilo.oidHenkilo)
         }
 
+    override fun getOppijanumero(henkiloOid: Oid): Either<OppijanumeroException, Oid> =
+        getHenkiloByMasterOid(henkiloOid).flatMap { henkilo ->
+            henkilo.oppijanumero?.let { parseOid(it) }
+                ?: OppijanumeroException.OppijaNotIdentifiedException(EmptyRequest()).left()
+        }
+
     override fun getHenkiloByMasterOid(masterOid: Oid): Either<OppijanumeroException, OppijanumerorekisteriHenkilo> =
         try {
             val source =

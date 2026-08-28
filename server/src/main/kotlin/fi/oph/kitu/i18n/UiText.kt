@@ -405,7 +405,9 @@ object UiText {
                 get() =
                     tr(
                         "yki.arvioija.eiYksiloity",
-                        fi = "Henkilöä ei ole yksilöity oppijanumerorekisterissä.",
+                        fi =
+                            "Henkilöä ei ole yksilöity oppijanumerorekisterissä, " +
+                                "joten arvioijaa ei voi lisätä.",
                     )
             val onrEiVastannut: LocalizedString
                 get() =

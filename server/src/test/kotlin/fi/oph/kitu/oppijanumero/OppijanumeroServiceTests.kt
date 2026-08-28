@@ -1,6 +1,7 @@
 package fi.oph.kitu.oppijanumero
 
 import fi.oph.kitu.assertLeftIsThrowable
+import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.defaultObjectMapper
 import fi.oph.kitu.util.result.getOrThrow
 import org.junit.jupiter.api.Test
@@ -12,6 +13,7 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers.request
 import org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
 import org.springframework.web.client.RestClient
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 class OppijanumeroServiceTests {
     @Test
@@ -55,6 +57,53 @@ class OppijanumeroServiceTests {
                     ),
                 ).getOrThrow()
         }
+    }
+
+    @Test
+    fun `getOppijanumero hylkaa yksiloimattoman henkilon`() {
+        val service = yleistunnisteVastaa("""{"oid":"$YKSILOIMATON","oppijanumero":null}""")
+
+        assertIs<OppijanumeroException.OppijaNotIdentifiedException>(
+            service.getOppijanumero(Oid.parse(YKSILOIMATON).getOrThrow()).leftOrNull(),
+        )
+    }
+
+    @Test
+    fun `getOppijanumero palauttaa oppijanumeron yksiloidylle henkilolle`() {
+        val service = yleistunnisteVastaa("""{"oid":"$YKSILOIMATON","oppijanumero":"$YKSILOITY"}""")
+
+        assertEquals(
+            Oid.parse(YKSILOITY).getOrThrow(),
+            service.getOppijanumero(Oid.parse(YKSILOIMATON).getOrThrow()).getOrThrow(),
+        )
+    }
+
+    /**
+     * getMasterOid putoaa tarkoituksella takaisin henkilo-OIDiin — siita riippuu mm. virkailijan
+     * asiointikielen haku ja yksiloimattomien oppijoiden suoritusnakymat. Vahti sille, ettei
+     * getOppijanumeron tiukkuus vuoda sinne.
+     */
+    @Test
+    fun `getMasterOid putoaa yha takaisin henkilo-oidiin`() {
+        val service = yleistunnisteVastaa("""{"oid":"$YKSILOIMATON","oppijanumero":null}""")
+
+        assertEquals(
+            Oid.parse(YKSILOIMATON).getOrThrow(),
+            service.getMasterOid(Oid.parse(YKSILOIMATON).getOrThrow()).getOrThrow(),
+        )
+    }
+
+    private fun yleistunnisteVastaa(json: String): OppijanumeroServiceImpl {
+        val restClientBuilder = RestClient.builder().baseUrl(BASE_URL)
+        MockRestServiceServer
+            .bindTo(restClientBuilder)
+            .build()
+            .expect(requestTo("$BASE_URL/yleistunniste/hae/$YKSILOIMATON"))
+            .andRespond(
+                withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(json),
+            )
+
+        return OppijanumeroServiceImpl(OppijanumerorekisteriClient(restClientBuilder.build(), BASE_URL))
     }
 
     @Test
@@ -144,5 +193,11 @@ class OppijanumeroServiceTests {
         val obj = defaultObjectMapper.readValue(json, OppijanumerorekisteriHenkilo::class.java)
 
         assertEquals("1.2.246.562.98.89505889280", obj.oppijanumero)
+    }
+
+    companion object {
+        private const val BASE_URL = "http://localhost:8080/oppijanumerorekisteri-service"
+        private const val YKSILOIMATON = "1.2.246.562.24.10691606777"
+        private const val YKSILOITY = "1.2.246.562.24.20281155246"
     }
 }
