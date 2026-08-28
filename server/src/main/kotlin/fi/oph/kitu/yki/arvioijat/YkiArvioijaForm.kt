@@ -20,8 +20,6 @@ data class ArvioijaFormData(
     val postinumero: String? = null,
     val postitoimipaikka: String? = null,
     val kaudenAlkupaiva: LocalDate? = null,
-    val jatkorekisterointi: Boolean = false,
-    val tila: YkiArvioijaTila = YkiArvioijaTila.AKTIIVINEN,
     val ashaNumero: String? = null,
     val turvakielto: Turvakieltotieto = Turvakieltotieto.EI,
     val onOlemassa: Boolean = false,
@@ -52,8 +50,6 @@ data class ArvioijaFormData(
             postinumero = postinumero.orEmpty().trim(),
             postitoimipaikka = postitoimipaikka.orEmpty().trim(),
             kaudenAlkupaiva = alkupaiva,
-            jatkorekisterointi = jatkorekisterointi,
-            tila = tila,
             ashaNumero = ashaNumero?.trim()?.takeIf { it.isNotEmpty() },
             arviointioikeudet = arviointioikeudet(),
         )
@@ -74,7 +70,6 @@ data class ArvioijaFormData(
                 katuosoite = esitaytto.katuosoite.tai(pohja.katuosoite),
                 postinumero = esitaytto.postinumero.tai(pohja.postinumero),
                 postitoimipaikka = esitaytto.postitoimipaikka.tai(pohja.postitoimipaikka),
-                jatkorekisterointi = merkinta != null,
                 onOlemassa = merkinta != null,
             )
         }
@@ -95,8 +90,6 @@ data class ArvioijaFormData(
                 postinumero = arvioija.postinumero,
                 postitoimipaikka = arvioija.postitoimipaikka,
                 kaudenAlkupaiva = oikeudet.firstNotNullOfOrNull { it.kaudenAlkupaiva },
-                jatkorekisterointi = oikeudet.any { it.jatkorekisterointi },
-                tila = oikeudet.firstOrNull()?.tila ?: YkiArvioijaTila.AKTIIVINEN,
                 ashaNumero = arvioija.ashaNumero,
                 turvakielto = turvakielto,
                 onOlemassa = true,

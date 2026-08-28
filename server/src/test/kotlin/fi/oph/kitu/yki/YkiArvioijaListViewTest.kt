@@ -6,6 +6,7 @@ import fi.oph.kitu.html.table.RenderableDisplayTableEnum
 import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.util.result.getOrThrow
+import fi.oph.kitu.yki.arvioijat.Rekisterointitila
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaListRow
@@ -29,13 +30,22 @@ class YkiArvioijaListViewTest(
     @param:Autowired private val postgres: PostgreSQLContainer,
     @param:Autowired private val repository: YkiArvioijaRepository,
 ) {
+    /** Kiinteä tarkasteluhetki, jotta laskettu tila ei riipu ajohetkestä. */
+    private val tanaan = LocalDate.of(2025, 6, 1)
+
     @BeforeEach
     fun nukeDb() {
         repository.deleteAll()
         listOf(
-            arvioija("1.2.246.562.24.20281155246", "Öhman-Testi", Tutkintokieli.FIN, YkiArvioijaTila.AKTIIVINEN),
-            arvioija("1.2.246.562.24.59267607404", "Andersson-Testi", Tutkintokieli.SWE, YkiArvioijaTila.AKTIIVINEN),
-            arvioija("1.2.246.562.24.74064782358", "Kivinen-Testi", Tutkintokieli.ENG, YkiArvioijaTila.PASSIVOITU),
+            arvioija("1.2.246.562.24.20281155246", "Öhman-Testi", Tutkintokieli.FIN),
+            arvioija("1.2.246.562.24.59267607404", "Andersson-Testi", Tutkintokieli.SWE),
+            // Kausi on päättynyt ennen tarkasteluhetkeä, joten tila lasketaan passivoiduksi.
+            arvioija(
+                "1.2.246.562.24.74064782358",
+                "Kivinen-Testi",
+                Tutkintokieli.ENG,
+                kaudenPaattymispaiva = LocalDate.of(2024, 1, 1),
+            ),
         ).forEach { repository.tallenna(it) }
     }
 
@@ -43,7 +53,9 @@ class YkiArvioijaListViewTest(
         oid: String,
         sukunimi: String,
         kieli: Tutkintokieli,
-        tila: YkiArvioijaTila,
+        kaudenAlkupaiva: LocalDate = LocalDate.of(2021, 1, 1),
+        kaudenPaattymispaiva: LocalDate = LocalDate.of(2026, 1, 1),
+        tila: YkiArvioijaTila? = null,
     ) = YkiArvioijaEntity(
         id = null,
         arvioijaOid = Oid.parse(oid).getOrThrow(),
@@ -62,8 +74,8 @@ class YkiArvioijaListViewTest(
                     kieli = kieli,
                     tasot = setOf(Tutkintotaso.PT, Tutkintotaso.KT),
                     tila = tila,
-                    kaudenAlkupaiva = LocalDate.of(2021, 1, 1),
-                    kaudenPaattymispaiva = LocalDate.of(2026, 1, 1),
+                    kaudenAlkupaiva = kaudenAlkupaiva,
+                    kaudenPaattymispaiva = kaudenPaattymispaiva,
                     jatkorekisterointi = false,
                     ensimmainenRekisterointipaiva = LocalDate.of(2021, 1, 1),
                     rekisteriintuontiaika = null,
@@ -73,9 +85,9 @@ class YkiArvioijaListViewTest(
 
     @Test
     fun `listanäkymä palauttaa kaikki rivit oletusjärjestyksessä`() {
-        val rows = repository.findForListView(YkiArvioijaParams())
+        val rows = repository.findForListView(YkiArvioijaParams(), tanaan)
 
-        assertEquals(3, repository.countForListView(YkiArvioijaParams()))
+        assertEquals(3, repository.countForListView(YkiArvioijaParams(), tanaan))
         assertEquals(
             listOf("Andersson-Testi", "Kivinen-Testi", "Öhman-Testi"),
             rows.map { it.sukunimi },
@@ -84,9 +96,9 @@ class YkiArvioijaListViewTest(
 
     @Test
     fun `hakusana suodattaa nimen ja oppijanumeron perusteella`() {
-        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "Kivinen")).size)
-        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "59267607404")).size)
-        assertEquals(0, repository.findForListView(YkiArvioijaParams(search = "ei-lC6ydy")).size)
+        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "Kivinen"), tanaan).size)
+        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "59267607404"), tanaan).size)
+        assertEquals(0, repository.findForListView(YkiArvioijaParams(search = "ei-lC6ydy"), tanaan).size)
     }
 
     @Test
@@ -94,54 +106,56 @@ class YkiArvioijaListViewTest(
         // Sukunimi ja etunimi ovat eri sarakkeissa, joten yksi ILIKE ei riittaisi.
         assertEquals(
             listOf("Kivinen-Testi"),
-            repository.findForListView(YkiArvioijaParams(search = "Kivinen Testi")).map { it.sukunimi },
+            repository.findForListView(YkiArvioijaParams(search = "Kivinen Testi"), tanaan).map { it.sukunimi },
         )
         // Jarjestyksella ei ole valia.
         assertEquals(
             listOf("Kivinen-Testi"),
-            repository.findForListView(YkiArvioijaParams(search = "Testi Kivinen")).map { it.sukunimi },
+            repository.findForListView(YkiArvioijaParams(search = "Testi Kivinen"), tanaan).map { it.sukunimi },
         )
         // Kaikkien termien on osuttava.
-        assertEquals(0, repository.findForListView(YkiArvioijaParams(search = "Kivinen Andersson")).size)
+        assertEquals(0, repository.findForListView(YkiArvioijaParams(search = "Kivinen Andersson"), tanaan).size)
         // Ylimaarainen valilyonti ei riko hakua.
-        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "  Kivinen   ")).size)
+        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "  Kivinen   "), tanaan).size)
     }
 
     @Test
     fun `haku ei ole kirjainkokoriippuvainen`() {
-        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "kivinen")).size)
-        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "KIVINEN")).size)
+        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "kivinen"), tanaan).size)
+        assertEquals(1, repository.findForListView(YkiArvioijaParams(search = "KIVINEN"), tanaan).size)
     }
 
     @Test
     fun `tila-, kieli- ja tasosuodattimet rajaavat tuloksia`() {
         assertEquals(
             listOf("Kivinen-Testi"),
-            repository.findForListView(YkiArvioijaParams(tila = YkiArvioijaTila.PASSIVOITU)).map { it.sukunimi },
+            repository
+                .findForListView(YkiArvioijaParams(tila = Rekisterointitila.PASSIVOITU), tanaan)
+                .map { it.sukunimi },
         )
         assertEquals(
             listOf("Öhman-Testi"),
-            repository.findForListView(YkiArvioijaParams(kieli = Tutkintokieli.FIN)).map { it.sukunimi },
+            repository.findForListView(YkiArvioijaParams(kieli = Tutkintokieli.FIN), tanaan).map { it.sukunimi },
         )
-        assertEquals(3, repository.findForListView(YkiArvioijaParams(taso = Tutkintotaso.PT)).size)
-        assertEquals(0, repository.findForListView(YkiArvioijaParams(taso = Tutkintotaso.YT)).size)
+        assertEquals(3, repository.findForListView(YkiArvioijaParams(taso = Tutkintotaso.PT), tanaan).size)
+        assertEquals(0, repository.findForListView(YkiArvioijaParams(taso = Tutkintotaso.YT), tanaan).size)
     }
 
     @Test
     fun `kausiPaattyyEnnen rajaa päättyvät kaudet`() {
         assertEquals(
             3,
-            repository.findForListView(YkiArvioijaParams(kausiPaattyyEnnen = LocalDate.of(2027, 1, 1))).size,
+            repository.findForListView(YkiArvioijaParams(kausiPaattyyEnnen = LocalDate.of(2027, 1, 1)), tanaan).size,
         )
         assertEquals(
             0,
-            repository.findForListView(YkiArvioijaParams(kausiPaattyyEnnen = LocalDate.of(2020, 1, 1))).size,
+            repository.findForListView(YkiArvioijaParams(kausiPaattyyEnnen = LocalDate.of(2020, 1, 1)), tanaan).size,
         )
     }
 
     @Test
     fun `vainSolkiVirheet rajaa riveihin joilla on lähetysvirhe`() {
-        assertEquals(0, repository.findForListView(YkiArvioijaParams(vainSolkiVirheet = true)).size)
+        assertEquals(0, repository.findForListView(YkiArvioijaParams(vainSolkiVirheet = true), tanaan).size)
     }
 
     @Test
@@ -149,12 +163,14 @@ class YkiArvioijaListViewTest(
         val ekaSivu =
             repository.findForListView(
                 YkiArvioijaParams(sortDirection = SortDirection.DESC, page = 1, limit = 2),
+                tanaan,
             )
         assertEquals(listOf("Öhman-Testi", "Kivinen-Testi"), ekaSivu.map { it.sukunimi })
 
         val tokaSivu =
             repository.findForListView(
                 YkiArvioijaParams(sortDirection = SortDirection.DESC, page = 2, limit = 2),
+                tanaan,
             )
         assertEquals(listOf("Andersson-Testi"), tokaSivu.map { it.sukunimi })
     }

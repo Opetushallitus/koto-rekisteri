@@ -1,18 +1,11 @@
 package fi.oph.kitu.yki.arvioijat
 
-import fi.oph.kitu.html.table.Nimetty
-import fi.oph.kitu.i18n.LocalizedString
-import fi.oph.kitu.i18n.UiText
-
-enum class YkiArvioijaTila : Nimetty {
+/**
+ * Kantaan tallennettu tila. Vanhentunut: kitu kirjoittaa aina NULLin ja tila lasketaan
+ * kauden paivista, ks. [Rekisterointitila]. Arvon kirjoittaa enaa Solkin sisaantuleva push,
+ * ja laskennassa siita vaikuttaa vain [PASSIVOITU].
+ */
+enum class YkiArvioijaTila {
     AKTIIVINEN,
     PASSIVOITU,
-    ;
-
-    override val nimi: LocalizedString
-        get() =
-            when (this) {
-                AKTIIVINEN -> UiText.Yki.ArvioijaTila.aktiivinen
-                PASSIVOITU -> UiText.Yki.ArvioijaTila.passivoitu
-            }
 }

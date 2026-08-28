@@ -14,7 +14,7 @@ import java.time.LocalDate
 
 data class YkiArvioijaParams(
     var search: String = "",
-    var tila: YkiArvioijaTila? = null,
+    var tila: Rekisterointitila? = null,
     var kieli: Tutkintokieli? = null,
     var taso: Tutkintotaso? = null,
     @param:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -93,7 +93,8 @@ data class YkiArvioijaParams(
                     param to "%$term%",
                 )
             }
-            tila?.let { add("tila = :tila::yki_arvioija_tila", "tila" to it.name) }
+            // Alikyselyn laskettu sarake, ei enaa yki_arvioija_tila-enum.
+            tila?.let { add("tila = :tila", "tila" to it.name) }
             kieli?.let { add("kieli = :kieli::yki_tutkintokieli", "kieli" to it.name) }
             taso?.let { add("tasot @> ARRAY[:taso]::text[]", "taso" to it.name) }
             kausiPaattyyEnnen?.let {

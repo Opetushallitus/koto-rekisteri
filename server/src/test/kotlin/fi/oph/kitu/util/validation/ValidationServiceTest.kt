@@ -608,8 +608,6 @@ class ValidationServiceTest(
             postinumero = "99490",
             postitoimipaikka = "Enontekiö",
             kaudenAlkupaiva = LocalDate.of(2025, 12, 7),
-            jatkorekisterointi = false,
-            tila = YkiArvioijaTila.AKTIIVINEN,
             ashaNumero = "OPH-1234-2025",
             arviointioikeudet =
                 listOf(

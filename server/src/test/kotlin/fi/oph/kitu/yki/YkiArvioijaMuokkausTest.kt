@@ -1,10 +1,12 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.util.result.getOrThrow
+import fi.oph.kitu.yki.arvioijat.Rekisterointitila
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
@@ -29,12 +31,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
+import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -42,8 +46,15 @@ import kotlin.test.assertTrue
 class YkiArvioijaMuokkausTest(
     @param:Autowired private val context: WebApplicationContext,
     @param:Autowired private val repository: YkiArvioijaRepository,
+    @param:Autowired private val timeService: TestTimeService,
 ) {
     private lateinit var mockMvc: MockMvc
+
+    companion object {
+        /** Kiinteä tarkasteluhetki, jotta laskettu tila ei riipu ajohetkestä. */
+        private val HETKI: Instant = Instant.parse("2026-06-01T09:00:00Z")
+        private val TANAAN: LocalDate = LocalDate.of(2026, 6, 1)
+    }
 
     private val petro = "1.2.246.562.24.59267607404"
     private val ranja = "1.2.246.562.24.20281155246"
@@ -280,31 +291,193 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
-    fun `passivoitu arvioija ei aktivoidu yhteystietojen korjauksesta`() {
+    fun `yhteystiedon korjaus ei elvyta Solkin passivoimaa arvioijaa`() {
         val id = idOf(petro)
-        passivoi(id)
+        solkiPassivoi(id, kaudenPaattymispaiva = TANAAN.plusYears(1))
 
-        mockMvc
-            .perform(
-                muokkaus(id, petro)
-                    .param("postitoimipaikka", "TAMPERE")
-                    .param("arviointioikeus", "FIN:PT"),
-            ).andReturn()
+        timeService.runWithFixedClock(HETKI) {
+            // lomake() lahettaa postitoimipaikaksi HELSINGIN, fixtuurissa se on Testila.
+            mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "2021-01-01", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+        }
 
         val paivitetty = repository.findArvioijaById(id)!!
-        assertEquals("TAMPERE", paivitetty.postitoimipaikka, "muutoksen on tallennuttava")
+        assertEquals("HELSINKI", paivitetty.postitoimipaikka, "muutoksen on tallennuttava")
         assertEquals(
-            listOf(YkiArvioijaTila.PASSIVOITU),
-            paivitetty.arviointioikeudet.map { it.tila },
-            "lomake ei kanna tilaa, joten sen on sailyttava ennallaan",
+            listOf(Rekisterointitila.PASSIVOITU),
+            paivitetty.arviointioikeudet.map { Rekisterointitila.laske(it, TANAAN) },
+            "tallennus nollaa tallennetun tilan, joten Solkin kannanotto on kaannettava kauden paivamaariin",
         )
     }
 
-    private fun passivoi(id: Int) {
+    @Test
+    fun `uusi kausi aktivoi Solkin passivoiman arvioijan`() {
+        val id = idOf(petro)
+        solkiPassivoi(id, kaudenPaattymispaiva = TANAAN.plusYears(1))
+
+        timeService.runWithFixedClock(HETKI) {
+            mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+        }
+
+        assertEquals(
+            listOf(Rekisterointitila.AKTIIVINEN),
+            repository.findArvioijaById(id)!!.arviointioikeudet.map { Rekisterointitila.laske(it, TANAAN) },
+            "uusi kausi on uusi rekisterointi, joka kumoaa aiemman passivoinnin",
+        )
+    }
+
+    @Test
+    fun `uusi kausi aktivoi passivoidun arvioijan`() {
+        val id = idOf(petro)
+
+        timeService.runWithFixedClock(HETKI) {
+            mockMvc
+                .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
+                .andExpect(status().isSeeOther)
+
+            mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+        }
+
+        val paivitetty = repository.findArvioijaById(id)!!
+        assertEquals(
+            listOf(Rekisterointitila.AKTIIVINEN),
+            paivitetty.arviointioikeudet.map { Rekisterointitila.laske(it, TANAAN) },
+            "voimassa oleva kausi tarkoittaa aktiivista merkintaa",
+        )
+        assertNull(paivitetty.passivoitu, "voimassa oleva kausi paattaa sailytysajan laskennan")
+    }
+
+    @Test
+    fun `passivointi paattaa kauden tahan paivaan`() {
+        val id = idOf(petro)
+
+        timeService.runWithFixedClock(HETKI) {
+            mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+            mockMvc
+                .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
+                .andExpect(status().isSeeOther)
+        }
+
+        val oikeus = repository.findArvioijaById(id)!!.arviointioikeudet.single()
+        assertEquals(TANAAN, oikeus.kaudenPaattymispaiva, "kausi paattyy passivointipaivaan")
+        assertNull(oikeus.tila, "tila lasketaan kaudesta, sita ei kirjoiteta")
+        assertEquals(
+            Rekisterointitila.PASSIVOITU,
+            Rekisterointitila.laske(oikeus, TANAAN.plusDays(1)),
+            "paattymispaiva on inklusiivinen, joten merkinta on passiivinen vasta huomenna",
+        )
+        assertTrue(
+            repository.findKausihistoria(id).any { it.kaudenPaattymispaiva == TANAAN },
+            "katkaistu kausi kuuluu kausihistoriaan",
+        )
+    }
+
+    @Test
+    fun `passivointi ei pidenna jo paattynytta kautta`() {
+        val id = idOf(petro)
+        val ennen = repository.findArvioijaById(id)!!.arviointioikeudet.single()
+
+        timeService.runWithFixedClock(HETKI) {
+            mockMvc
+                .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
+                .andExpect(status().isSeeOther)
+        }
+
+        val jalkeen = repository.findArvioijaById(id)!!
+        assertEquals(
+            ennen.kaudenPaattymispaiva,
+            jalkeen.arviointioikeudet.single().kaudenPaattymispaiva,
+            "vanhentunutta arviointioikeutta ei saa pidentaa passivoimalla",
+        )
+        assertNotNull(jalkeen.passivoitu, "sailytysajan alkuhetki on silti asetettava")
+    }
+
+    @Test
+    fun `jatkorekisterointi johdetaan kauden alkupaivasta`() {
+        val id = idOf(petro)
+
+        timeService.runWithFixedClock(HETKI) {
+            mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "2021-01-01", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+            assertFalse(
+                repository
+                    .findArvioijaById(id)!!
+                    .arviointioikeudet
+                    .single()
+                    .jatkorekisterointi,
+                "ensimmainen kausi ei ole jatkorekisterointi",
+            )
+
+            mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+        }
+
+        assertTrue(
+            repository
+                .findArvioijaById(id)!!
+                .arviointioikeudet
+                .single()
+                .jatkorekisterointi,
+            "myohemmin alkava kausi on jatkorekisterointi",
+        )
+    }
+
+    @Test
+    fun `yhteystiedon korjaus ei kasvata kausihistoriaa`() {
+        val id = idOf(petro)
+
+        timeService.runWithFixedClock(HETKI) {
+            mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "2021-01-01", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+            val historia = repository.findKausihistoria(id).size
+
+            mockMvc
+                .perform(
+                    lomake(id, kaudenAlkupaiva = "2021-01-01", oikeudet = listOf("FIN:PT"))
+                        .param("sahkopostiosoite", "uusi@testi.fi"),
+                ).andExpect(status().isSeeOther)
+
+            assertEquals(historia, repository.findKausihistoria(id).size, "kausi ei muuttunut")
+        }
+    }
+
+    @Test
+    fun `tietosivu nayttaa arviointioikeuden lasketun tilan`() {
+        val id = idOf(petro)
+
+        timeService.runWithFixedClock(HETKI) {
+            mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+
+            val tietosivu = html(get("/yki/arvioijat/$id").session(session()))
+            assertContains(tietosivu, """data-testid="arviointioikeusTila"""")
+            assertContains(tietosivu, "Aktiivinen")
+        }
+    }
+
+    /** Solki on ainoa taho joka voi kirjata tilan; kitu kirjoittaa aina NULLin. */
+    private fun solkiPassivoi(
+        id: Int,
+        kaudenPaattymispaiva: LocalDate,
+    ) {
         val arvioija = repository.findArvioijaById(id)!!
         repository.tallenna(
             arvioija.copy(
-                arviointioikeudet = arvioija.arviointioikeudet.map { it.copy(tila = YkiArvioijaTila.PASSIVOITU) },
+                arviointioikeudet =
+                    arvioija.arviointioikeudet.map {
+                        it.copy(tila = YkiArvioijaTila.PASSIVOITU, kaudenPaattymispaiva = kaudenPaattymispaiva)
+                    },
             ),
         )
     }
@@ -336,14 +509,10 @@ class YkiArvioijaMuokkausTest(
 
         val passivoitu = repository.findArvioijaById(id)!!
         assertEquals(
-            listOf(YkiArvioijaTila.PASSIVOITU),
-            passivoitu.arviointioikeudet.map { it.tila }.distinct(),
+            listOf(Rekisterointitila.PASSIVOITU),
+            passivoitu.arviointioikeudet.map { Rekisterointitila.laske(it, LocalDate.now().plusDays(1)) }.distinct(),
         )
         assertNotNull(passivoitu.passivoitu, "sailytysajan laskenta alkaa passivointihetkesta")
-        assertTrue(
-            repository.findKausihistoria(id).any { it.tila == YkiArvioijaTila.PASSIVOITU },
-            "passivointi kuuluu kausihistoriaan",
-        )
     }
 
     @Test

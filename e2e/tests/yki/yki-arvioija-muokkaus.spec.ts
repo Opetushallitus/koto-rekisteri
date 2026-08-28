@@ -82,7 +82,10 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     await page.getByTestId("vahvistaPassivointi").click()
 
     await expect(ykiArvioijaLomakePage.viewMessage).toContainText("passiivise")
-    await expect(historia).toContainText("Passivoitu")
+    // Tila lasketaan kauden päivistä, joten passivointi päättää kauden tähän päivään.
+    await expect(historia).toContainText(
+      new Intl.DateTimeFormat("fi-FI").format(new Date()),
+    )
     await expect(page.getByTestId("passivoiArvioija")).toHaveCount(0)
   })
 

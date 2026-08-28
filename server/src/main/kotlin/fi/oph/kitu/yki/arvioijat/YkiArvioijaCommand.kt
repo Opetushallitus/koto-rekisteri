@@ -14,21 +14,17 @@ data class TallennaArvioija(
     val postinumero: String,
     val postitoimipaikka: String,
     val kaudenAlkupaiva: LocalDate,
-    val jatkorekisterointi: Boolean,
-    val tila: YkiArvioijaTila,
     val ashaNumero: String?,
     val arviointioikeudet: List<Arviointioikeus>,
 ) {
     val kaudenPaattymispaiva: LocalDate get() = Rekisterikausi.paattymispaiva(kaudenAlkupaiva)
 
     /**
-     * @param aiemmatTilat kielikohtainen tila ennestaan olevilta riveilta. Lomake ei kanna tilaa,
-     *   joten ilman tata muokkaus aktivoisi passivoidun merkinnan uudelleen.
+     * Tila jatetaan tyhjaksi: se lasketaan kauden paivista, ks. [Rekisterointitila].
+     * Jatkorekisterointi johdetaan samasta datasta, joten se ei voi olla ristiriidassa
+     * merkinnan historian kanssa eika muuttumaton tallennus kasvata kausihistoriaa.
      */
-    fun toEntity(
-        ensimmainenRekisterointipaiva: LocalDate = kaudenAlkupaiva,
-        aiemmatTilat: Map<Tutkintokieli, YkiArvioijaTila> = emptyMap(),
-    ): YkiArvioijaEntity =
+    fun toEntity(ensimmainenRekisterointipaiva: LocalDate = kaudenAlkupaiva): YkiArvioijaEntity =
         YkiArvioijaEntity(
             id = null,
             arvioijaOid = arvioijaOid,
@@ -47,10 +43,10 @@ data class TallennaArvioija(
                         arvioijaId = null,
                         kieli = oikeus.kieli,
                         tasot = oikeus.tasot,
-                        tila = aiemmatTilat[oikeus.kieli] ?: tila,
+                        tila = null,
                         kaudenAlkupaiva = kaudenAlkupaiva,
                         kaudenPaattymispaiva = kaudenPaattymispaiva,
-                        jatkorekisterointi = jatkorekisterointi,
+                        jatkorekisterointi = kaudenAlkupaiva > ensimmainenRekisterointipaiva,
                         ensimmainenRekisterointipaiva = ensimmainenRekisterointipaiva,
                         rekisteriintuontiaika = null,
                     )

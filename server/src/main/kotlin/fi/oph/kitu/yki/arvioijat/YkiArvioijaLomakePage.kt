@@ -133,14 +133,6 @@ object YkiArvioijaLomakePage {
                             small { +UiText.Yki.Arvioija.kaudenPaattymispaivaOhje }
                         }
 
-                        label {
-                            input(type = InputType.checkBox, name = "jatkorekisterointi", value = "true") {
-                                testId("jatkorekisterointi")
-                                checked = form.jatkorekisterointi
-                            }
-                            +UiText.Yki.Arvioija.jatkorekisterointi
-                        }
-
                         tekstikentta(UiText.Yki.Arvioija.ashaNumero, "ashaNumero", form.ashaNumero, errors)
                     }
                 }
