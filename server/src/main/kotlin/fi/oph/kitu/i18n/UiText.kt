@@ -367,6 +367,24 @@ object UiText {
                             "Toinen käyttäjä ehti muokata arvioijan tietoja. Lataa sivu uudelleen " +
                                 "ja tee muutokset uudelleen.",
                     )
+            val kausihistoria: LocalizedString
+                get() = tr("yki.arvioija.kausihistoria", fi = "Rekisteröintikaudet")
+            val kirjattu: LocalizedString get() = tr("yki.arvioija.kirjattu", fi = "Kirjattu")
+            val kirjaaja: LocalizedString get() = tr("yki.arvioija.kirjaaja", fi = "Kirjaaja")
+            val jarjestelma: LocalizedString get() = tr("yki.arvioija.jarjestelma", fi = "Järjestelmä")
+            val eiKausihistoriaa: LocalizedString
+                get() = tr("yki.arvioija.eiKausihistoriaa", fi = "Ei kirjattuja kausia.")
+            val passivoi: LocalizedString get() = tr("yki.arvioija.passivoi", fi = "Merkitse passiiviseksi")
+            val passivoiVahvistus: LocalizedString
+                get() =
+                    tr(
+                        "yki.arvioija.passivoiVahvistus",
+                        fi =
+                            "Arvioijan kaikki arviointioikeudet merkitään passiivisiksi. " +
+                                "Toimintoa ei voi perua käyttöliittymästä.",
+                    )
+            val passivoitu: LocalizedString
+                get() = tr("yki.arvioija.passivoitu", fi = "Arvioija merkittiin passiiviseksi.")
             val kirjoitusEiKaytossa: LocalizedString
                 get() =
                     tr(
