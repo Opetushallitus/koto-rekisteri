@@ -237,7 +237,8 @@ class YkiArvioijaViewController(
             }
 
             is YkiArvioijaError.OppijaaEiYksiloity -> {
-                yleinen(
+                kentta(
+                    "oppijanumero",
                     UiText.Yki.Arvioija.eiYksiloity
                         .toString(),
                 )
@@ -277,4 +278,9 @@ class YkiArvioijaViewController(
         }
 
     private fun yleinen(viesti: String): FormErrors = FormErrors.of(listOf(ValidationError(emptyList(), viesti)))
+
+    private fun kentta(
+        nimi: String,
+        viesti: String,
+    ): FormErrors = FormErrors.of(listOf(ValidationError(listOf(nimi), viesti)))
 }

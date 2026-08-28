@@ -48,6 +48,9 @@ class YkiArvioijaLisaysTest(
     /** Ainoa mock-ONR:n henkilo, jolla on osoite ja sahkoposti. */
     private val petronOid = "1.2.246.562.24.59267607404"
 
+    /** Mock-ONR tuntee taman henkilon, mutta hanella ei ole oppijanumeroa. */
+    private val yksiloimatonOid = "1.2.246.562.24.10691606777"
+
     /** Mock-ONR:lla ei ole tata henkiloa, joten turvakieltokysely epaonnistuu. */
     private val oidJotaEiOleOnrissa = "1.2.246.562.24.99999999999"
 
@@ -399,6 +402,19 @@ class YkiArvioijaLisaysTest(
             message = "arvioijaOid on vain piilokentta, joten virhe jaisi muuten renderoimatta",
         )
         assertContains(html, """data-testid="formErrorSummary"""")
+    }
+
+    @Test
+    fun `yksiloimattoman henkilon oppijanumero hylataan eika mitaan tallenneta`() {
+        val html = haku("tapa" to "OPPIJANUMERO", "oppijanumero" to yksiloimatonOid)
+
+        assertContains(html, """data-testid="oppijanumero-error"""", message = "virheen on osuttava kenttaan")
+        assertContains(html, "ei ole yksilöity")
+        assertFalse(
+            html.contains("""data-testid="tallennaArvioija""""),
+            "yksiloimattomalle ei saa avata tallennuslomaketta",
+        )
+        assertNull(repository.findByArvioijaOid(Oid.parse(yksiloimatonOid).getOrThrow()))
     }
 
     @Test
