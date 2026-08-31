@@ -31,6 +31,7 @@ import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.p
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 object YkiArvioijaTiedotPage {
     fun render(
@@ -59,11 +60,7 @@ object YkiArvioijaTiedotPage {
                         +UiText.Yki.Arvioija.muokkaa
                     }
 
-                    // Myos luonnollisesti paattynyt merkinta tarvitsee passivoinnin: se on ainoa
-                    // tapa asettaa sailytysajan alkuhetki.
-                    if (arvioija.passivoitu == null) {
-                        passivointiNappi(arvioija.id!!.toInt(), kirjoitusKaytossa)
-                    }
+                    passivointiNappi(arvioija.id!!.toInt(), kirjoitusKaytossa, arvioija.passivoitu)
                 }
             }
 
@@ -155,16 +152,38 @@ object YkiArvioijaTiedotPage {
         }
 }
 
+/**
+ * Nappi renderoidaan aina, jotta sivulta nakee etta toiminto on olemassa; esto perustellaan
+ * tooltipilla. Luonnollisesti paattynyt merkinta on yha passivoitavissa, koska se on ainoa tapa
+ * asettaa sailytysajan alkuhetki.
+ */
 private fun FlowContent.passivointiNappi(
     arvioijaId: Int,
     kirjoitusKaytossa: Boolean,
+    passivoitu: OffsetDateTime?,
 ) {
-    if (!kirjoitusKaytossa) {
+    val estonSyy =
+        when {
+            !kirjoitusKaytossa -> {
+                UiText.Yki.Arvioija.kirjoitusEiKaytossa
+            }
+
+            passivoitu != null -> {
+                UiText.Yki.Arvioija.joPassivoitu
+                    .interpolate("pvm" to passivoitu.toLocalDate().finnishDate())
+            }
+
+            else -> {
+                null
+            }
+        }
+
+    if (estonSyy != null) {
         buttonLink(
             href = Links.Yki.passivoiArvioija(arvioijaId),
             enabled = false,
             testId = "passivoiArvioija",
-            disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
+            disabledTooltip = estonSyy,
         ) {
             +UiText.Yki.Arvioija.passivoi
         }

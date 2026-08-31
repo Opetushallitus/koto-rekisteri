@@ -86,7 +86,15 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     await expect(historia).toContainText(
       new Intl.DateTimeFormat("fi-FI").format(new Date()),
     )
-    await expect(page.getByTestId("passivoiArvioija")).toHaveCount(0)
+    // Nappi jää näkyviin estettynä, jotta toiminnon olemassaolo ja eston syy näkyvät sivulta.
+    await expect(page.getByTestId("passivoiArvioija")).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    )
+    await expect(page.getByTestId("passivoiArvioija")).toHaveAttribute(
+      "data-tooltip",
+      /merkitty passiiviseksi/,
+    )
   })
 
   test("muokkauksen voi peruuttaa palaamatta tallentamiseen", async ({
