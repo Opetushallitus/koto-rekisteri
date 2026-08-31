@@ -567,18 +567,26 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
-    fun `passivointinappi katoaa kun arvioija on jo passivoitu`() {
+    fun `passivointinappi estetaan perusteluineen kun arvioija on jo passivoitu`() {
         val id = idOf(petro)
-        assertContains(html(get("/yki/arvioijat/$id").session(session())), """data-testid="passivoiArvioija"""")
+        assertFalse(passivointiNappi(id).contains("aria-disabled"), "passivointi on aluksi kaytettavissa")
 
-        mockMvc
-            .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
-            .andExpect(status().isSeeOther)
+        timeService.runWithFixedClock(HETKI) {
+            mockMvc
+                .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
+                .andExpect(status().isSeeOther)
+        }
 
-        assertFalse(
-            html(get("/yki/arvioijat/$id").session(session())).contains("""data-testid="passivoiArvioija""""),
-            "passivoidulle ei tarjota passivointia uudelleen",
-        )
+        val nappi = passivointiNappi(id)
+        assertContains(nappi, """aria-disabled="true"""", message = "passivointia ei tarjota uudelleen")
+        assertContains(nappi, "merkitty passiiviseksi 1.6.2026", message = "esto on perusteltava tooltipilla")
+    }
+
+    /** Nappi renderoityy joko modaalin avaavana buttonina tai estettyna linkkina. */
+    private fun passivointiNappi(id: Int): String {
+        val sivu = html(get("/yki/arvioijat/$id").session(session()))
+        return Regex("""<[^>]*data-testid="passivoiArvioija"[^>]*>""").find(sivu)?.value
+            ?: error("passivointinappia ei loytynyt sivulta:\n$sivu")
     }
 
     @Test
