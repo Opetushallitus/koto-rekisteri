@@ -72,7 +72,7 @@ Kaikki 14 OPH:lle esitettyä kysymystä on vastattu 21.8.2026. Vastaukset on vie
 | 7    | Lukuoikeus                     | Säilyy kaikilla kitu-virkailijoilla                                                                                               |
 | 8    | Hetu-sarake                    | **Säilyy pysyvästi** — ennen 2026 alkaneiden kausien hetut on säilytettävä lain nojalla                                           |
 | 9    | Kausihistorian oikeusperuste   | Osa rekisterimerkinnän elinkaarta, sama 5 v säilytysaika                                                                          |
-| 10 ✱ | Säilytysajan alkuhetki         | **Passivointihetkestä**, ei kauden päättymispäivästä                                                                              |
+| 10 ✱ | Säilytysajan alkuhetki         | **Passivointihetkestä**, ei kauden päättymispäivästä — umpeutuneella merkinnällä se on kauden päättymispäivä (§6.2)               |
 | 11 ✱ | Puhelinnumero                  | **Ei toteuteta** — tavoitetilan tietotaulukko pätee                                                                               |
 | 12 ✱ | Hallintopäätöksen ASHA-numero  | **Toteutetaan** vapaana tekstikenttänä, ei muotovalidointia                                                                       |
 | 13   | Käyttöoikeus Otuvaan           | OPH perustaa; pyyntö tehdään heti, jotta läpimenoaika ei estä julkaisua                                                           |
@@ -295,6 +295,31 @@ DROP TABLE IF EXISTS yki_arvioija_error;
 - `henkilotunnus` jää sarakkeeksi mutta **kirjoituspolku ei enää koskaan aseta sitä** (2026 lainmuutos).
   Poisto vasta tietosuojahyväksynnän jälkeen (avoin kysymys §12).
 
+### 1.5 `V121__deprecate_yki_arvioija_tila.sql` — tila lasketaan kauden päivistä
+
+Tallennettu `tila` osoittautui käytössä kestämättömäksi: lomake ei kanna sitä, joten tallennus peri sen
+vanhalta riviltä ja passivoitu arvioija jäi passiiviseksi vaikka hänelle kirjattiin uusi kausi. Sarake on
+siksi **vanhentunut** (nullable, ei defaultia) ja tila lasketaan `Rekisterointitila.laske`ssa:
+
+| ehto                                         | tila            |
+| -------------------------------------------- | --------------- |
+| tallennettu `tila` = PASSIVOITU              | PASSIVOITU      |
+| `kauden_paattymispaiva` ei-tyhjä ja < tänään | PASSIVOITU      |
+| `kauden_alkupaiva` ei-tyhjä ja > tänään      | TULEVAISUUDESSA |
+| muuten                                       | AKTIIVINEN      |
+
+Kitu kirjoittaa sarakkeeseen aina NULLin; ainoa ei-tyhjän arvon kirjoittaja on Solkin push. Tallennettu
+`AKTIIVINEN` sivuutetaan, koska V117 täytti sarakkeen sillä eikä se siten kanna tietoa — näin laskenta
+pätee koko rekisteriin ilman datamigraatiota. Sama sääntö on kirjoitettu myös SQL:ksi
+(`Rekisterointitila.SQL`) listanäkymän suodatusta ja lajittelua varten, ja `YkiArvioijaTilaSqlTest`
+vartioi että toteutukset pysyvät yhtenevinä. Tarkasteluhetki sidotaan parametrina `TimeService`ltä, ei
+`CURRENT_DATE`:na, jotta kiinnitetty testikello ohjaa myös SQL:ää.
+
+**Passivointihetki on manuaalisen passivoinnin leima, ei tilan johdannainen.** Kun kausi umpeutuu
+itsestään, tila muuttuu PASSIVOITUksi mutta `passivoitu` jää NULLiksi — juuri se erottaa
+hallintopäätöksellä passivoidun merkinnän luonnollisesti päättyneestä. Säilytysajan laskenta lukee
+molempia, ks. §6.2.
+
 ---
 
 ## 2. Palvelukerros
@@ -427,10 +452,10 @@ Esitäyttö `getHenkiloByMasterOid(oid)`:n `etunimet`/`kutsumanimi`/`sukunimi` +
 
 ### 2.8 Jatkokauden päättely (OPH kys. 3)
 
-`jatkorekisterointi` päätellään esitäytössä (ks. §3.4): **`true`, jos arvioijalla on jo aiempi
-rekisteröintikausi** (merkintä on olemassa ennestään).
-Virkailija voi ylikirjoittaa arvon lomakkeen valintaruudulla, joten kyseessä on esitäyttö, ei pakotus.
-Uudella arvioijalla oletus on `false`.
+`jatkorekisterointi` **johdetaan palvelimella** eikä tule lomakkeelta: se on `true`, kun tallennettava
+kausi alkaa myöhemmin kuin merkinnän `ensimmainen_rekisterointipaiva`. Johdanto on idempotentti, joten
+pelkkä yhteystiedon korjaus ei käännä lippua eikä siten kasvata kausihistoriaa. Lomakkeen valintaruutu
+poistettiin: virkailijan ylikirjoitus saattoi tuottaa historian kanssa ristiriitaisen arvon.
 
 ### 2.6 `YkiArvioijaRepository.kt`
 
@@ -652,10 +677,10 @@ data class ArvioijaFormData(
 }
 ```
 
-**Elinkaarikentät eivät kulje lomakkeen kautta.** Lomake tuntee vain virkailijan syöttämät kentät,
-joten `passivoitu` ja arviointioikeuksien `tila` poimitaan tallennuksessa
-olemassa olevalta riviltä. Ilman tätä pelkkä yhteystiedon korjaus aktivoisi passivoidun merkinnän
-uudelleen. Vastaavasti `arvioijaOid`-kentän validointivirheet nostetaan `formErrorSummary`n
+**Elinkaarikentät eivät kulje lomakkeen kautta.** Lomake tuntee vain virkailijan syöttämät kentät.
+Arviointioikeuden `tila` **lasketaan kauden päivistä** (ks. §1.5), joten sitä ei poimita eikä
+tallenneta lainkaan, ja `passivoitu` säilyy tallennuksessa niin kauan kuin merkintä pysyy
+passiivisena. Ilman jälkimmäistä pelkkä yhteystiedon korjaus nollaisi säilytysajan alkuhetken. Vastaavasti `arvioijaOid`-kentän validointivirheet nostetaan `formErrorSummary`n
 `piilokentat`-listalla näkyviin — kenttä renderöityy vain piilokenttänä, joten ilman tätä ONR-virhe
 palauttaisi lomakkeen ilman mitään palautetta.
 
@@ -949,37 +974,21 @@ halutun virheen — e2e-testit ohjaavat sillä virhepolkua.
 
 ## 6. Ajastetut tehtävät
 
-### 6.1 Automaattinen passivointi (UC3)
+### 6.1 Automaattinen passivointi (UC3) — ei tarvita
 
-`yki/arvioijat/YkiArvioijaScheduledTasks.kt`:
+**Vaihe 7 on rauennut.** UC3 toteutui ilman ajastettua tehtävää, kun tila alettiin laskea kauden
+päivistä (§1.5): kauden päättymispäivän jälkeen merkintä on PASSIVOITU joka lukukerralla, ilman että
+mikään ajo on käynyt kirjoittamassa sitä. Aiemmin tähän kohtaan suunniteltu
+`passivoiPaattyneetArvioijat`-tehtävä olisi vain kirjoittanut kantaan tilan, jonka laskenta jo tuottaa.
 
-```kotlin
-@Configuration
-class YkiArvioijaScheduledTasks(private val tracer: Tracer) {
-    @Value($$"${kitu.yki.scheduling.passivoiPaattyneetArvioijat.schedule}")
-    lateinit var passivointiSchedule: String
+Harkittiin myös, että tehtävä leimaisi `passivoitu`-aikaleiman umpeutuneille merkinnöille säilytysajan
+alkuhetkeksi. Sekin hylättiin: leima tarkoittaa nimenomaan **manuaalista** passivointia, ja sen
+kirjoittaminen umpeutumisen perusteella hävittäisi tiedon siitä, päättyikö merkintä hallintopäätöksellä
+vai kauden umpeutumiseen. Säilytysaika saadaan ilman leimaa, ks. §6.2.
 
-    @WithSpan @Bean
-    fun passivoiPaattyneetArvioijat(service: YkiArvioijaService): Task<Void> =
-        tracer.recurringTask("Passivoi päättyneet YKI-arvioijarekisterimerkinnät", passivointiSchedule) {
-            service.passivoiPaattyneetKaudet()
-        }
-}
-```
-
-`passivoiPaattyneetKaudet()`:
-
-1. `repository.passivoiPaattyneet(timeService.today())` → `List<Int>` (UPDATE nollaa outbox-kentät →
-   uudelleenlähetys pakotettu, §2.6) + historiarivit `yki_arvioija_kausi`-tauluun.
-2. `auditLogger.logAllInternalOnly("Yki arvioija passivoitu automaattisesti", passivoidut) { … }` —
-   **ei** `auditLogger.log(...)`, joka vaatii `AuditContext`in (CasUserDetails + HTTP-pyyntö) eikä siis
-   toimi ajastetussa tehtävässä.
-3. `solki.lahetaLahettamattomat(maxYritykset = 3)` — sama kuvio kuin
-   `YkiViewController.hyvaksyTarkistusArvioinnit`, joka kutsuu KIOS-lähetystä heti kirjoituksen jälkeen.
-
-Ajastukset porrastettu: passivointi `01:15`, yöllinen lähetys `02:15`.
-`ExtendedSchedules.parse` hyväksyy `DAILY|HH:mm`; jos halutaan cron, se on **6-kenttäinen** SPRID53-cron
-ilman vuosikenttää.
+Sivuvaikutus käyttöliittymään: passivointinappi estetään aina kun merkintä on jo passiivinen — myös
+umpeutumisen takia — koska passivointihetki on säilytysajan alkuhetki ja klikkaus siirtäisi umpeutuneen
+merkinnän säilytysaikaa eteenpäin.
 
 ### 6.2 Säilytysajan valvonta (5 vuotta)
 
@@ -990,6 +999,14 @@ nykyisessä toteutuksessa ole minkäänlaista arvioijatietojen poistoa — **tä
 OPH on vahvistanut, että **5 vuotta lasketaan passivointihetkestä** (ei kauden päättymispäivästä).
 Tämä on syy `passivoitu`-aikaleimalle (§1.1): pelkkä kauden päättymispäivä ei riitä, koska kesken kauden
 passivoidun merkinnän säilytysaika alkaa aiemmin kuin kausi olisi päättynyt.
+
+Koska leima kirjataan vain manuaalisesta passivoinnista (§1.5), **alkuhetki on
+`COALESCE(passivoitu, max(kauden_paattymispaiva))`**: hallintopäätöksellä passivoidulla se on leima,
+umpeutuneella kauden viimeinen voimassaolopäivä. Molemmissa se on hetki, jona merkintä muuttui
+passiiviseksi, eli täsmälleen se mitä OPH vastasi. Reunaehdot: merkintä jonka `kauden_paattymispaiva`
+on NULL ei vanhene koskaan, eikä Solkin `PASSIVOITU`-rivi jonka kausi on vielä voimassa (leima
+puuttuu, päättymispäivä tulevaisuudessa) — jälkimmäinen ratkeaa itsestään ensimmäisessä kitun
+tallennuksessa, joka kääntää Solkin kannanoton kauden päivämääriin.
 
 Poisto on peruuttamaton, joten tehtävä pidetään **oletuksena pois päältä** ja otetaan käyttöön vasta kun
 sen toiminta on todennettu untuvassa.
@@ -1214,19 +1231,19 @@ kerrallaan. Askeleet 1–8 eivät riipu Solkin rajapintasopimuksesta, joten työ
 Jyväskylää. Askel 11 tehdään vasta tämän PR:n mergen jälkeen omana muutoksenaan, kun JYU on
 vahvistanut rajapinnan.
 
-| #   | Vaihe                                                    | Koko | Riippuu                 |
-| --- | -------------------------------------------------------- | ---- | ----------------------- |
-| 1   | Poista kuollut arvioijien virhetuontikoneisto            | S    | —                       |
-| 2   | Laajenna arvioijataulut masteriksi (V116–V118)           | L    | 1                       |
-| 3   | Uudista arvioijalistanäkymä                              | L    | 2                       |
-| 4   | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —                       |
-| 5   | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | 2, 4                    |
-| 6   | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | 5                       |
-| 7   | Automaattinen passivointi (UC3)                          | M    | 6                       |
-| 8   | Säilytysajan valvonta (5 v)                              | M    | 7                       |
-| 9   | YKI-arvioijien Solki-lähetys                             | L    | 6, sopimus JYU:n kanssa |
-| 10  | Kavenna sisääntuleva rajapinta passivointi-endpointiksi  | M    | 9                       |
-| 11  | Käyttöönotto ja kytkimet                                 | S    | 9, 10                   |
+| #     | Vaihe                                                    | Koko | Riippuu                 |
+| ----- | -------------------------------------------------------- | ---- | ----------------------- |
+| 1     | Poista kuollut arvioijien virhetuontikoneisto            | S    | —                       |
+| 2     | Laajenna arvioijataulut masteriksi (V116–V118)           | L    | 1                       |
+| 3     | Uudista arvioijalistanäkymä                              | L    | 2                       |
+| 4     | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —                       |
+| 5     | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | 2, 4                    |
+| 6     | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | 5                       |
+| ~~7~~ | ~~Automaattinen passivointi (UC3)~~ — rauennut, ks. §6.1 | –    | —                       |
+| 8     | Säilytysajan valvonta (5 v)                              | M    | 6                       |
+| 9     | YKI-arvioijien Solki-lähetys                             | L    | 6, sopimus JYU:n kanssa |
+| 10    | Kavenna sisääntuleva rajapinta passivointi-endpointiksi  | M    | 9                       |
+| 11    | Käyttöönotto ja kytkimet                                 | S    | 9, 10                   |
 
 1. **`Poista kuollut arvioijien virhetuontikoneisto`** — `yki/arvioijat/error/`, `V118` DROP TABLE,
    `dev/YkiController` kuollut stubi, `DashboardService`/`HomePage`/`EnumFromUrlParamsParsingConfig`
@@ -1246,10 +1263,11 @@ vahvistanut rajapinnan.
    ASHA-numerokenttä, turvakieltovaroitus, audit-operaatiot, UiText. e2e.
 6. **`Lisää arvioijan muokkaus, kausihistoria ja manuaalinen passivointi (UC2)`** — tietosivu +
    kausihistoriataulukko + POST, `passivoiArvioija`, kielen lisäys perii voimassa olevan kauden. e2e.
-7. **`Lisää arvioijien automaattinen passivointi (UC3)`** — `YkiArvioijaScheduledTasks`,
-   `passivoitu`-leima kauden päättymispäivästä, ajastukset.
-8. **`Lisää säilytysajan valvonta`** — §6.2:n poistotehtävä, oletuksena pois päältä, testit
-   suojaehdoille. Ajettava ensin untuvassa ja tarkistettava poistuvien määrä.
+7. _(rauennut)_ **`Lisää arvioijien automaattinen passivointi (UC3)`** — toteutui ilman ajoa, kun tila
+   alettiin laskea kauden päivistä (§1.5, §6.1).
+8. **`Lisää säilytysajan valvonta`** — §6.2:n poistotehtävä (alkuhetki
+   `COALESCE(passivoitu, max(kauden_paattymispaiva))`), oletuksena pois päältä, testit suojaehdoille.
+   Ajettava ensin untuvassa ja tarkistettava poistuvien määrä. Tämä on **seuraava vaihe**.
 9. **`Lisää YKI-arvioijien Solki-lähetys`** — `solki/`-paketti, outbox-kirjoitukset, dev-stubi, propertyt
    (`enabled=false`), virhenäkymä + "Lähetä uudelleen" + dashboard-laskuri,
    `docs/technical/integraatiot.md`. Testit + e2e.
