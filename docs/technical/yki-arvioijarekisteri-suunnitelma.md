@@ -65,7 +65,7 @@ Kaikki 14 OPH:lle esitettyä kysymystä on vastattu 21.8.2026. Vastaukset on vie
 | ---- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | 1    | Kauden päättymispäivä          | `alkupäivä + 5 v` samana päivänä                                                                                                  |
 | 2    | Päättymispäivän inklusiivisuus | Inklusiivinen — passivointi vasta päivän jälkeen                                                                                  |
-| 3 ✱  | Jatkokausi                     | **Järjestelmä päättelee automaattisesti `Kyllä`**, virkailija voi ylikirjoittaa                                                   |
+| 3 ✱  | Jatkokausi                     | **Järjestelmä päättelee automaattisesti** kauden alkupäivästä (§2.8); ylikirjoitus poistettiin 31.8.2026                          |
 | 4 ✱  | Yksilöimätön henkilö           | ~~Merkintä saa tallentua keskeneräisenä~~ **Kumottu 28.8.2026**: arvioijalla on aina jo oppijanumero, joten yksilöimätön hylätään |
 | 5 ✱  | Turvakielto                    | **Ei rajoituksia tietoihin** — käyttöliittymässä näytetään varoitus virkailijalle                                                 |
 | 6    | Merkinnän poisto               | Ei toteuteta; passivointi riittää                                                                                                 |
@@ -310,7 +310,14 @@ siksi **vanhentunut** (nullable, ei defaultia) ja tila lasketaan `Rekisterointit
 
 Kitu kirjoittaa sarakkeeseen aina NULLin; ainoa ei-tyhjän arvon kirjoittaja on Solkin push. Tallennettu
 `AKTIIVINEN` sivuutetaan, koska V117 täytti sarakkeen sillä eikä se siten kanna tietoa — näin laskenta
-pätee koko rekisteriin ilman datamigraatiota. Sama sääntö on kirjoitettu myös SQL:ksi
+pätee koko rekisteriin ilman datamigraatiota.
+
+**Päivämäärät voittavat myös siirtymän aikana (päätös 1.9.2026).** Sivuuttaminen ei koske vain V117:n
+täytearvoja: myös Solkin juuri lähettämä `AKTIIVINEN` jää huomiotta, jos kausi on päivien perusteella
+päättynyt, ja merkintä näkyy passiivisena. Tämä on tietoinen valinta — kausi on se, mihin
+arviointioikeus perustuu — ja se on ainoa kohta, jossa laskenta ohittaa Solkin nimenomaisen väitteen.
+Vastakkainen suunta säilyy: tallennettu `PASSIVOITU` ohittaa voimassa olevatkin päivät, joten Solki voi
+yhä passivoida kesken kauden niin kauan kuin se on master. Sama sääntö on kirjoitettu myös SQL:ksi
 (`Rekisterointitila.SQL`) listanäkymän suodatusta ja lajittelua varten, ja `YkiArvioijaTilaSqlTest`
 vartioi että toteutukset pysyvät yhtenevinä. Tarkasteluhetki sidotaan parametrina `TimeService`ltä, ei
 `CURRENT_DATE`:na, jotta kiinnitetty testikello ohjaa myös SQL:ää.
@@ -355,8 +362,6 @@ data class TallennaArvioija(
     val postinumero: String,
     val postitoimipaikka: String,
     val kaudenAlkupaiva: LocalDate,
-    val jatkorekisterointi: Boolean,
-    val tila: YkiArvioijaTila,
     val ashaNumero: String?,
     val arviointioikeudet: List<Arviointioikeus>,
 ) {
@@ -424,7 +429,7 @@ class YkiArvioijaService(
     @WithSpan fun paivitaArvioija(id: Int, k: TallennaArvioija, tekija: Oid?): Either<YkiArvioijaError, YkiArvioijaEntity>
     @WithSpan fun passivoiArvioija(id: Int, tekija: Oid?): Either<YkiArvioijaError, YkiArvioijaEntity>
 
-    /** Ajastettu (§6). */ @WithSpan fun passivoiPaattyneetKaudet(): Int
+    /** Ajastettu (§6.2). */ @WithSpan fun poistaSailytysajanYlittaneet(): Int
 }
 ```
 
@@ -475,8 +480,8 @@ interface CustomYkiArvioijaRepository {
     fun merkitseLahetetyksi(id: Int)
     fun merkitseLahetysvirhe(id: Int, virhe: String)
 
-    // Automaattipassivointi
-    @Transactional fun passivoiPaattyneet(today: LocalDate): List<Int>
+    // Säilytysajan valvonta (§6.2)
+    @Transactional fun poistaSailytysajanYlittaneet(tanaan: LocalDate, raja: LocalDate): List<Oid>
 }
 ```
 
@@ -505,30 +510,27 @@ WHERE (solkiin_lahetetty IS NULL OR solkiin_lahetetty < muokattu)
   -- AND solki_lahetysyritykset < :maxYritykset   (vain kun maxYritykset != null)
 ORDER BY muokattu;
 
--- passivoiPaattyneet(): passivoi päättyneet oikeudet ja likaa outboxin.
--- passivoitu-hetkeksi merkitaan KAUDEN PAATTYMISPAIVA, ei now(): muuten kayttoonoton
--- yhteydessa passivoituvien vanhojen rivien sailytysaika alkaisi vasta kayttoonotosta.
-WITH paattyneet AS (
-    UPDATE yki_arviointioikeus SET tila = 'PASSIVOITU'
-    WHERE tila = 'AKTIIVINEN'
-      AND kauden_paattymispaiva IS NOT NULL
-      AND kauden_paattymispaiva < :today
-    RETURNING arvioija_id
-)
-UPDATE yki_arvioija a
-SET muokattu = now(), muokkaaja_oid = NULL,
-    passivoitu = COALESCE(
-        a.passivoitu,
-        (SELECT max(o.kauden_paattymispaiva)::timestamptz
-         FROM yki_arviointioikeus o WHERE o.arvioija_id = a.id)
-    ),
-    solkiin_lahetetty = NULL, solki_lahetysvirhe = NULL, solki_lahetysyritykset = 0
-WHERE a.id IN (SELECT DISTINCT arvioija_id FROM paattyneet)
-RETURNING a.id;
+-- poistaSailytysajanYlittaneet(): merkinnät joiden säilytysaika on umpeutunut.
+-- Passiivisuus luetaan samasta lausekkeesta kuin näkymissä (Rekisterointitila.SQL) ja
+-- alkuhetki on COALESCE(passivoitu, max(kauden_paattymispaiva)), ks. §6.2.
+DELETE FROM yki_arvioija
+WHERE EXISTS (SELECT 1 FROM yki_arviointioikeus WHERE arvioija_id = yki_arvioija.id)
+  AND NOT EXISTS (
+        SELECT 1 FROM yki_arviointioikeus
+        WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id
+          AND <Rekisterointitila.SQL> <> 'PASSIVOITU'
+      )
+  AND COALESCE(
+        yki_arvioija.passivoitu::date,
+        (SELECT max(kauden_paattymispaiva) FROM yki_arviointioikeus
+         WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id)
+      ) < :raja
+RETURNING arvioija_oid;
 ```
 
-Päättymispäivä on **inklusiivinen**: arvioija on aktiivinen vielä päättymispäivänä ja passivoituu
-seuraavana yönä. Passivointi kirjaa myös uuden rivin `yki_arvioija_kausi`-tauluun.
+Päättymispäivä on **inklusiivinen**: arvioija on aktiivinen vielä päättymispäivänä ja passiivinen
+seuraavasta päivästä (§1.5). Manuaalinen passivointi päättää kauden kuluvaan päivään ja kirjaa uuden
+rivin `yki_arvioija_kausi`-tauluun.
 
 Litteä listaprojektio (vrt. `VktSuoritusFlat`) `YkiArvioijaListRow` rakennetaan **kahdella kyselyllä**
 (arvioijat sivullisittain + arviointioikeudet `WHERE arvioija_id IN (…)`) ja zipataan repositoryssa —
@@ -665,8 +667,6 @@ data class ArvioijaFormData(
     val postinumero: String? = null,
     val postitoimipaikka: String? = null,
     val kaudenAlkupaiva: LocalDate? = null,
-    val jatkorekisterointi: Boolean = false,
-    val tila: YkiArvioijaTila = YkiArvioijaTila.AKTIIVINEN,
     val ashaNumero: String? = null,
     /** Yksi monivalinta, arvot muotoa "FIN:PT" — kieli×taso-matriisin valintaruudut. */
     val arviointioikeus: List<String>? = null,
@@ -722,8 +722,8 @@ päivittää esikatseluarvon `change`-tapahtumassa — sama kuvio kuin `Forms.kt
   CSV:hen ja lähetetään Solkille normaalisti. Turvakieltoa **ei tallenneta kituun**, vaan se luetaan
   ONR:stä näyttöhetkellä.
 - **Rekisterimerkintä** — §3.4:n muokkauslomake ilman vaihetta 1, sisältäen **hallintopäätöksen
-  ASHA-numeron** vapaana tekstikenttänä (OPH kys. 12) ja **jatkokausi**-valintaruudun, jonka arvon
-  järjestelmä esitäyttää (§2.8)
+  ASHA-numeron** vapaana tekstikenttänä (OPH kys. 12). Jatkokausi johdetaan palvelimella eikä ole
+  lomakkeella (§2.8)
 - **Rekisteröintikaudet** — `displayTable` `yki_arvioija_kausi`-riveistä (kieli, tasot, tila, alku, loppu,
   jatkokausi, kirjattu, kirjaaja) laskevassa `kirjattu`-järjestyksessä
 - **Integraatiot** — Solki-lähetyksen tila (`solkiinLahetetty` / `solkiLahetysvirhe` /
@@ -797,28 +797,57 @@ se näkyy `springdoc.pathsToMatch=/**/api/**/*` -suodattimen läpi `/api-docs`is
 
 ### 4.2 Sisääntuleva `POST /yki/api/arvioija` — kavennetaan, ei poisteta
 
-> **Muutos aiempaan päätökseen.** Suunnitelmassa oli tarkoitus poistaa sisääntuleva rajapinta kokonaan.
-> Tavoitetilakuvaus kuitenkin edellyttää **Solki→kitu-muutosrajapintaa** yhdessä tapauksessa:
-> arvioijan omasta toiveesta tapahtuva kesken kauden passivointi tehdään Solkin YKI-sovelluksessa, ja
-> _"tieto siirretään muutosrajapintaa pitkin kielitutkintorekisteriin"_. Kolmesta passivointitavasta siis
-> kaksi kulkee kitusta Solkiin (automaattinen kauden päättyminen, laiminlyönnin takia tehty passivointi)
-> ja **yksi Solkista kituun**.
+> **Passivointi tapahtuu aina kitun käyttöliittymästä (päätös 1.9.2026).** Suunnitelma varautui
+> aiemmin siihen, että arvioijan omasta toiveesta tapahtuva passivointi tehtäisiin Solkin
+> YKI-sovelluksessa ja siirtyisi muutosrajapintaa pitkin kituun. Näin ei tehdä: virkailija passivoi
+> merkinnän kitussa myös silloin, kun pyyntö tulee arvioijalta itseltään. Tämä oli ainoa tapaus, joka
+> olisi edellyttänyt Solki→kitu-rajapinnalta rekisterimerkinnän kirjoitusoikeutta, joten **kavennettu
+> passivointi-endpoint jää tekemättä.**
 
 Tavoiterakenne:
 
-| Suunta       | Tapaus                                                 | Rajapinta                                       |
-| ------------ | ------------------------------------------------------ | ----------------------------------------------- |
-| kitu → Solki | Uusi merkintä, muokkaus, uusi kausi                    | §5.1 `PUT /arvioijat/{oppijanumero}`            |
-| kitu → Solki | Automaattinen passivointi kauden päätyttyä             | sama                                            |
-| kitu → Solki | Passivointi laiminlyönnin takia (OPH kuulee arvioijaa) | sama                                            |
-| Solki → kitu | **Passivointi arvioijan omasta toiveesta**             | kavennettu `POST /yki/api/arvioija/passivointi` |
+| Suunta       | Tapaus                                                 | Rajapinta                            |
+| ------------ | ------------------------------------------------------ | ------------------------------------ |
+| kitu → Solki | Uusi merkintä, muokkaus, uusi kausi                    | §5.1 `PUT /arvioijat/{oppijanumero}` |
+| kitu → Solki | Passivointi kauden päätyttyä (laskettu, ei toimintoa)  | sama                                 |
+| kitu → Solki | Passivointi laiminlyönnin takia (OPH kuulee arvioijaa) | sama                                 |
+| kitu → Solki | **Passivointi arvioijan omasta toiveesta**             | sama — virkailija tekee sen kitussa  |
+| Solki → kitu | **Yhteystietojen päivitys**                            | nykyinen `POST /yki/api/arvioija`    |
 
-Suositus: **ei säilytetä nykyistä koko rekisterimerkinnän kirjoittavaa `POST /yki/api/arvioija`-rajapintaa**,
-vaan korvataan se kapealla passivointi-endpointilla, joka ottaa vastaan vain oppijanumeron, passivoinnin
-syyn ja päivämäärän. Näin master-vastuu ei vuoda takaisin Solkille: Solki ei voi kirjoittaa nimiä,
-yhteystietoja eikä kausia, vain passivoida. Kavennettu rajapinta ei myöskään saa laukaista kitun omaa
-`PUT`-lähetystä takaisin Solkiin (kaikuvaara) — passivointi merkitään `solkiin_lahetetty`-kenttään heti
-lähetetyksi.
+**Yhteys pysyy kaksisuuntaisena:** Solki lähettää jatkossakin yhteystietojen päivityksiä, joten
+sisääntulevaa rajapintaa ei poisteta. Rekisterimerkinnän osalta suunta on kuitenkin yksi: kitu
+kirjoittaa merkinnän, Solki lukee sen ja kirjoittaa takaisin vain yhteystiedot.
+
+#### Varautuminen: yhteystiedot ja vain ne
+
+Solkilla on nyt §5.1:n dokumenttimuoto, joten se voi lähettää saman dokumentin takaisin. Kavennus ei
+siis tarvitse uutta endpointia eikä uutta DTO:ta — riittää että vastaanotto **soveltaa payloadista
+vain yhteystietokentät**:
+
+| Kenttä                                                              | Sisääntulevassa           | Perustelu                                           |
+| ------------------------------------------------------------------- | ------------------------- | --------------------------------------------------- |
+| `sahkopostiosoite`, `katuosoite`, `postinumero`, `postitoimipaikka` | **päivitetään**           | Solki on näiden lähde: arvioija asioi Solkin kanssa |
+| `sukunimi`, `etunimet`                                              | ohitetaan                 | ONR on nimien master (§2.5), ei Solki eikä kitu     |
+| `arviointioikeudet` (kieli, tasot, kausi, `tila`)                   | ohitetaan                 | Kitu on rekisterin master vaiheesta 11              |
+| tuntematon `arvioijanOppijanumero`                                  | virhe, **ei luoda riviä** | Kitu päättää kuka rekisterissä on                   |
+
+Kaikuvaaraa vastaan ei tarvita uutta koneistoa: `tallenna(..., lahde = Tallennuslahde.SOLKI)` leimaa
+rivin jo nyt lähetetyksi (ellei se ollut jo jonossa), joten Solkin oma yhteystietomuutos ei palaa
+sille takaisin.
+
+**Tallennettu `tila` säilyy siirtymän ajan.** Vaikka yhteystietopäivitys ei kanna tilaa, sarake ja
+§1.5:n sääntö "vain tallennettu PASSIVOITU ohittaa laskennan" pidetään ennallaan niin kauan kuin
+`kitu.yki.arvioijarekisteri.kirjoitus.enabled` on olemassa ja Solki on rekisterin master: siihen asti
+Solkin pushin kirjaama tila on oikea tieto, eikä sitä saa hukata. Sarakkeen poistoa voi harkita vasta
+kun kytkin on poistettu ja kitu toimii masterina (vaihe 11 jälkeen), ja silloinkin erillisenä
+muutoksena — laskenta ei sitä edellytä.
+
+#### Hylätty vaihtoehto: kavennettu passivointi-endpoint
+
+Aiempi suositus oli korvata nykyinen rajapinta kapealla passivointi-endpointilla, joka ottaisi vastaan
+vain oppijanumeron, passivoinnin syyn ja päivämäärän. Se **raukeaa** yllä olevan päätöksen myötä:
+passivointi ei tule Solkista lainkaan, joten endpointille ei jää käyttötapausta. Sama master-perustelu
+(Solki ei kirjoita nimiä, kausia eikä tiloja) toteutuu nyt kavennuksella yhteystietoihin.
 
 **Kunnes kaventaminen tehdään, sisääntuleva push ei saa poistaa mitään eikä kaikua takaisin.**
 Vaihe 2 vaihtoi endpointin tallennuksen `upsert`ista `tallenna`an, jolloin se alkoi (a) poistaa
@@ -840,16 +869,13 @@ erillistä suodatinta sisääntulleille riveille. Katettu testeillä `YkiArvioij
 lahetysjonoon`, `Kitun oma tallennus jaa lahetysjonoon`) ja `YkiApiControllerTest` (`Solkin push ei
 poista arviointioikeuksia jotka puuttuvat payloadista`).
 
-Vanhan endpointin osalta edetään kaksivaiheisesti, koska JYU saattaa jo kutsua sitä:
+Endpointia **ei siis poisteta eikä 410:ta tehdä.** Aiempi suunnitelma eteni kaksivaiheisesti kohti
+`410 Gone` -vastausta; se raukeaa, koska Solki jatkaa yhteystietojen lähettämistä samaa reittiä.
 
-**Vaihe A (tässä työssä):** mapping jää, mutta palauttaa `410 Gone` selittävällä
-`TiedonsiirtoFailure`-rungolla ja `@Deprecated`-merkinnällä. Security-sääntö säilyy, jotta oikeutettu
-kutsuja saa 410:n eikä 403:a. Samalla poistuvat: `YkiArvioija`/`YkiArviointioikeus`-DTO:t,
-`ValidationService`in DTO-ylikuormitus, `SchemaExamplesController.ykiArvioija()` +
-`badRequestArvioijaResponse()`, `server/src/test/resources/yki-arvioija-example.json`,
-`YkiApiControllerTest`in neljä arvioija-testiä. e2e: `securityconfig.spec.ts`:n odotusarvot `400 → 410`.
-
-**Vaihe B (myöhempi PR, JYU vahvistanut):** mapping, security-sääntö ja e2e-rivi poistetaan kokonaan.
+Kavennus tehdään vastaanoton puolella: DTO ja security-sääntö säilyvät, mutta tallennus soveltaa vain
+yhteystietokentät. `YkiArvioija`/`YkiArviointioikeus`-DTO:t, schema-esimerkit ja `YkiApiControllerTest`in
+arvioija-testit jäävät siis paikoilleen — testit tosin kirjoitetaan varmistamaan, että muut kentät
+ohitetaan. Tallennettu `tila` kirjoitetaan yhä pushista, ks. yllä.
 
 ---
 
@@ -857,27 +883,37 @@ kutsuja saa 410:n eikä 403:a. Samalla poistuvat: `YkiArvioija`/`YkiArviointioik
 
 Uusi paketti `server/src/main/kotlin/fi/oph/kitu/yki/arvioijat/solki/`.
 
-### 5.1 EHDOTETTU REST-sopimus (sovittava Jyväskylän kanssa)
+### 5.1 REST-sopimus (JYU hyväksynyt 1.9.2026)
+
+> **JYU on hyväksynyt tämän sopimuksen sellaisenaan 1.9.2026**, eli endpoint, payload, kenttäjoukko,
+> enkoodaukset ja statuskoodit ovat sovitut. Vaiheen 9 toteutus voi alkaa. Jäljellä on vain
+> operatiivisia asioita (§5.1.1) — ne eivät muuta sopimusta.
+
+**Lähtökohta: samat kentät kuin poistuneessa CSV-tuonnissa.** Solki tuotti aiemmin kitulle
+arvioijarivit CSV:nä, joten kentät ovat jo olemassa Solkin päässä. Lähetetään ne takaisin
+samannimisinä, jolloin JYU:lle ei synny kartoitustyötä — vain siirtotapa muuttuu. Poikkeukset on
+merkitty alle.
+
+`{base}` on olemassa oleva `kitu.yki.baseUrl` (huomaa paattava kautta):
+untuva ja QA `https://yki-test.cc.jyu.fi/oph/`, tuotanto `https://yki.jyu.fi/oph/`.
 
 ```
-PUT  {base}/arvioijat/{oppijanumero}
+PUT  {base}arvioijat/{arvioijanOppijanumero}
 Authorization:   Basic <Solkin kitulle myöntämät tunnukset>
 Content-Type:    application/json; charset=utf-8
-Idempotency-Key: {oppijanumero}:{versio}
+Idempotency-Key: {arvioijanOppijanumero}:{versio}
 ```
 
 ```json
 {
-  "oppijanumero": "1.2.246.562.24.59267607404",
+  "arvioijanOppijanumero": "1.2.246.562.24.59267607404",
   "versio": "2026-08-21T09:12:33.512Z",
   "sukunimi": "Kivinen-Testi",
   "etunimet": "Petro Testi",
   "sahkopostiosoite": "petro.kivinen@example.com",
-  "osoite": {
-    "katuosoite": "Testikatu 1 A 2",
-    "postinumero": "00100",
-    "postitoimipaikka": "Helsinki"
-  },
+  "katuosoite": "Testikatu 1 A 2",
+  "postinumero": "00100",
+  "postitoimipaikka": "Helsinki",
   "arviointioikeudet": [
     {
       "kieli": "fin",
@@ -892,17 +928,50 @@ Idempotency-Key: {oppijanumero}:{versio}
 }
 ```
 
-| Päätös                                                                  | Perustelu                                                                                                                                                         |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **PUT + koko dokumentti, avaimena oppijanumero**                        | Uudelleenyritys on triviaalisti idempotentti; arviointioikeuden poisto ilmaistavissa (kieli katoaa taulukosta); ei erillisiä create/update/delete-verbejä         |
-| **Kausi ja tila arviointioikeuskohtaisina**                             | Vastaa kitun tietomallia (sovittu päätös) ja poistuneen CSV:n riviesitystä                                                                                        |
-| **Ei henkilötunnusta**                                                  | 1.1.2026 lainmuutos — Solkin on avaimennettava oppijanumerolla                                                                                                    |
-| **Ei puhelinnumeroa**                                                   | OPH vahvisti (kys. 11), ettei puhelinnumeroa säilytetä kitussa lainkaan — se on kokonaan Solkin omaa tietoa                                                       |
-| **Ei ASHA-numeroa**                                                     | Hallintopäätöksen viite tallennetaan kituun (kys. 12) mutta se on OPH:n sisäinen hallinnollinen tieto; varmistetaan JYU:lta, onko sille Solkissa käyttöä          |
-| `kieli` = `Tutkintokieli.solkiCode` (`"fin"`), `tasot` = `PT`/`KT`/`YT` | Sama lankamuoto kuin poistuneessa CSV:ssä → ei muunnostyötä JYU:n päässä                                                                                          |
-| `versio` = kitun `muokattu`                                             | Solki voi hylätä vanhemman version, jolloin epäjärjestyksessä saapuva uusinta ei palauta vanhaa tilaa                                                             |
-| **Ei DELETE-operaatiota**                                               | Rekisteristä ei poisteta, vain passivoidaan (UC3)                                                                                                                 |
-| **PUT korvaa vain OPH:n omistamat kentät**                              | Solki täydentää merkintöjä omilla tiedoillaan (arviointikerrat, huomautukset, lisätiedot, liitteet, puhelinnumerot, postinumero) — lähetys ei saa tyhjentää niitä |
+#### Kenttävastaavuus poistuneeseen CSV:hen
+
+CSV-sarakkeet ovat commitista `d160c1f1^` (`SolkiArvioijaResponse`). Rivitaso oli
+arvioija × kieli; JSON ryhmittelee saman datan arvioijakohtaiseksi dokumentiksi.
+
+| CSV-sarake                                      | JSON                                      | Muutos                                                             |
+| ----------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------ |
+| `arvioijanOppijanumero`                         | sama, dokumentin juuressa                 | —                                                                  |
+| `henkilotunnus`                                 | **ei mukana**                             | 1.1.2026 lainmuutos; kitu ei ota vastaan eikä lähetä hetua         |
+| `sukunimi`, `etunimet`                          | samat                                     | —                                                                  |
+| `sahkopostiosoite`                              | sama                                      | —                                                                  |
+| `katuosoite`, `postinumero`, `postitoimipaikka` | samat, dokumentin juuressa                | —                                                                  |
+| `ensimmainenRekisterointipaiva`                 | sama, arviointioikeudessa                 | —                                                                  |
+| `kaudenAlkupaiva`                               | sama                                      | —                                                                  |
+| `kaudenPaattymispaiva`                          | sama                                      | —                                                                  |
+| `jatkorekisterointi`                            | sama, `true`/`false`                      | CSV:ssä `"0"`/`"1"`                                                |
+| `tila`                                          | sama, `"AKTIIVINEN"`/`"PASSIVOITU"`       | CSV:ssä `0`/`1`; **kitussa laskettu arvo**, ks. huomio alla        |
+| `kieli`                                         | sama, `Tutkintokieli.solkiCode` (`"fin"`) | CSV:n vanhat numerokoodit `10`/`11`/`12` = `SWE10`/`ENG11`/`ENG12` |
+| `tasot`                                         | sama, JSON-taulukko `["PT","KT","YT"]`    | CSV:ssä `"PT+KT+YT"`                                               |
+
+Enkoodausten muutokset (`0`/`1` → boolean, `"PT+KT+YT"` → taulukko) ovat ehdotus: JSON-natiivit
+tyypit ovat luettavampia, mutta jos CSV-identtinen esitys on JYU:lle halvempi, se käy yhtä hyvin.
+Kenttien **nimet ja merkitykset** on tarkoitus pitää ennallaan joka tapauksessa.
+
+> **Huomio `tila`-kentästä.** Kitu ei enää tallenna tilaa vaan laskee sen kauden päivistä (§1.5).
+> Kentässä lähetetään siis lähetyshetkellä laskettu arvo. Se on tosi lähetyshetkellä mutta
+> vanhenee vastaanottajan kopiossa, kun kausi umpeutuu ilman että kumpikaan pää kirjoittaa mitään —
+> juuri se vika, jonka takia kitu luopui tallennetusta tilasta. Suositus: Solki johtaa tilan
+> samoista päivistä (**päättymispäivä on inklusiivinen**) ja käyttää kenttää korkeintaan
+> tarkistussummana. Manuaalinen passivointi näkyy joka tapauksessa myös päivissä, koska se päättää
+> kauden kuluvaan päivään.
+
+| Päätös                                                                  | Perustelu                                                                                                                                                                                                       |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PUT + koko dokumentti, avaimena oppijanumero**                        | Uudelleenyritys on triviaalisti idempotentti; arviointioikeuden poisto ilmaistavissa (kieli katoaa taulukosta); ei erillisiä create/update/delete-verbejä                                                       |
+| **Arvioijakohtainen dokumentti, ei CSV:n riviesitystä**                 | Ainoa rakenteellinen ero CSV:hen. Riviesityksessä ei voi ilmaista kielen poistoa ilman sopimusta koko joukon korvaamisesta; dokumentissa se on kielen puuttuminen                                               |
+| **Kausi ja tila arviointioikeuskohtaisina**                             | Vastaa kitun tietomallia (sovittu päätös) ja poistuneen CSV:n riviesitystä                                                                                                                                      |
+| **Ei henkilötunnusta**                                                  | 1.1.2026 lainmuutos — Solkin on avaimennettava oppijanumerolla                                                                                                                                                  |
+| **Ei puhelinnumeroa**                                                   | OPH vahvisti (kys. 11), ettei puhelinnumeroa säilytetä kitussa lainkaan — se on kokonaan Solkin omaa tietoa                                                                                                     |
+| **Ei ASHA-numeroa**                                                     | Hallintopäätöksen viite tallennetaan kituun (kys. 12) mutta se on OPH:n sisäinen hallinnollinen tieto; varmistetaan JYU:lta, onko sille Solkissa käyttöä                                                        |
+| `kieli` = `Tutkintokieli.solkiCode` (`"fin"`), `tasot` = `PT`/`KT`/`YT` | Sama lankamuoto kuin poistuneessa CSV:ssä → ei muunnostyötä JYU:n päässä                                                                                                                                        |
+| `versio` = kitun `muokattu`                                             | Solki voi hylätä vanhemman version, jolloin epäjärjestyksessä saapuva uusinta ei palauta vanhaa tilaa                                                                                                           |
+| **Ei DELETE-operaatiota**                                               | Kitu poistaa oman kopionsa säilytysajan umpeuduttua (§6.2), mutta poistoa **ei** välitetä Solkille: Solkilla on oma säilytysaikansa ja oma rekisterinsä. Käytännössä kitu lakkaa lähettämästä kyseistä henkilöä |
+| **PUT korvaa vain OPH:n omistamat kentät**                              | Solki täydentää merkintöjä omilla tiedoillaan (arviointikerrat, huomautukset, lisätiedot, liitteet, puhelinnumerot, postinumero) — lähetys ei saa tyhjentää niitä                                               |
 
 | Status                    | Merkitys                | Kitu tekee                                                    |
 | ------------------------- | ----------------------- | ------------------------------------------------------------- |
@@ -912,9 +981,37 @@ Idempotency-Key: {oppijanumero}:{versio}
 | `401` / `403`             | Konfiguraatio-ongelma   | virhe, uusinta aikataulun mukaan                              |
 | `5xx` / yhteysvirhe       | Ohimenevä               | virhe + yrityslaskuri, uusinta                                |
 
+### 5.1.1 Sovittu ja avoinna
+
+**Sovittu 1.9.2026 (sopimus hyväksytty sellaisenaan):** endpoint ja verbi, kenttäjoukko ja
+CSV-vastaavuus, JSON-natiivit tyypit, `tila` mukana laskettuna arvona yllä olevin varauksin,
+passivoinnin ilmaisu päättymispäivällä, idempotenssi (`Idempotency-Key` + `versio`) ja statuskoodit,
+ei ASHA-numeroa eikä henkilötunnusta.
+
+**Payload on lukittu 1.9.2026.** JYU vahvisti, ettei Solki tarvitse passivoinnin syytä,
+henkilötunnusta eikä ASHA-numeroa, joten yllä oleva kenttäjoukko on lopullinen eikä siihen jää
+avoimia lisäyksiä.
+
+**Tunnistautuminen (sovittu 1.9.2026):** käytetään **samoja Basic-tunnuksia** kuin nykyisessä
+`solkiRestClient`issa (`kitu.yki.username`/`password` = `YKI_API_USER`/`YKI_API_PASSWORD`) saman
+`kitu.yki.baseUrl`-osoitteen alla. Uutta tunnusten vaihtoa ei siis tarvita, eikä lähetyksen
+käyttöönotto odota muuta kuin JYU:n vastaanottopään valmiutta.
+
+**Avoinna, ei estä vaihetta 9:**
+
+1. **JYU:n testiympäristö ja aikataulu:** milloin untuvan lähetys voidaan ajaa oikeaa vastaanottajaa
+   vasten, ja tehdäänkö IP-rajaus JYU:n vai OPH:n päässä.
+2. **Sisääntulevan rajapinnan kohtalo (§4.2, vaihe 10).** Nyt sovittiin vain suunta kitu → Solki.
+   Kitusta tulee master vaiheessa 11, jolloin `POST /yki/api/arvioija` kavennetaan tai poistetaan —
+   sovittava erikseen, jääkö Solkille kirjoitusoikeutta johonkin kenttään.
+
 Dokumentoidaan `docs/technical/integraatiot.md`:hen omana lukunaan (Solki-luku muuttuu kaksisuuntaiseksi).
 
 ### 5.2 Luokat (malli 1:1 `ilmoittautumisjarjestelma/`-paketista)
+
+Olemassa oleva `solkiRestClient` (`SolkiRestClientConfig`) osoittaa jo oikeaan baseen ja asettaa
+Basic-tunnistautumisen, joten se on lähtökohtaisesti uudelleenkäytettävissä. Harkittava kuitenkin oma
+bean, jos lähetykselle halutaan eri timeoutit tai uudelleenyrityskäytäntö kuin debug-haulle.
 
 | Tiedosto                         | Sisältö                                                                                                                                                            |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -951,17 +1048,15 @@ virhenäkymässä:
 | "sen jälkeen säännöllisesti (joka yö)" | `DAILY\|02:15` -ajastus, poimii **kaikki** lähettämättömät riippumatta laskurista |
 
 ```properties
+# Osoite ja tunnukset ovat jo olemassa (kitu.yki.baseUrl, kitu.yki.username/password, §5.1.1);
+# vain lähetyksen kytkin ja ajastukset ovat uusia.
 kitu.yki.arvioijat.solki.enabled=false
-kitu.yki.arvioijat.solki.url=${SOLKI_ARVIOIJA_API_URL:}
-kitu.yki.arvioijat.solki.username=${SOLKI_ARVIOIJA_API_USER:}
-kitu.yki.arvioijat.solki.password=${SOLKI_ARVIOIJA_API_PASSWORD:}
 kitu.yki.scheduling.lahetaArvioijatSolkiin.schedule=FIXED_DELAY|900s
 kitu.yki.scheduling.lahetaEpaonnistuneetArvioijatSolkiin.schedule=DAILY|02:15
-kitu.yki.scheduling.passivoiPaattyneetArvioijat.schedule=DAILY|01:15
 ```
 
-untuva/qa/prod: `enabled=true` (JYU:n valmistuttua), URLit ympäristökohtaisiin propertytiedostoihin,
-salaisuudet AWS Secrets Manageriin (`scripts/ensure_aws_secrets.sh` + README:n salaisuuslista päivitettävä).
+untuva/qa/prod: `enabled=true` (JYU:n valmistuttua). Uusia salaisuuksia ei tarvita: `YKI_API_USER` ja
+`YKI_API_PASSWORD` ovat jo ympäristöissä.
 local: `enabled=true`, ajastukset `-`.
 **e2e: ajastukset `0 0 0 29 2 ?`** (karkausvuoden 29.2.) eikä `-` — CLAUDE.md:n mukaan `-` tekee tehtävästä
 kokonaan näkymättömän db-scheduler-UI:ssa, jolloin sitä ei voi laukaista testistä käsin.
@@ -1069,8 +1164,8 @@ Huomioita:
 - Propertyn oletusarvo on **pois päältä** kunnes sääntö on vahvistettu:
   `kitu.yki.scheduling.poistaVanhentuneetArvioijat.schedule=0 0 0 29 2 ?` (karkausvuoden 29.2.,
   eli käytännössä ei koskaan, mutta tehtävä näkyy db-scheduler-UI:ssa ja on ajettavissa käsin).
-- Testattava erikseen, ettei poisto koske aktiivisia eikä `passivoitu IS NULL` -rivejä, ja että
-  migraation sekä automaattipassivoinnin täyttämä `passivoitu` vastaa kauden päättymispäivää.
+- Testattava erikseen kaikki kolme suojaa (ei-passiivinen oikeus, tuntematon alkuhetki,
+  arviointioikeudeton merkintä) sekä se, että manuaalinen leima voittaa kauden päättymispäivän.
 
 ---
 
@@ -1167,13 +1262,13 @@ YkiArvioijaUpdated("YkiArvioijaUpdated"),
 YkiArvioijaPassivated("YkiArvioijaPassivated"),
 ```
 
-| Operaatio               | Kutsupaikka (`YkiArvioijaService`, `target = arvioijaOid`)      |
-| ----------------------- | --------------------------------------------------------------- |
-| `YkiArvioijaViewed`     | `haeArvioija(id)` (tietosivu)                                   |
-| `YkiArvioijaCreated`    | `luoArvioija`, onnistuneen INSERTin jälkeen                     |
-| `YkiArvioijaUpdated`    | `paivitaArvioija`, onnistuneen UPDATEn jälkeen                  |
-| `YkiArvioijaPassivated` | `passivoiArvioija` (manuaalinen)                                |
-| —                       | automaattipassivointi ja listan massaluku: `logAllInternalOnly` |
+| Operaatio               | Kutsupaikka (`YkiArvioijaService`, `target = arvioijaOid`)    |
+| ----------------------- | ------------------------------------------------------------- |
+| `YkiArvioijaViewed`     | `haeArvioija(id)` (tietosivu)                                 |
+| `YkiArvioijaCreated`    | `luoArvioija`, onnistuneen INSERTin jälkeen                   |
+| `YkiArvioijaUpdated`    | `paivitaArvioija`, onnistuneen UPDATEn jälkeen                |
+| `YkiArvioijaPassivated` | `passivoiArvioija` (manuaalinen)                              |
+| —                       | säilytysajan poisto ja listan massaluku: `logAllInternalOnly` |
 
 Tämä on projektin **ensimmäinen** luonti/muokkaus-audit-operaatio.
 
@@ -1192,7 +1287,7 @@ Uudet:
   (mallina `YkiSuoritusColumnTest`).
 - `YkiArvioijaServiceTest.kt` — `@SpringBootTest` + Testcontainers + `MockOppijanumeroService`:
   luonti oppijanumerolla, päivitys laskee päättymispäivän uusiksi, kielen poisto,
-  **kausihistoriarivin synty vain kun kausi muuttuu**, manuaalinen passivointi, `passivoiPaattyneetKaudet`.
+  **kausihistoriarivin synty vain kun kausi muuttuu**, manuaalinen passivointi.
 - `SolkiArvioijaClientTest.kt` — `MockRestServiceServer`. **Muista laiskan `RestClient`in ansa:**
   `@TestInstance(PER_CLASS)`, yksi `reset()`-palvelin, kaikki client-mock-testit samassa luokassa.
 - `SolkiArvioijaServiceTest.kt` — outbox-tilakone: onnistuminen nollaa virheen ja laskurin, 400 on pysyvä,
@@ -1201,8 +1296,8 @@ Uudet:
   200 + `aria-invalid`, onnistunut POST → 303.
 
 Muutettavat: `YkiArvioijaRepositoryTest.kt` (uusi `tallenna`-semantiikka, arviointioikeuksien korvaus,
-outbox-kentät, kausihistoria, `passivoiPaattyneet`), `YkiApiControllerTest.kt` (arvioija-testit pois,
-410-testi + CSV-testi), `webmvc/DashboardServiceTest.kt`. Poistetaan `yki/YkiArvioijaErrorTests.kt`.
+outbox-kentät, kausihistoria, `poistaSailytysajanYlittaneet`), `YkiApiControllerTest.kt` (arvioija-testit jäävät;
+lisätään testit siitä, että push päivittää vain yhteystiedot), `webmvc/DashboardServiceTest.kt`. Poistetaan `yki/YkiArvioijaErrorTests.kt`.
 
 ### 9.2 E2E (`e2e/`)
 
@@ -1219,8 +1314,8 @@ outbox-kentät, kausihistoria, `passivoiPaattyneet`), `YkiApiControllerTest.kt` 
   **synnyttää kausihistoriarivin**, kielen lisäys/poisto, manuaalinen passivointi dialogin kautta.
 - Uusi `tests/yki/yki-arvioija-solki.spec.ts` — dev-stubi 500 → virhenäkymässä rivi + syy + laskuri;
   "Lähetä uudelleen" (stubi 204) → virhe katoaa.
-- `tests/security/securityconfig.spec.ts` — uudet reitit, `POST /yki/api/arvioija` → 410, uusi
-  `MockUser.VIRKAILIJA`-lohko.
+- `tests/security/securityconfig.spec.ts` — uudet reitit ja uusi `MockUser.VIRKAILIJA`-lohko;
+  `POST /yki/api/arvioija` säilyy ennallaan.
 
 ---
 
@@ -1234,19 +1329,19 @@ kerrallaan. Askeleet 1–8 eivät riipu Solkin rajapintasopimuksesta, joten työ
 Jyväskylää. Askel 11 tehdään vasta tämän PR:n mergen jälkeen omana muutoksenaan, kun JYU on
 vahvistanut rajapinnan.
 
-| #     | Vaihe                                                    | Koko | Riippuu                 |
-| ----- | -------------------------------------------------------- | ---- | ----------------------- |
-| 1     | Poista kuollut arvioijien virhetuontikoneisto            | S    | —                       |
-| 2     | Laajenna arvioijataulut masteriksi (V116–V118)           | L    | 1                       |
-| 3     | Uudista arvioijalistanäkymä                              | L    | 2                       |
-| 4     | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —                       |
-| 5     | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | 2, 4                    |
-| 6     | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | 5                       |
-| ~~7~~ | ~~Automaattinen passivointi (UC3)~~ — rauennut, ks. §6.1 | –    | —                       |
-| 8     | Säilytysajan valvonta (5 v)                              | M    | 6                       |
-| 9     | YKI-arvioijien Solki-lähetys                             | L    | 6, sopimus JYU:n kanssa |
-| 10    | Kavenna sisääntuleva rajapinta passivointi-endpointiksi  | M    | 9                       |
-| 11    | Käyttöönotto ja kytkimet                                 | S    | 9, 10                   |
+| #     | Vaihe                                                    | Koko | Riippuu                      |
+| ----- | -------------------------------------------------------- | ---- | ---------------------------- |
+| 1     | Poista kuollut arvioijien virhetuontikoneisto            | S    | —                            |
+| 2     | Laajenna arvioijataulut masteriksi (V116–V118)           | L    | 1                            |
+| 3     | Uudista arvioijalistanäkymä                              | L    | 2                            |
+| 4     | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —                            |
+| 5     | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | 2, 4                         |
+| 6     | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | 5                            |
+| ~~7~~ | ~~Automaattinen passivointi (UC3)~~ — rauennut, ks. §6.1 | –    | —                            |
+| 8     | Säilytysajan valvonta (5 v)                              | M    | 6                            |
+| 9     | YKI-arvioijien Solki-lähetys                             | L    | 6 (sopimus sovittu 1.9.2026) |
+| 10    | Kavenna sisääntuleva rajapinta yhteystietoihin (§4.2)    | M    | 9                            |
+| 11    | Käyttöönotto ja kytkimet                                 | S    | 9, 10                        |
 
 1. **`Poista kuollut arvioijien virhetuontikoneisto`** — `yki/arvioijat/error/`, `V118` DROP TABLE,
    `dev/YkiController` kuollut stubi, `DashboardService`/`HomePage`/`EnumFromUrlParamsParsingConfig`
@@ -1274,11 +1369,13 @@ vahvistanut rajapinnan.
 9. **`Lisää YKI-arvioijien Solki-lähetys`** — `solki/`-paketti, outbox-kirjoitukset, dev-stubi, propertyt
    (`enabled=false`), virhenäkymä + "Lähetä uudelleen" + dashboard-laskuri,
    `docs/technical/integraatiot.md`. Testit + e2e.
-10. **`Kavenna sisääntuleva arvioijarajapinta`** — `POST /yki/api/arvioija` → 410, tilalle kavennettu
-    passivointi-endpoint (§4.2), DTO:t + schema-esimerkit + testit pois, e2e-matriisi.
+10. **`Kavenna sisääntuleva arvioijarajapinta`** — endpoint **jää käyttöön**, koska Solki lähettää
+    yhteystietojen päivityksiä (§4.2). Kavennus tarkoittaa, että payloadista sovelletaan vain
+    yhteystietokentät; nimet, arviointioikeudet ja tila ohitetaan, eikä tuntematonta arvioijaa luoda.
+    Tallennettu `tila` säilyy kannassa siirtymän ajan.
 11. _(JYU:n vahvistuksen jälkeen)_ `kitu.yki.arvioijarekisteri.kirjoitus.enabled=true` (§7.5) ja
-    Solki-lähetyksen `enabled=true` untuvaan/QA:han/prodiin; 410-mapping kokonaan pois; säilytysajan
-    poisto päälle. `henkilotunnus`-saraketta **ei** poisteta: ennen 2026 alkaneiden kausien hetut on
+    Solki-lähetyksen `enabled=true` untuvaan/QA:han/prodiin; säilytysajan poisto päälle. Vasta tämän
+    jälkeen voi harkita tallennetun `tila`-sarakkeen poistoa (§4.2). `henkilotunnus`-saraketta **ei** poisteta: ennen 2026 alkaneiden kausien hetut on
     säilytettävä lain nojalla.
 
 Muista jokaisen askeleen lopuksi `./scripts/format.sh` (ktlint + prettier). Pidä pitkäikäinen haara
@@ -1299,10 +1396,8 @@ koskemattomana.
    OID-tunnisteella."_ Varmistetaan JYU:lta enää tekninen toteutettavuus ja aikataulu.
 3. Autentikointi: HTTP Basic (kanava on jo pystyssä) vai Otuva OAuth2 client credentials? Suositus: Basic v1:ssä.
 4. Mitä Solki tekee, kun kieli katoaa payloadista — poistaako oikeuden vai säilyttääkö historian?
-5. **Solki→kitu-muutosrajapinta:** tavoitetilassa arvioijan omasta toiveesta tehtävä passivointi kulkee
-   Solkista kituun. Riittääkö §4.2:n kavennettu passivointi-endpoint (oppijanumero + syy + päivämäärä), vai
-   tarvitseeko Solki välittää muutakin? Kutsuuko Solki jo nykyistä `POST /yki/api/arvioija`-rajapintaa
-   (ratkaisee, tarvitaanko 410-välivaihe)?
+5. ~~**Solki→kitu-muutosrajapinta**~~ — ratkaistu 1.9.2026: passivointi tehdään aina kitun
+   käyttöliittymästä, ja sisääntuleva suunta kavennetaan yhteystietoihin (§4.2).
 
 6. **Onko arvioija aina jo olemassa Solkissa, kun kitu lähettää merkinnän?** Tavoitetilakuvauksen mukaan
    Solki luo arvioijalle käyttäjätunnuksen ja viisinumeroisen arvioijatunnuksen jo koulutuksen yhteydessä,
@@ -1409,19 +1504,19 @@ tiimin omalla työllä.
 
 ### Kehityskortit
 
-| Kortti | Otsikko                                                  | Koko | Riippuu       |
-| ------ | -------------------------------------------------------- | ---- | ------------- |
-| KTR-1  | Poista kuollut arvioijien virhetuontikoneisto            | S    | —             |
-| KTR-2  | Laajenna arvioijataulut masteriksi                       | L    | KTR-1         |
-| KTR-3  | Uudista arvioijalistanäkymä                              | L    | KTR-2         |
-| KTR-4  | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —             |
-| KTR-5  | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | KTR-2, KTR-4  |
-| KTR-6  | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | KTR-5         |
-| KTR-7  | Automaattinen passivointi (UC3)                          | M    | KTR-6         |
-| KTR-8  | Säilytysajan valvonta (5 v)                              | M    | KTR-7         |
-| KTR-9  | YKI-arvioijien Solki-lähetys                             | L    | KTR-6, KTR-A  |
-| KTR-10 | Kavenna sisääntuleva arvioijarajapinta                   | M    | KTR-9         |
-| KTR-11 | Käyttöönotto ja kytkimet                                 | S    | KTR-9, KTR-10 |
+| Kortti    | Otsikko                                                  | Koko | Riippuu       |
+| --------- | -------------------------------------------------------- | ---- | ------------- |
+| KTR-1     | Poista kuollut arvioijien virhetuontikoneisto            | S    | —             |
+| KTR-2     | Laajenna arvioijataulut masteriksi                       | L    | KTR-1         |
+| KTR-3     | Uudista arvioijalistanäkymä                              | L    | KTR-2         |
+| KTR-4     | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —             |
+| KTR-5     | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | KTR-2, KTR-4  |
+| KTR-6     | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | KTR-5         |
+| ~~KTR-7~~ | ~~Automaattinen passivointi (UC3)~~ — rauennut           | –    | —             |
+| KTR-8     | Säilytysajan valvonta (5 v)                              | M    | KTR-6         |
+| KTR-9     | YKI-arvioijien Solki-lähetys                             | L    | KTR-6, KTR-A  |
+| KTR-10    | Kavenna sisääntuleva arvioijarajapinta                   | M    | KTR-9         |
+| KTR-11    | Käyttöönotto ja kytkimet                                 | S    | KTR-9, KTR-10 |
 
 **KTR-4 on rinnakkaistettavissa** — se ei riipu tietokantatyöstä, joten kaksi tekijää voi edetä yhtä
 aikaa (KTR-2 → KTR-3 ja KTR-4). Muuten ketju on käytännössä lineaarinen.
@@ -1468,15 +1563,14 @@ Tietosivu + kausihistoriataulukko + POST, `passivoiArvioija`.
 _Valmis kun:_ uusi kauden alkupäivä synnyttää historiarivin mutta pelkkä yhteystiedon muutos ei; kielen
 lisäys kesken kauden perii voimassa olevan kauden.
 
-**KTR-7 · Automaattinen passivointi (UC3)** — M
-`YkiArvioijaScheduledTasks`, `passivoitu`-leima kauden päättymispäivästä (ei `now()`), outboxin likaus.
-_Valmis kun:_ päättyneet kaudet passivoituvat, `passivoitu` vastaa kauden päättymispäivää, tehtävä näkyy
-db-scheduler-UI:ssa ja on ajettavissa käsin.
+**KTR-7 · Automaattinen passivointi (UC3)** — ~~M~~ **rauennut**
+Tila lasketaan kauden päivistä (§1.5), joten päättynyt kausi näkyy passiivisena ilman ajoa. Ks. §6.1.
 
 **KTR-8 · Säilytysajan valvonta (5 v)** — M
 §6.2:n poistotehtävä, oletuksena pois päältä.
-_Valmis kun:_ poisto ei koske aktiivisia eikä `passivoitu IS NULL` -rivejä, ja tehtävä on **ajettu
-untuvassa ja poistuvien rivien määrä tarkistettu** ennen kuin tuotantoon ottamista harkitaan.
+_Valmis kun:_ kaikki kolme suojaa on testattu (ei-passiivinen oikeus, tuntematon alkuhetki,
+arviointioikeudeton merkintä), ja tehtävä on **ajettu untuvassa ja poistuvien rivien määrä
+tarkistettu** ennen kuin tuotantoon ottamista harkitaan.
 
 **KTR-9 · YKI-arvioijien Solki-lähetys** — L
 `solki/`-paketti, outbox-kirjoitukset, dev-stubi, propertyt (`enabled=false`), virhenäkymä +
@@ -1485,10 +1579,10 @@ _Valmis kun:_ 3 yritystä ja yöajo toimivat, virhe näkyy syineen,
 `.withLenientStringConverter()` on mukana ja `debugString()` ei vuoda henkilötietoja lokiin.
 
 **KTR-10 · Kavenna sisääntuleva arvioijarajapinta** — M
-`POST /yki/api/arvioija` → 410, tilalle kavennettu passivointi-endpoint (§4.2).
-_Valmis kun:_ Solki voi passivoida muttei kirjoittaa nimiä tai kausia, ja **inbound-passivointi ei
-laukaise kaikuvaa PUT-lähetystä takaisin Solkiin**.
+`POST /yki/api/arvioija` jää käyttöön mutta soveltaa vain yhteystietokentät (§4.2).
+_Valmis kun:_ Solki voi päivittää yhteystiedot muttei nimiä, kausia eikä tilaa, tuntematonta arvioijaa
+ei luoda, ja **yhteystietopäivitys ei laukaise kaikuvaa PUT-lähetystä takaisin Solkiin**.
 
 **KTR-11 · Käyttöönotto ja kytkimet** — S
-`enabled=true` untuvaan, QA:han ja prodiin, 410-mapping pois, cutover sovitusti.
+`enabled=true` untuvaan, QA:han ja prodiin, cutover sovitusti.
 _Valmis kun:_ cutover-päivä on sovittu JYU:n kanssa ja datan täsmäävyys tarkistettu ennen kytkintä.
