@@ -6,6 +6,7 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.util.result.getOrThrow
+import fi.oph.kitu.yki.arvioijat.Rekisterikausi
 import fi.oph.kitu.yki.arvioijat.Rekisterointitila
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
@@ -33,6 +34,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import java.time.Instant
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -54,6 +57,9 @@ class YkiArvioijaMuokkausTest(
         /** Kiinteä tarkasteluhetki, jotta laskettu tila ei riipu ajohetkestä. */
         private val HETKI: Instant = Instant.parse("2026-06-01T09:00:00Z")
         private val TANAAN: LocalDate = LocalDate.of(2026, 6, 1)
+
+        /** Kausi joka on TANAAN viela voimassa: 1.1.2024-1.1.2029. */
+        private val VOIMASSA_ALKAEN: LocalDate = LocalDate.of(2024, 1, 1)
     }
 
     private val petro = "1.2.246.562.24.59267607404"
@@ -293,12 +299,12 @@ class YkiArvioijaMuokkausTest(
     @Test
     fun `yhteystiedon korjaus ei elvyta Solkin passivoimaa arvioijaa`() {
         val id = idOf(petro)
-        solkiPassivoi(id, kaudenPaattymispaiva = TANAAN.plusYears(1))
+        solkiPassivoi(id, kaudenAlkupaiva = VOIMASSA_ALKAEN)
 
         timeService.runWithFixedClock(HETKI) {
             // lomake() lahettaa postitoimipaikaksi HELSINGIN, fixtuurissa se on Testila.
             mockMvc
-                .perform(lomake(id, kaudenAlkupaiva = "2021-01-01", oikeudet = listOf("FIN:PT")))
+                .perform(lomake(id, kaudenAlkupaiva = "$VOIMASSA_ALKAEN", oikeudet = listOf("FIN:PT")))
                 .andExpect(status().isSeeOther)
         }
 
@@ -312,9 +318,31 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
+    fun `yhteystiedon korjaus ei nollaa sailytysajan alkuhetkea`() {
+        val id = idOf(petro)
+        solkiPassivoi(id, kaudenAlkupaiva = VOIMASSA_ALKAEN, passivointihetki = HETKI.atOffset(ZoneOffset.UTC))
+
+        timeService.runWithFixedClock(HETKI) {
+            mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "$VOIMASSA_ALKAEN", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+        }
+
+        val paivitetty = repository.findArvioijaById(id)!!
+        assertEquals(
+            listOf(Rekisterointitila.PASSIVOITU),
+            paivitetty.arviointioikeudet.map { Rekisterointitila.laske(it, TANAAN) },
+        )
+        assertNotNull(
+            paivitetty.passivoitu,
+            "passiiviseksi jaava merkinta ei saa menettaa sailytysajan alkuhetkea",
+        )
+    }
+
+    @Test
     fun `uusi kausi aktivoi Solkin passivoiman arvioijan`() {
         val id = idOf(petro)
-        solkiPassivoi(id, kaudenPaattymispaiva = TANAAN.plusYears(1))
+        solkiPassivoi(id, kaudenAlkupaiva = VOIMASSA_ALKAEN)
 
         timeService.runWithFixedClock(HETKI) {
             mockMvc
@@ -466,17 +494,27 @@ class YkiArvioijaMuokkausTest(
         }
     }
 
-    /** Solki on ainoa taho joka voi kirjata tilan; kitu kirjoittaa aina NULLin. */
+    /**
+     * Solki on ainoa taho joka voi kirjata tilan; kitu kirjoittaa aina NULLin. Kausi kirjataan
+     * sellaisena kuin lomakkeen viiden vuoden laskenta sen tuottaa, jotta muuttumattoman kauden
+     * tallennus tunnistetaan muuttumattomaksi.
+     */
     private fun solkiPassivoi(
         id: Int,
-        kaudenPaattymispaiva: LocalDate,
+        kaudenAlkupaiva: LocalDate,
+        passivointihetki: OffsetDateTime? = null,
     ) {
         val arvioija = repository.findArvioijaById(id)!!
         repository.tallenna(
             arvioija.copy(
+                passivoitu = passivointihetki,
                 arviointioikeudet =
                     arvioija.arviointioikeudet.map {
-                        it.copy(tila = YkiArvioijaTila.PASSIVOITU, kaudenPaattymispaiva = kaudenPaattymispaiva)
+                        it.copy(
+                            tila = YkiArvioijaTila.PASSIVOITU,
+                            kaudenAlkupaiva = kaudenAlkupaiva,
+                            kaudenPaattymispaiva = Rekisterikausi.paattymispaiva(kaudenAlkupaiva),
+                        )
                     },
             ),
         )
