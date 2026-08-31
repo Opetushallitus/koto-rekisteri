@@ -4,6 +4,7 @@ import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.jdbc.orderSql
 import fi.oph.kitu.jdbc.pageSql
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oid.getOid
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -49,6 +50,15 @@ interface CustomYkiArvioijaRepository {
         params: YkiArvioijaParams,
         tanaan: LocalDate,
     ): Int
+
+    /**
+     * Poistaa merkinnat joiden sailytysaika on umpeutunut. Palauttaa poistetut auditlokia varten.
+     * [yki_arviointioikeus] ja [yki_arvioija_kausi] poistuvat ON DELETE CASCADE -saannolla.
+     */
+    fun poistaSailytysajanYlittaneet(
+        tanaan: LocalDate,
+        raja: LocalDate,
+    ): List<Oid>
 
     fun allArviontioikeudet(
         orderBy: YkiArvioijaColumn = YkiArvioijaColumn.Sukunimi,
@@ -410,6 +420,37 @@ class CustomYkiArvioijaRepositoryImpl(
 
     @WithSpan
     override fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int> = arvioijat.map { tallenna(it) }
+
+    /**
+     * Kolme suojaa poistolta: merkinta jolla on yksikin ei-passiivinen arviointioikeus, merkinta
+     * jolta arviointioikeudet on poistettu kokonaan (NOT EXISTS olisi tyhjalle joukolle tosi), ja
+     * merkinta jonka sailytysajan alkuhetkea ei tiedeta — silloin COALESCE on NULL ja vertailu
+     * epatosi. Passiivisuus luetaan samasta lausekkeesta kuin nakymissa, jottei "paattynyt"
+     * tarkoita poistossa eri asiaa.
+     */
+    @WithSpan
+    @Transactional
+    override fun poistaSailytysajanYlittaneet(
+        tanaan: LocalDate,
+        raja: LocalDate,
+    ): List<Oid> =
+        namedJdbcTemplate.query(
+            """
+            DELETE FROM yki_arvioija
+            WHERE EXISTS (
+                      SELECT 1 FROM yki_arviointioikeus
+                      WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id
+                  )
+              AND NOT EXISTS (
+                      SELECT 1 FROM yki_arviointioikeus
+                      WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id
+                        AND ${Rekisterointitila.SQL} <> '${Rekisterointitila.PASSIVOITU}'
+                  )
+              AND ${Sailytysaika.ALKUHETKI_SQL} < :raja
+            RETURNING arvioija_oid
+            """.trimIndent(),
+            mapOf("tanaan" to tanaan, "raja" to raja),
+        ) { rs, _ -> rs.getOid("arvioija_oid") }
 
     @WithSpan
     override fun allArviontioikeudet(
