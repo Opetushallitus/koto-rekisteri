@@ -387,6 +387,12 @@ object UiText {
                     )
             val passivoitu: LocalizedString
                 get() = tr("yki.arvioija.passivoitu", fi = "Arvioija merkittiin passiiviseksi.")
+            val kausiPaattynyt: LocalizedString
+                get() =
+                    tr(
+                        "yki.arvioija.kausiPaattynyt",
+                        fi = "Rekisteröintikausi on päättynyt. Uusi rekisteröintikausi aktivoi merkinnän.",
+                    )
             val joPassivoitu: LocalizedString
                 get() =
                     tr(

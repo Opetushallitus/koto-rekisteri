@@ -31,7 +31,6 @@ import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.p
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 object YkiArvioijaTiedotPage {
     fun render(
@@ -60,7 +59,7 @@ object YkiArvioijaTiedotPage {
                         +UiText.Yki.Arvioija.muokkaa
                     }
 
-                    passivointiNappi(arvioija.id!!.toInt(), kirjoitusKaytossa, arvioija.passivoitu)
+                    passivointiNappi(arvioija, kirjoitusKaytossa, tanaan)
                 }
             }
 
@@ -154,23 +153,34 @@ object YkiArvioijaTiedotPage {
 
 /**
  * Nappi renderoidaan aina, jotta sivulta nakee etta toiminto on olemassa; esto perustellaan
- * tooltipilla. Luonnollisesti paattynyt merkinta on yha passivoitavissa, koska se on ainoa tapa
- * asettaa sailytysajan alkuhetki.
+ * tooltipilla. Jo passiivista merkintaa ei saa passivoida uudelleen: passivointihetki on
+ * sailytysajan alkuhetki, joten klikkaus siirtaisi paattyneen merkinnan sailytysaikaa eteenpain.
  */
 private fun FlowContent.passivointiNappi(
-    arvioijaId: Int,
+    arvioija: YkiArvioijaEntity,
     kirjoitusKaytossa: Boolean,
-    passivoitu: OffsetDateTime?,
+    tanaan: LocalDate,
 ) {
+    val arvioijaId = arvioija.id!!.toInt()
+    val merkintaOnPassiivinen =
+        arvioija.arviointioikeudet.isNotEmpty() &&
+            arvioija.arviointioikeudet.all {
+                Rekisterointitila.laske(it, tanaan) == Rekisterointitila.PASSIVOITU
+            }
+
     val estonSyy =
         when {
             !kirjoitusKaytossa -> {
                 UiText.Yki.Arvioija.kirjoitusEiKaytossa
             }
 
-            passivoitu != null -> {
+            arvioija.passivoitu != null -> {
                 UiText.Yki.Arvioija.joPassivoitu
-                    .interpolate("pvm" to passivoitu.toLocalDate().finnishDate())
+                    .interpolate("pvm" to arvioija.passivoitu.toLocalDate().finnishDate())
+            }
+
+            merkintaOnPassiivinen -> {
+                UiText.Yki.Arvioija.kausiPaattynyt
             }
 
             else -> {
