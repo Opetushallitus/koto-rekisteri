@@ -130,6 +130,23 @@ class YkiArvioijaService(
         return repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
     }
 
+    /**
+     * Ajastettu (§6.2). Poisto on peruuttamaton, joten tehtava on oletuksena kaytannossa pois
+     * paalta ja otetaan kayttoon vasta kun poistuvien maara on tarkistettu untuvassa.
+     */
+    @WithSpan
+    fun poistaSailytysajanYlittaneet(): Int {
+        val tanaan = timeService.today()
+        val poistetut = repository.poistaSailytysajanYlittaneet(tanaan, tanaan.minusYears(Sailytysaika.VUOSIA))
+
+        // Ajastetussa tehtavassa ei ole AuditContextia, joten auditLogger.log ei toimi.
+        auditLogger.logAllInternalOnly("Yki arvioija poistettu sailytysajan umpeuduttua", poistetut) { oid ->
+            arrayOf("arvioija.oid" to oid.toString())
+        }
+
+        return poistetut.size
+    }
+
     @WithSpan
     fun onOlemassa(id: Int): Boolean = repository.findArvioijaById(id) != null
 

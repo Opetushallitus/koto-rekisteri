@@ -1024,38 +1024,41 @@ fun poistaVanhentuneetArvioijat(service: YkiArvioijaService): Task<Void> =
     }
 ```
 
-Vanhoilla Solki-peräisillä riveillä ei ole passivointihetkeä. Se **täytetään kauden päättymispäivästä**
-kahdessa kohdassa, jotta säilytysaika kuluu historiallisella aikajanalla eikä ala vasta käyttöönotosta:
-
-1. **Migraatiossa** (§1.1) jo passivoiduille riveille, joilla on kauden päättymispäivä.
-2. **Automaattipassivoinnissa** (§6.1) niille legacy-riveille, jotka ovat vielä `AKTIIVINEN` mutta joiden
-   kausi on jo mennyt — ne passivoituvat ensimmäisellä ajolla ja saavat passivointihetkekseen kauden
-   päättymispäivän, eivät `now()`:ta.
-
-Manuaalinen passivointi kesken kauden merkitsee `passivoitu = now()`, koska silloin arviointioikeus
-tosiasiassa päättyy sillä hetkellä. Näin `passivoitu` vastaa aina hetkeä, jolloin henkilö lakkasi olemasta
-arvioija — riippumatta siitä, päättyikö kausi luonnollisesti vai kesken.
+Legacy-riveiltä passivointihetki puuttuu, eikä sitä täytetä: umpeutuneen merkinnän alkuhetki luetaan
+kauden päättymispäivästä (§1.5). Näin säilytysaika kuluu historiallisella aikajanalla eikä ala vasta
+käyttöönotosta, ilman että kantaan kirjoitetaan passivointihetkiä joita kukaan ei ole päättänyt.
+Manuaalinen passivointi kesken kauden merkitsee `passivoitu = now()` ja päättää kauden samaan päivään,
+joten `passivoitu` vastaa aina hetkeä, jolloin henkilö lakkasi olemasta arvioija.
 
 ```sql
--- Poistaa arvioijan, jonka passivoinnista on kulunut yli 5 vuotta.
--- yki_arviointioikeus ja yki_arvioija_kausi poistuvat ON DELETE CASCADE -säännöllä.
-DELETE FROM yki_arvioija a
-WHERE a.passivoitu IS NOT NULL
-  AND a.passivoitu < now() - interval '5 years'
+-- Poistaa merkinnän, jonka säilytysaika on umpeutunut. yki_arviointioikeus ja
+-- yki_arvioija_kausi poistuvat ON DELETE CASCADE -säännöllä. :tanaan ja :raja sidotaan
+-- TimeServicelta (raja = tanaan - 5 v), jotta kiinnitetty testikello ohjaa myös poistoa.
+DELETE FROM yki_arvioija
+WHERE EXISTS (SELECT 1 FROM yki_arviointioikeus WHERE arvioija_id = yki_arvioija.id)
   AND NOT EXISTS (
-        SELECT 1 FROM yki_arviointioikeus o
-        WHERE o.arvioija_id = a.id AND o.tila = 'AKTIIVINEN'
+        SELECT 1 FROM yki_arviointioikeus
+        WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id
+          AND <Rekisterointitila.SQL> <> 'PASSIVOITU'
       )
-RETURNING id, arvioija_oid;
+  AND COALESCE(
+        yki_arvioija.passivoitu::date,
+        (SELECT max(kauden_paattymispaiva) FROM yki_arviointioikeus
+         WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id)
+      ) < :raja
+RETURNING arvioija_oid;
 ```
 
 Huomioita:
 
-- **Aktiivinen arviointioikeus suojaa poistolta.** `NOT EXISTS`-ehto varmistaa, ettei arvioijaa poisteta
-  niin kauan kuin yhdelläkään kielellä on `AKTIIVINEN`-oikeus, vaikka jokin kausi olisi vanhentunut.
-- **`passivoitu IS NULL` suojaa poistolta.** Rivi, jolta kauden päättymispäivä puuttuu, ei saa
-  passivointihetkeä kummassakaan täyttökohdassa eikä siten koskaan poistu automaattisesti. Vanhin ja
-  epäluotettavin data on näin suojassa ilman erillistä ehtoa.
+- **Passiivisuus luetaan samasta lausekkeesta kuin näkymissä** (`Rekisterointitila.SQL`), jottei
+  "päättynyt" tarkoita poistossa eri asiaa kuin käyttöliittymässä. Yksikin ei-passiivinen
+  arviointioikeus suojaa poistolta, vaikka jokin toinen kausi olisi vanhentunut aikoja sitten.
+- **Tuntematon alkuhetki suojaa poistolta.** Jos merkinnällä ei ole passivointihetkeä eikä yhtään
+  kauden päättymispäivää, COALESCE on NULL ja vertailu epätosi. Vanhin ja epäluotettavin data on
+  näin suojassa ilman erillistä ehtoa.
+- **Arviointioikeudeton merkintä suojaa poistolta.** Ilman `EXISTS`-ehtoa `NOT EXISTS` olisi tyhjälle
+  joukolle tosi ja merkintä poistuisi vahingossa.
 - **Poisto on takautuva.** Koska passivointihetki täytetään historiallisesta päivämäärästä, käyttöönoton
   jälkeen kannassa on heti rivejä, joiden säilytysaika on jo umpeutunut. Tämä on tarkoitus, mutta se
   tarkoittaa myös, että **ensimmäinen ajo poistaa kerralla suuren joukon rivejä** — ajo on tehtävä
