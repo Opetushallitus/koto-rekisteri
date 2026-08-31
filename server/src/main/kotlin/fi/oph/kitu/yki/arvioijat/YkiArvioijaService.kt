@@ -161,9 +161,10 @@ class YkiArvioijaService(
     }
 
     /**
-     * Lomake kantaa vain virkailijan syottamat kentat; tila lasketaan kaudesta. Passivointihetki
-     * on voimassa vain niin kauan kuin kausi ei ole voimassa, joten uusi kausi paattaa myos
-     * sailytysajan laskennan.
+     * Lomake kantaa vain virkailijan syottamat kentat; tila lasketaan kaudesta. Sailytysajan
+     * alkuhetki paatellaan tallennettavista kausista eika lomakkeen kaudesta, koska
+     * [paataMuuttumatonPassivoitu] voi viela kiristaa kautta: muuten passiiviseksi jaava merkinta
+     * menettaisi alkuhetkensa.
      */
     private fun entiteetti(
         validoitu: TallennaArvioija,
@@ -171,13 +172,16 @@ class YkiArvioijaService(
     ): YkiArvioijaEntity {
         val tanaan = timeService.today()
         val tallennettava = validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu))
+        val arviointioikeudet =
+            tallennettava.arviointioikeudet.map { oikeus ->
+                paataMuuttumatonPassivoitu(oikeus, olemassaoleva, tanaan)
+            }
+        val merkintaJaaPassiiviseksi =
+            arviointioikeudet.all { Rekisterointitila.laske(it, tanaan) == Rekisterointitila.PASSIVOITU }
 
         return tallennettava.copy(
-            passivoitu = olemassaoleva?.passivoitu?.takeUnless { validoitu.kaudenPaattymispaiva >= tanaan },
-            arviointioikeudet =
-                tallennettava.arviointioikeudet.map { oikeus ->
-                    paataMuuttumatonPassivoitu(oikeus, olemassaoleva, tanaan)
-                },
+            passivoitu = olemassaoleva?.passivoitu?.takeIf { merkintaJaaPassiiviseksi },
+            arviointioikeudet = arviointioikeudet,
         )
     }
 
