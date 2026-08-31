@@ -569,17 +569,40 @@ class YkiArvioijaMuokkausTest(
     @Test
     fun `passivointinappi estetaan perusteluineen kun arvioija on jo passivoitu`() {
         val id = idOf(petro)
-        assertFalse(passivointiNappi(id).contains("aria-disabled"), "passivointi on aluksi kaytettavissa")
 
         timeService.runWithFixedClock(HETKI) {
             mockMvc
+                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
+                .andExpect(status().isSeeOther)
+            assertFalse(
+                passivointiNappi(id).contains("aria-disabled"),
+                "voimassa olevan merkinnan voi passivoida",
+            )
+
+            mockMvc
                 .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
                 .andExpect(status().isSeeOther)
-        }
 
-        val nappi = passivointiNappi(id)
-        assertContains(nappi, """aria-disabled="true"""", message = "passivointia ei tarjota uudelleen")
-        assertContains(nappi, "merkitty passiiviseksi 1.6.2026", message = "esto on perusteltava tooltipilla")
+            val nappi = passivointiNappi(id)
+            assertContains(nappi, """aria-disabled="true"""", message = "passivointia ei tarjota uudelleen")
+            assertContains(nappi, "merkitty passiiviseksi 1.6.2026", message = "esto on perusteltava tooltipilla")
+        }
+    }
+
+    @Test
+    fun `paattynyt kausi estaa passivoinnin mutta ei kirjaa passivointihetkea`() {
+        val id = idOf(petro)
+        var nappi = ""
+
+        // Fixtuurin kausi paattyi 1.1.2026, eli ennen tarkasteluhetkea.
+        timeService.runWithFixedClock(HETKI) { nappi = passivointiNappi(id) }
+
+        assertContains(nappi, """aria-disabled="true"""", message = "paattynytta merkintaa ei passivoida uudelleen")
+        assertContains(nappi, "Rekisteröintikausi on päättynyt", message = "esto on perusteltava tooltipilla")
+        assertNull(
+            repository.findArvioijaById(id)!!.passivoitu,
+            "kauden umpeutuminen ei ole passivointihetki: sailytysaika lasketaan kauden paattymisesta",
+        )
     }
 
     /** Nappi renderoityy joko modaalin avaavana buttonina tai estettyna linkkina. */
