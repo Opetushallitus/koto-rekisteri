@@ -387,7 +387,6 @@ object UiText {
                     )
             val passivoitu: LocalizedString
                 get() = tr("yki.arvioija.passivoitu", fi = "Arvioija merkittiin passiiviseksi.")
-            val integraatiot: LocalizedString get() = tr("yki.arvioija.integraatiot", fi = "Integraatiot")
             val solkiinLahetetty: LocalizedString
                 get() = tr("yki.arvioija.solkiinLahetetty", fi = "Lähetetty Solkiin")
             val solkiLahetysyritykset: LocalizedString
@@ -396,8 +395,16 @@ object UiText {
                 get() = tr("yki.arvioija.lahetaUudelleen", fi = "Lähetä uudelleen Solkiin")
             val lahetysjonossa: LocalizedString
                 get() = tr("yki.arvioija.lahetysjonossa", fi = "Odottaa lähetystä")
-            val lahetetty: LocalizedString
-                get() = tr("yki.arvioija.lahetetty", fi = "Lähetys käynnistettiin.")
+            val lahetysOnnistui: LocalizedString
+                get() = tr("yki.arvioija.lahetysOnnistui", fi = "Arvioija lähetettiin Solkiin.")
+            val lahetysEpaonnistui: LocalizedString
+                get() = tr("yki.arvioija.lahetysEpaonnistui", fi = "Lähetys epäonnistui. Syy näkyy alla.")
+            val lahetysEiKaytossa: LocalizedString
+                get() =
+                    tr(
+                        "yki.arvioija.lahetysEiKaytossa",
+                        fi = "Solki-lähetys ei ole käytössä. Rivi jää lähetysjonoon.",
+                    )
             val kausiPaattynyt: LocalizedString
                 get() =
                     tr(

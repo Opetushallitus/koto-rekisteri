@@ -149,7 +149,7 @@ object YkiArvioijaTiedotPage {
 
             card {
                 cardContent {
-                    h2 { +UiText.Yki.Arvioija.integraatiot }
+                    h2 { +UiText.Yki.integraatiot }
                     infoTable(
                         UiText.Yki.Arvioija.solkiinLahetetty to {
                             arvioija.solkiinLahetetty

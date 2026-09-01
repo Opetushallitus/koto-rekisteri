@@ -56,11 +56,21 @@ interface CustomYkiArvioijaRepository {
      * nopeisiin uusintoihin; null poimii kaikki, jolloin yollinen ajo yrittaa myos pitkaan
      * epaonnistuneet uudelleen.
      */
-    fun findLahetettavat(maxYritykset: Int? = null): List<YkiArvioijaEntity>
+    fun findLahetettavat(
+        maxYritykset: Int? = null,
+        limit: Int = LAHETYSERAN_KOKO,
+    ): List<YkiArvioijaEntity>
 
     fun countSolkiLahetysvirheet(): Long
 
-    fun merkitseLahetetyksi(id: Int)
+    /**
+     * @param lahetettyVersio rivin `muokattu` lahetyshetkella. Jos rivia on muokattu sen jalkeen,
+     *   leimaa ei anneta: muuten samanaikainen muokkaus putoaisi jonosta lahettamatta.
+     */
+    fun merkitseLahetetyksi(
+        id: Int,
+        lahetettyVersio: OffsetDateTime?,
+    )
 
     fun merkitseLahetysvirhe(
         id: Int,
@@ -437,8 +447,16 @@ class CustomYkiArvioijaRepositoryImpl(
     @WithSpan
     override fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int> = arvioijat.map { tallenna(it) }
 
+    /**
+     * Era on rajattu, koska lahetys tehdaan peraikkain HTTP-kutsuina saman ajon sisalla ja
+     * arviointioikeudet haetaan riveittain: kytkimen avaaminen ei saa tuottaa yhta ajoa, joka
+     * lahettaa koko kertyneen jonon ja ylittaa tehtavan aikarajan. Jono valuu useassa ajossa.
+     */
     @WithSpan
-    override fun findLahetettavat(maxYritykset: Int?): List<YkiArvioijaEntity> =
+    override fun findLahetettavat(
+        maxYritykset: Int?,
+        limit: Int,
+    ): List<YkiArvioijaEntity> =
         namedJdbcTemplate
             .query(
                 """
@@ -446,20 +464,30 @@ class CustomYkiArvioijaRepositoryImpl(
                 WHERE (solkiin_lahetetty IS NULL OR solkiin_lahetetty < muokattu)
                 ${maxYritykset?.let { "AND solki_lahetysyritykset < :maxYritykset" }.orEmpty()}
                 ORDER BY muokattu
+                LIMIT :limit
                 """.trimIndent(),
-                maxYritykset?.let { mapOf("maxYritykset" to it) }.orEmpty(),
+                maxYritykset?.let { mapOf("maxYritykset" to it) }.orEmpty() + mapOf("limit" to limit),
                 YkiArvioijaEntity.fromRow,
             ).map { it.withArviointioikeudet() }
 
+    /** Sama rivitarkkuus kuin listanakymassa (arvioija x kieli), jotta laskuri ja lista tasmaavat. */
     @WithSpan
     override fun countSolkiLahetysvirheet(): Long =
         jdbcTemplate.queryForObject(
-            "SELECT count(*) FROM yki_arvioija WHERE solki_lahetysvirhe IS NOT NULL",
+            """
+            SELECT count(*)
+            FROM yki_arvioija
+            JOIN yki_arviointioikeus ON yki_arvioija.id = yki_arviointioikeus.arvioija_id
+            WHERE solki_lahetysvirhe IS NOT NULL
+            """.trimIndent(),
             Long::class.java,
         ) ?: 0
 
     @WithSpan
-    override fun merkitseLahetetyksi(id: Int) {
+    override fun merkitseLahetetyksi(
+        id: Int,
+        lahetettyVersio: OffsetDateTime?,
+    ) {
         jdbcTemplate.update(
             """
             UPDATE yki_arvioija
@@ -468,8 +496,10 @@ class CustomYkiArvioijaRepositoryImpl(
                 solki_lahetysyritykset = 0,
                 solki_viimeisin_lahetysyritys = now()
             WHERE id = ?
+              AND muokattu IS NOT DISTINCT FROM ?
             """.trimIndent(),
             id,
+            lahetettyVersio,
         )
     }
 
@@ -548,6 +578,9 @@ class CustomYkiArvioijaRepositoryImpl(
  * kirjoitetaan aina samassa jarjestyksessa riippumatta siita mista suunnasta ne tulivat.
  */
 private fun Set<Tutkintotaso>.normalisoitu(): Array<String> = map { it.name }.sorted().toTypedArray()
+
+/** Yhdessa ajossa lahetettavien rivien enimmaismaara. */
+const val LAHETYSERAN_KOKO = 100
 
 @Repository
 interface YkiArvioijaRepository :

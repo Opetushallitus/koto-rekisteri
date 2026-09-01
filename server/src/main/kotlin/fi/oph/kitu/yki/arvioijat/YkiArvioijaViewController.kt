@@ -11,6 +11,7 @@ import fi.oph.kitu.security.CurrentUser
 import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.webmvc.Links
+import fi.oph.kitu.yki.arvioijat.solki.Lahetystulos
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -227,15 +228,34 @@ class YkiArvioijaViewController(
     ): ResponseEntity<String> =
         arvioijaService.lahetaUudelleen(id).fold(
             ifLeft = { ResponseEntity.status(HttpStatus.NOT_FOUND).build() },
-            ifRight = { arvioija ->
-                // Lahetys on jo tehty synkronisesti; virhe nakyy tietosivun integraatiokortissa.
-                viewMessage?.showSuccess(
-                    UiText.Yki.Arvioija.lahetetty
-                        .toString(),
-                )
+            ifRight = { tulos ->
+                // Lahetys on jo tehty synkronisesti, joten viesti kertoo lopputuloksen eika
+                // pelkkaa kaynnistysta: muuten kytkin kiinni tai 500 nayttaisi onnistumiselta.
+                when (tulos) {
+                    Lahetystulos.LAHETETTY -> {
+                        viewMessage?.showSuccess(
+                            UiText.Yki.Arvioija.lahetysOnnistui
+                                .toString(),
+                        )
+                    }
+
+                    Lahetystulos.VIRHE -> {
+                        viewMessage?.showError(
+                            UiText.Yki.Arvioija.lahetysEpaonnistui
+                                .toString(),
+                        )
+                    }
+
+                    Lahetystulos.EI_KAYTOSSA -> {
+                        viewMessage?.showInfo(
+                            UiText.Yki.Arvioija.lahetysEiKaytossa
+                                .toString(),
+                        )
+                    }
+                }
                 ResponseEntity
                     .status(HttpStatus.SEE_OTHER)
-                    .location(URI.create(Links.Yki.arvioija(arvioija.id!!.toInt())))
+                    .location(URI.create(Links.Yki.arvioija(id)))
                     .build()
             },
         )

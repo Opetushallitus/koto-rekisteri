@@ -54,18 +54,15 @@ class YkiController(
         )
 
     /**
-     * Solki-stubi vaiheen 9 lahetykselle. `failWith`illa e2e-testi ohjaa virhepolkua ilman
-     * oikeaa vastaanottajaa.
+     * Solki-stubi vaiheen 9 lahetykselle. Virhepolkuja ei ohjata taalta: client maarittaa URLin,
+     * joten testi ei voi valittaa stubille haluttua statusta. Ne katetaan yksikkotesteissa.
      */
     @PutMapping("/yki/import/arvioijat/{oppijanumero}")
     fun fakeSolkiArvioijaPut(
         @PathVariable oppijanumero: String,
-        @RequestParam(required = false) failWith: Int?,
         @RequestBody body: Map<String, Any?>,
     ): ResponseEntity<String> {
         logger.info("Solki-stubi vastaanotti arvioijan {} ({} kenttaa)", oppijanumero, body.size)
-        return failWith
-            ?.let { ResponseEntity.status(it).body("""{"virheet":["dev-stubin pakotettu virhe"]}""") }
-            ?: ResponseEntity.noContent().build()
+        return ResponseEntity.noContent().build()
     }
 }

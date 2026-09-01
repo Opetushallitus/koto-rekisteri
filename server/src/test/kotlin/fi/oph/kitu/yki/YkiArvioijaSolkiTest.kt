@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.ResponseEntity
+import org.springframework.web.client.ResourceAccessException
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.test.Test
@@ -141,11 +142,64 @@ class YkiArvioijaSolkiTest(
         assertEquals(1, repository.findLahetettavat().size, "yollinen ajo yrittaa silti")
     }
 
-    private fun tallenna(lahde: Tallennuslahde = Tallennuslahde.KITU): Int =
+    @Test
+    fun `odottamaton poikkeus ei kaada tallennusta vaan kirjautuu riville`() {
+        val id = tallenna()
+        stub.vastaus = { throw ResourceAccessException("connection refused") }
+
+        // Ei saa heittaa: tallennus on jo tehty, ja virkailija saisi 500:n valmiiseen riviin.
+        timeService.runWithFixedClock(hetki) { solki.lahetaLahettamattomat() }
+
+        val rivi = repository.findArvioijaById(id)!!
+        assertContains(rivi.solkiLahetysvirhe!!, "Unexpected failure")
+        assertEquals(1, repository.findLahetettavat().size, "rivi jaa jonoon uusintaa varten")
+    }
+
+    @Test
+    fun `lahetyksen aikana muokattu rivi jaa jonoon`() {
+        val id = tallenna()
+        val lahetettava = repository.findLahetettavat().single()
+
+        // Virkailija ehtii muokata rivia kesken lahetyksen.
+        repository.tallenna(lahetettava.copy(postitoimipaikka = "TAMPERE"))
+        repository.merkitseLahetetyksi(id, lahetettava.muokattu)
+
+        assertEquals(
+            1,
+            repository.findLahetettavat().size,
+            "vanhalla versiolla tehty leima ei saa pudottaa uutta muutosta jonosta",
+        )
+    }
+
+    @Test
+    fun `yhden rivin virhe ei keskeyta eraa`() {
+        val hajoava = tallenna()
+        val toimiva = tallenna(oid = "1.2.246.562.24.59267607404")
+        stub.vastaus = { req ->
+            if (req.arvioijanOppijanumero.endsWith("20281155246")) {
+                throw IllegalStateException("hajosi")
+            } else {
+                Unit.right()
+            }
+        }
+
+        timeService.runWithFixedClock(hetki) { solki.lahetaLahettamattomat() }
+
+        assertNotNull(repository.findArvioijaById(hajoava)!!.solkiLahetysvirhe)
+        assertNotNull(
+            repository.findArvioijaById(toimiva)!!.solkiinLahetetty,
+            "eran muut rivit on lahetettava vaikka yksi hajoaa",
+        )
+    }
+
+    private fun tallenna(
+        lahde: Tallennuslahde = Tallennuslahde.KITU,
+        oid: String = "1.2.246.562.24.20281155246",
+    ): Int =
         repository.tallenna(
             YkiArvioijaEntity(
                 id = null,
-                arvioijaOid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                arvioijaOid = Oid.parse(oid).getOrThrow(),
                 henkilotunnus = null,
                 sukunimi = "Öhman-Testi",
                 etunimet = "Ranja Testi",
