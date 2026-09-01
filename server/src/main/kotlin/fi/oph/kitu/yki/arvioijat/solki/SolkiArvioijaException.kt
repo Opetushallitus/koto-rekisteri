@@ -41,13 +41,28 @@ sealed class SolkiArvioijaException(
      * Poikkeama KIOS-mallista: pyyntorunkoa **ei** serialisoida. Osoite ja sahkoposti ovat
      * henkilotietoa, joka paatyisi lokeihin ja virhesarakkeeseen, josta se nakyy myos
      * virhenakymassa.
+     *
+     * Vastausrunko otetaan mukaan, koska ilman sita virheesta ei paattele mitaan, mutta se
+     * katkaistaan: vastaus voi kaiuttaa lahetetyt arvot takaisin, ja teksti tallentuu
+     * rajoittamattomaan solki_lahetysvirhe-sarakkeeseen josta se renderoidaan tietosivulle.
      */
     fun debugString(): String =
         listOfNotNull(
             message,
             "oppijanumero: $oppijanumero",
             response?.statusCode?.let { "response status: $it" },
-            response?.body?.let { "response body: $it" },
+            response?.body?.let { "response body: ${katkaise(it)}" },
             cause?.let { "cause: $it" },
         ).joinToString("; ")
+
+    private fun katkaise(body: String): String =
+        if (body.length <= VASTAUKSEN_ENIMMAISPITUUS) {
+            body
+        } else {
+            body.take(VASTAUKSEN_ENIMMAISPITUUS) + "… (katkaistu, ${body.length} merkkia)"
+        }
+
+    companion object {
+        private const val VASTAUKSEN_ENIMMAISPITUUS = 500
+    }
 }

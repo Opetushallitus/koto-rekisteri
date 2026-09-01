@@ -17,6 +17,7 @@ import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -76,6 +77,20 @@ class YkiArvioijaSolkiClientTest {
         val tulos = client.put(request())
 
         assertTrue(tulos.leftOrNull() is SolkiArvioijaException.UnexpectedError)
+    }
+
+    @Test
+    fun `pitka vastausrunko katkaistaan virheilmoituksesta`() {
+        val (client, server) = clientJaServer()
+        // Solki voi kaiuttaa lahetetyt arvot takaisin, ja teksti paatyy kayttoliittymaan asti.
+        val pitkaVastaus = "katuosoite 'Testikuja 5' on virheellinen. ".repeat(50)
+        server.expect(method(HttpMethod.PUT)).andRespond(withStatus(HttpStatus.BAD_REQUEST).body(pitkaVastaus))
+
+        val virhe = client.put(request()).leftOrNull()!!.debugString()
+
+        assertTrue(virhe.length < pitkaVastaus.length, "vastausrunko on katkaistava: ${virhe.length}")
+        assertContains(virhe, "katkaistu")
+        assertContains(virhe, "response status: 400")
     }
 
     @Test

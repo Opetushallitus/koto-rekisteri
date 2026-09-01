@@ -129,7 +129,8 @@ kytkin on pois, rivit jäävät jonoon ja lähtevät takautuvasti kytkimen avaut
 
 **Virheilmoitus ei sisällä pyyntörunkoa** (`SolkiArvioijaException.debugString()`): osoite ja
 sähköposti ovat henkilötietoa, ja virhe päätyy sekä lokiin että virhesarakkeeseen, joka näkyy
-käyttöliittymässä.
+käyttöliittymässä. Vastausrunko otetaan mukaan mutta **katkaistaan 500 merkkiin** — vastaus voi
+kaiuttaa lähetetyt arvot takaisin, ja `solki_lahetysvirhe` on rajoittamaton `TEXT`.
 
 ### Yhteystietojen päivitys (Solki → kitu)
 
