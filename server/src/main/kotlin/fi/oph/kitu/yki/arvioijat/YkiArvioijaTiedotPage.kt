@@ -6,6 +6,7 @@ import fi.oph.kitu.html.ViewMessageData
 import fi.oph.kitu.html.buttonLink
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
+import fi.oph.kitu.html.errorMessage
 import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.modal
@@ -15,6 +16,7 @@ import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.viewMessage
 import fi.oph.kitu.html.warningMessage
+import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.i18n.finnishDateTime
@@ -141,6 +143,34 @@ object YkiArvioijaTiedotPage {
                         p { +UiText.Yki.Arvioija.eiKausihistoriaa }
                     } else {
                         kausihistoriaTaulukko(kausihistoria, tanaan)
+                    }
+                }
+            }
+
+            card {
+                cardContent {
+                    h2 { +UiText.Yki.Arvioija.integraatiot }
+                    infoTable(
+                        UiText.Yki.Arvioija.solkiinLahetetty to {
+                            arvioija.solkiinLahetetty
+                                ?.toInstant()
+                                ?.let { finnishDateTime(it) }
+                                ?: +UiText.Yki.Arvioija.lahetysjonossa
+                        },
+                        UiText.Yki.Arvioija.solkiLahetysyritykset to {
+                            +arvioija.solkiLahetysyritykset.toString()
+                        },
+                    )
+                    arvioija.solkiLahetysvirhe?.let { errorMessage(LocalizedString(fi = it)) }
+
+                    if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
+                        formPost(Links.Yki.lahetaArvioijaSolkiin(arvioija.id!!.toInt())) {
+                            button(type = ButtonType.submit, classes = "secondary") {
+                                testId("lahetaArvioijaSolkiin")
+                                disabled = !kirjoitusKaytossa
+                                +UiText.Yki.Arvioija.lahetaUudelleen
+                            }
+                        }
                     }
                 }
             }

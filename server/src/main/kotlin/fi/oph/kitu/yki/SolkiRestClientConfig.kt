@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki
 
 import fi.oph.kitu.restclient.withBasicAuth
+import fi.oph.kitu.restclient.withLenientStringConverter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -24,5 +25,8 @@ class SolkiRestClientConfig(
         restClientBuilder
             .baseUrl(baseUrl)
             .withBasicAuth(user, password)
+            // retrieveEntitySafely(String::class.java) kaatuisi Jacksonin sisalla ilman tata:
+            // Spring 7:n oletus-StringHttpMessageConverter mainostaa vain text/*.
+            .withLenientStringConverter()
             .build()
 }

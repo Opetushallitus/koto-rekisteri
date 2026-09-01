@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -49,4 +52,20 @@ class YkiController(
                 """.trimIndent(),
             ),
         )
+
+    /**
+     * Solki-stubi vaiheen 9 lahetykselle. `failWith`illa e2e-testi ohjaa virhepolkua ilman
+     * oikeaa vastaanottajaa.
+     */
+    @PutMapping("/yki/import/arvioijat/{oppijanumero}")
+    fun fakeSolkiArvioijaPut(
+        @PathVariable oppijanumero: String,
+        @RequestParam(required = false) failWith: Int?,
+        @RequestBody body: Map<String, Any?>,
+    ): ResponseEntity<String> {
+        logger.info("Solki-stubi vastaanotti arvioijan {} ({} kenttaa)", oppijanumero, body.size)
+        return failWith
+            ?.let { ResponseEntity.status(it).body("""{"virheet":["dev-stubin pakotettu virhe"]}""") }
+            ?: ResponseEntity.noContent().build()
+    }
 }

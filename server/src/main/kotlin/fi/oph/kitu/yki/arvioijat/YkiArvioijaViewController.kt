@@ -220,6 +220,26 @@ class YkiArvioijaViewController(
             },
         )
 
+    @PostMapping("/{id}/laheta", produces = ["text/html"])
+    fun lahetaArvioijaSolkiin(
+        @PathVariable id: Int,
+        viewMessage: ViewMessage? = null,
+    ): ResponseEntity<String> =
+        arvioijaService.lahetaUudelleen(id).fold(
+            ifLeft = { ResponseEntity.status(HttpStatus.NOT_FOUND).build() },
+            ifRight = { arvioija ->
+                // Lahetys on jo tehty synkronisesti; virhe nakyy tietosivun integraatiokortissa.
+                viewMessage?.showSuccess(
+                    UiText.Yki.Arvioija.lahetetty
+                        .toString(),
+                )
+                ResponseEntity
+                    .status(HttpStatus.SEE_OTHER)
+                    .location(URI.create(Links.Yki.arvioija(arvioija.id!!.toInt())))
+                    .build()
+            },
+        )
+
     @GetMapping("/{id}", produces = ["text/html"])
     fun arvioijaView(
         @PathVariable id: Int,

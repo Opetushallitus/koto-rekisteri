@@ -51,6 +51,7 @@ class DashboardService(
         YkiStats(
             suoritusCount = ykiSuoritusRepository.countSuoritukset(),
             arvioijaCount = ykiArvioijaRepository.count(),
+            arvioijaSolkiErrorCount = ykiArvioijaRepository.countSolkiLahetysvirheet(),
             tarkistusarvioinnitOdottamassaCount =
                 ykiSuoritusRepository.countTarkistusarvioinnitOdottamassaHyvaksyntaa(),
             latestReceivedAt = ykiSuoritusRepository.findLatestReceivedAt(),
@@ -88,6 +89,7 @@ class DashboardService(
 data class YkiStats(
     val suoritusCount: Long,
     val arvioijaCount: Long,
+    val arvioijaSolkiErrorCount: Long,
     val tarkistusarvioinnitOdottamassaCount: Long,
     val latestReceivedAt: Instant?,
     val suoritusImportErrorCount: Long,

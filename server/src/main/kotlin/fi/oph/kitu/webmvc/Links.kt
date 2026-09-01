@@ -99,6 +99,9 @@ object Links {
         fun passivoiArvioija(id: Int): String =
             linkTo(methodOn(YkiArvioijaViewController::class.java).passivoiArvioija(id, null)).toString()
 
+        fun lahetaArvioijaSolkiin(id: Int): String =
+            linkTo(methodOn(YkiArvioijaViewController::class.java).lahetaArvioijaSolkiin(id, null)).toString()
+
         fun muokkaaArvioijaa(id: Int): String =
             linkTo(methodOn(YkiArvioijaViewController::class.java).muokkaaArvioijaaView(id)).toString()
 

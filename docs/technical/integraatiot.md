@@ -85,12 +85,56 @@ suoritustietoja ja Moodle-XML-pohjaisia tehtäväpaketteja.
 - `tehtavapankki/TehtavapankkiIngestService` — lataa XML:t S3:sta, parsii ne
   XmlParserilla ja tallentaa yleiseen tehtäväpankki-skeemaan.
 
-## Solki — YKI-tietojen lähde
+## Solki — YKI-tietojen lähde ja arvioijarekisterin vastaanottaja
 
-**Paketti:** `yki/`
-**Suunta:** sisääntuleva pyyntö
+**Paketti:** `yki/`, arvioijien lähetys `yki/arvioijat/solki/`
+**Suunta:** kaksisuuntainen
 
 Yleiset kielitutkinnot lähetetään Jyväskylän yliopiston Solki-järjestelmästä.
+
+### Arvioijarekisterin lähetys (kitu → Solki)
+
+Kitu on arvioijarekisterin master, joten jokainen kitussa tehty tallennus lähetetään Solkille:
+
+```
+PUT {kitu.yki.baseUrl}arvioijat/{arvioijanOppijanumero}
+Authorization:   Basic (kitu.yki.username/password, samat tunnukset kuin suoritushaussa)
+Idempotency-Key: {arvioijanOppijanumero}:{versio}
+```
+
+Runko on `SolkiArvioijaRequest`: samat kentät kuin poistuneessa CSV-tuonnissa, ilman henkilötunnusta
+(1.1.2026 lainmuutos). `tila` on **laskettu** arvo (`Rekisterointitila`), ei kannassa säilytettävä —
+vastaanottajan on syytä johtaa se samoista kauden päivistä. Sopimus on kuvattu kokonaisuudessaan
+`yki-arvioijarekisteri-suunnitelma.md`:n luvussa 5.1 (JYU hyväksynyt 1.9.2026).
+
+**Lähetysjono** elää `yki_arvioija`-taulun sarakkeissa `solkiin_lahetetty`, `solki_lahetysvirhe`,
+`solki_lahetysyritykset` ja `solki_viimeisin_lahetysyritys`. Rivi on jonossa, kun
+`solkiin_lahetetty IS NULL OR solkiin_lahetetty < muokattu`. Solkista sisään tullut push leimataan heti
+lähetetyksi, jottei Solkin oma data kaiku takaisin sille.
+
+**Uudelleenyritykset** (`SolkiArvioijaScheduledTasks`):
+
+| Kerros                        | Toteutus                                                       |
+| ----------------------------- | -------------------------------------------------------------- |
+| Välitön palaute virkailijalle | yksi synkroninen yritys tallennuksen jälkeen                   |
+| "3 kertaa"                    | `FIXED_DELAY\|900s`, poimii rivit `solki_lahetysyritykset < 3` |
+| "sen jälkeen säännöllisesti"  | `DAILY\|02:15`, poimii kaikki lähettämättömät                  |
+
+Virkailija näkee tilan arvioijan tietosivun **Integraatiot**-kortissa ja voi käynnistää lähetyksen
+uudelleen. Listanäkymässä on suodatin `vainSolkiVirheet` ja etusivulla laskuri.
+
+`kitu.yki.arvioijat.solki.enabled` on erillinen kytkin: `kitu.yki.baseUrl` on asetettu joka
+ympäristössä (myös local ja e2e dev-stubiin), joten sen olemassaolo ei kerro, saako lähettää. Kun
+kytkin on pois, rivit jäävät jonoon ja lähtevät takautuvasti kytkimen avautuessa.
+
+**Virheilmoitus ei sisällä pyyntörunkoa** (`SolkiArvioijaException.debugString()`): osoite ja
+sähköposti ovat henkilötietoa, ja virhe päätyy sekä lokiin että virhesarakkeeseen, joka näkyy
+käyttöliittymässä.
+
+### Yhteystietojen päivitys (Solki → kitu)
+
+Solki lähettää yhteystietojen muutokset nykyisen `POST /yki/api/arvioija` -rajapinnan kautta.
+Rekisterimerkintää se ei kirjoita: nimet tulevat ONR:stä ja kaudet kitusta. Ks. suunnitelman §4.2.
 
 ## CAS + OAuth2 — virkailija-autentikointi
 
