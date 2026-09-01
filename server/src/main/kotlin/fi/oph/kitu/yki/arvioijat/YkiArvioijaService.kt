@@ -13,6 +13,7 @@ import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.util.validation.ValidationService
+import fi.oph.kitu.yki.arvioijat.solki.Lahetystulos
 import fi.oph.kitu.yki.arvioijat.solki.SolkiArvioijaService
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.dao.OptimisticLockingFailureException
@@ -149,9 +150,17 @@ class YkiArvioijaService(
         return poistetut.size
     }
 
-    /** Virkailijan kayynnistama uusintalahetys virhetilanteen jalkeen. */
+    /** Virkailijan kaynnistama uusintalahetys virhetilanteen jalkeen. */
     @WithSpan
-    fun lahetaUudelleen(id: Int): Either<YkiArvioijaError, YkiArvioijaEntity> = lahetaSolkiin(id)
+    fun lahetaUudelleen(id: Int): Either<YkiArvioijaError, Lahetystulos> {
+        val arvioija = repository.findArvioijaById(id) ?: return YkiArvioijaError.ArvioijaaEiLoydy.left()
+
+        // Lahetys vie henkilotietoja ulos jarjestelmasta virkailijan komennosta, joten se kuuluu
+        // auditlokiin siina missa muutkin kirjoituspolut.
+        auditLogger.log(AuditLogOperation.YkiArvioijaSolkiinLahetetty, arvioija.arvioijaOid)
+
+        return solki.lahetaArvioija(arvioija).right()
+    }
 
     /**
      * Yksi synkroninen lahetysyritys tallennuksen jalkeen (§5.3): virkailija nakee tuloksen heti.

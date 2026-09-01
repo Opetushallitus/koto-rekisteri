@@ -28,6 +28,16 @@ sealed class SolkiArvioijaException(
     ) : SolkiArvioijaException(oppijanumero, null, "Empty or unserializable response")
 
     /**
+     * Yhteysvirhe. [fi.oph.kitu.restclient.retrieveEntitySafely] heittaa
+     * `ResourceAccessException`in lapi, joten se on napattava tassa: muuten tallennuksen
+     * synkroninen lahetysyritys kaataisi virkailijan pyynnon jo tallennetulle riville.
+     */
+    class ConnectionFailure(
+        oppijanumero: String,
+        cause: Throwable,
+    ) : SolkiArvioijaException(oppijanumero, null, "Connection failure", cause)
+
+    /**
      * Poikkeama KIOS-mallista: pyyntorunkoa **ei** serialisoida. Osoite ja sahkoposti ovat
      * henkilotietoa, joka paatyisi lokeihin ja virhesarakkeeseen, josta se nakyy myos
      * virhenakymassa.

@@ -39,4 +39,5 @@ enum class AuditLogOperation(
     YkiArvioijaCreated("YkiArvioijaCreated"),
     YkiArvioijaUpdated("YkiArvioijaUpdated"),
     YkiArvioijaPassivated("YkiArvioijaPassivated"),
+    YkiArvioijaSolkiinLahetetty("YkiArvioijaSolkiinLahetetty"),
 }

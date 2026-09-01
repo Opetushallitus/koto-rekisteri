@@ -9,10 +9,13 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestClient
 
 interface SolkiArvioijaClient {
+    /** Palauttaa aina tuloksen: yhteysvirhekin on Left, ei poikkeus. */
     fun put(request: SolkiArvioijaRequest): Either<SolkiArvioijaException, Unit>
 }
 
@@ -29,13 +32,13 @@ class SolkiArvioijaClientImpl(
     @WithSpan
     override fun put(request: SolkiArvioijaRequest): Either<SolkiArvioijaException, Unit> {
         val response =
-            restClient
-                .method(HttpMethod.PUT)
-                .uri("arvioijat/{oppijanumero}", request.arvioijanOppijanumero)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Idempotency-Key", "${request.arvioijanOppijanumero}:${request.versio}")
-                .body(request)
-                .retrieveEntitySafely(String::class.java)
+            try {
+                laheta(request)
+            } catch (e: ResourceAccessException) {
+                // retrieveEntitySafely heittaa yhteysvirheen lapi. Ilman tata tallennuksen
+                // synkroninen lahetysyritys kaataisi virkailijan pyynnon jo tallennetulle riville.
+                return SolkiArvioijaException.ConnectionFailure(request.arvioijanOppijanumero, e).left()
+            }
 
         return when {
             response == null -> {
@@ -65,6 +68,15 @@ class SolkiArvioijaClientImpl(
             }
         }
     }
+
+    private fun laheta(request: SolkiArvioijaRequest): ResponseEntity<String>? =
+        restClient
+            .method(HttpMethod.PUT)
+            .uri("arvioijat/{oppijanumero}", request.arvioijanOppijanumero)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Idempotency-Key", "${request.arvioijanOppijanumero}:${request.versio}")
+            .body(request)
+            .retrieveEntitySafely(String::class.java)
 
     companion object {
         private const val CONFLICT = 409

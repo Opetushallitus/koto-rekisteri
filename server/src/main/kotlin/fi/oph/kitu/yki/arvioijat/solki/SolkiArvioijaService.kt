@@ -10,11 +10,22 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.stereotype.Service
 
+enum class Lahetystulos {
+    LAHETETTY,
+    VIRHE,
+
+    /** Lahetys on kytketty pois: rivi jaa jonoon ja lahtee kun kytkin avataan. */
+    EI_KAYTOSSA,
+}
+
 interface SolkiArvioijaService {
     /** Yksi synkroninen yritys tallennuksen jalkeen, jotta virkailija nakee tuloksen heti. */
-    fun lahetaArvioija(arvioija: YkiArvioijaEntity)
+    fun lahetaArvioija(arvioija: YkiArvioijaEntity): Lahetystulos
 
-    /** @param maxYritykset null = kaikki lahettamattomat, myos pitkaan epaonnistuneet. */
+    /**
+     * @param maxYritykset null = kaikki lahettamattomat, myos pitkaan epaonnistuneet.
+     * @return onnistuneiden lahetysten maara.
+     */
     fun lahetaLahettamattomat(maxYritykset: Int? = null): Int
 }
 
@@ -25,25 +36,50 @@ class SolkiArvioijaServiceImpl(
     private val client: SolkiArvioijaClient,
     private val timeService: TimeService,
 ) : SolkiArvioijaService {
-    @WithSpan
-    override fun lahetaArvioija(arvioija: YkiArvioijaEntity) {
-        val id = arvioija.id?.toInt() ?: return
+    private val logger = LoggerFactory.getLogger(javaClass)
 
-        client
-            .put(SolkiArvioijaRequest.of(arvioija, timeService.today()))
-            .fold(
-                ifLeft = { virhe -> repository.merkitseLahetysvirhe(id, virhe.debugString()) },
-                ifRight = { repository.merkitseLahetetyksi(id) },
-            )
-    }
+    @WithSpan
+    override fun lahetaArvioija(arvioija: YkiArvioijaEntity): Lahetystulos = laheta(arvioija)
 
     @WithSpan
     override fun lahetaLahettamattomat(maxYritykset: Int?): Int {
         val lahetettavat = repository.findLahetettavat(maxYritykset)
-        lahetettavat.forEach { lahetaArvioija(it) }
+        val onnistuneet = lahetettavat.count { laheta(it) == Lahetystulos.LAHETETTY }
 
-        Span.current().setAttribute("arvioijat.lahetetty", lahetettavat.size.toLong())
-        return lahetettavat.size
+        Span
+            .current()
+            .setAttribute("arvioijat.yritetty", lahetettavat.size.toLong())
+            .setAttribute("arvioijat.lahetetty", onnistuneet.toLong())
+
+        return onnistuneet
+    }
+
+    /**
+     * Yksikin odottamaton poikkeus ei saa keskeyttaa eraa: muuten yksi rikkinainen rivi estaisi
+     * koko jonon lahetyksen eivatka muut rivit saisi edes virhemerkintaa.
+     */
+    private fun laheta(arvioija: YkiArvioijaEntity): Lahetystulos {
+        val id = arvioija.id?.toInt() ?: return Lahetystulos.VIRHE
+
+        return runCatching {
+            client
+                .put(SolkiArvioijaRequest.of(arvioija, timeService.today()))
+                .fold(
+                    ifLeft = { virhe ->
+                        repository.merkitseLahetysvirhe(id, virhe.debugString())
+                        Lahetystulos.VIRHE
+                    },
+                    ifRight = {
+                        // Versioehto: jos rivia on muokattu lahetyksen aikana, se jaa jonoon.
+                        repository.merkitseLahetetyksi(id, arvioija.muokattu)
+                        Lahetystulos.LAHETETTY
+                    },
+                )
+        }.getOrElse { e ->
+            logger.warn("Arvioijan {} lahetys epaonnistui odottamattomasti", arvioija.arvioijaOid, e)
+            repository.merkitseLahetysvirhe(id, "Unexpected failure: ${e.javaClass.simpleName}")
+            Lahetystulos.VIRHE
+        }
     }
 }
 
@@ -57,8 +93,9 @@ class SolkiArvioijaServiceMock : SolkiArvioijaService {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @WithSpan
-    override fun lahetaArvioija(arvioija: YkiArvioijaEntity) {
+    override fun lahetaArvioija(arvioija: YkiArvioijaEntity): Lahetystulos {
         logger.debug("lahetaArvioija called but Solki sending is disabled, skipping.")
+        return Lahetystulos.EI_KAYTOSSA
     }
 
     @WithSpan
