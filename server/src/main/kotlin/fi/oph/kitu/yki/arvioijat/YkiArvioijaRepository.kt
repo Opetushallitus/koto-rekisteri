@@ -52,6 +52,22 @@ interface CustomYkiArvioijaRepository {
     ): Int
 
     /**
+     * Solki-lahetysjono: rivit joita ei ole lahetetty muokkauksen jalkeen. [maxYritykset] rajaa
+     * nopeisiin uusintoihin; null poimii kaikki, jolloin yollinen ajo yrittaa myos pitkaan
+     * epaonnistuneet uudelleen.
+     */
+    fun findLahetettavat(maxYritykset: Int? = null): List<YkiArvioijaEntity>
+
+    fun countSolkiLahetysvirheet(): Long
+
+    fun merkitseLahetetyksi(id: Int)
+
+    fun merkitseLahetysvirhe(
+        id: Int,
+        virhe: String,
+    )
+
+    /**
      * Poistaa merkinnat joiden sailytysaika on umpeutunut. Palauttaa poistetut auditlokia varten.
      * [yki_arviointioikeus] ja [yki_arvioija_kausi] poistuvat ON DELETE CASCADE -saannolla.
      */
@@ -420,6 +436,64 @@ class CustomYkiArvioijaRepositoryImpl(
 
     @WithSpan
     override fun saveAllNewEntities(arvioijat: Iterable<YkiArvioijaEntity>): List<Int> = arvioijat.map { tallenna(it) }
+
+    @WithSpan
+    override fun findLahetettavat(maxYritykset: Int?): List<YkiArvioijaEntity> =
+        namedJdbcTemplate
+            .query(
+                """
+                SELECT * FROM yki_arvioija
+                WHERE (solkiin_lahetetty IS NULL OR solkiin_lahetetty < muokattu)
+                ${maxYritykset?.let { "AND solki_lahetysyritykset < :maxYritykset" }.orEmpty()}
+                ORDER BY muokattu
+                """.trimIndent(),
+                maxYritykset?.let { mapOf("maxYritykset" to it) }.orEmpty(),
+                YkiArvioijaEntity.fromRow,
+            ).map { it.withArviointioikeudet() }
+
+    @WithSpan
+    override fun countSolkiLahetysvirheet(): Long =
+        jdbcTemplate.queryForObject(
+            "SELECT count(*) FROM yki_arvioija WHERE solki_lahetysvirhe IS NOT NULL",
+            Long::class.java,
+        ) ?: 0
+
+    @WithSpan
+    override fun merkitseLahetetyksi(id: Int) {
+        jdbcTemplate.update(
+            """
+            UPDATE yki_arvioija
+            SET solkiin_lahetetty = now(),
+                solki_lahetysvirhe = NULL,
+                solki_lahetysyritykset = 0,
+                solki_viimeisin_lahetysyritys = now()
+            WHERE id = ?
+            """.trimIndent(),
+            id,
+        )
+    }
+
+    /**
+     * Yrityslaskuri kasvaa vain virheesta: se rajaa nopeat uusinnat, eika ole kaikkien
+     * lahetysten kokonaismaara.
+     */
+    @WithSpan
+    override fun merkitseLahetysvirhe(
+        id: Int,
+        virhe: String,
+    ) {
+        jdbcTemplate.update(
+            """
+            UPDATE yki_arvioija
+            SET solki_lahetysvirhe = ?,
+                solki_lahetysyritykset = solki_lahetysyritykset + 1,
+                solki_viimeisin_lahetysyritys = now()
+            WHERE id = ?
+            """.trimIndent(),
+            virhe,
+            id,
+        )
+    }
 
     /**
      * Kolme suojaa poistolta: merkinta jolla on yksikin ei-passiivinen arviointioikeus, merkinta

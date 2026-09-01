@@ -1,0 +1,174 @@
+package fi.oph.kitu.yki
+
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
+import fi.oph.kitu.DBContainerConfiguration
+import fi.oph.kitu.TestTimeService
+import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.util.result.getOrThrow
+import fi.oph.kitu.yki.arvioijat.Rekisterointitila
+import fi.oph.kitu.yki.arvioijat.Tallennuslahde
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
+import fi.oph.kitu.yki.arvioijat.YkiArviointioikeusEntity
+import fi.oph.kitu.yki.arvioijat.solki.SolkiArvioijaException
+import fi.oph.kitu.yki.arvioijat.solki.SolkiArvioijaRequest
+import fi.oph.kitu.yki.arvioijat.solki.SolkiArvioijaServiceImpl
+import org.junit.jupiter.api.BeforeEach
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.http.ResponseEntity
+import java.time.Instant
+import java.time.LocalDate
+import kotlin.test.Test
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+@SpringBootTest
+@Import(DBContainerConfiguration::class)
+class YkiArvioijaSolkiTest(
+    @param:Autowired private val repository: YkiArvioijaRepository,
+    @param:Autowired private val timeService: TestTimeService,
+) {
+    private val hetki = Instant.parse("2026-06-01T09:00:00Z")
+    private val tanaan = LocalDate.of(2026, 6, 1)
+
+    /** Kerää lähetetyt pyynnöt ja antaa testin päättää vastauksen. */
+    private class Stub(
+        var vastaus: (SolkiArvioijaRequest) -> Either<SolkiArvioijaException, Unit> = { Unit.right() },
+    ) : fi.oph.kitu.yki.arvioijat.solki.SolkiArvioijaClient {
+        val lahetetyt = mutableListOf<SolkiArvioijaRequest>()
+
+        override fun put(request: SolkiArvioijaRequest): Either<SolkiArvioijaException, Unit> {
+            lahetetyt += request
+            return vastaus(request)
+        }
+    }
+
+    private lateinit var stub: Stub
+    private lateinit var solki: SolkiArvioijaServiceImpl
+
+    @BeforeEach
+    fun setup() {
+        repository.deleteAll()
+        stub = Stub()
+        solki = SolkiArvioijaServiceImpl(repository, stub, timeService)
+    }
+
+    @Test
+    fun `kitun oma tallennus jaa lahetysjonoon ja lahtee`() {
+        tallenna()
+
+        val jonossa = repository.findLahetettavat()
+        assertEquals(1, jonossa.size, "kitun tallennus jaa jonoon")
+
+        timeService.runWithFixedClock(hetki) { solki.lahetaLahettamattomat() }
+
+        assertEquals(1, stub.lahetetyt.size)
+        assertEquals(0, repository.findLahetettavat().size, "onnistunut lahetys poistaa jonosta")
+    }
+
+    @Test
+    fun `Solkin oma push ei paady takaisin Solkiin`() {
+        tallenna(lahde = Tallennuslahde.SOLKI)
+
+        assertEquals(0, repository.findLahetettavat().size, "Solkin dataa ei laheteta takaisin")
+    }
+
+    @Test
+    fun `payload sisaltaa CSV-vastaavat kentat ja lasketun tilan`() {
+        tallenna()
+
+        timeService.runWithFixedClock(hetki) { solki.lahetaLahettamattomat() }
+
+        val request = stub.lahetetyt.single()
+        assertEquals("1.2.246.562.24.20281155246", request.arvioijanOppijanumero)
+        assertNotNull(request.versio, "versio = kitun muokattu")
+        val oikeus = request.arviointioikeudet.single()
+        assertEquals(Tutkintokieli.FIN, oikeus.kieli)
+        assertEquals(listOf(Tutkintotaso.PT), oikeus.tasot)
+        assertEquals(Rekisterointitila.AKTIIVINEN, oikeus.tila, "tila lasketaan lahetyshetkella")
+    }
+
+    @Test
+    fun `virhe kirjataan riville ja rivi jaa jonoon`() {
+        val id = tallenna()
+        stub.vastaus = { req ->
+            SolkiArvioijaException
+                .UnexpectedError(req.arvioijanOppijanumero, ResponseEntity.status(500).body("hajosi"))
+                .left()
+        }
+
+        timeService.runWithFixedClock(hetki) { solki.lahetaLahettamattomat() }
+
+        val rivi = repository.findArvioijaById(id)!!
+        assertNotNull(rivi.solkiLahetysvirhe)
+        assertEquals(1, rivi.solkiLahetysyritykset, "yrityslaskuri kasvaa virheesta")
+        assertNull(rivi.solkiinLahetetty)
+        assertEquals(1, repository.findLahetettavat().size, "epaonnistunut jaa jonoon")
+    }
+
+    @Test
+    fun `virheilmoitus ei sisalla henkilotietoja`() {
+        val id = tallenna()
+        stub.vastaus = { req ->
+            SolkiArvioijaException
+                .BadRequest(req.arvioijanOppijanumero, ResponseEntity.badRequest().body("kentta puuttuu"))
+                .left()
+        }
+
+        timeService.runWithFixedClock(hetki) { solki.lahetaLahettamattomat() }
+
+        val virhe = repository.findArvioijaById(id)!!.solkiLahetysvirhe!!
+        assertContains(virhe, "1.2.246.562.24.20281155246", message = "oppijanumero kuuluu virheeseen")
+        assertTrue(
+            listOf("Testikuja", "testi@testi.fi", "Testila").none { virhe.contains(it) },
+            "osoite ja sahkoposti eivat saa vuotaa lokiin eivatka virhesarakkeeseen: $virhe",
+        )
+    }
+
+    @Test
+    fun `nopeat uusinnat rajautuvat yrityslaskurilla mutta yollinen ajo ei`() {
+        val id = tallenna()
+        repeat(3) { repository.merkitseLahetysvirhe(id, "virhe") }
+
+        assertEquals(0, repository.findLahetettavat(maxYritykset = 3).size, "3 yritysta kaytetty")
+        assertEquals(1, repository.findLahetettavat().size, "yollinen ajo yrittaa silti")
+    }
+
+    private fun tallenna(lahde: Tallennuslahde = Tallennuslahde.KITU): Int =
+        repository.tallenna(
+            YkiArvioijaEntity(
+                id = null,
+                arvioijaOid = Oid.parse("1.2.246.562.24.20281155246").getOrThrow(),
+                henkilotunnus = null,
+                sukunimi = "Öhman-Testi",
+                etunimet = "Ranja Testi",
+                sahkopostiosoite = "testi@testi.fi",
+                katuosoite = "Testikuja 5",
+                postinumero = "40100",
+                postitoimipaikka = "Testila",
+                arviointioikeudet =
+                    listOf(
+                        YkiArviointioikeusEntity(
+                            id = null,
+                            arvioijaId = null,
+                            kieli = Tutkintokieli.FIN,
+                            tasot = setOf(Tutkintotaso.PT),
+                            tila = null,
+                            kaudenAlkupaiva = LocalDate.of(2024, 1, 1),
+                            kaudenPaattymispaiva = LocalDate.of(2029, 1, 1),
+                            jatkorekisterointi = false,
+                            ensimmainenRekisterointipaiva = LocalDate.of(2024, 1, 1),
+                            rekisteriintuontiaika = null,
+                        ),
+                    ),
+            ),
+            lahde = lahde,
+        )
+}

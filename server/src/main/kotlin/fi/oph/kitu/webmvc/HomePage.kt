@@ -68,6 +68,12 @@ object HomePage {
         statRow("Arvioijat", s.arvioijaCount, Links.Yki.arvioijat())
         statRow("Tarkistusarvioinnit", s.tarkistusarvioinnitOdottamassaCount, Links.Yki.tarkistusArvioinnit())
         statRow(
+            label = "Arvioijien Solki-lähetyksen virheet",
+            value = s.arvioijaSolkiErrorCount,
+            href = Links.Yki.arvioijat() + "?vainSolkiVirheet=true",
+            errorIfNonZero = true,
+        )
+        statRow(
             label = "Suoritusten tuonnin virheet",
             value = s.suoritusImportErrorCount,
             href = Links.Yki.suorituksetVirheet(),

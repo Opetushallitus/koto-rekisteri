@@ -13,6 +13,7 @@ import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.util.validation.ValidationService
+import fi.oph.kitu.yki.arvioijat.solki.SolkiArvioijaService
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.stereotype.Service
@@ -27,6 +28,7 @@ class YkiArvioijaService(
     private val oppijanumeroService: OppijanumeroService,
     private val auditLogger: AuditLogger,
     private val timeService: TimeService,
+    private val solki: SolkiArvioijaService,
 ) {
     @WithSpan
     fun haeSivullinen(params: YkiArvioijaParams): List<YkiArvioijaListRow> =
@@ -88,7 +90,7 @@ class YkiArvioijaService(
                         },
                         validoitu.arvioijaOid,
                     )
-                    repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+                    lahetaSolkiin(id)
                 }
             }
 
@@ -127,7 +129,7 @@ class YkiArvioijaService(
         repository.tallenna(passivoitu, tekija)
         auditLogger.log(AuditLogOperation.YkiArvioijaPassivated, olemassaoleva.arvioijaOid)
 
-        return repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+        return lahetaSolkiin(id)
     }
 
     /**
@@ -145,6 +147,20 @@ class YkiArvioijaService(
         }
 
         return poistetut.size
+    }
+
+    /** Virkailijan kayynnistama uusintalahetys virhetilanteen jalkeen. */
+    @WithSpan
+    fun lahetaUudelleen(id: Int): Either<YkiArvioijaError, YkiArvioijaEntity> = lahetaSolkiin(id)
+
+    /**
+     * Yksi synkroninen lahetysyritys tallennuksen jalkeen (§5.3): virkailija nakee tuloksen heti.
+     * Epaonnistuminen ei kaada tallennusta, vaan rivi jaa lahetysjonoon.
+     */
+    private fun lahetaSolkiin(id: Int): Either<YkiArvioijaError, YkiArvioijaEntity> {
+        val tallennettu = repository.findArvioijaById(id) ?: return YkiArvioijaError.ArvioijaaEiLoydy.left()
+        solki.lahetaArvioija(tallennettu)
+        return repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
     }
 
     @WithSpan
@@ -172,7 +188,7 @@ class YkiArvioijaService(
                     odotettuMuokkaushetki,
                 ).flatMap {
                     auditLogger.log(AuditLogOperation.YkiArvioijaUpdated, validoitu.arvioijaOid)
-                    repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
+                    lahetaSolkiin(id)
                 }
             }
     }
