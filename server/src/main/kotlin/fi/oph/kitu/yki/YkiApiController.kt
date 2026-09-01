@@ -12,6 +12,7 @@ import fi.oph.kitu.util.validation.ValidationService
 import fi.oph.kitu.util.validation.getOrThrow
 import fi.oph.kitu.webmvc.csvAttachmentResponse
 import fi.oph.kitu.yki.Arviointitila.ARVIOITU
+import fi.oph.kitu.yki.arvioijat.ArvioijarekisteriAsetukset
 import fi.oph.kitu.yki.arvioijat.Tallennuslahde
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
@@ -53,6 +54,7 @@ class YkiApiController(
     private val ilmoittautumisjarjestelma: IlmoittautumisjarjestelmaService,
     private val oppijanumeroHaku: OppijanumeroHakuService,
     private val arvioijaService: YkiArvioijaService,
+    private val asetukset: ArvioijarekisteriAsetukset,
 ) {
     @GetMapping("/suoritukset", "/suoritus", produces = ["text/csv"])
     fun getSuorituksetAsCsv(
@@ -303,9 +305,40 @@ class YkiApiController(
         @RequestBody arvioija: YkiArvioija,
     ): ResponseEntity<*> {
         val validatedArvioija = validationService.validateAndEnrich(arvioija).getOrThrow()
-        // Solki on yha arvioijadatan master: osittainen push ei saa pyyhkia muita kielia
-        // eika Solkin omaa dataa lahetata takaisin Solkiin. Kavennetaan vasta vaiheessa 11.
-        ykiArvioijaRepository.tallenna(validatedArvioija.toEntity(), lahde = Tallennuslahde.SOLKI)
+
+        return if (asetukset.kirjoitusKaytossa) {
+            paivitaYhteystiedot(validatedArvioija)
+        } else {
+            // Siirtymavaihe: kitu ei ole viela master, joten Solkin koko payload otetaan vastaan.
+            // Osittainen push ei saa pyyhkia muita kielia eika Solkin omaa dataa lahetetaan
+            // takaisin Solkiin (Tallennuslahde.SOLKI hoitaa molemmat).
+            ykiArvioijaRepository.tallenna(validatedArvioija.toEntity(), lahde = Tallennuslahde.SOLKI)
+            TiedonsiirtoSuccess().toResponseEntity()
+        }
+    }
+
+    /**
+     * Kavennettu sisaantulo (§4.2): kitun ollessa master Solki saa paivittaa vain yhteystiedot.
+     * Nimet omistaa ONR ja arviointioikeudet kitu, joten muu payload ohitetaan. Tuntematonta
+     * arvioijaa ei luoda: kitu paattaa kuka rekisterissa on.
+     */
+    private fun paivitaYhteystiedot(arvioija: YkiArvioija): ResponseEntity<*> {
+        val olemassaoleva =
+            ykiArvioijaRepository.findByArvioijaOid(arvioija.arvioijaOid)
+                ?: return TiedonsiirtoFailure
+                    .badRequest("Arvioijaa ${arvioija.arvioijaOid} ei ole rekisterissa")
+                    .toResponseEntity()
+
+        ykiArvioijaRepository.tallenna(
+            olemassaoleva.copy(
+                sahkopostiosoite = arvioija.sahkopostiosoite,
+                katuosoite = arvioija.katuosoite,
+                postinumero = arvioija.postinumero,
+                postitoimipaikka = arvioija.postitoimipaikka,
+            ),
+            lahde = Tallennuslahde.SOLKI,
+        )
+
         return TiedonsiirtoSuccess().toResponseEntity()
     }
 }

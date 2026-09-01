@@ -873,9 +873,22 @@ Endpointia **ei siis poisteta eikä 410:ta tehdä.** Aiempi suunnitelma eteni ka
 `410 Gone` -vastausta; se raukeaa, koska Solki jatkaa yhteystietojen lähettämistä samaa reittiä.
 
 Kavennus tehdään vastaanoton puolella: DTO ja security-sääntö säilyvät, mutta tallennus soveltaa vain
-yhteystietokentät. `YkiArvioija`/`YkiArviointioikeus`-DTO:t, schema-esimerkit ja `YkiApiControllerTest`in
-arvioija-testit jäävät siis paikoilleen — testit tosin kirjoitetaan varmistamaan, että muut kentät
-ohitetaan. Tallennettu `tila` kirjoitetaan yhä pushista, ks. yllä.
+yhteystietokentät. `YkiArvioija`/`YkiArviointioikeus`-DTO:t ja schema-esimerkit jäävät paikoilleen.
+
+**Kavennus on sidottu kirjoituskytkimeen** `kitu.yki.arvioijarekisteri.kirjoitus.enabled` (§7.5), joka
+kertoo onko kitu master. Kytkin on untuvassa/QA:ssa/prodissa `false` vaiheeseen 11 asti, joten
+siirtymän ajan Solkin koko payload otetaan yhä vastaan ja tallennettu `tila` kirjoitetaan — muuten
+Solki menettäisi kirjoitusoikeuden rekisteriin ennen kuin kitu on ottanut sen vastuun. Kytkimen
+kääntyessä sisääntulo kaventuu samassa hetkessä kuin kitun oma kirjoitus avautuu, ilman erillistä
+propertya.
+
+Kavennettuna: tuntematonta arvioijaa **ei luoda** (kitu päättää kuka rekisterissä on, vastaus 400),
+nimet ohitetaan (ONR on master) ja arviointioikeudet ohitetaan kokonaan — myös `tila`, joka jää
+kitun riveillä NULLiksi. Kaikuvaara hoituu ennallaan `Tallennuslahde.SOLKI`lla: rivi leimataan
+lähetetyksi, paitsi jos siinä oli jo lähettämätön kitun oma muutos.
+
+Testit: `YkiArvioijaKavennettuApiTest` (kytkin päällä) ja `YkiArvioijaSiirtymaApiTest` (kytkin pois)
+ajavat molemmat regiimit erikseen.
 
 ---
 
