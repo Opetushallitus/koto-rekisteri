@@ -655,6 +655,24 @@ class YkiArvioijaMuokkausTest(
             .let { assertEquals(404, it.response.status) }
     }
 
+    @Test
+    fun `tuntemattoman arvioijan tallennus palauttaa 404`() {
+        mockMvc
+            .perform(lomake(999999, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
+            .andReturn()
+            .let { assertEquals(404, it.response.status) }
+    }
+
+    @Test
+    fun `tuntemattoman arvioijan tyhja tallennus palauttaa 404 eika lomaketta`() {
+        // Olemassaolo on tarkistettava ennen kenttatarkistuksia: muuten vajaa lomake saisi
+        // vastaukseksi 200:n ja lomakesivun. Sama odotus on securityconfig-e2e:ssa.
+        mockMvc
+            .perform(post("/yki/arvioijat/999999").session(session()).with(csrf()))
+            .andReturn()
+            .let { assertEquals(404, it.response.status) }
+    }
+
     /** Muokkauslomake tunnetuilla arvoilla — toisin kuin [muokkaus], ei aseta kenttia valmiiksi. */
     private fun lomake(
         id: Int,

@@ -6,9 +6,6 @@ import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.stereotype.Service
 
 enum class Lahetystulos {
     LAHETETTY,
@@ -29,9 +26,9 @@ interface SolkiArvioijaService {
     fun lahetaLahettamattomat(maxYritykset: Int? = null): Int
 }
 
-@Service
-@ConditionalOnBean(SolkiArvioijaClient::class)
-class SolkiArvioijaServiceImpl(
+// open, koska @WithSpan vaatii CGLIB-proxyn: ilman @Service-annotaatiota Kotlinin allopen ei
+// enaa avaa luokkaa.
+open class SolkiArvioijaServiceImpl(
     private val repository: YkiArvioijaRepository,
     private val client: SolkiArvioijaClient,
     private val timeService: TimeService,
@@ -84,12 +81,10 @@ class SolkiArvioijaServiceImpl(
 }
 
 /**
- * Ilman clientia lahetys on kokonaan pois kaytosta. Rivit jaavat lahetysjonoon, joten kytkimen
- * avaaminen lahettaa ne takautuvasti.
+ * Lahetys pois kaytosta. Rivit jaavat lahetysjonoon, joten kytkimen avaaminen lahettaa ne
+ * takautuvasti.
  */
-@Service
-@ConditionalOnMissingBean(SolkiArvioijaClient::class)
-class SolkiArvioijaServiceMock : SolkiArvioijaService {
+open class SolkiArvioijaServiceMock : SolkiArvioijaService {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @WithSpan

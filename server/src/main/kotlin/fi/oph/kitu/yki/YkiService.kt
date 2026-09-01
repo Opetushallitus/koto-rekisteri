@@ -2,12 +2,8 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.auditlogs.AuditLogOperation
 import fi.oph.kitu.auditlogs.AuditLogger
-import fi.oph.kitu.jdbc.SortDirection
 import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.result.getOrThrow
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaArviointioikeus
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaColumn
-import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusEntity
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusFilter
 import fi.oph.kitu.yki.suoritukset.YkiSuoritusOrder
@@ -32,7 +28,6 @@ class YkiService(
     @param:Qualifier("solkiRestClient")
     private val solkiRestClient: RestClient,
     private val suoritusRepository: YkiSuoritusRepository,
-    private val arvioijaRepository: YkiArvioijaRepository,
     private val auditLogger: AuditLogger,
     private val oppijanumeroService: OppijanumeroService,
 ) {
@@ -133,20 +128,6 @@ class YkiService(
                     arrayOf(
                         "suoritus.id" to suoritus.id,
                     )
-                }
-            }
-
-    @WithSpan
-    fun allArvioijat(
-        orderBy: YkiArvioijaColumn = YkiArvioijaColumn.Sukunimi,
-        orderByDirection: SortDirection = SortDirection.ASC,
-    ): List<YkiArvioijaArviointioikeus> =
-        arvioijaRepository
-            .allArviontioikeudet(orderBy, orderByDirection)
-            .toList()
-            .also {
-                auditLogger.logAllInternalOnly("Yki arvioija viewed", it) { arvioija ->
-                    arrayOf("arvioija.oppijanumero" to arvioija.arvioijanOppijanumero)
                 }
             }
 }
