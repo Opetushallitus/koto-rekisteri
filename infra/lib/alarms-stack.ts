@@ -31,13 +31,17 @@ export interface AlarmsStackSlackProps {
 
 export interface AlarmsStackProps extends StackProps {
   slack?: AlarmsStackSlackProps
+  // Kun tämä on false, tutkimusryhmä luodaan edelleen (tutkimuksen voi
+  // käynnistää käsin konsolista) mutta hälytykset eivät käynnistä sitä itse.
+  automaticInvestigations: boolean
 }
 
 export class AlarmsStack extends cdk.Stack {
   readonly alarmSnsTopic: aws_sns.Topic
   readonly infoSnsTopic: aws_sns.Topic
   readonly investigationGroup: CfnInvestigationGroup
-  readonly investigationAction: IAlarmAction
+  // Tyhjä lista kun automaattiset tutkimukset on kytketty pois päältä.
+  readonly investigationActions: IAlarmAction[]
 
   constructor(scope: Construct, id: string, props: AlarmsStackProps) {
     super(scope, id, props)
@@ -76,9 +80,9 @@ export class AlarmsStack extends cdk.Stack {
     }
 
     this.investigationGroup = this.createInvestigationGroup(alarmsSlack)
-    this.investigationAction = new InvestigationGroupAlarmAction(
-      this.investigationGroup.attrArn,
-    )
+    this.investigationActions = props.automaticInvestigations
+      ? [new InvestigationGroupAlarmAction(this.investigationGroup.attrArn)]
+      : []
   }
 
   private createSnsTopic(id: string) {

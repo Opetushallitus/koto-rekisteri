@@ -34,9 +34,11 @@ export class EnvironmentStage extends Stage {
     // topics to the single shared Slack configuration.
     const usEastAlarmsStack = new AlarmsStack(this, "AlarmsUsEast1", {
       env: { ...env, region: "us-east-1" },
+      automaticInvestigations: environmentConfig.automaticInvestigations,
     })
     const alarmsStack = new AlarmsStack(this, "Alarms", {
       env,
+      automaticInvestigations: environmentConfig.automaticInvestigations,
       slack: {
         workspaceId: environmentConfig.slackWorkspaceId,
         alarmsChannel: environmentConfig.slackAlarmsChannel,
@@ -55,7 +57,7 @@ export class EnvironmentStage extends Stage {
       env,
       alarmsSnsTopic: alarmsStack.alarmSnsTopic,
       infoSnsTopic: alarmsStack.infoSnsTopic,
-      investigationAction: alarmsStack.investigationAction,
+      investigationActions: alarmsStack.investigationActions,
     })
 
     const networkStack = new NetworkStack(this, "Network", {
@@ -91,7 +93,7 @@ export class EnvironmentStage extends Stage {
       databaseName: environmentConfig.databaseName,
       image: props.serviceImage,
       alarmSnsTopic: alarmsStack.alarmSnsTopic,
-      investigationAction: alarmsStack.investigationAction,
+      investigationActions: alarmsStack.investigationActions,
       productionQuality: environmentConfig.productionQuality,
     })
 
@@ -99,7 +101,7 @@ export class EnvironmentStage extends Stage {
       env: { ...env, region: "us-east-1" },
       domainName: environmentConfig.domainName,
       alarmsSnsTopic: usEastAlarmsStack.alarmSnsTopic,
-      investigationAction: usEastAlarmsStack.investigationAction,
+      investigationActions: usEastAlarmsStack.investigationActions,
     })
 
     new BackupsStack(this, "Backups", {

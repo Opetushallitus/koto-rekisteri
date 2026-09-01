@@ -12,7 +12,7 @@ import { Construct } from "constructs"
 export interface Route53HealthChecksProps extends StackProps {
   domainName: string
   alarmsSnsTopic: ITopic
-  investigationAction: IAlarmAction
+  investigationActions: IAlarmAction[]
 }
 
 export class Route53HealthChecksStack extends Stack {
@@ -37,7 +37,9 @@ export class Route53HealthChecksStack extends Stack {
       threshold: 1, // 1 is healthy, 0 is unhealthy
       evaluationPeriods: 1,
     })
-    healthCheckAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
-    healthCheckAlarm.addAlarmAction(props.investigationAction)
+    healthCheckAlarm.addAlarmAction(
+      new SnsAction(props.alarmsSnsTopic),
+      ...props.investigationActions,
+    )
   }
 }

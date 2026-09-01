@@ -24,7 +24,7 @@ import { ITopic } from "aws-cdk-lib/aws-sns"
 export interface LogGroupsStackProps extends StackProps {
   alarmsSnsTopic: aws_sns.ITopic
   infoSnsTopic: aws_sns.ITopic
-  investigationAction: IAlarmAction
+  investigationActions: IAlarmAction[]
 }
 
 export class LogGroupsStack extends Stack {
@@ -77,8 +77,10 @@ export class LogGroupsStack extends Stack {
         treatMissingData: TreatMissingData.NOT_BREACHING,
       })
 
-    errorsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
-    errorsAlarm.addAlarmAction(props.investigationAction)
+    errorsAlarm.addAlarmAction(
+      new SnsAction(props.alarmsSnsTopic),
+      ...props.investigationActions,
+    )
     errorsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
 
     const warningsAlarm = this.serviceLogGroup
@@ -97,8 +99,10 @@ export class LogGroupsStack extends Stack {
         treatMissingData: TreatMissingData.NOT_BREACHING,
       })
 
-    warningsAlarm.addAlarmAction(new SnsAction(props.alarmsSnsTopic))
-    warningsAlarm.addAlarmAction(props.investigationAction)
+    warningsAlarm.addAlarmAction(
+      new SnsAction(props.alarmsSnsTopic),
+      ...props.investigationActions,
+    )
     warningsAlarm.addOkAction(new SnsAction(props.alarmsSnsTopic))
   }
 
