@@ -172,6 +172,10 @@ class YkiArvioijaService(
         return repository.findArvioijaById(id)?.right() ?: YkiArvioijaError.ArvioijaaEiLoydy.left()
     }
 
+    /**
+     * Tarpeen ennen lomakkeen kenttatarkistuksia: ilman tata tuntemattomalle id:lle lahetetty
+     * vajaa lomake saisi vastaukseksi 200:n ja lomakesivun 404:n sijaan.
+     */
     @WithSpan
     fun onOlemassa(id: Int): Boolean = repository.findArvioijaById(id) != null
 

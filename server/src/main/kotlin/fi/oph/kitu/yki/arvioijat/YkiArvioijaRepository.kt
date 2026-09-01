@@ -633,36 +633,6 @@ data class YkiArvioijaArviointioikeus(
             }
         }
 
-        fun toYkiArvioijaEntity(aas: Iterable<YkiArvioijaArviointioikeus>): YkiArvioijaEntity {
-            val head = aas.first()
-            return YkiArvioijaEntity(
-                id = null,
-                arvioijaOid = head.arvioijanOppijanumero,
-                henkilotunnus = head.henkilotunnus,
-                sukunimi = head.sukunimi,
-                etunimet = head.etunimet,
-                sahkopostiosoite = head.sahkopostiosoite,
-                katuosoite = head.katuosoite,
-                postinumero = head.postinumero,
-                postitoimipaikka = head.postitoimipaikka,
-                arviointioikeudet =
-                    aas.map { ao ->
-                        YkiArviointioikeusEntity(
-                            id = null,
-                            arvioijaId = null,
-                            kieli = ao.kieli,
-                            tasot = ao.tasot,
-                            tila = ao.tila,
-                            kaudenAlkupaiva = ao.kaudenAlkupaiva,
-                            kaudenPaattymispaiva = ao.kaudenPaattymispaiva,
-                            jatkorekisterointi = ao.jatkorekisterointi,
-                            ensimmainenRekisterointipaiva = ao.ensimmainenRekisterointipaiva,
-                            rekisteriintuontiaika = ao.rekisteriintuontiaika,
-                        )
-                    },
-            )
-        }
-
         val fromRow =
             RowMapper { rs, _ ->
                 join(
@@ -670,8 +640,5 @@ data class YkiArvioijaArviointioikeus(
                     YkiArviointioikeusEntity.fromRow.mapRow(rs, 0),
                 )
             }
-
-        fun Iterable<YkiArvioijaArviointioikeus>.group(): List<YkiArvioijaEntity> =
-            groupBy { it.arvioijanOppijanumero }.map { (_, aos) -> toYkiArvioijaEntity(aos) }
     }
 }

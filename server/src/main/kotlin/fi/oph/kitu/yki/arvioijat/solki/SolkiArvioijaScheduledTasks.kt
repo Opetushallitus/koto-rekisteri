@@ -5,10 +5,16 @@ import fi.oph.kitu.util.scheduling.recurringTask
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+/**
+ * Vain lahetyksen ollessa paalla: muuten tehtavat kavisivat prodissa 15 minuutin valein tekematta
+ * mitaan, ja nakyisivat db-scheduler-UI:ssa harhaanjohtavasti ajossa olevina.
+ */
 @Configuration
+@ConditionalOnProperty("kitu.yki.arvioijat.solki.enabled", havingValue = "true")
 class SolkiArvioijaScheduledTasks(
     private val tracer: Tracer,
 ) {
