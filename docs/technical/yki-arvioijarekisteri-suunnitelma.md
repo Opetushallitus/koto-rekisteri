@@ -1334,6 +1334,10 @@ lisätään testit siitä, että push päivittää vain yhteystiedot), `webmvc/D
 
 ## 10. Vaiheistus (commitit yhdessä PR:ssä)
 
+> **Tila 1.9.2026.** Vaiheet 1–6 ja 8 on mergetty mainiin, vaihe 7 raukesi (§6.1) ja vaiheet 9–10 ovat
+> katselmoitavana PR:ssä [#3378](https://github.com/Opetushallitus/kielitutkintorekisteri/pull/3378).
+> Jäljellä on vaihe 11, joka on käyttöönottoa eikä koodia. Merkinnät: ✅ mergetty, 🔄 PR:ssä, ⊘ rauennut.
+
 Toteutus tehdään **yhdessä haarassa `yki-arvioija-laajenna-taulut-masteriksi` ja yhdessä PR:ssä**
 ([#3324](https://github.com/Opetushallitus/kielitutkintorekisteri/pull/3324)): kukin alla oleva askel on
 yksi tai useampi commit samassa PR:ssä, ei omaa PR:ää. Askeleet pysyvät silti itsenäisinä ja
@@ -1342,19 +1346,19 @@ kerrallaan. Askeleet 1–8 eivät riipu Solkin rajapintasopimuksesta, joten työ
 Jyväskylää. Askel 11 tehdään vasta tämän PR:n mergen jälkeen omana muutoksenaan, kun JYU on
 vahvistanut rajapinnan.
 
-| #     | Vaihe                                                    | Koko | Riippuu                      |
-| ----- | -------------------------------------------------------- | ---- | ---------------------------- |
-| 1     | Poista kuollut arvioijien virhetuontikoneisto            | S    | —                            |
-| 2     | Laajenna arvioijataulut masteriksi (V116–V118)           | L    | 1                            |
-| 3     | Uudista arvioijalistanäkymä                              | L    | 2                            |
-| 4     | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —                            |
-| 5     | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | 2, 4                         |
-| 6     | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | 5                            |
-| ~~7~~ | ~~Automaattinen passivointi (UC3)~~ — rauennut, ks. §6.1 | –    | —                            |
-| 8     | Säilytysajan valvonta (5 v)                              | M    | 6                            |
-| 9     | YKI-arvioijien Solki-lähetys                             | L    | 6 (sopimus sovittu 1.9.2026) |
-| 10    | Kavenna sisääntuleva rajapinta yhteystietoihin (§4.2)    | M    | 9                            |
-| 11    | Käyttöönotto ja kytkimet                                 | S    | 9, 10                        |
+| #     | Vaihe                                                    | Koko | Riippuu                      | Tila     |
+| ----- | -------------------------------------------------------- | ---- | ---------------------------- | -------- |
+| 1     | Poista kuollut arvioijien virhetuontikoneisto            | S    | —                            | ✅ #3323 |
+| 2     | Laajenna arvioijataulut masteriksi (V116–V118)           | L    | 1                            | ✅ #3324 |
+| 3     | Uudista arvioijalistanäkymä                              | L    | 2                            | ✅ #3325 |
+| 4     | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —                            | ✅ #3324 |
+| 5     | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | 2, 4                         | ✅ #3324 |
+| 6     | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | 5                            | ✅ #3353 |
+| ~~7~~ | ~~Automaattinen passivointi (UC3)~~ — rauennut, ks. §6.1 | –    | —                            | ⊘        |
+| 8     | Säilytysajan valvonta (5 v)                              | M    | 6                            | ✅ #3372 |
+| 9     | YKI-arvioijien Solki-lähetys                             | L    | 6 (sopimus sovittu 1.9.2026) | 🔄 #3378 |
+| 10    | Kavenna sisääntuleva rajapinta yhteystietoihin (§4.2)    | M    | 9                            | 🔄 #3378 |
+| 11    | Käyttöönotto ja kytkimet                                 | S    | 9, 10                        | —        |
 
 1. **`Poista kuollut arvioijien virhetuontikoneisto`** — `yki/arvioijat/error/`, `V118` DROP TABLE,
    `dev/YkiController` kuollut stubi, `DashboardService`/`HomePage`/`EnumFromUrlParamsParsingConfig`
@@ -1517,19 +1521,19 @@ tiimin omalla työllä.
 
 ### Kehityskortit
 
-| Kortti    | Otsikko                                                  | Koko | Riippuu       |
-| --------- | -------------------------------------------------------- | ---- | ------------- |
-| KTR-1     | Poista kuollut arvioijien virhetuontikoneisto            | S    | —             |
-| KTR-2     | Laajenna arvioijataulut masteriksi                       | L    | KTR-1         |
-| KTR-3     | Uudista arvioijalistanäkymä                              | L    | KTR-2         |
-| KTR-4     | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —             |
-| KTR-5     | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | KTR-2, KTR-4  |
-| KTR-6     | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | KTR-5         |
-| ~~KTR-7~~ | ~~Automaattinen passivointi (UC3)~~ — rauennut           | –    | —             |
-| KTR-8     | Säilytysajan valvonta (5 v)                              | M    | KTR-6         |
-| KTR-9     | YKI-arvioijien Solki-lähetys                             | L    | KTR-6, KTR-A  |
-| KTR-10    | Kavenna sisääntuleva arvioijarajapinta                   | M    | KTR-9         |
-| KTR-11    | Käyttöönotto ja kytkimet                                 | S    | KTR-9, KTR-10 |
+| Kortti    | Otsikko                                                  | Koko | Riippuu       | Tila  |
+| --------- | -------------------------------------------------------- | ---- | ------------- | ----- |
+| KTR-1     | Poista kuollut arvioijien virhetuontikoneisto            | S    | —             | ✅    |
+| KTR-2     | Laajenna arvioijataulut masteriksi                       | L    | KTR-1         | ✅    |
+| KTR-3     | Uudista arvioijalistanäkymä                              | L    | KTR-2         | ✅    |
+| KTR-4     | Lomakevirhekehys ja arvioijarekisterin käyttöoikeus      | M    | —             | ✅    |
+| KTR-5     | Uuden arvioijan tallennus + ONR-haku (UC1)               | L    | KTR-2, KTR-4  | ✅    |
+| KTR-6     | Muokkaus, kausihistoria ja manuaalinen passivointi (UC2) | L    | KTR-5         | ✅    |
+| ~~KTR-7~~ | ~~Automaattinen passivointi (UC3)~~ — rauennut           | –    | —             | ⊘     |
+| KTR-8     | Säilytysajan valvonta (5 v)                              | M    | KTR-6         | ✅    |
+| KTR-9     | YKI-arvioijien Solki-lähetys                             | L    | KTR-6, KTR-A  | 🔄 PR |
+| KTR-10    | Kavenna sisääntuleva arvioijarajapinta                   | M    | KTR-9         | 🔄 PR |
+| KTR-11    | Käyttöönotto ja kytkimet                                 | S    | KTR-9, KTR-10 | —     |
 
 **KTR-4 on rinnakkaistettavissa** — se ei riipu tietokantatyöstä, joten kaksi tekijää voi edetä yhtä
 aikaa (KTR-2 → KTR-3 ja KTR-4). Muuten ketju on käytännössä lineaarinen.
