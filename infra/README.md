@@ -92,7 +92,7 @@ order (because of dependencies):
    stack.
 8. **`Service`** — the application Fargate service, see below.
 9. **`Route53HealthChecks`** (region: `us-east-1`) — HTTPS check against the
-   public domain; alarm wired to `usEastAlarmsStack.investigationAction`.
+   public domain; alarm wired to `usEastAlarmsStack.investigationActions`.
 10. **`Backups`** — AWS Backup plan that protects the Aurora cluster; backup-job
     state changes go to the alarm SNS topic.
 11. **`KoskiAuditLogsIntegration`** — a CloudWatch Logs subscription filter on
@@ -146,7 +146,8 @@ one-liner for the uploader. Default TTL is 7 days (the SigV4 maximum).
 - Health check: 2 successful pings × 10s = 20s to healthy. Deployment drain
   timeout 5s.
 - Alarms attached: 5xx count ≥ 4 over the period; CPU > 50%; memory > 50%.
-  All three trigger SNS + investigation.
+  All three trigger SNS, plus an investigation when `automaticInvestigations`
+  is on for the env.
 - An S3 bucket for `tehtavapankki` is created and the task role gets
   read+write access to it (write for the Koealusta-import scheduled task,
   read for the virkailija-facing listing page and signed download URLs).
@@ -175,11 +176,35 @@ When an alarm transitions to `ALARM`:
 2. The same alarm has the AIOps investigation group ARN as a second action.
    CloudWatch calls `aiops:CreateInvestigation` on the group (allowed by the
    group's resource policy that grants
-   `aiops.alarms.cloudwatch.amazonaws.com`).
+   `aiops.alarms.cloudwatch.amazonaws.com`). **This step only happens when
+   `automaticInvestigations` is enabled — see below.**
 3. Q investigates in the background. While doing so, it pushes events both to
    the investigation group's SNS topic and directly to the configured chat
    channels (`chatConfigurationArns`). The latter is what produces the
    Q-curated summary in Slack.
+
+### Feature flag: `automaticInvestigations`
+
+`EnvironmentConfig.automaticInvestigations` (`lib/accounts.ts`) decides whether
+alarms auto-start an Amazon Q investigation. **It is `false` in every env
+today** — investigations run Logs Insights queries and metric scans that are
+billed as CloudWatch usage, and the cost was disproportionate to the value.
+
+What the flag does and does not change:
+
+- **Off** — `AlarmsStack.investigationActions` is an empty array, so no alarm
+  gets the investigation group ARN as an action. Every alarm still publishes to
+  SNS and still reaches Slack; only the Q auto-start is gone.
+- **On** — the array holds the single `InvestigationGroupAlarmAction`, spread
+  into each `addAlarmAction(...)` call.
+- Either way the investigation group, its role, its resource policy and the SNS
+  grants are created as before, so an investigation can still be started **by
+  hand** from the CloudWatch console. Flipping the flag back on is a pure alarm
+  change — no group is recreated and no investigation history is lost.
+
+To re-enable for one env, set `automaticInvestigations: true` on that env in
+`lib/accounts.ts` and deploy; the diff is limited to `AlarmActions` on the
+alarms in `LogGroups`, `Service` and `Route53HealthChecks`.
 
 ### Stack layout
 
@@ -197,11 +222,11 @@ Per env (`Dev` / `Test` / `Prod`):
 - **`<Env>/Alarms`** — Primary alarm infrastructure in the env's region. Owns
   the Chatbot `SlackChannelConfiguration`, the Investigation group with both
   SNS and Slack notification channels, and exposes
-  `alarmSnsTopic` / `infoSnsTopic` / `investigationAction` for other stacks to
+  `alarmSnsTopic` / `infoSnsTopic` / `investigationActions` for other stacks to
   attach to.
 - **`<Env>/LogGroups`** — Service log groups + metric filters that turn
   structured log lines into CloudWatch metrics, and the `LogErrors` /
-  `LogWarnings` alarms wired to those topics + investigation action.
+  `LogWarnings` alarms wired to those topics + investigation actions.
 
 ### Slack channels
 
@@ -251,7 +276,8 @@ The application logs JSON in ECS format
 
 - **`LogErrors`** — counts entries where `$.success == false` _or_
   `$.log.level == "ERROR"`. Threshold: **1**, evaluation period 1. Triggers
-  SNS alarm + investigation. Earlier versions also matched on the existence
+  SNS alarm (+ investigation when enabled). Earlier versions also matched on
+  the existence
   of `$.stack_trace` / `$.error.type`; that produced false positives because
   Spring Boot includes those fields in any WARN log that carries a
   `Throwable` (SpringDoc and OTel emit such warnings during startup).
@@ -260,8 +286,8 @@ The application logs JSON in ECS format
 
 Add new metric/alarm pairs through the same
 `addMetricFilter(...).metric(...).createAlarm(...)` chain and remember to
-attach `SnsAction(alarmsSnsTopic)` and `investigationAction` so they reach
-Slack.
+attach `SnsAction(alarmsSnsTopic)` and spread `...investigationActions` so they
+reach Slack.
 
 ### Verifying live state
 

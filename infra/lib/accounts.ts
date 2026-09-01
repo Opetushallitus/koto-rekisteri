@@ -9,6 +9,10 @@ export interface EnvironmentConfig {
   domainName: string
   databaseName: string
   productionQuality: boolean
+  // Käynnistetäänkö hälytyksestä automaattisesti Amazon Q -tutkimus. Tutkimukset
+  // ajavat Logs Insights -kyselyitä ja metriikkahakuja, joista CloudWatch
+  // laskuttaa, joten tämä pidetään oletuksena pois päältä.
+  automaticInvestigations: boolean
   slackWorkspaceId: string
   slackAlarmsChannel: SlackChannel
   slackInfoChannel?: SlackChannel
@@ -44,6 +48,7 @@ export const deploymentAccounts: {
     domainName: "kios.untuvaopintopolku.fi",
     databaseName: "kios",
     productionQuality: false,
+    automaticInvestigations: false,
     slackWorkspaceId: "T02C6SZL7KP",
     slackAlarmsChannel: {
       name: "kielitutkintorekisteri-alerts-dev-test",
@@ -65,6 +70,7 @@ export const deploymentAccounts: {
     domainName: "kios.testiopintopolku.fi",
     databaseName: "kios",
     productionQuality: false,
+    automaticInvestigations: false,
     slackWorkspaceId: "T02C6SZL7KP",
     slackAlarmsChannel: {
       name: "kielitutkintorekisteri-alerts-dev-test",
@@ -86,6 +92,7 @@ export const deploymentAccounts: {
     domainName: "kios.opintopolku.fi",
     databaseName: "kios",
     productionQuality: true,
+    automaticInvestigations: false,
     slackWorkspaceId: "T02C6SZL7KP",
     slackAlarmsChannel: {
       name: "kielitutkintorekisteri-alerts",

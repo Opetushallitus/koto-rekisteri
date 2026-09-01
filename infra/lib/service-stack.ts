@@ -50,7 +50,7 @@ export interface ServiceStackProps extends StackProps {
   database: DatabaseCluster
   databaseName: string
   alarmSnsTopic: ITopic
-  investigationAction: IAlarmAction
+  investigationActions: IAlarmAction[]
   productionQuality: boolean
 }
 
@@ -93,8 +93,7 @@ export class ServiceStack extends Stack {
         threshold: 4,
         treatMissingData: TreatMissingData.NOT_BREACHING,
       })
-    alarm5xx.addAlarmAction(snsAction)
-    alarm5xx.addAlarmAction(props.investigationAction)
+    alarm5xx.addAlarmAction(snsAction, ...props.investigationActions)
     alarm5xx.addOkAction(snsAction)
 
     const cluster = new Cluster(this, "Cluster", {
@@ -322,8 +321,7 @@ service:
         threshold: 50,
         evaluationPeriods: 1,
       })
-    cpuAlarm.addAlarmAction(snsAction)
-    cpuAlarm.addAlarmAction(props.investigationAction)
+    cpuAlarm.addAlarmAction(snsAction, ...props.investigationActions)
 
     const memoryAlarm = this.service.service
       .metricMemoryUtilization()
@@ -331,8 +329,7 @@ service:
         threshold: 50,
         evaluationPeriods: 1,
       })
-    memoryAlarm.addAlarmAction(snsAction)
-    memoryAlarm.addAlarmAction(props.investigationAction)
+    memoryAlarm.addAlarmAction(snsAction, ...props.investigationActions)
 
     tehtavapankkiBucket.grantReadWrite(this.service.taskDefinition.taskRole)
   }

@@ -24,6 +24,8 @@ export class UtilityStage extends Stage {
 
     const alarmsStack = new AlarmsStack(this, "Alarms", {
       env: props.env,
+      // Util-tilillä ei ole hälytyksiä, joihin tutkimus voitaisiin kytkeä.
+      automaticInvestigations: false,
       slack: {
         workspaceId: props.slackWorkspaceId,
         alarmsChannel: props.slackChannel,
