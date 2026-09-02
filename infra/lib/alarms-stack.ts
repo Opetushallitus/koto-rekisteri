@@ -83,6 +83,15 @@ export class AlarmsStack extends cdk.Stack {
     this.investigationActions = props.automaticInvestigations
       ? [new InvestigationGroupAlarmAction(this.investigationGroup.attrArn)]
       : []
+
+    // Pidetään tutkimusryhmän ARN:n vienti pysyvästi olemassa, vaikka mikään
+    // pino ei viittaisi siihen. Käyttämätön vienti ei maksa mitään, ja näin
+    // automaticInvestigations-lipun kääntäminen on kumpaankin suuntaan pelkkä
+    // hälytystoiminnon muutos: vientiä ei luoda eikä poisteta. Ilman tätä lipun
+    // pois kytkeminen kaataa tuottajapinon rollbackiin, koska CloudFormation ei
+    // poista vientiä johon kuluttajapino vielä viittaa ja CDK päivittää
+    // tuottajan ensin.
+    this.exportValue(this.investigationGroup.attrArn)
   }
 
   private createSnsTopic(id: string) {
