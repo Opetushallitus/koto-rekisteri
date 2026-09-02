@@ -98,4 +98,5 @@ Katso esimerkki: `html/Navigation.kt`.
 Salaisuuksia ei tallenneta lähdekoodiin. Paikallinen kehitys hakee ne AWS
 Secrets Managerista skriptin `scripts/ensure_aws_secrets.sh` kautta.
 Pää-README sisältää listan salaisuuksista, jotka on perustettava manuaalisesti
-per AWS-tili (`slack-webhook-url`, `oppijanumero-password`, `kielitesti-token`).
+per AWS-tili (`slack-webhook-url`, `oppijanumero-password`, `kielitesti-token`
+sekä vain Test-tilille `tolgee-api-key`).

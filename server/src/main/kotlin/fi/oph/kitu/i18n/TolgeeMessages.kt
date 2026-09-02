@@ -6,8 +6,6 @@ object TolgeeMessages {
 
     fun get(key: String): LocalizedString? = store[key]
 
-    fun keys(): Set<String> = store.keys
-
     fun set(messages: Map<String, LocalizedString>) {
         store = messages
     }

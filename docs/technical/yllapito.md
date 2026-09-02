@@ -45,6 +45,7 @@ automaattisesti spring-boot:runin ympärille.
   - `slack-webhook-url`
   - `oppijanumero-password`
   - `kielitesti-token`
+  - `tolgee-api-key` (vain Test-tili / QA; käännösavainten synkronointi Tolgeehen)
 
 ## AWS-tilit ja roolit
 

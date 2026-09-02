@@ -154,6 +154,10 @@ Seuraavat salaisuudet pitää luoda manuaalisesti AWS Secret Manageriin.
 - `slack-webhook-url`: Hälytysten lähettämiseen Slack-kanavalle. Ks. [slackNotifierLambda](infra/lib/lambdas/slackNotifierLambda). Pitää luoda regioonille `eu-west-1` sekä `us-east-1`.
 - `oppijanumero-password`: Oppijanumeropalvelun salaisuus. Ks. [fi.oph.kitu.oppijanumero-paketti](server/src/main/kotlin/fi/oph/kitu/oppijanumero).
 - `kielitesti-token`: Koealustan salaisuus. Ks. [fi.oph.kitu.kielitesti-paketti](server/src/main/kotlin/fi/oph/kitu/kotoutumiskoulutus).
+- `tolgee-api-key`: Tolgee Cloudin **Project API Key** käännösavainten synkronointiin. Vain Test-tilille
+  `961341546901` (QA), regioona `eu-west-1`. Tarvittavat scopet: `keys.view`, `keys.create`,
+  `keys.delete`, `translations.view`. Personal Access Token ei kelpaa — projekti tulee avaimesta.
+  Ks. [fi.oph.kitu.i18n.tolgee-paketti](server/src/main/kotlin/fi/oph/kitu/i18n/tolgee).
 
 ## Käyttöliittymän käännökset (lokalisointi)
 
@@ -163,24 +167,43 @@ käännökset haetaan Tolgeesta OPH:n lokalisointipalvelun kautta sovelluksen k�
 ajoittain uudelleen) polusta `/lokalisointi/tolgee/kielitutkintorekisteri/{fi,sv,en}.json`.
 
 Haku on käytössä ympäristöissä, joissa `kitu.lokalisointi.namespace` on asetettu (untuva, qa,
-tuotanto). Nimiavaruus (namespace) erottaa eri sovellusten käännökset jaetussa
-lokalisointipalvelussa; kitun nimiavaruus on `kielitutkintorekisteri` (vrt. KOSKIn `koski`).
-Paikallisesti ja testeissä nimiavaruus on tyhjä, jolloin käytetään koodin suomenkielisiä oletuksia
-eikä proxya kutsuta. Erillistä salaisuutta ei tarvita, koska proxy tarjoilee julkaistut
-käännöstiedostot.
+tuotanto sekä paikallinen `local`-profiili, joka lukee untuvan proxysta). Nimiavaruus (namespace)
+erottaa eri sovellusten käännökset jaetussa lokalisointipalvelussa; kitun nimiavaruus on
+`kielitutkintorekisteri` (vrt. KOSKIn `koski`). Testeissä, e2e:ssä ja `local-opintopolku`-profiilissa
+nimiavaruus on tyhjä, jolloin käytetään koodin suomenkielisiä oletuksia eikä proxya kutsuta.
+Erillistä salaisuutta ei lukemiseen tarvita, koska proxy tarjoilee julkaistut käännöstiedostot.
 
-### Tolgeen alustaminen ja täydentäminen
+### Avainten synkronointi Tolgeehen
 
-Reitti `GET /kielitutkinnot/lokalisointi/puuttuvat-kaannokset` (virkailijakirjautuminen) palauttaa
-JSON-muodossa ne käännösavaimet, joita ei vielä löydy Tolgeesta, sekä niiden suomenkielisen
-oletustekstin. Kun Tolgee on tyhjä, reitti listaa kaikki avaimet; sitä mukaa kun avaimet lisätään
-Tolgeeseen, lista pienenee. Käytä sitä näin: hae reitin JSON (esim. untuvassa) ja tuo se Tolgeehen
-nimiavaruuteen `kielitutkintorekisteri` (Import, kieli `fi`). Suomi säilyy kanonisena
-koodissa ([UiText.kt](server/src/main/kotlin/fi/oph/kitu/i18n/UiText.kt)); Tolgeehen tuodaan
-avaimet, joille kääntäjät lisäävät ruotsin ja englannin.
+Koodin avainluettelo viedään Tolgeehen automaattisesti: sovellus vertaa käynnistyessään koodin
+avaimia (`UiTextRegistry`, lämmitetty `UiTextWarmup`illa) Tolgeen nimiavaruuden avaimiin ja
 
-Kun lokalisointi on käytössä (nimiavaruus asetettu) ja avaimia puuttuu, etusivulla näytetään varoitus
-puuttuvien avainten lukumäärästä sekä latauslinkki edellä mainittuun JSONiin.
+- luo Tolgeehen avaimet, joita sieltä puuttuu, suomenkielisen oletustekstin kanssa
+  (`resolution: NEW`, eli olemassa olevaa käännöstä ei koskaan ylikirjoiteta), ja
+- poistaa Tolgeesta avaimet, joita koodissa ei enää ole.
+
+Synkronointi kirjoittaa **suoraan Tolgee Cloudiin** (`https://app.tolgee.io`), ei lokalisointipalvelun
+proxyn kautta — proxy on read-only eikä siinä ole poistoreittiä. Käännösten _luku_ pysyy proxyssa.
+
+Ajo tapahtuu **vain QA-ympäristössä** ja vain sovelluksen käynnistyessä. Ympäristörajaus on
+salaisuus itse: koko synkronointipaketti on gatettu `kitu.tolgee.apiKey`-propertyyn, ja
+`TOLGEE_API_KEY` injektoidaan vain Test-tilin (QA) taskiin. Muualla property on tyhjä eivätkä beanit
+edes instantioidu.
+
+Poistoja rajoittaa turvaraja `max(kitu.tolgee.sync.minDeleteAllowance, kitu.tolgee.sync.maxDeleteRatio ×
+Tolgeen avainmäärä)` (oletuksena `max(5, 10 %)`). Jos poistettavia on enemmän, **uudet avaimet viedään
+silti, poistot ohitetaan** ja etusivulle tulee varoitus. Sama varoitus näkyy, jos synkronointi
+epäonnistui tai koodin avainrekisteri oli tyhjä. Virhepoistosta toipuu Tolgeen roskakorin kautta
+(Tolgee UI → Trash → Restore).
+
+Vianselvitykseen: `kitu.tolgee.sync.dryRun=true` laskee ja lokittaa diffin kirjoittamatta mitään.
+
+Koska suomi on kanoninen koodissa, `resolution: NEW` ei päivitä Tolgeehen jo vietyä lähdetekstiä.
+Kun tekstin **merkitys** muuttuu, vaihda avaimen nimi — muuten kääntäjä näkee vanhan lähdetekstin.
+
+Tolgeen monikkoeditori (ICU, `{count, plural, …}`) ei toimi kitussa: `LocalizedString.interpolate` on
+pelkkä `{name}`-korvaus, joten ICU-syntaksi renderöityisi raakana. Tämä koskee `{count}`-avaimia
+`error.jarjestelmassaVirheita`, `error.koskiSiirtoEpaonnistunut` ja `time.{minuuttia,tuntia,paivaa}Sitten`.
 
 ## Hyödyllisiä komentoja
 

@@ -9,10 +9,11 @@ import fi.oph.kitu.html.testId
 import fi.oph.kitu.html.warningMessage
 import fi.oph.kitu.i18n.LocalizedString
 import fi.oph.kitu.i18n.formatRelativeTime
+import fi.oph.kitu.i18n.tolgee.TolgeeSyncResult
+import fi.oph.kitu.i18n.tolgee.TolgeeSyncStatus
 import kotlinx.html.FlowContent
 import kotlinx.html.UL
 import kotlinx.html.a
-import kotlinx.html.br
 import kotlinx.html.div
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -25,10 +26,10 @@ import java.time.Instant
 object HomePage {
     private const val SKELETON_ROW_COUNT = 5
 
-    fun render(missingTranslationCount: Int = 0): String =
+    fun render(): String =
         Page.renderHtml {
             h1 { +"Kielitutkintorekisteri" }
-            missingTranslationsWarning(missingTranslationCount)
+            tolgeeSyncWarning()
             div(classes = "grid dashboard-grid") {
                 testId("dashboard")
                 lazyCard(groupId = "yki", contentKey = "yki", title = "Yleinen kielitutkinto")
@@ -223,13 +224,25 @@ object HomePage {
     }
 }
 
-internal fun FlowContent.missingTranslationsWarning(count: Int) {
-    if (count <= 0) return
-    warningMessage(LocalizedString(fi = "Tolgeesta puuttuu $count käännösavainta.")) {
-        br()
-        a(href = "/kielitutkinnot/lokalisointi/puuttuvat-kaannokset") {
-            attributes["download"] = "puuttuvat-kaannokset.json"
-            +"Lataa puuttuvat käännökset (JSON)"
+internal fun FlowContent.tolgeeSyncWarning() {
+    val viesti =
+        when (val tila = TolgeeSyncStatus.last) {
+            is TolgeeSyncResult.PoistorajaYlittyi -> {
+                "Tolgee-synkronointi ohitti poistot: poistettavia avaimia ${tila.poistettavia}, " +
+                    "turvaraja ${tila.raja}. Tarkista muutokset ennen kuin nostat rajaa."
+            }
+
+            TolgeeSyncResult.RekisteriTyhja -> {
+                "Tolgee-synkronointi ohitettiin: koodin käännösavainrekisteri oli tyhjä."
+            }
+
+            is TolgeeSyncResult.Virhe -> {
+                "Tolgee-synkronointi epäonnistui: ${tila.syy}"
+            }
+
+            is TolgeeSyncResult.Ok, null -> {
+                return
+            }
         }
-    }
+    warningMessage(LocalizedString(fi = viesti))
 }
