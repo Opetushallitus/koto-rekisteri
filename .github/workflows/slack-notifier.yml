@@ -4,6 +4,7 @@ on:
   workflow_run:
     workflows:
       - Build
+      - AWS audit
     types:
       - completed
 

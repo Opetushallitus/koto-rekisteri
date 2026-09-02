@@ -43,8 +43,10 @@ infra/
     └── yki-historia-upload-stack.ts   # Prod-only S3 bucket for YKI-historia uploads
 ```
 
-`infra/scripts/` holds Node helpers invoked by top-level `scripts/*.sh`
-(currently just `presign-yki-historia-upload.mjs`, see below).
+`infra/scripts/` holds helpers that belong to the CDK app rather than to the
+server: `presign-yki-historia-upload.mjs` (see below) and
+`audit-deployed-stacks.sh` + `cdk-app-inventory.mjs` (see _Stack lifecycle_
+below).
 
 ## Util stage (`bin/infra.ts`, `lib/utility-stage.ts`)
 
@@ -64,8 +66,9 @@ Created once, in the shared util account. Three things live here:
 Each of `Dev`, `Test`, `Prod` instantiates the same set of stacks in roughly this
 order (because of dependencies):
 
-1. **`GithubActions`** — per-env CDK deploy role + CloudWatch log-tail permission.
-   Trusted via OIDC.
+1. **`GithubActions`** — per-env CDK deploy role, CloudWatch log-tail permission
+   and the read-only `cloudformation:ListStacks` / `lambda:ListFunctions` used by
+   the weekly audit. Trusted via OIDC.
 2. **`AlarmsUsEast1`** (region: `us-east-1`) and **`Alarms`** (env region) — see
    the Monitoring section below. The us-east-1 stack is created first so the
    primary stack can subscribe its SNS topics to the single shared Slack
@@ -243,6 +246,30 @@ The result is that flipping `automaticInvestigations` is a pure `AlarmActions`
 change in either direction, with no export being created or deleted and no
 two-step deploy to coordinate.
 
+### AWS Health events
+
+`alarms-stack.ts` also has an EventBridge rule (`AwsHealthScheduledChanges`)
+that forwards `aws.health` events of category `scheduledChange` to the alarm SNS
+topic, and from there to Slack via Chatbot. These are AWS's advance warnings
+about things that will break if ignored: Lambda runtime end-of-support, RDS
+engine end-of-life, certificate expiry. Without the rule they only appear in the
+AWS Health Dashboard, which nobody reads — that is how six Lambdas ended up
+stranded on `nodejs20.x` past its deprecation date.
+
+Two deliberate choices:
+
+- **Target is `alarmSnsTopic`, not `infoSnsTopic`.** Only prod defines a
+  `slackInfoChannel` (`accounts.ts`), and the `us-east-1` stack reaches Slack
+  only through `additionalAlarmTopics`. The alarm topic is the one topic that is
+  subscribed in every instance of this stack.
+- **Only `scheduledChange`.** Adding `accountNotification` would pull in things
+  like Shield subscription renewal reminders and drown the signal.
+
+Coverage comes for free: `AlarmsStack` is already instantiated in both
+`eu-west-1` and `us-east-1` per env, plus once for `Util`. Health events for
+global services are only delivered to `us-east-1`; regional ones go to their own
+region. Both are covered.
+
 ### Stack layout
 
 Per env (`Dev` / `Test` / `Prod`):
@@ -384,6 +411,76 @@ TAG=$(git rev-parse main) npx cdk deploy --exclusively 'Prod/Alarms' 'Prod/Alarm
 CDK bootstrap (`cdk-hnb659fds-*` roles) must already exist in each account; the
 GitHub Actions deploy role assumes those roles to publish artifacts.
 
+## Stack lifecycle and runtime currency
+
+**Lambda runtimes are never pinned, and must not be.** The one Lambda this repo
+owns (`koski-audit-logs-integration-stack.ts`) uses `Runtime.NODEJS_LATEST`, and
+CDK's own custom-resource Lambdas (`LogRetention`, `VpcRestrictDefaultSG`,
+`OpenIdConnectProvider`) use `determineLatestNodeRuntimeName()`. Both are
+_variable_ values that move when `aws-cdk-lib` is upgraded. Renovate automerges
+those minor bumps and every `main` push redeploys Dev → Test → Prod, so runtimes
+stay current with no human action.
+
+**The one thing that breaks this is a stack falling out of the pipeline.** When
+a stack is renamed or removed from the app, CloudFormation does _not_ delete the
+old stack — it just stops being managed, and its resources freeze at whatever
+they were on the last deploy. Every stale Lambda runtime this project has ever
+had came from that, not from a stale pin:
+
+| Orphan stack                         | Cause                                                                 |
+| ------------------------------------ | --------------------------------------------------------------------- |
+| `Prod-AlarmsStack`                   | renamed to `Prod-Alarms`; Slack notifier Lambda deleted in `7f800a99` |
+| `CertificateStack` (us-east-1)       | ACM cert moved into `service-stack.ts` in the env's own region        |
+| `<Env>-Bastion`, `<Env>-EcsRdsProxy` | removed from the app in `253dc088`                                    |
+| `Util-SlackBot`                      | folded into `Util-Alarms`                                             |
+
+**So: when you remove or rename a stack, delete the old CloudFormation stack in
+every account in the same change.** Not doing so is what this section exists to
+prevent.
+
+### Stacks that are deliberately outside the CDK app
+
+- **`DnsStack`** per env — owns the Route53 hosted zone. Kept out of CDK so the
+  app can never destroy it (`dns-stack.ts` looks it up instead). Note the app
+  _also_ has a `<Env>/Dns` stack, which only performs that lookup and therefore
+  synthesises to an empty stack.
+- **`CDKToolkit`** — CDK bootstrap.
+
+### `PhysicalName.GENERATE_IF_NEEDED` is load-bearing
+
+`alarms-stack.ts` creates its SNS topics with
+`topicName: PhysicalName.GENERATE_IF_NEEDED`. That makes the physical name — and
+therefore the ARN — resolve at synth time, so the `us-east-1` ↔ `eu-west-1`
+topic sharing needs no CloudFormation export. Remove it and CDK immediately
+falls back to `crossRegionReferences`, which materialises a pair of
+`CustomCrossRegionExport{Reader,Writer}` custom-resource Lambdas per stack —
+exactly the ones that went stale in `CertificateStack` and `DnsStack`.
+
+### Weekly audit
+
+`.github/workflows/aws-audit.yml` runs `infra/scripts/audit-deployed-stacks.sh`
+against each account every Monday at 06:00 UTC (and on `workflow_dispatch`). The
+script synthesises the app, reads the expected stacks straight out of the cloud
+assembly (`cdk-app-inventory.mjs` — `cdk list` only gives construct paths, not
+stack names), and reports:
+
+- CloudFormation stacks that are deployed but no longer in the app
+- stacks in the app that are not deployed
+- Lambda functions whose runtime is not the current `Runtime.NODEJS_LATEST`
+
+The expected runtime is read from `aws-cdk-lib` at run time, so it tracks
+Renovate's bumps by itself. Ignore lists live at the top of the script:
+`DnsStack` and `CDKToolkit` for stacks, and `vaka-pilvi-tietoturva-*` /
+`aws-controltower-*` / `aws-quicksetup-*` for Lambdas — the last three are OPH's
+central Control Tower tooling and AWS's own, not ours. A failing run is reported
+to Slack by `slack-notifier.yml`.
+
+Run it locally against one account with:
+
+```bash
+TAG=$(git rev-parse main) AWS_PROFILE=oph-ktr-prod infra/scripts/audit-deployed-stacks.sh
+```
+
 ## Manual prerequisites that don't live in CDK
 
 Listed here because deploys silently or loudly fail when these don't exist:
@@ -393,8 +490,11 @@ Listed here because deploys silently or loudly fail when these don't exist:
 - **Secrets Manager secrets** per env account, by exact name:
   `kielitesti-token`, `palvelukayttaja-password`, `yki-api-password`,
   `yki-api-user`, `palvelukayttaja-oauth-password`,
-  `oppijanumero-password`, `slack-webhook-url`. The repo's `scripts/`
+  `oppijanumero-password`. The repo's `scripts/`
   directory has helpers (`scripts/ensure_aws_secrets.sh`) for setting these.
+  (`slack-webhook-url` is **no longer needed** — the Lambda that read it was
+  replaced by Chatbot in `7f800a99`. The secrets still exist in the accounts and
+  can be deleted.)
 - **`tolgee-api-key` in the Test account only** (`961341546901`, `eu-west-1`),
   a Tolgee Cloud **Project API Key** (not a Personal Access Token) with scopes
   `keys.view`, `keys.create`, `keys.delete`, `translations.view`. Create it by
