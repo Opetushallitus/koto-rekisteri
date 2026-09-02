@@ -211,6 +211,38 @@ To re-enable for one env, set `automaticInvestigations: true` on that env in
 `lib/accounts.ts` and deploy; the diff is limited to `AlarmActions` on the
 alarms in `LogGroups`, `Service` and `Route53HealthChecks`.
 
+#### Why the investigation-group export is pinned
+
+`AlarmsStack` ends with an explicit
+`this.exportValue(this.investigationGroup.attrArn)`. **Leave it there** — it is
+what makes the flag safe to flip in both directions, and it is deliberately
+permanent.
+
+Without it, turning the flag off removes the investigation-group ARN from every
+consumer stack, and with it the CloudFormation export that carried the ARN
+across stacks. CloudFormation refuses to delete an export while an
+already-deployed stack still imports it, and CDK deploys the producer (`Alarms`
+/ `AlarmsUsEast1`) **before** its consumers, so the producer's update rolls
+back:
+
+```
+Cannot delete export Dev-AlarmsUsEast1:ExportsOutputFnGetAttInvestigationGroupArnECB47902
+as it is in use by Dev-Route53HealthChecks
+```
+
+`exportValue` pins the export under the exact same name the automatic
+cross-stack reference generates, so the export simply always exists:
+
+- **Flag off** — the export is left dangling with no importers. An unused
+  CloudFormation export carries no cost.
+- **Flag on** — the automatic cross-stack reference and `exportValue` resolve to
+  the same single output, so `exportValue` is a no-op and the consumers import
+  the export that is already there.
+
+The result is that flipping `automaticInvestigations` is a pure `AlarmActions`
+change in either direction, with no export being created or deleted and no
+two-step deploy to coordinate.
+
 ### Stack layout
 
 Per env (`Dev` / `Test` / `Prod`):
