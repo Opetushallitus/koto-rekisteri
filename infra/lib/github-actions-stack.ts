@@ -40,12 +40,21 @@ export class GithubActionsStack extends Stack {
         sid: "AllowAssumingCDKRoles",
         actions: ["sts:AssumeRole", "iam:PassRole"],
         resources: [
-          "arn:aws:iam::*:role/cdk-readOnlyRole",
           "arn:aws:iam::*:role/cdk-hnb659fds-deploy-role-*",
           "arn:aws:iam::*:role/cdk-hnb659fds-file-publishing-*",
           "arn:aws:iam::*:role/cdk-hnb659fds-image-publishing-*",
           "arn:aws:iam::*:role/cdk-hnb659fds-lookup-*",
         ],
+      }),
+    )
+    this.githubActionsRole.addToPolicy(
+      new PolicyStatement({
+        sid: "AllowDriftAudit",
+        // scripts/audit-deployed-stacks.sh vertaa deployattuja pinoja ja
+        // Lambda-ajonaikoja CDK-appiin. Kumpikaan list-rajapinta ei tue
+        // resurssitason rajausta, joten resources on pakko olla "*".
+        actions: ["cloudformation:ListStacks", "lambda:ListFunctions"],
+        resources: ["*"],
       }),
     )
     this.githubActionsRole.addToPolicy(

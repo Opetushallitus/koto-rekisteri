@@ -29,10 +29,11 @@ automaattisesti spring-boot:runin ympärille.
 
 ### Hälytykset
 
-- Slack-webhookit on tallennettu AWS Secrets Manageriin nimellä
-  `slack-webhook-url` per AWS-tili.
+- Slack-yhteys on AWS Chatbot (`infra/lib/alarms-stack`), ei webhookia.
 - CloudWatch-pohjaiset hälytykset määritellään `infra/lib/alarms-stack`issa
   ja `infra/lib/koski-audit-logs-integration-stack`issa.
+- AWS Health -tapahtumat (ajonaikojen ja versioiden elinkaari) reititetään
+  samaan Slack-kanavaan `alarms-stack`in EventBridge-säännöllä.
 
 ## Salaisuudet
 
@@ -42,7 +43,6 @@ automaattisesti spring-boot:runin ympärille.
   automaattisesti, kun käynnistät ympäristön `./scripts/start_local_env.sh`-komennolla.
 - Manuaalisesti perustettavat salaisuudet per AWS-tili
   (pää-README sisältää aina ajantasaisimman listan):
-  - `slack-webhook-url`
   - `oppijanumero-password`
   - `kielitesti-token`
   - `tolgee-api-key` (vain Test-tili / QA; käännösavainten synkronointi Tolgeehen)

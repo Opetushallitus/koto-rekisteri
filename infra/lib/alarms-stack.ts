@@ -1,5 +1,12 @@
 import * as cdk from "aws-cdk-lib"
-import { aws_chatbot, aws_sns, PhysicalName, StackProps } from "aws-cdk-lib"
+import {
+  aws_chatbot,
+  aws_events,
+  aws_events_targets,
+  aws_sns,
+  PhysicalName,
+  StackProps,
+} from "aws-cdk-lib"
 import { Construct } from "constructs"
 import {
   Effect,
@@ -92,6 +99,8 @@ export class AlarmsStack extends cdk.Stack {
     // poista vientiä johon kuluttajapino vielä viittaa ja CDK päivittää
     // tuottajan ensin.
     this.exportValue(this.investigationGroup.attrArn)
+
+    this.createHealthEventRule()
   }
 
   private createSnsTopic(id: string) {
@@ -102,6 +111,27 @@ export class AlarmsStack extends cdk.Stack {
     topic.grantPublish(new ServicePrincipal("cloudwatch.amazonaws.com"))
 
     return topic
+  }
+
+  // AWS Health kertoo etukäteen mm. Lambda-ajonaikojen ja RDS-versioiden
+  // elinkaaren päättymisestä. Ilman tätä sääntöä ilmoitukset jäävät AWS Health
+  // Dashboardiin, jota kukaan ei lue. Kohteena on alarmSnsTopic eikä
+  // infoSnsTopic, koska vain se on varmasti tilattu jokaisessa pinossa:
+  // info-kanava on määritelty ainoastaan prodille (accounts.ts), ja us-east-1:n
+  // pino saa Slack-yhteyden vain additionalAlarmTopicsin kautta.
+  private createHealthEventRule() {
+    new aws_events.Rule(this, "AwsHealthScheduledChanges", {
+      description:
+        "AWS Health scheduled change -tapahtumat (ajonaikojen ja versioiden elinkaari) Slackiin",
+      eventPattern: {
+        source: ["aws.health"],
+        detailType: ["AWS Health Event"],
+        // Pelkkä scheduledChange: accountNotification toisi mukanaan mm.
+        // Shield-tilauksen uusimismuistutukset ja hukuttaisi signaalin.
+        detail: { eventTypeCategory: ["scheduledChange"] },
+      },
+      targets: [new aws_events_targets.SnsTopic(this.alarmSnsTopic)],
+    })
   }
 
   private createSlackChannelConfiguration(

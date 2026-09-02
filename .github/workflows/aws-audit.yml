@@ -1,0 +1,56 @@
+name: AWS audit
+
+# Etsii AWS-tileiltä pinoja ja Lambda-ajonaikoja, jotka ovat karanneet
+# CDK-appista. Kun pino poistetaan tai nimetään uudelleen koodissa,
+# CloudFormation jättää vanhan pinon pystyyn eikä mikään enää päivitä sen
+# resursseja — muun muassa Lambdojen ajonaikoja. Katso
+# infra/scripts/audit-deployed-stacks.sh ja infra/README.md.
+#
+# Epäonnistuminen ilmoitetaan Slackiin slack-notifier.yml:n kautta.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: aws-audit
+  cancel-in-progress: false
+
+env:
+  MISE_ENV: ci
+
+jobs:
+  audit:
+    name: ${{ matrix.environment }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [Util, Dev, Test, Prod]
+    permissions:
+      id-token: write
+      contents: read
+    environment:
+      name: ${{ matrix.environment }}
+    env:
+      TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Install tools
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
+        with:
+          experimental: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to ${{ matrix.environment }}
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
+        with:
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::${{ vars.account_id }}:role/kitu-github-actions-role
+      - name: Install dependencies
+        run: npm ci
+        working-directory: infra
+      - name: Audit deployed stacks and Lambda runtimes
+        run: ./scripts/audit-deployed-stacks.sh
+        working-directory: infra
