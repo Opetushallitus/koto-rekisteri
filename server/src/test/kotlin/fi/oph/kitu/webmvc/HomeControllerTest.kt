@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -23,7 +22,6 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -56,8 +54,8 @@ class HomeControllerTest(
 
         assertContains(response, "Kielitutkintorekisteri")
         assertFalse(
-            response.contains("Tolgeesta puuttuu"),
-            "Käännösvaroitusta ei näytetä kun lokalisointi ei ole käytössä (namespace tyhjä)",
+            response.contains("warning-text"),
+            "Tolgee-varoitusta ei näytetä kun synkronointia ei ole ajettu",
         )
         assertContains(response, """data-testid="dashboard"""")
         assertContains(response, """data-testid="yki-links"""")
@@ -74,27 +72,6 @@ class HomeControllerTest(
         assertContains(response, "Valtionhallinnon kielitutkinto")
         assertContains(response, "Kotoutumiskoulutuksen kielitaidon päättötesti")
         assertContains(response, "Ylläpito")
-    }
-
-    @Test
-    fun `puuttuvat-kaannokset -reitti listaa avaimet oletusteksteineen kun Tolgee on tyhja`() {
-        val json = getHtml("/lokalisointi/puuttuvat-kaannokset")
-
-        assertContains(json, "nav.yki")
-        assertContains(json, "Yleinen kielitutkinto")
-        assertContains(json, "error.jarjestelmassaVirheita")
-        assertContains(json, "{count} virhettä.")
-    }
-
-    @Test
-    fun `puuttuvat-kaannokset -reitti palauttaa JSONia vaikka selain suosisi XMLaa`() {
-        mockMvc
-            .perform(
-                get("/lokalisointi/puuttuvat-kaannokset")
-                    .session(virkailijaSession())
-                    .accept(MediaType.APPLICATION_XML, MediaType.ALL),
-            ).andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
     }
 
     @Test

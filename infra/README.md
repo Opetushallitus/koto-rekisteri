@@ -135,9 +135,14 @@ one-liner for the uploader. Default TTL is 7 days (the SigV4 maximum).
   `container-repository-stack.ts`.
 - Secrets pulled at task start from Secrets Manager: `kielitesti-token`,
   `palvelukayttaja-password`, `yki-api-password`, `yki-api-user`,
-  `palvelukayttaja-oauth-password`. **These must exist in the env account
+  `palvelukayttaja-oauth-password`, plus `tolgee-api-key` **in the `qa` env
+  only** (`props.name === "qa"`). **These must exist in the env account
   before deploy** — CDK doesn't create them. The DB password is sourced
   from the auto-generated cluster secret.
+- `tolgee-api-key` is what scopes the UI-translation key sync to QA: the app
+  gates the whole `i18n/tolgee` package on `kitu.tolgee.apiKey` being non-empty,
+  so envs without the secret never write to Tolgee. See the main README's
+  "Avainten synkronointi Tolgeehen".
 - OTel sidecar: collector config stored as an SSM parameter
   (`/kitu/otel-config-<stack-id>`), loaded into the sidecar via
   `AOT_CONFIG_CONTENT`. Tail sampling: 0.1% for the health check route,
@@ -358,6 +363,12 @@ Listed here because deploys silently or loudly fail when these don't exist:
   `yki-api-user`, `palvelukayttaja-oauth-password`,
   `oppijanumero-password`, `slack-webhook-url`. The repo's `scripts/`
   directory has helpers (`scripts/ensure_aws_secrets.sh`) for setting these.
+- **`tolgee-api-key` in the Test account only** (`961341546901`, `eu-west-1`),
+  a Tolgee Cloud **Project API Key** (not a Personal Access Token) with scopes
+  `keys.view`, `keys.create`, `keys.delete`, `translations.view`. Create it by
+  hand before deploying QA; `ensure_aws_secrets.sh` deliberately does not fetch
+  it, because local dev never syncs translations. Until it exists the sync is
+  simply off, so the change is safe to merge and deploy ahead of the key.
 - **KOSKI account-side resources**: IAM role `kitu-sqs-sender` (with trust
   policy for the kitu Lambda role) and SQS queue
   `oma-opintopolku-loki-audit-queue`. Owned by the KOSKI team.

@@ -163,6 +163,18 @@ export class ServiceStack extends Stack {
               "palvelukayttaja-oauth-password",
             ),
           ),
+          // Käännösavainten synkronointi Tolgee Cloudiin ajetaan vain QA:sta.
+          ...(props.name === "qa"
+            ? {
+                TOLGEE_API_KEY: aws_ecs.Secret.fromSecretsManager(
+                  aws_secretsmanager.Secret.fromSecretNameV2(
+                    this,
+                    "TolgeeApiKey",
+                    "tolgee-api-key",
+                  ),
+                ),
+              }
+            : {}),
         },
       },
       cpu: 2048,
