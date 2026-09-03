@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service
 class TallennaArvioijaValidation(
     val onr: OppijanumeroValidation,
     val timeService: TimeService,
+    val arvioijaRepository: YkiArvioijaRepository,
+    val kausiRepository: YkiArvioijaKausiRepository,
 ) : Validation<TallennaArvioija> {
     override fun ValidationRaise.validateBeforeEnrichment(value: TallennaArvioija) {
         accumulate {
@@ -26,6 +28,22 @@ class TallennaArvioijaValidation(
             accumulating { validateSahkopostiosoite(value.sahkopostiosoite) }
             accumulating { validateKaudenAlkupaiva(value.kaudenAlkupaiva, timeService.today(), "kaudenAlkupaiva") }
             validateArviointioikeudet(value.arviointioikeudet.map { it.kieli to it.tasot })
+        }
+    }
+
+    /** Lisayslomake toimii myos jatkokauden kirjaamisena, joten paallekkaisyys on estettava tassakin. */
+    override fun ValidationRaise.validateAfterEnrichment(value: TallennaArvioija) {
+        val arvioijaId = arvioijaRepository.findByArvioijaOid(value.arvioijaOid)?.id?.toInt() ?: return
+
+        accumulate {
+            accumulating {
+                validateEiPaallekkaisiaKausia(
+                    kaudet = kausiRepository.findKaudet(arvioijaId),
+                    alkupaiva = value.kaudenAlkupaiva,
+                    paattymispaiva = value.kaudenPaattymispaiva,
+                    kentta = "kaudenAlkupaiva",
+                )
+            }
         }
     }
 }

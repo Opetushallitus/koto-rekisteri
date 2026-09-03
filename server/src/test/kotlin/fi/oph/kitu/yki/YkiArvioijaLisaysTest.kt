@@ -238,6 +238,28 @@ class YkiArvioijaLisaysTest(
     }
 
     @Test
+    fun `lisayslomakkeelta ei voi kirjata paallekkaista kautta`() {
+        tallennaOlemassaolevaMerkinta()
+
+        val html =
+            html(
+                post("/yki/arvioijat/uusi")
+                    .session(session())
+                    .with(csrf())
+                    .param("arvioijaOid", petronOid)
+                    .param("sukunimi", "Kivinen-Testi")
+                    .param("etunimet", "Petro Testi")
+                    .param("katuosoite", "Kivinenkatu 2 A 3")
+                    .param("postinumero", "00100")
+                    .param("postitoimipaikka", "HELSINKI")
+                    .param("kaudenAlkupaiva", "2024-01-01")
+                    .param("arviointioikeus", "FIN:PT"),
+            )
+
+        assertContains(html, "päällekkäin")
+    }
+
+    @Test
     fun `lisayslomakkeelta tallennus sailyttaa ensimmaisen rekisterointipaivan`() {
         tallennaOlemassaolevaMerkinta()
 
