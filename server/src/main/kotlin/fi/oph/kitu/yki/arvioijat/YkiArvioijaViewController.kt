@@ -26,6 +26,7 @@ import java.net.URI
 @RequestMapping("/yki/arvioijat")
 class YkiArvioijaViewController(
     private val arvioijaService: YkiArvioijaService,
+    private val kausiService: YkiArvioijaKausiService,
     private val asetukset: ArvioijarekisteriAsetukset,
     private val timeService: TimeService,
 ) {
@@ -65,7 +66,7 @@ class YkiArvioijaViewController(
     ): ResponseEntity<String> =
         arvioijaService.haeHenkilotiedot(form.oppijanumero).fold(
             ifLeft = { virhe ->
-                ResponseEntity.ok(YkiArvioijaLomakePage.renderHaku(form, virheet(virhe)))
+                ResponseEntity.ok(YkiArvioijaLomakePage.renderHaku(form, lomakevirheet(virhe)))
             },
             ifRight = { esitaytto ->
                 ResponseEntity.ok(
@@ -97,7 +98,7 @@ class YkiArvioijaViewController(
 
         return arvioijaService.luoArvioija(form.toCommand(oid, alkupaiva), CurrentUser.oid(), form.muokattu).fold(
             ifLeft = { virhe ->
-                ResponseEntity.ok(YkiArvioijaLomakePage.renderLomake(form, virheet(virhe)))
+                ResponseEntity.ok(YkiArvioijaLomakePage.renderLomake(form, lomakevirheet(virhe)))
             },
             ifRight = { arvioija ->
                 viewMessage?.showSuccess(
@@ -172,7 +173,7 @@ class YkiArvioijaViewController(
                     if (virhe == YkiArvioijaError.ArvioijaaEiLoydy) {
                         ResponseEntity.status(HttpStatus.NOT_FOUND).build()
                     } else {
-                        ResponseEntity.ok(muokkausLomake(id, form, virheet(virhe)))
+                        ResponseEntity.ok(muokkausLomake(id, form, lomakevirheet(virhe)))
                     }
                 },
                 ifRight = {
@@ -272,7 +273,8 @@ class YkiArvioijaViewController(
         return ResponseEntity.ok(
             YkiArvioijaTiedotPage.render(
                 arvioija = arvioija,
-                kausihistoria = arvioijaService.haeKausihistoria(id),
+                kaudet = kausiService.haeKaudet(id),
+                muutosloki = kausiService.haeMuutosloki(id),
                 turvakielto = arvioijaService.haeTurvakielto(arvioija.arvioijaOid),
                 flash = viewMessage?.consume(),
                 kirjoitusKaytossa = asetukset.kirjoitusKaytossa,
@@ -292,58 +294,4 @@ class YkiArvioijaViewController(
                 FormErrors.of(listOf(ValidationError(listOf(kentta), viesti))),
             ),
         )
-
-    private fun virheet(error: YkiArvioijaError): FormErrors =
-        when (error) {
-            is YkiArvioijaError.Validointivirheet -> {
-                FormErrors.of(error.virheet)
-            }
-
-            is YkiArvioijaError.OppijaaEiYksiloity -> {
-                kentta(
-                    "oppijanumero",
-                    UiText.Yki.Arvioija.eiYksiloity
-                        .toString(),
-                )
-            }
-
-            is YkiArvioijaError.OppijanumeroaEiSaatu -> {
-                when (error.syy) {
-                    is OppijanumeroException.OppijaNotFoundException -> {
-                        yleinen(
-                            UiText.Yki.Arvioija.eiLoytynytOnrista
-                                .toString(),
-                        )
-                    }
-
-                    else -> {
-                        yleinen(
-                            UiText.Yki.Arvioija.onrEiVastannut
-                                .toString(),
-                        )
-                    }
-                }
-            }
-
-            YkiArvioijaError.ArvioijaaEiLoydy, YkiArvioijaError.KauttaEiLoydy -> {
-                yleinen(
-                    UiText.Yki.Arvioija.eiLoydy
-                        .toString(),
-                )
-            }
-
-            YkiArvioijaError.MuokattuSamanaikaisesti -> {
-                yleinen(
-                    UiText.Yki.Arvioija.muokattuSamanaikaisesti
-                        .toString(),
-                )
-            }
-        }
-
-    private fun yleinen(viesti: String): FormErrors = FormErrors.of(listOf(ValidationError(emptyList(), viesti)))
-
-    private fun kentta(
-        nimi: String,
-        viesti: String,
-    ): FormErrors = FormErrors.of(listOf(ValidationError(listOf(nimi), viesti)))
 }

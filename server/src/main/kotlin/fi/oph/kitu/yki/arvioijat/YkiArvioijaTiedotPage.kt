@@ -28,16 +28,20 @@ import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.button
+import kotlinx.html.details
+import kotlinx.html.div
 import kotlinx.html.footer
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.p
+import kotlinx.html.summary
 import java.time.LocalDate
 
 object YkiArvioijaTiedotPage {
     fun render(
         arvioija: YkiArvioijaEntity,
-        kausihistoria: List<YkiArvioijaKausiEntity>,
+        kaudet: List<YkiRekisterointikausiEntity>,
+        muutosloki: List<YkiArvioijaKausiEntity>,
         turvakielto: Turvakieltotieto,
         flash: ViewMessageData?,
         kirjoitusKaytossa: Boolean,
@@ -87,64 +91,44 @@ object YkiArvioijaTiedotPage {
 
             card(overflowAuto = true) {
                 cardContent {
-                    h2 { +UiText.Yki.Arvioija.arviointioikeudet }
-                    displayTable(
-                        arvioija.arviointioikeudet,
-                        listOf(
-                            DisplayTableColumn(
-                                UiText.Yki.Arvioija.tutkintokieli
-                                    .toString(),
-                                testId = "kieli",
-                            ) { +it.kieli.nimi },
-                            DisplayTableColumn(
-                                UiText.Yki.Arvioija.arviointioikeudet
-                                    .toString(),
-                                testId = "tasot",
-                            ) { oikeus ->
-                                +oikeus.tasot.sorted().joinToString(", ") { it.nimi.toString() }
-                            },
-                            DisplayTableColumn(
-                                UiText.Yki.Sarake.tila
-                                    .toString(),
-                                testId = "arviointioikeusTila",
-                            ) { oikeus ->
-                                +Rekisterointitila.laske(oikeus, tanaan).nimi
-                            },
-                            DisplayTableColumn(
-                                UiText.Yki.Arvioija.kaudenAlkupaiva
-                                    .toString(),
-                                testId = "kaudenAlkupaiva",
-                            ) { oikeus ->
-                                oikeus.kaudenAlkupaiva?.let { finnishDate(it) }
-                            },
-                            DisplayTableColumn(
-                                UiText.Yki.Arvioija.kaudenPaattymispaiva
-                                    .toString(),
-                                testId = "kaudenPaattymispaiva",
-                            ) { oikeus ->
-                                oikeus.kaudenPaattymispaiva?.let { finnishDate(it) }
-                            },
-                            DisplayTableColumn(
-                                UiText.Yki.Arvioija.jatkorekisterointi
-                                    .toString(),
-                                testId = "jatkorekisterointi",
-                            ) { oikeus ->
-                                +(if (oikeus.jatkorekisterointi) UiText.Filter.kylla else UiText.Filter.ei)
-                            },
-                        ),
-                    )
+                    h2 { +UiText.Yki.Arvioija.kausihistoria }
+
+                    if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
+                        p {
+                            buttonLink(
+                                href = Links.Yki.uusiKausi(arvioija.id!!.toInt()),
+                                enabled = kirjoitusKaytossa,
+                                testId = "uusiKausi",
+                                disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
+                            ) {
+                                +UiText.Yki.Arvioija.Kausi.uusi
+                            }
+                        }
+                    }
+
+                    if (kaudet.isEmpty()) {
+                        p { +UiText.Yki.Arvioija.Kausi.eiKausia }
+                    } else {
+                        kaudetTaulukko(arvioija, kaudet, kirjoitusKaytossa, tanaan)
+                    }
+
+                    details {
+                        summary {
+                            testId("naytaMuutoshistoria")
+                            +UiText.Yki.Arvioija.Kausi.naytaMuutoshistoria
+                        }
+                        if (muutosloki.isEmpty()) {
+                            p { +UiText.Yki.Arvioija.eiKausihistoriaa }
+                        } else {
+                            kausihistoriaTaulukko(muutosloki, tanaan)
+                        }
+                    }
                 }
             }
 
-            card(overflowAuto = true) {
-                cardContent {
-                    h2 { +UiText.Yki.Arvioija.kausihistoria }
-                    if (kausihistoria.isEmpty()) {
-                        p { +UiText.Yki.Arvioija.eiKausihistoriaa }
-                    } else {
-                        kausihistoriaTaulukko(kausihistoria, tanaan)
-                    }
-                }
+            // Natiivi dialog leikkautuu overflow-kontekstissa, joten ne renderoidaan kortin ulkopuolelle.
+            if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI) && kirjoitusKaytossa) {
+                kaudet.forEach { kausi -> kausidialogit(arvioija, kausi, kaudet.size, tanaan) }
             }
 
             card {
@@ -265,6 +249,13 @@ private fun FlowContent.kausihistoriaTaulukko(
         kausihistoria,
         listOf(
             DisplayTableColumn(
+                UiText.Yki.Arvioija.Kausi.toimenpide
+                    .toString(),
+                testId = "kausiToimenpide",
+            ) { kausi ->
+                kausi.toimenpide?.let { +it.nimi }
+            },
+            DisplayTableColumn(
                 UiText.Yki.Arvioija.tutkintokieli
                     .toString(),
                 testId = "kausiKieli",
@@ -324,3 +315,171 @@ private fun FlowContent.kausihistoriaTaulukko(
         testId = "kausihistoria",
     )
 }
+
+private fun FlowContent.kaudetTaulukko(
+    arvioija: YkiArvioijaEntity,
+    kaudet: List<YkiRekisterointikausiEntity>,
+    kirjoitusKaytossa: Boolean,
+    tanaan: LocalDate,
+) {
+    val arvioijaId = arvioija.id!!.toInt()
+
+    displayTable(
+        kaudet,
+        listOfNotNull(
+            DisplayTableColumn(
+                UiText.Yki.Sarake.tila
+                    .toString(),
+                testId = "kausiTila",
+            ) { kausi ->
+                +Rekisterointitila.laske(kausi, tanaan).nimi
+            },
+            DisplayTableColumn(
+                UiText.Yki.Arvioija.kaudenAlkupaiva
+                    .toString(),
+                testId = "kausiAlkupaiva",
+            ) { kausi ->
+                finnishDate(kausi.alkupaiva)
+            },
+            DisplayTableColumn(
+                UiText.Yki.Arvioija.kaudenPaattymispaiva
+                    .toString(),
+                testId = "kausiPaattymispaiva",
+            ) { kausi ->
+                kausi.paattymispaiva?.let { finnishDate(it) }
+            },
+            DisplayTableColumn(
+                UiText.Yki.Arvioija.arviointioikeudet
+                    .toString(),
+                testId = "kausiOikeudet",
+            ) { kausi ->
+                kausi.oikeudet.sortedBy { it.kieli.name }.forEach { oikeus ->
+                    div {
+                        +"${oikeus.kieli.nimi}: ${oikeus.tasot.sorted().joinToString(", ") { it.nimi.toString() }}"
+                    }
+                }
+            },
+            if (!CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
+                null
+            } else {
+                DisplayTableColumn(
+                    UiText.Yki.Arvioija.Kausi.toiminnot
+                        .toString(),
+                    testId = "kausiToiminnot",
+                ) { kausi ->
+                    kausitoiminnot(arvioijaId, kausi, kaudet.size, kirjoitusKaytossa, tanaan)
+                }
+            },
+        ),
+        testId = "rekisterointikaudet",
+        rowTestId = { "kausi-${it.id}" },
+    )
+}
+
+private fun FlowContent.kausitoiminnot(
+    arvioijaId: Int,
+    kausi: YkiRekisterointikausiEntity,
+    kausiaYhteensa: Int,
+    kirjoitusKaytossa: Boolean,
+    tanaan: LocalDate,
+) {
+    val kausiId = kausi.id!!.toInt()
+
+    buttonLink(
+        href = Links.Yki.muokkaaKautta(arvioijaId, kausiId),
+        enabled = kirjoitusKaytossa,
+        testId = "muokkaaKautta",
+        disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
+    ) {
+        +UiText.Yki.Arvioija.Kausi.muokkaa
+    }
+
+    if (Rekisterointitila.laske(kausi, tanaan) == Rekisterointitila.AKTIIVINEN) {
+        kausikomento(
+            passivointiDialogi(kausiId),
+            UiText.Yki.Arvioija.Kausi.passivoi,
+            "passivoiKausi",
+            kirjoitusKaytossa,
+        )
+    }
+
+    // Viimeinen kausi jattaisi arvioijan ilman arviointioikeuksia, jolloin han katoaisi listalta.
+    if (kausiaYhteensa > 1) {
+        kausikomento(poistoDialogi(kausiId), UiText.Yki.Arvioija.Kausi.poista, "poistaKausi", kirjoitusKaytossa)
+    }
+}
+
+private fun FlowContent.kausikomento(
+    dialogId: String,
+    teksti: LocalizedString,
+    testId: String,
+    kirjoitusKaytossa: Boolean,
+) {
+    modalCommandButton(dialogId, ModalCommand.OPEN, classes = "secondary") {
+        testId(testId)
+        disabled = !kirjoitusKaytossa
+        if (!kirjoitusKaytossa) {
+            attributes["data-tooltip"] =
+                UiText.Yki.Arvioija.kirjoitusEiKaytossa
+                    .toString()
+        }
+        +teksti
+    }
+}
+
+private fun FlowContent.kausidialogit(
+    arvioija: YkiArvioijaEntity,
+    kausi: YkiRekisterointikausiEntity,
+    kausiaYhteensa: Int,
+    tanaan: LocalDate,
+) {
+    val arvioijaId = arvioija.id!!.toInt()
+    val kausiId = kausi.id!!.toInt()
+
+    if (Rekisterointitila.laske(kausi, tanaan) == Rekisterointitila.AKTIIVINEN) {
+        vahvistusdialogi(
+            passivointiDialogi(kausiId),
+            UiText.Yki.Arvioija.Kausi.passivoi,
+            UiText.Yki.Arvioija.Kausi.passivoiVahvistus,
+            Links.Yki.passivoiKausi(arvioijaId, kausiId),
+            "vahvistaKaudenPassivointi",
+        )
+    }
+
+    if (kausiaYhteensa > 1) {
+        vahvistusdialogi(
+            poistoDialogi(kausiId),
+            UiText.Yki.Arvioija.Kausi.poista,
+            UiText.Yki.Arvioija.Kausi.poistaVahvistus,
+            Links.Yki.poistaKausi(arvioijaId, kausiId),
+            "vahvistaKaudenPoisto",
+        )
+    }
+}
+
+private fun FlowContent.vahvistusdialogi(
+    dialogId: String,
+    otsikko: LocalizedString,
+    vahvistus: LocalizedString,
+    action: String,
+    vahvistusTestId: String,
+) {
+    modal(dialogId, otsikko.toString()) {
+        p { +vahvistus }
+        formPost(action) {
+            footer {
+                button(type = ButtonType.submit) {
+                    testId(vahvistusTestId)
+                    +otsikko
+                }
+                modalCommandButton(dialogId, ModalCommand.CLOSE, classes = "secondary") {
+                    +UiText.Yki.Arvioija.peruuta
+                }
+            }
+        }
+    }
+}
+
+private fun passivointiDialogi(kausiId: Int): String = "passivoiKausiDialog-$kausiId"
+
+private fun poistoDialogi(kausiId: Int): String = "poistaKausiDialog-$kausiId"

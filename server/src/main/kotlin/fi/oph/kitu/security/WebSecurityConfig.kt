@@ -168,6 +168,10 @@ class WebSecurityConfig {
                     }
                 authorize(GET, "/yki/arvioijat/uusi", arvioijarekisterinKirjoitus)
                 authorize(GET, "/yki/arvioijat/*/muokkaa", arvioijarekisterinKirjoitus)
+                // Yksitasoinen * ei kata kausilomakkeiden polkuja, ja GET /yki/arvioijat/{id} on
+                // jaatava lukuoikeudella auki, joten kaudet luetellaan erikseen.
+                authorize(GET, "/yki/arvioijat/*/kaudet/uusi", arvioijarekisterinKirjoitus)
+                authorize(GET, "/yki/arvioijat/*/kaudet/*/muokkaa", arvioijarekisterinKirjoitus)
                 authorize(POST, "/yki/arvioijat/**", arvioijarekisterinKirjoitus)
 
                 if (developmentProfileActive(environment)) {

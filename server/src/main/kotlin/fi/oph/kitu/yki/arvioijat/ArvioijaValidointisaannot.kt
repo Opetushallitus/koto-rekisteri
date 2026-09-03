@@ -44,3 +44,44 @@ internal fun RaiseAccumulate<ValidationError>.validateArviointioikeudet(
         }
     }
 }
+
+internal fun RaiseAccumulate<ValidationError>.validatePakollisetYhteystiedot(
+    sukunimi: String,
+    etunimet: String,
+    katuosoite: String,
+    postinumero: String,
+    postitoimipaikka: String,
+) {
+    pakollinen(sukunimi, "sukunimi", "Sukunimi")
+    pakollinen(etunimet, "etunimet", "Etunimet")
+    pakollinen(katuosoite, "katuosoite", "Katuosoite")
+    pakollinen(postinumero, "postinumero", "Postinumero")
+    pakollinen(postitoimipaikka, "postitoimipaikka", "Postitoimipaikka")
+}
+
+private fun RaiseAccumulate<ValidationError>.pakollinen(
+    arvo: String,
+    kentta: String,
+    otsikko: String,
+) {
+    accumulating {
+        ensure(arvo.isNotBlank()) {
+            ValidationError(listOf(kentta), "$otsikko on pakollinen tieto")
+        }
+    }
+}
+
+internal fun Raise<ValidationError>.validatePostinumero(postinumero: String) {
+    ensure(postinumero.isBlank() || POSTINUMERO.matches(postinumero)) {
+        ValidationError(listOf("postinumero"), "Postinumeron on oltava viisi numeroa")
+    }
+}
+
+internal fun Raise<ValidationError>.validateSahkopostiosoite(sahkoposti: String?) {
+    ensure(sahkoposti.isNullOrBlank() || SAHKOPOSTI.matches(sahkoposti)) {
+        ValidationError(listOf("sahkopostiosoite"), "Sähköpostiosoite on virheellinen")
+    }
+}
+
+private val POSTINUMERO = Regex("""\d{5}""")
+private val SAHKOPOSTI = Regex("""[^@\s]+@[^@\s.]+(\.[^@\s.]+)+""")

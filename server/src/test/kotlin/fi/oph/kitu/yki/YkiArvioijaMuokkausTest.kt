@@ -480,7 +480,7 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
-    fun `tietosivu nayttaa arviointioikeuden lasketun tilan`() {
+    fun `tietosivu nayttaa rekisterointikauden lasketun tilan`() {
         val id = idOf(petro)
 
         timeService.runWithFixedClock(HETKI) {
@@ -489,7 +489,8 @@ class YkiArvioijaMuokkausTest(
                 .andExpect(status().isSeeOther)
 
             val tietosivu = html(get("/yki/arvioijat/$id").session(session()))
-            assertContains(tietosivu, """data-testid="arviointioikeusTila"""")
+            assertContains(tietosivu, """data-testid="rekisterointikaudet"""")
+            assertContains(tietosivu, """data-testid="kausiTila"""")
             assertContains(tietosivu, "Aktiivinen")
         }
     }
