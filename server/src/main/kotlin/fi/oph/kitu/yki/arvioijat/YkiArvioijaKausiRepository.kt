@@ -442,12 +442,21 @@ class YkiArvioijaKausiRepository(
         arviointioikeudet: List<YkiArviointioikeusEntity>,
         tekija: Oid?,
     ) {
+        // Ryhmittely alkupaivaan, ei paivapariin: sama alkupaiva tarkoittaa samaa kautta, ja
+        // kaksi kautta samalla alkupaivalla olisi paallekkainen — sellaisesta projektio valitsisi
+        // toisen ja poistaisi toisen kielet. Sama saanto kuin V122:n siirrossa.
         arviointioikeudet
             .filterNot { it.kieli.isLegacy() }
             .filter { it.kaudenAlkupaiva != null }
-            .groupBy { it.kaudenAlkupaiva!! to it.kaudenPaattymispaiva }
-            .forEach { (paivat, oikeudet) ->
-                val kausiId = upsertKausi(arvioijaId, paivat.first, paivat.second, tekija)
+            .groupBy { it.kaudenAlkupaiva!! }
+            .forEach { (alkupaiva, oikeudet) ->
+                val paattymispaiva =
+                    if (oikeudet.any { it.kaudenPaattymispaiva == null }) {
+                        null
+                    } else {
+                        oikeudet.maxOf { it.kaudenPaattymispaiva!! }
+                    }
+                val kausiId = upsertKausi(arvioijaId, alkupaiva, paattymispaiva, tekija)
                 jdbcTemplate.update(
                     "DELETE FROM yki_arvioija_arviointikausi_oikeus WHERE kausi_id = ?",
                     kausiId,
