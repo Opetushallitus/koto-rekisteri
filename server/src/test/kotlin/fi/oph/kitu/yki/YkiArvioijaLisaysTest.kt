@@ -170,6 +170,27 @@ class YkiArvioijaLisaysTest(
     }
 
     @Test
+    fun `puuttuva kauden alkupaiva palauttaa lomakkeen eika kaada renderointia`() {
+        val html =
+            html(
+                post("/yki/arvioijat/uusi")
+                    .session(session())
+                    .with(csrf())
+                    .param("arvioijaOid", petronOid)
+                    .param("sukunimi", "Kivinen-Testi")
+                    .param("etunimet", "Petro Testi")
+                    .param("katuosoite", "Kivinenkatu 2 A 3")
+                    .param("postinumero", "00100")
+                    .param("postitoimipaikka", "HELSINKI")
+                    .param("arviointioikeus", "FIN:PT"),
+            )
+
+        assertContains(html, "pakollinen tieto")
+        assertContains(html, """aria-invalid="true"""")
+        assertNull(repository.findByArvioijaOid(Oid.parse(petronOid).getOrThrow()))
+    }
+
+    @Test
     fun `virheellinen postinumero merkitaan kenttaan`() {
         val html =
             html(
