@@ -2,7 +2,6 @@ package fi.oph.kitu.yki.arvioijat
 
 import fi.oph.kitu.html.FormErrors
 import fi.oph.kitu.html.Page
-import fi.oph.kitu.html.ariaInvalid
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
 import fi.oph.kitu.html.dateInput
@@ -51,8 +50,7 @@ object YkiKausiLomakePage {
                             errors = errors,
                             testId = "alkupaiva",
                         ) { invalid ->
-                            dateInput("alkupaiva", form.alkupaiva, testId = "alkupaiva-input")
-                            if (invalid) ariaInvalid(true)
+                            dateInput("alkupaiva", form.alkupaiva, "alkupaiva-input", invalid)
                         }
 
                         label {

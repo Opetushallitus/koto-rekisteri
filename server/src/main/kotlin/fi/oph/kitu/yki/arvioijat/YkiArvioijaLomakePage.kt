@@ -116,8 +116,7 @@ object YkiArvioijaLomakePage {
                             errors = errors,
                             testId = "kaudenAlkupaiva",
                         ) { invalid ->
-                            dateInput("kaudenAlkupaiva", form.kaudenAlkupaiva, testId = "kaudenAlkupaiva-input")
-                            if (invalid) ariaInvalid(true)
+                            dateInput("kaudenAlkupaiva", form.kaudenAlkupaiva, "kaudenAlkupaiva-input", invalid)
                         }
 
                         label {

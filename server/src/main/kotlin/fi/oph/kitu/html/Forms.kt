@@ -28,9 +28,11 @@ fun FlowContent.dateInput(
     name: String,
     date: LocalDate?,
     testId: String? = null,
+    invalid: Boolean = false,
 ) {
     input(type = InputType.date, name = name) {
         testId(testId)
+        ariaInvalid(invalid)
         value = date?.toString().orEmpty()
     }
 }
