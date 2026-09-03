@@ -34,9 +34,9 @@ import kotlin.test.assertContains
 import kotlin.test.assertFalse
 import kotlin.test.fail
 
-@SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.kirjoitus.enabled=false"])
+@SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.muokkaus.enabled=false"])
 @Import(DBContainerConfiguration::class)
-class YkiArvioijaKirjoituskytkinTest(
+class YkiArvioijaMuokkauskytkinTest(
     @param:Autowired private val context: WebApplicationContext,
     @param:Autowired private val repository: YkiArvioijaRepository,
 ) {

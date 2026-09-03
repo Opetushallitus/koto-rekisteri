@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component
  */
 @Component
 class ArvioijarekisteriAsetukset(
-    @param:Value($$"${kitu.yki.arvioijarekisteri.kirjoitus.enabled:false}")
-    val kirjoitusKaytossa: Boolean,
+    @param:Value($$"${kitu.yki.arvioijarekisteri.muokkaus.enabled:false}")
+    val muokkausKaytossa: Boolean,
     /** Kitu on rekisterin master: sisaantulo kavennetaan, lahetys on paalla, projektio paivitetaan. */
     @param:Value($$"${kitu.yki.arvioijarekisteri.integraatio.enabled:false}")
     val integraatioKaytossa: Boolean,

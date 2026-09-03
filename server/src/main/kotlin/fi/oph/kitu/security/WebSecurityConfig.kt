@@ -160,19 +160,19 @@ class WebSecurityConfig {
             authorizeHttpRequests {
                 configureCommonAuthorizations(environment)
 
-                val arvioijarekisterinKirjoitus: AuthorizationManager<in RequestAuthorizationContext> =
-                    if (arvioijarekisteri.kirjoitusKaytossa) {
+                val arvioijarekisterinMuokkaus: AuthorizationManager<in RequestAuthorizationContext> =
+                    if (arvioijarekisteri.muokkausKaytossa) {
                         hasAuthority(Authority.YKI_ARVIOIJAREKISTERI.role())
                     } else {
                         denyAll
                     }
-                authorize(GET, "/yki/arvioijat/uusi", arvioijarekisterinKirjoitus)
-                authorize(GET, "/yki/arvioijat/*/muokkaa", arvioijarekisterinKirjoitus)
+                authorize(GET, "/yki/arvioijat/uusi", arvioijarekisterinMuokkaus)
+                authorize(GET, "/yki/arvioijat/*/muokkaa", arvioijarekisterinMuokkaus)
                 // Yksitasoinen * ei kata kausilomakkeiden polkuja, ja GET /yki/arvioijat/{id} on
                 // jaatava lukuoikeudella auki, joten kaudet luetellaan erikseen.
-                authorize(GET, "/yki/arvioijat/*/kaudet/uusi", arvioijarekisterinKirjoitus)
-                authorize(GET, "/yki/arvioijat/*/kaudet/*/muokkaa", arvioijarekisterinKirjoitus)
-                authorize(POST, "/yki/arvioijat/**", arvioijarekisterinKirjoitus)
+                authorize(GET, "/yki/arvioijat/*/kaudet/uusi", arvioijarekisterinMuokkaus)
+                authorize(GET, "/yki/arvioijat/*/kaudet/*/muokkaa", arvioijarekisterinMuokkaus)
+                authorize(POST, "/yki/arvioijat/**", arvioijarekisterinMuokkaus)
 
                 if (developmentProfileActive(environment)) {
                     println("Developer profile active, allowing access to /dev/**")
