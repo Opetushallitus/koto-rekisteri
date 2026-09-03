@@ -95,11 +95,23 @@ WITH lahde AS (SELECT arvioija_id,
                                                                           kauden_paattymispaiva
                 FROM lahde
                 ORDER BY arvioija_id, kauden_alkupaiva, kieli, prioriteetti, kirjattu DESC),
-     -- Vasta deduplikoinnin jalkeen paivapariin ryhmittely on turvallista: jaljelle jaavat
-     -- erot ovat aitoja Solki-aikaisia kielikohtaisia poikkeamia.
-     kausi AS (SELECT arvioija_id, kauden_alkupaiva, kauden_paattymispaiva
+
+     -- Ryhmittely alkupaivaan, ei paivapariin. Kausi on arvioijakohtainen, joten yhdesta
+     -- alkupaivasta saa syntya vain yksi kausi: paivapariin ryhmittely tekisi kielikohtaisesti
+     -- poikkeavista paattymispaivista kaksi paallekkaista kautta, joista projektio valitsisi
+     -- toisen ja poistaisi toisen kielet arviointioikeuksista.
+     --
+     -- Poikkeamassa voittaa pisin paattymispaiva, ja tyhja voittaa kaiken (tuntematon loppu ei
+     -- ole paattynyt, ks. Rekisterointitila): kauden pidentaminen on turvallisempaa kuin
+     -- arviointioikeuden hiljainen poisto.
+     kausi AS (SELECT arvioija_id,
+                      kauden_alkupaiva,
+                      CASE
+                          WHEN bool_or(kauden_paattymispaiva IS NULL) THEN NULL
+                          ELSE max(kauden_paattymispaiva)
+                          END AS kauden_paattymispaiva
                FROM oikeus
-               GROUP BY arvioija_id, kauden_alkupaiva, kauden_paattymispaiva),
+               GROUP BY arvioija_id, kauden_alkupaiva),
      lisatty AS (
          INSERT INTO yki_arvioija_arviointikausi (arvioija_id, alkupaiva, paattymispaiva)
              SELECT arvioija_id, kauden_alkupaiva, kauden_paattymispaiva FROM kausi
@@ -112,8 +124,7 @@ SELECT lisatty.id,
 FROM lisatty
          JOIN oikeus
               ON oikeus.arvioija_id = lisatty.arvioija_id
-                  AND oikeus.kauden_alkupaiva = lisatty.alkupaiva
-                  AND oikeus.kauden_paattymispaiva IS NOT DISTINCT FROM lisatty.paattymispaiva;
+                  AND oikeus.kauden_alkupaiva = lisatty.alkupaiva;
 
 -- Kasin passivoidun merkinnan viimeisin kausi merkitaan passivoiduksi, jottei alkupaivan
 -- myohempi korjaus laske paattymispaivaa uudelleen ja elvyta merkintaa.
