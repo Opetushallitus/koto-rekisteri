@@ -5,6 +5,7 @@ import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.sql.PreparedStatement
@@ -18,6 +19,7 @@ data class Kausioikeus(
 @Repository
 class YkiArvioijaKausiRepository(
     private val jdbcTemplate: JdbcTemplate,
+    private val namedJdbcTemplate: NamedParameterJdbcTemplate,
 ) {
     @WithSpan
     fun findKaudet(arvioijaId: Int): List<YkiRekisterointikausiEntity> {
@@ -259,6 +261,58 @@ class YkiArvioijaKausiRepository(
             """.trimIndent(),
             arvioijaId,
             arvioijaId,
+        )
+    }
+
+    /** Arvioijatason passivointi paattaa kaikki viela voimassa olevat kaudet, vain kiristaen. */
+    @WithSpan
+    @Transactional
+    fun passivoiKaudet(
+        arvioijaId: Int,
+        tanaan: LocalDate,
+        tekija: Oid?,
+    ) {
+        jdbcTemplate.update(
+            """
+            UPDATE yki_arvioija_rekisterointikausi
+            SET paattymispaiva = GREATEST(alkupaiva, LEAST(COALESCE(paattymispaiva, ?), ?)),
+                passivoitu = COALESCE(passivoitu, now()),
+                passivoija_oid = COALESCE(passivoija_oid, ?),
+                muokattu = now(),
+                muokkaaja_oid = ?
+            WHERE arvioija_id = ?
+              AND (paattymispaiva IS NULL OR paattymispaiva >= ?)
+            """.trimIndent(),
+            tanaan,
+            tanaan,
+            tekija?.toString(),
+            tekija?.toString(),
+            arvioijaId,
+            tanaan,
+        )
+    }
+
+    /**
+     * Sailytysajan alkuhetki nollataan kun merkinta on jalleen voimassa: uusi kausi on uusi
+     * rekisterointi, joka kumoaa aiemman passivoinnin.
+     */
+    @WithSpan
+    fun poistaPassivointileimaJosAktiivinen(
+        arvioijaId: Int,
+        tanaan: LocalDate,
+    ) {
+        namedJdbcTemplate.update(
+            """
+            UPDATE yki_arvioija
+            SET passivoitu = NULL
+            WHERE id = :arvioijaId
+              AND EXISTS (
+                  SELECT 1 FROM yki_arviointioikeus
+                  WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id
+                    AND ${Rekisterointitila.SQL} <> '${Rekisterointitila.PASSIVOITU}'
+              )
+            """.trimIndent(),
+            mapOf("arvioijaId" to arvioijaId, "tanaan" to tanaan),
         )
     }
 

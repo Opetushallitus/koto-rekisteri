@@ -474,6 +474,16 @@ object UiText {
                 val peruuta: LocalizedString get() = tr("yki.arvioija.kausi.peruuta", fi = "Peruuta")
                 val tallenna: LocalizedString get() = tr("yki.arvioija.kausi.tallenna", fi = "Tallenna")
                 val toiminnot: LocalizedString get() = tr("yki.arvioija.kausi.toiminnot", fi = "Toiminnot")
+                val vanhentuneet: LocalizedString
+                    get() = tr("yki.arvioija.kausi.vanhentuneet", fi = "Vanhentuneet arviointioikeudet")
+                val vanhentuneetOhje: LocalizedString
+                    get() =
+                        tr(
+                            "yki.arvioija.kausi.vanhentuneetOhje",
+                            fi =
+                                "Nämä tutkintokielet eivät ole enää myönnettävissä eivätkä kuulu " +
+                                    "rekisteröintikausiin. Tiedot säilytetään sellaisenaan.",
+                        )
                 val toimenpide: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide", fi = "Toimenpide")
                 val lisays: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide.lisays", fi = "Lisäys")
                 val muokkaus: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide.muokkaus", fi = "Muokkaus")

@@ -25,6 +25,7 @@ import java.time.ZoneOffset
 @Service
 class YkiArvioijaService(
     private val repository: YkiArvioijaRepository,
+    private val kausiRepository: YkiArvioijaKausiRepository,
     private val validationService: ValidationService,
     private val oppijanumeroService: OppijanumeroService,
     private val auditLogger: AuditLogger,
@@ -127,6 +128,10 @@ class YkiArvioijaService(
                     },
             )
 
+        // Kaudet ovat master, joten ne katkaistaan ensin: ilman sita projektion uudelleenlaskenta
+        // palauttaisi alkuperaiset paivat. Jarjestys ratkaisee myos siksi, etta tallenna
+        // synkronoi kaudet oikeuksista — katkaistuun kauteen se osuu paivityksena, ei lisayksena.
+        kausiRepository.passivoiKaudet(id, tanaan, tekija)
         repository.tallenna(passivoitu, tekija)
         auditLogger.log(AuditLogOperation.YkiArvioijaPassivated, olemassaoleva.arvioijaOid)
 
@@ -179,10 +184,15 @@ class YkiArvioijaService(
     @WithSpan
     fun onOlemassa(id: Int): Boolean = repository.findArvioijaById(id) != null
 
+    /**
+     * Vain yhteystiedot: kaudet muokataan omilla reiteillaan. Arviointioikeudet kopioidaan
+     * tallennettavaan entiteettiin sellaisenaan, joten myos Solkin kirjaama tila sailyy eika
+     * yhteystiedon korjaus elvyta passivoitua merkintaa.
+     */
     @WithSpan
     fun paivitaArvioija(
         id: Int,
-        komento: TallennaArvioija,
+        komento: PaivitaArvioijanTiedot,
         tekija: Oid?,
         odotettuMuokkaushetki: OffsetDateTime? = null,
     ): Either<YkiArvioijaError, YkiArvioijaEntity> {
@@ -196,7 +206,15 @@ class YkiArvioijaService(
             .mapLeft { YkiArvioijaError.Validointivirheet(it) }
             .flatMap { validoitu ->
                 tallennaTaiKonflikti(
-                    entiteetti(validoitu, olemassaoleva),
+                    olemassaoleva.copy(
+                        sukunimi = validoitu.sukunimi,
+                        etunimet = validoitu.etunimet,
+                        sahkopostiosoite = validoitu.sahkopostiosoite,
+                        katuosoite = validoitu.katuosoite,
+                        postinumero = validoitu.postinumero,
+                        postitoimipaikka = validoitu.postitoimipaikka,
+                        ashaNumero = validoitu.ashaNumero,
+                    ),
                     tekija,
                     odotettuMuokkaushetki,
                 ).flatMap {
@@ -218,10 +236,7 @@ class YkiArvioijaService(
     ): YkiArvioijaEntity {
         val tanaan = timeService.today()
         val tallennettava = validoitu.toEntity(ensimmainenRekisterointipaiva(olemassaoleva, validoitu))
-        val arviointioikeudet =
-            tallennettava.arviointioikeudet.map { oikeus ->
-                paataMuuttumatonPassivoitu(oikeus, olemassaoleva, tanaan)
-            }
+        val arviointioikeudet = tallennettava.arviointioikeudet
         val merkintaJaaPassiiviseksi =
             arviointioikeudet.all { Rekisterointitila.laske(it, tanaan) == Rekisterointitila.PASSIVOITU }
 
@@ -229,35 +244,6 @@ class YkiArvioijaService(
             passivoitu = olemassaoleva?.passivoitu?.takeIf { merkintaJaaPassiiviseksi },
             arviointioikeudet = arviointioikeudet,
         )
-    }
-
-    /**
-     * Tallennettu PASSIVOITU on ainoa merkitseva tallennettu tila, ja tallennus nollaa sen. Jos
-     * kausi sailyy ennallaan — esimerkiksi yhteystietoa korjatessa — kannanotto kaannetaan uuteen
-     * esitystapaan paattamalla kausi, jottei korjaus elvyta passivoitua merkintaa. Uusi kausi sen
-     * sijaan on uusi rekisterointi ja saa aktivoida merkinnan.
-     */
-    private fun paataMuuttumatonPassivoitu(
-        oikeus: YkiArviointioikeusEntity,
-        olemassaoleva: YkiArvioijaEntity?,
-        tanaan: LocalDate,
-    ): YkiArviointioikeusEntity {
-        val aiempi =
-            olemassaoleva
-                ?.arviointioikeudet
-                ?.firstOrNull { it.kieli == oikeus.kieli }
-                ?.takeIf { it.tila == YkiArvioijaTila.PASSIVOITU }
-                ?: return oikeus
-
-        val kausiEnnallaan =
-            aiempi.kaudenAlkupaiva == oikeus.kaudenAlkupaiva &&
-                aiempi.kaudenPaattymispaiva == oikeus.kaudenPaattymispaiva
-
-        return if (kausiEnnallaan) {
-            oikeus.copy(kaudenPaattymispaiva = minOf(oikeus.kaudenPaattymispaiva ?: tanaan, tanaan.minusDays(1)))
-        } else {
-            oikeus
-        }
     }
 
     private fun tallennaTaiKonflikti(

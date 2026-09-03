@@ -37,6 +37,18 @@ data class ArvioijaFormData(
             .groupBy({ it.first }, { it.second })
             .map { (kieli, tasot) -> TallennaArvioija.Arviointioikeus(kieli, tasot.toSet()) }
 
+    fun toPaivitys(oid: Oid): PaivitaArvioijanTiedot =
+        PaivitaArvioijanTiedot(
+            arvioijaOid = oid,
+            sukunimi = sukunimi.orEmpty().trim(),
+            etunimet = etunimet.orEmpty().trim(),
+            sahkopostiosoite = sahkopostiosoite?.trim()?.takeIf { it.isNotEmpty() },
+            katuosoite = katuosoite.orEmpty().trim(),
+            postinumero = postinumero.orEmpty().trim(),
+            postitoimipaikka = postitoimipaikka.orEmpty().trim(),
+            ashaNumero = ashaNumero?.trim()?.takeIf { it.isNotEmpty() },
+        )
+
     fun toCommand(
         oid: Oid,
         alkupaiva: LocalDate,

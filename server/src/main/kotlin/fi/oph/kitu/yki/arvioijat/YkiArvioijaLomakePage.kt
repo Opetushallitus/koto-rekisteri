@@ -63,6 +63,7 @@ object YkiArvioijaLomakePage {
         form: ArvioijaFormData,
         errors: FormErrors,
         otsikko: LocalizedString = UiText.Yki.Arvioija.uusiArvioija,
+        naytaKausi: Boolean = true,
         action: String = Links.Yki.uusiArvioija(),
         tallennaTeksti: LocalizedString = UiText.Yki.Arvioija.tallenna,
         peruutusLinkki: String? = null,
@@ -110,26 +111,30 @@ object YkiArvioijaLomakePage {
                     cardContent {
                         h2 { +UiText.Yki.Arvioija.rekisterimerkinta }
 
-                        formField(
-                            label = UiText.Yki.Arvioija.kaudenAlkupaiva,
-                            name = "kaudenAlkupaiva",
-                            errors = errors,
-                            testId = "kaudenAlkupaiva",
-                        ) { invalid ->
-                            dateInput("kaudenAlkupaiva", form.kaudenAlkupaiva, "kaudenAlkupaiva-input", invalid)
-                        }
-
-                        label {
-                            +UiText.Yki.Arvioija.kaudenPaattymispaiva
-                            input(
-                                type = InputType.date,
-                                name = "kaudenPaattymispaivaEsikatselu",
-                                value = form.laskettuPaattymispaiva()?.toString().orEmpty(),
-                            ) {
-                                testId("kaudenPaattymispaiva")
-                                disabled = true
+                        // Muokkauslomakkeella kausi hallitaan tietosivun kausitaulukosta, jottei
+                        // alkupaivan muutos taalla loisi uutta kautta vanhan rinnalle.
+                        if (naytaKausi) {
+                            formField(
+                                label = UiText.Yki.Arvioija.kaudenAlkupaiva,
+                                name = "kaudenAlkupaiva",
+                                errors = errors,
+                                testId = "kaudenAlkupaiva",
+                            ) { invalid ->
+                                dateInput("kaudenAlkupaiva", form.kaudenAlkupaiva, "kaudenAlkupaiva-input", invalid)
                             }
-                            small { +UiText.Yki.Arvioija.kaudenPaattymispaivaOhje }
+
+                            label {
+                                +UiText.Yki.Arvioija.kaudenPaattymispaiva
+                                input(
+                                    type = InputType.date,
+                                    name = "kaudenPaattymispaivaEsikatselu",
+                                    value = form.laskettuPaattymispaiva()?.toString().orEmpty(),
+                                ) {
+                                    testId("kaudenPaattymispaiva")
+                                    disabled = true
+                                }
+                                small { +UiText.Yki.Arvioija.kaudenPaattymispaivaOhje }
+                            }
                         }
 
                         tekstikentta(UiText.Yki.Arvioija.ashaNumero, "ashaNumero", form.ashaNumero, errors)
@@ -137,10 +142,12 @@ object YkiArvioijaLomakePage {
                 }
 
                 card {
-                    cardContent {
-                        h2 { +UiText.Yki.Arvioija.arviointioikeudet }
-                        p { +UiText.Yki.Arvioija.arviointioikeudetOhje }
-                        arviointioikeusMatriisi(form.arviointioikeus.orEmpty(), errors)
+                    if (naytaKausi) {
+                        cardContent {
+                            h2 { +UiText.Yki.Arvioija.arviointioikeudet }
+                            p { +UiText.Yki.Arvioija.arviointioikeudetOhje }
+                            arviointioikeusMatriisi(form.arviointioikeus.orEmpty(), errors)
+                        }
                     }
 
                     footer {

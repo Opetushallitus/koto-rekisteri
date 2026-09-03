@@ -329,6 +329,47 @@ molempia, ks. §6.2.
 
 ---
 
+### 1.6 `V122__yki_arvioija_rekisterointikausi.sql` ja `V123__yki_arvioija_kausi_muutosloki.sql` — kausi masteriksi
+
+Rekisteröintikausi ei ollut hallittava olio: voimassa oleva kausi eli `yki_arviointioikeus`-rivillä ja
+`yki_arvioija_kausi` oli append-only-loki. Kummallakaan ei ole pysyvää tunnistetta, jolla yksittäisen
+kauden voisi muokata tai poistaa, joten tietosivulla ei ollut mitään kausikohtaista toimintoa.
+
+**V122** lisää masteriksi `yki_arvioija_rekisterointikausi`-taulun (`alkupaiva`, `paattymispaiva`,
+`passivoitu`, luonti- ja muokkausleimat) ja sen kielirivit `yki_arvioija_rekisterointikausi_oikeus`.
+Kausi on **arvioijakohtainen**, ei kielikohtainen. `ensimmainen_rekisterointipaiva` siirtyy
+arvioijatasolle sarakkeeksi `yki_arvioija.arvioijan_ensimmainen_rekisterointipaiva`: se on
+arvioijakohtainen tieto ja V63:n Solki-tuonnissa vanhempi kuin yksikään rekonstruoitava kausi, joten
+sitä ei saa laskea uudelleen kausista. Nimi poikkeaa tarkoituksella `yki_arviointioikeus`-sarakkeesta,
+koska `SELECT yki_arvioija.*` liitoksessa samannimiset sarakkeet osuisivat päällekkäin.
+
+`yki_arviointioikeus` **jää paikalleen johdettuna projektiona**, jotta `Rekisterointitila.SQL`,
+listanäkymän kysely ja Solki-lähetys jatkavat ennallaan.
+
+Siirto **deduplikoi lokin ensin** tasolla `(arvioija_id, alkupäivä, kieli)`: passivointi katkaisee
+päättymispäivän, jolloin V119:n uniikkiehto päästää läpi toisen rivin samasta kaudesta, ja pelkkä
+päiväpariin ryhmittely tekisi yhdestä kaudesta kaksi päällekkäistä. Alkupäivättömiä rivejä ei siirretä,
+eikä vanhentuneita kieliä (`SWE10`, `ENG11`, `ENG12`), joita ei voi myöntää eikä perua. Projektion
+kirjoitus on no-op arvioijalle jolla ei ole yhtään kautta, joten kumpikin ryhmä säilyy koskemattomana.
+
+`yki_arvioija_rekisterointikausi` ei rajoita päivien järjestystä kannassa: tuodussa datassa on rivejä
+joilla päättymispäivä edeltää alkupäivää, ja kovaehto tekisi niistä korjauskelvottomia. Järjestys
+tarkistetaan validoinnissa uusille ja muokatuille kausille.
+
+**V123** tekee `yki_arvioija_kaudesta` pelkän muutoslokin: `toimenpide`- ja `kausi_id`-sarakkeet ja
+uniikkiehdon poisto. Taulun **nimi säilyy**, koska uudelleennimeäminen rikkoisi rinnakkain ajossa
+olevan vanhan sovellusversion tietosivun rullaavan julkaisun ajaksi. Uniikkiehto oli olemassa vain
+vaimentamaan muuttumattoman kauden kirjaus; nyt rivi kirjataan vain kun kausi tosiasiassa muuttuu, ja
+saman kauden uudelleenlisäys poiston jälkeen on aito tapahtuma jonka on näyttävä lokissa.
+
+**Säilytysajan suojaus.** Projektio osoittaa yhteen kauteen ja riippuu kuluvasta päivästä, joten se voi
+osoittaa päättyneeseen kauteen vaikka arvioijalla on uudempi voimassa oleva. `Sailytysaika.ALKUHETKI_SQL`
+ottaa siksi `GREATEST`in projektiosta ja masterista, ja `poistaSailytysajanYlittaneet` tarkistaa
+erikseen, ettei masterissa ole voimassa olevaa kautta. Ilman näitä vanhentunut projektio poistaisi
+peruuttamattomasti yhä voimassa olevan merkinnän.
+
+---
+
 ## 2. Palvelukerros
 
 Uudet tiedostot pakettiin `server/src/main/kotlin/fi/oph/kitu/yki/arvioijat/`. Kaikki riippuvuudet
@@ -392,15 +433,18 @@ ONR-olemassaolotarkistus (`OppijanumeroValidation.validateOppijanumeroInOnr`). L
 pakolliset kentät, postinumeron muoto (5 numeroa), sähköpostin muoto, vähintään yksi arviointioikeus,
 ei tyhjiä tasojoukkoja, ei duplikaattikieliä, kauden alkupäivä ei yli vuotta tulevaisuudessa.
 
+> **Päivitys (V122).** Kaksi alla kuvattua sääntöä **eivät ole enää validointisääntöjä vaan
+> rakenteellisia**, ks. §1.6. Rekisteröintikausi on oma rivinsä, jolla on yksi päiväpari ja N
+> kielikohtaista oikeusriviä, joten kielet eivät voi olla eri kausilla eikä kielen lisääminen voi
+> aloittaa uutta kautta. `ensure(...)`-tarkistus olisi kuollutta koodia. Tilalle tuli **päällekkäisten
+> kausien kielto** (`TallennaKausiValidation.validateEiPaallekkaisyytta`), jota ei aiemmin ollut.
+
 Tavoitetilakuvauksesta johdettu lisäsääntö: **kaikkien arviointioikeuksien kauden on oltava identtinen**
-(_"Henkilön kaikilla kielillä ja eri tutkintotasoilla on yhtä pitkä arviointikausi"_). Käyttöliittymä
-takaa tämän kirjoittamalla saman kauden kaikille riveille, ja `validateAfterEnrichment` varmistaa sen —
-näin per-kieli-tallennus ei voi ajautua epäjohdonmukaiseksi esimerkiksi rajapinnan kautta.
+(_"Henkilön kaikilla kielillä ja eri tutkintotasoilla on yhtä pitkä arviointikausi"_).
 
 Kun virkailija **lisää kielen tai tason kesken kauden**, uusi arviointioikeus saa voimassa olevan kauden
 päivämäärät (_"Jos henkilölle tulee uusi arvioitava kieli tai taitotaso, niin arviointikausi kaikille alkaa
-ja päättyy samaan aikaan"_) — lomake ei kysy uutta alkupäivää, vaan `enrich` kopioi sen olemassa olevalta
-merkinnältä.
+ja päättyy samaan aikaan"_) — lomake ei kysy uutta alkupäivää.
 
 `ValidationError.path` täytetään lomakkeen kenttänimillä (`listOf("postinumero")`) — se on §3.1:n
 `FormErrors`-kartan avain. Hetun siirtokielto (`kitu.validaatiot.yki.hetunSiirronRajapaiva`) poistuu tästä
@@ -635,6 +679,12 @@ näkymätön tagipohjaiselle `DisplayTableColumn.of`:lle) ja siirtyy tyypille `Y
 
 ### 3.4 Lisäys- ja muokkauslomake
 
+> **Päivitys (V122).** Muokkauslomakkeelta poistuivat kauden alkupäivä, päättymispäivän esikatselu ja
+> arviointioikeusmatriisi: kausi hallitaan tietosivun kausitaulukosta. Ilman tätä alkupäivän muutos
+> lomakkeella loisi uuden kauden vanhan rinnalle sen sijaan että muokkaisi sitä. Lisäyslomake kantaa
+> ne yhä, koska arvioijan luonti perustaa myös ensimmäisen kauden. Muokkaus kulkee omalla komennollaan
+> `PaivitaArvioijanTiedot`, jolloin tallennus ei voi koskea arviointioikeuksiin lainkaan.
+
 Syötetty OID ratkaistaan ONR:n **master-OIDiksi**: rekisteri avaimennetaan master-OIDilla, joten duplikaatti-OID loisi muuten samalle
 henkilölle toisen merkinnän eikä löytäisi olemassa olevaa.
 
@@ -724,8 +774,16 @@ päivittää esikatseluarvon `change`-tapahtumassa — sama kuvio kuin `Forms.kt
 - **Rekisterimerkintä** — §3.4:n muokkauslomake ilman vaihetta 1, sisältäen **hallintopäätöksen
   ASHA-numeron** vapaana tekstikenttänä (OPH kys. 12). Jatkokausi johdetaan palvelimella eikä ole
   lomakkeella (§2.8)
-- **Rekisteröintikaudet** — `displayTable` `yki_arvioija_kausi`-riveistä (kieli, tasot, tila, alku, loppu,
-  jatkokausi, kirjattu, kirjaaja) laskevassa `kirjattu`-järjestyksessä
+- **Rekisteröintikaudet** — `displayTable` `yki_arvioija_rekisterointikausi`-riveistä (tila, alku, loppu,
+  arviointioikeudet, toiminnot). Rivikohtaiset napit **Muokkaa**, **Passivoi** (vain aktiiviselle) ja
+  **Poista** (ei viimeiselle kaudelle), ja taulukon yllä **Lisää rekisteröintikausi**. Poisto ja
+  passivointi vahvistetaan `<dialog>`illa, jonka id on rivikohtainen (`poistaKausiDialog-{id}`);
+  dialogit renderöidään `overflow`-kortin **ulkopuolelle**, jottei natiivi dialogi leikkaudu.
+  Vanha erillinen Arviointioikeudet-taulukko poistui: sen sisältö on nyt kausirivin sarake.
+- **Muutoshistoria** — `yki_arvioija_kausi` -lokirivit (toimenpide, kieli, tasot, tila, alku, loppu,
+  jatkokausi, kirjattu, kirjaaja) `<details>`-elementin takana, oletuksena kiinni
+- **Vanhentuneet arviointioikeudet** — vain luettava taulukko, näytetään vain jos rivejä on.
+  Vanhentuneet kielet eivät kuulu kausiin, joten ilman tätä ne katoaisivat sivulta kokonaan
 - **Integraatiot** — Solki-lähetyksen tila (`solkiinLahetetty` / `solkiLahetysvirhe` /
   `solkiLahetysyritykset`) + nappi "Lähetä uudelleen Solkiin"
 - **Toiminnot** — "Merkitse passiiviseksi" `<dialog>`-varmistuksella (`html/Modal.kt`,
@@ -1359,6 +1417,7 @@ vahvistanut rajapinnan.
 | 9     | YKI-arvioijien Solki-lähetys                             | L    | 6 (sopimus sovittu 1.9.2026) | 🔄 #3378 |
 | 10    | Kavenna sisääntuleva rajapinta yhteystietoihin (§4.2)    | M    | 9                            | 🔄 #3378 |
 | 11    | Käyttöönotto ja kytkimet                                 | S    | 9, 10                        | —        |
+| 12    | Rekisteröintikausien hallinta (V122–V123)                | L    | 6                            | 🔄       |
 
 1. **`Poista kuollut arvioijien virhetuontikoneisto`** — `yki/arvioijat/error/`, `V118` DROP TABLE,
    `dev/YkiController` kuollut stubi, `DashboardService`/`HomePage`/`EnumFromUrlParamsParsingConfig`
@@ -1394,6 +1453,12 @@ vahvistanut rajapinnan.
     Solki-lähetyksen `enabled=true` untuvaan/QA:han/prodiin; säilytysajan poisto päälle. Vasta tämän
     jälkeen voi harkita tallennetun `tila`-sarakkeen poistoa (§4.2). `henkilotunnus`-saraketta **ei** poisteta: ennen 2026 alkaneiden kausien hetut on
     säilytettävä lain nojalla.
+
+12. **`Hallitse rekisteröintikausia arvioijan sivulta`** — §1.6:n taulut ja siirto, `Kausiprojektio`,
+    `YkiArvioijaKausiRepository`/`-Service`/`-ViewController`, kausilomake, tietosivun uusi
+    kausitaulukko + muutoshistoria `<details>`in takana, muokkauslomakkeen kausikenttien poisto (§3.4),
+    päällekkäisyysvalidointi, säilytysajan suojaus, yöllinen projektion päivitys ja käsin ajettava
+    kausisynkronointi. Testit + e2e.
 
 Muista jokaisen askeleen lopuksi `./scripts/format.sh` (ktlint + prettier). Pidä pitkäikäinen haara
 ajan tasalla komennolla `git pull --rebase origin main` ja pushaa `--force-with-lease`illa. Älä avaa
