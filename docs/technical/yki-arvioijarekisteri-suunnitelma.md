@@ -905,7 +905,7 @@ sille takaisin.
 
 **Tallennettu `tila` säilyy siirtymän ajan.** Vaikka yhteystietopäivitys ei kanna tilaa, sarake ja
 §1.5:n sääntö "vain tallennettu PASSIVOITU ohittaa laskennan" pidetään ennallaan niin kauan kuin
-`kitu.yki.arvioijarekisteri.kirjoitus.enabled` on olemassa ja Solki on rekisterin master: siihen asti
+`kitu.yki.arvioijarekisteri.integraatio.enabled` on pois päältä ja Solki on rekisterin master: siihen asti
 Solkin pushin kirjaama tila on oikea tieto, eikä sitä saa hukata. Sarakkeen poistoa voi harkita vasta
 kun kytkin on poistettu ja kitu toimii masterina (vaihe 11 jälkeen), ja silloinkin erillisenä
 muutoksena — laskenta ei sitä edellytä.
@@ -943,7 +943,7 @@ Endpointia **ei siis poisteta eikä 410:ta tehdä.** Aiempi suunnitelma eteni ka
 Kavennus tehdään vastaanoton puolella: DTO ja security-sääntö säilyvät, mutta tallennus soveltaa vain
 yhteystietokentät. `YkiArvioija`/`YkiArviointioikeus`-DTO:t ja schema-esimerkit jäävät paikoilleen.
 
-**Kavennus on sidottu kirjoituskytkimeen** `kitu.yki.arvioijarekisteri.kirjoitus.enabled` (§7.5), joka
+**Kavennus on sidottu integraatiokytkimeen** `kitu.yki.arvioijarekisteri.integraatio.enabled` (§7.5), joka
 kertoo onko kitu master. Kytkin on untuvassa/QA:ssa/prodissa `false` vaiheeseen 11 asti, joten
 siirtymän ajan Solkin koko payload otetaan yhä vastaan ja tallennettu `tila` kirjoitetaan — muuten
 Solki menettäisi kirjoitusoikeuden rekisteriin ennen kuin kitu on ottanut sen vastuun. Kytkimen
@@ -1094,13 +1094,13 @@ Olemassa oleva `solkiRestClient` (`SolkiRestClientConfig`) osoittaa jo oikeaan b
 Basic-tunnistautumisen, joten se on lähtökohtaisesti uudelleenkäytettävissä. Harkittava kuitenkin oma
 bean, jos lähetykselle halutaan eri timeoutit tai uudelleenyrityskäytäntö kuin debug-haulle.
 
-| Tiedosto                         | Sisältö                                                                                                                                                            |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `SolkiArvioijaRequest.kt`        | Payload-dataluokat + `fun of(entity): SolkiArvioijaRequest`                                                                                                        |
-| `SolkiArvioijaException.kt`      | Sealed: `BadRequest`, `Unauthorized`, `Conflict`, `UnexpectedError`, `NullResponse`, `MalformedResponse` + `debugString()`                                         |
-| `SolkiArvioijaClient.kt`         | Interface + `@ConditionalOnProperty("kitu.yki.arvioijat.solki.enabled", havingValue="true")` -impl; `retrieveEntitySafely(String::class.java)`; palauttaa `Either` |
-| `SolkiArvioijaService.kt`        | Interface + `@ConditionalOnBean`-impl + `@ConditionalOnMissingBean`-mock (pelkkä loki)                                                                             |
-| `SolkiArvioijaScheduledTasks.kt` | Kaksi `tracer.recurringTask(...)`-beania (§5.3)                                                                                                                    |
+| Tiedosto                         | Sisältö                                                                                                                                                                          |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SolkiArvioijaRequest.kt`        | Payload-dataluokat + `fun of(entity): SolkiArvioijaRequest`                                                                                                                      |
+| `SolkiArvioijaException.kt`      | Sealed: `BadRequest`, `Unauthorized`, `Conflict`, `UnexpectedError`, `NullResponse`, `MalformedResponse` + `debugString()`                                                       |
+| `SolkiArvioijaClient.kt`         | Interface + `@ConditionalOnProperty("kitu.yki.arvioijarekisteri.integraatio.enabled", havingValue="true")` -impl; `retrieveEntitySafely(String::class.java)`; palauttaa `Either` |
+| `SolkiArvioijaService.kt`        | Interface + `@ConditionalOnBean`-impl + `@ConditionalOnMissingBean`-mock (pelkkä loki)                                                                                           |
+| `SolkiArvioijaScheduledTasks.kt` | Kaksi `tracer.recurringTask(...)`-beania (§5.3)                                                                                                                                  |
 
 **`debugString()` ei saa serialisoida pyyntörunkoa** (poikkeama KIOS-mallista): osoite ja sähköposti ovat
 henkilötietoa, joka päätyisi lokeihin ja virhesarakkeeseen. Mukaan vain oppijanumero, statuskoodi ja
@@ -1109,7 +1109,7 @@ vastausrunko.
 **`SolkiRestClientConfig` on täydennettävä `.withLenientStringConverter()`-kutsulla** — ilman sitä
 `retrieveEntitySafely(String::class.java)` kaatuu Jacksonin sisällä, koska Spring 7:n oletusarvoinen
 `StringHttpMessageConverter` mainostaa vain `text/*` (CLAUDE.md). Uusi kytkinproperty
-`kitu.yki.arvioijat.solki.enabled` erikseen, koska `kitu.yki.baseUrl` on asetettu joka ympäristössä
+`kitu.yki.arvioijarekisteri.integraatio.enabled` erikseen `kitu.yki.baseUrl`ista, koska osoite on asetettu joka ympäristössä
 (myös local/e2e dev-stubiin).
 
 ### 5.3 Uudelleenyritys: "3 kertaa, sitten yöllisesti"
@@ -1131,7 +1131,7 @@ virhenäkymässä:
 ```properties
 # Osoite ja tunnukset ovat jo olemassa (kitu.yki.baseUrl, kitu.yki.username/password, §5.1.1);
 # vain lähetyksen kytkin ja ajastukset ovat uusia.
-kitu.yki.arvioijat.solki.enabled=false
+kitu.yki.arvioijarekisteri.integraatio.enabled=false
 kitu.yki.scheduling.lahetaArvioijatSolkiin.schedule=FIXED_DELAY|900s
 kitu.yki.scheduling.lahetaEpaonnistuneetArvioijatSolkiin.schedule=DAILY|02:15
 ```
@@ -1306,28 +1306,43 @@ object CurrentUser {
 `MockUser.VIRKAILIJA` (pelkkä `Authority.VIRKAILIJA`) e2e-oikeusmatriisiin todistamaan 200 luvulle /
 403 kirjoitukselle.
 
-### 7.5 Ominaisuuskytkin `kitu.yki.arvioijarekisteri.kirjoitus.enabled`
+### 7.5 Ominaisuuskytkimet: muokkaus ja integraatio
 
-Syöttökäyttöliittymä valmistuu vaiheittain, mutta `main` deployautuu suoraan prodiin asti. Kirjoitus
-on siksi oletuksena **pois päältä**: `ArvioijarekisteriAsetukset.kirjoitusKaytossa` lukee propertyn
-oletuksella `false`, eli **ilman propertya rekisteri toimii vain lukutilassa**. Päällä `local`-,
-`local-opintopolku`- ja `e2e`-profiileissa sekä backend-testeissä; untuva/QA/prod perivät
-`application.properties`:n `false`-arvon, kunnes vaiheen 11 kytkentä tehdään.
+Syöttökäyttöliittymä valmistuu vaiheittain, mutta `main` deployautuu suoraan prodiin asti. Molemmat
+kytkimet ovat siksi oletuksena **pois päältä** (`ArvioijarekisteriAsetukset`, oletus `false`), eli
+ilman propertyjä rekisteri toimii vain lukutilassa eikä integraatiota ole.
 
-Kaksi vaikutusta:
+| Kytkin                                           | Mitä ohjaa                                                                                                                               |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `kitu.yki.arvioijarekisteri.muokkaus.enabled`    | Virkailijan kirjoitusreitit (`WebSecurityConfig`, `denyAll` vs. `hasAuthority`) ja käyttöliittymän napit                                 |
+| `kitu.yki.arvioijarekisteri.integraatio.enabled` | **Molemmat suunnat Solkiin**: sisääntulon kavennus (§4.2), lähtevän lähetyksen toteutus ja ajastukset, sekä projektion yöllinen päivitys |
 
-1. **Palvelin torjuu kirjoituksen.** `WebSecurityConfig`in CAS-ketjussa `/yki/arvioijat/uusi`,
-   `/yki/arvioijat/*/muokkaa` ja `POST /yki/arvioijat/**` saavat `denyAll`in
-   `hasAuthority(YKI_ARVIOIJAREKISTERI)`:n sijaan → 403 myös suoralla URL:lla. Sääntö valitaan
-   kerran käynnistyksessä, joten kytkimen kääntäminen vaatii uudelleenkäynnistyksen.
-2. **Napit näkyvät, mutta eivät toimi.** "Lisää arvioija" ja "Muokkaa" renderöidään
-   `html/PicoComponents.kt`:n `buttonLink(enabled = …)`illa: kytkimen ollessa pois päältä `href`
-   jätetään pois ja tilalle tulee `aria-disabled="true"` + Picon `data-tooltip`
-   (`UiText.Yki.Arvioija.kirjoitusEiKaytossa`). Käyttöoikeustarkistus säilyy erillisenä: ilman
-   `YKI_ARVIOIJAREKISTERI`-oikeutta nappeja ei renderöidä lainkaan.
+Kytkimet ovat erillisiä, koska ne vastaavat eri kysymyksiin: _saako virkailija muokata_ ja _onko kitu
+rekisterin master_. Käyttöönotossa nämä tapahtuvat eri hetkinä (§10 vaihe 11, §11 kysymys 9).
 
-E2E ajaa yhdellä profiililla, joten kytkin pois päältä -tila katetaan backend-testillä
-`YkiArvioijaKirjoituskytkinTest` (`@SpringBootTest(properties = [...=false])`).
+| muokkaus | integraatio | Tila                                                                |
+| -------- | ----------- | ------------------------------------------------------------------- |
+| pois     | pois        | Lähtötila: vain luku, Solki on master ja kirjoittaa koko payloadin  |
+| päällä   | pois        | **Siirtymän työtila**: virkailija syöttää kitussa, Solki yhä master |
+| päällä   | päällä      | Tavoitetila: kitu on master                                         |
+| pois     | päällä      | Ei käytössä; kytkinjärjestys on muokkaus ensin                      |
+
+Muokkauskytkimen kaksi vaikutusta ovat ennallaan: palvelin torjuu kirjoituksen (403 myös suoralla
+URL:lla) ja napit renderöidään estettyinä selitteen kanssa. Sääntö valitaan kerran käynnistyksessä,
+joten kytkimen kääntäminen vaatii uudelleenkäynnistyksen.
+
+**Siirtymän työtilan (muokkaus päällä, integraatio pois) haitta on syytä tuntea.** Sisääntuleva
+täysi push kirjoittaa `yki_arviointioikeus`-projektion koskematta `yki_arvioija_arviointikausi`
+-masteriin, joten taulut ajautuvat väistämättä eri linjoille. Solkin push voi siis yliajaa
+projektion, jonka virkailija juuri johti kitun kausista. Korjaus on uusi kausimuutos kyseiselle
+arvioijalle — **ei** `synkronoiArvioijaKaudet`, joka rakentaisi kaudet oikeuksista ja toisi Solkin
+yliajon masteriin. Juuri tästä syystä yöllinen `paivitaArvioijaProjektiot` on kytketty
+integraatiokytkimeen: se on turvaton täsmälleen silloin kun täysi sisääntulo on päällä, ja yliajaisi
+koko rekisterin vanhentuneesta masterista sekä työntäisi sen Solki-lähetysjonoon.
+
+E2E ajaa yhdellä profiililla, joten kytkimet pois päältä -tilat katetaan backend-testeillä
+`YkiArvioijaMuokkauskytkinTest`, `YkiArvioijaIntegraatiokytkinTest` ja
+`YkiArvioijaProjektiokytkinTest` (`@SpringBootTest(properties = [...])`).
 
 ---
 
@@ -1459,9 +1474,20 @@ vahvistanut rajapinnan.
     yhteystietojen päivityksiä (§4.2). Kavennus tarkoittaa, että payloadista sovelletaan vain
     yhteystietokentät; nimet, arviointioikeudet ja tila ohitetaan, eikä tuntematonta arvioijaa luoda.
     Tallennettu `tila` säilyy kannassa siirtymän ajan.
-11. _(JYU:n vahvistuksen jälkeen)_ `kitu.yki.arvioijarekisteri.kirjoitus.enabled=true` (§7.5) ja
-    Solki-lähetyksen `enabled=true` untuvaan/QA:han/prodiin; säilytysajan poisto päälle. Vasta tämän
-    jälkeen voi harkita tallennetun `tila`-sarakkeen poistoa (§4.2). `henkilotunnus`-saraketta **ei** poisteta: ennen 2026 alkaneiden kausien hetut on
+11. **Käyttöönotto kahdessa askeleessa** (§7.5), koska kytkimet ovat erilliset:
+
+    a. `kitu.yki.arvioijarekisteri.muokkaus.enabled=true` untuvaan/QA:han/prodiin. Käyttöliittymä
+    avautuu, Solki on yhä master ja saa kirjoittaa koko merkinnän. Tämä on §11:n kysymyksen 9
+    kuvaama jakso, jolla molemmat voivat kirjoittaa; §7.5 kertoo mitä siitä seuraa.
+
+    b. _(JYU:n vahvistuksen jälkeen)_ `kitu.yki.arvioijarekisteri.integraatio.enabled=true`.
+    Sisääntulo kaventuu, lähetys Solkiin alkaa ja projektion yöllinen päivitys käynnistyy.
+    **Ennen tätä on ajettava `synkronoiArvioijaKaudet` käsin db-scheduler-UI:sta:** kausimasteri
+    on ollut vanhentunut siitä asti kun täysi sisääntulo alkoi kirjoittaa pelkkää projektiota,
+    ja yöllinen ajo lähtee siitä hetkestä masterin varaan.
+
+    Sitten säilytysajan poisto päälle. Vasta tämän jälkeen voi harkita tallennetun `tila`-sarakkeen
+    poistoa (§4.2). `henkilotunnus`-saraketta **ei** poisteta: ennen 2026 alkaneiden kausien hetut on
     säilytettävä lain nojalla.
 
 12. **`Hallitse arviointikausia arvioijan sivulta`** — §1.6:n taulut ja siirto, `Kausiprojektio`,
@@ -1539,7 +1565,7 @@ Nämä eivät estä toteutusta, mutta on syytä varmistaa ennen kyseisen vaiheen
 ./scripts/format.sh && ./scripts/check-formatting.sh
 
 # Backend-testit (Docker päällä — Testcontainers)
-cd server && ./mvnw test -Dtest='YkiArvioija*'   # sis. YkiArvioijaKirjoituskytkinTest
+cd server && ./mvnw test -Dtest='YkiArvioija*'   # sis. YkiArvioijaMuokkauskytkinTest
 cd server && ./mvnw test -Dtest='SolkiArvioija*'
 cd server && ./mvnw package            # koko sarja
 
