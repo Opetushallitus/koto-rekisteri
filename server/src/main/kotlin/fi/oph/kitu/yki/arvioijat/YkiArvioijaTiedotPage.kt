@@ -12,6 +12,7 @@ import fi.oph.kitu.html.formPost
 import fi.oph.kitu.html.infoTable
 import fi.oph.kitu.html.modal
 import fi.oph.kitu.html.modalCommandButton
+import fi.oph.kitu.html.selitettyEsto
 import fi.oph.kitu.html.table.DisplayTableColumn
 import fi.oph.kitu.html.table.displayTable
 import fi.oph.kitu.html.testId
@@ -46,6 +47,7 @@ object YkiArvioijaTiedotPage {
         turvakielto: Turvakieltotieto,
         flash: ViewMessageData?,
         muokkausKaytossa: Boolean,
+        integraatioKaytossa: Boolean,
         tanaan: LocalDate,
     ): String =
         Page.renderHtml {
@@ -161,11 +163,22 @@ object YkiArvioijaTiedotPage {
                     arvioija.solkiLahetysvirhe?.let { errorMessage(LocalizedString(fi = it)) }
 
                     if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
+                        // Lahetys on integraatiotoiminto, mutta reitti on muokkauskytkimen takana,
+                        // joten nappi vaatii molemmat: muuten se nayttaisi aktiiviselta ja vastaisi 403.
+                        val estonSyy =
+                            when {
+                                !muokkausKaytossa -> UiText.Yki.Arvioija.kirjoitusEiKaytossa
+                                !integraatioKaytossa -> UiText.Yki.Arvioija.integraatioEiKaytossa
+                                else -> null
+                            }
+
                         formPost(Links.Yki.lahetaArvioijaSolkiin(arvioija.id!!.toInt())) {
-                            button(type = ButtonType.submit, classes = "secondary") {
-                                testId("lahetaArvioijaSolkiin")
-                                disabled = !muokkausKaytossa
-                                +UiText.Yki.Arvioija.lahetaUudelleen
+                            selitettyEsto(estonSyy) {
+                                button(type = ButtonType.submit, classes = "secondary") {
+                                    testId("lahetaArvioijaSolkiin")
+                                    disabled = estonSyy != null
+                                    +UiText.Yki.Arvioija.lahetaUudelleen
+                                }
                             }
                         }
                     }
@@ -448,15 +461,16 @@ private fun FlowContent.kausikomento(
     testId: String,
     muokkausKaytossa: Boolean,
 ) {
-    modalCommandButton(dialogId, ModalCommand.OPEN, classes = "secondary") {
-        testId(testId)
-        disabled = !muokkausKaytossa
-        if (!muokkausKaytossa) {
-            attributes["data-tooltip"] =
-                UiText.Yki.Arvioija.kirjoitusEiKaytossa
-                    .toString()
+    val estonSyy =
+        UiText.Yki.Arvioija.kirjoitusEiKaytossa
+            .takeIf { !muokkausKaytossa }
+
+    selitettyEsto(estonSyy) {
+        modalCommandButton(dialogId, ModalCommand.OPEN, classes = "secondary") {
+            testId(testId)
+            disabled = !muokkausKaytossa
+            +teksti
         }
-        +teksti
     }
 }
 

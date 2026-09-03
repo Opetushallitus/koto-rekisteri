@@ -12,6 +12,7 @@ import kotlinx.html.fieldSet
 import kotlinx.html.option
 import kotlinx.html.section
 import kotlinx.html.select
+import kotlinx.html.span
 
 // https://picocss.com/docs/card
 fun FlowContent.card(
@@ -59,6 +60,26 @@ fun FlowContent.horizontalGroup(f: FlowContent.() -> Unit) {
     fieldSet {
         attributes["role"] = "group"
         f()
+    }
+}
+
+/**
+ * Selite disabloidulle kontrollille. Pico asettaa `:where(button, …)[disabled]`ille
+ * `pointer-events: none`, joten napin omalle `data-tooltip`ille ei koskaan tule hoveria — selite
+ * ripustetaan siksi kaareen. `buttonLink` ei tarvitse tata, koska se renderoi
+ * `<a aria-disabled>`in eika `[disabled]`ia.
+ */
+fun FlowContent.selitettyEsto(
+    estonSyy: LocalizedString?,
+    block: FlowContent.() -> Unit,
+) {
+    if (estonSyy == null) {
+        block()
+        return
+    }
+    span {
+        data("tooltip", estonSyy.toString())
+        block()
     }
 }
 

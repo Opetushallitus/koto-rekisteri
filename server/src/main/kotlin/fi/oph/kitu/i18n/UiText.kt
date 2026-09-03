@@ -419,6 +419,12 @@ object UiText {
                             "Arvioija on merkitty passiiviseksi {pvm}. " +
                                 "Uusi arviointikausi aktivoi merkinnän.",
                     )
+            val integraatioEiKaytossa: LocalizedString
+                get() =
+                    tr(
+                        "yki.arvioija.integraatioEiKaytossa",
+                        fi = "Solki-integraatio ei ole käytössä tässä ympäristössä.",
+                    )
             val kirjoitusEiKaytossa: LocalizedString
                 get() =
                     tr(

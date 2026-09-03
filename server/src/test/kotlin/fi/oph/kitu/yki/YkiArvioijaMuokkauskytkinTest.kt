@@ -100,6 +100,46 @@ class YkiArvioijaMuokkauskytkinTest(
     }
 
     @Test
+    fun `kausireitit ovat suljettuja`() {
+        // Turvasaanto ajetaan ennen kontrolleria, joten tuntematon kausiId riittaa.
+        listOf(
+            get("/yki/arvioijat/$arvioijaId/kaudet/uusi"),
+            get("/yki/arvioijat/$arvioijaId/kaudet/1/muokkaa"),
+        ).forEach { mockMvc.perform(it.session(session())).andExpect(status().isForbidden) }
+
+        listOf(
+            post("/yki/arvioijat/$arvioijaId/kaudet"),
+            post("/yki/arvioijat/$arvioijaId/kaudet/1"),
+            post("/yki/arvioijat/$arvioijaId/kaudet/1/passivoi"),
+            post("/yki/arvioijat/$arvioijaId/kaudet/1/poista"),
+            post("/yki/arvioijat/$arvioijaId/passivoi"),
+            post("/yki/arvioijat/$arvioijaId/laheta"),
+        ).forEach { mockMvc.perform(it.session(session()).with(csrf())).andExpect(status().isForbidden) }
+    }
+
+    @Test
+    fun `kausinapit nakyvat mutta eivat ole klikattavissa`() {
+        val sivu = html(get("/yki/arvioijat/$arvioijaId").session(session()))
+
+        assertContains(nappi(sivu, "uusiKausi"), """aria-disabled="true"""")
+        assertContains(nappi(sivu, "muokkaaKautta"), """aria-disabled="true"""")
+    }
+
+    @Test
+    fun `Solkiin lahetys on estetty ja esto on selitetty kaareessa`() {
+        val sivu = html(get("/yki/arvioijat/$arvioijaId").session(session()))
+
+        assertContains(nappipainike(sivu, "lahetaArvioijaSolkiin"), "disabled")
+        // Pico asettaa disabloidulle napille pointer-events: none, joten selite ei nakyisi
+        // napin omassa data-tooltipissa lainkaan — sen on oltava kaareessa.
+        assertContains(
+            sivu,
+            """<span data-tooltip="Arvioijarekisterin ylläpito ei ole vielä käytössä""",
+            message = "eston selite kuuluu kaareeseen, ei disabloituun nappiin",
+        )
+    }
+
+    @Test
     fun `listaus ja tietosivu ovat yha luettavissa`() {
         assertContains(html(get("/yki/arvioijat").session(session())), "Kivinen-Testi")
         assertContains(html(get("/yki/arvioijat/$arvioijaId").session(session())), "Kivinen-Testi")
@@ -110,6 +150,14 @@ class YkiArvioijaMuokkauskytkinTest(
         testId: String,
     ): String =
         Regex("""<a [^>]*data-testid="$testId"[^>]*>""").find(html)?.value
+            ?: fail("nappia $testId ei loytynyt sivulta:\n$html")
+
+    /** Kausitoiminnot ovat <button>eja, eivat linkkeja, joten niille tarvitaan oma hakunsa. */
+    private fun nappipainike(
+        html: String,
+        testId: String,
+    ): String =
+        Regex("""<button [^>]*data-testid="$testId"[^>]*>""").find(html)?.value
             ?: fail("nappia $testId ei loytynyt sivulta:\n$html")
 
     private fun html(request: org.springframework.test.web.servlet.RequestBuilder): String {
