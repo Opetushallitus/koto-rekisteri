@@ -131,6 +131,17 @@ object YkiArvioijaTiedotPage {
                 kaudet.forEach { kausi -> kausidialogit(arvioija, kausi, kaudet.size, tanaan) }
             }
 
+            val vanhentuneet = arvioija.arviointioikeudet.filter { it.kieli.isLegacy() }
+            if (vanhentuneet.isNotEmpty()) {
+                card(overflowAuto = true) {
+                    cardContent {
+                        h2 { +UiText.Yki.Arvioija.Kausi.vanhentuneet }
+                        p { +UiText.Yki.Arvioija.Kausi.vanhentuneetOhje }
+                        vanhentuneetOikeudet(vanhentuneet)
+                    }
+                }
+            }
+
             card {
                 cardContent {
                     h2 { +UiText.Yki.integraatiot }
@@ -483,3 +494,41 @@ private fun FlowContent.vahvistusdialogi(
 private fun passivointiDialogi(kausiId: Int): String = "passivoiKausiDialog-$kausiId"
 
 private fun poistoDialogi(kausiId: Int): String = "poistaKausiDialog-$kausiId"
+
+/** Vanhentuneet kielet eivat kuulu kausiin, joten ne naytetaan omanaan vain luettavina. */
+private fun FlowContent.vanhentuneetOikeudet(oikeudet: List<YkiArviointioikeusEntity>) {
+    displayTable(
+        oikeudet,
+        listOf(
+            DisplayTableColumn(
+                UiText.Yki.Arvioija.tutkintokieli
+                    .toString(),
+                testId = "vanhentunutKieli",
+            ) {
+                +it.kieli.nimi
+            },
+            DisplayTableColumn(
+                UiText.Yki.Sarake.tasot
+                    .toString(),
+                testId = "vanhentunutTasot",
+            ) { oikeus ->
+                +oikeus.tasot.sorted().joinToString(", ") { it.nimi.toString() }
+            },
+            DisplayTableColumn(
+                UiText.Yki.Arvioija.kaudenAlkupaiva
+                    .toString(),
+                testId = "vanhentunutAlkupaiva",
+            ) { oikeus ->
+                oikeus.kaudenAlkupaiva?.let { finnishDate(it) }
+            },
+            DisplayTableColumn(
+                UiText.Yki.Arvioija.kaudenPaattymispaiva
+                    .toString(),
+                testId = "vanhentunutPaattymispaiva",
+            ) { oikeus ->
+                oikeus.kaudenPaattymispaiva?.let { finnishDate(it) }
+            },
+        ),
+        testId = "vanhentuneetOikeudet",
+    )
+}

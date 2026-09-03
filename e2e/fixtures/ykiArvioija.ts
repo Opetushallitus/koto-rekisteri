@@ -128,4 +128,21 @@ export const insert = async (db: TestDB, arvioijaName: YkiArvioijaName) => {
               ${arvioija.kieli},
               ${arvioija.tasot})
   `)
+
+  // Kaudet ovat master ja yki_arviointioikeus niistä johdettu projektio, joten kumpikin
+  // on seedattava: pelkkä projektio jättäisi tietosivun kausitaulukon tyhjäksi.
+  if (arvioija.kaudenAlkupaiva !== null) {
+    const kausiId = (
+      await db.dbClient.query(SQL`
+        INSERT INTO yki_arvioija_rekisterointikausi (arvioija_id, alkupaiva, paattymispaiva)
+        VALUES (${arvioijaId}, ${arvioija.kaudenAlkupaiva}, ${arvioija.kaudenPaattymispaiva})
+        RETURNING id
+    `)
+    )[0].id
+
+    await db.dbClient.query(SQL`
+        INSERT INTO yki_arvioija_rekisterointikausi_oikeus (kausi_id, kieli, tasot)
+        VALUES (${kausiId}, ${arvioija.kieli}, ${arvioija.tasot})
+    `)
+  }
 }

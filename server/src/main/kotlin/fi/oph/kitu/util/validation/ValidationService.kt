@@ -9,6 +9,8 @@ import fi.oph.kitu.tiedontuontischema.VktSuoritus
 import fi.oph.kitu.tiedontuontischema.VktValidation
 import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.tiedontuontischema.YkiSuoritusValidation
+import fi.oph.kitu.yki.arvioijat.PaivitaArvioijanTiedot
+import fi.oph.kitu.yki.arvioijat.PaivitaArvioijanTiedotValidation
 import fi.oph.kitu.yki.arvioijat.TallennaArvioija
 import fi.oph.kitu.yki.arvioijat.TallennaArvioijaValidation
 import fi.oph.kitu.yki.arvioijat.TallennaKausi
@@ -25,6 +27,7 @@ final class ValidationService(
     val ykiArvioija: YkiArvioijaValidation,
     val tallennaArvioija: TallennaArvioijaValidation,
     val tallennaKausi: TallennaKausiValidation,
+    val paivitaArvioijanTiedot: PaivitaArvioijanTiedotValidation,
 ) {
     fun <T : KielitutkinnonSuoritus> validateAndEnrich(hs: Henkilosuoritus<T>): ValidationResult<Henkilosuoritus<T>> =
         either {
@@ -55,6 +58,9 @@ final class ValidationService(
 
     fun validateAndEnrich(komento: TallennaKausi): ValidationResult<TallennaKausi> =
         either { with(tallennaKausi) { validateAndEnrich(komento) } }
+
+    fun validateAndEnrich(komento: PaivitaArvioijanTiedot): ValidationResult<PaivitaArvioijanTiedot> =
+        either { with(paivitaArvioijanTiedot) { validateAndEnrich(komento) } }
 }
 
 fun <T> ValidationResult<T>.getOrThrow(): T =

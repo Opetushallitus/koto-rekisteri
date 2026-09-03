@@ -15,6 +15,12 @@ class YkiArvioijaScheduledTasks(
     @Value($$"${kitu.yki.scheduling.poistaVanhentuneetArvioijat.schedule}")
     lateinit var sailytysaikaSchedule: String
 
+    @Value($$"${kitu.yki.scheduling.paivitaArvioijaProjektiot.schedule}")
+    lateinit var projektioSchedule: String
+
+    @Value($$"${kitu.yki.scheduling.synkronoiArvioijaKaudet.schedule}")
+    lateinit var kausisynkronointiSchedule: String
+
     @WithSpan
     @Bean
     fun poistaVanhentuneetArvioijat(arvioijaService: YkiArvioijaService): Task<Void> =
@@ -23,5 +29,25 @@ class YkiArvioijaScheduledTasks(
             sailytysaikaSchedule,
         ) {
             arvioijaService.poistaSailytysajanYlittaneet()
+        }
+
+    @WithSpan
+    @Bean
+    fun paivitaArvioijaProjektiot(kausiService: YkiArvioijaKausiService): Task<Void> =
+        tracer.recurringTask(
+            "Paivita YKI-arvioijien arviointioikeusprojektio",
+            projektioSchedule,
+        ) {
+            kausiService.paivitaProjektiot()
+        }
+
+    @WithSpan
+    @Bean
+    fun synkronoiArvioijaKaudet(kausiService: YkiArvioijaKausiService): Task<Void> =
+        tracer.recurringTask(
+            "Synkronoi YKI-arvioijien kaudet arviointioikeuksista",
+            kausisynkronointiSchedule,
+        ) {
+            kausiService.synkronoiKaudetArviointioikeuksista()
         }
 }

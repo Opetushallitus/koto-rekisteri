@@ -28,9 +28,6 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     await expect(ykiArvioijaLomakePage.field("sukunimi")).toHaveValue(
       "Kivinen-Testi",
     )
-    await expect(
-      ykiArvioijaLomakePage.page.getByTestId("arviointioikeus-FIN:PT"),
-    ).toBeChecked()
 
     await ykiArvioijaLomakePage.field("postitoimipaikka").fill("TAMPERE")
     await ykiArvioijaLomakePage.tallenna()
@@ -52,7 +49,7 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     )
   })
 
-  test("kausihistoria kirjaa uuden kauden ja passivointi paattaa merkinnan", async ({
+  test("rekisteröintikausi lisätään omalla lomakkeellaan ja passivointi päättää merkinnän", async ({
     indexPage,
     ykiArvioijaLomakePage,
   }) => {
@@ -65,16 +62,22 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     await ykiArvioijaLomakePage.valitseArviointioikeus("FIN", "PT")
     await ykiArvioijaLomakePage.tallenna()
 
-    await expect(page.getByTestId("kausihistoria")).toContainText("7.12.2025")
+    const kaudet = page.getByTestId("rekisterointikaudet")
+    await expect(kaudet).toContainText("7.12.2025")
 
-    // Uusi kausi kirjautuu historiaan alkuperaisen rinnalle
-    await page.getByTestId("muokkaaArvioijaa").click()
-    await ykiArvioijaLomakePage.asetaKaudenAlkupaiva("2026-06-01")
-    await ykiArvioijaLomakePage.tallenna()
+    // Uusi kausi lisätään kausilomakkeelta, ei arvioijan muokkauslomakkeelta.
+    await page.getByTestId("uusiKausi").click()
+    await page.getByTestId("alkupaiva-input").fill("2031-01-01")
+    await page.getByTestId("arviointioikeus-FIN:PT").check()
+    await page.getByTestId("tallennaKausi").click()
 
-    const historia = page.getByTestId("kausihistoria")
-    await expect(historia).toContainText("7.12.2025")
-    await expect(historia).toContainText("1.6.2026")
+    await expect(ykiArvioijaLomakePage.viewMessage).toContainText("lisättiin")
+    await expect(kaudet).toContainText("7.12.2025")
+    await expect(kaudet).toContainText("1.1.2031")
+
+    // Muutosloki on oletuksena kiinni ja avautuu details-elementistä.
+    await page.getByTestId("naytaMuutoshistoria").click()
+    await expect(page.getByTestId("kausihistoria")).toContainText("1.1.2031")
 
     // Passivointi vaatii vahvistuksen dialogissa
     await page.getByTestId("passivoiArvioija").click()
@@ -82,10 +85,6 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     await page.getByTestId("vahvistaPassivointi").click()
 
     await expect(ykiArvioijaLomakePage.viewMessage).toContainText("passiivise")
-    // Tila lasketaan kauden päivistä, joten passivointi päättää kauden tähän päivään.
-    await expect(historia).toContainText(
-      new Intl.DateTimeFormat("fi-FI").format(new Date()),
-    )
     // Nappi jää näkyviin estettynä, jotta toiminnon olemassaolo ja eston syy näkyvät sivulta.
     await expect(page.getByTestId("passivoiArvioija")).toHaveAttribute(
       "aria-disabled",

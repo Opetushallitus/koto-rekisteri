@@ -87,3 +87,18 @@ data class TallennaKausi(
     val arviointioikeudet: List<Kausioikeus>,
     val paattymispaiva: LocalDate? = null,
 )
+
+/**
+ * Arvioijan yhteystietojen paivitys. Kaudet eivat kulje taman kautta vaan
+ * [TallennaKausi]n, joten muokkauslomake ei voi vahingossa luoda uutta kautta.
+ */
+data class PaivitaArvioijanTiedot(
+    val arvioijaOid: Oid,
+    val sukunimi: String,
+    val etunimet: String,
+    val sahkopostiosoite: String?,
+    val katuosoite: String,
+    val postinumero: String,
+    val postitoimipaikka: String,
+    val ashaNumero: String?,
+)

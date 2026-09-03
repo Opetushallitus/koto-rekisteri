@@ -9,6 +9,7 @@ import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.yki.arvioijat.Rekisterikausi
 import fi.oph.kitu.yki.arvioijat.Rekisterointitila
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaKausiRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeusEntity
@@ -49,6 +50,7 @@ import kotlin.test.assertTrue
 class YkiArvioijaMuokkausTest(
     @param:Autowired private val context: WebApplicationContext,
     @param:Autowired private val repository: YkiArvioijaRepository,
+    @param:Autowired private val kausiRepository: YkiArvioijaKausiRepository,
     @param:Autowired private val timeService: TestTimeService,
 ) {
     private lateinit var mockMvc: MockMvc
@@ -93,7 +95,6 @@ class YkiArvioijaMuokkausTest(
 
         assertContains(html, """value="Kivinen-Testi"""")
         assertContains(html, """value="Testikuja 5"""")
-        assertContains(html, """data-testid="arviointioikeus-FIN:PT"""")
         assertContains(html, """data-testid="tallennaArvioija"""")
         assertContains(html, """data-testid="peruutaMuokkaus"""")
     }
@@ -110,8 +111,16 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
-    fun `muokkauslomake sailyttaa valitut arviointioikeudet valittuina`() {
-        val html = html(get("/yki/arvioijat/${idOf(petro)}/muokkaa").session(session()))
+    fun `kausilomake sailyttaa valitut arviointioikeudet valittuina`() {
+        val id = idOf(petro)
+        val kausiId =
+            kausiRepository
+                .findKaudet(id)
+                .single()
+                .id!!
+                .toInt()
+
+        val html = html(get("/yki/arvioijat/$id/kaudet/$kausiId/muokkaa").session(session()))
 
         val valittu = Regex("""data-testid="arviointioikeus-FIN:PT"[^>]*checked""")
         assertTrue(valittu.containsMatchIn(html), "tallennetun oikeuden on oltava valittuna:\n$html")
@@ -141,12 +150,7 @@ class YkiArvioijaMuokkausTest(
     fun `kielen poisto poistaa arviointioikeuden`() {
         val id = idOf(petro)
 
-        mockMvc
-            .perform(
-                muokkaus(id, petro)
-                    .param("postitoimipaikka", "Testilä")
-                    .param("arviointioikeus", "SWE:YT"),
-            ).andReturn()
+        muokkaaKautta(id, "2021-01-01", "SWE:YT")
 
         val oikeudet = repository.findArvioijaById(id)!!.arviointioikeudet
         assertEquals(setOf(Tutkintokieli.SWE), oikeudet.map { it.kieli }.toSet(), "FIN-oikeuden on poistuttava")
@@ -268,17 +272,18 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
-    fun `vanhentunut tutkintokieli nakyy lomakkeella lukittuna`() {
+    fun `vanhentunut tutkintokieli nakyy tietosivulla omassa osiossaan`() {
         val id = idOf(petro)
         lisaaLegacyOikeus(id)
 
-        val lomake = html(get("/yki/arvioijat/$id/muokkaa").session(session()))
-        val kentta =
-            Regex("""<input[^>]*data-testid="arviointioikeus-SWE10:PT"[^>]*>""").find(lomake)?.value
+        val tietosivu = html(get("/yki/arvioijat/$id").session(session()))
 
-        assertNotNull(kentta, "legacy-oikeuden on nayttava lomakkeella:\n$lomake")
-        assertContains(kentta, "checked")
-        assertContains(kentta, "disabled")
+        assertContains(
+            tietosivu,
+            """data-testid="vanhentuneetOikeudet"""",
+            message = "vanhentunut oikeus ei kuulu kauteen, joten se naytetaan erikseen",
+        )
+        assertContains(tietosivu, "ruotsi (vanha koodi)")
     }
 
     private fun lisaaLegacyOikeus(id: Int) {
@@ -342,12 +347,10 @@ class YkiArvioijaMuokkausTest(
     @Test
     fun `uusi kausi aktivoi Solkin passivoiman arvioijan`() {
         val id = idOf(petro)
-        solkiPassivoi(id, kaudenAlkupaiva = VOIMASSA_ALKAEN)
+        solkiPassivoi(id, kaudenAlkupaiva = LocalDate.of(2019, 1, 1))
 
         timeService.runWithFixedClock(HETKI) {
-            mockMvc
-                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
-                .andExpect(status().isSeeOther)
+            uusiKausi(id, "2026-05-01", "FIN:PT")
         }
 
         assertEquals(
@@ -366,9 +369,7 @@ class YkiArvioijaMuokkausTest(
                 .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
                 .andExpect(status().isSeeOther)
 
-            mockMvc
-                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
-                .andExpect(status().isSeeOther)
+            uusiKausi(id, "2026-05-01", "FIN:PT")
         }
 
         val paivitetty = repository.findArvioijaById(id)!!
@@ -385,9 +386,7 @@ class YkiArvioijaMuokkausTest(
         val id = idOf(petro)
 
         timeService.runWithFixedClock(HETKI) {
-            mockMvc
-                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
-                .andExpect(status().isSeeOther)
+            uusiKausi(id, "2026-05-01", "FIN:PT")
             mockMvc
                 .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
                 .andExpect(status().isSeeOther)
@@ -433,8 +432,7 @@ class YkiArvioijaMuokkausTest(
 
         timeService.runWithFixedClock(HETKI) {
             mockMvc
-                .perform(lomake(id, kaudenAlkupaiva = "2021-01-01", oikeudet = listOf("FIN:PT")))
-                .andExpect(status().isSeeOther)
+            muokkaaKautta(id, "2021-01-01", "FIN:PT")
             assertFalse(
                 repository
                     .findArvioijaById(id)!!
@@ -444,9 +442,7 @@ class YkiArvioijaMuokkausTest(
                 "ensimmainen kausi ei ole jatkorekisterointi",
             )
 
-            mockMvc
-                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
-                .andExpect(status().isSeeOther)
+            uusiKausi(id, "2026-05-01", "FIN:PT")
         }
 
         assertTrue(
@@ -484,9 +480,7 @@ class YkiArvioijaMuokkausTest(
         val id = idOf(petro)
 
         timeService.runWithFixedClock(HETKI) {
-            mockMvc
-                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
-                .andExpect(status().isSeeOther)
+            uusiKausi(id, "2026-05-01", "FIN:PT")
 
             val tietosivu = html(get("/yki/arvioijat/$id").session(session()))
             assertContains(tietosivu, """data-testid="rekisterointikaudet"""")
@@ -525,11 +519,8 @@ class YkiArvioijaMuokkausTest(
     fun `tietosivu nayttaa kausihistorian`() {
         val id = idOf(petro)
 
-        // Uusi kausi synnyttaa historiarivin alkuperaisen rinnalle. Lomake rakennetaan tassa itse,
-        // koska muokkaus()-apuri asettaa jo oman kaudenAlkupaivansa ja Spring sitoo ensimmaisen arvon.
-        mockMvc
-            .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
-            .andExpect(status().isSeeOther)
+        // Uusi kausi synnyttaa lokirivin alkuperaisen rinnalle.
+        uusiKausi(id, "2026-05-01", "FIN:PT")
 
         val tietosivu = html(get("/yki/arvioijat/$id").session(session()))
 
@@ -572,9 +563,7 @@ class YkiArvioijaMuokkausTest(
         val id = idOf(petro)
 
         timeService.runWithFixedClock(HETKI) {
-            mockMvc
-                .perform(lomake(id, kaudenAlkupaiva = "2026-05-01", oikeudet = listOf("FIN:PT")))
-                .andExpect(status().isSeeOther)
+            uusiKausi(id, "2026-05-01", "FIN:PT")
             assertFalse(
                 passivointiNappi(id).contains("aria-disabled"),
                 "voimassa olevan merkinnan voi passivoida",
@@ -630,14 +619,7 @@ class YkiArvioijaMuokkausTest(
                 .first()
                 .kaudenAlkupaiva
 
-        mockMvc
-            .perform(
-                lomake(
-                    id,
-                    kaudenAlkupaiva = voimassaolevaKausi.toString(),
-                    oikeudet = listOf("FIN:PT", "SWE:YT"),
-                ),
-            ).andExpect(status().isSeeOther)
+        muokkaaKautta(id, voimassaolevaKausi.toString(), "FIN:PT", "SWE:YT")
 
         val oikeudet = repository.findArvioijaById(id)!!.arviointioikeudet
         assertEquals(setOf(Tutkintokieli.FIN, Tutkintokieli.SWE), oikeudet.map { it.kieli }.toSet())
@@ -703,6 +685,38 @@ class YkiArvioijaMuokkausTest(
         .param("katuosoite", "Testikuja 5")
         .param("postinumero", "40100")
         .param("kaudenAlkupaiva", "2025-01-01")
+
+    /** Kausi ei kulje muokkauslomakkeen kautta, joten testit ohjaavat sita omilla reiteillaan. */
+    private fun uusiKausi(
+        id: Int,
+        alkupaiva: String,
+        vararg oikeudet: String,
+    ) {
+        val request =
+            post("/yki/arvioijat/$id/kaudet").session(session()).with(csrf()).param("alkupaiva", alkupaiva)
+        oikeudet.forEach { request.param("arviointioikeus", it) }
+        mockMvc.perform(request).andExpect(status().isSeeOther)
+    }
+
+    private fun muokkaaKautta(
+        id: Int,
+        alkupaiva: String,
+        vararg oikeudet: String,
+    ) {
+        val kausiId =
+            kausiRepository
+                .findKaudet(id)
+                .first()
+                .id!!
+                .toInt()
+        val request =
+            post("/yki/arvioijat/$id/kaudet/$kausiId")
+                .session(session())
+                .with(csrf())
+                .param("alkupaiva", alkupaiva)
+        oikeudet.forEach { request.param("arviointioikeus", it) }
+        mockMvc.perform(request).andExpect(status().isSeeOther)
+    }
 
     private fun idOf(oid: String): Int = repository.findByArvioijaOid(Oid.parse(oid).getOrThrow())!!.id!!.toInt()
 

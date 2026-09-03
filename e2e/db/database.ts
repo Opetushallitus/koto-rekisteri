@@ -110,6 +110,8 @@ const withEmptyDatabase = (pool: pg.Pool) => async () => {
         yki_suoritus_lisatieto,
         yki_arvioija,
         yki_arviointioikeus,
+        yki_arvioija_rekisterointikausi,
+        yki_arvioija_rekisterointikausi_oikeus,
         vkt_suoritus,
         koski_error
       RESTART IDENTITY CASCADE
