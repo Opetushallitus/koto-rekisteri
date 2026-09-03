@@ -45,7 +45,7 @@ object YkiArvioijaTiedotPage {
         muutosloki: List<YkiArvioijaKausiEntity>,
         turvakielto: Turvakieltotieto,
         flash: ViewMessageData?,
-        kirjoitusKaytossa: Boolean,
+        muokkausKaytossa: Boolean,
         tanaan: LocalDate,
     ): String =
         Page.renderHtml {
@@ -59,17 +59,17 @@ object YkiArvioijaTiedotPage {
                 buttonGroup {
                     buttonLink(
                         href = Links.Yki.muokkaaArvioijaa(arvioija.id!!.toInt()),
-                        enabled = kirjoitusKaytossa,
+                        enabled = muokkausKaytossa,
                         testId = "muokkaaArvioijaa",
                         disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
                     ) {
                         +UiText.Yki.Arvioija.muokkaa
                     }
 
-                    passivointiNappi(arvioija, kirjoitusKaytossa, tanaan)
+                    passivointiNappi(arvioija, muokkausKaytossa, tanaan)
                 }
 
-                passivointiDialogi(arvioija, kirjoitusKaytossa, tanaan)
+                passivointiDialogi(arvioija, muokkausKaytossa, tanaan)
             }
 
             card {
@@ -99,7 +99,7 @@ object YkiArvioijaTiedotPage {
                         p {
                             buttonLink(
                                 href = Links.Yki.uusiKausi(arvioija.id!!.toInt()),
-                                enabled = kirjoitusKaytossa,
+                                enabled = muokkausKaytossa,
                                 testId = "uusiKausi",
                                 disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
                             ) {
@@ -111,7 +111,7 @@ object YkiArvioijaTiedotPage {
                     if (kaudet.isEmpty()) {
                         p { +UiText.Yki.Arvioija.Kausi.eiKausia }
                     } else {
-                        kaudetTaulukko(arvioija, kaudet, kirjoitusKaytossa, tanaan)
+                        kaudetTaulukko(arvioija, kaudet, muokkausKaytossa, tanaan)
                     }
 
                     details {
@@ -129,7 +129,7 @@ object YkiArvioijaTiedotPage {
             }
 
             // Natiivi dialog leikkautuu overflow-kontekstissa, joten ne renderoidaan kortin ulkopuolelle.
-            if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI) && kirjoitusKaytossa) {
+            if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI) && muokkausKaytossa) {
                 kaudet.forEach { kausi -> kausidialogit(arvioija, kausi, kaudet.size, tanaan) }
             }
 
@@ -164,7 +164,7 @@ object YkiArvioijaTiedotPage {
                         formPost(Links.Yki.lahetaArvioijaSolkiin(arvioija.id!!.toInt())) {
                             button(type = ButtonType.submit, classes = "secondary") {
                                 testId("lahetaArvioijaSolkiin")
-                                disabled = !kirjoitusKaytossa
+                                disabled = !muokkausKaytossa
                                 +UiText.Yki.Arvioija.lahetaUudelleen
                             }
                         }
@@ -180,10 +180,10 @@ object YkiArvioijaTiedotPage {
 
 private fun FlowContent.passivointiNappi(
     arvioija: YkiArvioijaEntity,
-    kirjoitusKaytossa: Boolean,
+    muokkausKaytossa: Boolean,
     tanaan: LocalDate,
 ) {
-    val estonSyy = passivoinninEstonSyy(arvioija, kirjoitusKaytossa, tanaan)
+    val estonSyy = passivoinninEstonSyy(arvioija, muokkausKaytossa, tanaan)
 
     if (estonSyy != null) {
         buttonLink(
@@ -206,10 +206,10 @@ private fun FlowContent.passivointiNappi(
 /** Natiivi dialog renderoidaan nappiryhman ulkopuolelle, jottei se kuulu ryhman lapsiin. */
 private fun FlowContent.passivointiDialogi(
     arvioija: YkiArvioijaEntity,
-    kirjoitusKaytossa: Boolean,
+    muokkausKaytossa: Boolean,
     tanaan: LocalDate,
 ) {
-    if (passivoinninEstonSyy(arvioija, kirjoitusKaytossa, tanaan) != null) return
+    if (passivoinninEstonSyy(arvioija, muokkausKaytossa, tanaan) != null) return
 
     vahvistusdialogi(
         PASSIVOINTI_MODAL,
@@ -227,7 +227,7 @@ private fun FlowContent.passivointiDialogi(
  */
 private fun passivoinninEstonSyy(
     arvioija: YkiArvioijaEntity,
-    kirjoitusKaytossa: Boolean,
+    muokkausKaytossa: Boolean,
     tanaan: LocalDate,
 ): LocalizedString? {
     val merkintaOnPassiivinen =
@@ -237,7 +237,7 @@ private fun passivoinninEstonSyy(
             }
 
     return when {
-        !kirjoitusKaytossa -> {
+        !muokkausKaytossa -> {
             UiText.Yki.Arvioija.kirjoitusEiKaytossa
         }
 
@@ -343,7 +343,7 @@ private fun FlowContent.kausihistoriaTaulukko(
 private fun FlowContent.kaudetTaulukko(
     arvioija: YkiArvioijaEntity,
     kaudet: List<YkiArviointikausiEntity>,
-    kirjoitusKaytossa: Boolean,
+    muokkausKaytossa: Boolean,
     tanaan: LocalDate,
 ) {
     val arvioijaId = arvioija.id!!.toInt()
@@ -398,7 +398,7 @@ private fun FlowContent.kaudetTaulukko(
                         .toString(),
                     testId = "kausiToiminnot",
                 ) { kausi ->
-                    kausitoiminnot(arvioijaId, kausi, kaudet.size, kirjoitusKaytossa, tanaan)
+                    kausitoiminnot(arvioijaId, kausi, kaudet.size, muokkausKaytossa, tanaan)
                 }
             },
         ),
@@ -411,7 +411,7 @@ private fun FlowContent.kausitoiminnot(
     arvioijaId: Int,
     kausi: YkiArviointikausiEntity,
     kausiaYhteensa: Int,
-    kirjoitusKaytossa: Boolean,
+    muokkausKaytossa: Boolean,
     tanaan: LocalDate,
 ) {
     val kausiId = kausi.id!!.toInt()
@@ -419,7 +419,7 @@ private fun FlowContent.kausitoiminnot(
     buttonGroup {
         buttonLink(
             href = Links.Yki.muokkaaKautta(arvioijaId, kausiId),
-            enabled = kirjoitusKaytossa,
+            enabled = muokkausKaytossa,
             testId = "muokkaaKautta",
             disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
         ) {
@@ -431,13 +431,13 @@ private fun FlowContent.kausitoiminnot(
                 kaudenPassivointiDialogi(kausiId),
                 UiText.Yki.Arvioija.Kausi.passivoi,
                 "passivoiKausi",
-                kirjoitusKaytossa,
+                muokkausKaytossa,
             )
         }
 
         // Viimeinen kausi jattaisi arvioijan ilman arviointioikeuksia, jolloin han katoaisi listalta.
         if (kausiaYhteensa > 1) {
-            kausikomento(poistoDialogi(kausiId), UiText.Yki.Arvioija.Kausi.poista, "poistaKausi", kirjoitusKaytossa)
+            kausikomento(poistoDialogi(kausiId), UiText.Yki.Arvioija.Kausi.poista, "poistaKausi", muokkausKaytossa)
         }
     }
 }
@@ -446,12 +446,12 @@ private fun FlowContent.kausikomento(
     dialogId: String,
     teksti: LocalizedString,
     testId: String,
-    kirjoitusKaytossa: Boolean,
+    muokkausKaytossa: Boolean,
 ) {
     modalCommandButton(dialogId, ModalCommand.OPEN, classes = "secondary") {
         testId(testId)
-        disabled = !kirjoitusKaytossa
-        if (!kirjoitusKaytossa) {
+        disabled = !muokkausKaytossa
+        if (!muokkausKaytossa) {
             attributes["data-tooltip"] =
                 UiText.Yki.Arvioija.kirjoitusEiKaytossa
                     .toString()

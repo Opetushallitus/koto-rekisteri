@@ -46,7 +46,7 @@ object YkiArvioijaPage {
         arvioijat: List<YkiArvioijaListRow>,
         params: YkiArvioijaParams,
         pagination: Pagination,
-        kirjoitusKaytossa: Boolean,
+        muokkausKaytossa: Boolean,
     ): String =
         Page.renderHtml(
             wideContent = true,
@@ -74,7 +74,7 @@ object YkiArvioijaPage {
                                 li {
                                     buttonLink(
                                         href = Links.Yki.uusiArvioija(),
-                                        enabled = kirjoitusKaytossa,
+                                        enabled = muokkausKaytossa,
                                         testId = "lisaaArvioija",
                                         disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
                                     ) {

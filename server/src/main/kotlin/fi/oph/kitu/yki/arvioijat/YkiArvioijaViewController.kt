@@ -50,7 +50,7 @@ class YkiArvioijaViewController(
                             Links.Yki.arvioijat() + httpParams(params.toMap() + ("page" to page.toString()))
                         },
                     ),
-                kirjoitusKaytossa = asetukset.kirjoitusKaytossa,
+                muokkausKaytossa = asetukset.muokkausKaytossa,
             ),
         )
     }
@@ -261,7 +261,7 @@ class YkiArvioijaViewController(
                 muutosloki = kausiService.haeMuutosloki(id),
                 turvakielto = arvioijaService.haeTurvakielto(arvioija.arvioijaOid),
                 flash = viewMessage?.consume(),
-                kirjoitusKaytossa = asetukset.kirjoitusKaytossa,
+                muokkausKaytossa = asetukset.muokkausKaytossa,
                 tanaan = timeService.today(),
             ),
         )
