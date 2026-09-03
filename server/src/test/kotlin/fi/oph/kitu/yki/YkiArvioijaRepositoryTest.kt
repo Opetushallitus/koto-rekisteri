@@ -79,6 +79,8 @@ class YkiArvioijaRepositoryTest(
             id = null,
             luotu = null,
             muokattu = null,
+            // Johdetaan kausista tallennuksen yhteydessa, ks. paivitaEnsimmainenRekisterointipaiva.
+            arvioijanEnsimmainenRekisterointipaiva = null,
             arviointioikeudet =
                 arviointioikeudet
                     .map { it.copy(id = null, arvioijaId = null, rekisteriintuontiaika = null) }

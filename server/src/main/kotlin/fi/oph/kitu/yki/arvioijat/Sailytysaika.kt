@@ -9,14 +9,28 @@ package fi.oph.kitu.yki.arvioijat
 object Sailytysaika {
     const val VUOSIA = 5L
 
-    /** Alkuhetki SQL:na; sama COALESCE molemmissa kyselyissa, jottei suoja ja poisto eroa. */
+    /**
+     * Alkuhetki SQL:na; sama COALESCE molemmissa kyselyissa, jottei suoja ja poisto eroa.
+     *
+     * yki_arviointioikeus on projektio yhdesta kaudesta ja voi osoittaa paattyneeseen kauteen
+     * vaikka arvioijalla on uudempi kausi. GREATEST ottaa myohaisemman kahdesta lahteesta, joten
+     * vanhentunut projektio ei voi aikaistaa sailytysajan alkua eika siten poistaa voimassa
+     * olevaa merkintaa.
+     */
     const val ALKUHETKI_SQL = """
         COALESCE(
             yki_arvioija.passivoitu::date,
-            (
-                SELECT max(kauden_paattymispaiva)
-                FROM yki_arviointioikeus
-                WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id
+            GREATEST(
+                (
+                    SELECT max(kauden_paattymispaiva)
+                    FROM yki_arviointioikeus
+                    WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id
+                ),
+                (
+                    SELECT max(paattymispaiva)
+                    FROM yki_arvioija_rekisterointikausi
+                    WHERE yki_arvioija_rekisterointikausi.arvioija_id = yki_arvioija.id
+                )
             )
         )
     """

@@ -52,6 +52,11 @@ enum class Rekisterointitila : Nimetty {
             tanaan: LocalDate,
         ): Rekisterointitila = laske(kausi.tila, kausi.kaudenAlkupaiva, kausi.kaudenPaattymispaiva, tanaan)
 
+        fun laske(
+            kausi: YkiRekisterointikausiEntity,
+            tanaan: LocalDate,
+        ): Rekisterointitila = laske(null, kausi.alkupaiva, kausi.paattymispaiva, tanaan)
+
         /**
          * [laske] SQL:na. Jokainen haara palauttaa text-literaalin: jos ensimmainen palauttaisi
          * sarakkeen, CASE ratkeaisi tyypiksi yki_arvioija_tila eika 'TULEVAISUUDESSA' olisi
