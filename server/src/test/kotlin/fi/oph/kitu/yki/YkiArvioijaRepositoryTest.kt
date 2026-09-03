@@ -207,16 +207,14 @@ class YkiArvioijaRepositoryTest(
     fun `Solkin push ei pyyhi kitussa syotettyja kenttia`() {
         val kitunMerkinta =
             arvioija(arviointioikeus(Tutkintokieli.SWE)).copy(
-                ashaNumero = "OPH-123-2026",
                 passivoitu = OffsetDateTime.parse("2026-02-01T00:00:00Z"),
             )
         arvioijaRepository.tallenna(kitunMerkinta)
 
-        // Solkin payload ei kanna naita kenttia lainkaan.
+        // Solkin payload ei kanna tata kenttaa lainkaan.
         arvioijaRepository.tallenna(arvioija(arviointioikeus(Tutkintokieli.SWE)), lahde = Tallennuslahde.SOLKI)
 
         val tallennettu = arvioijaRepository.findByArvioijaOid(oid)
-        assertEquals("OPH-123-2026", tallennettu?.ashaNumero, "hallintopaatoksen numero on kitun omaa dataa")
         assertNotNull(tallennettu?.passivoitu, "passivointihetki on sailytysajan laskennan alkupiste")
     }
 
@@ -365,21 +363,14 @@ class YkiArvioijaRepositoryTest(
     fun `Uudet kentät tallentuvat ja luotu-leima säilyy päivityksessä`() {
         val tekija = Oid.parse("1.2.246.562.24.59267607404").getOrThrow()
         val id =
-            arvioijaRepository.tallenna(
-                arvioija(arviointioikeus()).copy(ashaNumero = "OPH-1234-2026"),
-                tekija = tekija,
-            )
+            arvioijaRepository.tallenna(arvioija(arviointioikeus()), tekija = tekija)
         val luotu = arvioijaRepository.findById(id).getOrNull()?.luotu
         assertNotNull(luotu)
 
-        arvioijaRepository.tallenna(
-            arvioija(arviointioikeus()).copy(ashaNumero = "OPH-9999-2026"),
-            tekija = tekija,
-        )
+        arvioijaRepository.tallenna(arvioija(arviointioikeus()), tekija = tekija)
 
         val saved = arvioijaRepository.findById(id).getOrNull()
         assertNotNull(saved)
-        assertEquals("OPH-9999-2026", saved.ashaNumero)
         assertEquals(luotu, saved.luotu, "luotu-leima ei saa muuttua paivityksessa")
         assertEquals(tekija, saved.muokkaajaOid)
     }

@@ -65,6 +65,8 @@ object YkiKausiLomakePage {
                             }
                             small { +UiText.Yki.Arvioija.kaudenPaattymispaivaOhje }
                         }
+
+                        tekstikentta(UiText.Yki.Arvioija.ashaNumero, "ashaNumero", form.ashaNumero, errors)
                     }
                 }
 

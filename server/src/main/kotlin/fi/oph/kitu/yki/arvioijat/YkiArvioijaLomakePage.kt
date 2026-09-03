@@ -107,13 +107,13 @@ object YkiArvioijaLomakePage {
                     }
                 }
 
-                card {
-                    cardContent {
-                        h2 { +UiText.Yki.Arvioija.rekisterimerkinta }
+                // Muokkauslomakkeella kausi ja sen hallintopaatos hallitaan tietosivun
+                // kausitaulukosta, jottei alkupaivan muutos taalla loisi uutta kautta vanhan rinnalle.
+                if (naytaKausi) {
+                    card {
+                        cardContent {
+                            h2 { +UiText.Yki.Arvioija.rekisterimerkinta }
 
-                        // Muokkauslomakkeella kausi hallitaan tietosivun kausitaulukosta, jottei
-                        // alkupaivan muutos taalla loisi uutta kautta vanhan rinnalle.
-                        if (naytaKausi) {
                             formField(
                                 label = UiText.Yki.Arvioija.kaudenAlkupaiva,
                                 name = "kaudenAlkupaiva",
@@ -135,9 +135,9 @@ object YkiArvioijaLomakePage {
                                 }
                                 small { +UiText.Yki.Arvioija.kaudenPaattymispaivaOhje }
                             }
-                        }
 
-                        tekstikentta(UiText.Yki.Arvioija.ashaNumero, "ashaNumero", form.ashaNumero, errors)
+                            tekstikentta(UiText.Yki.Arvioija.ashaNumero, "ashaNumero", form.ashaNumero, errors)
+                        }
                     }
                 }
 

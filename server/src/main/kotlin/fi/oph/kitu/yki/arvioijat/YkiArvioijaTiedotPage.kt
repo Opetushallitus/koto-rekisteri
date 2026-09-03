@@ -87,7 +87,6 @@ object YkiArvioijaTiedotPage {
                         UiText.Yki.Arvioija.katuosoite to { +arvioija.katuosoite },
                         UiText.Yki.Arvioija.postinumero to { +arvioija.postinumero },
                         UiText.Yki.Arvioija.postitoimipaikka to { +arvioija.postitoimipaikka },
-                        UiText.Yki.Arvioija.ashaNumero to { +arvioija.ashaNumero.orEmpty() },
                     )
                 }
             }
@@ -314,6 +313,13 @@ private fun FlowContent.kausihistoriaTaulukko(
                 +(if (kausi.jatkorekisterointi) UiText.Filter.kylla else UiText.Filter.ei)
             },
             DisplayTableColumn(
+                UiText.Yki.Sarake.ashaNumero
+                    .toString(),
+                testId = "kausiMuutosAsha",
+            ) { kausi ->
+                +kausi.ashaNumero.orEmpty()
+            },
+            DisplayTableColumn(
                 UiText.Yki.Arvioija.kirjattu
                     .toString(),
                 testId = "kausiKirjattu",
@@ -376,6 +382,13 @@ private fun FlowContent.kaudetTaulukko(
                         +"${oikeus.kieli.nimi}: ${oikeus.tasot.sorted().joinToString(", ") { it.nimi.toString() }}"
                     }
                 }
+            },
+            DisplayTableColumn(
+                UiText.Yki.Sarake.ashaNumero
+                    .toString(),
+                testId = "kausiAsha",
+            ) { kausi ->
+                +kausi.ashaNumero.orEmpty()
             },
             if (!CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
                 null

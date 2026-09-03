@@ -70,20 +70,22 @@ class YkiArvioijaKausiRepository(
         alkupaiva: LocalDate,
         paattymispaiva: LocalDate?,
         oikeudet: List<Kausioikeus>,
+        ashaNumero: String?,
         tekija: Oid?,
     ): Int {
         val kausiId =
             jdbcTemplate.queryForObject(
                 """
                 INSERT INTO yki_arvioija_arviointikausi
-                    (arvioija_id, alkupaiva, paattymispaiva, luoja_oid, muokkaaja_oid)
-                VALUES (?, ?, ?, ?, ?)
+                    (arvioija_id, alkupaiva, paattymispaiva, asha_numero, luoja_oid, muokkaaja_oid)
+                VALUES (?, ?, ?, ?, ?, ?)
                 RETURNING id
                 """.trimIndent(),
                 Int::class.java,
                 arvioijaId,
                 alkupaiva,
                 paattymispaiva,
+                ashaNumero,
                 tekija?.toString(),
                 tekija?.toString(),
             )!!
@@ -99,16 +101,18 @@ class YkiArvioijaKausiRepository(
         alkupaiva: LocalDate,
         paattymispaiva: LocalDate?,
         oikeudet: List<Kausioikeus>,
+        ashaNumero: String?,
         tekija: Oid?,
     ) {
         jdbcTemplate.update(
             """
             UPDATE yki_arvioija_arviointikausi
-            SET alkupaiva = ?, paattymispaiva = ?, muokattu = now(), muokkaaja_oid = ?
+            SET alkupaiva = ?, paattymispaiva = ?, asha_numero = ?, muokattu = now(), muokkaaja_oid = ?
             WHERE id = ?
             """.trimIndent(),
             alkupaiva,
             paattymispaiva,
+            ashaNumero,
             tekija?.toString(),
             kausiId,
         )
@@ -174,8 +178,8 @@ class YkiArvioijaKausiRepository(
             """
             INSERT INTO yki_arvioija_kausi
                 (arvioija_id, kieli, tasot, tila, kauden_alkupaiva, kauden_paattymispaiva,
-                 jatkorekisterointi, toimenpide, kausi_id, kirjaaja_oid)
-            VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)
+                 jatkorekisterointi, asha_numero, toimenpide, kausi_id, kirjaaja_oid)
+            VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?)
             """.trimIndent(),
             kausi.oikeudet,
             kausi.oikeudet.size,
@@ -186,9 +190,10 @@ class YkiArvioijaKausiRepository(
             ps.setObject(4, kausi.alkupaiva)
             ps.setObject(5, kausi.paattymispaiva)
             ps.setBoolean(6, jatkorekisterointi)
-            ps.setString(7, toimenpide.name)
-            ps.setObject(8, kausiId)
-            ps.setString(9, tekija?.toString())
+            ps.setString(7, kausi.ashaNumero)
+            ps.setString(8, toimenpide.name)
+            ps.setObject(9, kausiId)
+            ps.setString(10, tekija?.toString())
         }
     }
 
@@ -262,6 +267,33 @@ class YkiArvioijaKausiRepository(
             arvioijaId,
             arvioijaId,
         )
+    }
+
+    /**
+     * Lisayslomake perustaa arvioijan ja hanen ensimmaisen kautensa yhdella tallennuksella, joten
+     * hallintopaatoksen viite kirjataan kaudelle vasta sen synnyttya.
+     */
+    @WithSpan
+    @Transactional
+    fun asetaAshaNumero(
+        arvioijaId: Int,
+        alkupaiva: LocalDate,
+        ashaNumero: String?,
+        tanaan: LocalDate,
+    ) {
+        if (ashaNumero == null) return
+
+        jdbcTemplate.update(
+            """
+            UPDATE yki_arvioija_arviointikausi
+            SET asha_numero = ?, muokattu = muokattu
+            WHERE arvioija_id = ? AND alkupaiva = ?
+            """.trimIndent(),
+            ashaNumero,
+            arvioijaId,
+            alkupaiva,
+        )
+        paivitaProjektio(arvioijaId, tanaan)
     }
 
     /** Arvioijatason passivointi paattaa kaikki viela voimassa olevat kaudet, vain kiristaen. */
@@ -364,15 +396,16 @@ class YkiArvioijaKausiRepository(
             """
             INSERT INTO yki_arviointioikeus
                 (arvioija_id, kieli, tasot, tila, kauden_alkupaiva, kauden_paattymispaiva,
-                 jatkorekisterointi, ensimmainen_rekisterointipaiva)
-            VALUES (?, ?, ?, NULL, ?, ?, ?, ?)
+                 jatkorekisterointi, ensimmainen_rekisterointipaiva, asha_numero)
+            VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)
             ON CONFLICT ON CONSTRAINT yki_arviointioikeus_unique_arvioija_kieli DO UPDATE SET
                 tasot = EXCLUDED.tasot,
                 tila = NULL,
                 kauden_alkupaiva = EXCLUDED.kauden_alkupaiva,
                 kauden_paattymispaiva = EXCLUDED.kauden_paattymispaiva,
                 jatkorekisterointi = EXCLUDED.jatkorekisterointi,
-                ensimmainen_rekisterointipaiva = EXCLUDED.ensimmainen_rekisterointipaiva
+                ensimmainen_rekisterointipaiva = EXCLUDED.ensimmainen_rekisterointipaiva,
+                asha_numero = EXCLUDED.asha_numero
             """.trimIndent(),
             tavoite,
             tavoite.size,
@@ -384,6 +417,7 @@ class YkiArvioijaKausiRepository(
             ps.setObject(5, oikeus.kaudenPaattymispaiva)
             ps.setBoolean(6, oikeus.jatkorekisterointi)
             ps.setObject(7, oikeus.ensimmainenRekisterointipaiva)
+            ps.setString(8, oikeus.ashaNumero)
         }
     }
 

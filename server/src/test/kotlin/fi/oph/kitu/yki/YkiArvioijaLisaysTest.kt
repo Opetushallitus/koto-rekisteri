@@ -6,6 +6,7 @@ import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaKausiRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeusEntity
@@ -42,6 +43,7 @@ import kotlin.test.assertTrue
 class YkiArvioijaLisaysTest(
     @param:Autowired private val context: WebApplicationContext,
     @param:Autowired private val repository: YkiArvioijaRepository,
+    @param:Autowired private val kausiRepository: YkiArvioijaKausiRepository,
 ) {
     private lateinit var mockMvc: MockMvc
 
@@ -130,7 +132,11 @@ class YkiArvioijaLisaysTest(
         val tallennettu = repository.findByArvioijaOid(Oid.parse(petronOid).getOrThrow())
         assertNotNull(tallennettu)
         assertNull(tallennettu.henkilotunnus, "hetua ei saa tallentaa")
-        assertEquals("OPH-1234-2025", tallennettu.ashaNumero)
+        assertEquals(
+            "OPH-1234-2025",
+            kausiRepository.findKaudet(tallennettu.id!!.toInt()).single().ashaNumero,
+            "hallintopaatoksen viite kirjataan kaudelle, ei arvioijalle",
+        )
         assertContains(
             result.response.getHeader("Location").orEmpty(),
             "/yki/arvioijat/${tallennettu.id!!.toInt()}",
@@ -231,7 +237,10 @@ class YkiArvioijaLisaysTest(
         val html = haku("oppijanumero" to petronOid)
 
         assertContains(html, "Arvioija on jo rekisterissä")
-        assertContains(html, """value="OPH-9-2020"""")
+        assertFalse(
+            html.contains("""value="OPH-9-2020""""),
+            "uusi kausi on uusi hallintopaatos, joten edellisen viitetta ei esitayteta",
+        )
         assertTrue(valittuna(html, "FIN:PT"), "nykyisen merkinnan oikeudet on esitaytettava:\n$html")
         assertTrue(valittuna(html, "SWE:YT"), "muunkielinen oikeus ei saa kadota lomakkeelta:\n$html")
         assertFalse(valittuna(html, "ENG:YT"), "valitsematon oikeus ei saa nakya valittuna")
@@ -294,6 +303,11 @@ class YkiArvioijaLisaysTest(
     }
 
     private fun tallennaOlemassaolevaMerkinta(oid: String = petronOid): Int =
+        tallennaMerkinta(oid).also { id ->
+            kausiRepository.asetaAshaNumero(id, LocalDate.of(2020, 1, 1), "OPH-9-2020", LocalDate.of(2026, 6, 1))
+        }
+
+    private fun tallennaMerkinta(oid: String): Int =
         repository.tallenna(
             YkiArvioijaEntity(
                 id = null,
@@ -305,7 +319,6 @@ class YkiArvioijaLisaysTest(
                 katuosoite = "Kivinenkatu 2 A 3",
                 postinumero = "00100",
                 postitoimipaikka = "HELSINKI",
-                ashaNumero = "OPH-9-2020",
                 arviointioikeudet =
                     listOf(
                         arviointioikeus(Tutkintokieli.FIN, setOf(Tutkintotaso.PT, Tutkintotaso.KT)),

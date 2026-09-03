@@ -46,7 +46,6 @@ data class ArvioijaFormData(
             katuosoite = katuosoite.orEmpty().trim(),
             postinumero = postinumero.orEmpty().trim(),
             postitoimipaikka = postitoimipaikka.orEmpty().trim(),
-            ashaNumero = ashaNumero?.trim()?.takeIf { it.isNotEmpty() },
         )
 
     fun toCommand(
@@ -102,7 +101,6 @@ data class ArvioijaFormData(
                 postinumero = arvioija.postinumero,
                 postitoimipaikka = arvioija.postitoimipaikka,
                 kaudenAlkupaiva = oikeudet.firstNotNullOfOrNull { it.kaudenAlkupaiva },
-                ashaNumero = arvioija.ashaNumero,
                 turvakielto = turvakielto,
                 onOlemassa = true,
                 muokattu = arvioija.muokattu,
@@ -148,7 +146,10 @@ object Arviointioikeusvalinta {
 data class KausiFormData(
     val alkupaiva: LocalDate? = null,
     val arviointioikeus: List<String>? = null,
+    val ashaNumero: String? = null,
 ) {
+    fun ashaNumeroTrimmattuna(): String? = ashaNumero?.trim()?.takeIf { it.isNotEmpty() }
+
     fun laskettuPaattymispaiva(): LocalDate? = alkupaiva?.let(Arviointikausi::paattymispaiva)
 
     fun arviointioikeudet(): List<Kausioikeus> = Arviointioikeusvalinta.oikeudet(arviointioikeus)
@@ -157,6 +158,7 @@ data class KausiFormData(
         fun of(kausi: YkiArviointikausiEntity): KausiFormData =
             KausiFormData(
                 alkupaiva = kausi.alkupaiva,
+                ashaNumero = kausi.ashaNumero,
                 arviointioikeus =
                     kausi.oikeudet.flatMap { oikeus ->
                         oikeus.tasot.map { taso -> Arviointioikeusvalinta.koodaa(oikeus.kieli, taso) }

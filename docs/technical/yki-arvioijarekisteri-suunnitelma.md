@@ -356,6 +356,13 @@ kirjoitus on no-op arvioijalle jolla ei ole yhtään kautta, joten kumpikin ryhm
 joilla päättymispäivä edeltää alkupäivää, ja kovaehto tekisi niistä korjauskelvottomia. Järjestys
 tarkistetaan validoinnissa uusille ja muokatuille kausille.
 
+**V124** siirtää hallintopäätöksen **ASHA-numeron arvioijalta kaudelle**. Numero yksilöi yhden
+hallintopäätöksen ja jokainen arviointikausi on oma päätöksensä, joten arvioijatasolla jatkokausi olisi
+ylikirjoittanut edellisen kauden päätösviitteen. Sarake tulee myös projektioon ja muutoslokiin, jotta
+listanäkymän haku, lajittelu ja CSV-vienti jatkavat ennallaan ja viitteen korjaus näkyy historiassa.
+Siirrossa nykyinen arvo annetaan **viimeisimmälle** kaudelle; vanhemmille sitä ei monisteta, koska ne
+ovat eri päätöksiä joiden viitettä ei tiedetä.
+
 **V123** tekee `yki_arvioija_kaudesta` pelkän muutoslokin: `toimenpide`- ja `kausi_id`-sarakkeet ja
 uniikkiehdon poisto. Taulun **nimi säilyy**, koska uudelleennimeäminen rikkoisi rinnakkain ajossa
 olevan vanhan sovellusversion tietosivun rullaavan julkaisun ajaksi. Uniikkiehto oli olemassa vain
@@ -679,8 +686,8 @@ näkymätön tagipohjaiselle `DisplayTableColumn.of`:lle) ja siirtyy tyypille `Y
 
 ### 3.4 Lisäys- ja muokkauslomake
 
-> **Päivitys (V122).** Muokkauslomakkeelta poistuivat kauden alkupäivä, päättymispäivän esikatselu ja
-> arviointioikeusmatriisi: kausi hallitaan tietosivun kausitaulukosta. Ilman tätä alkupäivän muutos
+> **Päivitys (V122–V124).** Muokkauslomakkeelta poistuivat kauden alkupäivä, päättymispäivän esikatselu,
+> ASHA-numero ja arviointioikeusmatriisi: kausi hallitaan tietosivun kausitaulukosta. Ilman tätä alkupäivän muutos
 > lomakkeella loisi uuden kauden vanhan rinnalle sen sijaan että muokkaisi sitä. Lisäyslomake kantaa
 > ne yhä, koska arvioijan luonti perustaa myös ensimmäisen kauden. Muokkaus kulkee omalla komennollaan
 > `PaivitaArvioijanTiedot`, jolloin tallennus ei voi koskea arviointioikeuksiin lainkaan.
@@ -776,7 +783,8 @@ päivittää esikatseluarvon `change`-tapahtumassa — sama kuvio kuin `Forms.kt
   lomakkeella (§2.8)
 - **Arviointikaudet** — `displayTable` `yki_arvioija_arviointikausi`-riveistä (tila, alku, loppu,
   arviointioikeudet, toiminnot). Rivikohtaiset napit **Muokkaa**, **Passivoi** (vain aktiiviselle) ja
-  **Poista** (ei viimeiselle kaudelle), ja taulukon yllä **Lisää arviointikausi**. Vierekkäiset napit
+  **Poista** (ei viimeiselle kaudelle), ja taulukon yllä **Lisää arviointikausi**. Kauden rivillä on myös
+  sen **hallintopäätöksen ASHA-numero** (§1.6). Vierekkäiset napit
   kääritään Picon nappiryhmään (`buttonGroup`, `<div role="group">`, https://picocss.com/docs/group);
   `<dialog>`-elementit jäävät ryhmän ulkopuolelle, koska ne eivät ole ryhmän lapsia. Poisto ja
   passivointi vahvistetaan `<dialog>`illa, jonka id on rivikohtainen (`poistaKausiDialog-{id}`);

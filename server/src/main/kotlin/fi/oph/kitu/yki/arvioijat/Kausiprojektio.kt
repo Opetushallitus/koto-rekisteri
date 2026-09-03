@@ -50,6 +50,7 @@ object Kausiprojektio {
                 jatkorekisterointi = kausi.alkupaiva > ensimmainen,
                 ensimmainenRekisterointipaiva = ensimmainen,
                 rekisteriintuontiaika = null,
+                ashaNumero = kausi.ashaNumero,
             )
         }
     }
@@ -86,7 +87,8 @@ object Kausiprojektio {
             a.kaudenAlkupaiva == b.kaudenAlkupaiva &&
             a.kaudenPaattymispaiva == b.kaudenPaattymispaiva &&
             a.jatkorekisterointi == b.jatkorekisterointi &&
-            a.ensimmainenRekisterointipaiva == b.ensimmainenRekisterointipaiva
+            a.ensimmainenRekisterointipaiva == b.ensimmainenRekisterointipaiva &&
+            a.ashaNumero == b.ashaNumero
 
     private fun alkanut(
         kausi: YkiArviointikausiEntity,

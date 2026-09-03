@@ -84,6 +84,12 @@ class YkiArvioijaService(
                     tekija,
                     odotettuMuokkaushetki,
                 ).flatMap { id ->
+                    kausiRepository.asetaAshaNumero(
+                        id,
+                        validoitu.kaudenAlkupaiva,
+                        validoitu.ashaNumero,
+                        timeService.today(),
+                    )
                     auditLogger.log(
                         if (olemassaoleva == null) {
                             AuditLogOperation.YkiArvioijaCreated
@@ -213,7 +219,6 @@ class YkiArvioijaService(
                         katuosoite = validoitu.katuosoite,
                         postinumero = validoitu.postinumero,
                         postitoimipaikka = validoitu.postitoimipaikka,
-                        ashaNumero = validoitu.ashaNumero,
                     ),
                     tekija,
                     odotettuMuokkaushetki,

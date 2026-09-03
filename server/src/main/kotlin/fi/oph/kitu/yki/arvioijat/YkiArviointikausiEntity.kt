@@ -25,6 +25,8 @@ data class YkiArviointikausiEntity(
     val arvioijaId: Number?,
     val alkupaiva: LocalDate,
     val paattymispaiva: LocalDate?,
+    /** Kautta koskevan hallintopaatoksen viite; jokainen kausi on oma paatoksensa. */
+    val ashaNumero: String? = null,
     /** Asetettu jos kausi katkaistiin kesken kauden, ks. [Arviointikausi]. */
     val passivoitu: OffsetDateTime? = null,
     val passivoijaOid: Oid? = null,
@@ -45,6 +47,7 @@ data class YkiArviointikausiEntity(
                     arvioijaId = rs.getInt("arvioija_id"),
                     alkupaiva = rs.getDate("alkupaiva").toLocalDate(),
                     paattymispaiva = rs.getDate("paattymispaiva")?.toLocalDate(),
+                    ashaNumero = rs.getString("asha_numero"),
                     passivoitu = rs.getObject("passivoitu", OffsetDateTime::class.java),
                     passivoijaOid = rs.getOidOrNull("passivoija_oid"),
                     luotu = rs.getObject("luotu", OffsetDateTime::class.java),

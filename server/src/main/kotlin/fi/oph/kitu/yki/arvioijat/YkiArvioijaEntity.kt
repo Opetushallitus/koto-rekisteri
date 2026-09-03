@@ -25,7 +25,6 @@ data class YkiArvioijaEntity(
     val katuosoite: String,
     val postinumero: String,
     val postitoimipaikka: String,
-    val ashaNumero: String? = null,
     val arvioijanEnsimmainenRekisterointipaiva: LocalDate? = null,
     val passivoitu: OffsetDateTime? = null,
     val luotu: OffsetDateTime? = null,
@@ -52,7 +51,6 @@ data class YkiArvioijaEntity(
                     katuosoite = rs.getString("katuosoite"),
                     postinumero = rs.getString("postinumero"),
                     postitoimipaikka = rs.getString("postitoimipaikka"),
-                    ashaNumero = rs.getString("asha_numero"),
                     arvioijanEnsimmainenRekisterointipaiva =
                         rs.getDate("arvioijan_ensimmainen_rekisterointipaiva")?.toLocalDate(),
                     passivoitu = rs.getObject("passivoitu", OffsetDateTime::class.java),
@@ -84,6 +82,7 @@ data class YkiArviointioikeusEntity(
     val jatkorekisterointi: Boolean,
     val ensimmainenRekisterointipaiva: LocalDate,
     val rekisteriintuontiaika: OffsetDateTime?,
+    val ashaNumero: String? = null,
 ) {
     companion object {
         val fromRow =
@@ -99,6 +98,7 @@ data class YkiArviointioikeusEntity(
                     jatkorekisterointi = rs.getBoolean("jatkorekisterointi"),
                     rekisteriintuontiaika = rs.getObject("rekisteriintuontiaika", OffsetDateTime::class.java),
                     ensimmainenRekisterointipaiva = rs.getDate("ensimmainen_rekisterointipaiva").toLocalDate(),
+                    ashaNumero = rs.getString("asha_numero"),
                 )
             }
     }
@@ -119,6 +119,7 @@ data class YkiArvioijaKausiEntity(
     val kaudenAlkupaiva: LocalDate?,
     val kaudenPaattymispaiva: LocalDate?,
     val jatkorekisterointi: Boolean,
+    val ashaNumero: String?,
     val toimenpide: Kausitoimenpide?,
     val kausiId: Number?,
     val kirjattu: OffsetDateTime?,
@@ -136,6 +137,7 @@ data class YkiArvioijaKausiEntity(
                     kaudenAlkupaiva = rs.getDate("kauden_alkupaiva")?.toLocalDate(),
                     kaudenPaattymispaiva = rs.getDate("kauden_paattymispaiva")?.toLocalDate(),
                     jatkorekisterointi = rs.getBoolean("jatkorekisterointi"),
+                    ashaNumero = rs.getString("asha_numero"),
                     toimenpide = rs.getString("toimenpide")?.let(Kausitoimenpide::valueOf),
                     kausiId = rs.getObject("kausi_id", Integer::class.java),
                     kirjattu = rs.getObject("kirjattu", OffsetDateTime::class.java),
