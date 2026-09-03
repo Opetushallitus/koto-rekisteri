@@ -1341,7 +1341,7 @@ integraatiokytkimeen: se on turvaton täsmälleen silloin kun täysi sisääntul
 koko rekisterin vanhentuneesta masterista sekä työntäisi sen Solki-lähetysjonoon.
 
 E2E ajaa yhdellä profiililla, joten kytkimet pois päältä -tilat katetaan backend-testeillä
-`YkiArvioijaMuokkauskytkinTest`, `YkiArvioijaIntegraatiokytkinTest` ja
+`YkiArvioijaMuokkauskytkinTest`, `YkiArvioijaIntegraatiokytkin{Pois,Paalla}Test` ja
 `YkiArvioijaProjektiokytkinTest` (`@SpringBootTest(properties = [...])`).
 
 ---

@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
  */
 @SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.integraatio.enabled=false"])
 @Import(DBContainerConfiguration::class)
-class YkiArvioijaSolkiKytkinPoisTest(
+class YkiArvioijaIntegraatiokytkinPoisTest(
     @param:Autowired private val service: SolkiArvioijaService,
 ) {
     @Test
@@ -27,7 +27,7 @@ class YkiArvioijaSolkiKytkinPoisTest(
 
 @SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.integraatio.enabled=true"])
 @Import(DBContainerConfiguration::class)
-class YkiArvioijaSolkiKytkinPaallaTest(
+class YkiArvioijaIntegraatiokytkinPaallaTest(
     @param:Autowired private val service: SolkiArvioijaService,
 ) {
     @Test
