@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration
  * mitaan, ja nakyisivat db-scheduler-UI:ssa harhaanjohtavasti ajossa olevina.
  */
 @Configuration
-@ConditionalOnProperty("kitu.yki.arvioijat.solki.enabled", havingValue = "true")
+@ConditionalOnProperty("kitu.yki.arvioijarekisteri.integraatio.enabled", havingValue = "true")
 class SolkiArvioijaScheduledTasks(
     private val tracer: Tracer,
 ) {

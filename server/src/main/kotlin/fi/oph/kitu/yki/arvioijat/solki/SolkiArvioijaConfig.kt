@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class SolkiArvioijaConfig {
     @Bean
-    @ConditionalOnProperty("kitu.yki.arvioijat.solki.enabled", havingValue = "true")
+    @ConditionalOnProperty("kitu.yki.arvioijarekisteri.integraatio.enabled", havingValue = "true")
     fun solkiArvioijaLahetys(
         repository: YkiArvioijaRepository,
         client: SolkiArvioijaClient,

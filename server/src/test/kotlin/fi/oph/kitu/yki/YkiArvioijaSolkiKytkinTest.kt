@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
  * Toteutuksen valinta ei saa riippua komponenttiskannauksen jarjestyksesta: vaara valinta olisi
  * hiljaista datan katoamista (mock nielee lahetykset) tai kaynnistysvirhe.
  */
-@SpringBootTest(properties = ["kitu.yki.arvioijat.solki.enabled=false"])
+@SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.integraatio.enabled=false"])
 @Import(DBContainerConfiguration::class)
 class YkiArvioijaSolkiKytkinPoisTest(
     @param:Autowired private val service: SolkiArvioijaService,
@@ -25,7 +25,7 @@ class YkiArvioijaSolkiKytkinPoisTest(
     }
 }
 
-@SpringBootTest(properties = ["kitu.yki.arvioijat.solki.enabled=true"])
+@SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.integraatio.enabled=true"])
 @Import(DBContainerConfiguration::class)
 class YkiArvioijaSolkiKytkinPaallaTest(
     @param:Autowired private val service: SolkiArvioijaService,
