@@ -92,7 +92,7 @@ private val SAHKOPOSTI = Regex("""[^@\s]+@[^@\s.]+(\.[^@\s.]+)+""")
  * kirjoituspolulla, koska lisayslomake toimii myos jatkokauden kirjaamisena.
  */
 internal fun Raise<ValidationError>.validateEiPaallekkaisiaKausia(
-    kaudet: List<YkiRekisterointikausiEntity>,
+    kaudet: List<YkiArviointikausiEntity>,
     alkupaiva: LocalDate,
     paattymispaiva: LocalDate?,
     ohitaKausiId: Int? = null,
@@ -110,7 +110,7 @@ internal fun Raise<ValidationError>.validateEiPaallekkaisiaKausia(
         val jakso = "${paallekkainen.alkupaiva.finnishDate()}–${paallekkainen.paattymispaiva?.finnishDate() ?: ""}"
         ValidationError(
             listOf(kentta),
-            "Kausi menee päällekkäin rekisteröintikauden $jakso kanssa. " +
+            "Kausi menee päällekkäin arviointikauden $jakso kanssa. " +
                 "Henkilöllä ei voi olla päällekkäisiä arviointikausia.",
         )
     }

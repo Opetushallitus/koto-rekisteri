@@ -22,15 +22,15 @@ class YkiArvioijaKausiRepository(
     private val namedJdbcTemplate: NamedParameterJdbcTemplate,
 ) {
     @WithSpan
-    fun findKaudet(arvioijaId: Int): List<YkiRekisterointikausiEntity> {
+    fun findKaudet(arvioijaId: Int): List<YkiArviointikausiEntity> {
         val kaudet =
             jdbcTemplate.query(
                 """
-                SELECT * FROM yki_arvioija_rekisterointikausi
+                SELECT * FROM yki_arvioija_arviointikausi
                 WHERE arvioija_id = ?
                 ORDER BY alkupaiva DESC, id DESC
                 """.trimIndent(),
-                YkiRekisterointikausiEntity.fromRow,
+                YkiArviointikausiEntity.fromRow,
                 arvioijaId,
             )
         if (kaudet.isEmpty()) return kaudet
@@ -40,27 +40,27 @@ class YkiArvioijaKausiRepository(
     }
 
     @WithSpan
-    fun findKausi(kausiId: Int): YkiRekisterointikausiEntity? =
+    fun findKausi(kausiId: Int): YkiArviointikausiEntity? =
         jdbcTemplate
             .query(
-                "SELECT * FROM yki_arvioija_rekisterointikausi WHERE id = ?",
-                YkiRekisterointikausiEntity.fromRow,
+                "SELECT * FROM yki_arvioija_arviointikausi WHERE id = ?",
+                YkiArviointikausiEntity.fromRow,
                 kausiId,
             ).firstOrNull()
             ?.let { kausi -> kausi.copy(oikeudet = findOikeudet(listOf(kausiId))) }
 
-    private fun findOikeudet(kausiIdt: List<Int>): List<YkiRekisterointikausiOikeusEntity> {
+    private fun findOikeudet(kausiIdt: List<Int>): List<YkiArviointikausiOikeusEntity> {
         if (kausiIdt.isEmpty()) return emptyList()
         return jdbcTemplate.query({ connection ->
             connection
                 .prepareStatement(
                     """
-                    SELECT * FROM yki_arvioija_rekisterointikausi_oikeus
+                    SELECT * FROM yki_arvioija_arviointikausi_oikeus
                     WHERE kausi_id = ANY (?)
                     ORDER BY kieli
                     """.trimIndent(),
                 ).apply { setArray(1, connection.createArrayOf("integer", kausiIdt.toTypedArray())) }
-        }, YkiRekisterointikausiOikeusEntity.fromRow)
+        }, YkiArviointikausiOikeusEntity.fromRow)
     }
 
     @WithSpan
@@ -75,7 +75,7 @@ class YkiArvioijaKausiRepository(
         val kausiId =
             jdbcTemplate.queryForObject(
                 """
-                INSERT INTO yki_arvioija_rekisterointikausi
+                INSERT INTO yki_arvioija_arviointikausi
                     (arvioija_id, alkupaiva, paattymispaiva, luoja_oid, muokkaaja_oid)
                 VALUES (?, ?, ?, ?, ?)
                 RETURNING id
@@ -103,7 +103,7 @@ class YkiArvioijaKausiRepository(
     ) {
         jdbcTemplate.update(
             """
-            UPDATE yki_arvioija_rekisterointikausi
+            UPDATE yki_arvioija_arviointikausi
             SET alkupaiva = ?, paattymispaiva = ?, muokattu = now(), muokkaaja_oid = ?
             WHERE id = ?
             """.trimIndent(),
@@ -113,7 +113,7 @@ class YkiArvioijaKausiRepository(
             kausiId,
         )
 
-        jdbcTemplate.update("DELETE FROM yki_arvioija_rekisterointikausi_oikeus WHERE kausi_id = ?", kausiId)
+        jdbcTemplate.update("DELETE FROM yki_arvioija_arviointikausi_oikeus WHERE kausi_id = ?", kausiId)
         kirjoitaOikeudet(kausiId, oikeudet)
     }
 
@@ -130,7 +130,7 @@ class YkiArvioijaKausiRepository(
     ) {
         jdbcTemplate.update(
             """
-            UPDATE yki_arvioija_rekisterointikausi
+            UPDATE yki_arvioija_arviointikausi
             SET paattymispaiva = GREATEST(alkupaiva, LEAST(COALESCE(paattymispaiva, ?), ?)),
                 passivoitu = COALESCE(passivoitu, now()),
                 passivoija_oid = COALESCE(passivoija_oid, ?),
@@ -149,7 +149,7 @@ class YkiArvioijaKausiRepository(
     @WithSpan
     @Transactional
     fun poistaKausi(kausiId: Int) {
-        jdbcTemplate.update("DELETE FROM yki_arvioija_rekisterointikausi WHERE id = ?", kausiId)
+        jdbcTemplate.update("DELETE FROM yki_arvioija_arviointikausi WHERE id = ?", kausiId)
     }
 
     @WithSpan
@@ -165,7 +165,7 @@ class YkiArvioijaKausiRepository(
         arvioijaId: Int,
         kausiId: Int?,
         toimenpide: Kausitoimenpide,
-        kausi: YkiRekisterointikausiEntity,
+        kausi: YkiArviointikausiEntity,
         jatkorekisterointi: Boolean,
         tekija: Oid?,
     ) {
@@ -179,7 +179,7 @@ class YkiArvioijaKausiRepository(
             """.trimIndent(),
             kausi.oikeudet,
             kausi.oikeudet.size,
-        ) { ps: PreparedStatement, oikeus: YkiRekisterointikausiOikeusEntity ->
+        ) { ps: PreparedStatement, oikeus: YkiArviointikausiOikeusEntity ->
             ps.setInt(1, arvioijaId)
             ps.setString(2, oikeus.kieli.toString())
             ps.setArray(3, ps.connection.createArrayOf("text", oikeus.tasot.normalisoidutTasot()))
@@ -232,7 +232,7 @@ class YkiArvioijaKausiRepository(
     fun findArvioijaIdt(): List<Int> =
         jdbcTemplate
             .queryForList(
-                "SELECT DISTINCT arvioija_id FROM yki_arvioija_rekisterointikausi ORDER BY arvioija_id",
+                "SELECT DISTINCT arvioija_id FROM yki_arvioija_arviointikausi ORDER BY arvioija_id",
                 Int::class.java,
             ).filterNotNull()
 
@@ -252,7 +252,7 @@ class YkiArvioijaKausiRepository(
             UPDATE yki_arvioija
             SET arvioijan_ensimmainen_rekisterointipaiva = vanhin.alkupaiva
             FROM (SELECT min(alkupaiva) AS alkupaiva
-                  FROM yki_arvioija_rekisterointikausi
+                  FROM yki_arvioija_arviointikausi
                   WHERE arvioija_id = ?) vanhin
             WHERE yki_arvioija.id = ?
               AND vanhin.alkupaiva IS NOT NULL
@@ -274,7 +274,7 @@ class YkiArvioijaKausiRepository(
     ) {
         jdbcTemplate.update(
             """
-            UPDATE yki_arvioija_rekisterointikausi
+            UPDATE yki_arvioija_arviointikausi
             SET paattymispaiva = GREATEST(alkupaiva, LEAST(COALESCE(paattymispaiva, ?), ?)),
                 passivoitu = COALESCE(passivoitu, now()),
                 passivoija_oid = COALESCE(passivoija_oid, ?),
@@ -406,7 +406,7 @@ class YkiArvioijaKausiRepository(
             .forEach { (paivat, oikeudet) ->
                 val kausiId = upsertKausi(arvioijaId, paivat.first, paivat.second, tekija)
                 jdbcTemplate.update(
-                    "DELETE FROM yki_arvioija_rekisterointikausi_oikeus WHERE kausi_id = ?",
+                    "DELETE FROM yki_arvioija_arviointikausi_oikeus WHERE kausi_id = ?",
                     kausiId,
                 )
                 kirjoitaOikeudet(kausiId, oikeudet.map { Kausioikeus(it.kieli, it.tasot) })
@@ -422,11 +422,11 @@ class YkiArvioijaKausiRepository(
     ): Int =
         jdbcTemplate.queryForObject(
             """
-            INSERT INTO yki_arvioija_rekisterointikausi
+            INSERT INTO yki_arvioija_arviointikausi
                 (arvioija_id, alkupaiva, paattymispaiva, luoja_oid, muokkaaja_oid)
             VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT ON CONSTRAINT yki_arvioija_rekisterointikausi_unique DO UPDATE
-                SET muokattu = yki_arvioija_rekisterointikausi.muokattu
+            ON CONFLICT ON CONSTRAINT yki_arvioija_arviointikausi_unique DO UPDATE
+                SET muokattu = yki_arvioija_arviointikausi.muokattu
             RETURNING id
             """.trimIndent(),
             Int::class.java,
@@ -491,7 +491,7 @@ class YkiArvioijaKausiRepository(
         if (oikeudet.isEmpty()) return
         jdbcTemplate.batchUpdate(
             """
-            INSERT INTO yki_arvioija_rekisterointikausi_oikeus (kausi_id, kieli, tasot)
+            INSERT INTO yki_arvioija_arviointikausi_oikeus (kausi_id, kieli, tasot)
             VALUES (?, ?, ?)
             """.trimIndent(),
             oikeudet,

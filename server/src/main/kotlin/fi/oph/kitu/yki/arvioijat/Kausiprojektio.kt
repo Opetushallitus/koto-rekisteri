@@ -3,7 +3,7 @@ package fi.oph.kitu.yki.arvioijat
 import java.time.LocalDate
 
 /**
- * `yki_arviointioikeus` on johdettu `yki_arvioija_rekisterointikausi`sta. Valinta riippuu kuluvasta
+ * `yki_arviointioikeus` on johdettu `yki_arvioija_arviointikausi`sta. Valinta riippuu kuluvasta
  * paivasta, joten projektio vanhenee kun tuleva kausi alkaa; sen korjaa yollinen ajo.
  */
 object Kausiprojektio {
@@ -12,9 +12,9 @@ object Kausiprojektio {
      * "Alkaa myohemmin", ei "Passivoitu".
      */
     fun projisoitava(
-        kaudet: List<YkiRekisterointikausiEntity>,
+        kaudet: List<YkiArviointikausiEntity>,
         tanaan: LocalDate,
-    ): YkiRekisterointikausiEntity? {
+    ): YkiArviointikausiEntity? {
         val voimassa = kaudet.filter { alkanut(it, tanaan) && !paattynyt(it, tanaan) }
         if (voimassa.isNotEmpty()) return voimassa.maxWith(compareBy({ it.alkupaiva }, { it.tunniste }))
 
@@ -22,13 +22,13 @@ object Kausiprojektio {
         if (tulevat.isNotEmpty()) return tulevat.minWith(compareBy({ it.alkupaiva }, { it.tunniste }))
 
         return kaudet.maxWithOrNull(
-            compareBy<YkiRekisterointikausiEntity, LocalDate?>(nullsFirst()) { it.paattymispaiva }
+            compareBy<YkiArviointikausiEntity, LocalDate?>(nullsFirst()) { it.paattymispaiva }
                 .thenBy { it.tunniste },
         )
     }
 
     fun projisoi(
-        kaudet: List<YkiRekisterointikausiEntity>,
+        kaudet: List<YkiArviointikausiEntity>,
         ensimmainenRekisterointipaiva: LocalDate?,
         nykyiset: List<YkiArviointioikeusEntity>,
         tanaan: LocalDate,
@@ -89,14 +89,14 @@ object Kausiprojektio {
             a.ensimmainenRekisterointipaiva == b.ensimmainenRekisterointipaiva
 
     private fun alkanut(
-        kausi: YkiRekisterointikausiEntity,
+        kausi: YkiArviointikausiEntity,
         tanaan: LocalDate,
     ): Boolean = !kausi.alkupaiva.isAfter(tanaan)
 
     private fun paattynyt(
-        kausi: YkiRekisterointikausiEntity,
+        kausi: YkiArviointikausiEntity,
         tanaan: LocalDate,
     ): Boolean = kausi.paattymispaiva != null && kausi.paattymispaiva.isBefore(tanaan)
 
-    private val YkiRekisterointikausiEntity.tunniste: Int get() = id?.toInt() ?: 0
+    private val YkiArviointikausiEntity.tunniste: Int get() = id?.toInt() ?: 0
 }

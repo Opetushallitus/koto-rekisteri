@@ -370,12 +370,12 @@ object UiText {
                                 "ja tee muutokset uudelleen.",
                     )
             val kausihistoria: LocalizedString
-                get() = tr("yki.arvioija.kausihistoria", fi = "Rekisteröintikaudet")
+                get() = tr("yki.arvioija.arviointikaudet", fi = "Arviointikaudet")
             val kirjattu: LocalizedString get() = tr("yki.arvioija.kirjattu", fi = "Kirjattu")
             val kirjaaja: LocalizedString get() = tr("yki.arvioija.kirjaaja", fi = "Kirjaaja")
             val jarjestelma: LocalizedString get() = tr("yki.arvioija.jarjestelma", fi = "Järjestelmä")
-            val eiKausihistoriaa: LocalizedString
-                get() = tr("yki.arvioija.eiKausihistoriaa", fi = "Ei kirjattuja kausia.")
+            val eiMuutoshistoriaa: LocalizedString
+                get() = tr("yki.arvioija.eiMuutoshistoriaa", fi = "Ei kirjattuja muutoksia.")
             val passivoi: LocalizedString get() = tr("yki.arvioija.passivoi", fi = "Merkitse passiiviseksi")
             val passivoiVahvistus: LocalizedString
                 get() =
@@ -409,7 +409,7 @@ object UiText {
                 get() =
                     tr(
                         "yki.arvioija.kausiPaattynyt",
-                        fi = "Rekisteröintikausi on päättynyt. Uusi rekisteröintikausi aktivoi merkinnän.",
+                        fi = "Arviointikausi on päättynyt. Uusi arviointikausi aktivoi merkinnän.",
                     )
             val joPassivoitu: LocalizedString
                 get() =
@@ -417,7 +417,7 @@ object UiText {
                         "yki.arvioija.joPassivoitu",
                         fi =
                             "Arvioija on merkitty passiiviseksi {pvm}. " +
-                                "Uusi rekisteröintikausi aktivoi merkinnän.",
+                                "Uusi arviointikausi aktivoi merkinnän.",
                     )
             val kirjoitusEiKaytossa: LocalizedString
                 get() =
@@ -467,43 +467,47 @@ object UiText {
 
             object Kausi {
                 val uusi: LocalizedString
-                    get() = tr("yki.arvioija.kausi.uusi", fi = "Lisää rekisteröintikausi")
-                val muokkaa: LocalizedString get() = tr("yki.arvioija.kausi.muokkaa", fi = "Muokkaa")
-                val passivoi: LocalizedString get() = tr("yki.arvioija.kausi.passivoi", fi = "Passivoi")
-                val poista: LocalizedString get() = tr("yki.arvioija.kausi.poista", fi = "Poista")
-                val peruuta: LocalizedString get() = tr("yki.arvioija.kausi.peruuta", fi = "Peruuta")
-                val tallenna: LocalizedString get() = tr("yki.arvioija.kausi.tallenna", fi = "Tallenna")
-                val toiminnot: LocalizedString get() = tr("yki.arvioija.kausi.toiminnot", fi = "Toiminnot")
+                    get() = tr("yki.arvioija.arviointikausi.uusi", fi = "Lisää arviointikausi")
+                val muokkaa: LocalizedString get() = tr("yki.arvioija.arviointikausi.muokkaa", fi = "Muokkaa")
+                val passivoi: LocalizedString get() = tr("yki.arvioija.arviointikausi.passivoi", fi = "Passivoi")
+                val poista: LocalizedString get() = tr("yki.arvioija.arviointikausi.poista", fi = "Poista")
+                val peruuta: LocalizedString get() = tr("yki.arvioija.arviointikausi.peruuta", fi = "Peruuta")
+                val tallenna: LocalizedString get() = tr("yki.arvioija.arviointikausi.tallenna", fi = "Tallenna")
+                val toiminnot: LocalizedString get() = tr("yki.arvioija.arviointikausi.toiminnot", fi = "Toiminnot")
                 val vanhentuneet: LocalizedString
-                    get() = tr("yki.arvioija.kausi.vanhentuneet", fi = "Vanhentuneet arviointioikeudet")
+                    get() = tr("yki.arvioija.arviointikausi.vanhentuneet", fi = "Vanhentuneet arviointioikeudet")
                 val vanhentuneetOhje: LocalizedString
                     get() =
                         tr(
                             "yki.arvioija.kausi.vanhentuneetOhje",
                             fi =
                                 "Nämä tutkintokielet eivät ole enää myönnettävissä eivätkä kuulu " +
-                                    "rekisteröintikausiin. Tiedot säilytetään sellaisenaan.",
+                                    "arviointikausiin. Tiedot säilytetään sellaisenaan.",
                         )
-                val toimenpide: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide", fi = "Toimenpide")
-                val lisays: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide.lisays", fi = "Lisäys")
-                val muokkaus: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide.muokkaus", fi = "Muokkaus")
+                val toimenpide: LocalizedString get() = tr("yki.arvioija.arviointikausi.toimenpide", fi = "Toimenpide")
+                val lisays: LocalizedString get() = tr("yki.arvioija.arviointikausi.toimenpide.lisays", fi = "Lisäys")
+                val muokkaus: LocalizedString get() =
+                    tr(
+                        "yki.arvioija.arviointikausi.toimenpide.muokkaus",
+                        fi = "Muokkaus",
+                    )
                 val passivointi: LocalizedString
-                    get() = tr("yki.arvioija.kausi.toimenpide.passivointi", fi = "Passivointi")
-                val poisto: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide.poisto", fi = "Poisto")
+                    get() = tr("yki.arvioija.arviointikausi.toimenpide.passivointi", fi = "Passivointi")
+                val poisto: LocalizedString get() = tr("yki.arvioija.arviointikausi.toimenpide.poisto", fi = "Poisto")
                 val tallennus: LocalizedString
-                    get() = tr("yki.arvioija.kausi.toimenpide.tallennus", fi = "Tallennus")
+                    get() = tr("yki.arvioija.arviointikausi.toimenpide.tallennus", fi = "Tallennus")
                 val eiKausia: LocalizedString
-                    get() = tr("yki.arvioija.kausi.eiKausia", fi = "Ei kirjattuja rekisteröintikausia.")
+                    get() = tr("yki.arvioija.arviointikausi.eiKausia", fi = "Ei kirjattuja arviointikausia.")
                 val muokkaaOtsikko: LocalizedString
-                    get() = tr("yki.arvioija.kausi.muokkaaOtsikko", fi = "Muokkaa rekisteröintikautta")
+                    get() = tr("yki.arvioija.arviointikausi.muokkaaOtsikko", fi = "Muokkaa arviointikautta")
                 val naytaMuutoshistoria: LocalizedString
-                    get() = tr("yki.arvioija.kausi.naytaMuutoshistoria", fi = "Näytä muutoshistoria")
+                    get() = tr("yki.arvioija.arviointikausi.naytaMuutoshistoria", fi = "Näytä muutoshistoria")
                 val poistaVahvistus: LocalizedString
                     get() =
                         tr(
                             "yki.arvioija.kausi.poistaVahvistus",
                             fi =
-                                "Rekisteröintikausi ja sen arviointioikeudet poistetaan pysyvästi. " +
+                                "Arviointikausi ja sen arviointioikeudet poistetaan pysyvästi. " +
                                     "Käytä tätä vain jos kausi on kirjattu väärälle henkilölle.",
                         )
                 val passivoiVahvistus: LocalizedString
@@ -511,29 +515,29 @@ object UiText {
                         tr(
                             "yki.arvioija.kausi.passivoiVahvistus",
                             fi =
-                                "Rekisteröintikausi päätetään tähän päivään. " +
+                                "Arviointikausi päätetään tähän päivään. " +
                                     "Toimintoa ei voi perua käyttöliittymästä.",
                         )
                 val lisatty: LocalizedString
-                    get() = tr("yki.arvioija.kausi.lisatty", fi = "Rekisteröintikausi lisättiin.")
+                    get() = tr("yki.arvioija.arviointikausi.lisatty", fi = "Arviointikausi lisättiin.")
                 val paivitetty: LocalizedString
-                    get() = tr("yki.arvioija.kausi.paivitetty", fi = "Rekisteröintikausi päivitettiin.")
+                    get() = tr("yki.arvioija.arviointikausi.paivitetty", fi = "Arviointikausi päivitettiin.")
                 val passivoitu: LocalizedString
-                    get() = tr("yki.arvioija.kausi.passivoitu", fi = "Rekisteröintikausi passivoitiin.")
+                    get() = tr("yki.arvioija.arviointikausi.passivoitu", fi = "Arviointikausi passivoitiin.")
                 val poistettu: LocalizedString
-                    get() = tr("yki.arvioija.kausi.poistettu", fi = "Rekisteröintikausi poistettiin.")
+                    get() = tr("yki.arvioija.arviointikausi.poistettu", fi = "Arviointikausi poistettiin.")
                 val eiAktiivinen: LocalizedString
                     get() =
                         tr(
                             "yki.arvioija.kausi.eiAktiivinen",
-                            fi = "Vain aktiivisen rekisteröintikauden voi passivoida.",
+                            fi = "Vain aktiivisen arviointikauden voi passivoida.",
                         )
                 val viimeistaEiVoiPoistaa: LocalizedString
                     get() =
                         tr(
                             "yki.arvioija.kausi.viimeistaEiVoiPoistaa",
                             fi =
-                                "Viimeistä rekisteröintikautta ei voi poistaa. " +
+                                "Viimeistä arviointikautta ei voi poistaa. " +
                                     "Merkitse arvioija passiiviseksi sen sijaan.",
                         )
             }

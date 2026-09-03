@@ -34,7 +34,7 @@ class TallennaKausiValidation(
                 if (nykyinen?.passivoitu != null) {
                     nykyinen.paattymispaiva
                 } else {
-                    Rekisterikausi.paattymispaiva(value.alkupaiva)
+                    Arviointikausi.paattymispaiva(value.alkupaiva)
                 },
         )
     }
@@ -51,7 +51,7 @@ class TallennaKausiValidation(
         ensure(vanhentuneet.isEmpty()) {
             ValidationError(
                 listOf("arviointioikeus"),
-                "Vanhentunutta tutkintokieltä ei voi lisätä rekisteröintikaudelle",
+                "Vanhentunutta tutkintokieltä ei voi lisätä arviointikaudelle",
             )
         }
     }

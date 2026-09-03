@@ -17,7 +17,7 @@ data class TallennaArvioija(
     val ashaNumero: String?,
     val arviointioikeudet: List<Arviointioikeus>,
 ) {
-    val kaudenPaattymispaiva: LocalDate get() = Rekisterikausi.paattymispaiva(kaudenAlkupaiva)
+    val kaudenPaattymispaiva: LocalDate get() = Arviointikausi.paattymispaiva(kaudenAlkupaiva)
 
     /**
      * Tila jatetaan tyhjaksi: se lasketaan kauden paivista, ks. [Rekisterointitila].
@@ -77,7 +77,7 @@ data class ArvioijanEsitaytto(
 )
 
 /**
- * Yhden rekisterointikauden tallennus. [kausiId] on null uutta kautta lisattaessa.
+ * Yhden arviointikauden tallennus. [kausiId] on null uutta kautta lisattaessa.
  * [paattymispaiva] taytetaan validoinnin `enrich`-vaiheessa.
  */
 data class TallennaKausi(

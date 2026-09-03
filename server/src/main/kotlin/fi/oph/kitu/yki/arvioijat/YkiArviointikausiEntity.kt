@@ -15,17 +15,17 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 
 /**
- * Yksi rekisterointikausi. Kausi on arvioijakohtainen: kaikilla kielilla on sama kausi, ja
+ * Yksi arviointikausi. Kausi on arvioijakohtainen: kaikilla kielilla on sama kausi, ja
  * [oikeudet] kertoo mihin kieliin ja tasoihin se kohdistuu.
  */
-@Table("yki_arvioija_rekisterointikausi")
-data class YkiRekisterointikausiEntity(
+@Table("yki_arvioija_arviointikausi")
+data class YkiArviointikausiEntity(
     @Id
     val id: Number?,
     val arvioijaId: Number?,
     val alkupaiva: LocalDate,
     val paattymispaiva: LocalDate?,
-    /** Asetettu jos kausi katkaistiin kesken kauden, ks. [Rekisterikausi]. */
+    /** Asetettu jos kausi katkaistiin kesken kauden, ks. [Arviointikausi]. */
     val passivoitu: OffsetDateTime? = null,
     val passivoijaOid: Oid? = null,
     val luotu: OffsetDateTime? = null,
@@ -33,14 +33,14 @@ data class YkiRekisterointikausiEntity(
     val muokattu: OffsetDateTime? = null,
     val muokkaajaOid: Oid? = null,
     @MappedCollection(keyColumn = "id", idColumn = "kausi_id")
-    val oikeudet: List<YkiRekisterointikausiOikeusEntity> = emptyList(),
+    val oikeudet: List<YkiArviointikausiOikeusEntity> = emptyList(),
 ) {
     fun sisaltaa(kieli: Tutkintokieli): Boolean = oikeudet.any { it.kieli == kieli }
 
     companion object {
         val fromRow =
             RowMapper { rs, _ ->
-                YkiRekisterointikausiEntity(
+                YkiArviointikausiEntity(
                     id = rs.getInt("id"),
                     arvioijaId = rs.getInt("arvioija_id"),
                     alkupaiva = rs.getDate("alkupaiva").toLocalDate(),
@@ -57,8 +57,8 @@ data class YkiRekisterointikausiEntity(
     }
 }
 
-@Table("yki_arvioija_rekisterointikausi_oikeus")
-data class YkiRekisterointikausiOikeusEntity(
+@Table("yki_arvioija_arviointikausi_oikeus")
+data class YkiArviointikausiOikeusEntity(
     @Id
     val id: Number?,
     val kausiId: Number?,
@@ -68,7 +68,7 @@ data class YkiRekisterointikausiOikeusEntity(
     companion object {
         val fromRow =
             RowMapper { rs, _ ->
-                YkiRekisterointikausiOikeusEntity(
+                YkiArviointikausiOikeusEntity(
                     id = rs.getInt("id"),
                     kausiId = rs.getInt("kausi_id"),
                     kieli = Tutkintokieli.valueOf(rs.getString("kieli")),

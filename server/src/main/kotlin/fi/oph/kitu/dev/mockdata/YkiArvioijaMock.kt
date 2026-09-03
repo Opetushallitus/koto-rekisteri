@@ -2,7 +2,7 @@ package fi.oph.kitu.dev.mockdata
 
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
-import fi.oph.kitu.yki.arvioijat.Rekisterikausi
+import fi.oph.kitu.yki.arvioijat.Arviointikausi
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeusEntity
 import java.time.LocalDate
@@ -22,7 +22,7 @@ fun generateRandomYkiArvioijaEntity(): YkiArvioijaEntity {
     // menneisyyden ja tulevaisuuden valilta, jotta dev-datassa esiintyvat kaikki kolme tilaa.
     val kaudenAlkupaiva =
         getRandomLocalDate(
-            LocalDate.now().minusYears(Rekisterikausi.KAUDEN_PITUUS_VUOSINA + 1),
+            LocalDate.now().minusYears(Arviointikausi.KAUDEN_PITUUS_VUOSINA + 1),
             LocalDate.now().plusMonths(6),
         )
 
@@ -42,7 +42,7 @@ fun generateRandomYkiArvioijaEntity(): YkiArvioijaEntity {
                     id = null,
                     arvioijaId = null,
                     kaudenAlkupaiva = kaudenAlkupaiva,
-                    kaudenPaattymispaiva = Rekisterikausi.paattymispaiva(kaudenAlkupaiva),
+                    kaudenPaattymispaiva = Arviointikausi.paattymispaiva(kaudenAlkupaiva),
                     jatkorekisterointi = Random.nextBoolean(),
                     tila = null,
                     kieli = Tutkintokieli.entries.random(),

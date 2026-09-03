@@ -3,6 +3,7 @@ package fi.oph.kitu.yki.arvioijat
 import fi.oph.kitu.html.ModalCommand
 import fi.oph.kitu.html.Page
 import fi.oph.kitu.html.ViewMessageData
+import fi.oph.kitu.html.buttonGroup
 import fi.oph.kitu.html.buttonLink
 import fi.oph.kitu.html.card
 import fi.oph.kitu.html.cardContent
@@ -40,7 +41,7 @@ import java.time.LocalDate
 object YkiArvioijaTiedotPage {
     fun render(
         arvioija: YkiArvioijaEntity,
-        kaudet: List<YkiRekisterointikausiEntity>,
+        kaudet: List<YkiArviointikausiEntity>,
         muutosloki: List<YkiArvioijaKausiEntity>,
         turvakielto: Turvakieltotieto,
         flash: ViewMessageData?,
@@ -55,7 +56,7 @@ object YkiArvioijaTiedotPage {
             turvakielto.varoitus?.let { warningMessage(it) }
 
             if (CurrentUser.hasAuthority(Authority.YKI_ARVIOIJAREKISTERI)) {
-                p {
+                buttonGroup {
                     buttonLink(
                         href = Links.Yki.muokkaaArvioijaa(arvioija.id!!.toInt()),
                         enabled = kirjoitusKaytossa,
@@ -67,6 +68,8 @@ object YkiArvioijaTiedotPage {
 
                     passivointiNappi(arvioija, kirjoitusKaytossa, tanaan)
                 }
+
+                passivointiDialogi(arvioija, kirjoitusKaytossa, tanaan)
             }
 
             card {
@@ -118,7 +121,7 @@ object YkiArvioijaTiedotPage {
                             +UiText.Yki.Arvioija.Kausi.naytaMuutoshistoria
                         }
                         if (muutosloki.isEmpty()) {
-                            p { +UiText.Yki.Arvioija.eiKausihistoriaa }
+                            p { +UiText.Yki.Arvioija.eiMuutoshistoriaa }
                         } else {
                             kausihistoriaTaulukko(muutosloki, tanaan)
                         }
@@ -176,46 +179,16 @@ object YkiArvioijaTiedotPage {
         }
 }
 
-/**
- * Nappi renderoidaan aina, jotta sivulta nakee etta toiminto on olemassa; esto perustellaan
- * tooltipilla. Jo passiivista merkintaa ei saa passivoida uudelleen: passivointihetki on
- * sailytysajan alkuhetki, joten klikkaus siirtaisi paattyneen merkinnan sailytysaikaa eteenpain.
- */
 private fun FlowContent.passivointiNappi(
     arvioija: YkiArvioijaEntity,
     kirjoitusKaytossa: Boolean,
     tanaan: LocalDate,
 ) {
-    val arvioijaId = arvioija.id!!.toInt()
-    val merkintaOnPassiivinen =
-        arvioija.arviointioikeudet.isNotEmpty() &&
-            arvioija.arviointioikeudet.all {
-                Rekisterointitila.laske(it, tanaan) == Rekisterointitila.PASSIVOITU
-            }
-
-    val estonSyy =
-        when {
-            !kirjoitusKaytossa -> {
-                UiText.Yki.Arvioija.kirjoitusEiKaytossa
-            }
-
-            arvioija.passivoitu != null -> {
-                UiText.Yki.Arvioija.joPassivoitu
-                    .interpolate("pvm" to arvioija.passivoitu.toLocalDate().finnishDate())
-            }
-
-            merkintaOnPassiivinen -> {
-                UiText.Yki.Arvioija.kausiPaattynyt
-            }
-
-            else -> {
-                null
-            }
-        }
+    val estonSyy = passivoinninEstonSyy(arvioija, kirjoitusKaytossa, tanaan)
 
     if (estonSyy != null) {
         buttonLink(
-            href = Links.Yki.passivoiArvioija(arvioijaId),
+            href = Links.Yki.passivoiArvioija(arvioija.id!!.toInt()),
             enabled = false,
             testId = "passivoiArvioija",
             disabledTooltip = estonSyy,
@@ -229,23 +202,57 @@ private fun FlowContent.passivointiNappi(
         testId("passivoiArvioija")
         +UiText.Yki.Arvioija.passivoi
     }
+}
 
-    modal(
+/** Natiivi dialog renderoidaan nappiryhman ulkopuolelle, jottei se kuulu ryhman lapsiin. */
+private fun FlowContent.passivointiDialogi(
+    arvioija: YkiArvioijaEntity,
+    kirjoitusKaytossa: Boolean,
+    tanaan: LocalDate,
+) {
+    if (passivoinninEstonSyy(arvioija, kirjoitusKaytossa, tanaan) != null) return
+
+    vahvistusdialogi(
         PASSIVOINTI_MODAL,
-        UiText.Yki.Arvioija.passivoi
-            .toString(),
-    ) {
-        p { +UiText.Yki.Arvioija.passivoiVahvistus }
-        formPost(Links.Yki.passivoiArvioija(arvioijaId)) {
-            footer {
-                button(type = ButtonType.submit) {
-                    testId("vahvistaPassivointi")
-                    +UiText.Yki.Arvioija.passivoi
-                }
-                modalCommandButton(PASSIVOINTI_MODAL, ModalCommand.CLOSE, classes = "secondary") {
-                    +UiText.Yki.Arvioija.peruuta
-                }
+        UiText.Yki.Arvioija.passivoi,
+        UiText.Yki.Arvioija.passivoiVahvistus,
+        Links.Yki.passivoiArvioija(arvioija.id!!.toInt()),
+        "vahvistaPassivointi",
+    )
+}
+
+/**
+ * Nappi renderoidaan aina, jotta sivulta nakee etta toiminto on olemassa; esto perustellaan
+ * tooltipilla. Jo passiivista merkintaa ei saa passivoida uudelleen: passivointihetki on
+ * sailytysajan alkuhetki, joten klikkaus siirtaisi paattyneen merkinnan sailytysaikaa eteenpain.
+ */
+private fun passivoinninEstonSyy(
+    arvioija: YkiArvioijaEntity,
+    kirjoitusKaytossa: Boolean,
+    tanaan: LocalDate,
+): LocalizedString? {
+    val merkintaOnPassiivinen =
+        arvioija.arviointioikeudet.isNotEmpty() &&
+            arvioija.arviointioikeudet.all {
+                Rekisterointitila.laske(it, tanaan) == Rekisterointitila.PASSIVOITU
             }
+
+    return when {
+        !kirjoitusKaytossa -> {
+            UiText.Yki.Arvioija.kirjoitusEiKaytossa
+        }
+
+        arvioija.passivoitu != null -> {
+            UiText.Yki.Arvioija.joPassivoitu
+                .interpolate("pvm" to arvioija.passivoitu.toLocalDate().finnishDate())
+        }
+
+        merkintaOnPassiivinen -> {
+            UiText.Yki.Arvioija.kausiPaattynyt
+        }
+
+        else -> {
+            null
         }
     }
 }
@@ -329,7 +336,7 @@ private fun FlowContent.kausihistoriaTaulukko(
 
 private fun FlowContent.kaudetTaulukko(
     arvioija: YkiArvioijaEntity,
-    kaudet: List<YkiRekisterointikausiEntity>,
+    kaudet: List<YkiArviointikausiEntity>,
     kirjoitusKaytossa: Boolean,
     tanaan: LocalDate,
 ) {
@@ -382,41 +389,43 @@ private fun FlowContent.kaudetTaulukko(
                 }
             },
         ),
-        testId = "rekisterointikaudet",
+        testId = "arviointikaudet",
         rowTestId = { "kausi-${it.id}" },
     )
 }
 
 private fun FlowContent.kausitoiminnot(
     arvioijaId: Int,
-    kausi: YkiRekisterointikausiEntity,
+    kausi: YkiArviointikausiEntity,
     kausiaYhteensa: Int,
     kirjoitusKaytossa: Boolean,
     tanaan: LocalDate,
 ) {
     val kausiId = kausi.id!!.toInt()
 
-    buttonLink(
-        href = Links.Yki.muokkaaKautta(arvioijaId, kausiId),
-        enabled = kirjoitusKaytossa,
-        testId = "muokkaaKautta",
-        disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
-    ) {
-        +UiText.Yki.Arvioija.Kausi.muokkaa
-    }
+    buttonGroup {
+        buttonLink(
+            href = Links.Yki.muokkaaKautta(arvioijaId, kausiId),
+            enabled = kirjoitusKaytossa,
+            testId = "muokkaaKautta",
+            disabledTooltip = UiText.Yki.Arvioija.kirjoitusEiKaytossa,
+        ) {
+            +UiText.Yki.Arvioija.Kausi.muokkaa
+        }
 
-    if (Rekisterointitila.laske(kausi, tanaan) == Rekisterointitila.AKTIIVINEN) {
-        kausikomento(
-            passivointiDialogi(kausiId),
-            UiText.Yki.Arvioija.Kausi.passivoi,
-            "passivoiKausi",
-            kirjoitusKaytossa,
-        )
-    }
+        if (Rekisterointitila.laske(kausi, tanaan) == Rekisterointitila.AKTIIVINEN) {
+            kausikomento(
+                kaudenPassivointiDialogi(kausiId),
+                UiText.Yki.Arvioija.Kausi.passivoi,
+                "passivoiKausi",
+                kirjoitusKaytossa,
+            )
+        }
 
-    // Viimeinen kausi jattaisi arvioijan ilman arviointioikeuksia, jolloin han katoaisi listalta.
-    if (kausiaYhteensa > 1) {
-        kausikomento(poistoDialogi(kausiId), UiText.Yki.Arvioija.Kausi.poista, "poistaKausi", kirjoitusKaytossa)
+        // Viimeinen kausi jattaisi arvioijan ilman arviointioikeuksia, jolloin han katoaisi listalta.
+        if (kausiaYhteensa > 1) {
+            kausikomento(poistoDialogi(kausiId), UiText.Yki.Arvioija.Kausi.poista, "poistaKausi", kirjoitusKaytossa)
+        }
     }
 }
 
@@ -440,7 +449,7 @@ private fun FlowContent.kausikomento(
 
 private fun FlowContent.kausidialogit(
     arvioija: YkiArvioijaEntity,
-    kausi: YkiRekisterointikausiEntity,
+    kausi: YkiArviointikausiEntity,
     kausiaYhteensa: Int,
     tanaan: LocalDate,
 ) {
@@ -449,7 +458,7 @@ private fun FlowContent.kausidialogit(
 
     if (Rekisterointitila.laske(kausi, tanaan) == Rekisterointitila.AKTIIVINEN) {
         vahvistusdialogi(
-            passivointiDialogi(kausiId),
+            kaudenPassivointiDialogi(kausiId),
             UiText.Yki.Arvioija.Kausi.passivoi,
             UiText.Yki.Arvioija.Kausi.passivoiVahvistus,
             Links.Yki.passivoiKausi(arvioijaId, kausiId),
@@ -479,19 +488,21 @@ private fun FlowContent.vahvistusdialogi(
         p { +vahvistus }
         formPost(action) {
             footer {
-                button(type = ButtonType.submit) {
-                    testId(vahvistusTestId)
-                    +otsikko
-                }
-                modalCommandButton(dialogId, ModalCommand.CLOSE, classes = "secondary") {
-                    +UiText.Yki.Arvioija.peruuta
+                buttonGroup {
+                    button(type = ButtonType.submit) {
+                        testId(vahvistusTestId)
+                        +otsikko
+                    }
+                    modalCommandButton(dialogId, ModalCommand.CLOSE, classes = "secondary") {
+                        +UiText.Yki.Arvioija.peruuta
+                    }
                 }
             }
         }
     }
 }
 
-private fun passivointiDialogi(kausiId: Int): String = "passivoiKausiDialog-$kausiId"
+private fun kaudenPassivointiDialogi(kausiId: Int): String = "passivoiKausiDialog-$kausiId"
 
 private fun poistoDialogi(kausiId: Int): String = "poistaKausiDialog-$kausiId"
 

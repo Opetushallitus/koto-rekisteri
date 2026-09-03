@@ -59,7 +59,7 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     )
   })
 
-  test("rekisteröintikausi lisätään omalla lomakkeellaan ja passivointi päättää merkinnän", async ({
+  test("arviointikausi lisätään omalla lomakkeellaan ja passivointi päättää merkinnän", async ({
     indexPage,
     ykiArvioijaLomakePage,
   }) => {
@@ -73,7 +73,7 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     await ykiArvioijaLomakePage.valitseArviointioikeus("FIN", "PT")
     await ykiArvioijaLomakePage.tallenna()
 
-    const kaudet = page.getByTestId("rekisterointikaudet")
+    const kaudet = page.getByTestId("arviointikaudet")
     await expect(kaudet).toContainText(fiPaiva(isoPaiva(8)))
 
     // Uusi kausi lisätään kausilomakkeelta, ei arvioijan muokkauslomakkeelta.

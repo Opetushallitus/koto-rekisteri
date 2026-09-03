@@ -2,9 +2,9 @@ package fi.oph.kitu.yki
 
 import fi.oph.kitu.yki.arvioijat.Kausiprojektio
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaTila
+import fi.oph.kitu.yki.arvioijat.YkiArviointikausiEntity
+import fi.oph.kitu.yki.arvioijat.YkiArviointikausiOikeusEntity
 import fi.oph.kitu.yki.arvioijat.YkiArviointioikeusEntity
-import fi.oph.kitu.yki.arvioijat.YkiRekisterointikausiEntity
-import fi.oph.kitu.yki.arvioijat.YkiRekisterointikausiOikeusEntity
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,19 +19,19 @@ class KausiprojektioTest {
         alku: LocalDate,
         loppu: LocalDate?,
         vararg kielet: Tutkintokieli,
-    ) = YkiRekisterointikausiEntity(
+    ) = YkiArviointikausiEntity(
         id = id,
         arvioijaId = 1,
         alkupaiva = alku,
         paattymispaiva = loppu,
         oikeudet =
             kielet.mapIndexed { i, kieli ->
-                YkiRekisterointikausiOikeusEntity(i, id, kieli, setOf(Tutkintotaso.PT))
+                YkiArviointikausiOikeusEntity(i, id, kieli, setOf(Tutkintotaso.PT))
             },
     )
 
     private fun projisoi(
-        kaudet: List<YkiRekisterointikausiEntity>,
+        kaudet: List<YkiArviointikausiEntity>,
         ensimmainen: LocalDate? = null,
         nykyiset: List<YkiArviointioikeusEntity> = emptyList(),
     ) = Kausiprojektio.projisoi(kaudet, ensimmainen, nykyiset, tanaan)
