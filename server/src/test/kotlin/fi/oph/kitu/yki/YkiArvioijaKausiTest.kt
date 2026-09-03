@@ -142,6 +142,16 @@ class YkiArvioijaKausiTest(
             assertEquals(TANAAN, kausi.paattymispaiva, "kausi paattyy tahan paivaan")
             assertNotNull(kausi.passivoitu, "passivointihetki kirjataan")
             assertEquals(
+                Rekisterointitila.AKTIIVINEN,
+                Rekisterointitila.laske(kausi, TANAAN),
+                "paattymispaiva on inklusiivinen, joten kausi on voimassa viela passivointipaivan",
+            )
+            assertEquals(
+                Rekisterointitila.PASSIVOITU,
+                Rekisterointitila.laske(kausi, TANAAN.plusDays(1)),
+                "vasta seuraavana paivana merkinta on passiivinen",
+            )
+            assertEquals(
                 TANAAN,
                 kausiRepository.findArviointioikeudet(id).single().kaudenPaattymispaiva,
                 "projektio seuraa katkaistua kautta",
@@ -263,6 +273,29 @@ class YkiArvioijaKausiTest(
 
             assertContains(html, "päällekkäin")
             assertEquals(1, kausiRepository.findKaudet(id).size, "paallekkaista kautta ei tallenneta")
+        }
+    }
+
+    @Test
+    fun `kausi ei voi alkaa edellisen viimeisena voimassaolopaivana`() {
+        val id = idOf(petro)
+
+        timeService.runWithFixedClock(HETKI) {
+            // Seedattu kausi on voimassa 1.1.2021-1.1.2026, paattymispaiva mukaan lukien.
+            mockMvc
+                .perform(
+                    post("/yki/arvioijat/$id/kaudet")
+                        .session(session())
+                        .with(csrf())
+                        .param("alkupaiva", "$VANHA_LOPPU")
+                        .param("arviointioikeus", "FIN:PT"),
+                ).andExpect(status().isOk)
+
+            assertEquals(1, kausiRepository.findKaudet(id).size, "paattymispaiva kuuluu viela edelliseen kauteen")
+
+            lisaaKausi(id, "${VANHA_LOPPU.plusDays(1)}", "FIN:PT")
+
+            assertEquals(2, kausiRepository.findKaudet(id).size, "seuraava paiva on vapaa")
         }
     }
 

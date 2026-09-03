@@ -4,6 +4,25 @@ import YkiArvioijaLomakePage from "../../models/yki/YkiArvioijaLomakePage"
 
 const PETRO = "1.2.246.562.24.59267607404"
 
+/**
+ * Päivät johdetaan tästä päivästä, koska kauden alkupäivä ei saa olla yli vuotta
+ * tulevaisuudessa eikä kausi saa mennä päällekkäin toisen kanssa.
+ */
+const isoPaiva = (vuosiaSitten: number) => {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - vuosiaSitten)
+  return d.toISOString().slice(0, 10)
+}
+
+const fiPaiva = (iso: string) =>
+  new Intl.DateTimeFormat("fi-FI").format(new Date(iso))
+
+const TANAAN = new Intl.DateTimeFormat("fi-FI").format(new Date())
+
+/** Dialogeja on yksi per kausirivi, joten vahvistusnappi haetaan avoimen dialogin sisältä. */
+const avoinDialogi = (page: import("@playwright/test").Page) =>
+  page.locator("dialog[open]")
+
 describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
   beforeEach(async ({ db }) => {
     await db.withEmptyDatabase()
@@ -26,39 +45,38 @@ describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
   }) => {
     const page = ykiArvioijaLomakePage.page
     await indexPage.login()
-    await luoArvioija(ykiArvioijaLomakePage, "2025-12-07")
+    await luoArvioija(ykiArvioijaLomakePage, isoPaiva(1))
 
     await page.getByTestId("muokkaaKautta").first().click()
-    await page.getByTestId("alkupaiva-input").fill("2026-03-01")
+    await page.getByTestId("alkupaiva-input").fill(isoPaiva(2))
     await page.getByTestId("tallennaKausi").click()
 
     await expect(ykiArvioijaLomakePage.viewMessage).toContainText(
       "päivitettiin",
     )
     const kaudet = page.getByTestId("rekisterointikaudet")
-    await expect(kaudet).toContainText("1.3.2026")
-    await expect(kaudet).toContainText("1.3.2031")
+    await expect(kaudet).toContainText(fiPaiva(isoPaiva(2)))
+    // Päättymispäivä on aina alkupäivä + 5 vuotta, joten se siirtyy mukana.
+    await expect(kaudet).toContainText(fiPaiva(isoPaiva(-3)))
   })
 
-  test("aktiivisen kauden voi passivoida ja passivoitua ei tarjota uudelleen", async ({
+  test("aktiivisen kauden voi passivoida", async ({
     indexPage,
     ykiArvioijaLomakePage,
   }) => {
     const page = ykiArvioijaLomakePage.page
     await indexPage.login()
-    await luoArvioija(ykiArvioijaLomakePage, "2025-12-07")
+    await luoArvioija(ykiArvioijaLomakePage, isoPaiva(1))
 
     await page.getByTestId("passivoiKausi").first().click()
-    await page.getByTestId("vahvistaKaudenPassivointi").click()
+    await avoinDialogi(page).getByTestId("vahvistaKaudenPassivointi").click()
 
     await expect(ykiArvioijaLomakePage.viewMessage).toContainText(
       "passivoitiin",
     )
-    // Kausi päättyy tähän päivään, joten passivointia ei enää tarjota.
-    await expect(page.getByTestId("passivoiKausi")).toHaveCount(0)
-    await expect(page.getByTestId("rekisterointikaudet")).toContainText(
-      new Intl.DateTimeFormat("fi-FI").format(new Date()),
-    )
+    // Kausi päättyy tähän päivään. Päättymispäivä on inklusiivinen, joten merkintä
+    // lukee vielä tänään aktiiviseksi ja muuttuu passiiviseksi vasta huomenna.
+    await expect(page.getByTestId("rekisterointikaudet")).toContainText(TANAAN)
   })
 
   test("väärälle henkilölle kirjattu kausi poistetaan, viimeistä ei voi poistaa", async ({
@@ -67,25 +85,26 @@ describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
   }) => {
     const page = ykiArvioijaLomakePage.page
     await indexPage.login()
-    await luoArvioija(ykiArvioijaLomakePage, "2025-12-07")
+    // Päättynyt kausi, jotta uusi mahtuu sen perään menemättä päällekkäin.
+    await luoArvioija(ykiArvioijaLomakePage, isoPaiva(8))
 
     // Ainoan kauden poistaminen jättäisi arvioijan ilman arviointioikeuksia.
     await expect(page.getByTestId("poistaKausi")).toHaveCount(0)
 
     await page.getByTestId("uusiKausi").click()
-    await page.getByTestId("alkupaiva-input").fill("2031-01-01")
+    await page.getByTestId("alkupaiva-input").fill(isoPaiva(1))
     await page.getByTestId("arviointioikeus-FIN:PT").check()
     await page.getByTestId("tallennaKausi").click()
 
     const kaudet = page.getByTestId("rekisterointikaudet")
-    await expect(kaudet).toContainText("1.1.2031")
+    await expect(kaudet).toContainText(fiPaiva(isoPaiva(1)))
 
     await page.getByTestId("poistaKausi").first().click()
-    await page.getByTestId("vahvistaKaudenPoisto").click()
+    await avoinDialogi(page).getByTestId("vahvistaKaudenPoisto").click()
 
     await expect(ykiArvioijaLomakePage.viewMessage).toContainText("poistettiin")
-    await expect(kaudet).not.toContainText("1.1.2031")
-    await expect(kaudet).toContainText("7.12.2025")
+    await expect(kaudet).not.toContainText(fiPaiva(isoPaiva(1)))
+    await expect(kaudet).toContainText(fiPaiva(isoPaiva(8)))
   })
 
   test("päällekkäistä kautta ei tallenneta", async ({
@@ -94,14 +113,15 @@ describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
   }) => {
     const page = ykiArvioijaLomakePage.page
     await indexPage.login()
-    await luoArvioija(ykiArvioijaLomakePage, "2025-12-07")
+    await luoArvioija(ykiArvioijaLomakePage, isoPaiva(1))
 
     await page.getByTestId("uusiKausi").click()
-    await page.getByTestId("alkupaiva-input").fill("2026-06-01")
+    await page.getByTestId("alkupaiva-input").fill(isoPaiva(0))
     await page.getByTestId("arviointioikeus-FIN:PT").check()
     await page.getByTestId("tallennaKausi").click()
 
-    await expect(page.getByTestId("formErrorSummary")).toContainText(
+    // Virhe kohdistuu alkupäivään, joten se näkyy kentän vieressä.
+    await expect(page.getByTestId("alkupaiva-error")).toContainText(
       "päällekkäin",
     )
   })
@@ -112,7 +132,7 @@ describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
     ykiArvioijatPage,
   }) => {
     await indexPage.login()
-    await luoArvioija(ykiArvioijaLomakePage, "2025-12-07")
+    await luoArvioija(ykiArvioijaLomakePage, isoPaiva(1))
 
     await indexPage.login("VIRKAILIJA")
     await ykiArvioijatPage.open()
