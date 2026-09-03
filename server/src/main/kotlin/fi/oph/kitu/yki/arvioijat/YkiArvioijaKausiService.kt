@@ -12,6 +12,8 @@ import fi.oph.kitu.yki.arvioijat.solki.SolkiArvioijaService
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.time.LocalDate
 
 @Service
@@ -211,8 +213,33 @@ class YkiArvioijaKausiService(
         kausiRepository.poistaPassivointileimaJosAktiivinen(arvioijaId, tanaan)
         if (muuttui) {
             kausiRepository.merkitseMuuttuneeksi(arvioijaId, tekija)
-            arvioijaRepository.findArvioijaById(arvioijaId)?.let { solki.lahetaArvioija(it) }
+            lahetaSolkiinCommitinJalkeen(arvioijaId)
         }
+    }
+
+    /**
+     * Kausimuutokset ovat transaktionaalisia, joten lahetys ei saa tapahtua niiden sisalla:
+     * HTTP-kutsu pitaisi yki_arvioija-rivin lukkoa ja poolatun yhteyden auki koko etakutsun ajan,
+     * ja Solkin hidastuminen sarjallistaisi virkailijat sen taakse. Rivi on jo merkitty
+     * lahetysjonoon, joten commitin jalkeen epaonnistuva lahetys jaa jonoon kuten muutenkin.
+     */
+    private fun lahetaSolkiinCommitinJalkeen(arvioijaId: Int) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            laheta(arvioijaId)
+            return
+        }
+
+        TransactionSynchronizationManager.registerSynchronization(
+            object : TransactionSynchronization {
+                override fun afterCommit() {
+                    laheta(arvioijaId)
+                }
+            },
+        )
+    }
+
+    private fun laheta(arvioijaId: Int) {
+        arvioijaRepository.findArvioijaById(arvioijaId)?.let { solki.lahetaArvioija(it) }
     }
 
     private fun kirjaa(
