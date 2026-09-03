@@ -3,6 +3,7 @@ package fi.oph.kitu.yki.arvioijat
 import arrow.core.raise.Raise
 import arrow.core.raise.RaiseAccumulate
 import arrow.core.raise.ensure
+import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
@@ -85,3 +86,38 @@ internal fun Raise<ValidationError>.validateSahkopostiosoite(sahkoposti: String?
 
 private val POSTINUMERO = Regex("""\d{5}""")
 private val SAHKOPOSTI = Regex("""[^@\s]+@[^@\s.]+(\.[^@\s.]+)+""")
+
+/**
+ * OPH:n saanto: henkilolla ei voi olla paallekkaisia arviointikausia. Tarkistus on kummallakin
+ * kirjoituspolulla, koska lisayslomake toimii myos jatkokauden kirjaamisena.
+ */
+internal fun Raise<ValidationError>.validateEiPaallekkaisiaKausia(
+    kaudet: List<YkiRekisterointikausiEntity>,
+    alkupaiva: LocalDate,
+    paattymispaiva: LocalDate?,
+    ohitaKausiId: Int? = null,
+    kentta: String,
+) {
+    val paallekkainen =
+        kaudet
+            .filter { it.id?.toInt() != ohitaKausiId }
+            .firstOrNull { kausi ->
+                !paattyyEnnen(paattymispaiva, kausi.alkupaiva) &&
+                    !paattyyEnnen(kausi.paattymispaiva, alkupaiva)
+            }
+
+    ensure(paallekkainen == null) {
+        val jakso = "${paallekkainen!!.alkupaiva.finnishDate()}–${paallekkainen.paattymispaiva?.finnishDate() ?: ""}"
+        ValidationError(
+            listOf(kentta),
+            "Kausi menee päällekkäin rekisteröintikauden $jakso kanssa. " +
+                "Henkilöllä ei voi olla päällekkäisiä arviointikausia.",
+        )
+    }
+}
+
+/** Tyhja paattymispaiva tarkoittaa toistaiseksi voimassa olevaa, joten se ei paaty ennen mitaan. */
+private fun paattyyEnnen(
+    paattymispaiva: LocalDate?,
+    alkupaiva: LocalDate,
+): Boolean = paattymispaiva != null && paattymispaiva < alkupaiva

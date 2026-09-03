@@ -3,14 +3,12 @@ package fi.oph.kitu.yki.arvioijat
 import arrow.core.raise.Raise
 import arrow.core.raise.accumulate
 import arrow.core.raise.ensure
-import fi.oph.kitu.i18n.finnishDate
 import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.util.validation.EnrichmentRaise
 import fi.oph.kitu.util.validation.Validation
 import fi.oph.kitu.util.validation.Validation.ValidationError
 import fi.oph.kitu.util.validation.ValidationRaise
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 @Service
 class TallennaKausiValidation(
@@ -59,34 +57,12 @@ class TallennaKausiValidation(
     }
 
     private fun Raise<ValidationError>.validateEiPaallekkaisyytta(value: TallennaKausi) {
-        val muut =
-            kausiRepository
-                .findKaudet(value.arvioijaId)
-                .filter { it.id?.toInt() != value.kausiId }
-
-        val paallekkainen = muut.firstOrNull { leikkaa(it, value) }
-        ensure(paallekkainen == null) {
-            ValidationError(
-                listOf("alkupaiva"),
-                "Kausi menee päällekkäin rekisteröintikauden ${kuvaus(paallekkainen!!)} kanssa. " +
-                    "Henkilöllä ei voi olla päällekkäisiä arviointikausia.",
-            )
-        }
+        validateEiPaallekkaisiaKausia(
+            kaudet = kausiRepository.findKaudet(value.arvioijaId),
+            alkupaiva = value.alkupaiva,
+            paattymispaiva = value.paattymispaiva,
+            ohitaKausiId = value.kausiId,
+            kentta = "alkupaiva",
+        )
     }
-
-    private fun leikkaa(
-        kausi: YkiRekisterointikausiEntity,
-        uusi: TallennaKausi,
-    ): Boolean =
-        !alkaaEnnen(uusi.paattymispaiva, kausi.alkupaiva) &&
-            !alkaaEnnen(kausi.paattymispaiva, uusi.alkupaiva)
-
-    /** Tyhja paattymispaiva tarkoittaa toistaiseksi voimassa olevaa, joten se ei paaty ennen mitaan. */
-    private fun alkaaEnnen(
-        paattymispaiva: LocalDate?,
-        alkupaiva: LocalDate,
-    ): Boolean = paattymispaiva != null && paattymispaiva < alkupaiva
-
-    private fun kuvaus(kausi: YkiRekisterointikausiEntity): String =
-        "${kausi.alkupaiva.finnishDate()}–${kausi.paattymispaiva?.finnishDate() ?: ""}"
 }
