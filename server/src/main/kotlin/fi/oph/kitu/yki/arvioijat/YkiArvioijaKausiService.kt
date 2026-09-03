@@ -29,12 +29,12 @@ class YkiArvioijaKausiService(
      * alkaa. Ajo kirjoittaa vain tosiasiassa muuttuneet rivit, jottei koko rekisteri paady
      * turhaan Solki-lahetysjonoon.
      *
-     * Kirjoituskytkimen ollessa pois paalta kitu ei ole master, joten projektiota ei kosketa:
+     * Integraatiokytkimen ollessa pois paalta kitu ei ole master, joten projektiota ei kosketa:
      * muuten migraation aikainen tilannekuva yliajaisi Solkin tuoreemman datan.
      */
     @WithSpan
     fun paivitaProjektiot(): Int {
-        if (!asetukset.kirjoitusKaytossa) return 0
+        if (!asetukset.integraatioKaytossa) return 0
         val tanaan = timeService.today()
 
         return kausiRepository.findArvioijaIdt().count { arvioijaId ->

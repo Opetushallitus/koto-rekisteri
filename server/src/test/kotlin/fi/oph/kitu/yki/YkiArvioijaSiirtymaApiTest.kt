@@ -34,7 +34,7 @@ import kotlin.test.assertNotNull
  * arvioijarekisterin master ja saa kirjoittaa koko merkinnan. Kavennettu polku on
  * [YkiApiControllerTest]issa, joka ajaa kytkin paalla.
  */
-@SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.kirjoitus.enabled=false"])
+@SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.integraatio.enabled=false"])
 @Import(DBContainerConfiguration::class)
 class YkiArvioijaSiirtymaApiTest(
     @param:Autowired val timeService: TestTimeService,

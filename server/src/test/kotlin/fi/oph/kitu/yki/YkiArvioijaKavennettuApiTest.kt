@@ -32,7 +32,7 @@ import kotlin.test.assertNull
  * Kavennettu sisaantulo (§4.2): kitun ollessa master Solki saa paivittaa vain yhteystiedot.
  * Siirtymavaiheen kayttaytyminen on [YkiArvioijaSiirtymaApiTest]issa.
  */
-@SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.kirjoitus.enabled=true"])
+@SpringBootTest(properties = ["kitu.yki.arvioijarekisteri.integraatio.enabled=true"])
 @Import(DBContainerConfiguration::class)
 class YkiArvioijaKavennettuApiTest(
     @param:Autowired val repository: YkiArvioijaRepository,

@@ -306,7 +306,7 @@ class YkiApiController(
     ): ResponseEntity<*> {
         val validatedArvioija = validationService.validateAndEnrich(arvioija).getOrThrow()
 
-        return if (asetukset.kirjoitusKaytossa) {
+        return if (asetukset.integraatioKaytossa) {
             paivitaYhteystiedot(validatedArvioija)
         } else {
             // Siirtymavaihe: kitu ei ole viela master, joten Solkin koko payload otetaan vastaan.

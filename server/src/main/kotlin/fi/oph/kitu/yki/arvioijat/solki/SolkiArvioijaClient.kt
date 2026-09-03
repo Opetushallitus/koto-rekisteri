@@ -24,7 +24,7 @@ interface SolkiArvioijaClient {
  * local ja e2e dev-stubiin) eika sen olemassaolo siksi kerro, saako lahettaa.
  */
 @Service
-@ConditionalOnProperty("kitu.yki.arvioijat.solki.enabled", havingValue = "true")
+@ConditionalOnProperty("kitu.yki.arvioijarekisteri.integraatio.enabled", havingValue = "true")
 class SolkiArvioijaClientImpl(
     @param:Qualifier("solkiRestClient")
     val restClient: RestClient,
