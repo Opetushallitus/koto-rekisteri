@@ -123,7 +123,8 @@ lähetetyksi, jottei Solkin oma data kaiku takaisin sille.
 Virkailija näkee tilan arvioijan tietosivun **Integraatiot**-kortissa ja voi käynnistää lähetyksen
 uudelleen. Listanäkymässä on suodatin `vainSolkiVirheet` ja etusivulla laskuri.
 
-`kitu.yki.arvioijat.solki.enabled` on erillinen kytkin: `kitu.yki.baseUrl` on asetettu joka
+`kitu.yki.arvioijarekisteri.integraatio.enabled` ohjaa **molempia suuntia** ja on erillinen
+kytkin osoitteesta: `kitu.yki.baseUrl` on asetettu joka
 ympäristössä (myös local ja e2e dev-stubiin), joten sen olemassaolo ei kerro, saako lähettää. Kun
 kytkin on pois, rivit jäävät jonoon ja lähtevät takautuvasti kytkimen avautuessa.
 
@@ -136,6 +137,10 @@ kaiuttaa lähetetyt arvot takaisin, ja `solki_lahetysvirhe` on rajoittamaton `TE
 
 Solki lähettää yhteystietojen muutokset nykyisen `POST /yki/api/arvioija` -rajapinnan kautta.
 Rekisterimerkintää se ei kirjoita: nimet tulevat ONR:stä ja kaudet kitusta. Ks. suunnitelman §4.2.
+
+Kavennus on saman `kitu.yki.arvioijarekisteri.integraatio.enabled` -kytkimen takana kuin lähtevä
+suunta. Kytkimen ollessa pois kitu ei ole vielä master, joten Solkin **koko payload** otetaan yhä
+vastaan ja tallennetaan.
 
 ## CAS + OAuth2 — virkailija-autentikointi
 

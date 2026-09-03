@@ -45,9 +45,9 @@ class YkiArvioijaKausiService(
     }
 
     /**
-     * Rakentaa kaudet uudelleen arviointioikeuksista. Kaytetaan kasin kun kirjoituskytkin
-     * avataan ymparistossa: V122:n siirto on siihen mennessa vanhentunut, koska Solki on
-     * jatkanut kirjoittamista.
+     * Rakentaa kaudet uudelleen arviointioikeuksista. Ajetaan kasin ennen kuin integraatiokytkin
+     * avataan ymparistossa: V122:n siirto on siihen mennessa vanhentunut, koska taysi sisaantulo
+     * on kirjoittanut pelkkaa projektiota koskematta masteriin.
      */
     @WithSpan
     fun synkronoiKaudetArviointioikeuksista(): Int {
