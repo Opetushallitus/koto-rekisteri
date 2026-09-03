@@ -3,6 +3,16 @@ import { expect } from "@playwright/test"
 
 const PETRO = "1.2.246.562.24.59267607404"
 
+/** Kauden alkupäivä ei saa olla yli vuotta tulevaisuudessa, joten päivät johdetaan tästä päivästä. */
+const isoPaiva = (vuosiaSitten: number) => {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - vuosiaSitten)
+  return d.toISOString().slice(0, 10)
+}
+
+const fiPaiva = (iso: string) =>
+  new Intl.DateTimeFormat("fi-FI").format(new Date(iso))
+
 describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
   beforeEach(async ({ db }) => {
     await db.withEmptyDatabase()
@@ -56,28 +66,31 @@ describe("Yleisen kielitutkinnon arvioijan muokkaus", () => {
     const page = ykiArvioijaLomakePage.page
     await indexPage.login()
 
+    // Päättynyt kausi, jotta uusi mahtuu sen perään menemättä päällekkäin.
     await ykiArvioijaLomakePage.open()
     await ykiArvioijaLomakePage.haeOppijanumerolla(PETRO)
-    await ykiArvioijaLomakePage.asetaKaudenAlkupaiva("2025-12-07")
+    await ykiArvioijaLomakePage.asetaKaudenAlkupaiva(isoPaiva(8))
     await ykiArvioijaLomakePage.valitseArviointioikeus("FIN", "PT")
     await ykiArvioijaLomakePage.tallenna()
 
     const kaudet = page.getByTestId("rekisterointikaudet")
-    await expect(kaudet).toContainText("7.12.2025")
+    await expect(kaudet).toContainText(fiPaiva(isoPaiva(8)))
 
     // Uusi kausi lisätään kausilomakkeelta, ei arvioijan muokkauslomakkeelta.
     await page.getByTestId("uusiKausi").click()
-    await page.getByTestId("alkupaiva-input").fill("2031-01-01")
+    await page.getByTestId("alkupaiva-input").fill(isoPaiva(1))
     await page.getByTestId("arviointioikeus-FIN:PT").check()
     await page.getByTestId("tallennaKausi").click()
 
     await expect(ykiArvioijaLomakePage.viewMessage).toContainText("lisättiin")
-    await expect(kaudet).toContainText("7.12.2025")
-    await expect(kaudet).toContainText("1.1.2031")
+    await expect(kaudet).toContainText(fiPaiva(isoPaiva(8)))
+    await expect(kaudet).toContainText(fiPaiva(isoPaiva(1)))
 
     // Muutosloki on oletuksena kiinni ja avautuu details-elementistä.
     await page.getByTestId("naytaMuutoshistoria").click()
-    await expect(page.getByTestId("kausihistoria")).toContainText("1.1.2031")
+    await expect(page.getByTestId("kausihistoria")).toContainText(
+      fiPaiva(isoPaiva(1)),
+    )
 
     // Passivointi vaatii vahvistuksen dialogissa
     await page.getByTestId("passivoiArvioija").click()

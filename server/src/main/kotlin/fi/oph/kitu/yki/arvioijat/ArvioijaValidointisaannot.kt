@@ -107,7 +107,7 @@ internal fun Raise<ValidationError>.validateEiPaallekkaisiaKausia(
             }
 
     ensure(paallekkainen == null) {
-        val jakso = "${paallekkainen!!.alkupaiva.finnishDate()}–${paallekkainen.paattymispaiva?.finnishDate() ?: ""}"
+        val jakso = "${paallekkainen.alkupaiva.finnishDate()}–${paallekkainen.paattymispaiva?.finnishDate() ?: ""}"
         ValidationError(
             listOf(kentta),
             "Kausi menee päällekkäin rekisteröintikauden $jakso kanssa. " +
