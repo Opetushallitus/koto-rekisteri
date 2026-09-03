@@ -322,6 +322,32 @@ class YkiArvioijaKausiTest(
     }
 
     @Test
+    fun `tulevan kauden passivointi ei synnyta haamukautta`() {
+        val id = idOf(petro)
+
+        timeService.runWithFixedClock(HETKI) {
+            // Tuleva kausi: alkupaiva korkeintaan vuoden paassa, ei paallekkain seedatun kanssa.
+            lisaaKausi(id, "2026-12-01", "FIN:PT")
+            assertEquals(2, kausiRepository.findKaudet(id).size)
+
+            mockMvc
+                .perform(post("/yki/arvioijat/$id/passivoi").session(session()).with(csrf()))
+                .andExpect(status().isSeeOther)
+
+            val kaudet = kausiRepository.findKaudet(id)
+            assertEquals(
+                2,
+                kaudet.size,
+                "katkaisun on osuttava olemassa olevaan kauteen, ei lisattava uutta",
+            )
+            assertTrue(
+                kaudet.none { it.alkupaiva == TANAAN },
+                "tanaan alkavaa kautta ei ole olemassa: sellainen olisi tallennan synnyttama haamu",
+            )
+        }
+    }
+
+    @Test
     fun `toimenpiteet kirjataan muutoslokiin`() {
         val id = idOf(petro)
 

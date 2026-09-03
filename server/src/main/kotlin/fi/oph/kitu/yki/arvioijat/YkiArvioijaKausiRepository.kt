@@ -122,8 +122,9 @@ class YkiArvioijaKausiRepository(
     }
 
     /**
-     * Passivointi vain kiristaa kautta: ilman [GREATEST]ia tulevan kauden passivointi rikkoisi
-     * paivien jarjestysehdon, ja ilman [LEAST]ia klikkaus pidentaisi jo paattynytta kautta.
+     * Passivointi vain kiristaa kautta: ilman LEASTia klikkaus pidentaisi jo paattynytta kautta.
+     * Alkupaivaan ei kosketa, jotta katkaisu vastaa tasmalleen projektioon kirjoitettavaa —
+     * muuten tallennan kausisynkronointi ei osu tahan riviin ja lisaisi haamukauden.
      */
     @WithSpan
     @Transactional
@@ -135,7 +136,7 @@ class YkiArvioijaKausiRepository(
         jdbcTemplate.update(
             """
             UPDATE yki_arvioija_arviointikausi
-            SET paattymispaiva = GREATEST(alkupaiva, LEAST(COALESCE(paattymispaiva, ?), ?)),
+            SET paattymispaiva = LEAST(COALESCE(paattymispaiva, ?), ?),
                 passivoitu = COALESCE(passivoitu, now()),
                 passivoija_oid = COALESCE(passivoija_oid, ?),
                 muokattu = now(),
@@ -271,28 +272,30 @@ class YkiArvioijaKausiRepository(
 
     /**
      * Lisayslomake perustaa arvioijan ja hanen ensimmaisen kautensa yhdella tallennuksella, joten
-     * hallintopaatoksen viite kirjataan kaudelle vasta sen synnyttya.
+     * hallintopaatoksen viite kirjataan kaudelle vasta sen synnyttya. Projektio rakennetaan aina,
+     * myos ilman viitetta: tallenna ei kirjoita asha_numeroa, joten ilman tata jatkokausi jattaisi
+     * projektioon edellisen kauden viitteen.
      */
     @WithSpan
     @Transactional
-    fun asetaAshaNumero(
+    fun viimeisteleKausi(
         arvioijaId: Int,
         alkupaiva: LocalDate,
         ashaNumero: String?,
         tanaan: LocalDate,
     ) {
-        if (ashaNumero == null) return
-
-        jdbcTemplate.update(
-            """
-            UPDATE yki_arvioija_arviointikausi
-            SET asha_numero = ?, muokattu = muokattu
-            WHERE arvioija_id = ? AND alkupaiva = ?
-            """.trimIndent(),
-            ashaNumero,
-            arvioijaId,
-            alkupaiva,
-        )
+        if (ashaNumero != null) {
+            jdbcTemplate.update(
+                """
+                UPDATE yki_arvioija_arviointikausi
+                SET asha_numero = ?, muokattu = muokattu
+                WHERE arvioija_id = ? AND alkupaiva = ?
+                """.trimIndent(),
+                ashaNumero,
+                arvioijaId,
+                alkupaiva,
+            )
+        }
         paivitaProjektio(arvioijaId, tanaan)
     }
 
@@ -307,7 +310,7 @@ class YkiArvioijaKausiRepository(
         jdbcTemplate.update(
             """
             UPDATE yki_arvioija_arviointikausi
-            SET paattymispaiva = GREATEST(alkupaiva, LEAST(COALESCE(paattymispaiva, ?), ?)),
+            SET paattymispaiva = LEAST(COALESCE(paattymispaiva, ?), ?),
                 passivoitu = COALESCE(passivoitu, now()),
                 passivoija_oid = COALESCE(passivoija_oid, ?),
                 muokattu = now(),
@@ -327,6 +330,10 @@ class YkiArvioijaKausiRepository(
     /**
      * Sailytysajan alkuhetki nollataan kun merkinta on jalleen voimassa: uusi kausi on uusi
      * rekisterointi, joka kumoaa aiemman passivoinnin.
+     *
+     * Ehto luetaan masterista ja ohittaa passivoidut kaudet. Tanaan katkaistu kausi on
+     * paattymispaivan inklusiivisuuden takia viela tanaan AKTIIVINEN, joten projektiosta luettuna
+     * mika tahansa saman paivan muokkaus pyyhkisi juuri asetetun leiman.
      */
     @WithSpan
     fun poistaPassivointileimaJosAktiivinen(
@@ -339,9 +346,11 @@ class YkiArvioijaKausiRepository(
             SET passivoitu = NULL
             WHERE id = :arvioijaId
               AND EXISTS (
-                  SELECT 1 FROM yki_arviointioikeus
-                  WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id
-                    AND ${Rekisterointitila.SQL} <> '${Rekisterointitila.PASSIVOITU}'
+                  SELECT 1 FROM yki_arvioija_arviointikausi kausi
+                  WHERE kausi.arvioija_id = yki_arvioija.id
+                    AND kausi.passivoitu IS NULL
+                    AND kausi.alkupaiva <= :tanaan
+                    AND (kausi.paattymispaiva IS NULL OR kausi.paattymispaiva >= :tanaan)
               )
             """.trimIndent(),
             mapOf("arvioijaId" to arvioijaId, "tanaan" to tanaan),

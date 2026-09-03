@@ -84,7 +84,7 @@ class YkiArvioijaService(
                     tekija,
                     odotettuMuokkaushetki,
                 ).flatMap { id ->
-                    kausiRepository.asetaAshaNumero(
+                    kausiRepository.viimeisteleKausi(
                         id,
                         validoitu.kaudenAlkupaiva,
                         validoitu.ashaNumero,
@@ -126,9 +126,11 @@ class YkiArvioijaService(
                 passivoitu = olemassaoleva.passivoitu ?: timeService.now().atOffset(ZoneOffset.UTC),
                 arviointioikeudet =
                     olemassaoleva.arviointioikeudet.map { oikeus ->
+                        // Alkupaivaan ei kosketa: passivoiKaudet ei koske siihen masterissa
+                        // kaan, ja jos ne eroavat, tallennan synkronoima kausi ei osu mihinkaan
+                        // olemassa olevaan ja syntyy haamukausi.
                         oikeus.copy(
                             tila = null,
-                            kaudenAlkupaiva = oikeus.kaudenAlkupaiva?.let { minOf(it, tanaan) },
                             kaudenPaattymispaiva = minOf(oikeus.kaudenPaattymispaiva ?: tanaan, tanaan),
                         )
                     },
