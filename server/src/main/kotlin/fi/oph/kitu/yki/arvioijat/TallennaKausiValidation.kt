@@ -41,6 +41,7 @@ class TallennaKausiValidation(
 
     override fun ValidationRaise.validateAfterEnrichment(value: TallennaKausi) {
         accumulate {
+            accumulating { validatePaivienJarjestys(value) }
             accumulating { validateEiPaallekkaisyytta(value) }
         }
     }
@@ -52,6 +53,21 @@ class TallennaKausiValidation(
             ValidationError(
                 listOf("arviointioikeus"),
                 "Vanhentunutta tutkintokieltä ei voi lisätä arviointikaudelle",
+            )
+        }
+    }
+
+    /**
+     * Katkaistun kauden alkupaivan muokkaus voi siirtaa sen paattymispaivan ohi: paattymispaiva
+     * sailyy passivoituna, alkupaiva ei. Kannassa ei ole jarjestysehtoa, koska tuodussa datassa on
+     * rivaeja jotka rikkoisivat sen.
+     */
+    private fun Raise<ValidationError>.validatePaivienJarjestys(value: TallennaKausi) {
+        val paattymispaiva = value.paattymispaiva ?: return
+        ensure(!paattymispaiva.isBefore(value.alkupaiva)) {
+            ValidationError(
+                listOf("alkupaiva"),
+                "Kauden alkupäivä ei voi olla päättymispäivän jälkeen",
             )
         }
     }

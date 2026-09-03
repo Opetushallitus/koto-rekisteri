@@ -247,6 +247,33 @@ class YkiArvioijaLisaysTest(
     }
 
     @Test
+    fun `jatkokausi ilman ASHA-numeroa ei peri edellisen kauden viitetta`() {
+        tallennaOlemassaolevaMerkinta()
+
+        mockMvc
+            .perform(
+                post("/yki/arvioijat/uusi")
+                    .session(session())
+                    .with(csrf())
+                    .param("arvioijaOid", petronOid)
+                    .param("sukunimi", "Kivinen-Testi")
+                    .param("etunimet", "Petro Testi")
+                    .param("katuosoite", "Kivinenkatu 2 A 3")
+                    .param("postinumero", "00100")
+                    .param("postitoimipaikka", "HELSINKI")
+                    .param("kaudenAlkupaiva", "2026-03-01")
+                    .param("arviointioikeus", "FIN:PT"),
+            ).andExpect(status().isSeeOther)
+
+        val id = repository.findByArvioijaOid(Oid.parse(petronOid).getOrThrow())!!.id!!.toInt()
+
+        assertNull(
+            kausiRepository.findArviointioikeudet(id).single().ashaNumero,
+            "projektio seuraa voimassa olevaa kautta, jolla ei ole paatosviitetta",
+        )
+    }
+
+    @Test
     fun `lisayslomakkeelta ei voi kirjata paallekkaista kautta`() {
         tallennaOlemassaolevaMerkinta()
 
@@ -304,7 +331,7 @@ class YkiArvioijaLisaysTest(
 
     private fun tallennaOlemassaolevaMerkinta(oid: String = petronOid): Int =
         tallennaMerkinta(oid).also { id ->
-            kausiRepository.asetaAshaNumero(id, LocalDate.of(2020, 1, 1), "OPH-9-2020", LocalDate.of(2026, 6, 1))
+            kausiRepository.viimeisteleKausi(id, LocalDate.of(2020, 1, 1), "OPH-9-2020", LocalDate.of(2026, 6, 1))
         }
 
     private fun tallennaMerkinta(oid: String): Int =
