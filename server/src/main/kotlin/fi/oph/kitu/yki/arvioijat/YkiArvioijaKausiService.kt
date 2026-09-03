@@ -91,6 +91,7 @@ class YkiArvioijaKausiService(
                     validoitu.alkupaiva,
                     validoitu.paattymispaiva,
                     validoitu.arviointioikeudet,
+                    validoitu.ashaNumero,
                     tekija,
                 )
             kirjaa(arvioijaId, kausiId, Kausitoimenpide.LISAYS, tekija)
@@ -112,6 +113,7 @@ class YkiArvioijaKausiService(
                 validoitu.alkupaiva,
                 validoitu.paattymispaiva,
                 validoitu.arviointioikeudet,
+                validoitu.ashaNumero,
                 tekija,
             )
             kirjaa(arvioijaId, kausiId, Kausitoimenpide.MUOKKAUS, tekija)

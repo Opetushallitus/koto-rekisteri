@@ -132,6 +132,7 @@ class YkiArvioijaKausiViewController(
         kausiId = kausiId,
         alkupaiva = alkupaiva,
         arviointioikeudet = form.arviointioikeudet(),
+        ashaNumero = form.ashaNumeroTrimmattuna(),
     )
 
     /** Lomakkeeton toiminto ei voi nayttaa kenttavirhetta, joten virhe kerrotaan flash-viestina. */

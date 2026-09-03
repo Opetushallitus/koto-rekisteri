@@ -35,7 +35,6 @@ data class TallennaArvioija(
             katuosoite = katuosoite,
             postinumero = postinumero,
             postitoimipaikka = postitoimipaikka,
-            ashaNumero = ashaNumero,
             arviointioikeudet =
                 arviointioikeudet.map { oikeus ->
                     YkiArviointioikeusEntity(
@@ -85,6 +84,7 @@ data class TallennaKausi(
     val kausiId: Int?,
     val alkupaiva: LocalDate,
     val arviointioikeudet: List<Kausioikeus>,
+    val ashaNumero: String?,
     val paattymispaiva: LocalDate? = null,
 )
 
@@ -100,5 +100,4 @@ data class PaivitaArvioijanTiedot(
     val katuosoite: String,
     val postinumero: String,
     val postitoimipaikka: String,
-    val ashaNumero: String?,
 )

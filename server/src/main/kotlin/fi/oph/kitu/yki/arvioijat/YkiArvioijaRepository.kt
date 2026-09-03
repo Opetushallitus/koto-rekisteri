@@ -113,7 +113,8 @@ class CustomYkiArvioijaRepositoryImpl(
                    yki_arviointioikeus.kauden_alkupaiva,
                    yki_arviointioikeus.kauden_paattymispaiva,
                    yki_arviointioikeus.jatkorekisterointi,
-                   yki_arviointioikeus.ensimmainen_rekisterointipaiva
+                   yki_arviointioikeus.ensimmainen_rekisterointipaiva,
+                   yki_arviointioikeus.asha_numero
             FROM yki_arvioija
             JOIN yki_arviointioikeus ON yki_arvioija.id = yki_arviointioikeus.arvioija_id
             """.trimIndent()
@@ -179,12 +180,11 @@ class CustomYkiArvioijaRepositoryImpl(
                 "NULL"
             }
 
-        // ASHA-numero ja passivointihetki syntyvat kitussa. Solkin payload ei kanna niita,
-        // joten EXCLUDED-arvo olisi aina tyhja ja pyyhkisi ne.
+        // Passivointihetki syntyy kitussa. Solkin payload ei kanna sita, joten EXCLUDED-arvo
+        // olisi aina tyhja ja pyyhkisi sen.
         val kitunOmatKentat =
             if (lahde == Tallennuslahde.KITU) {
                 """
-                asha_numero = EXCLUDED.asha_numero,
                 passivoitu = EXCLUDED.passivoitu,
                 """.trimIndent()
             } else {
@@ -202,7 +202,6 @@ class CustomYkiArvioijaRepositoryImpl(
                 add(arvioija.katuosoite)
                 add(arvioija.postinumero)
                 add(arvioija.postitoimipaikka)
-                add(arvioija.ashaNumero)
                 add(arvioija.passivoitu)
                 add(tekija?.toString())
                 add(tekija?.toString())
@@ -221,7 +220,6 @@ class CustomYkiArvioijaRepositoryImpl(
                     katuosoite,
                     postinumero,
                     postitoimipaikka,
-                    asha_numero,
                     passivoitu,
                     luotu,
                     luoja_oid,
@@ -230,7 +228,7 @@ class CustomYkiArvioijaRepositoryImpl(
                     solkiin_lahetetty,
                     solki_lahetysvirhe,
                     solki_lahetysyritykset
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, now(), ?, $uudenRivinLahetysleima, NULL, 0)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?, now(), ?, $uudenRivinLahetysleima, NULL, 0)
                 ON CONFLICT (arvioija_oid) DO UPDATE
                 SET
                     -- henkilotunnus paivitetaan EXCLUDED-arvosta, jotta validoinnin

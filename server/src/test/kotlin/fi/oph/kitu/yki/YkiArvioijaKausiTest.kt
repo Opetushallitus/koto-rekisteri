@@ -300,6 +300,28 @@ class YkiArvioijaKausiTest(
     }
 
     @Test
+    fun `jokaisella kaudella on oma hallintopaatoksensa`() {
+        val id = idOf(petro)
+
+        timeService.runWithFixedClock(HETKI) {
+            lisaaKausi(id, "2026-02-01", "FIN:PT", ashaNumero = "OPH-77-2026")
+
+            val kaudet = kausiRepository.findKaudet(id).associateBy { it.alkupaiva }
+            assertEquals("OPH-77-2026", kaudet.getValue(LocalDate.of(2026, 2, 1)).ashaNumero)
+            assertNull(
+                kaudet.getValue(VANHA_ALKU).ashaNumero,
+                "aiemman kauden paatosviitetta ei monisteta uudelle kaudelle",
+            )
+
+            assertEquals(
+                "OPH-77-2026",
+                kausiRepository.findArviointioikeudet(id).single().ashaNumero,
+                "projektio kantaa voimassa olevan kauden paatosviitteen",
+            )
+        }
+    }
+
+    @Test
     fun `toimenpiteet kirjataan muutoslokiin`() {
         val id = idOf(petro)
 
@@ -346,12 +368,14 @@ class YkiArvioijaKausiTest(
         id: Int,
         alkupaiva: String,
         vararg oikeudet: String,
+        ashaNumero: String? = null,
     ) {
         val request =
             post("/yki/arvioijat/$id/kaudet")
                 .session(session())
                 .with(csrf())
                 .param("alkupaiva", alkupaiva)
+        ashaNumero?.let { request.param("ashaNumero", it) }
         oikeudet.forEach { request.param("arviointioikeus", it) }
         mockMvc.perform(request).andExpect(status().isSeeOther)
     }

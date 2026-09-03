@@ -93,11 +93,14 @@ describe("Yleisen kielitutkinnon arvioijan arviointikaudet", () => {
 
     await page.getByTestId("uusiKausi").click()
     await page.getByTestId("alkupaiva-input").fill(isoPaiva(1))
+    await page.getByTestId("ashaNumero-input").fill("OPH-77-2026")
     await page.getByTestId("arviointioikeus-FIN:PT").check()
     await page.getByTestId("tallennaKausi").click()
 
     const kaudet = page.getByTestId("arviointikaudet")
     await expect(kaudet).toContainText(fiPaiva(isoPaiva(1)))
+    // Hallintopäätöksen viite kuuluu kaudelle, joten se näkyy kauden rivillä.
+    await expect(kaudet).toContainText("OPH-77-2026")
 
     await page.getByTestId("poistaKausi").first().click()
     await avoinDialogi(page).getByTestId("vahvistaKaudenPoisto").click()
