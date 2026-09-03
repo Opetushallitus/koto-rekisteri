@@ -464,6 +464,69 @@ object UiText {
                     )
             val takaisinListaan: LocalizedString
                 get() = tr("yki.arvioija.takaisinListaan", fi = "Takaisin arvioijalistaan")
+
+            object Kausi {
+                val uusi: LocalizedString
+                    get() = tr("yki.arvioija.kausi.uusi", fi = "Lisää rekisteröintikausi")
+                val muokkaa: LocalizedString get() = tr("yki.arvioija.kausi.muokkaa", fi = "Muokkaa")
+                val passivoi: LocalizedString get() = tr("yki.arvioija.kausi.passivoi", fi = "Passivoi")
+                val poista: LocalizedString get() = tr("yki.arvioija.kausi.poista", fi = "Poista")
+                val peruuta: LocalizedString get() = tr("yki.arvioija.kausi.peruuta", fi = "Peruuta")
+                val tallenna: LocalizedString get() = tr("yki.arvioija.kausi.tallenna", fi = "Tallenna")
+                val toiminnot: LocalizedString get() = tr("yki.arvioija.kausi.toiminnot", fi = "Toiminnot")
+                val toimenpide: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide", fi = "Toimenpide")
+                val lisays: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide.lisays", fi = "Lisäys")
+                val muokkaus: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide.muokkaus", fi = "Muokkaus")
+                val passivointi: LocalizedString
+                    get() = tr("yki.arvioija.kausi.toimenpide.passivointi", fi = "Passivointi")
+                val poisto: LocalizedString get() = tr("yki.arvioija.kausi.toimenpide.poisto", fi = "Poisto")
+                val tallennus: LocalizedString
+                    get() = tr("yki.arvioija.kausi.toimenpide.tallennus", fi = "Tallennus")
+                val eiKausia: LocalizedString
+                    get() = tr("yki.arvioija.kausi.eiKausia", fi = "Ei kirjattuja rekisteröintikausia.")
+                val muokkaaOtsikko: LocalizedString
+                    get() = tr("yki.arvioija.kausi.muokkaaOtsikko", fi = "Muokkaa rekisteröintikautta")
+                val naytaMuutoshistoria: LocalizedString
+                    get() = tr("yki.arvioija.kausi.naytaMuutoshistoria", fi = "Näytä muutoshistoria")
+                val poistaVahvistus: LocalizedString
+                    get() =
+                        tr(
+                            "yki.arvioija.kausi.poistaVahvistus",
+                            fi =
+                                "Rekisteröintikausi ja sen arviointioikeudet poistetaan pysyvästi. " +
+                                    "Käytä tätä vain jos kausi on kirjattu väärälle henkilölle.",
+                        )
+                val passivoiVahvistus: LocalizedString
+                    get() =
+                        tr(
+                            "yki.arvioija.kausi.passivoiVahvistus",
+                            fi =
+                                "Rekisteröintikausi päätetään tähän päivään. " +
+                                    "Toimintoa ei voi perua käyttöliittymästä.",
+                        )
+                val lisatty: LocalizedString
+                    get() = tr("yki.arvioija.kausi.lisatty", fi = "Rekisteröintikausi lisättiin.")
+                val paivitetty: LocalizedString
+                    get() = tr("yki.arvioija.kausi.paivitetty", fi = "Rekisteröintikausi päivitettiin.")
+                val passivoitu: LocalizedString
+                    get() = tr("yki.arvioija.kausi.passivoitu", fi = "Rekisteröintikausi passivoitiin.")
+                val poistettu: LocalizedString
+                    get() = tr("yki.arvioija.kausi.poistettu", fi = "Rekisteröintikausi poistettiin.")
+                val eiAktiivinen: LocalizedString
+                    get() =
+                        tr(
+                            "yki.arvioija.kausi.eiAktiivinen",
+                            fi = "Vain aktiivisen rekisteröintikauden voi passivoida.",
+                        )
+                val viimeistaEiVoiPoistaa: LocalizedString
+                    get() =
+                        tr(
+                            "yki.arvioija.kausi.viimeistaEiVoiPoistaa",
+                            fi =
+                                "Viimeistä rekisteröintikautta ei voi poistaa. " +
+                                    "Merkitse arvioija passiiviseksi sen sijaan.",
+                        )
+            }
         }
 
         object Taso {

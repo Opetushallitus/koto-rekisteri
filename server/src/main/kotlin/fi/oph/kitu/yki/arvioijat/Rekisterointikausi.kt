@@ -1,5 +1,7 @@
 package fi.oph.kitu.yki.arvioijat
 
+import fi.oph.kitu.i18n.LocalizedString
+import fi.oph.kitu.i18n.UiText
 import fi.oph.kitu.jdbc.getTypedArray
 import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.oid.getOidOrNull
@@ -83,4 +85,15 @@ enum class Kausitoimenpide {
     PASSIVOINTI,
     POISTO,
     TALLENNUS,
+    ;
+
+    val nimi: LocalizedString
+        get() =
+            when (this) {
+                LISAYS -> UiText.Yki.Arvioija.Kausi.lisays
+                MUOKKAUS -> UiText.Yki.Arvioija.Kausi.muokkaus
+                PASSIVOINTI -> UiText.Yki.Arvioija.Kausi.passivointi
+                POISTO -> UiText.Yki.Arvioija.Kausi.poisto
+                TALLENNUS -> UiText.Yki.Arvioija.Kausi.tallennus
+            }
 }

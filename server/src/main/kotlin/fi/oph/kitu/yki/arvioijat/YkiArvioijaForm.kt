@@ -104,14 +104,51 @@ data class ArvioijaFormData(
         fun valinta(
             kieli: Tutkintokieli,
             taso: Tutkintotaso,
-        ): String = "${kieli.name}:${taso.name}"
+        ): String = Arviointioikeusvalinta.koodaa(kieli, taso)
 
-        private fun parseValinta(arvo: String): Pair<Tutkintokieli, Tutkintotaso>? {
-            val osat = arvo.split(":")
-            if (osat.size != 2) return null
-            val kieli = Tutkintokieli.entries.firstOrNull { it.name == osat[0] } ?: return null
-            val taso = Tutkintotaso.entries.firstOrNull { it.name == osat[1] } ?: return null
-            return kieli to taso
-        }
+        private fun parseValinta(arvo: String): Pair<Tutkintokieli, Tutkintotaso>? = Arviointioikeusvalinta.pura(arvo)
+    }
+}
+
+/** Arviointioikeusmatriisin valintaruudun arvo, esim. `"FIN:PT"`. */
+object Arviointioikeusvalinta {
+    fun koodaa(
+        kieli: Tutkintokieli,
+        taso: Tutkintotaso,
+    ): String = "${kieli.name}:${taso.name}"
+
+    fun pura(arvo: String): Pair<Tutkintokieli, Tutkintotaso>? {
+        val osat = arvo.split(":")
+        if (osat.size != 2) return null
+        val kieli = Tutkintokieli.entries.firstOrNull { it.name == osat[0] } ?: return null
+        val taso = Tutkintotaso.entries.firstOrNull { it.name == osat[1] } ?: return null
+        return kieli to taso
+    }
+
+    fun oikeudet(valinnat: List<String>?): List<Kausioikeus> =
+        valinnat
+            .orEmpty()
+            .mapNotNull(::pura)
+            .groupBy({ it.first }, { it.second })
+            .map { (kieli, tasot) -> Kausioikeus(kieli, tasot.toSet()) }
+}
+
+data class KausiFormData(
+    val alkupaiva: LocalDate? = null,
+    val arviointioikeus: List<String>? = null,
+) {
+    fun laskettuPaattymispaiva(): LocalDate? = alkupaiva?.let(Rekisterikausi::paattymispaiva)
+
+    fun arviointioikeudet(): List<Kausioikeus> = Arviointioikeusvalinta.oikeudet(arviointioikeus)
+
+    companion object {
+        fun of(kausi: YkiRekisterointikausiEntity): KausiFormData =
+            KausiFormData(
+                alkupaiva = kausi.alkupaiva,
+                arviointioikeus =
+                    kausi.oikeudet.flatMap { oikeus ->
+                        oikeus.tasot.map { taso -> Arviointioikeusvalinta.koodaa(oikeus.kieli, taso) }
+                    },
+            )
     }
 }

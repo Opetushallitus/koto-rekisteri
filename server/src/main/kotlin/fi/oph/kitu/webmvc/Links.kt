@@ -11,6 +11,8 @@ import fi.oph.kitu.vkt.VktViewController
 import fi.oph.kitu.yki.YkiApiController
 import fi.oph.kitu.yki.YkiViewController
 import fi.oph.kitu.yki.arvioijat.ArvioijaHakuFormData
+import fi.oph.kitu.yki.arvioijat.KausiFormData
+import fi.oph.kitu.yki.arvioijat.YkiArvioijaKausiViewController
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaParams
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaViewController
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
@@ -101,6 +103,48 @@ object Links {
 
         fun lahetaArvioijaSolkiin(id: Int): String =
             linkTo(methodOn(YkiArvioijaViewController::class.java).lahetaArvioijaSolkiin(id, null)).toString()
+
+        fun kaudet(id: Int): String =
+            linkTo(
+                methodOn(YkiArvioijaKausiViewController::class.java).luoKausi(id, KausiFormData(), null),
+            ).toString()
+
+        fun uusiKausi(id: Int): String =
+            linkTo(
+                methodOn(YkiArvioijaKausiViewController::class.java).uusiKausiView(id, KausiFormData()),
+            ).toString()
+
+        fun kausi(
+            id: Int,
+            kausiId: Int,
+        ): String =
+            linkTo(
+                methodOn(YkiArvioijaKausiViewController::class.java).paivitaKausi(id, kausiId, KausiFormData(), null),
+            ).toString()
+
+        fun muokkaaKautta(
+            id: Int,
+            kausiId: Int,
+        ): String =
+            linkTo(
+                methodOn(YkiArvioijaKausiViewController::class.java).muokkaaKausiView(id, kausiId),
+            ).toString()
+
+        fun passivoiKausi(
+            id: Int,
+            kausiId: Int,
+        ): String =
+            linkTo(
+                methodOn(YkiArvioijaKausiViewController::class.java).passivoiKausi(id, kausiId, null),
+            ).toString()
+
+        fun poistaKausi(
+            id: Int,
+            kausiId: Int,
+        ): String =
+            linkTo(
+                methodOn(YkiArvioijaKausiViewController::class.java).poistaKausi(id, kausiId, null),
+            ).toString()
 
         fun muokkaaArvioijaa(id: Int): String =
             linkTo(methodOn(YkiArvioijaViewController::class.java).muokkaaArvioijaaView(id)).toString()

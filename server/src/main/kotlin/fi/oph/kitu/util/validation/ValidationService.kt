@@ -11,6 +11,8 @@ import fi.oph.kitu.tiedontuontischema.YkiSuoritus
 import fi.oph.kitu.tiedontuontischema.YkiSuoritusValidation
 import fi.oph.kitu.yki.arvioijat.TallennaArvioija
 import fi.oph.kitu.yki.arvioijat.TallennaArvioijaValidation
+import fi.oph.kitu.yki.arvioijat.TallennaKausi
+import fi.oph.kitu.yki.arvioijat.TallennaKausiValidation
 import fi.oph.kitu.yki.arvioijat.YkiArvioija
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaValidation
 import org.springframework.stereotype.Service
@@ -22,6 +24,7 @@ final class ValidationService(
     val ykiSuoritus: YkiSuoritusValidation,
     val ykiArvioija: YkiArvioijaValidation,
     val tallennaArvioija: TallennaArvioijaValidation,
+    val tallennaKausi: TallennaKausiValidation,
 ) {
     fun <T : KielitutkinnonSuoritus> validateAndEnrich(hs: Henkilosuoritus<T>): ValidationResult<Henkilosuoritus<T>> =
         either {
@@ -49,6 +52,9 @@ final class ValidationService(
 
     fun validateAndEnrich(komento: TallennaArvioija): ValidationResult<TallennaArvioija> =
         either { with(tallennaArvioija) { validateAndEnrich(komento) } }
+
+    fun validateAndEnrich(komento: TallennaKausi): ValidationResult<TallennaKausi> =
+        either { with(tallennaKausi) { validateAndEnrich(komento) } }
 }
 
 fun <T> ValidationResult<T>.getOrThrow(): T =

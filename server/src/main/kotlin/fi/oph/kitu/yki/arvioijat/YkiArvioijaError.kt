@@ -22,6 +22,11 @@ sealed interface YkiArvioijaError {
 
     data object KauttaEiLoydy : YkiArvioijaError
 
+    /** Poisto jattaisi arvioijan ilman arviointioikeuksia, jolloin han katoaisi listanakymasta. */
+    data object ViimeistaKauttaEiVoiPoistaa : YkiArvioijaError
+
+    data object KausiEiOleAktiivinen : YkiArvioijaError
+
     /** Toinen kayttaja ehti tallentaa muutoksensa sen jalkeen kun lomake avattiin. */
     data object MuokattuSamanaikaisesti : YkiArvioijaError
 }
