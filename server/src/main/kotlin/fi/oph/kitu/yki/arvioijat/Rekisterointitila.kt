@@ -6,7 +6,7 @@ import fi.oph.kitu.i18n.UiText
 import java.time.LocalDate
 
 /**
- * Arviointioikeuden tila laskettuna rekisterointikauden paivista. Jarjestys vastaa [SQL]:n
+ * Arviointioikeuden tila laskettuna arviointikauden paivista. Jarjestys vastaa [SQL]:n
  * palauttamaa tekstijarjestysta, jotta listanakyman lajittelu on sama molemmissa.
  */
 enum class Rekisterointitila : Nimetty {
@@ -53,7 +53,7 @@ enum class Rekisterointitila : Nimetty {
         ): Rekisterointitila = laske(kausi.tila, kausi.kaudenAlkupaiva, kausi.kaudenPaattymispaiva, tanaan)
 
         fun laske(
-            kausi: YkiRekisterointikausiEntity,
+            kausi: YkiArviointikausiEntity,
             tanaan: LocalDate,
         ): Rekisterointitila = laske(null, kausi.alkupaiva, kausi.paattymispaiva, tanaan)
 

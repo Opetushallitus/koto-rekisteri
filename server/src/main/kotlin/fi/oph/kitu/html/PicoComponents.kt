@@ -7,6 +7,7 @@ import kotlinx.html.ARTICLE
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.article
+import kotlinx.html.div
 import kotlinx.html.fieldSet
 import kotlinx.html.option
 import kotlinx.html.section
@@ -56,6 +57,18 @@ fun FlowContent.itemSelect(
 // https://picocss.com/docs/group
 fun FlowContent.horizontalGroup(f: FlowContent.() -> Unit) {
     fieldSet {
+        attributes["role"] = "group"
+        f()
+    }
+}
+
+/**
+ * Vierekkaiset napit ja nappilinkit; fieldset-pohjainen [horizontalGroup] on lomakekenttia varten.
+ *
+ * https://picocss.com/docs/group
+ */
+fun FlowContent.buttonGroup(f: FlowContent.() -> Unit) {
+    div {
         attributes["role"] = "group"
         f()
     }

@@ -510,7 +510,7 @@ class CustomYkiArvioijaRepositoryImpl(
                         AND ${Rekisterointitila.SQL} <> '${Rekisterointitila.PASSIVOITU}'
                   )
               AND NOT EXISTS (
-                      SELECT 1 FROM yki_arvioija_rekisterointikausi kausi
+                      SELECT 1 FROM yki_arvioija_arviointikausi kausi
                       WHERE kausi.arvioija_id = yki_arvioija.id
                         AND (kausi.paattymispaiva IS NULL OR kausi.paattymispaiva >= :tanaan)
                   )

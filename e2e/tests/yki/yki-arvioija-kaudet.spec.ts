@@ -23,7 +23,7 @@ const TANAAN = new Intl.DateTimeFormat("fi-FI").format(new Date())
 const avoinDialogi = (page: import("@playwright/test").Page) =>
   page.locator("dialog[open]")
 
-describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
+describe("Yleisen kielitutkinnon arvioijan arviointikaudet", () => {
   beforeEach(async ({ db }) => {
     await db.withEmptyDatabase()
   })
@@ -54,7 +54,7 @@ describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
     await expect(ykiArvioijaLomakePage.viewMessage).toContainText(
       "päivitettiin",
     )
-    const kaudet = page.getByTestId("rekisterointikaudet")
+    const kaudet = page.getByTestId("arviointikaudet")
     await expect(kaudet).toContainText(fiPaiva(isoPaiva(2)))
     // Päättymispäivä on aina alkupäivä + 5 vuotta, joten se siirtyy mukana.
     await expect(kaudet).toContainText(fiPaiva(isoPaiva(-3)))
@@ -76,7 +76,7 @@ describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
     )
     // Kausi päättyy tähän päivään. Päättymispäivä on inklusiivinen, joten merkintä
     // lukee vielä tänään aktiiviseksi ja muuttuu passiiviseksi vasta huomenna.
-    await expect(page.getByTestId("rekisterointikaudet")).toContainText(TANAAN)
+    await expect(page.getByTestId("arviointikaudet")).toContainText(TANAAN)
   })
 
   test("väärälle henkilölle kirjattu kausi poistetaan, viimeistä ei voi poistaa", async ({
@@ -96,7 +96,7 @@ describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
     await page.getByTestId("arviointioikeus-FIN:PT").check()
     await page.getByTestId("tallennaKausi").click()
 
-    const kaudet = page.getByTestId("rekisterointikaudet")
+    const kaudet = page.getByTestId("arviointikaudet")
     await expect(kaudet).toContainText(fiPaiva(isoPaiva(1)))
 
     await page.getByTestId("poistaKausi").first().click()
@@ -145,6 +145,6 @@ describe("Yleisen kielitutkinnon arvioijan rekisteröintikaudet", () => {
     const sivu = ykiArvioijatPage.getPageContent()
     await expect(sivu.getByTestId("uusiKausi")).toHaveCount(0)
     await expect(sivu.getByTestId("muokkaaKautta")).toHaveCount(0)
-    await expect(sivu.getByTestId("rekisterointikaudet")).toBeVisible()
+    await expect(sivu.getByTestId("arviointikaudet")).toBeVisible()
   })
 })

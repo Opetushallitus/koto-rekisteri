@@ -106,7 +106,7 @@ data class YkiArviointioikeusEntity(
 
 /**
  * Yksi muutoslokirivi. Append-only: rivi kirjataan vain kun kausi tosiasiassa muuttuu. Kaudet
- * itse elavat [YkiRekisterointikausiEntity]-rivilla.
+ * itse elavat [YkiArviointikausiEntity]-rivilla.
  */
 @Table("yki_arvioija_kausi")
 data class YkiArvioijaKausiEntity(

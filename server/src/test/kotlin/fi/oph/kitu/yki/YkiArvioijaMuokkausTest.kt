@@ -6,7 +6,7 @@ import fi.oph.kitu.oid.Oid
 import fi.oph.kitu.security.Authority
 import fi.oph.kitu.security.cas.CasUserDetails
 import fi.oph.kitu.util.result.getOrThrow
-import fi.oph.kitu.yki.arvioijat.Rekisterikausi
+import fi.oph.kitu.yki.arvioijat.Arviointikausi
 import fi.oph.kitu.yki.arvioijat.Rekisterointitila
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaKausiRepository
@@ -476,14 +476,14 @@ class YkiArvioijaMuokkausTest(
     }
 
     @Test
-    fun `tietosivu nayttaa rekisterointikauden lasketun tilan`() {
+    fun `tietosivu nayttaa arviointikauden lasketun tilan`() {
         val id = idOf(petro)
 
         timeService.runWithFixedClock(HETKI) {
             uusiKausi(id, "2026-05-01", "FIN:PT")
 
             val tietosivu = html(get("/yki/arvioijat/$id").session(session()))
-            assertContains(tietosivu, """data-testid="rekisterointikaudet"""")
+            assertContains(tietosivu, """data-testid="arviointikaudet"""")
             assertContains(tietosivu, """data-testid="kausiTila"""")
             assertContains(tietosivu, "Aktiivinen")
         }
@@ -508,7 +508,7 @@ class YkiArvioijaMuokkausTest(
                         it.copy(
                             tila = YkiArvioijaTila.PASSIVOITU,
                             kaudenAlkupaiva = kaudenAlkupaiva,
-                            kaudenPaattymispaiva = Rekisterikausi.paattymispaiva(kaudenAlkupaiva),
+                            kaudenPaattymispaiva = Arviointikausi.paattymispaiva(kaudenAlkupaiva),
                         )
                     },
             ),
@@ -588,7 +588,7 @@ class YkiArvioijaMuokkausTest(
         timeService.runWithFixedClock(HETKI) { nappi = passivointiNappi(id) }
 
         assertContains(nappi, """aria-disabled="true"""", message = "paattynytta merkintaa ei passivoida uudelleen")
-        assertContains(nappi, "Rekisteröintikausi on päättynyt", message = "esto on perusteltava tooltipilla")
+        assertContains(nappi, "Arviointikausi on päättynyt", message = "esto on perusteltava tooltipilla")
         assertNull(
             repository.findArvioijaById(id)!!.passivoitu,
             "kauden umpeutuminen ei ole passivointihetki: sailytysaika lasketaan kauden paattymisesta",

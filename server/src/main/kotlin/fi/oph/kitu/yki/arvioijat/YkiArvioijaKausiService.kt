@@ -65,7 +65,7 @@ class YkiArvioijaKausiService(
     }
 
     @WithSpan
-    fun haeKaudet(arvioijaId: Int): List<YkiRekisterointikausiEntity> = kausiRepository.findKaudet(arvioijaId)
+    fun haeKaudet(arvioijaId: Int): List<YkiArviointikausiEntity> = kausiRepository.findKaudet(arvioijaId)
 
     @WithSpan
     fun haeMuutosloki(arvioijaId: Int): List<YkiArvioijaKausiEntity> = kausiRepository.findMuutosloki(arvioijaId)
@@ -75,8 +75,7 @@ class YkiArvioijaKausiService(
     fun haeKausi(
         arvioijaId: Int,
         kausiId: Int,
-    ): YkiRekisterointikausiEntity? =
-        kausiRepository.findKausi(kausiId)?.takeIf { it.arvioijaId?.toInt() == arvioijaId }
+    ): YkiArviointikausiEntity? = kausiRepository.findKausi(kausiId)?.takeIf { it.arvioijaId?.toInt() == arvioijaId }
 
     @WithSpan
     @Transactional

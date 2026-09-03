@@ -322,8 +322,9 @@ class YkiArvioijaKausiTest(
                     .andReturn()
                     .response.contentAsString
 
-            assertContains(html, """data-testid="rekisterointikaudet"""")
+            assertContains(html, """data-testid="arviointikaudet"""")
             assertContains(html, """data-testid="uusiKausi"""")
+            assertContains(html, """role="group"""", message = "vierekkaiset napit ryhmitellaan")
             assertContains(html, """data-testid="naytaMuutoshistoria"""")
             assertFalse(
                 html.contains("""data-testid="arviointioikeusTila""""),

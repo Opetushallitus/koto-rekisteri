@@ -1,4 +1,4 @@
--- Rekisterointikaudesta tulee virkailijan hallittava olio: han voi lisata kauden, muokata sen
+-- Arviointikaudesta tulee virkailijan hallittava olio: han voi lisata kauden, muokata sen
 -- alkupaivaa, passivoida sen ja poistaa vaaralle henkilolle kirjatun kauden. Se vaatii kaudelle
 -- pysyvan tunnisteen, jollaista append-only-loki yki_arvioija_kausi ei tarjoa.
 --
@@ -23,7 +23,7 @@ FROM (SELECT arvioija_id, min(ensimmainen_rekisterointipaiva) AS paiva
       GROUP BY arvioija_id) vanhin
 WHERE yki_arvioija.id = vanhin.arvioija_id;
 
-CREATE TABLE yki_arvioija_rekisterointikausi
+CREATE TABLE yki_arvioija_arviointikausi
 (
     id             INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     arvioija_id    INTEGER     NOT NULL REFERENCES yki_arvioija (id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -39,21 +39,21 @@ CREATE TABLE yki_arvioija_rekisterointikausi
     -- Paivien jarjestysta ei rajoiteta kannassa: tuodussa datassa on rivaeja joilla
     -- paattymispaiva edeltaa alkupaivaa, ja kovaehto tekisi niista korjauskelvottomia.
     -- Jarjestys tarkistetaan validoinnissa uusille ja muokatuille kausille.
-    CONSTRAINT yki_arvioija_rekisterointikausi_unique UNIQUE NULLS NOT DISTINCT
+    CONSTRAINT yki_arvioija_arviointikausi_unique UNIQUE NULLS NOT DISTINCT
         (arvioija_id, alkupaiva, paattymispaiva)
 );
 
-CREATE INDEX yki_arvioija_rekisterointikausi_arvioija_idx
-    ON yki_arvioija_rekisterointikausi (arvioija_id, alkupaiva DESC);
+CREATE INDEX yki_arvioija_arviointikausi_arvioija_idx
+    ON yki_arvioija_arviointikausi (arvioija_id, alkupaiva DESC);
 
-CREATE TABLE yki_arvioija_rekisterointikausi_oikeus
+CREATE TABLE yki_arvioija_arviointikausi_oikeus
 (
     id       INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    kausi_id INTEGER           NOT NULL REFERENCES yki_arvioija_rekisterointikausi (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    kausi_id INTEGER           NOT NULL REFERENCES yki_arvioija_arviointikausi (id) ON DELETE CASCADE ON UPDATE CASCADE,
     kieli    yki_tutkintokieli NOT NULL,
     tasot    TEXT[]            NOT NULL,
 
-    CONSTRAINT yki_arvioija_rekisterointikausi_oikeus_unique UNIQUE (kausi_id, kieli)
+    CONSTRAINT yki_arvioija_arviointikausi_oikeus_unique UNIQUE (kausi_id, kieli)
 );
 
 -- Backfill. Nykytila voittaa lokin, loki taydentaa historian.
@@ -101,11 +101,11 @@ WITH lahde AS (SELECT arvioija_id,
                FROM oikeus
                GROUP BY arvioija_id, kauden_alkupaiva, kauden_paattymispaiva),
      lisatty AS (
-         INSERT INTO yki_arvioija_rekisterointikausi (arvioija_id, alkupaiva, paattymispaiva)
+         INSERT INTO yki_arvioija_arviointikausi (arvioija_id, alkupaiva, paattymispaiva)
              SELECT arvioija_id, kauden_alkupaiva, kauden_paattymispaiva FROM kausi
              RETURNING id, arvioija_id, alkupaiva, paattymispaiva)
 INSERT
-INTO yki_arvioija_rekisterointikausi_oikeus (kausi_id, kieli, tasot)
+INTO yki_arvioija_arviointikausi_oikeus (kausi_id, kieli, tasot)
 SELECT lisatty.id,
        oikeus.kieli,
        (SELECT array_agg(taso ORDER BY taso) FROM unnest(oikeus.tasot) AS taso)
@@ -117,18 +117,18 @@ FROM lisatty
 
 -- Kasin passivoidun merkinnan viimeisin kausi merkitaan passivoiduksi, jottei alkupaivan
 -- myohempi korjaus laske paattymispaivaa uudelleen ja elvyta merkintaa.
-UPDATE yki_arvioija_rekisterointikausi kausi
+UPDATE yki_arvioija_arviointikausi kausi
 SET passivoitu = arvioija.passivoitu
 FROM yki_arvioija arvioija
 WHERE kausi.arvioija_id = arvioija.id
   AND arvioija.passivoitu IS NOT NULL
   AND kausi.alkupaiva = (SELECT max(alkupaiva)
-                         FROM yki_arvioija_rekisterointikausi uusin
+                         FROM yki_arvioija_arviointikausi uusin
                          WHERE uusin.arvioija_id = arvioija.id);
 
-COMMENT ON TABLE yki_arvioija_rekisterointikausi IS 'Arvioijan rekisterointikaudet. Master: virkailija lisaa, muokkaa, passivoi ja poistaa naita. Kausi on arvioijakohtainen, joten kaikilla kielilla on sama kausi.';
-COMMENT ON COLUMN yki_arvioija_rekisterointikausi.paattymispaiva IS 'Yleensa alkupaiva + 5 vuotta. Passivointi katkaisee sen, ja NULL esiintyy vain historiadatassa jolta paiva puuttuu.';
-COMMENT ON COLUMN yki_arvioija_rekisterointikausi.passivoitu IS 'Asetettu jos kausi katkaistiin kesken kauden. Erottaa katkaistun kauden luonnollisesti paattyneesta, jotta alkupaivan muokkaus ei laske paattymispaivaa uudelleen.';
-COMMENT ON TABLE yki_arvioija_rekisterointikausi_oikeus IS 'Yhteen rekisterointikauteen kuuluvat arviointioikeudet kielittain.';
+COMMENT ON TABLE yki_arvioija_arviointikausi IS 'Arvioijan arviointikaudet. Master: virkailija lisaa, muokkaa, passivoi ja poistaa naita. Kausi on arvioijakohtainen, joten kaikilla kielilla on sama kausi.';
+COMMENT ON COLUMN yki_arvioija_arviointikausi.paattymispaiva IS 'Yleensa alkupaiva + 5 vuotta. Passivointi katkaisee sen, ja NULL esiintyy vain historiadatassa jolta paiva puuttuu.';
+COMMENT ON COLUMN yki_arvioija_arviointikausi.passivoitu IS 'Asetettu jos kausi katkaistiin kesken kauden. Erottaa katkaistun kauden luonnollisesti paattyneesta, jotta alkupaivan muokkaus ei laske paattymispaivaa uudelleen.';
+COMMENT ON TABLE yki_arvioija_arviointikausi_oikeus IS 'Yhteen arviointikauteen kuuluvat arviointioikeudet kielittain.';
 COMMENT ON COLUMN yki_arvioija.arvioijan_ensimmainen_rekisterointipaiva IS 'Arvioijan ensimmainen rekisterointipaiva. Nimetty erikseen yki_arviointioikeus-sarakkeesta, koska yki_arvioija.* ja liitos samannimiseen sarakkeeseen osuisivat paallekkain. Siirretty riveilta, koska tieto on arvioijakohtainen ja voi olla vanhempi kuin yksikaan tallennettu kausi.';
-COMMENT ON TABLE yki_arviointioikeus IS 'DERIVED. Projektio yki_arvioija_rekisterointikausi-taulusta: arvioijan voimassa oleva kausi kielittain. Kirjoitetaan uusiksi kausimuutoksen jalkeen. Legacy-kielten rivit ovat jaadytettya tuontidataa eivatka kuulu projektioon.';
+COMMENT ON TABLE yki_arviointioikeus IS 'DERIVED. Projektio yki_arvioija_arviointikausi-taulusta: arvioijan voimassa oleva kausi kielittain. Kirjoitetaan uusiksi kausimuutoksen jalkeen. Legacy-kielten rivit ovat jaadytettya tuontidataa eivatka kuulu projektioon.';

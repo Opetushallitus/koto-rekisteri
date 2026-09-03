@@ -28,8 +28,8 @@ object Sailytysaika {
                 ),
                 (
                     SELECT max(paattymispaiva)
-                    FROM yki_arvioija_rekisterointikausi
-                    WHERE yki_arvioija_rekisterointikausi.arvioija_id = yki_arvioija.id
+                    FROM yki_arvioija_arviointikausi
+                    WHERE yki_arvioija_arviointikausi.arvioija_id = yki_arvioija.id
                 )
             )
         )

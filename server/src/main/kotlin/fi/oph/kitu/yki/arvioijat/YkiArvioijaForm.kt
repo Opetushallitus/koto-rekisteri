@@ -28,7 +28,7 @@ data class ArvioijaFormData(
     val muokattu: OffsetDateTime? = null,
     val arviointioikeus: List<String>? = null,
 ) {
-    fun laskettuPaattymispaiva(): LocalDate? = kaudenAlkupaiva?.let(Rekisterikausi::paattymispaiva)
+    fun laskettuPaattymispaiva(): LocalDate? = kaudenAlkupaiva?.let(Arviointikausi::paattymispaiva)
 
     fun arviointioikeudet(): List<TallennaArvioija.Arviointioikeus> =
         arviointioikeus
@@ -149,12 +149,12 @@ data class KausiFormData(
     val alkupaiva: LocalDate? = null,
     val arviointioikeus: List<String>? = null,
 ) {
-    fun laskettuPaattymispaiva(): LocalDate? = alkupaiva?.let(Rekisterikausi::paattymispaiva)
+    fun laskettuPaattymispaiva(): LocalDate? = alkupaiva?.let(Arviointikausi::paattymispaiva)
 
     fun arviointioikeudet(): List<Kausioikeus> = Arviointioikeusvalinta.oikeudet(arviointioikeus)
 
     companion object {
-        fun of(kausi: YkiRekisterointikausiEntity): KausiFormData =
+        fun of(kausi: YkiArviointikausiEntity): KausiFormData =
             KausiFormData(
                 alkupaiva = kausi.alkupaiva,
                 arviointioikeus =
