@@ -262,6 +262,7 @@ class YkiArvioijaViewController(
                 turvakielto = arvioijaService.haeTurvakielto(arvioija.arvioijaOid),
                 flash = viewMessage?.consume(),
                 muokkausKaytossa = asetukset.muokkausKaytossa,
+                integraatioKaytossa = asetukset.integraatioKaytossa,
                 tanaan = timeService.today(),
             ),
         )
