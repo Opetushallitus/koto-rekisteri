@@ -75,3 +75,15 @@ data class ArvioijanEsitaytto(
     val turvakielto: Turvakieltotieto,
     val olemassaolevaMerkinta: YkiArvioijaEntity?,
 )
+
+/**
+ * Yhden rekisterointikauden tallennus. [kausiId] on null uutta kautta lisattaessa.
+ * [paattymispaiva] taytetaan validoinnin `enrich`-vaiheessa.
+ */
+data class TallennaKausi(
+    val arvioijaId: Int,
+    val kausiId: Int?,
+    val alkupaiva: LocalDate,
+    val arviointioikeudet: List<Kausioikeus>,
+    val paattymispaiva: LocalDate? = null,
+)

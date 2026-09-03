@@ -20,6 +20,8 @@ sealed interface YkiArvioijaError {
 
     data object ArvioijaaEiLoydy : YkiArvioijaError
 
+    data object KauttaEiLoydy : YkiArvioijaError
+
     /** Toinen kayttaja ehti tallentaa muutoksensa sen jalkeen kun lomake avattiin. */
     data object MuokattuSamanaikaisesti : YkiArvioijaError
 }

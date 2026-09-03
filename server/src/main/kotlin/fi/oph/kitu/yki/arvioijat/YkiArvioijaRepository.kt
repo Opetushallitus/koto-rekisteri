@@ -96,6 +96,7 @@ interface CustomYkiArvioijaRepository {
 class CustomYkiArvioijaRepositoryImpl(
     val jdbcTemplate: JdbcTemplate,
     val namedJdbcTemplate: NamedParameterJdbcTemplate,
+    val kausiRepository: YkiArvioijaKausiRepository,
 ) : CustomYkiArvioijaRepository {
     companion object {
         /**
@@ -140,12 +141,16 @@ class CustomYkiArvioijaRepositoryImpl(
                     "Arvioijan ${arvioija.arvioijaOid} tietoja on muokattu samanaikaisesti",
                 )
         val arvioijaId = savedArvioija.id!!.toInt()
+        val ennen = kausiRepository.findArviointioikeudet(arvioijaId)
 
         if (lahde == Tallennuslahde.KITU) {
             poistaPuuttuvatArviointioikeudet(arvioijaId, arvioija.arviointioikeudet)
         }
         upsertArviointioikeudet(arvioijaId, arvioija.arviointioikeudet)
-        kirjaaKausihistoria(arvioijaId, arvioija.arviointioikeudet, tekija)
+        kausiRepository.kirjaaMuuttuneet(arvioijaId, ennen, arvioija.arviointioikeudet, tekija)
+        if (lahde == Tallennuslahde.KITU) {
+            kausiRepository.synkronoiKaudet(arvioijaId, arvioija.arviointioikeudet, tekija)
+        }
 
         return arvioijaId
     }
@@ -320,52 +325,6 @@ class CustomYkiArvioijaRepositoryImpl(
                         ps.setObject(6, it.kaudenPaattymispaiva)
                         ps.setBoolean(7, it.jatkorekisterointi)
                         ps.setObject(8, it.ensimmainenRekisterointipaiva)
-                    }
-                }
-
-                override fun getBatchSize(): Int = arviointioikeudet.count()
-            },
-        )
-    }
-
-    /**
-     * Kirjaa kauden historiaan. Uniikkiehto varmistaa, ettei muuttumaton kausi kasvata
-     * historiaa: pelkka yhteystiedon korjaus ei siis tuota uutta riviä.
-     */
-    private fun kirjaaKausihistoria(
-        arvioijaId: Int,
-        arviointioikeudet: List<YkiArviointioikeusEntity>,
-        tekija: Oid?,
-    ) {
-        if (arviointioikeudet.isEmpty()) return
-        jdbcTemplate.batchUpdate(
-            """
-            INSERT INTO yki_arvioija_kausi(
-                arvioija_id,
-                kieli,
-                tasot,
-                tila,
-                kauden_alkupaiva,
-                kauden_paattymispaiva,
-                jatkorekisterointi,
-                kirjaaja_oid
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT ON CONSTRAINT yki_arvioija_kausi_unique DO NOTHING
-            """.trimIndent(),
-            object : BatchPreparedStatementSetter {
-                override fun setValues(
-                    ps: PreparedStatement,
-                    i: Int,
-                ) {
-                    arviointioikeudet.elementAt(i).let {
-                        ps.setInt(1, arvioijaId)
-                        ps.setString(2, it.kieli.toString())
-                        ps.setArray(3, ps.connection.createArrayOf("YKI_TUTKINTOTASO", it.tasot.normalisoitu()))
-                        ps.setString(4, it.tila?.toString())
-                        ps.setObject(5, it.kaudenAlkupaiva)
-                        ps.setObject(6, it.kaudenPaattymispaiva)
-                        ps.setBoolean(7, it.jatkorekisterointi)
-                        ps.setString(8, tekija?.toString())
                     }
                 }
 
@@ -549,6 +508,11 @@ class CustomYkiArvioijaRepositoryImpl(
                       SELECT 1 FROM yki_arviointioikeus
                       WHERE yki_arviointioikeus.arvioija_id = yki_arvioija.id
                         AND ${Rekisterointitila.SQL} <> '${Rekisterointitila.PASSIVOITU}'
+                  )
+              AND NOT EXISTS (
+                      SELECT 1 FROM yki_arvioija_rekisterointikausi kausi
+                      WHERE kausi.arvioija_id = yki_arvioija.id
+                        AND (kausi.paattymispaiva IS NULL OR kausi.paattymispaiva >= :tanaan)
                   )
               AND ${Sailytysaika.ALKUHETKI_SQL} < :raja
             RETURNING arvioija_oid

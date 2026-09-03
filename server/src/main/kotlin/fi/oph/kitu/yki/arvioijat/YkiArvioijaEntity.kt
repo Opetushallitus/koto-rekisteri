@@ -26,6 +26,7 @@ data class YkiArvioijaEntity(
     val postinumero: String,
     val postitoimipaikka: String,
     val ashaNumero: String? = null,
+    val arvioijanEnsimmainenRekisterointipaiva: LocalDate? = null,
     val passivoitu: OffsetDateTime? = null,
     val luotu: OffsetDateTime? = null,
     val luojaOid: Oid? = null,
@@ -52,6 +53,8 @@ data class YkiArvioijaEntity(
                     postinumero = rs.getString("postinumero"),
                     postitoimipaikka = rs.getString("postitoimipaikka"),
                     ashaNumero = rs.getString("asha_numero"),
+                    arvioijanEnsimmainenRekisterointipaiva =
+                        rs.getDate("arvioijan_ensimmainen_rekisterointipaiva")?.toLocalDate(),
                     passivoitu = rs.getObject("passivoitu", OffsetDateTime::class.java),
                     luotu = rs.getObject("luotu", OffsetDateTime::class.java),
                     luojaOid = rs.getOidOrNull("luoja_oid"),
@@ -102,8 +105,8 @@ data class YkiArviointioikeusEntity(
 }
 
 /**
- * Yksi kirjattu rekisterointikausi. Append-only historia: voimassa oleva kausi elaa
- * [YkiArviointioikeusEntity]-rivilla ja historiarivi kirjataan vain kun kausi muuttuu.
+ * Yksi muutoslokirivi. Append-only: rivi kirjataan vain kun kausi tosiasiassa muuttuu. Kaudet
+ * itse elavat [YkiRekisterointikausiEntity]-rivilla.
  */
 @Table("yki_arvioija_kausi")
 data class YkiArvioijaKausiEntity(
@@ -116,6 +119,8 @@ data class YkiArvioijaKausiEntity(
     val kaudenAlkupaiva: LocalDate?,
     val kaudenPaattymispaiva: LocalDate?,
     val jatkorekisterointi: Boolean,
+    val toimenpide: Kausitoimenpide?,
+    val kausiId: Number?,
     val kirjattu: OffsetDateTime?,
     val kirjaajaOid: Oid?,
 ) {
@@ -131,6 +136,8 @@ data class YkiArvioijaKausiEntity(
                     kaudenAlkupaiva = rs.getDate("kauden_alkupaiva")?.toLocalDate(),
                     kaudenPaattymispaiva = rs.getDate("kauden_paattymispaiva")?.toLocalDate(),
                     jatkorekisterointi = rs.getBoolean("jatkorekisterointi"),
+                    toimenpide = rs.getString("toimenpide")?.let(Kausitoimenpide::valueOf),
+                    kausiId = rs.getObject("kausi_id", Integer::class.java),
                     kirjattu = rs.getObject("kirjattu", OffsetDateTime::class.java),
                     kirjaajaOid = rs.getOidOrNull("kirjaaja_oid"),
                 )

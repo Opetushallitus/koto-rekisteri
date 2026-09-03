@@ -325,7 +325,7 @@ class YkiArvioijaViewController(
                 }
             }
 
-            YkiArvioijaError.ArvioijaaEiLoydy -> {
+            YkiArvioijaError.ArvioijaaEiLoydy, YkiArvioijaError.KauttaEiLoydy -> {
                 yleinen(
                     UiText.Yki.Arvioija.eiLoydy
                         .toString(),

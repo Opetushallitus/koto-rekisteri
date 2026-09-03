@@ -22,8 +22,8 @@ class TallennaArvioijaValidation(
             accumulating { validatePakollisetKentat(value) }
             accumulating { validatePostinumero(value) }
             accumulating { validateSahkopostiosoite(value) }
-            accumulating { validateKaudenAlkupaiva(value) }
-            accumulating { validateArviointioikeudet(value) }
+            accumulating { validateKaudenAlkupaiva(value.kaudenAlkupaiva, timeService.today(), "kaudenAlkupaiva") }
+            accumulating { validateArviointioikeudet(value.arviointioikeudet.map { it.kieli to it.tasot }) }
         }
     }
 
@@ -57,40 +57,6 @@ class TallennaArvioijaValidation(
         val sahkoposti = value.sahkopostiosoite
         ensure(sahkoposti.isNullOrBlank() || SAHKOPOSTI.matches(sahkoposti)) {
             ValidationError(listOf("sahkopostiosoite"), "Sähköpostiosoite on virheellinen")
-        }
-    }
-
-    private fun Raise<ValidationError>.validateKaudenAlkupaiva(value: TallennaArvioija) {
-        ensure(!value.kaudenAlkupaiva.isAfter(timeService.today().plusYears(1))) {
-            ValidationError(
-                listOf("kaudenAlkupaiva"),
-                "Kauden alkupäivä ei voi olla yli vuotta tulevaisuudessa",
-            )
-        }
-    }
-
-    private fun RaiseAccumulate<ValidationError>.validateArviointioikeudet(value: TallennaArvioija) {
-        accumulating {
-            ensure(value.arviointioikeudet.isNotEmpty()) {
-                ValidationError(
-                    listOf("arviointioikeus"),
-                    "Valitse vähintään yksi tutkintokieli ja tutkintotaso",
-                )
-            }
-        }
-        accumulating {
-            ensure(value.arviointioikeudet.all { it.tasot.isNotEmpty() }) {
-                ValidationError(
-                    listOf("arviointioikeus"),
-                    "Valitse jokaiselle valitulle tutkintokielelle vähintään yksi tutkintotaso",
-                )
-            }
-        }
-        accumulating {
-            val kielet = value.arviointioikeudet.map { it.kieli }
-            ensure(kielet.size == kielet.distinct().size) {
-                ValidationError(listOf("arviointioikeus"), "Sama tutkintokieli on valittu useaan kertaan")
-            }
         }
     }
 
