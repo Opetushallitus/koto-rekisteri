@@ -31,6 +31,10 @@ class DashboardServiceTest(
         jdbc.execute("TRUNCATE TABLE vkt_suoritus CASCADE")
         jdbc.execute("TRUNCATE TABLE koski_error")
         jdbc.execute("TRUNCATE TABLE tehtavapaketti CASCADE")
+        // Virhetaulut luetaan importErrorCounteihin, ja koto-testit siivoavat vain
+        // @BeforeEachissa — ilman naita rivit jaavat elamaan yli ja "tyhja kanta" ei ole tyhja.
+        jdbc.execute("TRUNCATE TABLE yki_suoritus_error CASCADE")
+        jdbc.execute("TRUNCATE TABLE koto_suoritus_error CASCADE")
         clearAllCaches()
     }
 
