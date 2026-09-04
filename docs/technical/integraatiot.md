@@ -105,7 +105,21 @@ Idempotency-Key: {arvioijanOppijanumero}:{versio}
 Runko on `SolkiArvioijaRequest`: samat kentät kuin poistuneessa CSV-tuonnissa, ilman henkilötunnusta
 (1.1.2026 lainmuutos). `tila` on **laskettu** arvo (`Rekisterointitila`), ei kannassa säilytettävä —
 vastaanottajan on syytä johtaa se samoista kauden päivistä. Sopimus on kuvattu kokonaisuudessaan
-`yki-arvioijarekisteri-suunnitelma.md`:n luvussa 5.1 (JYU hyväksynyt 1.9.2026).
+`yki-arvioijarekisteri-suunnitelma.md`:n luvussa 5.1 (JYU hyväksynyt 1.9.2026, täydennetty 4.9.2026).
+
+**`syntymaaika` on ainoa kenttä jota CSV:ssä ei ollut** — Solki johti sen henkilötunnuksesta, jota
+kitu ei enää lähetä. Kitu **ei säilytä** syntymäaikaa vaan hakee sen ONR:stä lähetyshetkellä
+(`OppijanumeroService.getHenkiloByMasterOid`). Kaksi tapausta on pidettävä erillään:
+
+| ONR                                                | Kitu tekee                                                                                         |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| vastaa, syntymäaika on                             | lähettää kentän muodossa `yyyy-MM-dd`                                                              |
+| vastaa, syntymäaikaa ei ole (yksilöimätön henkilö) | jättää kentän **kokonaan pois** rungosta (`@JsonInclude(NON_NULL)`) ja merkitsee rivin lähetetyksi |
+| ei vastaa                                          | **ei lähetä lainkaan**: `merkitseLahetysvirhe` ja rivi jää jonoon                                  |
+
+Viimeinen rivi on tarkoituksellinen poikkeus turvakiellon mallista, joka epäonnistuu auki: vajaana
+lähtenyt rivi merkittäisiin lähetetyksi, eikä mikään lähettäisi sitä uudelleen ennen seuraavaa
+muokkausta, joten ONR-katko jättäisi pysyvän aukon Solkin kopioon.
 
 **Lähetysjono** elää `yki_arvioija`-taulun sarakkeissa `solkiin_lahetetty`, `solki_lahetysvirhe`,
 `solki_lahetysyritykset` ja `solki_viimeisin_lahetysyritys`. Rivi on jonossa, kun
@@ -128,8 +142,8 @@ kytkin osoitteesta: `kitu.yki.baseUrl` on asetettu joka
 ympäristössä (myös local ja e2e dev-stubiin), joten sen olemassaolo ei kerro, saako lähettää. Kun
 kytkin on pois, rivit jäävät jonoon ja lähtevät takautuvasti kytkimen avautuessa.
 
-**Virheilmoitus ei sisällä pyyntörunkoa** (`SolkiArvioijaException.debugString()`): osoite ja
-sähköposti ovat henkilötietoa, ja virhe päätyy sekä lokiin että virhesarakkeeseen, joka näkyy
+**Virheilmoitus ei sisällä pyyntörunkoa** (`SolkiArvioijaException.debugString()`): osoite,
+sähköposti ja syntymäaika ovat henkilötietoa, ja virhe päätyy sekä lokiin että virhesarakkeeseen, joka näkyy
 käyttöliittymässä. Vastausrunko otetaan mukaan mutta **katkaistaan 500 merkkiin** — vastaus voi
 kaiuttaa lähetetyt arvot takaisin, ja `solki_lahetysvirhe` on rajoittamaton `TEXT`.
 

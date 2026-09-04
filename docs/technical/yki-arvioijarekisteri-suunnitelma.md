@@ -964,11 +964,14 @@ ajavat molemmat regiimit erikseen.
 
 Uusi paketti `server/src/main/kotlin/fi/oph/kitu/yki/arvioijat/solki/`.
 
-### 5.1 REST-sopimus (JYU hyväksynyt 1.9.2026)
+### 5.1 REST-sopimus (JYU hyväksynyt 1.9.2026, täydennetty 4.9.2026)
 
 > **JYU on hyväksynyt tämän sopimuksen sellaisenaan 1.9.2026**, eli endpoint, payload, kenttäjoukko,
 > enkoodaukset ja statuskoodit ovat sovitut. Vaiheen 9 toteutus voi alkaa. Jäljellä on vain
 > operatiivisia asioita (§5.1.1) — ne eivät muuta sopimusta.
+>
+> **Täydennys 4.9.2026:** JYU pyysi payloadiin `syntymaaika`-kentän. Se on ainoa muutos
+> 1.9.2026 hyväksyttyyn kenttäjoukkoon, ks. §5.1.1.
 
 **Lähtökohta: samat kentät kuin poistuneessa CSV-tuonnissa.** Solki tuotti aiemmin kitulle
 arvioijarivit CSV:nä, joten kentät ovat jo olemassa Solkin päässä. Lähetetään ne takaisin
@@ -991,6 +994,7 @@ Idempotency-Key: {arvioijanOppijanumero}:{versio}
   "versio": "2026-08-21T09:12:33.512Z",
   "sukunimi": "Kivinen-Testi",
   "etunimet": "Petro Testi",
+  "syntymaaika": "2016-01-01",
   "sahkopostiosoite": "petro.kivinen@example.com",
   "katuosoite": "Testikatu 1 A 2",
   "postinumero": "00100",
@@ -1014,20 +1018,21 @@ Idempotency-Key: {arvioijanOppijanumero}:{versio}
 CSV-sarakkeet ovat commitista `d160c1f1^` (`SolkiArvioijaResponse`). Rivitaso oli
 arvioija × kieli; JSON ryhmittelee saman datan arvioijakohtaiseksi dokumentiksi.
 
-| CSV-sarake                                      | JSON                                      | Muutos                                                             |
-| ----------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------ |
-| `arvioijanOppijanumero`                         | sama, dokumentin juuressa                 | —                                                                  |
-| `henkilotunnus`                                 | **ei mukana**                             | 1.1.2026 lainmuutos; kitu ei ota vastaan eikä lähetä hetua         |
-| `sukunimi`, `etunimet`                          | samat                                     | —                                                                  |
-| `sahkopostiosoite`                              | sama                                      | —                                                                  |
-| `katuosoite`, `postinumero`, `postitoimipaikka` | samat, dokumentin juuressa                | —                                                                  |
-| `ensimmainenRekisterointipaiva`                 | sama, arviointioikeudessa                 | —                                                                  |
-| `kaudenAlkupaiva`                               | sama                                      | —                                                                  |
-| `kaudenPaattymispaiva`                          | sama                                      | —                                                                  |
-| `jatkorekisterointi`                            | sama, `true`/`false`                      | CSV:ssä `"0"`/`"1"`                                                |
-| `tila`                                          | sama, `"AKTIIVINEN"`/`"PASSIVOITU"`       | CSV:ssä `0`/`1`; **kitussa laskettu arvo**, ks. huomio alla        |
-| `kieli`                                         | sama, `Tutkintokieli.solkiCode` (`"fin"`) | CSV:n vanhat numerokoodit `10`/`11`/`12` = `SWE10`/`ENG11`/`ENG12` |
-| `tasot`                                         | sama, JSON-taulukko `["PT","KT","YT"]`    | CSV:ssä `"PT+KT+YT"`                                               |
+| CSV-sarake                                      | JSON                                      | Muutos                                                                               |
+| ----------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------ |
+| `arvioijanOppijanumero`                         | sama, dokumentin juuressa                 | —                                                                                    |
+| `henkilotunnus`                                 | **ei mukana**                             | 1.1.2026 lainmuutos; kitu ei ota vastaan eikä lähetä hetua                           |
+| `sukunimi`, `etunimet`                          | samat                                     | —                                                                                    |
+| — (ei CSV-saraketta)                            | `syntymaaika`, dokumentin juuressa        | **Lisätty 4.9.2026.** Solki johti syntymäajan hetusta; hetun poisto vei siltä pohjan |
+| `sahkopostiosoite`                              | sama                                      | —                                                                                    |
+| `katuosoite`, `postinumero`, `postitoimipaikka` | samat, dokumentin juuressa                | —                                                                                    |
+| `ensimmainenRekisterointipaiva`                 | sama, arviointioikeudessa                 | —                                                                                    |
+| `kaudenAlkupaiva`                               | sama                                      | —                                                                                    |
+| `kaudenPaattymispaiva`                          | sama                                      | —                                                                                    |
+| `jatkorekisterointi`                            | sama, `true`/`false`                      | CSV:ssä `"0"`/`"1"`                                                                  |
+| `tila`                                          | sama, `"AKTIIVINEN"`/`"PASSIVOITU"`       | CSV:ssä `0`/`1`; **kitussa laskettu arvo**, ks. huomio alla                          |
+| `kieli`                                         | sama, `Tutkintokieli.solkiCode` (`"fin"`) | CSV:n vanhat numerokoodit `10`/`11`/`12` = `SWE10`/`ENG11`/`ENG12`                   |
+| `tasot`                                         | sama, JSON-taulukko `["PT","KT","YT"]`    | CSV:ssä `"PT+KT+YT"`                                                                 |
 
 Enkoodausten muutokset (`0`/`1` → boolean, `"PT+KT+YT"` → taulukko) ovat ehdotus: JSON-natiivit
 tyypit ovat luettavampia, mutta jos CSV-identtinen esitys on JYU:lle halvempi, se käy yhtä hyvin.
@@ -1041,18 +1046,19 @@ Kenttien **nimet ja merkitykset** on tarkoitus pitää ennallaan joka tapauksess
 > tarkistussummana. Manuaalinen passivointi näkyy joka tapauksessa myös päivissä, koska se päättää
 > kauden kuluvaan päivään.
 
-| Päätös                                                                  | Perustelu                                                                                                                                                                                                       |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **PUT + koko dokumentti, avaimena oppijanumero**                        | Uudelleenyritys on triviaalisti idempotentti; arviointioikeuden poisto ilmaistavissa (kieli katoaa taulukosta); ei erillisiä create/update/delete-verbejä                                                       |
-| **Arvioijakohtainen dokumentti, ei CSV:n riviesitystä**                 | Ainoa rakenteellinen ero CSV:hen. Riviesityksessä ei voi ilmaista kielen poistoa ilman sopimusta koko joukon korvaamisesta; dokumentissa se on kielen puuttuminen                                               |
-| **Kausi ja tila arviointioikeuskohtaisina**                             | Vastaa kitun tietomallia (sovittu päätös) ja poistuneen CSV:n riviesitystä                                                                                                                                      |
-| **Ei henkilötunnusta**                                                  | 1.1.2026 lainmuutos — Solkin on avaimennettava oppijanumerolla                                                                                                                                                  |
-| **Ei puhelinnumeroa**                                                   | OPH vahvisti (kys. 11), ettei puhelinnumeroa säilytetä kitussa lainkaan — se on kokonaan Solkin omaa tietoa                                                                                                     |
-| **Ei ASHA-numeroa**                                                     | Hallintopäätöksen viite tallennetaan kituun (kys. 12) mutta se on OPH:n sisäinen hallinnollinen tieto; varmistetaan JYU:lta, onko sille Solkissa käyttöä                                                        |
-| `kieli` = `Tutkintokieli.solkiCode` (`"fin"`), `tasot` = `PT`/`KT`/`YT` | Sama lankamuoto kuin poistuneessa CSV:ssä → ei muunnostyötä JYU:n päässä                                                                                                                                        |
-| `versio` = kitun `muokattu`                                             | Solki voi hylätä vanhemman version, jolloin epäjärjestyksessä saapuva uusinta ei palauta vanhaa tilaa                                                                                                           |
-| **Ei DELETE-operaatiota**                                               | Kitu poistaa oman kopionsa säilytysajan umpeuduttua (§6.2), mutta poistoa **ei** välitetä Solkille: Solkilla on oma säilytysaikansa ja oma rekisterinsä. Käytännössä kitu lakkaa lähettämästä kyseistä henkilöä |
-| **PUT korvaa vain OPH:n omistamat kentät**                              | Solki täydentää merkintöjä omilla tiedoillaan (arviointikerrat, huomautukset, lisätiedot, liitteet, puhelinnumerot, postinumero) — lähetys ei saa tyhjentää niitä                                               |
+| Päätös                                                                  | Perustelu                                                                                                                                                                                                                     |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PUT + koko dokumentti, avaimena oppijanumero**                        | Uudelleenyritys on triviaalisti idempotentti; arviointioikeuden poisto ilmaistavissa (kieli katoaa taulukosta); ei erillisiä create/update/delete-verbejä                                                                     |
+| **Arvioijakohtainen dokumentti, ei CSV:n riviesitystä**                 | Ainoa rakenteellinen ero CSV:hen. Riviesityksessä ei voi ilmaista kielen poistoa ilman sopimusta koko joukon korvaamisesta; dokumentissa se on kielen puuttuminen                                                             |
+| **Kausi ja tila arviointioikeuskohtaisina**                             | Vastaa kitun tietomallia (sovittu päätös) ja poistuneen CSV:n riviesitystä                                                                                                                                                    |
+| **Ei henkilötunnusta**                                                  | 1.1.2026 lainmuutos — Solkin on avaimennettava oppijanumerolla                                                                                                                                                                |
+| **Syntymäaika mukana, haettuna ONR:stä**                                | Korvaa hetusta johdetun syntymäajan (JYU:n pyyntö 4.9.2026). Kitu **ei säilytä** kenttää — se ei ole tavoitetilan tietotaulukossa (§1) — vaan hakee sen lähetyshetkellä. Jätetään pois kokonaan jos ONR:ssäkään ei ole tietoa |
+| **Ei puhelinnumeroa**                                                   | OPH vahvisti (kys. 11), ettei puhelinnumeroa säilytetä kitussa lainkaan — se on kokonaan Solkin omaa tietoa                                                                                                                   |
+| **Ei ASHA-numeroa**                                                     | Hallintopäätöksen viite tallennetaan kituun (kys. 12) mutta se on OPH:n sisäinen hallinnollinen tieto; varmistetaan JYU:lta, onko sille Solkissa käyttöä                                                                      |
+| `kieli` = `Tutkintokieli.solkiCode` (`"fin"`), `tasot` = `PT`/`KT`/`YT` | Sama lankamuoto kuin poistuneessa CSV:ssä → ei muunnostyötä JYU:n päässä                                                                                                                                                      |
+| `versio` = kitun `muokattu`                                             | Solki voi hylätä vanhemman version, jolloin epäjärjestyksessä saapuva uusinta ei palauta vanhaa tilaa                                                                                                                         |
+| **Ei DELETE-operaatiota**                                               | Kitu poistaa oman kopionsa säilytysajan umpeuduttua (§6.2), mutta poistoa **ei** välitetä Solkille: Solkilla on oma säilytysaikansa ja oma rekisterinsä. Käytännössä kitu lakkaa lähettämästä kyseistä henkilöä               |
+| **PUT korvaa vain OPH:n omistamat kentät**                              | Solki täydentää merkintöjä omilla tiedoillaan (arviointikerrat, huomautukset, lisätiedot, liitteet, puhelinnumerot, postinumero) — lähetys ei saa tyhjentää niitä                                                             |
 
 | Status                    | Merkitys                | Kitu tekee                                                    |
 | ------------------------- | ----------------------- | ------------------------------------------------------------- |
@@ -1069,9 +1075,17 @@ CSV-vastaavuus, JSON-natiivit tyypit, `tila` mukana laskettuna arvona yllä olev
 passivoinnin ilmaisu päättymispäivällä, idempotenssi (`Idempotency-Key` + `versio`) ja statuskoodit,
 ei ASHA-numeroa eikä henkilötunnusta.
 
-**Payload on lukittu 1.9.2026.** JYU vahvisti, ettei Solki tarvitse passivoinnin syytä,
-henkilötunnusta eikä ASHA-numeroa, joten yllä oleva kenttäjoukko on lopullinen eikä siihen jää
-avoimia lisäyksiä.
+**Payload lukittiin 1.9.2026 ja avattiin kerran 4.9.2026.** JYU vahvisti 1.9.2026, ettei Solki
+tarvitse passivoinnin syytä, henkilötunnusta eikä ASHA-numeroa. Sen jälkeen JYU pyysi
+`syntymaaika`-kentän: Solki johti syntymäajan aiemmin CSV:n `henkilotunnus`-sarakkeesta, jota
+kitu ei enää lähetä (1.1.2026 lainmuutos), eikä CSV:ssä ollut erillistä syntymäaikasaraketta.
+Syntymäaika on hetun pienin korvaaja: se ei yksilöi henkilöä. Muita avoimia lisäyksiä ei ole.
+
+**Syntymäaikaa ei säilytetä kitussa.** Se haetaan ONR:stä lähetyshetkellä samaan tapaan kuin
+turvakielto (§3.4), koska kenttä ei ole tavoitetilan tietotaulukossa (§1). Jos ONR ei vastaa,
+riviä **ei lähetetä** vaan se jää lähetysjonoon: vajaana lähtenyt rivi merkittäisiin lähetetyksi,
+eikä mikään lähettäisi sitä uudelleen ennen seuraavaa muokkausta. Kentättömänä lähetetään vain
+silloin, kun ONR vastaa eikä syntymäaikaa ole (yksilöimätön henkilö).
 
 **Tunnistautuminen (sovittu 1.9.2026):** käytetään **samoja Basic-tunnuksia** kuin nykyisessä
 `solkiRestClient`issa (`kitu.yki.username`/`password` = `YKI_API_USER`/`YKI_API_PASSWORD`) saman

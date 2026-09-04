@@ -1,5 +1,6 @@
 package fi.oph.kitu.yki.arvioijat.solki
 
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -25,7 +26,8 @@ class SolkiArvioijaConfig {
         repository: YkiArvioijaRepository,
         client: SolkiArvioijaClient,
         timeService: TimeService,
-    ): SolkiArvioijaService = SolkiArvioijaServiceImpl(repository, client, timeService)
+        oppijanumeroService: OppijanumeroService,
+    ): SolkiArvioijaService = SolkiArvioijaServiceImpl(repository, client, timeService, oppijanumeroService)
 
     @Bean
     @ConditionalOnMissingBean(SolkiArvioijaService::class)

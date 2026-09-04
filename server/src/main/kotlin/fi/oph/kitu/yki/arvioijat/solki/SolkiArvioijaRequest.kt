@@ -1,6 +1,7 @@
 package fi.oph.kitu.yki.arvioijat.solki
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonInclude
 import fi.oph.kitu.yki.Tutkintokieli
 import fi.oph.kitu.yki.Tutkintotaso
 import fi.oph.kitu.yki.arvioijat.Rekisterointitila
@@ -11,6 +12,9 @@ import java.time.OffsetDateTime
 /**
  * Kenttajoukko vastaa poistunutta CSV-tuontia, jotta Solkille ei synny kartoitustyota (suunnitelma
  * §5.1). Henkilotunnusta ei laheteta 1.1.2026 lainmuutoksen takia.
+ *
+ * [syntymaaika] on ainoa kentta jota CSV:ssa ei ollut: Solki johti sen henkilotunnuksesta, joten
+ * hetun poisto vei silta pohjan. Kitu ei sailyta sita vaan hakee sen ONR:sta lahetyshetkella.
  */
 data class SolkiArvioijaRequest(
     val arvioijanOppijanumero: String,
@@ -18,6 +22,10 @@ data class SolkiArvioijaRequest(
     val versio: OffsetDateTime?,
     val sukunimi: String,
     val etunimet: String,
+    /** Muista kentista poiketen jatetaan pois kokonaan kun tietoa ei ole, ks. [of]. */
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    val syntymaaika: LocalDate?,
     val sahkopostiosoite: String?,
     val katuosoite: String,
     val postinumero: String,
@@ -42,15 +50,21 @@ data class SolkiArvioijaRequest(
     )
 
     companion object {
+        /**
+         * @param syntymaaika ONR:sta lahetyshetkella. Tyhja vain jos ONR:ssakaan ei ole tietoa;
+         *   ONR-katko on eri asia eika saa paatya tanne, ks. [SolkiArvioijaServiceImpl].
+         */
         fun of(
             arvioija: YkiArvioijaEntity,
             tanaan: LocalDate,
+            syntymaaika: LocalDate?,
         ): SolkiArvioijaRequest =
             SolkiArvioijaRequest(
                 arvioijanOppijanumero = arvioija.arvioijaOid.toString(),
                 versio = arvioija.muokattu,
                 sukunimi = arvioija.sukunimi,
                 etunimet = arvioija.etunimet,
+                syntymaaika = syntymaaika,
                 sahkopostiosoite = arvioija.sahkopostiosoite,
                 katuosoite = arvioija.katuosoite,
                 postinumero = arvioija.postinumero,

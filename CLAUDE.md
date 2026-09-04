@@ -47,6 +47,8 @@ TAG=$(git rev-parse HEAD) npx cdk deploy 'Dev/**'
 
 Backend tests spin up PostgreSQL via Testcontainers — Docker must be running. The Playwright suite expects the app's Maven build to launch it; see `e2e/README.md` for how to attach to an already-running IDEA debug session (`reuseExistingServer: true`).
 
+**After switching branches, run `./mvnw clean` first.** Flyway reads migrations from the classpath (`target/classes/db/migration`), and neither Maven nor the Kotlin compiler deletes class/resource files whose source has disappeared — so a migration belonging to another branch keeps running against every fresh Testcontainers database. The symptom is a `column "…" does not exist` failure in tests the source tree says should pass.
+
 ## Architecture
 
 ### Layout

@@ -38,9 +38,9 @@ sealed class SolkiArvioijaException(
     ) : SolkiArvioijaException(oppijanumero, null, "Connection failure", cause)
 
     /**
-     * Poikkeama KIOS-mallista: pyyntorunkoa **ei** serialisoida. Osoite ja sahkoposti ovat
-     * henkilotietoa, joka paatyisi lokeihin ja virhesarakkeeseen, josta se nakyy myos
-     * virhenakymassa.
+     * Poikkeama KIOS-mallista: pyyntorunkoa **ei** serialisoida. Osoite, sahkoposti ja
+     * syntymaaika ovat henkilotietoa, joka paatyisi lokeihin ja virhesarakkeeseen, josta se nakyy
+     * myos virhenakymassa.
      *
      * Vastausrunko otetaan mukaan, koska ilman sita virheesta ei paattele mitaan, mutta se
      * katkaistaan: vastaus voi kaiuttaa lahetetyt arvot takaisin, ja teksti tallentuu
