@@ -13,9 +13,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.system.OutputCaptureExtension
 import org.springframework.context.annotation.Import
+import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.http.HttpHeaders
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -33,6 +35,9 @@ import ch.qos.logback.classic.Logger as LogbackLogger
 @ExtendWith(OutputCaptureExtension::class)
 class AuditLoggerTests(
     @param:Autowired val timeService: TestTimeService,
+    @param:Autowired
+    @param:Qualifier("applicationTaskExecutor")
+    val taskExecutor: AsyncTaskExecutor,
 ) {
     @Autowired
     private lateinit var auditLogger: AuditLogger
@@ -52,10 +57,19 @@ class AuditLoggerTests(
         logbackLogger.detachAppender(listAppender)
     }
 
+    /**
+     * Oma instanssi jaetun beanin sijaan: logSeq on bootin sisainen juokseva numero, joten
+     * jaetulla beanilla se riippuu siita, montako tapahtumaa muut testit ehtivat kirjata samaan
+     * Spring-kontekstiin ennen tata. Tuore instanssi aloittaa nollasta kuten oikeakin boot.
+     */
+    private fun tuoreAuditLogger(): AuditLogger =
+        AuditLogger(taskExecutor, auditLogger.objectMapper, timeService).also {
+            it.appUrl = auditLogger.appUrl
+            it.environment = auditLogger.environment
+        }
+
     @Test
-    fun `log logs JSON string correctly`(
-        @Autowired auditLogger: AuditLogger,
-    ) {
+    fun `log logs JSON string correctly`() {
         timeService.runWithFixedClock(Instant.parse("2025-09-29T12:00:00Z")) {
             RequestContextHolder.setRequestAttributes(
                 ServletRequestAttributes(
@@ -87,7 +101,8 @@ class AuditLoggerTests(
                     principal.authorities,
                 )
 
-            auditLogger.log(
+            val tuore = tuoreAuditLogger()
+            tuore.log(
                 AuditLogOperation.KielitestiSuoritusViewed,
                 generateRandomOppijaOid(Random(123456789)),
             )
@@ -101,7 +116,7 @@ class AuditLoggerTests(
             {
                 "version":1,
                 "logSeq":0,
-                "bootTime":${auditLogger.objectMapper.writeValueAsString(auditLogger.bootTime)},
+                "bootTime":${tuore.objectMapper.writeValueAsString(tuore.bootTime)},
                 "type":"log",
                 "environment":"test",
                 "hostname":"http://localhost:8080/kielitutkinnot",
