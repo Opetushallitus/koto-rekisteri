@@ -1,11 +1,14 @@
 package fi.oph.kitu.yki.arvioijat.solki
 
+import fi.oph.kitu.oppijanumero.OppijanumeroException
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.TimeService
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaEntity
 import fi.oph.kitu.yki.arvioijat.YkiArvioijaRepository
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 
 enum class Lahetystulos {
     LAHETETTY,
@@ -32,6 +35,7 @@ open class SolkiArvioijaServiceImpl(
     private val repository: YkiArvioijaRepository,
     private val client: SolkiArvioijaClient,
     private val timeService: TimeService,
+    private val oppijanumeroService: OppijanumeroService,
 ) : SolkiArvioijaService {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -59,18 +63,14 @@ open class SolkiArvioijaServiceImpl(
         val id = arvioija.id?.toInt() ?: return Lahetystulos.VIRHE
 
         return runCatching {
-            client
-                .put(SolkiArvioijaRequest.of(arvioija, timeService.today()))
+            oppijanumeroService
+                .getHenkiloByMasterOid(arvioija.arvioijaOid)
                 .fold(
                     ifLeft = { virhe ->
-                        repository.merkitseLahetysvirhe(id, virhe.debugString())
+                        repository.merkitseLahetysvirhe(id, syntymaajanHakuvirhe(arvioija, virhe))
                         Lahetystulos.VIRHE
                     },
-                    ifRight = {
-                        // Versioehto: jos rivia on muokattu lahetyksen aikana, se jaa jonoon.
-                        repository.merkitseLahetetyksi(id, arvioija.muokattu)
-                        Lahetystulos.LAHETETTY
-                    },
+                    ifRight = { henkilo -> lahetaSolkiin(id, arvioija, henkilo.syntymaaika) },
                 )
         }.getOrElse { e ->
             logger.warn("Arvioijan {} lahetys epaonnistui odottamattomasti", arvioija.arvioijaOid, e)
@@ -78,6 +78,44 @@ open class SolkiArvioijaServiceImpl(
             Lahetystulos.VIRHE
         }
     }
+
+    private fun lahetaSolkiin(
+        id: Int,
+        arvioija: YkiArvioijaEntity,
+        syntymaaika: LocalDate?,
+    ): Lahetystulos =
+        client
+            .put(SolkiArvioijaRequest.of(arvioija, timeService.today(), syntymaaika))
+            .fold(
+                ifLeft = { virhe ->
+                    repository.merkitseLahetysvirhe(id, virhe.debugString())
+                    Lahetystulos.VIRHE
+                },
+                ifRight = {
+                    // Versioehto: jos rivia on muokattu lahetyksen aikana, se jaa jonoon.
+                    repository.merkitseLahetetyksi(id, arvioija.muokattu)
+                    Lahetystulos.LAHETETTY
+                },
+            )
+
+    /**
+     * ONR-katkoa ei saa tulkita puuttuvaksi syntymaajaksi: [SolkiArvioijaRequest.of] jattaisi
+     * kentan pois, rivi merkittaisiin lahetetyksi eika mikaan lahettaisi sita uudelleen ennen
+     * seuraavaa muokkausta. Rivi jatetaan siksi jonoon.
+     *
+     * Virheesta otetaan vain tyyppi ja tilakoodi. ONR:n vastausrunko on henkilotietoa, ja teksti
+     * paatyy solki_lahetysvirhe-sarakkeeseen josta se renderoidaan tietosivulle.
+     */
+    private fun syntymaajanHakuvirhe(
+        arvioija: YkiArvioijaEntity,
+        virhe: OppijanumeroException,
+    ): String =
+        listOfNotNull(
+            "Syntymaajan haku oppijanumerorekisterista epaonnistui",
+            "oppijanumero: ${arvioija.arvioijaOid}",
+            "cause: ${virhe.javaClass.simpleName}",
+            (virhe as? OppijanumeroException.HasResponse)?.let { "response status: ${it.response.statusCode}" },
+        ).joinToString("; ")
 }
 
 /**

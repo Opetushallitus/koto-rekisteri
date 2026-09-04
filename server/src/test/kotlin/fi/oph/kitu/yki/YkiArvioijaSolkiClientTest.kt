@@ -6,6 +6,7 @@ import fi.oph.kitu.yki.arvioijat.solki.SolkiArvioijaException
 import fi.oph.kitu.yki.arvioijat.solki.SolkiArvioijaRequest
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.mock.http.client.MockClientHttpRequest
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.header
 import org.springframework.test.web.client.match.MockRestRequestMatchers.method
@@ -14,11 +15,13 @@ import org.springframework.test.web.client.response.MockRestResponseCreators.wit
 import org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
 import org.springframework.web.client.RestClient
 import java.io.IOException
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /** Vastauskohtainen kasittely: yhteysvirhe ei saa vuotaa poikkeuksena kutsujalle. */
@@ -31,18 +34,35 @@ class YkiArvioijaSolkiClientTest {
         return SolkiArvioijaClientImpl(builder.build()) to server
     }
 
-    private fun request() =
-        SolkiArvioijaRequest(
-            arvioijanOppijanumero = "1.2.246.562.24.20281155246",
-            versio = versio,
-            sukunimi = "Öhman-Testi",
-            etunimet = "Ranja Testi",
-            sahkopostiosoite = "testi@testi.fi",
-            katuosoite = "Testikuja 5",
-            postinumero = "40100",
-            postitoimipaikka = "Testila",
-            arviointioikeudet = emptyList(),
-        )
+    private fun request(
+        syntymaaika: LocalDate? = LocalDate.of(1980, 1, 1),
+        sahkopostiosoite: String? = "testi@testi.fi",
+    ) = SolkiArvioijaRequest(
+        arvioijanOppijanumero = "1.2.246.562.24.20281155246",
+        versio = versio,
+        sukunimi = "Öhman-Testi",
+        etunimet = "Ranja Testi",
+        syntymaaika = syntymaaika,
+        sahkopostiosoite = sahkopostiosoite,
+        katuosoite = "Testikuja 5",
+        postinumero = "40100",
+        postitoimipaikka = "Testila",
+        arviointioikeudet = emptyList(),
+    )
+
+    /** Serialisoitu runko: se on ainoa paikka jossa kentan lankamuoto nakyy. */
+    private fun runko(request: SolkiArvioijaRequest): String {
+        val (client, server) = clientJaServer()
+        var runko = ""
+        server
+            .expect(method(HttpMethod.PUT))
+            .andExpect { req -> runko = (req as MockClientHttpRequest).bodyAsString }
+            .andRespond(withStatus(HttpStatus.NO_CONTENT))
+
+        client.put(request)
+
+        return runko
+    }
 
     @Test
     fun `yhteysvirhe palautuu Leftina eika poikkeuksena`() {
@@ -91,6 +111,25 @@ class YkiArvioijaSolkiClientTest {
         assertTrue(virhe.length < pitkaVastaus.length, "vastausrunko on katkaistava: ${virhe.length}")
         assertContains(virhe, "katkaistu")
         assertContains(virhe, "response status: 400")
+    }
+
+    @Test
+    fun `syntymaaika serialisoituu paivamaarana ilman kellonaikaa`() {
+        assertContains(runko(request(syntymaaika = LocalDate.of(1980, 1, 1))), """"syntymaaika":"1980-01-01"""")
+    }
+
+    @Test
+    fun `tyhja syntymaaika jatetaan pois rungosta`() {
+        // Solki johti syntymaajan ennen henkilotunnuksesta, joten tyhja arvo on sille eri asia
+        // kuin puuttuva kentta. Muut kentat serialisoituvat yha nullina, ks. alla.
+        val runko = runko(request(syntymaaika = null, sahkopostiosoite = null))
+
+        assertFalse(runko.contains("syntymaaika"), """tyhjan kentan on kadottava kokonaan: $runko""")
+        assertContains(
+            runko,
+            """"sahkopostiosoite":null""",
+            message = "muiden kenttien lankamuoto ei saa muuttua",
+        )
     }
 
     @Test

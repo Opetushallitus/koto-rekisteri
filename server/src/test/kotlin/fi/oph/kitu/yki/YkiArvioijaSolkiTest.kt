@@ -6,6 +6,7 @@ import arrow.core.right
 import fi.oph.kitu.DBContainerConfiguration
 import fi.oph.kitu.TestTimeService
 import fi.oph.kitu.oid.Oid
+import fi.oph.kitu.oppijanumero.OppijanumeroService
 import fi.oph.kitu.util.result.getOrThrow
 import fi.oph.kitu.yki.arvioijat.Rekisterointitila
 import fi.oph.kitu.yki.arvioijat.Tallennuslahde
@@ -35,6 +36,7 @@ import kotlin.test.assertTrue
 class YkiArvioijaSolkiTest(
     @param:Autowired private val repository: YkiArvioijaRepository,
     @param:Autowired private val timeService: TestTimeService,
+    @param:Autowired private val oppijanumeroService: OppijanumeroService,
 ) {
     private val hetki = Instant.parse("2026-06-01T09:00:00Z")
     private val tanaan = LocalDate.of(2026, 6, 1)
@@ -58,7 +60,7 @@ class YkiArvioijaSolkiTest(
     fun setup() {
         repository.deleteAll()
         stub = Stub()
-        solki = SolkiArvioijaServiceImpl(repository, stub, timeService)
+        solki = SolkiArvioijaServiceImpl(repository, stub, timeService, oppijanumeroService)
     }
 
     @Test
@@ -94,6 +96,35 @@ class YkiArvioijaSolkiTest(
         assertEquals(Tutkintokieli.FIN, oikeus.kieli)
         assertEquals(listOf(Tutkintotaso.PT), oikeus.tasot)
         assertEquals(Rekisterointitila.AKTIIVINEN, oikeus.tila, "tila lasketaan lahetyshetkella")
+        assertEquals(LocalDate.of(1980, 1, 1), request.syntymaaika, "syntymaaika haetaan ONR:sta")
+    }
+
+    @Test
+    fun `ONR-katko jattaa rivin jonoon eika laheta puutteellista payloadia`() {
+        // Fixtureton OID = ONR ei vastaa. Ilman tata rivi lahtisi ilman syntymaaikaa ja
+        // merkittaisiin lahetetyksi, jolloin puute jaisi pysyvaksi seuraavaan muokkaukseen asti.
+        val id = tallenna(oid = "1.2.246.562.24.99999999999")
+
+        timeService.runWithFixedClock(hetki) { solki.lahetaLahettamattomat() }
+
+        assertEquals(0, stub.lahetetyt.size, "puutteellista payloadia ei saa lahettaa")
+        assertEquals(1, repository.findLahetettavat().size, "rivi jaa jonoon uusintaa varten")
+        val rivi = repository.findArvioijaById(id)!!
+        assertNull(rivi.solkiinLahetetty)
+        assertContains(rivi.solkiLahetysvirhe!!, "Syntymaajan haku")
+    }
+
+    @Test
+    fun `ONR-n tyhja syntymaaika ei esta lahetysta`() {
+        // Yksiloimattomalla henkilolla ei ole syntymaaikaa. Se on eri asia kuin ONR-katko:
+        // tieto puuttuu aidosti, joten kentta jatetaan pois ja rivi merkitaan lahetetyksi.
+        val id = tallenna(oid = "1.2.246.562.24.10691606777")
+
+        timeService.runWithFixedClock(hetki) { solki.lahetaLahettamattomat() }
+
+        assertNull(stub.lahetetyt.single().syntymaaika)
+        assertNotNull(repository.findArvioijaById(id)!!.solkiinLahetetty)
+        assertEquals(0, repository.findLahetettavat().size)
     }
 
     @Test
